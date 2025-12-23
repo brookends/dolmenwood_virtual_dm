@@ -473,8 +473,34 @@ class StatBlock:
 
 
 @dataclass
+class HexFeature:
+    """
+    A notable feature within a hex location.
+
+    Features can be locations, structures, or points of interest
+    that characters can explore or interact with.
+    """
+    name: str
+    description: str
+    feature_type: str = "general"  # manor, ruin, grove, cave, etc.
+    is_hidden: bool = False
+    discovered: bool = False
+
+    # Associated entities
+    npcs: list[str] = field(default_factory=list)  # NPC names/IDs present
+    monsters: list[str] = field(default_factory=list)  # Monster encounters
+    treasure: Optional[str] = None  # Treasure description
+
+    # Adventure hooks
+    hooks: list[str] = field(default_factory=list)  # Plot hooks and connections
+
+    # Legacy compatibility
+    searchable: bool = False
+
+
+@dataclass
 class Feature:
-    """A notable feature in a location."""
+    """A notable feature in a location (legacy format)."""
     feature_id: str
     name: str
     description: str
@@ -837,24 +863,79 @@ class NPC:
 
 @dataclass
 class HexLocation:
-    """A hex from the Campaign Book."""
-    hex_id: str  # e.g., "0709"
-    terrain: str
-    name: Optional[str] = None
-    description: str = ""
-    features: list[Feature] = field(default_factory=list)
+    """
+    A hex location from the Dolmenwood Campaign Book.
+
+    Contains all information needed to run exploration, encounters,
+    and activities within a single hex on the campaign map.
+    """
+    # Core identification
+    hex_id: str  # e.g., "0101"
+    coordinates: tuple[int, int] = (0, 0)  # Grid coordinates
+    name: Optional[str] = None  # Named location, if any
+
+    # Terrain and region
+    terrain_type: str = "forest"  # bog, forest, river, etc.
+    terrain_description: str = ""  # Full terrain description, e.g., "Bog (3), Northern Scratch"
+    region: str = ""  # Region name, e.g., "Northern Scratch"
+
+    # Flavor text and descriptions
+    flavour_text: str = ""  # Evocative description for players
+    description: str = ""  # Full description (may duplicate flavour_text)
+    dm_notes: str = ""  # Notes for the DM
+
+    # Travel mechanics
+    travel_point_cost: int = 1  # Points to traverse this hex
+    lost_chance: int = 1  # X-in-6 chance of getting lost
+    encounter_chance: int = 1  # X-in-6 chance of encounter per travel turn
+    special_encounter_chance: int = 0  # X-in-6 chance of special encounter
+
+    # Encounters
+    encounter_table: Optional[str] = None  # Reference to encounter table
+    special_encounters: list[str] = field(default_factory=list)  # Special encounter descriptions
+
+    # Features within this hex
+    features: list["HexFeature"] = field(default_factory=list)  # Notable locations/features
+
+    # Associated content
+    npcs: list[str] = field(default_factory=list)  # NPC names/IDs in this hex
+    items: list[str] = field(default_factory=list)  # Notable items in this hex
+    secrets: list[str] = field(default_factory=list)  # Hidden information
+
+    # Special properties
+    ley_lines: Optional[str] = None  # Ley line information
+    foraging_yields: list[str] = field(default_factory=list)  # Special foraging results
+
+    # Source tracking
+    page_reference: str = ""  # Page in source book
+    source: Optional[SourceReference] = None
+
+    # Navigation (optional)
+    adjacent_hexes: Optional[dict[str, str]] = None  # direction -> hex_id
+
+    # Legacy fields (for backward compatibility)
+    terrain: str = ""  # Deprecated: use terrain_type
     lairs: list[Lair] = field(default_factory=list)
     landmarks: list[Landmark] = field(default_factory=list)
     fairy_influence: Optional[str] = None
     drune_presence: bool = False
     seasonal_variations: dict[Season, str] = field(default_factory=dict)
-    encounter_table: Optional[str] = None  # Reference to encounter table
-    source: Optional[SourceReference] = None
+    roads: list[str] = field(default_factory=list)
+    rivers: list[str] = field(default_factory=list)
 
-    # Navigation
-    adjacent_hexes: dict[str, str] = field(default_factory=dict)  # direction -> hex_id
-    roads: list[str] = field(default_factory=list)  # Connected hex_ids via road
-    rivers: list[str] = field(default_factory=list)  # Connected hex_ids via river
+    def __post_init__(self):
+        # Sync terrain fields
+        if self.terrain and not self.terrain_type:
+            self.terrain_type = self.terrain
+        elif self.terrain_type and not self.terrain:
+            self.terrain = self.terrain_type
+
+        # Parse coordinates from hex_id if not provided
+        if self.coordinates == (0, 0) and self.hex_id:
+            try:
+                self.coordinates = (int(self.hex_id[:2]), int(self.hex_id[2:4]))
+            except (ValueError, IndexError):
+                pass
 
 
 # =============================================================================

@@ -22,6 +22,7 @@ from typing import Any, Callable, Optional, Protocol, TypeVar
 from src.data_models import (
     ContentSource,
     Feature,
+    HexFeature,
     HexLocation,
     Lair,
     Landmark,
@@ -456,12 +457,44 @@ class ContentPipeline:
         if content_type == ContentType.HEX:
             parts.append(f"Hex {data.get('hex_id', '')}")
             parts.append(data.get('name', ''))
-            parts.append(f"Terrain: {data.get('terrain', '')}")
+            parts.append(f"Terrain: {data.get('terrain_type', data.get('terrain', ''))}")
+            parts.append(f"Region: {data.get('region', '')}")
+            parts.append(data.get('flavour_text', ''))
             parts.append(data.get('description', ''))
+
+            # Features with expanded data
             for feature in data.get('features', []):
                 if isinstance(feature, dict):
                     parts.append(feature.get('name', ''))
                     parts.append(feature.get('description', ''))
+                    parts.append(f"Type: {feature.get('feature_type', '')}")
+                    # Include NPCs and monsters in features
+                    for npc in feature.get('npcs', []):
+                        parts.append(f"NPC: {npc}")
+                    for monster in feature.get('monsters', []):
+                        parts.append(f"Monster: {monster}")
+                    if feature.get('treasure'):
+                        parts.append(f"Treasure: {feature.get('treasure')}")
+                    for hook in feature.get('hooks', []):
+                        parts.append(f"Hook: {hook}")
+
+            # Hex-level NPCs
+            for npc in data.get('npcs', []):
+                parts.append(f"NPC: {npc}")
+
+            # Special encounters
+            for enc in data.get('special_encounters', []):
+                parts.append(f"Special encounter: {enc}")
+
+            # Secrets (for DM search)
+            for secret in data.get('secrets', []):
+                parts.append(f"Secret: {secret}")
+
+            # Foraging
+            for forage in data.get('foraging_yields', []):
+                parts.append(f"Foraging: {forage}")
+
+            # Legacy landmarks
             for landmark in data.get('landmarks', []):
                 if isinstance(landmark, dict):
                     parts.append(landmark.get('name', ''))
@@ -891,16 +924,79 @@ class ContentPipeline:
 
     def _hex_to_dict(self, hex_data: HexLocation) -> dict:
         """Convert HexLocation to dictionary."""
+        # Convert features - handle both HexFeature and legacy Feature types
+        features_list = []
+        for f in hex_data.features:
+            if isinstance(f, HexFeature):
+                features_list.append({
+                    'name': f.name,
+                    'description': f.description,
+                    'feature_type': f.feature_type,
+                    'is_hidden': f.is_hidden,
+                    'npcs': f.npcs,
+                    'monsters': f.monsters,
+                    'treasure': f.treasure,
+                    'hooks': f.hooks,
+                })
+            else:
+                # Legacy Feature format
+                features_list.append({
+                    'name': f.name,
+                    'description': f.description,
+                    'feature_type': 'general',
+                    'is_hidden': getattr(f, 'hidden', False),
+                    'npcs': [],
+                    'monsters': [],
+                    'treasure': None,
+                    'hooks': [],
+                })
+
         return {
+            # Core identification
             'hex_id': hex_data.hex_id,
-            'terrain': hex_data.terrain,
+            'coordinates': list(hex_data.coordinates) if hex_data.coordinates else [0, 0],
             'name': hex_data.name,
+
+            # Terrain and region
+            'terrain_type': hex_data.terrain_type or hex_data.terrain,
+            'terrain_description': hex_data.terrain_description,
+            'region': hex_data.region,
+
+            # Descriptions
+            'flavour_text': hex_data.flavour_text,
             'description': hex_data.description,
-            'features': [
-                {'feature_id': f.feature_id, 'name': f.name, 'description': f.description,
-                 'searchable': f.searchable, 'hidden': f.hidden}
-                for f in hex_data.features
-            ],
+            'dm_notes': hex_data.dm_notes,
+
+            # Travel mechanics
+            'travel_point_cost': hex_data.travel_point_cost,
+            'lost_chance': hex_data.lost_chance,
+            'encounter_chance': hex_data.encounter_chance,
+            'special_encounter_chance': hex_data.special_encounter_chance,
+
+            # Encounters
+            'encounter_table': hex_data.encounter_table,
+            'special_encounters': hex_data.special_encounters,
+
+            # Features
+            'features': features_list,
+
+            # Associated content
+            'npcs': hex_data.npcs,
+            'items': hex_data.items,
+            'secrets': hex_data.secrets,
+
+            # Special properties
+            'ley_lines': hex_data.ley_lines,
+            'foraging_yields': hex_data.foraging_yields,
+
+            # Source tracking
+            'page_reference': hex_data.page_reference,
+
+            # Navigation
+            'adjacent_hexes': hex_data.adjacent_hexes,
+
+            # Legacy fields (for backward compatibility)
+            'terrain': hex_data.terrain or hex_data.terrain_type,
             'lairs': [
                 {'lair_id': l.lair_id, 'monster_type': l.monster_type,
                  'monster_count': l.monster_count, 'treasure_type': l.treasure_type}
@@ -916,8 +1012,6 @@ class ContentPipeline:
             'seasonal_variations': {
                 s.value: v for s, v in hex_data.seasonal_variations.items()
             },
-            'encounter_table': hex_data.encounter_table,
-            'adjacent_hexes': hex_data.adjacent_hexes,
             'roads': hex_data.roads,
             'rivers': hex_data.rivers,
         }

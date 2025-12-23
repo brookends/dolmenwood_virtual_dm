@@ -11,6 +11,14 @@ from src.content_loader.content_pipeline import (
     ExtractionError,
 )
 from src.content_loader.pdf_parser import PDFParser, TextParser
+from src.content_loader.hex_loader import (
+    HexDataLoader,
+    HexFileLoadResult,
+    HexDirectoryLoadResult,
+    HexFileMetadata,
+    load_all_hexes,
+    create_sample_hex_json,
+)
 
 __all__ = [
     # Core manager
@@ -28,4 +36,11 @@ __all__ = [
     # Parsers
     "PDFParser",
     "TextParser",
+    # Hex loader
+    "HexDataLoader",
+    "HexFileLoadResult",
+    "HexDirectoryLoadResult",
+    "HexFileMetadata",
+    "load_all_hexes",
+    "create_sample_hex_json",
 ]
