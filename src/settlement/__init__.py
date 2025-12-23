@@ -1,5 +1,5 @@
 """Settlement exploration and social interaction engine module."""
 
-from .settlement_engine import SettlementEngine
+from src.settlement.settlement_engine import SettlementEngine
 
 __all__ = ["SettlementEngine"]

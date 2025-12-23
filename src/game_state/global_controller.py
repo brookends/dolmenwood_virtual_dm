@@ -12,8 +12,8 @@ from datetime import datetime
 from typing import Any, Callable, Optional
 import logging
 
-from .state_machine import GameState, StateMachine
-from ..data_models import (
+from src.game_state.state_machine import GameState, StateMachine
+from src.data_models import (
     WorldState,
     PartyState,
     CharacterState,

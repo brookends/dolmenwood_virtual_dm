@@ -1,5 +1,5 @@
 """Dungeon exploration engine module."""
 
-from .dungeon_engine import DungeonEngine
+from src.dungeon.dungeon_engine import DungeonEngine
 
 __all__ = ["DungeonEngine"]
