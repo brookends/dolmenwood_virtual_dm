@@ -98,9 +98,9 @@ class DefaultValidator:
 
     # Required fields by content type
     REQUIRED_FIELDS = {
-        ContentType.HEX: ['hex_id', 'terrain'],
+        ContentType.HEX: ['hex_id'],
         ContentType.NPC: ['npc_id', 'name'],
-        ContentType.MONSTER: ['monster_id', 'name', 'stat_block'],
+        ContentType.MONSTER: ['monster_id', 'name'],  # Stats validated separately
         ContentType.SETTLEMENT: ['settlement_id', 'name'],
         ContentType.ITEM: ['item_id', 'name'],
         ContentType.SPELL: ['spell_id', 'name', 'level'],
@@ -218,27 +218,64 @@ class DefaultValidator:
         warnings = []
         normalized = dict(data)
 
-        # Validate stat block
-        stat_block = data.get('stat_block', {})
-        if stat_block:
+        # Check for required fields - support both new format and legacy stat_block format
+        has_new_format = 'armor_class' in data or 'hit_dice' in data
+        has_legacy_format = 'stat_block' in data and data['stat_block']
+
+        if has_new_format:
+            # New format with top-level stats
+            if 'armor_class' not in data:
+                warnings.append("Missing armor_class, defaulting to 10")
+                normalized['armor_class'] = 10
+            else:
+                # Normalize AC to integer
+                ac = data.get('armor_class')
+                if isinstance(ac, str):
+                    try:
+                        ac = int(ac.split()[0])
+                    except (ValueError, IndexError):
+                        ac = 10
+                        warnings.append("Could not parse AC, defaulting to 10")
+                normalized['armor_class'] = ac
+
+            if 'hit_dice' not in data:
+                warnings.append("Missing hit_dice, defaulting to 1d8")
+                normalized['hit_dice'] = "1d8"
+
+        elif has_legacy_format:
+            # Legacy stat_block format
+            stat_block = data['stat_block']
             if 'armor_class' not in stat_block:
-                errors.append("Monster stat_block missing armor_class")
+                warnings.append("Monster stat_block missing armor_class")
             if 'hit_dice' not in stat_block:
-                errors.append("Monster stat_block missing hit_dice")
+                warnings.append("Monster stat_block missing hit_dice")
 
             # Normalize AC to integer
             ac = stat_block.get('armor_class')
             if isinstance(ac, str):
                 try:
-                    ac = int(ac.split()[0])  # Handle "14 (leather)" format
+                    ac = int(ac.split()[0])
                 except (ValueError, IndexError):
                     ac = 10
                     warnings.append("Could not parse AC, defaulting to 10")
             stat_block['armor_class'] = ac
             normalized['stat_block'] = stat_block
+        else:
+            warnings.append("No stats found, using defaults")
+            normalized['armor_class'] = 10
+            normalized['hit_dice'] = "1d8"
 
         # Ensure lists exist
         normalized.setdefault('habitat', [])
+        normalized.setdefault('attacks', [])
+        normalized.setdefault('damage', [])
+        normalized.setdefault('special_abilities', [])
+        normalized.setdefault('immunities', [])
+        normalized.setdefault('resistances', [])
+        normalized.setdefault('vulnerabilities', [])
+        normalized.setdefault('traits', [])
+        normalized.setdefault('encounter_scenarios', [])
+        normalized.setdefault('lair_descriptions', [])
 
         return normalized, errors, warnings
 
@@ -512,10 +549,51 @@ class ContentPipeline:
                 parts.append(hook)
 
         elif content_type == ContentType.MONSTER:
+            # Core info
             parts.append(data.get('name', ''))
             parts.append(data.get('description', ''))
+            parts.append(data.get('behavior', ''))
+
+            # Classification
+            parts.append(f"Type: {data.get('monster_type', '')}")
+            parts.append(f"Size: {data.get('size', '')}")
+            parts.append(f"Alignment: {data.get('alignment', '')}")
+            parts.append(f"Sentience: {data.get('sentience', '')}")
+
+            # Stats for quick reference
+            parts.append(f"HD: {data.get('hit_dice', '')}")
+            parts.append(f"AC: {data.get('armor_class', '')}")
+            parts.append(f"Morale: {data.get('morale', '')}")
+
+            # Attacks
+            for attack in data.get('attacks', []):
+                parts.append(f"Attack: {attack}")
+
+            # Special abilities (important for search)
+            for ability in data.get('special_abilities', []):
+                parts.append(f"Ability: {ability}")
+
+            # Immunities/resistances/vulnerabilities
+            for immunity in data.get('immunities', []):
+                parts.append(f"Immune: {immunity}")
+            for resistance in data.get('resistances', []):
+                parts.append(f"Resistant: {resistance}")
+            for vulnerability in data.get('vulnerabilities', []):
+                parts.append(f"Vulnerable: {vulnerability}")
+
+            # Habitat
             for habitat in data.get('habitat', []):
                 parts.append(f"Found in: {habitat}")
+
+            # Encounter scenarios (useful for DM search)
+            for scenario in data.get('encounter_scenarios', []):
+                parts.append(f"Encounter: {scenario}")
+
+            # Traits
+            for trait in data.get('traits', []):
+                parts.append(f"Trait: {trait}")
+
+            # Legacy stat_block format support
             stat_block = data.get('stat_block', {})
             if stat_block:
                 parts.append(f"HD: {stat_block.get('hit_dice', '')}")

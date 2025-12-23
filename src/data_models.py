@@ -473,6 +473,131 @@ class StatBlock:
 
 
 @dataclass
+class MonsterSaves:
+    """Saving throw values for a monster."""
+    doom: int = 14  # Save vs Death/Doom
+    ray: int = 15   # Save vs Wands/Rays
+    hold: int = 16  # Save vs Paralysis/Hold
+    blast: int = 17 # Save vs Breath/Blast
+    spell: int = 18 # Save vs Spells
+
+
+@dataclass
+class Monster:
+    """
+    A monster entry from the Dolmenwood Monster Book.
+
+    Contains all information needed to run encounters with this creature,
+    including stats, abilities, behavior, and encounter seeds.
+    """
+    # Core identification
+    name: str
+    monster_id: str
+
+    # Combat statistics
+    armor_class: int = 10
+    hit_dice: str = "1d8"
+    hp: int = 4
+    level: int = 1
+    morale: int = 7
+
+    # Movement (in feet)
+    movement: str = "40'"  # Display string
+    speed: int = 40        # Base speed in feet
+    burrow_speed: Optional[int] = None
+    fly_speed: Optional[int] = None
+    swim_speed: Optional[int] = None
+
+    # Combat
+    attacks: list[str] = field(default_factory=list)  # ["Claw (+2, 1d6)", "Bite (+2, 1d8)"]
+    damage: list[str] = field(default_factory=list)   # ["1d6", "1d8"]
+
+    # Saving throws
+    save_doom: int = 14
+    save_ray: int = 15
+    save_hold: int = 16
+    save_blast: int = 17
+    save_spell: int = 18
+    saves_as: Optional[str] = None  # Alternative: "Fighter 3"
+
+    # Treasure
+    treasure_type: Optional[str] = None
+    hoard: Optional[str] = None
+    possessions: Optional[str] = None
+
+    # Classification
+    size: str = "Medium"  # Tiny, Small, Medium, Large, Huge, Gargantuan
+    monster_type: str = "Mortal"  # Mortal, Fairy, Undead, Demon, Monstrosity, etc.
+    sentience: str = "Sentient"  # Non-Sentient, Semi-Intelligent, Sentient
+    alignment: str = "Neutral"
+    intelligence: Optional[str] = None
+
+    # Abilities
+    special_abilities: list[str] = field(default_factory=list)
+    immunities: list[str] = field(default_factory=list)
+    resistances: list[str] = field(default_factory=list)
+    vulnerabilities: list[str] = field(default_factory=list)
+
+    # Description and behavior
+    description: Optional[str] = None
+    behavior: Optional[str] = None
+    speech: Optional[str] = None
+    traits: list[str] = field(default_factory=list)  # Random traits table
+
+    # Encounter information
+    number_appearing: Optional[str] = None  # Dice notation, e.g., "2d6"
+    lair_percentage: Optional[int] = None   # Percentage chance to find in lair
+    encounter_scenarios: list[str] = field(default_factory=list)
+    lair_descriptions: list[str] = field(default_factory=list)
+
+    # Experience and habitat
+    xp_value: int = 0
+    habitat: list[str] = field(default_factory=list)
+
+    # Source tracking
+    page_reference: str = ""
+    source: Optional["SourceReference"] = None  # Forward reference
+
+    def get_saves(self) -> MonsterSaves:
+        """Get saving throws as a MonsterSaves object."""
+        return MonsterSaves(
+            doom=self.save_doom,
+            ray=self.save_ray,
+            hold=self.save_hold,
+            blast=self.save_blast,
+            spell=self.save_spell,
+        )
+
+    def get_attack_bonus(self) -> int:
+        """Calculate attack bonus based on hit dice/level."""
+        return self.level
+
+    def to_stat_block(self) -> StatBlock:
+        """Convert to legacy StatBlock format for combat engine."""
+        # Parse attacks into the dict format expected by StatBlock
+        attack_list = []
+        for i, atk in enumerate(self.attacks):
+            dmg = self.damage[i] if i < len(self.damage) else "1d6"
+            attack_list.append({
+                'name': atk,
+                'damage': dmg,
+                'bonus': self.level,
+            })
+
+        return StatBlock(
+            armor_class=self.armor_class,
+            hit_dice=self.hit_dice,
+            hp_current=self.hp,
+            hp_max=self.hp,
+            movement=self.speed,
+            attacks=attack_list,
+            morale=self.morale,
+            save_as=self.saves_as or f"Monster {self.level}",
+            special_abilities=self.special_abilities,
+        )
+
+
+@dataclass
 class HexFeature:
     """
     A notable feature within a hex location.
