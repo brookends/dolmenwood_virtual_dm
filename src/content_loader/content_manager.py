@@ -26,6 +26,7 @@ from src.data_models import (
     SourceReference,
     ContentSource,
     HexLocation,
+    HexFeature,
     NPC,
     Feature,
     Lair,
@@ -629,21 +630,78 @@ class ContentManager:
 
     def _dict_to_hex(self, data: dict) -> HexLocation:
         """Convert dictionary to HexLocation."""
-        return HexLocation(
-            hex_id=data['hex_id'],
-            terrain=data['terrain'],
-            name=data.get('name'),
-            description=data.get('description', ''),
-            features=[
-                Feature(
-                    feature_id=f['feature_id'],
-                    name=f['name'],
+        # Parse features - handle both new HexFeature and legacy Feature formats
+        features = []
+        for f in data.get('features', []):
+            if 'feature_id' in f:
+                # Legacy Feature format - skip or convert
+                continue
+            else:
+                # New HexFeature format
+                features.append(HexFeature(
+                    name=f.get('name', 'Unknown'),
                     description=f.get('description', ''),
-                    searchable=f.get('searchable', False),
-                    hidden=f.get('hidden', False),
-                )
-                for f in data.get('features', [])
-            ],
+                    feature_type=f.get('feature_type', 'general'),
+                    is_hidden=f.get('is_hidden', False),
+                    npcs=f.get('npcs', []),
+                    monsters=f.get('monsters', []),
+                    treasure=f.get('treasure'),
+                    hooks=f.get('hooks', []),
+                ))
+
+        # Parse coordinates
+        coords = data.get('coordinates', [0, 0])
+        if isinstance(coords, list) and len(coords) >= 2:
+            coordinates = (coords[0], coords[1])
+        else:
+            coordinates = (0, 0)
+
+        return HexLocation(
+            # Core identification
+            hex_id=data['hex_id'],
+            coordinates=coordinates,
+            name=data.get('name'),
+
+            # Terrain and region
+            terrain_type=data.get('terrain_type', data.get('terrain', 'forest')),
+            terrain_description=data.get('terrain_description', ''),
+            region=data.get('region', ''),
+
+            # Descriptions
+            flavour_text=data.get('flavour_text', ''),
+            description=data.get('description', ''),
+            dm_notes=data.get('dm_notes', ''),
+
+            # Travel mechanics
+            travel_point_cost=data.get('travel_point_cost', 1),
+            lost_chance=data.get('lost_chance', 1),
+            encounter_chance=data.get('encounter_chance', 1),
+            special_encounter_chance=data.get('special_encounter_chance', 0),
+
+            # Encounters
+            encounter_table=data.get('encounter_table'),
+            special_encounters=data.get('special_encounters', []),
+
+            # Features
+            features=features,
+
+            # Associated content
+            npcs=data.get('npcs', []),
+            items=data.get('items', []),
+            secrets=data.get('secrets', []),
+
+            # Special properties
+            ley_lines=data.get('ley_lines'),
+            foraging_yields=data.get('foraging_yields', []),
+
+            # Source tracking
+            page_reference=data.get('page_reference', ''),
+
+            # Navigation
+            adjacent_hexes=data.get('adjacent_hexes'),
+
+            # Legacy fields
+            terrain=data.get('terrain', data.get('terrain_type', 'forest')),
             lairs=[
                 Lair(
                     lair_id=l['lair_id'],
@@ -667,8 +725,6 @@ class ContentManager:
             seasonal_variations={
                 Season(k): v for k, v in data.get('seasonal_variations', {}).items()
             },
-            encounter_table=data.get('encounter_table'),
-            adjacent_hexes=data.get('adjacent_hexes', {}),
             roads=data.get('roads', []),
             rivers=data.get('rivers', []),
             source=SourceReference(

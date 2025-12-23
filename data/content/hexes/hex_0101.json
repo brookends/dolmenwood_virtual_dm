@@ -1,0 +1,64 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [192],
+    "content_type": "hexes",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "hex_id": "0101",
+      "coordinates": [1, 1],
+      "name": "The Spectral Manse",
+      "flavour_text": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+      "terrain_type": "bog",
+      "terrain_description": "Bog (3), Northern Scratch",
+      "region": "Northern Scratch",
+      "travel_point_cost": 3,
+      "lost_chance": 2,
+      "encounter_chance": 2,
+      "special_encounter_chance": 2,
+      "special_encounters": [
+        "bewildered banshee heading to a ball at the Spectral Manse"
+      ],
+      "encounter_table": "Northern Scratch",
+      "ley_lines": null,
+      "foraging_yields": ["Bosun's Balm"],
+      "features": [
+        {
+          "name": "The Spectral Manse",
+          "description": "A thicket of twisted blackthorns stands amid a treacherous region of rivulets and sodden moss carpets. Those who push through the tangled branches arrive at a blue-tinged, spectral vision of a baroque manor of dark wood, its windows lit with the veiled glow of firelight behind drawn curtains. Strains of plaintive violin music can be heard from somewhere within. The manor exists in an odd dimension, halfway between Fairy and the mortal world. Interior walls appear skewed, passages twist at odd angles, and rooms seem to expand and contract as characters move through them. The front door opens freely, or a window can be forced. Each room connects to 1d3 other rooms, via crooked doors and lurching hallways. Items from the manse evaporate into mist when taken into the real world, except for Lord Hobbled-and-Blackened's possessions.",
+          "is_hidden": false,
+          "feature_type": "manor",
+          "npcs": [
+            "Lord Hobbled-and-Blackened",
+            "aged elven lady with violet eyes",
+            "frost elf courtiers"
+          ],
+          "monsters": [
+            "1d4 seelie dogs",
+            "banshee",
+            "2 frost elf courtiers"
+          ],
+          "treasure": "Magical violin worth 10,000gp",
+          "hooks": [
+            "Lord Hobbled-and-Blackened beseeches PCs to take a letter to Ygraine declaring his love",
+            "Portrait of Ygraine Mordlin suggests connection to larger story",
+            "Fixing the grandfather clock causes time acceleration"
+          ]
+        }
+      ],
+      "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+      "npcs": ["Lord Hobbled-and-Blackened"],
+      "items": ["Magical violin that can cast Dominate once a week"],
+      "secrets": [
+        "Lord Hobbled-and-Blackened was imprisoned for falling in love with Prince Mallowheart's fosterling daughter Ygraine Mordlin"
+      ],
+      "dm_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee heading to a ball at the Spectral Manse. Successful foraging yields 1d2 portions of Bosun's Balm in addition to normal results.",
+      "adjacent_hexes": null,
+      "page_reference": "p. 192"
+    }
+  ]
+}
