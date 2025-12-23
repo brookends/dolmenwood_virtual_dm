@@ -19,6 +19,13 @@ from src.content_loader.hex_loader import (
     load_all_hexes,
     create_sample_hex_json,
 )
+from src.content_loader.monster_loader import (
+    MonsterDataLoader,
+    MonsterFileLoadResult,
+    MonsterDirectoryLoadResult,
+    MonsterFileMetadata,
+    load_all_monsters,
+)
 
 __all__ = [
     # Core manager
@@ -43,4 +50,10 @@ __all__ = [
     "HexFileMetadata",
     "load_all_hexes",
     "create_sample_hex_json",
+    # Monster loader
+    "MonsterDataLoader",
+    "MonsterFileLoadResult",
+    "MonsterDirectoryLoadResult",
+    "MonsterFileMetadata",
+    "load_all_monsters",
 ]
