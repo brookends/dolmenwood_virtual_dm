@@ -12,7 +12,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Optional
 
-from ..data_models import TransitionLog
+from src.data_models import TransitionLog
 
 
 class GameState(str, Enum):

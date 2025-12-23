@@ -8,10 +8,18 @@ This module provides the main entry point and the VirtualDM class
 that coordinates all game subsystems.
 """
 
+import sys
+from pathlib import Path
+
+# Add the project root to the Python path for module discovery
+_project_root = Path(__file__).parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 import logging
 from typing import Any, Optional
 
-from .data_models import (
+from src.data_models import (
     GameDate,
     GameTime,
     CharacterState,
@@ -20,12 +28,12 @@ from .data_models import (
     Season,
     Weather,
 )
-from .game_state import GameState, StateMachine, GlobalController, TimeTracker
-from .hex_crawl import HexCrawlEngine
-from .dungeon import DungeonEngine
-from .combat import CombatEngine
-from .settlement import SettlementEngine
-from .downtime import DowntimeEngine
+from src.game_state import GameState, StateMachine, GlobalController, TimeTracker
+from src.hex_crawl import HexCrawlEngine
+from src.dungeon import DungeonEngine
+from src.combat import CombatEngine
+from src.settlement import SettlementEngine
+from src.downtime import DowntimeEngine
 
 
 # Configure logging
@@ -262,7 +270,7 @@ class VirtualDM:
         Returns:
             Rest result dictionary
         """
-        from .downtime.downtime_engine import RestType
+        from src.downtime.downtime_engine import RestType
 
         type_map = {
             "short": RestType.SHORT_REST,
@@ -282,12 +290,12 @@ class VirtualDM:
 
     def get_dice_log(self) -> list:
         """Get all dice rolls this session."""
-        from .data_models import DiceRoller
+        from src.data_models import DiceRoller
         return DiceRoller.get_roll_log()
 
     def clear_dice_log(self) -> None:
         """Clear the dice roll log."""
-        from .data_models import DiceRoller
+        from src.data_models import DiceRoller
         DiceRoller.clear_roll_log()
 
     def get_time_summary(self) -> dict[str, Any]:
