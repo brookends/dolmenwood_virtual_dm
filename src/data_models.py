@@ -600,7 +600,7 @@ class Monster:
 @dataclass
 class HexFeature:
     """
-    A notable feature within a hex location.
+    A notable feature within a hex location (legacy format).
 
     Features can be locations, structures, or points of interest
     that characters can explore or interact with.
@@ -621,6 +621,120 @@ class HexFeature:
 
     # Legacy compatibility
     searchable: bool = False
+
+
+# =============================================================================
+# NEW HEX DATA STRUCTURES (Updated Format)
+# =============================================================================
+
+
+@dataclass
+class HexProcedural:
+    """
+    Procedural generation rules for a hex.
+
+    Contains chances for getting lost, encounters, and foraging results.
+    """
+    lost_chance: str = "1-in-6"  # e.g., "2-in-6"
+    encounter_chance: str = "1-in-6"  # e.g., "2-in-6"
+    encounter_notes: str = ""  # Special notes about encounters
+    foraging_results: str = ""  # Description of foraging results
+    foraging_special: list[str] = field(default_factory=list)  # Special foraging yields
+
+
+@dataclass
+class RollTableEntry:
+    """
+    A single entry in a roll table.
+
+    Contains the roll value, optional title, description, and associated content.
+    """
+    roll: int  # The die roll value for this entry
+    description: str  # What happens on this roll
+    title: Optional[str] = None  # Optional title for the entry
+    monsters: list[str] = field(default_factory=list)  # Monster references
+    npcs: list[str] = field(default_factory=list)  # NPC references
+    items: list[str] = field(default_factory=list)  # Item references
+    mechanical_effect: Optional[str] = None  # Game mechanical effects
+    sub_table: Optional[str] = None  # Reference to a sub-table to roll on
+
+
+@dataclass
+class RollTable:
+    """
+    A roll table used for random generation.
+
+    Contains a die type and list of entries to roll on.
+    """
+    name: str
+    die_type: str  # e.g., "d6", "d8", "d20"
+    description: str = ""  # When to use this table
+    entries: list[RollTableEntry] = field(default_factory=list)
+
+
+@dataclass
+class PointOfInterest:
+    """
+    A point of interest within a hex.
+
+    More detailed than HexFeature, supports dungeon-like locations
+    with rooms, roll tables, and NPCs.
+    """
+    name: str
+    poi_type: str  # manse, ruin, grove, cave, settlement, etc.
+    description: str
+    tagline: Optional[str] = None  # Short evocative description
+
+    # Exploration details
+    entering: Optional[str] = None  # How to enter the location
+    interior: Optional[str] = None  # Description of the interior
+    exploring: Optional[str] = None  # How exploration works
+    leaving: Optional[str] = None  # Rules/effects when leaving
+    inhabitants: Optional[str] = None  # Who lives here
+
+    # Roll tables for this POI
+    roll_tables: list[RollTable] = field(default_factory=list)
+
+    # Associated content
+    npcs: list[str] = field(default_factory=list)  # NPC IDs present here
+    special_features: list[str] = field(default_factory=list)
+    secrets: list[str] = field(default_factory=list)
+
+    # Dungeon properties
+    is_dungeon: bool = False
+    dungeon_levels: Optional[int] = None
+
+
+@dataclass
+class HexNPC:
+    """
+    An NPC found within a hex location.
+
+    Contains full NPC details for roleplay and encounters.
+    """
+    npc_id: str
+    name: str
+    description: str
+    kindred: str = "Human"  # Race/species
+    alignment: str = "Neutral"
+
+    # Roleplay details
+    title: Optional[str] = None
+    demeanor: list[str] = field(default_factory=list)  # Personality traits
+    speech: str = ""  # How they speak
+
+    # Knowledge and goals
+    languages: list[str] = field(default_factory=list)
+    desires: list[str] = field(default_factory=list)  # What they want
+    secrets: list[str] = field(default_factory=list)  # Hidden information
+
+    # Equipment and location
+    possessions: list[str] = field(default_factory=list)
+    location: str = ""  # Where in the hex they can be found
+
+    # Combat
+    stat_reference: Optional[str] = None  # Reference to stat block
+    is_combatant: bool = False
 
 
 @dataclass
@@ -998,54 +1112,62 @@ class HexLocation:
     hex_id: str  # e.g., "0101"
     coordinates: tuple[int, int] = (0, 0)  # Grid coordinates
     name: Optional[str] = None  # Named location, if any
+    tagline: str = ""  # Short evocative description
 
     # Terrain and region
     terrain_type: str = "forest"  # bog, forest, river, etc.
     terrain_description: str = ""  # Full terrain description, e.g., "Bog (3), Northern Scratch"
+    terrain_difficulty: int = 1  # Terrain difficulty rating (1-4)
     region: str = ""  # Region name, e.g., "Northern Scratch"
 
-    # Flavor text and descriptions
-    flavour_text: str = ""  # Evocative description for players
-    description: str = ""  # Full description (may duplicate flavour_text)
+    # Descriptions
+    description: str = ""  # Full description
     dm_notes: str = ""  # Notes for the DM
 
-    # Travel mechanics
-    travel_point_cost: int = 1  # Points to traverse this hex
-    lost_chance: int = 1  # X-in-6 chance of getting lost
-    encounter_chance: int = 1  # X-in-6 chance of encounter per travel turn
-    special_encounter_chance: int = 0  # X-in-6 chance of special encounter
+    # Procedural rules (new format)
+    procedural: Optional["HexProcedural"] = None  # Lost/encounter/foraging rules
 
-    # Encounters
-    encounter_table: Optional[str] = None  # Reference to encounter table
-    special_encounters: list[str] = field(default_factory=list)  # Special encounter descriptions
+    # Points of interest (new format)
+    points_of_interest: list["PointOfInterest"] = field(default_factory=list)
 
-    # Features within this hex
-    features: list["HexFeature"] = field(default_factory=list)  # Notable locations/features
+    # Roll tables for the hex
+    roll_tables: list["RollTable"] = field(default_factory=list)
+
+    # NPCs (new format - full NPC data)
+    npcs: list["HexNPC"] = field(default_factory=list)
 
     # Associated content
-    npcs: list[str] = field(default_factory=list)  # NPC names/IDs in this hex
-    items: list[str] = field(default_factory=list)  # Notable items in this hex
+    items: list[Any] = field(default_factory=list)  # Notable items in this hex
     secrets: list[str] = field(default_factory=list)  # Hidden information
 
-    # Special properties
-    ley_lines: Optional[str] = None  # Ley line information
-    foraging_yields: list[str] = field(default_factory=list)  # Special foraging results
+    # Navigation
+    adjacent_hexes: list[str] = field(default_factory=list)  # Adjacent hex IDs
+    roads: list[str] = field(default_factory=list)  # Roads through hex
 
     # Source tracking
     page_reference: str = ""  # Page in source book
-    source: Optional[SourceReference] = None
+    source: Optional["SourceReference"] = None
 
-    # Navigation (optional)
-    adjacent_hexes: Optional[dict[str, str]] = None  # direction -> hex_id
+    # Metadata
+    _metadata: Optional[dict] = None  # Source metadata from JSON
 
     # Legacy fields (for backward compatibility)
     terrain: str = ""  # Deprecated: use terrain_type
-    lairs: list[Lair] = field(default_factory=list)
-    landmarks: list[Landmark] = field(default_factory=list)
+    flavour_text: str = ""  # Deprecated: use tagline
+    travel_point_cost: int = 1  # Points to traverse this hex (legacy)
+    lost_chance: int = 1  # X-in-6 chance of getting lost (legacy)
+    encounter_chance: int = 1  # X-in-6 chance of encounter (legacy)
+    special_encounter_chance: int = 0  # X-in-6 chance of special encounter (legacy)
+    encounter_table: Optional[str] = None  # Reference to encounter table (legacy)
+    special_encounters: list[str] = field(default_factory=list)  # Legacy
+    features: list["HexFeature"] = field(default_factory=list)  # Legacy format
+    ley_lines: Optional[str] = None  # Ley line information
+    foraging_yields: list[str] = field(default_factory=list)  # Legacy
+    lairs: list["Lair"] = field(default_factory=list)
+    landmarks: list["Landmark"] = field(default_factory=list)
     fairy_influence: Optional[str] = None
     drune_presence: bool = False
     seasonal_variations: dict[Season, str] = field(default_factory=dict)
-    roads: list[str] = field(default_factory=list)
     rivers: list[str] = field(default_factory=list)
 
     def __post_init__(self):
@@ -1061,6 +1183,12 @@ class HexLocation:
                 self.coordinates = (int(self.hex_id[:2]), int(self.hex_id[2:4]))
             except (ValueError, IndexError):
                 pass
+
+        # Sync legacy flavour_text with tagline
+        if self.flavour_text and not self.tagline:
+            self.tagline = self.flavour_text
+        elif self.tagline and not self.flavour_text:
+            self.flavour_text = self.tagline
 
 
 # =============================================================================

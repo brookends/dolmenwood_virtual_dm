@@ -4,22 +4,19 @@ Hex Data Loader for Dolmenwood Virtual DM.
 Loads hex data from JSON files in the data/content/hexes directory
 and stores them in both SQLite (structured storage) and ChromaDB (vector search).
 
-JSON File Format:
+JSON File Format (single hex per file):
 {
-    "_metadata": {
-        "source_file": "path/to/source.pdf",
-        "pages": [192],
-        "content_type": "hexes",
-        "item_count": 1
-    },
-    "items": [
-        {
-            "hex_id": "0101",
-            "coordinates": [1, 1],
-            "name": "The Spectral Manse",
-            ...
-        }
-    ]
+    "hex_id": "0101",
+    "coordinates": [1, 1],
+    "name": "The Spectral Manse",
+    "tagline": "A barren expanse...",
+    "region": "Northern Scratch",
+    "terrain_type": "bog",
+    "terrain_difficulty": 3,
+    "procedural": { ... },
+    "points_of_interest": [ ... ],
+    "npcs": [ ... ],
+    "_metadata": { ... }
 }
 """
 
@@ -28,12 +25,17 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Any, Optional
 
 from src.data_models import (
     ContentSource,
     HexFeature,
     HexLocation,
+    HexNPC,
+    HexProcedural,
+    PointOfInterest,
+    RollTable,
+    RollTableEntry,
     SourceReference,
     SourceType,
 )
@@ -53,6 +55,7 @@ class HexFileMetadata:
     item_count: int = 0
     errors: list[str] = field(default_factory=list)
     note: str = ""
+    extraction_note: str = ""
 
 
 @dataclass
@@ -196,7 +199,7 @@ class HexDataLoader:
 
     def load_file(self, file_path: Path) -> HexFileLoadResult:
         """
-        Load hexes from a single JSON file.
+        Load a hex from a single JSON file.
 
         Args:
             file_path: Path to JSON file
@@ -222,48 +225,69 @@ class HexDataLoader:
             logger.error(f"Error reading {file_path}: {e}")
             return result
 
-        # Parse metadata
+        # Parse metadata (now at top level of hex)
         metadata_dict = data.get("_metadata", {})
         result.metadata = HexFileMetadata(
             source_file=metadata_dict.get("source_file", ""),
             pages=metadata_dict.get("pages", []),
             content_type=metadata_dict.get("content_type", "hexes"),
-            item_count=metadata_dict.get("item_count", 0),
+            item_count=metadata_dict.get("item_count", 1),
             errors=metadata_dict.get("errors", []),
             note=metadata_dict.get("note", ""),
+            extraction_note=metadata_dict.get("extraction_note", ""),
         )
 
         # Determine source reference
         source_ref = self._get_source_reference(result.metadata)
 
-        # Load hex items
-        items = data.get("items", [])
-        if not items:
-            result.errors.append("No items found in file")
+        # Check if this is a single hex file (new format) or items array (legacy)
+        # New format: hex_id at top level, items is just a field for hex items
+        # Legacy format: items is an array of hex objects (each with hex_id)
+        if "hex_id" in data:
+            # New format - single hex per file (items field is for hex items, not hex data)
+            self._load_hex_item(data, source_ref, result)
+        elif "items" in data and isinstance(data["items"], list):
+            # Legacy format - check if items contains hex objects
+            items = data.get("items", [])
+            if items and isinstance(items[0], dict) and "hex_id" in items[0]:
+                # Items array contains hex data
+                for item in items:
+                    self._load_hex_item(item, source_ref, result)
+            else:
+                result.errors.append("Items array does not contain hex data")
+                return result
+        else:
+            result.errors.append("No hex_id or items found in file")
             return result
-
-        for item in items:
-            try:
-                hex_location = self._parse_hex_item(item)
-                import_result = self.pipeline.add_hex(hex_location, source_ref)
-                result.import_results.append(import_result)
-
-                if import_result.success:
-                    result.hexes_loaded += 1
-                else:
-                    result.hexes_failed += 1
-                    if import_result.error:
-                        result.errors.append(f"Hex {item.get('hex_id', '?')}: {import_result.error}")
-
-            except Exception as e:
-                result.hexes_failed += 1
-                result.errors.append(f"Error parsing hex {item.get('hex_id', '?')}: {e}")
-                logger.error(f"Error parsing hex from {file_path}: {e}")
 
         result.success = result.hexes_loaded > 0
         logger.debug(f"Loaded {result.hexes_loaded} hexes from {file_path}")
 
         return result
+
+    def _load_hex_item(
+        self,
+        item: dict[str, Any],
+        source_ref: SourceReference,
+        result: HexFileLoadResult
+    ) -> None:
+        """Load a single hex item and add to pipeline."""
+        try:
+            hex_location = self._parse_hex_item(item)
+            import_result = self.pipeline.add_hex(hex_location, source_ref)
+            result.import_results.append(import_result)
+
+            if import_result.success:
+                result.hexes_loaded += 1
+            else:
+                result.hexes_failed += 1
+                if import_result.error:
+                    result.errors.append(f"Hex {item.get('hex_id', '?')}: {import_result.error}")
+
+        except Exception as e:
+            result.hexes_failed += 1
+            result.errors.append(f"Error parsing hex {item.get('hex_id', '?')}: {e}")
+            logger.error(f"Error parsing hex: {e}")
 
     def _get_source_reference(self, metadata: HexFileMetadata) -> SourceReference:
         """Get source reference from metadata."""
@@ -283,7 +307,7 @@ class HexDataLoader:
         Parse a hex item from JSON into a HexLocation dataclass.
 
         Args:
-            item: Dictionary from JSON "items" array
+            item: Dictionary from JSON
 
         Returns:
             HexLocation dataclass instance
@@ -295,7 +319,37 @@ class HexDataLoader:
         else:
             coordinates = (0, 0)
 
-        # Parse features
+        # Parse procedural section
+        procedural = None
+        proc_data = item.get("procedural")
+        if proc_data:
+            procedural = HexProcedural(
+                lost_chance=proc_data.get("lost_chance", "1-in-6"),
+                encounter_chance=proc_data.get("encounter_chance", "1-in-6"),
+                encounter_notes=proc_data.get("encounter_notes", ""),
+                foraging_results=proc_data.get("foraging_results", ""),
+                foraging_special=proc_data.get("foraging_special", []),
+            )
+
+        # Parse points of interest
+        points_of_interest = []
+        for poi_data in item.get("points_of_interest", []):
+            poi = self._parse_point_of_interest(poi_data)
+            points_of_interest.append(poi)
+
+        # Parse hex-level roll tables
+        roll_tables = []
+        for table_data in item.get("roll_tables", []):
+            table = self._parse_roll_table(table_data)
+            roll_tables.append(table)
+
+        # Parse NPCs
+        npcs = []
+        for npc_data in item.get("npcs", []):
+            npc = self._parse_hex_npc(npc_data)
+            npcs.append(npc)
+
+        # Parse legacy features if present (backward compatibility)
         features = []
         for feature_data in item.get("features", []):
             feature = HexFeature(
@@ -315,31 +369,107 @@ class HexDataLoader:
             hex_id=item.get("hex_id", "0000"),
             coordinates=coordinates,
             name=item.get("name"),
+            tagline=item.get("tagline", ""),
             terrain_type=item.get("terrain_type", "forest"),
             terrain_description=item.get("terrain_description", ""),
+            terrain_difficulty=item.get("terrain_difficulty", 1),
             region=item.get("region", ""),
-            flavour_text=item.get("flavour_text", ""),
             description=item.get("description", ""),
             dm_notes=item.get("dm_notes", ""),
-            travel_point_cost=item.get("travel_point_cost", 1),
+            procedural=procedural,
+            points_of_interest=points_of_interest,
+            roll_tables=roll_tables,
+            npcs=npcs,
+            items=item.get("items", []),
+            secrets=item.get("secrets", []),
+            adjacent_hexes=item.get("adjacent_hexes", []),
+            roads=item.get("roads", []),
+            page_reference=item.get("page_reference", ""),
+            _metadata=item.get("_metadata"),
+            # Legacy fields
+            terrain=item.get("terrain_type", "forest"),
+            flavour_text=item.get("tagline", ""),
+            travel_point_cost=item.get("travel_point_cost", item.get("terrain_difficulty", 1)),
             lost_chance=item.get("lost_chance", 1),
             encounter_chance=item.get("encounter_chance", 1),
             special_encounter_chance=item.get("special_encounter_chance", 0),
             encounter_table=item.get("encounter_table"),
             special_encounters=item.get("special_encounters", []),
             features=features,
-            npcs=item.get("npcs", []),
-            items=item.get("items", []),
-            secrets=item.get("secrets", []),
             ley_lines=item.get("ley_lines"),
             foraging_yields=item.get("foraging_yields", []),
-            page_reference=item.get("page_reference", ""),
-            adjacent_hexes=item.get("adjacent_hexes"),
-            # Set terrain for backward compatibility
-            terrain=item.get("terrain_type", "forest"),
         )
 
         return hex_location
+
+    def _parse_point_of_interest(self, data: dict[str, Any]) -> PointOfInterest:
+        """Parse a point of interest from JSON."""
+        # Parse roll tables within the POI
+        roll_tables = []
+        for table_data in data.get("roll_tables", []):
+            table = self._parse_roll_table(table_data)
+            roll_tables.append(table)
+
+        return PointOfInterest(
+            name=data.get("name", "Unknown"),
+            poi_type=data.get("poi_type", "general"),
+            description=data.get("description", ""),
+            tagline=data.get("tagline"),
+            entering=data.get("entering"),
+            interior=data.get("interior"),
+            exploring=data.get("exploring"),
+            leaving=data.get("leaving"),
+            inhabitants=data.get("inhabitants"),
+            roll_tables=roll_tables,
+            npcs=data.get("npcs", []),
+            special_features=data.get("special_features", []),
+            secrets=data.get("secrets", []),
+            is_dungeon=data.get("is_dungeon", False),
+            dungeon_levels=data.get("dungeon_levels"),
+        )
+
+    def _parse_roll_table(self, data: dict[str, Any]) -> RollTable:
+        """Parse a roll table from JSON."""
+        entries = []
+        for entry_data in data.get("entries", []):
+            entry = RollTableEntry(
+                roll=entry_data.get("roll", 1),
+                description=entry_data.get("description", ""),
+                title=entry_data.get("title"),
+                monsters=entry_data.get("monsters", []),
+                npcs=entry_data.get("npcs", []),
+                items=entry_data.get("items", []),
+                mechanical_effect=entry_data.get("mechanical_effect"),
+                sub_table=entry_data.get("sub_table"),
+            )
+            entries.append(entry)
+
+        return RollTable(
+            name=data.get("name", "Unknown Table"),
+            die_type=data.get("die_type", "d6"),
+            description=data.get("description", ""),
+            entries=entries,
+        )
+
+    def _parse_hex_npc(self, data: dict[str, Any]) -> HexNPC:
+        """Parse an NPC from JSON."""
+        return HexNPC(
+            npc_id=data.get("npc_id", "unknown"),
+            name=data.get("name", "Unknown NPC"),
+            description=data.get("description", ""),
+            kindred=data.get("kindred", "Human"),
+            alignment=data.get("alignment", "Neutral"),
+            title=data.get("title"),
+            demeanor=data.get("demeanor", []),
+            speech=data.get("speech", ""),
+            languages=data.get("languages", []),
+            desires=data.get("desires", []),
+            secrets=data.get("secrets", []),
+            possessions=data.get("possessions", []),
+            location=data.get("location", ""),
+            stat_reference=data.get("stat_reference"),
+            is_combatant=data.get("is_combatant", False),
+        )
 
     def scan_directory(self, directory: Path) -> list[Path]:
         """
@@ -377,23 +507,26 @@ class HexDataLoader:
         except json.JSONDecodeError as e:
             return False, [f"Invalid JSON: {e}"]
 
-        # Check structure
-        if "_metadata" not in data:
-            errors.append("Missing _metadata section")
+        # Check for hex_id (new format) or items (legacy format)
+        if "hex_id" not in data and "items" not in data:
+            errors.append("Missing hex_id or items section")
 
-        if "items" not in data:
-            errors.append("Missing items section")
-        elif not isinstance(data["items"], list):
-            errors.append("items must be an array")
-        elif len(data["items"]) == 0:
-            errors.append("items array is empty")
-        else:
-            # Validate each item
-            for i, item in enumerate(data["items"]):
-                if "hex_id" not in item:
-                    errors.append(f"Item {i}: missing hex_id")
-                if "terrain_type" not in item:
-                    errors.append(f"Item {i}: missing terrain_type")
+        if "hex_id" in data:
+            # New single-hex format
+            if "terrain_type" not in data:
+                errors.append("Missing terrain_type")
+        elif "items" in data:
+            # Legacy format
+            if not isinstance(data["items"], list):
+                errors.append("items must be an array")
+            elif len(data["items"]) == 0:
+                errors.append("items array is empty")
+            else:
+                for i, item in enumerate(data["items"]):
+                    if "hex_id" not in item:
+                        errors.append(f"Item {i}: missing hex_id")
+                    if "terrain_type" not in item:
+                        errors.append(f"Item {i}: missing terrain_type")
 
         return len(errors) == 0, errors
 
@@ -428,58 +561,71 @@ def create_sample_hex_json(output_path: Path) -> None:
         output_path: Path to write sample file
     """
     sample_data = {
+        "hex_id": "0101",
+        "coordinates": [1, 1],
+        "name": "The Spectral Manse",
+        "tagline": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+        "region": "Northern Scratch",
+        "terrain_type": "bog",
+        "terrain_description": "Bog (3), Northern Scratch",
+        "terrain_difficulty": 3,
+        "procedural": {
+            "lost_chance": "2-in-6",
+            "encounter_chance": "2-in-6",
+            "encounter_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee heading to a ball at the Spectral Manse",
+            "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm, in addition to the normal results",
+            "foraging_special": ["Bosun's Balm (1d2 portions)"]
+        },
+        "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+        "points_of_interest": [
+            {
+                "name": "The Spectral Manse",
+                "poi_type": "manse",
+                "description": "A thicket of twisted blackthorns stands amid a treacherous region of rivulets and sodden moss carpets.",
+                "tagline": None,
+                "entering": "The front door opens freely, or a window can be forced.",
+                "interior": "The manor exists in an odd dimension, halfway between Fairy and the mortal world.",
+                "exploring": "Roll on the Rooms and Encounters tables for each room entered.",
+                "leaving": "With the exception of any of Lord Hobbled-and-Blackened's possessions, items from the manse evaporate into mist when taken into the real world.",
+                "inhabitants": "Lord Hobbled-and-Blackened is imprisoned in the manse with a number of spectral guests.",
+                "roll_tables": [],
+                "npcs": ["lord_hobbled_and_blackened"],
+                "special_features": [],
+                "secrets": [],
+                "is_dungeon": True,
+                "dungeon_levels": None
+            }
+        ],
+        "roll_tables": [],
+        "npcs": [
+            {
+                "npc_id": "lord_hobbled_and_blackened",
+                "name": "Lord Hobbled-and-Blackened",
+                "title": None,
+                "description": "A gaunt, icicle-thin frost elf courtier dressed in flamboyant white lace and a ruff of hoarfrost.",
+                "kindred": "Frost Elf",
+                "alignment": "Neutral",
+                "demeanor": ["Manic", "twitchy fingers"],
+                "speech": "Rapid babbling, laughing",
+                "languages": ["Woldish", "High Elfish"],
+                "desires": ["Freedom from the manse", "To see Ygraine once more"],
+                "secrets": ["Once a court musician to Prince Mallowheart", "Imprisoned here for falling in love with Ygraine Mordlin"],
+                "possessions": ["Magical violin, which when played skilfully can cast the arcane spell Dominate once a week (worth 10,000gp)"],
+                "location": "The Spectral Manse",
+                "stat_reference": "frost elf courtier (DMB)",
+                "is_combatant": True
+            }
+        ],
+        "items": [],
+        "secrets": [],
+        "dm_notes": "",
+        "adjacent_hexes": [],
+        "roads": [],
         "_metadata": {
             "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
             "pages": [192],
-            "content_type": "hexes",
-            "item_count": 1,
-            "errors": [],
-            "note": "Sample hex data for testing"
-        },
-        "items": [
-            {
-                "hex_id": "0101",
-                "coordinates": [1, 1],
-                "name": "The Spectral Manse",
-                "flavour_text": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
-                "terrain_type": "bog",
-                "terrain_description": "Bog (3), Northern Scratch",
-                "region": "Northern Scratch",
-                "travel_point_cost": 3,
-                "lost_chance": 2,
-                "encounter_chance": 2,
-                "special_encounter_chance": 2,
-                "special_encounters": [
-                    "bewildered banshee heading to a ball at the Spectral Manse"
-                ],
-                "encounter_table": "Northern Scratch",
-                "ley_lines": None,
-                "foraging_yields": ["Bosun's Balm"],
-                "features": [
-                    {
-                        "name": "The Spectral Manse",
-                        "description": "A thicket of twisted blackthorns stands amid a treacherous region of rivulets and sodden moss carpets.",
-                        "is_hidden": False,
-                        "feature_type": "manor",
-                        "npcs": ["Lord Hobbled-and-Blackened"],
-                        "monsters": ["1d4 seelie dogs", "banshee"],
-                        "treasure": "Magical violin worth 10,000gp",
-                        "hooks": [
-                            "Lord Hobbled-and-Blackened beseeches PCs to take a letter to Ygraine"
-                        ]
-                    }
-                ],
-                "description": "A barren expanse of stagnant pools.",
-                "npcs": ["Lord Hobbled-and-Blackened"],
-                "items": ["Magical violin that can cast Dominate once a week"],
-                "secrets": [
-                    "Lord Hobbled-and-Blackened was imprisoned for falling in love with Prince Mallowheart's fosterling daughter"
-                ],
-                "dm_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee.",
-                "adjacent_hexes": None,
-                "page_reference": "p. 192"
-            }
-        ]
+            "extraction_note": "Review and correct this data before importing"
+        }
     }
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

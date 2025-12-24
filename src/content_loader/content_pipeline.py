@@ -24,9 +24,14 @@ from src.data_models import (
     Feature,
     HexFeature,
     HexLocation,
+    HexNPC,
+    HexProcedural,
     Lair,
     Landmark,
     NPC,
+    PointOfInterest,
+    RollTable,
+    RollTableEntry,
     Season,
     SourceReference,
     SourceType,
@@ -111,9 +116,9 @@ class DefaultValidator:
 
     # Valid terrain types for Dolmenwood
     VALID_TERRAINS = {
-        'forest', 'deep_forest', 'river', 'lake', 'swamp', 'marsh',
+        'forest', 'deep_forest', 'river', 'lake', 'swamp', 'marsh', 'bog',
         'hills', 'mountains', 'plains', 'farmland', 'moor', 'ruins',
-        'settlement', 'road', 'trail'
+        'settlement', 'road', 'trail', 'grassland', 'woodland'
     }
 
     def validate(self, data: dict[str, Any], content_type: ContentType) -> ValidationResult:
@@ -166,20 +171,36 @@ class DefaultValidator:
                 warnings.append(f"Hex ID '{hex_id}' has more than 4 digits")
             normalized['hex_id'] = clean_id
 
-        # Validate terrain
-        terrain = data.get('terrain', '').lower().replace(' ', '_')
+        # Validate terrain - check terrain_type first, then fallback to terrain
+        terrain = data.get('terrain_type', data.get('terrain', '')).lower().replace(' ', '_')
         if terrain and terrain not in self.VALID_TERRAINS:
             warnings.append(f"Unknown terrain type: {terrain}")
         normalized['terrain'] = terrain
+        normalized['terrain_type'] = terrain
 
-        # Ensure lists exist
+        # Validate terrain_difficulty (should be 1-4)
+        terrain_difficulty = data.get('terrain_difficulty', 1)
+        if isinstance(terrain_difficulty, int) and not (1 <= terrain_difficulty <= 4):
+            warnings.append(f"Terrain difficulty {terrain_difficulty} outside expected range 1-4")
+        normalized['terrain_difficulty'] = terrain_difficulty
+
+        # Ensure new format lists exist
+        normalized.setdefault('points_of_interest', [])
+        normalized.setdefault('roll_tables', [])
+        normalized.setdefault('npcs', [])
+        normalized.setdefault('items', [])
+        normalized.setdefault('secrets', [])
+        normalized.setdefault('adjacent_hexes', [])
+        normalized.setdefault('roads', [])
+
+        # Ensure legacy lists exist
         normalized.setdefault('features', [])
         normalized.setdefault('lairs', [])
         normalized.setdefault('landmarks', [])
-        normalized.setdefault('adjacent_hexes', {})
-        normalized.setdefault('roads', [])
         normalized.setdefault('rivers', [])
         normalized.setdefault('seasonal_variations', {})
+        normalized.setdefault('foraging_yields', [])
+        normalized.setdefault('special_encounters', [])
 
         return normalized, errors, warnings
 
@@ -494,12 +515,74 @@ class ContentPipeline:
         if content_type == ContentType.HEX:
             parts.append(f"Hex {data.get('hex_id', '')}")
             parts.append(data.get('name', ''))
+            parts.append(data.get('tagline', ''))
             parts.append(f"Terrain: {data.get('terrain_type', data.get('terrain', ''))}")
             parts.append(f"Region: {data.get('region', '')}")
             parts.append(data.get('flavour_text', ''))
             parts.append(data.get('description', ''))
 
-            # Features with expanded data
+            # Procedural section (new format)
+            procedural = data.get('procedural')
+            if procedural and isinstance(procedural, dict):
+                parts.append(procedural.get('encounter_notes', ''))
+                parts.append(procedural.get('foraging_results', ''))
+                for forage_special in procedural.get('foraging_special', []):
+                    parts.append(f"Foraging: {forage_special}")
+
+            # Points of interest (new format)
+            for poi in data.get('points_of_interest', []):
+                if isinstance(poi, dict):
+                    parts.append(poi.get('name', ''))
+                    parts.append(poi.get('description', ''))
+                    parts.append(poi.get('tagline', ''))
+                    parts.append(f"Type: {poi.get('poi_type', '')}")
+                    parts.append(poi.get('entering', ''))
+                    parts.append(poi.get('interior', ''))
+                    parts.append(poi.get('exploring', ''))
+                    parts.append(poi.get('leaving', ''))
+                    parts.append(poi.get('inhabitants', ''))
+                    # NPCs in POI
+                    for npc_id in poi.get('npcs', []):
+                        parts.append(f"NPC: {npc_id}")
+                    # Secrets in POI
+                    for secret in poi.get('secrets', []):
+                        parts.append(f"Secret: {secret}")
+                    # Roll tables in POI
+                    for table in poi.get('roll_tables', []):
+                        if isinstance(table, dict):
+                            parts.append(f"Table: {table.get('name', '')}")
+                            for entry in table.get('entries', []):
+                                if isinstance(entry, dict):
+                                    parts.append(entry.get('description', ''))
+                                    if entry.get('mechanical_effect'):
+                                        parts.append(f"Effect: {entry.get('mechanical_effect')}")
+
+            # Hex-level NPCs (new format with full data)
+            for npc in data.get('npcs', []):
+                if isinstance(npc, dict):
+                    parts.append(f"NPC: {npc.get('name', '')}")
+                    parts.append(npc.get('description', ''))
+                    parts.append(f"Kindred: {npc.get('kindred', '')}")
+                    parts.append(npc.get('speech', ''))
+                    for desire in npc.get('desires', []):
+                        parts.append(f"Desire: {desire}")
+                    for secret in npc.get('secrets', []):
+                        parts.append(f"Secret: {secret}")
+                    for possession in npc.get('possessions', []):
+                        parts.append(f"Possession: {possession}")
+                else:
+                    # Legacy format - just a string
+                    parts.append(f"NPC: {npc}")
+
+            # Hex-level roll tables (new format)
+            for table in data.get('roll_tables', []):
+                if isinstance(table, dict):
+                    parts.append(f"Table: {table.get('name', '')}")
+                    for entry in table.get('entries', []):
+                        if isinstance(entry, dict):
+                            parts.append(entry.get('description', ''))
+
+            # Legacy features with expanded data
             for feature in data.get('features', []):
                 if isinstance(feature, dict):
                     parts.append(feature.get('name', ''))
@@ -515,10 +598,6 @@ class ContentPipeline:
                     for hook in feature.get('hooks', []):
                         parts.append(f"Hook: {hook}")
 
-            # Hex-level NPCs
-            for npc in data.get('npcs', []):
-                parts.append(f"NPC: {npc}")
-
             # Special encounters
             for enc in data.get('special_encounters', []):
                 parts.append(f"Special encounter: {enc}")
@@ -527,7 +606,7 @@ class ContentPipeline:
             for secret in data.get('secrets', []):
                 parts.append(f"Secret: {secret}")
 
-            # Foraging
+            # Legacy foraging
             for forage in data.get('foraging_yields', []):
                 parts.append(f"Foraging: {forage}")
 
@@ -1029,15 +1108,78 @@ class ContentPipeline:
                     'hooks': [],
                 })
 
+        # Convert procedural
+        procedural_dict = None
+        if hex_data.procedural:
+            procedural_dict = {
+                'lost_chance': hex_data.procedural.lost_chance,
+                'encounter_chance': hex_data.procedural.encounter_chance,
+                'encounter_notes': hex_data.procedural.encounter_notes,
+                'foraging_results': hex_data.procedural.foraging_results,
+                'foraging_special': hex_data.procedural.foraging_special,
+            }
+
+        # Convert points of interest
+        poi_list = []
+        for poi in hex_data.points_of_interest:
+            poi_dict = {
+                'name': poi.name,
+                'poi_type': poi.poi_type,
+                'description': poi.description,
+                'tagline': poi.tagline,
+                'entering': poi.entering,
+                'interior': poi.interior,
+                'exploring': poi.exploring,
+                'leaving': poi.leaving,
+                'inhabitants': poi.inhabitants,
+                'npcs': poi.npcs,
+                'special_features': poi.special_features,
+                'secrets': poi.secrets,
+                'is_dungeon': poi.is_dungeon,
+                'dungeon_levels': poi.dungeon_levels,
+                'roll_tables': [self._roll_table_to_dict(t) for t in poi.roll_tables],
+            }
+            poi_list.append(poi_dict)
+
+        # Convert roll tables
+        roll_tables_list = [self._roll_table_to_dict(t) for t in hex_data.roll_tables]
+
+        # Convert NPCs - handle both HexNPC objects and legacy string format
+        npcs_list = []
+        for npc in hex_data.npcs:
+            if isinstance(npc, HexNPC):
+                npcs_list.append({
+                    'npc_id': npc.npc_id,
+                    'name': npc.name,
+                    'description': npc.description,
+                    'kindred': npc.kindred,
+                    'alignment': npc.alignment,
+                    'title': npc.title,
+                    'demeanor': npc.demeanor,
+                    'speech': npc.speech,
+                    'languages': npc.languages,
+                    'desires': npc.desires,
+                    'secrets': npc.secrets,
+                    'possessions': npc.possessions,
+                    'location': npc.location,
+                    'stat_reference': npc.stat_reference,
+                    'is_combatant': npc.is_combatant,
+                })
+            else:
+                # Legacy format - just a string
+                npcs_list.append(npc)
+
         return {
             # Core identification
             'hex_id': hex_data.hex_id,
             'coordinates': list(hex_data.coordinates) if hex_data.coordinates else [0, 0],
             'name': hex_data.name,
+            'tagline': hex_data.tagline,
 
             # Terrain and region
             'terrain_type': hex_data.terrain_type or hex_data.terrain,
             'terrain_description': hex_data.terrain_description,
+            'terrain_difficulty': hex_data.terrain_difficulty,
             'region': hex_data.region,
 
             # Descriptions
@@ -1045,21 +1187,30 @@ class ContentPipeline:
             'description': hex_data.description,
             'dm_notes': hex_data.dm_notes,
 
-            # Travel mechanics
+            # Procedural rules (new format)
+            'procedural': procedural_dict,
+
+            # Points of interest (new format)
+            'points_of_interest': poi_list,
+
+            # Roll tables (new format)
+            'roll_tables': roll_tables_list,
+
+            # Travel mechanics (legacy)
             'travel_point_cost': hex_data.travel_point_cost,
             'lost_chance': hex_data.lost_chance,
             'encounter_chance': hex_data.encounter_chance,
             'special_encounter_chance': hex_data.special_encounter_chance,
 
-            # Encounters
+            # Encounters (legacy)
             'encounter_table': hex_data.encounter_table,
             'special_encounters': hex_data.special_encounters,
 
-            # Features
+            # Features (legacy)
             'features': features_list,
 
             # Associated content
-            'npcs': hex_data.npcs,
+            'npcs': npcs_list,
             'items': hex_data.items,
             'secrets': hex_data.secrets,
 
@@ -1072,6 +1223,7 @@ class ContentPipeline:
 
             # Navigation
             'adjacent_hexes': hex_data.adjacent_hexes,
+            'roads': hex_data.roads,
 
             # Legacy fields (for backward compatibility)
             'terrain': hex_data.terrain or hex_data.terrain_type,
@@ -1090,8 +1242,28 @@ class ContentPipeline:
             'seasonal_variations': {
                 s.value: v for s, v in hex_data.seasonal_variations.items()
             },
-            'roads': hex_data.roads,
             'rivers': hex_data.rivers,
+        }
+
+    def _roll_table_to_dict(self, table: RollTable) -> dict:
+        """Convert RollTable to dictionary."""
+        entries = []
+        for entry in table.entries:
+            entries.append({
+                'roll': entry.roll,
+                'description': entry.description,
+                'title': entry.title,
+                'monsters': entry.monsters,
+                'npcs': entry.npcs,
+                'items': entry.items,
+                'mechanical_effect': entry.mechanical_effect,
+                'sub_table': entry.sub_table,
+            })
+        return {
+            'name': table.name,
+            'die_type': table.die_type,
+            'description': table.description,
+            'entries': entries,
         }
 
     def _npc_to_dict(self, npc: NPC) -> dict:

@@ -27,10 +27,15 @@ from src.data_models import (
     ContentSource,
     HexLocation,
     HexFeature,
+    HexNPC,
+    HexProcedural,
     NPC,
     Feature,
     Lair,
     Landmark,
+    PointOfInterest,
+    RollTable,
+    RollTableEntry,
     StatBlock,
     Season,
 )
@@ -656,51 +661,110 @@ class ContentManager:
         else:
             coordinates = (0, 0)
 
+        # Parse procedural (new format)
+        procedural = None
+        proc_data = data.get('procedural')
+        if proc_data and isinstance(proc_data, dict):
+            procedural = HexProcedural(
+                lost_chance=proc_data.get('lost_chance', '1-in-6'),
+                encounter_chance=proc_data.get('encounter_chance', '1-in-6'),
+                encounter_notes=proc_data.get('encounter_notes', ''),
+                foraging_results=proc_data.get('foraging_results', ''),
+                foraging_special=proc_data.get('foraging_special', []),
+            )
+
+        # Parse points of interest (new format)
+        points_of_interest = []
+        for poi_data in data.get('points_of_interest', []):
+            if isinstance(poi_data, dict):
+                poi = self._dict_to_poi(poi_data)
+                points_of_interest.append(poi)
+
+        # Parse roll tables (new format)
+        roll_tables = []
+        for table_data in data.get('roll_tables', []):
+            if isinstance(table_data, dict):
+                table = self._dict_to_roll_table(table_data)
+                roll_tables.append(table)
+
+        # Parse NPCs - handle both HexNPC format and legacy string format
+        npcs = []
+        for npc_data in data.get('npcs', []):
+            if isinstance(npc_data, dict):
+                npc = HexNPC(
+                    npc_id=npc_data.get('npc_id', 'unknown'),
+                    name=npc_data.get('name', 'Unknown NPC'),
+                    description=npc_data.get('description', ''),
+                    kindred=npc_data.get('kindred', 'Human'),
+                    alignment=npc_data.get('alignment', 'Neutral'),
+                    title=npc_data.get('title'),
+                    demeanor=npc_data.get('demeanor', []),
+                    speech=npc_data.get('speech', ''),
+                    languages=npc_data.get('languages', []),
+                    desires=npc_data.get('desires', []),
+                    secrets=npc_data.get('secrets', []),
+                    possessions=npc_data.get('possessions', []),
+                    location=npc_data.get('location', ''),
+                    stat_reference=npc_data.get('stat_reference'),
+                    is_combatant=npc_data.get('is_combatant', False),
+                )
+                npcs.append(npc)
+            else:
+                # Legacy format - string, can't convert to HexNPC without more info
+                # Store as-is (will remain as string in the list)
+                npcs.append(npc_data)
+
         return HexLocation(
             # Core identification
             hex_id=data['hex_id'],
             coordinates=coordinates,
             name=data.get('name'),
+            tagline=data.get('tagline', ''),
 
             # Terrain and region
             terrain_type=data.get('terrain_type', data.get('terrain', 'forest')),
             terrain_description=data.get('terrain_description', ''),
+            terrain_difficulty=data.get('terrain_difficulty', 1),
             region=data.get('region', ''),
 
             # Descriptions
-            flavour_text=data.get('flavour_text', ''),
             description=data.get('description', ''),
             dm_notes=data.get('dm_notes', ''),
 
-            # Travel mechanics
-            travel_point_cost=data.get('travel_point_cost', 1),
-            lost_chance=data.get('lost_chance', 1),
-            encounter_chance=data.get('encounter_chance', 1),
-            special_encounter_chance=data.get('special_encounter_chance', 0),
+            # Procedural rules (new format)
+            procedural=procedural,
 
-            # Encounters
-            encounter_table=data.get('encounter_table'),
-            special_encounters=data.get('special_encounters', []),
+            # Points of interest (new format)
+            points_of_interest=points_of_interest,
 
-            # Features
-            features=features,
+            # Roll tables (new format)
+            roll_tables=roll_tables,
+
+            # NPCs (new format)
+            npcs=npcs,
 
             # Associated content
-            npcs=data.get('npcs', []),
             items=data.get('items', []),
             secrets=data.get('secrets', []),
 
-            # Special properties
-            ley_lines=data.get('ley_lines'),
-            foraging_yields=data.get('foraging_yields', []),
+            # Navigation
+            adjacent_hexes=data.get('adjacent_hexes', []),
+            roads=data.get('roads', []),
 
             # Source tracking
             page_reference=data.get('page_reference', ''),
 
-            # Navigation
-            adjacent_hexes=data.get('adjacent_hexes'),
-
             # Legacy fields
+            flavour_text=data.get('flavour_text', data.get('tagline', '')),
+            travel_point_cost=data.get('travel_point_cost', 1),
+            lost_chance=data.get('lost_chance', 1),
+            encounter_chance=data.get('encounter_chance', 1),
+            special_encounter_chance=data.get('special_encounter_chance', 0),
+            encounter_table=data.get('encounter_table'),
+            special_encounters=data.get('special_encounters', []),
+            features=features,
+            ley_lines=data.get('ley_lines'),
+            foraging_yields=data.get('foraging_yields', []),
             terrain=data.get('terrain', data.get('terrain_type', 'forest')),
             lairs=[
                 Lair(
@@ -725,12 +789,61 @@ class ContentManager:
             seasonal_variations={
                 Season(k): v for k, v in data.get('seasonal_variations', {}).items()
             },
-            roads=data.get('roads', []),
             rivers=data.get('rivers', []),
             source=SourceReference(
                 source_id=data.get('_source_id', ''),
                 book_code=data.get('_source_id', '').split('_')[0] if data.get('_source_id') else '',
             ),
+        )
+
+    def _dict_to_poi(self, data: dict) -> PointOfInterest:
+        """Convert dictionary to PointOfInterest."""
+        roll_tables = []
+        for table_data in data.get('roll_tables', []):
+            if isinstance(table_data, dict):
+                table = self._dict_to_roll_table(table_data)
+                roll_tables.append(table)
+
+        return PointOfInterest(
+            name=data.get('name', 'Unknown'),
+            poi_type=data.get('poi_type', 'general'),
+            description=data.get('description', ''),
+            tagline=data.get('tagline'),
+            entering=data.get('entering'),
+            interior=data.get('interior'),
+            exploring=data.get('exploring'),
+            leaving=data.get('leaving'),
+            inhabitants=data.get('inhabitants'),
+            roll_tables=roll_tables,
+            npcs=data.get('npcs', []),
+            special_features=data.get('special_features', []),
+            secrets=data.get('secrets', []),
+            is_dungeon=data.get('is_dungeon', False),
+            dungeon_levels=data.get('dungeon_levels'),
+        )
+
+    def _dict_to_roll_table(self, data: dict) -> RollTable:
+        """Convert dictionary to RollTable."""
+        entries = []
+        for entry_data in data.get('entries', []):
+            if isinstance(entry_data, dict):
+                entry = RollTableEntry(
+                    roll=entry_data.get('roll', 1),
+                    description=entry_data.get('description', ''),
+                    title=entry_data.get('title'),
+                    monsters=entry_data.get('monsters', []),
+                    npcs=entry_data.get('npcs', []),
+                    items=entry_data.get('items', []),
+                    mechanical_effect=entry_data.get('mechanical_effect'),
+                    sub_table=entry_data.get('sub_table'),
+                )
+                entries.append(entry)
+
+        return RollTable(
+            name=data.get('name', 'Unknown Table'),
+            die_type=data.get('die_type', 'd6'),
+            description=data.get('description', ''),
+            entries=entries,
         )
 
     # =========================================================================
