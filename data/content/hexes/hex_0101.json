@@ -1,64 +1,253 @@
 {
-  "_metadata": {
-    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [192],
-    "content_type": "hexes",
-    "item_count": 1,
-    "errors": [],
-    "note": "Review and correct this data before importing"
+  "hex_id": "0101",
+  "coordinates": [
+    1,
+    1
+  ],
+  "name": "The Spectral Manse",
+  "tagline": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee heading to a ball at the Spectral Manse",
+    "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm, in addition to the normal results",
+    "foraging_special": [
+      "Bosun's Balm (1d2 portions)"
+    ]
   },
-  "items": [
+  "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
+  "points_of_interest": [
     {
-      "hex_id": "0101",
-      "coordinates": [1, 1],
       "name": "The Spectral Manse",
-      "flavour_text": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
-      "terrain_type": "bog",
-      "terrain_description": "Bog (3), Northern Scratch",
-      "region": "Northern Scratch",
-      "travel_point_cost": 3,
-      "lost_chance": 2,
-      "encounter_chance": 2,
-      "special_encounter_chance": 2,
-      "special_encounters": [
-        "bewildered banshee heading to a ball at the Spectral Manse"
-      ],
-      "encounter_table": "Northern Scratch",
-      "ley_lines": null,
-      "foraging_yields": ["Bosun's Balm"],
-      "features": [
+      "poi_type": "manse",
+      "description": "A thicket of twisted blackthorns stands amid a treacherous region of rivulets and sodden moss carpets. Those who push through the tangled branches arrive at a blue-tinged, spectral vision of a baroque manor of dark wood, its windows lit with the veiled glow of firelight behind drawn curtains. Strains of plaintive violin music can be heard from somewhere within.",
+      "tagline": null,
+      "entering": "The front door opens freely, or a window can be forced.",
+      "interior": "The manor exists in an odd dimension, halfway between Fairy and the mortal world. Interior walls appear skewed, passages twist at odd angles, and rooms seem to expand and contract as characters move through them. Violin music drifts in the air, though its origin is unclear.",
+      "exploring": "Roll on the Rooms and Encounters tables for each room entered. Each room connects to 1d3 other rooms, via crooked doors and lurching hallways.",
+      "leaving": "With the exception of any of Lord Hobbled-and-Blackened's possessions, items from the manse evaporate into mist when taken into the real world.",
+      "inhabitants": "Lord Hobbled-and-Blackened is imprisoned in the manse with a number of spectral guests.",
+      "roll_tables": [
         {
-          "name": "The Spectral Manse",
-          "description": "A thicket of twisted blackthorns stands amid a treacherous region of rivulets and sodden moss carpets. Those who push through the tangled branches arrive at a blue-tinged, spectral vision of a baroque manor of dark wood, its windows lit with the veiled glow of firelight behind drawn curtains. Strains of plaintive violin music can be heard from somewhere within. The manor exists in an odd dimension, halfway between Fairy and the mortal world. Interior walls appear skewed, passages twist at odd angles, and rooms seem to expand and contract as characters move through them. The front door opens freely, or a window can be forced. Each room connects to 1d3 other rooms, via crooked doors and lurching hallways. Items from the manse evaporate into mist when taken into the real world, except for Lord Hobbled-and-Blackened's possessions.",
-          "is_hidden": false,
-          "feature_type": "manor",
-          "npcs": [
-            "Lord Hobbled-and-Blackened",
-            "aged elven lady with violet eyes",
-            "frost elf courtiers"
-          ],
-          "monsters": [
-            "1d4 seelie dogs",
-            "banshee",
-            "2 frost elf courtiers"
-          ],
-          "treasure": "Magical violin worth 10,000gp",
-          "hooks": [
-            "Lord Hobbled-and-Blackened beseeches PCs to take a letter to Ygraine declaring his love",
-            "Portrait of Ygraine Mordlin suggests connection to larger story",
-            "Fixing the grandfather clock causes time acceleration"
+          "name": "Rooms",
+          "die_type": "d6",
+          "description": "Roll when entering a new room",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Study",
+              "description": "Books of frost elf poetry, stag heads, ice hearth.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "frost elf poetry books"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Lounge",
+              "description": "Velvet couches, ice candles, wolf-skin rugs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Dining room",
+              "description": "Exquisite foods, frozen solid.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Winter garden",
+              "description": "Hoar-clad roses drip blood if touched.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roses drip blood if touched"
+            },
+            {
+              "roll": 5,
+              "title": "Pantry",
+              "description": "Bottled emotions, iced fruits, frozen game.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "bottled emotions",
+                "iced fruits"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Bedroom",
+              "description": "Ice-block bed, furs, tundra tapestries.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Encounters",
+          "die_type": "d8",
+          "description": "Roll when entering a new room",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Lord Hobbled-and-Blackened, manically playing a violin. He beseeches PCs to take a letter to Ygraine (declaring his love for her and pleading for her aid in escaping the manse). In return he offers his violin.",
+              "monsters": [],
+              "npcs": [
+                "Lord Hobbled-and-Blackened"
+              ],
+              "items": [
+                "magical violin"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "1d4 sleek, silver hounds (use seelie dog stats, DPB) growl and may attack non-Neutral aligned characters entering the room.",
+              "monsters": [
+                "seelie dog"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Attack non-Neutral aligned characters"
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "An aged elven lady with violet eyes and white, frost-clad hair in an extravagant beehive, waltzing and pirouetting to violin music. If asked to dance, she gladly accepts (partner must Save Versus Hold or be whisked away into the Prince's Road—see Fairy Roads, p26); otherwise she attacks any who disturb her (treat as a banshee, DMB).",
+              "monsters": [
+                "banshee"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "If asked to dance: Save Versus Hold or be whisked away into the Prince's Road"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "2 haughty frost elf courtiers (DMB). Roll 1d6: 1. Trysting, 2. Dancing ponderously, 3. Arguing about musical notes, 4. Looking for Lord Hobbled-and-Blackened (their host), 5. Lounging disinterestedly, 6. Duelling.",
+              "monsters": [
+                "frost elf courtier"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null,
+              "sub_table": "Roll 1d6: 1. Trysting, 2. Dancing ponderously, 3. Arguing about musical notes, 4. Looking for Lord Hobbled-and-Blackened (their host), 5. Lounging disinterestedly, 6. Duelling"
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "A portrait of a beautiful mortal woman dressed in a regal fur robe with a brilliant diamond upon her brow (Ygraine Mordlin, p84). The frame is carved with plaintive faces, weeping icy tears.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "portrait of Ygraine Mordlin"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Furnishings dance to the strains of violin music. A grandfather clock groans and grates, its hands stuck at seven-past-noon. Opening the clock and fixing the mechanism (a silver dagger is stuck inside) causes the hands to start moving and slowly accelerate, along with the tempo of the violin music. Upon returning to the mortal world, 1d12 days have passed.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "silver dagger"
+              ],
+              "mechanical_effect": "Fixing clock causes 1d12 days to pass upon leaving"
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "A raging wind rips a window and its curtains from their fittings and proceeds to suck the room's contents outside into the dark. PCs must Save Versus Hold or be ejected back into the mortal world, the manor disappearing until the next full moon.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Versus Hold or be ejected to mortal world; manor disappears until next full moon"
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "A great white stag's head has fallen from its mounting and lays on the carpet, moaning mournfully.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "stag's head"
+              ],
+              "mechanical_effect": null
+            }
           ]
         }
       ],
-      "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
-      "npcs": ["Lord Hobbled-and-Blackened"],
-      "items": ["Magical violin that can cast Dominate once a week"],
-      "secrets": [
-        "Lord Hobbled-and-Blackened was imprisoned for falling in love with Prince Mallowheart's fosterling daughter Ygraine Mordlin"
+      "npcs": [
+        "lord_hobbled_and_blackened"
       ],
-      "dm_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee heading to a ball at the Spectral Manse. Successful foraging yields 1d2 portions of Bosun's Balm in addition to normal results.",
-      "adjacent_hexes": null,
-      "page_reference": "p. 192"
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
     }
-  ]
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lord_hobbled_and_blackened",
+      "name": "Lord Hobbled-and-Blackened",
+      "title": null,
+      "description": "A gaunt, icicle-thin frost elf courtier dressed in flamboyant white lace and a ruff of hoarfrost.",
+      "kindred": "Frost Elf",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Manic",
+        "twitchy fingers"
+      ],
+      "speech": "Rapid babbling, laughing",
+      "languages": [
+        "Woldish",
+        "High Elfish"
+      ],
+      "desires": [
+        "Freedom from the manse",
+        "To see Ygraine once more"
+      ],
+      "secrets": [
+        "Once a court musician to Prince Mallowheart",
+        "Imprisoned here for falling in love with Ygraine Mordlin, the Prince's fosterling daughter"
+      ],
+      "possessions": [
+        "Magical violin, which when played skilfully can cast the arcane spell Dominate once a week (worth 10,000gp)"
+      ],
+      "location": "The Spectral Manse",
+      "stat_reference": "frost elf courtier (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      192
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
 }
