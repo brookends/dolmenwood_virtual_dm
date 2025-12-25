@@ -17,15 +17,28 @@ from src.tables.table_types import (
     ReactionRoll,
     MoraleResult,
     SkillTarget,
+    Kindred,
+    NameColumn,
+    CharacterAspectType,
     # Data classes
     TableEntry,
     DolmenwoodTable,
     TableResult,
     TableContext,
     SkillCheck,
+    NameTableColumn,
+    KindredNameTable,
+    CharacterAspectTable,
+    CharacterAspectResult,
+    GeneratedCharacterAspects,
     # Functions
     interpret_reaction_roll,
     check_morale,
+)
+
+from src.tables.character_tables import (
+    CharacterTableManager,
+    get_character_table_manager,
 )
 
 from src.tables.table_manager import (
@@ -78,13 +91,24 @@ __all__ = [
     "ReactionRoll",
     "MoraleResult",
     "SkillTarget",
+    "Kindred",
+    "NameColumn",
+    "CharacterAspectType",
     "TableEntry",
     "DolmenwoodTable",
     "TableResult",
     "TableContext",
     "SkillCheck",
+    "NameTableColumn",
+    "KindredNameTable",
+    "CharacterAspectTable",
+    "CharacterAspectResult",
+    "GeneratedCharacterAspects",
     "interpret_reaction_roll",
     "check_morale",
+    # Character tables
+    "CharacterTableManager",
+    "get_character_table_manager",
     # Table manager
     "TableManager",
     "get_table_manager",

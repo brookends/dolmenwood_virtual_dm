@@ -11,6 +11,41 @@ from typing import Any, Callable, Optional, Union
 import random
 
 
+class Kindred(str, Enum):
+    """Playable kindreds (races) in Dolmenwood."""
+    BREGGLE = "breggle"
+    ELF = "elf"
+    GRIMALKIN = "grimalkin"
+    HUMAN = "human"
+    MOSSLING = "mossling"
+    WOODGRUE = "woodgrue"
+
+
+class NameColumn(str, Enum):
+    """Name table column types."""
+    MALE = "male"
+    FEMALE = "female"
+    UNISEX = "unisex"
+    SURNAME = "surname"
+    RUSTIC = "rustic"      # For elves
+    COURTLY = "courtly"    # For elves
+
+
+class CharacterAspectType(str, Enum):
+    """Types of character aspect tables."""
+    NAME = "name"
+    BACKGROUND = "background"
+    TRINKET = "trinket"
+    HEAD = "head"
+    DEMEANOUR = "demeanour"
+    DESIRES = "desires"
+    FACE = "face"
+    DRESS = "dress"
+    BELIEFS = "beliefs"
+    FUR_BODY = "fur_body"      # Fur for some, body type for others
+    SPEECH = "speech"
+
+
 class TableCategory(str, Enum):
     """
     Categories of game tables for organization and context-specific access.
@@ -20,6 +55,7 @@ class TableCategory(str, Enum):
     """
     # Character creation
     CHARACTER_ASPECT = "character_aspect"  # Appearance, beliefs, background
+    CHARACTER_NAME = "character_name"      # Name generation tables
 
     # Treasure and items
     TREASURE_TYPE = "treasure_type"        # What types/amounts of treasure
@@ -386,3 +422,267 @@ class SkillTarget(Enum):
     FORCE_DOOR = 2         # 2-in-6 base
     GET_LOST = 2           # 2-in-6 base in wilderness
     ENCOUNTER = 2          # 2-in-6 base encounter check
+
+
+# =============================================================================
+# CHARACTER GENERATION TABLES
+# =============================================================================
+
+
+@dataclass
+class NameTableColumn:
+    """
+    A single column in a name table.
+
+    Represents one category of names (male, female, unisex, surname, etc.)
+    with a list of possible values to roll on.
+    """
+    column_type: NameColumn
+    names: list[str] = field(default_factory=list)
+    die_type: DieType = DieType.D20
+
+    def roll(self) -> str:
+        """Roll a random name from this column."""
+        if not self.names:
+            return ""
+        die_size = int(self.die_type.value[1:])
+        index = random.randint(1, min(die_size, len(self.names))) - 1
+        return self.names[index]
+
+
+@dataclass
+class KindredNameTable:
+    """
+    Name table for a specific kindred.
+
+    Different kindreds have different name table structures:
+    - Breggles, Humans, Mosslings, Woodgrue: male, female, unisex, surname
+    - Grimalkin: first names, surnames (no gender distinction)
+    - Elves: rustic names, courtly names (no surnames)
+    """
+    kindred: Kindred
+    columns: dict[NameColumn, NameTableColumn] = field(default_factory=dict)
+    description: str = ""
+    source_reference: str = ""
+
+    def get_available_columns(self) -> list[NameColumn]:
+        """Get list of available name columns for this kindred."""
+        return list(self.columns.keys())
+
+    def roll_name(self, column: NameColumn) -> str:
+        """Roll a name from a specific column."""
+        if column in self.columns:
+            return self.columns[column].roll()
+        return ""
+
+    def roll_full_name(
+        self,
+        gender: Optional[str] = None,
+        style: Optional[str] = None  # For elves: "rustic" or "courtly"
+    ) -> str:
+        """
+        Roll a complete name appropriate for the kindred.
+
+        Args:
+            gender: "male", "female", or None for random/unisex
+            style: For elves only - "rustic" or "courtly"
+
+        Returns:
+            Generated full name
+        """
+        if self.kindred == Kindred.ELF:
+            # Elves use rustic or courtly names (no surnames)
+            if style == "courtly" and NameColumn.COURTLY in self.columns:
+                return self.roll_name(NameColumn.COURTLY)
+            elif NameColumn.RUSTIC in self.columns:
+                return self.roll_name(NameColumn.RUSTIC)
+            return ""
+
+        elif self.kindred == Kindred.GRIMALKIN:
+            # Grimalkin have unisex first names and surnames
+            first = self.roll_name(NameColumn.UNISEX)
+            surname = self.roll_name(NameColumn.SURNAME)
+            return f"{first} {surname}".strip()
+
+        else:
+            # Standard kindreds: male/female/unisex + surname
+            if gender == "male" and NameColumn.MALE in self.columns:
+                first = self.roll_name(NameColumn.MALE)
+            elif gender == "female" and NameColumn.FEMALE in self.columns:
+                first = self.roll_name(NameColumn.FEMALE)
+            elif NameColumn.UNISEX in self.columns:
+                first = self.roll_name(NameColumn.UNISEX)
+            else:
+                # Fallback to any available first name column
+                for col in [NameColumn.MALE, NameColumn.FEMALE, NameColumn.UNISEX]:
+                    if col in self.columns:
+                        first = self.roll_name(col)
+                        break
+                else:
+                    first = ""
+
+            surname = self.roll_name(NameColumn.SURNAME)
+            return f"{first} {surname}".strip()
+
+
+@dataclass
+class CharacterAspectTable:
+    """
+    An aspect table for character generation.
+
+    Aspect tables provide random results for various character attributes
+    like background, demeanour, dress, etc. Each kindred has its own
+    set of aspect tables with kindred-appropriate results.
+    """
+    table_id: str
+    kindred: Kindred
+    aspect_type: CharacterAspectType
+    name: str
+    die_type: DieType = DieType.D10
+    entries: list[TableEntry] = field(default_factory=list)
+    description: str = ""
+    source_reference: str = ""
+
+    def roll(self) -> tuple[int, TableEntry]:
+        """
+        Roll on this aspect table.
+
+        Returns:
+            Tuple of (roll_total, matching_entry)
+        """
+        die_size = int(self.die_type.value[1:])
+        roll = random.randint(1, die_size)
+
+        for entry in self.entries:
+            if entry.matches_roll(roll):
+                return roll, entry
+
+        # Fallback
+        if self.entries:
+            return roll, self.entries[-1]
+        return roll, TableEntry(roll_min=roll, roll_max=roll, result="No result")
+
+
+@dataclass
+class CharacterAspectResult:
+    """Result of rolling on a character aspect table."""
+    kindred: Kindred
+    aspect_type: CharacterAspectType
+    roll: int
+    result: str
+    entry: Optional[TableEntry] = None
+
+    def __str__(self) -> str:
+        return f"{self.aspect_type.value}: {self.result}"
+
+
+@dataclass
+class GeneratedCharacterAspects:
+    """
+    Complete set of generated character aspects.
+
+    Contains all rolled aspects for a character of a specific kindred.
+    """
+    kindred: Kindred
+    name: str = ""
+    gender: Optional[str] = None
+
+    # Rolled aspects
+    background: Optional[CharacterAspectResult] = None
+    trinket: Optional[CharacterAspectResult] = None
+    head: Optional[CharacterAspectResult] = None
+    demeanour: Optional[CharacterAspectResult] = None
+    desires: Optional[CharacterAspectResult] = None
+    face: Optional[CharacterAspectResult] = None
+    dress: Optional[CharacterAspectResult] = None
+    beliefs: Optional[CharacterAspectResult] = None
+    fur_body: Optional[CharacterAspectResult] = None
+    speech: Optional[CharacterAspectResult] = None
+
+    def get_aspect(self, aspect_type: CharacterAspectType) -> Optional[CharacterAspectResult]:
+        """Get a specific aspect result."""
+        aspect_map = {
+            CharacterAspectType.BACKGROUND: self.background,
+            CharacterAspectType.TRINKET: self.trinket,
+            CharacterAspectType.HEAD: self.head,
+            CharacterAspectType.DEMEANOUR: self.demeanour,
+            CharacterAspectType.DESIRES: self.desires,
+            CharacterAspectType.FACE: self.face,
+            CharacterAspectType.DRESS: self.dress,
+            CharacterAspectType.BELIEFS: self.beliefs,
+            CharacterAspectType.FUR_BODY: self.fur_body,
+            CharacterAspectType.SPEECH: self.speech,
+        }
+        return aspect_map.get(aspect_type)
+
+    def set_aspect(self, aspect_type: CharacterAspectType, result: CharacterAspectResult) -> None:
+        """Set a specific aspect result."""
+        if aspect_type == CharacterAspectType.BACKGROUND:
+            self.background = result
+        elif aspect_type == CharacterAspectType.TRINKET:
+            self.trinket = result
+        elif aspect_type == CharacterAspectType.HEAD:
+            self.head = result
+        elif aspect_type == CharacterAspectType.DEMEANOUR:
+            self.demeanour = result
+        elif aspect_type == CharacterAspectType.DESIRES:
+            self.desires = result
+        elif aspect_type == CharacterAspectType.FACE:
+            self.face = result
+        elif aspect_type == CharacterAspectType.DRESS:
+            self.dress = result
+        elif aspect_type == CharacterAspectType.BELIEFS:
+            self.beliefs = result
+        elif aspect_type == CharacterAspectType.FUR_BODY:
+            self.fur_body = result
+        elif aspect_type == CharacterAspectType.SPEECH:
+            self.speech = result
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for display or serialization."""
+        result = {
+            "kindred": self.kindred.value,
+            "name": self.name,
+        }
+        if self.gender:
+            result["gender"] = self.gender
+
+        for aspect_type in CharacterAspectType:
+            if aspect_type == CharacterAspectType.NAME:
+                continue  # Name handled separately
+            aspect = self.get_aspect(aspect_type)
+            if aspect:
+                result[aspect_type.value] = aspect.result
+
+        return result
+
+    def describe(self) -> str:
+        """Get a formatted description of the character."""
+        lines = [
+            f"Name: {self.name}",
+            f"Kindred: {self.kindred.value.title()}",
+        ]
+        if self.gender:
+            lines.append(f"Gender: {self.gender.title()}")
+        lines.append("")
+
+        aspect_order = [
+            CharacterAspectType.BACKGROUND,
+            CharacterAspectType.HEAD,
+            CharacterAspectType.FACE,
+            CharacterAspectType.FUR_BODY,
+            CharacterAspectType.DRESS,
+            CharacterAspectType.DEMEANOUR,
+            CharacterAspectType.SPEECH,
+            CharacterAspectType.BELIEFS,
+            CharacterAspectType.DESIRES,
+            CharacterAspectType.TRINKET,
+        ]
+
+        for aspect_type in aspect_order:
+            aspect = self.get_aspect(aspect_type)
+            if aspect:
+                label = aspect_type.value.replace("_", " ").title()
+                lines.append(f"{label}: {aspect.result}")
+
+        return "\n".join(lines)
