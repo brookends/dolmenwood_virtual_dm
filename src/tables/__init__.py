@@ -20,6 +20,13 @@ from src.tables.table_types import (
     Kindred,
     NameColumn,
     CharacterAspectType,
+    # Encounter enums
+    EncounterLocationType,
+    EncounterTimeOfDay,
+    EncounterSeason,
+    DolmenwoodRegion,
+    DolmenwoodSettlement,
+    EncounterResultType,
     # Data classes
     TableEntry,
     DolmenwoodTable,
@@ -31,6 +38,11 @@ from src.tables.table_types import (
     CharacterAspectTable,
     CharacterAspectResult,
     GeneratedCharacterAspects,
+    # Encounter data classes
+    EncounterTableContext,
+    EncounterEntry,
+    EncounterTable,
+    EncounterResult,
     # Functions
     interpret_reaction_roll,
     check_morale,
@@ -84,6 +96,11 @@ from src.tables.procedure_triggers import (
     fire_combat_round,
 )
 
+from src.tables.encounter_tables import (
+    EncounterTableManager,
+    get_encounter_table_manager,
+)
+
 __all__ = [
     # Table types
     "TableCategory",
@@ -106,9 +123,23 @@ __all__ = [
     "GeneratedCharacterAspects",
     "interpret_reaction_roll",
     "check_morale",
+    # Encounter types
+    "EncounterLocationType",
+    "EncounterTimeOfDay",
+    "EncounterSeason",
+    "DolmenwoodRegion",
+    "DolmenwoodSettlement",
+    "EncounterResultType",
+    "EncounterTableContext",
+    "EncounterEntry",
+    "EncounterTable",
+    "EncounterResult",
     # Character tables
     "CharacterTableManager",
     "get_character_table_manager",
+    # Encounter tables
+    "EncounterTableManager",
+    "get_encounter_table_manager",
     # Table manager
     "TableManager",
     "get_table_manager",

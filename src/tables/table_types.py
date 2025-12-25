@@ -46,6 +46,87 @@ class CharacterAspectType(str, Enum):
     SPEECH = "speech"
 
 
+# =============================================================================
+# ENCOUNTER TABLE ENUMS
+# =============================================================================
+
+
+class EncounterLocationType(str, Enum):
+    """Types of locations for encounter tables."""
+    WILDERNESS = "wilderness"          # General wilderness
+    SETTLEMENT = "settlement"          # Town/village encounters
+    FAIRY_ROAD = "fairy_road"          # Fairy road encounters
+    HEX_SPECIFIC = "hex_specific"      # Specific hex encounters
+    REGIONAL = "regional"              # Regional wilderness tables
+    DUNGEON = "dungeon"                # Dungeon encounters
+
+
+class EncounterTimeOfDay(str, Enum):
+    """Time of day for encounter tables."""
+    ANY = "any"                        # Applies any time
+    DAY = "day"                        # Daytime only
+    NIGHT = "night"                    # Nighttime only
+    DAWN = "dawn"                      # Dawn specifically
+    DUSK = "dusk"                      # Dusk specifically
+
+
+class EncounterSeason(str, Enum):
+    """Seasons for encounter tables, including Dolmenwood unseasons."""
+    ANY = "any"                        # Applies any season
+    SPRING = "spring"
+    SUMMER = "summer"
+    AUTUMN = "autumn"
+    WINTER = "winter"
+    # Dolmenwood Unseasons
+    CHAME = "chame"                    # Unseason of Chame
+    VAGUE = "vague"                    # Unseason of Vague
+
+
+class DolmenwoodRegion(str, Enum):
+    """Regions of Dolmenwood for regional encounter tables."""
+    ANY = "any"                        # Applies anywhere
+    NORTHERN_SCRATCH = "northern_scratch"
+    LAKE_LONGMERE = "lake_longmere"
+    MULCHGROVE = "mulchgrove"
+    HAGS_ADDLE = "hags_addle"
+    ALDWEALD = "aldweald"
+    TITHELANDS = "tithelands"
+    HIGH_WOLD = "high_wold"
+    FEVER_MARSH = "fever_marsh"
+    DRUNE_TERRITORY = "drune_territory"
+
+
+class DolmenwoodSettlement(str, Enum):
+    """Named settlements in Dolmenwood with encounter tables."""
+    BLACKESWELL = "blackeswell"
+    CASTLE_BRACKENWOLD = "castle_brackenwold"
+    COBTON = "cobton"
+    DREG = "dreg"
+    FORT_VULGAR = "fort_vulgar"
+    HIGH_HANKLE = "high_hankle"
+    LANKSHORN = "lankshorn"
+    MEAGRES_REACH = "meagres_reach"
+    ODD = "odd"
+    ORBSWALLOW = "orbswallow"
+    PRIGWORT = "prigwort"
+    WOODCUTTERS_ENCAMPMENT = "woodcutters_encampment"
+
+
+class EncounterResultType(str, Enum):
+    """Types of encounter results."""
+    MONSTER = "monster"                # Monster encounter
+    NPC = "npc"                        # NPC encounter
+    LAIR = "lair"                      # Monster lair discovery
+    SPOOR = "spoor"                    # Signs of creature activity
+    SPECIAL = "special"                # Special/unique encounter
+    ENVIRONMENTAL = "environmental"    # Environmental hazard
+    FAIRY = "fairy"                    # Fairy-related encounter
+    PATROL = "patrol"                  # Guard/military patrol
+    MERCHANT = "merchant"              # Traveling merchant
+    PILGRIM = "pilgrim"                # Religious travelers
+    EVENT = "event"                    # Local event/happening
+
+
 class TableCategory(str, Enum):
     """
     Categories of game tables for organization and context-specific access.
@@ -68,6 +149,11 @@ class TableCategory(str, Enum):
     # Encounters (generic)
     ENCOUNTER_GENERIC = "encounter_generic"     # Generic wilderness encounters
     ENCOUNTER_TYPE = "encounter_type"           # Type of encounter (monster, NPC, etc.)
+    ENCOUNTER_COMMON = "encounter_common"       # Common encounter table
+    ENCOUNTER_REGIONAL = "encounter_regional"   # Regional encounter tables
+    ENCOUNTER_SETTLEMENT = "encounter_settlement"  # Settlement encounters
+    ENCOUNTER_FAIRY_ROAD = "encounter_fairy_road"  # Fairy road encounters
+    ENCOUNTER_UNSEASON = "encounter_unseason"   # Unseason-specific encounters
     REACTION = "reaction"                       # 2d6 reaction roll
     MORALE = "morale"                           # Morale check
     SURPRISE = "surprise"                       # Surprise determination
@@ -684,5 +770,237 @@ class GeneratedCharacterAspects:
             if aspect:
                 label = aspect_type.value.replace("_", " ").title()
                 lines.append(f"{label}: {aspect.result}")
+
+        return "\n".join(lines)
+
+
+# =============================================================================
+# ENCOUNTER TABLES
+# =============================================================================
+
+
+@dataclass
+class EncounterTableContext:
+    """
+    Context for selecting and rolling on encounter tables.
+
+    Used to determine which encounter table(s) apply and
+    any modifiers to the roll.
+    """
+    # Location context
+    location_type: EncounterLocationType = EncounterLocationType.WILDERNESS
+    hex_id: Optional[str] = None
+    settlement: Optional[DolmenwoodSettlement] = None
+    region: Optional[DolmenwoodRegion] = None
+    on_fairy_road: bool = False
+
+    # Time context
+    time_of_day: EncounterTimeOfDay = EncounterTimeOfDay.ANY
+    season: EncounterSeason = EncounterSeason.ANY
+    is_unseason: bool = False
+
+    # Modifiers
+    stealth_modifier: int = 0          # Party attempting stealth
+    noise_modifier: int = 0            # Party making noise
+    light_modifier: int = 0            # Light sources at night
+
+    def matches_table(
+        self,
+        table_location: EncounterLocationType,
+        table_time: EncounterTimeOfDay,
+        table_season: EncounterSeason,
+        table_settlement: Optional[DolmenwoodSettlement] = None,
+        table_region: Optional[DolmenwoodRegion] = None
+    ) -> bool:
+        """Check if this context matches a table's requirements."""
+        # Check location type
+        if table_location != self.location_type:
+            if table_location != EncounterLocationType.WILDERNESS:
+                return False
+
+        # Check settlement
+        if table_settlement is not None:
+            if self.settlement != table_settlement:
+                return False
+
+        # Check region
+        if table_region is not None and table_region != DolmenwoodRegion.ANY:
+            if self.region != table_region:
+                return False
+
+        # Check time of day
+        if table_time != EncounterTimeOfDay.ANY:
+            if self.time_of_day != table_time:
+                # Day/night don't match
+                if not (table_time == EncounterTimeOfDay.DAY and
+                        self.time_of_day in [EncounterTimeOfDay.DAWN, EncounterTimeOfDay.DAY]):
+                    if not (table_time == EncounterTimeOfDay.NIGHT and
+                            self.time_of_day in [EncounterTimeOfDay.DUSK, EncounterTimeOfDay.NIGHT]):
+                        return False
+
+        # Check season
+        if table_season != EncounterSeason.ANY:
+            if self.season != table_season:
+                return False
+
+        return True
+
+
+@dataclass
+class EncounterEntry:
+    """
+    A single entry in an encounter table.
+
+    Extends TableEntry with encounter-specific fields.
+    """
+    # Roll range
+    roll_min: int
+    roll_max: int
+
+    # Result
+    result: str
+    result_type: EncounterResultType = EncounterResultType.MONSTER
+
+    # References
+    monster_refs: list[str] = field(default_factory=list)
+    npc_refs: list[str] = field(default_factory=list)
+    number_appearing: Optional[str] = None  # Dice notation
+
+    # Sub-tables
+    sub_table: Optional[str] = None         # Reference to another table
+    regional_table: bool = False            # Roll on regional table instead
+
+    # Behavioral hints
+    activity: Optional[str] = None          # What the encounter is doing
+    disposition: Optional[str] = None       # Starting attitude
+
+    # Special flags
+    is_lair: bool = False
+    is_special: bool = False
+
+    def matches_roll(self, roll: int) -> bool:
+        """Check if a roll value falls within this entry's range."""
+        return self.roll_min <= roll <= self.roll_max
+
+
+@dataclass
+class EncounterTable:
+    """
+    An encounter table for a specific location/time/season combination.
+
+    Supports the hierarchical encounter table system:
+    1. Check for hex-specific encounters
+    2. Check for settlement encounters (if in settlement)
+    3. Check for regional encounters
+    4. Fall back to common encounters
+    """
+    table_id: str
+    name: str
+
+    # Table classification
+    location_type: EncounterLocationType
+    time_of_day: EncounterTimeOfDay = EncounterTimeOfDay.ANY
+    season: EncounterSeason = EncounterSeason.ANY
+
+    # Specific location (if applicable)
+    settlement: Optional[DolmenwoodSettlement] = None
+    region: Optional[DolmenwoodRegion] = None
+    hex_id: Optional[str] = None
+
+    # Die configuration
+    die_type: DieType = DieType.D12
+    num_dice: int = 1
+
+    # Entries
+    entries: list[EncounterEntry] = field(default_factory=list)
+
+    # Metadata
+    description: str = ""
+    source_reference: str = ""
+    page_number: Optional[int] = None
+
+    def get_max_roll(self) -> int:
+        """Get the maximum possible roll for this table."""
+        die_size = int(self.die_type.value[1:])
+        return self.num_dice * die_size
+
+    def get_min_roll(self) -> int:
+        """Get the minimum possible roll for this table."""
+        return self.num_dice
+
+    def roll(self) -> tuple[int, EncounterEntry]:
+        """Roll on this encounter table."""
+        die_size = int(self.die_type.value[1:])
+        rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
+        total = sum(rolls)
+
+        for entry in self.entries:
+            if entry.matches_roll(total):
+                return total, entry
+
+        # Fallback
+        if self.entries:
+            return total, self.entries[-1]
+
+        return total, EncounterEntry(
+            roll_min=total, roll_max=total,
+            result="No encounter", result_type=EncounterResultType.SPECIAL
+        )
+
+    def matches_context(self, context: EncounterTableContext) -> bool:
+        """Check if this table applies to the given context."""
+        return context.matches_table(
+            table_location=self.location_type,
+            table_time=self.time_of_day,
+            table_season=self.season,
+            table_settlement=self.settlement,
+            table_region=self.region
+        )
+
+
+@dataclass
+class EncounterResult:
+    """Complete result of an encounter roll."""
+    table_id: str
+    table_name: str
+
+    # Roll details
+    roll: int
+    entry: EncounterEntry
+
+    # Context
+    location_type: EncounterLocationType
+    time_of_day: EncounterTimeOfDay
+    season: EncounterSeason
+
+    # Resolved details
+    description: str = ""
+    monsters: list[str] = field(default_factory=list)
+    npcs: list[str] = field(default_factory=list)
+    number_appearing_rolled: Optional[int] = None
+
+    # Sub-results (if regional table was rolled)
+    sub_result: Optional["EncounterResult"] = None
+
+    def describe(self) -> str:
+        """Get a formatted description of the encounter."""
+        lines = [
+            f"[{self.table_name}] Roll: {self.roll}",
+            f"Result: {self.entry.result}",
+        ]
+
+        if self.entry.result_type != EncounterResultType.SPECIAL:
+            lines.append(f"Type: {self.entry.result_type.value}")
+
+        if self.number_appearing_rolled:
+            lines.append(f"Number Appearing: {self.number_appearing_rolled}")
+
+        if self.entry.activity:
+            lines.append(f"Activity: {self.entry.activity}")
+
+        if self.sub_result:
+            lines.append("")
+            lines.append("Sub-table result:")
+            lines.append(self.sub_result.describe())
 
         return "\n".join(lines)
