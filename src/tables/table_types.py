@@ -779,6 +779,72 @@ class GeneratedCharacterAspects:
 # =============================================================================
 
 
+class EncounterTableCategory(str, Enum):
+    """Categories of encounter tables for eligibility determination."""
+    COMMON = "common"              # Common wilderness encounters
+    HEX_SPECIFIC = "hex_specific"  # Specific to a hex
+    REGIONAL = "regional"          # Regional wilderness table
+    SEASONAL = "seasonal"          # Season-specific encounters (including unseasons)
+    SETTLEMENT = "settlement"      # Settlement encounters (day/night)
+    FAIRY_ROAD = "fairy_road"      # Fairy road only
+
+
+class NestedTableConditionType(str, Enum):
+    """Types of conditions for selecting nested sub-tables."""
+    TIME_OF_DAY = "time_of_day"      # Day vs night
+    ON_ROAD = "on_road"              # Traveling on road vs wild
+    HAS_FIRE = "has_fire"            # Fire present (for night encounters)
+    TERRAIN = "terrain"              # Terrain type
+    WEATHER = "weather"              # Weather conditions
+    CUSTOM = "custom"                # Custom condition
+
+
+@dataclass
+class NestedTableCondition:
+    """
+    A condition for selecting a nested sub-table.
+
+    Used when a parent table contains multiple sub-tables
+    selected based on situational conditions.
+    """
+    condition_type: NestedTableConditionType
+    condition_value: Any              # The value to match (e.g., "day", True)
+    condition_label: str = ""         # Human-readable label for the condition
+
+    def matches(self, context: "EncounterTableContext") -> bool:
+        """Check if this condition matches the given context."""
+        if self.condition_type == NestedTableConditionType.TIME_OF_DAY:
+            if self.condition_value == "day":
+                return context.time_of_day in [
+                    EncounterTimeOfDay.DAY, EncounterTimeOfDay.DAWN
+                ]
+            elif self.condition_value == "night":
+                return context.time_of_day in [
+                    EncounterTimeOfDay.NIGHT, EncounterTimeOfDay.DUSK
+                ]
+            return str(context.time_of_day.value) == str(self.condition_value)
+
+        elif self.condition_type == NestedTableConditionType.ON_ROAD:
+            return context.on_road == self.condition_value
+
+        elif self.condition_type == NestedTableConditionType.HAS_FIRE:
+            return context.has_fire == self.condition_value
+
+        elif self.condition_type == NestedTableConditionType.TERRAIN:
+            return context.terrain_type == self.condition_value
+
+        elif self.condition_type == NestedTableConditionType.WEATHER:
+            return context.weather == self.condition_value
+
+        # Custom conditions use extra_conditions dict
+        elif self.condition_type == NestedTableConditionType.CUSTOM:
+            return context.extra_conditions.get(
+                self.condition_label, None
+            ) == self.condition_value
+
+        return False
+
+
 @dataclass
 class EncounterTableContext:
     """
@@ -798,6 +864,15 @@ class EncounterTableContext:
     time_of_day: EncounterTimeOfDay = EncounterTimeOfDay.ANY
     season: EncounterSeason = EncounterSeason.ANY
     is_unseason: bool = False
+
+    # Situational conditions (for nested table selection)
+    on_road: bool = False              # Traveling on a road
+    has_fire: bool = False             # Fire/light source present
+    terrain_type: Optional[str] = None # Current terrain
+    weather: Optional[str] = None      # Current weather
+
+    # Extra conditions for custom nested table logic
+    extra_conditions: dict[str, Any] = field(default_factory=dict)
 
     # Modifiers
     stealth_modifier: int = 0          # Party attempting stealth
@@ -884,21 +959,38 @@ class EncounterEntry:
 
 
 @dataclass
+class NestedTableSelector:
+    """
+    Defines a nested sub-table with its selection conditions.
+
+    Used when a parent table contains multiple sub-tables that are
+    selected based on situational conditions (time of day, on road, etc.).
+    """
+    conditions: list[NestedTableCondition]  # All must match for this table
+    table: "EncounterTable"                  # The nested table to use
+
+    def matches(self, context: EncounterTableContext) -> bool:
+        """Check if all conditions match the given context."""
+        return all(cond.matches(context) for cond in self.conditions)
+
+
+@dataclass
 class EncounterTable:
     """
     An encounter table for a specific location/time/season combination.
 
-    Supports the hierarchical encounter table system:
-    1. Check for hex-specific encounters
-    2. Check for settlement encounters (if in settlement)
-    3. Check for regional encounters
-    4. Fall back to common encounters
+    Supports:
+    - Variable length tables (any die type, any number of entries)
+    - Nested conditional tables (sub-tables selected by conditions)
+    - Equal probability selection among eligible wilderness tables
+    - Exclusive table types (fairy road, settlement)
     """
     table_id: str
     name: str
 
     # Table classification
     location_type: EncounterLocationType
+    category: EncounterTableCategory = EncounterTableCategory.COMMON
     time_of_day: EncounterTimeOfDay = EncounterTimeOfDay.ANY
     season: EncounterSeason = EncounterSeason.ANY
 
@@ -907,12 +999,16 @@ class EncounterTable:
     region: Optional[DolmenwoodRegion] = None
     hex_id: Optional[str] = None
 
-    # Die configuration
+    # Die configuration - supports any die type for variable length
     die_type: DieType = DieType.D12
     num_dice: int = 1
 
-    # Entries
+    # Entries (for leaf tables that have actual results)
     entries: list[EncounterEntry] = field(default_factory=list)
+
+    # Nested tables (for container tables with conditional sub-tables)
+    nested_tables: list[NestedTableSelector] = field(default_factory=list)
+    is_container: bool = False  # True if this only contains nested tables
 
     # Metadata
     description: str = ""
@@ -928,8 +1024,34 @@ class EncounterTable:
         """Get the minimum possible roll for this table."""
         return self.num_dice
 
-    def roll(self) -> tuple[int, EncounterEntry]:
-        """Roll on this encounter table."""
+    def get_nested_table(self, context: EncounterTableContext) -> Optional["EncounterTable"]:
+        """
+        Get the appropriate nested table for the given context.
+
+        Returns None if no nested table matches or this isn't a container.
+        """
+        if not self.is_container or not self.nested_tables:
+            return None
+
+        for selector in self.nested_tables:
+            if selector.matches(context):
+                return selector.table
+
+        return None
+
+    def roll(self, context: Optional[EncounterTableContext] = None) -> tuple[int, EncounterEntry]:
+        """
+        Roll on this encounter table.
+
+        If this is a container table, selects the appropriate nested table
+        based on context and rolls on that instead.
+        """
+        # If container table, delegate to nested table
+        if self.is_container and context:
+            nested = self.get_nested_table(context)
+            if nested:
+                return nested.roll(context)
+
         die_size = int(self.die_type.value[1:])
         rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
         total = sum(rolls)
@@ -956,6 +1078,45 @@ class EncounterTable:
             table_settlement=self.settlement,
             table_region=self.region
         )
+
+    def is_eligible_for_context(self, context: EncounterTableContext) -> bool:
+        """
+        Check if this table is eligible for random selection in the given context.
+
+        This is different from matches_context - it checks category-specific
+        eligibility rules for the equal-probability selection system.
+        """
+        # Fairy road tables only eligible on fairy roads
+        if self.category == EncounterTableCategory.FAIRY_ROAD:
+            return context.on_fairy_road
+
+        # Settlement tables only eligible in that settlement
+        if self.category == EncounterTableCategory.SETTLEMENT:
+            if context.location_type != EncounterLocationType.SETTLEMENT:
+                return False
+            return self.settlement == context.settlement
+
+        # For wilderness encounters, check various eligibility
+        if context.location_type != EncounterLocationType.WILDERNESS:
+            return False
+
+        # Common tables are always eligible in wilderness
+        if self.category == EncounterTableCategory.COMMON:
+            return True
+
+        # Hex-specific tables only eligible in their hex
+        if self.category == EncounterTableCategory.HEX_SPECIFIC:
+            return self.hex_id == context.hex_id
+
+        # Regional tables eligible in their region
+        if self.category == EncounterTableCategory.REGIONAL:
+            return self.region == context.region
+
+        # Seasonal tables eligible during their season
+        if self.category == EncounterTableCategory.SEASONAL:
+            return self.season == context.season
+
+        return False
 
 
 @dataclass
