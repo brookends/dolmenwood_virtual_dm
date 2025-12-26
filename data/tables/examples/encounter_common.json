@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "table_id": "encounter_common_wilderness",
+    "name": "Common Wilderness Encounters",
+    "table_type": "encounter_common",
+    "die_type": "d12",
+    "num_dice": 1,
+    "source_book": "Campaign Book",
+    "page_number": 200,
+    "category": "common",
+    "description": "Common encounters in the Dolmenwood wilderness."
+  },
+  "entries": [
+    {
+      "roll_min": 1,
+      "roll_max": 1,
+      "result": "Wolves",
+      "data": {
+        "result_type": "monster",
+        "monster_id": "wolf",
+        "disposition": "hungry"
+      },
+      "dice": {"number_appearing": "2d4"}
+    },
+    {
+      "roll_min": 2,
+      "roll_max": 2,
+      "result": "Wild Boars",
+      "data": {
+        "result_type": "monster",
+        "monster_id": "wild_boar",
+        "disposition": "territorial"
+      },
+      "dice": {"number_appearing": "1d4"}
+    },
+    {
+      "roll_min": 3,
+      "roll_max": 3,
+      "result": "Bandits",
+      "data": {
+        "result_type": "npc",
+        "npc_type": "bandit",
+        "disposition": "hostile"
+      },
+      "dice": {"number_appearing": "2d6"}
+    },
+    {
+      "roll_min": 4,
+      "roll_max": 4,
+      "result": "Traveling Merchant",
+      "data": {
+        "result_type": "npc",
+        "npc_type": "merchant",
+        "disposition": "friendly"
+      },
+      "dice": {"number_appearing": "1", "guards": "1d4"}
+    },
+    {
+      "roll_min": 5,
+      "roll_max": 5,
+      "result": "Pilgrim Party",
+      "data": {
+        "result_type": "npc",
+        "npc_type": "pilgrim",
+        "disposition": "neutral"
+      },
+      "dice": {"number_appearing": "2d4"}
+    },
+    {
+      "roll_min": 6,
+      "roll_max": 6,
+      "result": "Giant Spiders",
+      "data": {
+        "result_type": "monster",
+        "monster_id": "giant_spider",
+        "disposition": "ambush"
+      },
+      "dice": {"number_appearing": "1d6"}
+    },
+    {
+      "roll_min": 7,
+      "roll_max": 7,
+      "result": "Woodcutters",
+      "data": {
+        "result_type": "npc",
+        "npc_type": "woodcutter",
+        "disposition": "wary"
+      },
+      "dice": {"number_appearing": "1d6"}
+    },
+    {
+      "roll_min": 8,
+      "roll_max": 8,
+      "result": "Moss Dwarfs",
+      "data": {
+        "result_type": "monster",
+        "monster_id": "moss_dwarf",
+        "disposition": "curious"
+      },
+      "dice": {"number_appearing": "2d4"}
+    },
+    {
+      "roll_min": 9,
+      "roll_max": 9,
+      "result": "Stirges",
+      "data": {
+        "result_type": "monster",
+        "monster_id": "stirge",
+        "disposition": "hungry"
+      },
+      "dice": {"number_appearing": "2d6"}
+    },
+    {
+      "roll_min": 10,
+      "roll_max": 10,
+      "result": "Patrol",
+      "data": {
+        "result_type": "npc",
+        "npc_type": "patrol",
+        "disposition": "suspicious"
+      },
+      "dice": {"number_appearing": "2d4"}
+    },
+    {
+      "roll_min": 11,
+      "roll_max": 11,
+      "result": "Roll on Regional Table",
+      "data": {"result_type": "special", "roll_regional": true},
+      "sub_tables": []
+    },
+    {
+      "roll_min": 12,
+      "roll_max": 12,
+      "result": "Fairy Creature",
+      "data": {
+        "result_type": "fairy",
+        "disposition": "unpredictable"
+      },
+      "sub_tables": ["fairy_creature_type"]
+    }
+  ]
+}

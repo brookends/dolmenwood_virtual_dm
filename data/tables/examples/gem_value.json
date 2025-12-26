@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "table_id": "gem_value",
+    "name": "Gem Value",
+    "table_type": "treasure_gem",
+    "die_type": "d100",
+    "num_dice": 1,
+    "source_book": "Campaign Book",
+    "page_number": 394,
+    "category": "treasure",
+    "subcategory": "gems",
+    "description": "Determines the base value of a gem in gold pieces."
+  },
+  "entries": [
+    {"roll_min": 1, "roll_max": 20, "result": "10 gp", "data": {"value_gp": 10}},
+    {"roll_min": 21, "roll_max": 45, "result": "50 gp", "data": {"value_gp": 50}},
+    {"roll_min": 46, "roll_max": 75, "result": "100 gp", "data": {"value_gp": 100}},
+    {"roll_min": 76, "roll_max": 90, "result": "500 gp", "data": {"value_gp": 500}},
+    {"roll_min": 91, "roll_max": 98, "result": "1,000 gp", "data": {"value_gp": 1000}},
+    {"roll_min": 99, "roll_max": 100, "result": "5,000 gp", "data": {"value_gp": 5000}}
+  ]
+}
