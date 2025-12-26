@@ -44,6 +44,11 @@ from src.tables.table_types import (
     RollTableMetadata,
     RollTableType,
     RollResult,
+    # Hex-embedded table parsing
+    HexRollTable,
+    HexRollTableEntry,
+    parse_hex_roll_tables,
+    convert_hex_tables_to_roll_tables,
 )
 
 
@@ -80,6 +85,10 @@ class EncounterTableManager:
 
         # Cache of loaded tables (table_id -> EncounterTable)
         self._tables: dict[str, EncounterTable] = {}
+
+        # Cache of hex-embedded roll tables (table_id -> RollTable)
+        # These are loaded from hex data in the database
+        self._roll_tables: dict[str, RollTable] = {}
 
         # Indexes by category for quick lookup
         self._by_category: dict[EncounterTableCategory, list[str]] = {
@@ -143,6 +152,97 @@ class EncounterTableManager:
         pass
 
     # =========================================================================
+    # HEX TABLE LOADING FROM DATABASE
+    # =========================================================================
+
+    def load_hex_tables_from_hex_data(self, hex_data: dict[str, Any]) -> list[RollTable]:
+        """
+        Load and register roll tables embedded in hex data.
+
+        Hex data in SQLite/ChromaDB contains embedded roll tables at:
+        - hex_data["roll_tables"] (hex-level encounters)
+        - hex_data["points_of_interest"][*]["roll_tables"] (POI-specific)
+
+        Args:
+            hex_data: The full hex JSON data from the database.
+
+        Returns:
+            List of RollTable objects that were loaded and registered.
+        """
+        roll_tables = convert_hex_tables_to_roll_tables(hex_data)
+        hex_id = hex_data.get("hex_id")
+
+        for table in roll_tables:
+            # Register in cache
+            self._roll_tables[table.table_id] = table
+
+            # Index by hex
+            if hex_id:
+                if hex_id not in self._by_hex:
+                    self._by_hex[hex_id] = []
+                if table.table_id not in self._by_hex[hex_id]:
+                    self._by_hex[hex_id].append(table.table_id)
+
+        return roll_tables
+
+    def load_hex_from_db(self, hex_id: str) -> Optional[dict[str, Any]]:
+        """
+        Load hex data from the database.
+
+        This method should be overridden when database integration is ready.
+
+        Args:
+            hex_id: The hex identifier (e.g., "0101").
+
+        Returns:
+            The hex data dictionary, or None if not found.
+        """
+        if self._db is None:
+            return None
+
+        # TODO: Implement database loading
+        # Example query:
+        # SELECT data FROM hexes WHERE hex_id = ?
+        return None
+
+    def load_hex_tables(self, hex_id: str) -> list[RollTable]:
+        """
+        Load all roll tables for a hex from the database.
+
+        Args:
+            hex_id: The hex identifier (e.g., "0101").
+
+        Returns:
+            List of RollTable objects for this hex.
+        """
+        # Check if already loaded
+        if hex_id in self._by_hex:
+            return [
+                self._roll_tables[tid]
+                for tid in self._by_hex[hex_id]
+                if tid in self._roll_tables
+            ]
+
+        # Load from database
+        hex_data = self.load_hex_from_db(hex_id)
+        if hex_data:
+            return self.load_hex_tables_from_hex_data(hex_data)
+
+        return []
+
+    def get_hex_roll_tables(self, hex_id: str) -> list[RollTable]:
+        """
+        Get roll tables for a hex, loading from database if necessary.
+
+        Args:
+            hex_id: The hex identifier.
+
+        Returns:
+            List of RollTable objects for this hex.
+        """
+        return self.load_hex_tables(hex_id)
+
+    # =========================================================================
     # TABLE REGISTRATION
     # =========================================================================
 
@@ -191,6 +291,7 @@ class EncounterTableManager:
     def clear_cache(self) -> None:
         """Clear the table cache and indexes."""
         self._tables.clear()
+        self._roll_tables.clear()
         self._by_category = {cat: [] for cat in EncounterTableCategory}
         self._by_settlement.clear()
         self._by_region.clear()

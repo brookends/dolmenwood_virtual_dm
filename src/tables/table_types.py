@@ -1911,3 +1911,196 @@ class RollResult:
             lines.append(sub.describe())
 
         return "\n".join(lines)
+
+
+# =============================================================================
+# HEX-EMBEDDED ROLL TABLES
+# =============================================================================
+# Hex data stored in SQLite/ChromaDB contains embedded roll tables with a
+# different format than standalone JSON tables. These classes parse that format.
+
+
+@dataclass
+class HexRollTableEntry:
+    """
+    An entry from a hex-embedded roll table.
+
+    Hex tables use a different JSON format:
+    - "roll" instead of "roll_min"/"roll_max"
+    - "title" and "description" instead of "result"
+    - Direct arrays for "monsters", "npcs", "items"
+    - "mechanical_effect" for game rules
+    - "sub_table" for inline text sub-tables
+    """
+    roll: int
+    title: Optional[str] = None
+    description: str = ""
+    monsters: list[str] = field(default_factory=list)
+    npcs: list[str] = field(default_factory=list)
+    items: list[str] = field(default_factory=list)
+    mechanical_effect: Optional[str] = None
+    sub_table: Optional[str] = None  # Inline sub-table text
+
+    @classmethod
+    def from_json(cls, json_data: dict[str, Any]) -> "HexRollTableEntry":
+        """Parse a hex table entry from JSON."""
+        return cls(
+            roll=json_data.get("roll", 1),
+            title=json_data.get("title"),
+            description=json_data.get("description", ""),
+            monsters=json_data.get("monsters", []),
+            npcs=json_data.get("npcs", []),
+            items=json_data.get("items", []),
+            mechanical_effect=json_data.get("mechanical_effect"),
+            sub_table=json_data.get("sub_table"),
+        )
+
+    def to_roll_table_entry(self) -> RollTableEntry:
+        """Convert to standard RollTableEntry format."""
+        # Build result string from title and description
+        if self.title:
+            result = f"{self.title}: {self.description}" if self.description else self.title
+        else:
+            result = self.description
+
+        return RollTableEntry(
+            roll_min=self.roll,
+            roll_max=self.roll,
+            result=result,
+            data={
+                "title": self.title,
+                "description": self.description,
+                "monsters": self.monsters,
+                "npcs": self.npcs,
+                "items": self.items,
+                "mechanical_effect": self.mechanical_effect,
+                "sub_table_text": self.sub_table,
+            },
+            sub_tables=[],
+            dice_expressions={},
+        )
+
+
+@dataclass
+class HexRollTable:
+    """
+    A roll table embedded in hex data.
+
+    Found in hex JSON under:
+    - hex.roll_tables[] (hex-level tables)
+    - hex.points_of_interest[].roll_tables[] (POI-specific tables)
+    """
+    name: str
+    die_type: str
+    description: str = ""
+    entries: list[HexRollTableEntry] = field(default_factory=list)
+
+    # Context for where this table came from
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+
+    @classmethod
+    def from_json(
+        cls,
+        json_data: dict[str, Any],
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None
+    ) -> "HexRollTable":
+        """Parse a hex table from JSON."""
+        entries = [
+            HexRollTableEntry.from_json(e)
+            for e in json_data.get("entries", [])
+        ]
+        return cls(
+            name=json_data.get("name", ""),
+            die_type=json_data.get("die_type", "d6"),
+            description=json_data.get("description", ""),
+            entries=entries,
+            hex_id=hex_id,
+            poi_name=poi_name,
+        )
+
+    def to_roll_table(self) -> RollTable:
+        """Convert to standard RollTable format."""
+        # Generate a unique table_id
+        if self.poi_name:
+            table_id = f"hex_{self.hex_id}_{self.poi_name}_{self.name}".lower().replace(" ", "_")
+        elif self.hex_id:
+            table_id = f"hex_{self.hex_id}_{self.name}".lower().replace(" ", "_")
+        else:
+            table_id = f"hex_{self.name}".lower().replace(" ", "_")
+
+        metadata = RollTableMetadata(
+            table_id=table_id,
+            name=self.name,
+            table_type=RollTableType.ENCOUNTER_HEX,
+            die_type=self.die_type,
+            num_dice=1,
+            category="hex_specific",
+            subcategory=self.hex_id,
+            description=self.description,
+            conditions={
+                "hex_id": self.hex_id,
+                "poi_name": self.poi_name,
+            },
+        )
+
+        entries = [e.to_roll_table_entry() for e in self.entries]
+
+        return RollTable(metadata=metadata, entries=entries, _entries_loaded=True)
+
+    def roll(self) -> tuple[int, Optional[HexRollTableEntry]]:
+        """Roll on this table and return the result."""
+        die_size = int(self.die_type.lower().replace('d', ''))
+        roll_value = random.randint(1, die_size)
+
+        for entry in self.entries:
+            if entry.roll == roll_value:
+                return roll_value, entry
+
+        # Fallback
+        if self.entries:
+            return roll_value, self.entries[-1]
+
+        return roll_value, None
+
+
+def parse_hex_roll_tables(hex_data: dict[str, Any]) -> list[HexRollTable]:
+    """
+    Extract all roll tables from hex data.
+
+    Parses tables from:
+    - hex_data["roll_tables"] (hex-level)
+    - hex_data["points_of_interest"][*]["roll_tables"] (POI-level)
+
+    Returns list of HexRollTable objects.
+    """
+    tables: list[HexRollTable] = []
+    hex_id = hex_data.get("hex_id")
+
+    # Hex-level tables
+    for table_data in hex_data.get("roll_tables", []):
+        tables.append(HexRollTable.from_json(table_data, hex_id=hex_id))
+
+    # POI-level tables
+    for poi in hex_data.get("points_of_interest", []):
+        poi_name = poi.get("name", "unknown")
+        for table_data in poi.get("roll_tables", []):
+            tables.append(HexRollTable.from_json(
+                table_data,
+                hex_id=hex_id,
+                poi_name=poi_name
+            ))
+
+    return tables
+
+
+def convert_hex_tables_to_roll_tables(hex_data: dict[str, Any]) -> list[RollTable]:
+    """
+    Extract and convert all roll tables from hex data to standard RollTable format.
+
+    This is the primary function for loading hex tables into the database-driven
+    table system.
+    """
+    hex_tables = parse_hex_roll_tables(hex_data)
+    return [ht.to_roll_table() for ht in hex_tables]

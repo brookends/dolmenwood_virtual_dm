@@ -68,9 +68,14 @@ from src.tables.table_types import (
     RollTable,
     RollTableReference,
     RollResult,
+    # Hex-embedded roll table classes
+    HexRollTableEntry,
+    HexRollTable,
     # Functions
     interpret_reaction_roll,
     check_morale,
+    parse_hex_roll_tables,
+    convert_hex_tables_to_roll_tables,
 )
 
 from src.tables.character_tables import (
@@ -187,6 +192,11 @@ __all__ = [
     "RollTable",
     "RollTableReference",
     "RollResult",
+    # Hex-embedded roll tables
+    "HexRollTableEntry",
+    "HexRollTable",
+    "parse_hex_roll_tables",
+    "convert_hex_tables_to_roll_tables",
     # Character tables
     "CharacterTableManager",
     "get_character_table_manager",
