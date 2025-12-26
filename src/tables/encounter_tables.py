@@ -45,10 +45,10 @@ from src.tables.table_types import (
     RollTableType,
     RollResult,
     # Hex-embedded table parsing
+    HexTableCategory,
     HexRollTable,
     HexRollTableEntry,
     parse_hex_roll_tables,
-    convert_hex_tables_to_roll_tables,
 )
 
 
@@ -155,35 +155,51 @@ class EncounterTableManager:
     # HEX TABLE LOADING FROM DATABASE
     # =========================================================================
 
-    def load_hex_tables_from_hex_data(self, hex_data: dict[str, Any]) -> list[RollTable]:
+    def load_hex_tables_from_hex_data(
+        self,
+        hex_data: dict[str, Any]
+    ) -> tuple[list[RollTable], list[RollTable]]:
         """
         Load and register roll tables embedded in hex data.
 
         Hex data in SQLite/ChromaDB contains embedded roll tables at:
-        - hex_data["roll_tables"] (hex-level encounters)
+        - hex_data["roll_tables"] (hex-level tables)
         - hex_data["points_of_interest"][*]["roll_tables"] (POI-specific)
+
+        IMPORTANT: Only ENCOUNTER tables are registered for wilderness encounter
+        rolls. Dungeon room tables and other table types are cached separately
+        and not included in encounter selection.
 
         Args:
             hex_data: The full hex JSON data from the database.
 
         Returns:
-            List of RollTable objects that were loaded and registered.
+            Tuple of (encounter_tables, other_tables) as RollTable lists.
         """
-        roll_tables = convert_hex_tables_to_roll_tables(hex_data)
+        hex_tables = parse_hex_roll_tables(hex_data)
         hex_id = hex_data.get("hex_id")
 
-        for table in roll_tables:
+        encounter_tables: list[RollTable] = []
+        other_tables: list[RollTable] = []
+
+        for hex_table in hex_tables:
+            roll_table = hex_table.to_roll_table()
+
             # Register in cache
-            self._roll_tables[table.table_id] = table
+            self._roll_tables[roll_table.table_id] = roll_table
 
-            # Index by hex
-            if hex_id:
-                if hex_id not in self._by_hex:
-                    self._by_hex[hex_id] = []
-                if table.table_id not in self._by_hex[hex_id]:
-                    self._by_hex[hex_id].append(table.table_id)
+            # Only index ENCOUNTER tables for wilderness encounter rolls
+            if hex_table.is_encounter_table():
+                encounter_tables.append(roll_table)
+                if hex_id:
+                    if hex_id not in self._by_hex:
+                        self._by_hex[hex_id] = []
+                    if roll_table.table_id not in self._by_hex[hex_id]:
+                        self._by_hex[hex_id].append(roll_table.table_id)
+            else:
+                other_tables.append(roll_table)
 
-        return roll_tables
+        return encounter_tables, other_tables
 
     def load_hex_from_db(self, hex_id: str) -> Optional[dict[str, Any]]:
         """
@@ -207,13 +223,16 @@ class EncounterTableManager:
 
     def load_hex_tables(self, hex_id: str) -> list[RollTable]:
         """
-        Load all roll tables for a hex from the database.
+        Load ENCOUNTER roll tables for a hex from the database.
+
+        Only returns tables categorized as encounters. Dungeon room tables
+        and other types are cached but not returned here.
 
         Args:
             hex_id: The hex identifier (e.g., "0101").
 
         Returns:
-            List of RollTable objects for this hex.
+            List of ENCOUNTER RollTable objects for this hex.
         """
         # Check if already loaded
         if hex_id in self._by_hex:
@@ -226,21 +245,64 @@ class EncounterTableManager:
         # Load from database
         hex_data = self.load_hex_from_db(hex_id)
         if hex_data:
-            return self.load_hex_tables_from_hex_data(hex_data)
+            encounter_tables, _ = self.load_hex_tables_from_hex_data(hex_data)
+            return encounter_tables
 
         return []
 
-    def get_hex_roll_tables(self, hex_id: str) -> list[RollTable]:
+    def get_hex_encounter_tables(self, hex_id: str) -> list[RollTable]:
         """
-        Get roll tables for a hex, loading from database if necessary.
+        Get ENCOUNTER tables for a hex, loading from database if necessary.
+
+        Only returns tables categorized as encounters. Use get_hex_dungeon_tables()
+        for dungeon room tables.
 
         Args:
             hex_id: The hex identifier.
 
         Returns:
-            List of RollTable objects for this hex.
+            List of ENCOUNTER RollTable objects for this hex.
         """
         return self.load_hex_tables(hex_id)
+
+    def get_hex_roll_tables(self, hex_id: str) -> list[RollTable]:
+        """
+        Get ALL roll tables for a hex (encounter + dungeon + other).
+
+        Args:
+            hex_id: The hex identifier.
+
+        Returns:
+            List of ALL RollTable objects for this hex.
+        """
+        # Ensure tables are loaded
+        self.load_hex_tables(hex_id)
+
+        # Return all tables for this hex from cache
+        return [
+            table for table in self._roll_tables.values()
+            if table.metadata.conditions.get("hex_id") == hex_id
+        ]
+
+    def get_hex_dungeon_tables(self, hex_id: str) -> list[RollTable]:
+        """
+        Get DUNGEON room tables for a hex.
+
+        Args:
+            hex_id: The hex identifier.
+
+        Returns:
+            List of DUNGEON RollTable objects for this hex.
+        """
+        # Ensure tables are loaded
+        self.load_hex_tables(hex_id)
+
+        # Return dungeon tables from cache
+        return [
+            table for table in self._roll_tables.values()
+            if (table.metadata.conditions.get("hex_id") == hex_id and
+                table.metadata.category in ("dungeon_room", "dungeon_encounter"))
+        ]
 
     # =========================================================================
     # TABLE REGISTRATION

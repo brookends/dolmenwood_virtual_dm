@@ -1920,6 +1920,30 @@ class RollResult:
 # different format than standalone JSON tables. These classes parse that format.
 
 
+class HexTableCategory(str, Enum):
+    """
+    Categories for hex-embedded roll tables.
+
+    Used to distinguish between different types of tables found in hex data,
+    so the system knows which tables to use for encounters vs dungeon exploration.
+    """
+    ENCOUNTER = "encounter"      # Wilderness/hex encounter tables
+    DUNGEON_ROOM = "dungeon_room"  # Dungeon room/location tables
+    DUNGEON_ENCOUNTER = "dungeon_encounter"  # Dungeon-specific encounters
+    TREASURE = "treasure"        # Treasure tables
+    EVENT = "event"              # Random event tables
+    NPC = "npc"                  # NPC tables
+    OTHER = "other"              # Miscellaneous tables
+
+
+# Keywords used to infer table category from name
+_ENCOUNTER_KEYWORDS = {"encounter", "encounters", "wandering", "random encounter"}
+_DUNGEON_ROOM_KEYWORDS = {"room", "rooms", "location", "locations", "area", "areas", "chamber", "chambers"}
+_TREASURE_KEYWORDS = {"treasure", "loot", "hoard"}
+_EVENT_KEYWORDS = {"event", "events", "happening", "occurrence"}
+_NPC_KEYWORDS = {"npc", "npcs", "character", "characters", "inhabitant", "inhabitants"}
+
+
 @dataclass
 class HexRollTableEntry:
     """
@@ -1981,6 +2005,43 @@ class HexRollTableEntry:
         )
 
 
+def _infer_hex_table_category(name: str) -> HexTableCategory:
+    """
+    Infer the table category from the table name.
+
+    Uses keyword matching to determine what type of table this is.
+    """
+    name_lower = name.lower().strip()
+
+    # Check for encounter keywords first (most specific)
+    for keyword in _ENCOUNTER_KEYWORDS:
+        if keyword in name_lower:
+            return HexTableCategory.ENCOUNTER
+
+    # Check for dungeon room keywords
+    for keyword in _DUNGEON_ROOM_KEYWORDS:
+        if keyword in name_lower:
+            return HexTableCategory.DUNGEON_ROOM
+
+    # Check for treasure keywords
+    for keyword in _TREASURE_KEYWORDS:
+        if keyword in name_lower:
+            return HexTableCategory.TREASURE
+
+    # Check for event keywords
+    for keyword in _EVENT_KEYWORDS:
+        if keyword in name_lower:
+            return HexTableCategory.EVENT
+
+    # Check for NPC keywords
+    for keyword in _NPC_KEYWORDS:
+        if keyword in name_lower:
+            return HexTableCategory.NPC
+
+    # Default to OTHER
+    return HexTableCategory.OTHER
+
+
 @dataclass
 class HexRollTable:
     """
@@ -1989,6 +2050,12 @@ class HexRollTable:
     Found in hex JSON under:
     - hex.roll_tables[] (hex-level tables)
     - hex.points_of_interest[].roll_tables[] (POI-specific tables)
+
+    The table_category field distinguishes between different types:
+    - ENCOUNTER: Used for wilderness/hex encounter rolls
+    - DUNGEON_ROOM: Used when exploring dungeons/POIs
+    - DUNGEON_ENCOUNTER: Encounters specific to a dungeon
+    - TREASURE, EVENT, NPC, OTHER: Other specialized tables
     """
     name: str
     die_type: str
@@ -1998,6 +2065,9 @@ class HexRollTable:
     # Context for where this table came from
     hex_id: Optional[str] = None
     poi_name: Optional[str] = None
+
+    # Table category (inferred from name if not specified)
+    table_category: HexTableCategory = HexTableCategory.OTHER
 
     @classmethod
     def from_json(
@@ -2011,13 +2081,38 @@ class HexRollTable:
             HexRollTableEntry.from_json(e)
             for e in json_data.get("entries", [])
         ]
+
+        name = json_data.get("name", "")
+
+        # Get category from JSON or infer from name
+        category_str = json_data.get("table_category", json_data.get("category"))
+        if category_str:
+            try:
+                category = HexTableCategory(category_str)
+            except ValueError:
+                category = _infer_hex_table_category(name)
+        else:
+            category = _infer_hex_table_category(name)
+
         return cls(
-            name=json_data.get("name", ""),
+            name=name,
             die_type=json_data.get("die_type", "d6"),
             description=json_data.get("description", ""),
             entries=entries,
             hex_id=hex_id,
             poi_name=poi_name,
+            table_category=category,
+        )
+
+    def is_encounter_table(self) -> bool:
+        """Check if this is an encounter table (for wilderness encounter rolls)."""
+        return self.table_category == HexTableCategory.ENCOUNTER
+
+    def is_dungeon_table(self) -> bool:
+        """Check if this is a dungeon-related table."""
+        return self.table_category in (
+            HexTableCategory.DUNGEON_ROOM,
+            HexTableCategory.DUNGEON_ENCOUNTER
         )
 
     def to_roll_table(self) -> RollTable:
@@ -2030,18 +2125,29 @@ class HexRollTable:
         else:
             table_id = f"hex_{self.name}".lower().replace(" ", "_")
 
+        # Map category to RollTableType
+        if self.table_category == HexTableCategory.ENCOUNTER:
+            table_type = RollTableType.ENCOUNTER_HEX
+        elif self.table_category == HexTableCategory.DUNGEON_ROOM:
+            table_type = RollTableType.CUSTOM  # Could add DUNGEON_ROOM type
+        elif self.table_category == HexTableCategory.DUNGEON_ENCOUNTER:
+            table_type = RollTableType.ENCOUNTER_HEX
+        else:
+            table_type = RollTableType.CUSTOM
+
         metadata = RollTableMetadata(
             table_id=table_id,
             name=self.name,
-            table_type=RollTableType.ENCOUNTER_HEX,
+            table_type=table_type,
             die_type=self.die_type,
             num_dice=1,
-            category="hex_specific",
+            category=self.table_category.value,
             subcategory=self.hex_id,
             description=self.description,
             conditions={
                 "hex_id": self.hex_id,
                 "poi_name": self.poi_name,
+                "table_category": self.table_category.value,
             },
         )
 

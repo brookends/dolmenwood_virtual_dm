@@ -69,6 +69,7 @@ from src.tables.table_types import (
     RollTableReference,
     RollResult,
     # Hex-embedded roll table classes
+    HexTableCategory,
     HexRollTableEntry,
     HexRollTable,
     # Functions
@@ -193,6 +194,7 @@ __all__ = [
     "RollTableReference",
     "RollResult",
     # Hex-embedded roll tables
+    "HexTableCategory",
     "HexRollTableEntry",
     "HexRollTable",
     "parse_hex_roll_tables",
