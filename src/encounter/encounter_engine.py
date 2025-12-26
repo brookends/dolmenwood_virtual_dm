@@ -1,0 +1,920 @@
+"""
+Encounter Engine for Dolmenwood Virtual DM.
+
+Implements the unified Encounter Sequence from the Dolmenwood Player's Book.
+This engine handles all encounters regardless of origin (wilderness, dungeon,
+or settlement).
+
+The Encounter Sequence:
+1. Awareness - Check if either side is already aware of the other
+2. Surprise - 2-in-6 base chance for unaware sides
+3. Encounter Distance - 2d6×10' dungeon, 2d6×30' outdoors
+4. Initiative - 1d6 per side, highest acts first
+5. Actions - Attack, Parley, Evasion, or Waiting
+6. Conclusion - One Turn passes after encounter resolves
+"""
+
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Optional
+import logging
+
+from src.game_state.state_machine import GameState
+from src.game_state.global_controller import GlobalController
+from src.data_models import (
+    DiceRoller,
+    EncounterState,
+    EncounterType,
+    SurpriseStatus,
+    ReactionResult,
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+class EncounterPhase(str, Enum):
+    """Phases of the encounter sequence."""
+    AWARENESS = "awareness"
+    SURPRISE = "surprise"
+    DISTANCE = "distance"
+    INITIATIVE = "initiative"
+    ACTIONS = "actions"
+    CONCLUSION = "conclusion"
+    ENDED = "ended"
+
+
+class EncounterOrigin(str, Enum):
+    """Where the encounter originated from."""
+    WILDERNESS = "wilderness"
+    DUNGEON = "dungeon"
+    SETTLEMENT = "settlement"
+
+
+class EncounterAction(str, Enum):
+    """Available actions during an encounter."""
+    ATTACK = "attack"       # Initiates combat
+    PARLEY = "parley"       # Attempt communication
+    EVASION = "evasion"     # Attempt to flee/avoid
+    WAIT = "wait"           # Hold position, observe
+
+
+@dataclass
+class AwarenessResult:
+    """Result of awareness check."""
+    party_aware: bool
+    enemies_aware: bool
+    party_had_prior_knowledge: bool = False
+    enemies_had_prior_knowledge: bool = False
+    message: str = ""
+
+
+@dataclass
+class SurpriseResult:
+    """Result of surprise determination."""
+    surprise_status: SurpriseStatus
+    party_roll: int = 0
+    enemy_roll: int = 0
+    party_modifier: int = 0
+    enemy_modifier: int = 0
+    surprise_rounds: int = 0
+    message: str = ""
+
+
+@dataclass
+class DistanceResult:
+    """Result of distance determination."""
+    distance_feet: int
+    base_roll: int
+    multiplier: int
+    is_outdoor: bool
+    adjusted_for_surprise: bool = False
+    message: str = ""
+
+
+@dataclass
+class InitiativeResult:
+    """Result of initiative determination."""
+    party_initiative: int
+    enemy_initiative: int
+    first_to_act: str  # "party", "enemy", or "simultaneous"
+    message: str = ""
+
+
+@dataclass
+class ActionDeclaration:
+    """A declared action by one side."""
+    side: str  # "party" or "enemy"
+    action: EncounterAction
+    target: Optional[str] = None
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class EncounterRoundResult:
+    """Result of processing one encounter round."""
+    phase: EncounterPhase
+    success: bool
+    actions_declared: list[ActionDeclaration] = field(default_factory=list)
+    actions_resolved: list[dict[str, Any]] = field(default_factory=list)
+    reaction_roll: Optional[int] = None
+    reaction_result: Optional[ReactionResult] = None
+    encounter_ended: bool = False
+    end_reason: str = ""
+    transition_to: Optional[str] = None  # State to transition to
+    messages: list[str] = field(default_factory=list)
+
+
+@dataclass
+class EncounterEngineState:
+    """Internal state of the encounter engine."""
+    encounter: EncounterState
+    origin: EncounterOrigin
+    current_phase: EncounterPhase
+    awareness: Optional[AwarenessResult] = None
+    surprise: Optional[SurpriseResult] = None
+    distance: Optional[DistanceResult] = None
+    initiative: Optional[InitiativeResult] = None
+    current_round: int = 0
+    party_acted: bool = False
+    enemy_acted: bool = False
+    reaction_attempted: bool = False
+
+
+class EncounterEngine:
+    """
+    Unified engine for handling encounters.
+
+    This engine implements the complete encounter sequence from the Dolmenwood
+    Player's Book, handling:
+    - Awareness and surprise determination
+    - Encounter distance calculation
+    - Initiative for action order
+    - Action resolution (attack, parley, evasion, waiting)
+    - Transitions to combat or social interaction
+
+    The encounter sequence always follows this order:
+    1. Awareness → 2. Surprise → 3. Distance → 4. Initiative → 5. Actions → 6. Conclusion
+    """
+
+    def __init__(self, controller: GlobalController):
+        """
+        Initialize the encounter engine.
+
+        Args:
+            controller: The global game controller
+        """
+        self.controller = controller
+        self.dice = DiceRoller()
+
+        # Current encounter state
+        self._state: Optional[EncounterEngineState] = None
+
+        # Callbacks
+        self._narration_callback: Optional[Callable] = None
+
+    def register_narration_callback(self, callback: Callable) -> None:
+        """Register callback for encounter narration."""
+        self._narration_callback = callback
+
+    # =========================================================================
+    # ENCOUNTER INITIALIZATION
+    # =========================================================================
+
+    def start_encounter(
+        self,
+        encounter: EncounterState,
+        origin: EncounterOrigin,
+        party_aware: bool = False,
+        enemies_aware: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Start a new encounter.
+
+        This initializes the encounter state and transitions the game to the
+        ENCOUNTER state. The encounter will proceed through all phases in order.
+
+        Args:
+            encounter: The encounter state with actors and context
+            origin: Where the encounter originated (wilderness/dungeon/settlement)
+            party_aware: Whether the party was already aware of the encounter
+            enemies_aware: Whether enemies were already aware of the party
+
+        Returns:
+            Dictionary with encounter initialization results
+        """
+        # Store the encounter in the controller
+        self.controller.set_encounter(encounter)
+
+        # Initialize engine state
+        self._state = EncounterEngineState(
+            encounter=encounter,
+            origin=origin,
+            current_phase=EncounterPhase.AWARENESS,
+        )
+
+        # Transition to ENCOUNTER state
+        self.controller.transition(
+            "encounter_triggered",
+            context={
+                "origin": origin.value,
+                "encounter_type": encounter.encounter_type.value,
+            }
+        )
+
+        result = {
+            "encounter_started": True,
+            "origin": origin.value,
+            "encounter_type": encounter.encounter_type.value,
+            "actors": encounter.actors,
+            "context": encounter.context,
+            "current_phase": EncounterPhase.AWARENESS.value,
+        }
+
+        # Run awareness phase immediately
+        awareness_result = self._resolve_awareness(party_aware, enemies_aware)
+        result["awareness"] = awareness_result
+
+        return result
+
+    # =========================================================================
+    # PHASE 1: AWARENESS
+    # =========================================================================
+
+    def _resolve_awareness(
+        self,
+        party_already_aware: bool,
+        enemies_already_aware: bool
+    ) -> AwarenessResult:
+        """
+        Resolve the awareness phase.
+
+        Awareness determines if either side knew about the other before the
+        encounter began. This affects surprise chances.
+
+        Args:
+            party_already_aware: Whether party had prior knowledge
+            enemies_already_aware: Whether enemies had prior knowledge
+
+        Returns:
+            AwarenessResult with awareness status
+        """
+        if not self._state:
+            return AwarenessResult(
+                party_aware=False,
+                enemies_aware=False,
+                message="No active encounter"
+            )
+
+        # If either side was already aware (scouting, tracking, etc.)
+        # they cannot be surprised
+        result = AwarenessResult(
+            party_aware=party_already_aware,
+            enemies_aware=enemies_already_aware,
+            party_had_prior_knowledge=party_already_aware,
+            enemies_had_prior_knowledge=enemies_already_aware,
+        )
+
+        if party_already_aware and enemies_already_aware:
+            result.message = "Both sides were aware of each other"
+        elif party_already_aware:
+            result.message = "Party was aware of the encounter"
+        elif enemies_already_aware:
+            result.message = "Enemies were aware of the party"
+        else:
+            result.message = "Neither side was previously aware"
+
+        self._state.awareness = result
+        self._state.current_phase = EncounterPhase.SURPRISE
+
+        return result
+
+    # =========================================================================
+    # PHASE 2: SURPRISE
+    # =========================================================================
+
+    def resolve_surprise(
+        self,
+        party_modifier: int = 0,
+        enemy_modifier: int = 0,
+    ) -> SurpriseResult:
+        """
+        Resolve the surprise phase.
+
+        Each side that was not already aware rolls 1d6. On a 1-2, that side
+        is surprised and cannot act for one round.
+
+        Modifiers:
+        - Cautious travel pace: +1 to surprise enemies
+        - Fast travel pace: -1 to party's roll
+        - Thief/Ranger abilities may modify
+
+        Args:
+            party_modifier: Modifier to party's surprise avoidance
+            enemy_modifier: Modifier to enemy's surprise avoidance
+
+        Returns:
+            SurpriseResult with surprise determination
+        """
+        if not self._state:
+            return SurpriseResult(
+                surprise_status=SurpriseStatus.NO_SURPRISE,
+                message="No active encounter"
+            )
+
+        result = SurpriseResult(
+            surprise_status=SurpriseStatus.NO_SURPRISE,
+            party_modifier=party_modifier,
+            enemy_modifier=enemy_modifier,
+        )
+
+        # Check if either side was already aware (from awareness phase)
+        party_aware = (
+            self._state.awareness.party_aware
+            if self._state.awareness else False
+        )
+        enemies_aware = (
+            self._state.awareness.enemies_aware
+            if self._state.awareness else False
+        )
+
+        # Roll surprise for unaware sides
+        # 2-in-6 base chance to be surprised (roll 1-2)
+        party_surprised = False
+        enemy_surprised = False
+
+        if not party_aware:
+            party_roll = self.dice.roll_d6(1, "party surprise check")
+            result.party_roll = party_roll.total + party_modifier
+            party_surprised = result.party_roll <= 2
+        else:
+            result.party_roll = 0  # Cannot be surprised if aware
+
+        if not enemies_aware:
+            enemy_roll = self.dice.roll_d6(1, "enemy surprise check")
+            result.enemy_roll = enemy_roll.total + enemy_modifier
+            enemy_surprised = result.enemy_roll <= 2
+        else:
+            result.enemy_roll = 0  # Cannot be surprised if aware
+
+        # Determine surprise status
+        if party_surprised and enemy_surprised:
+            result.surprise_status = SurpriseStatus.MUTUAL_SURPRISE
+            result.surprise_rounds = 0  # Both surprised = no free actions
+            result.message = "Both sides are surprised! No one acts."
+        elif party_surprised:
+            result.surprise_status = SurpriseStatus.PARTY_SURPRISED
+            result.surprise_rounds = 1
+            result.message = "Party is surprised! Enemies get a free round."
+        elif enemy_surprised:
+            result.surprise_status = SurpriseStatus.ENEMIES_SURPRISED
+            result.surprise_rounds = 1
+            result.message = "Enemies are surprised! Party gets a free round."
+        else:
+            result.surprise_status = SurpriseStatus.NO_SURPRISE
+            result.surprise_rounds = 0
+            result.message = "Neither side is surprised."
+
+        # Update encounter state with surprise
+        self._state.encounter.surprise_status = result.surprise_status
+        self._state.surprise = result
+        self._state.current_phase = EncounterPhase.DISTANCE
+
+        return result
+
+    # =========================================================================
+    # PHASE 3: ENCOUNTER DISTANCE
+    # =========================================================================
+
+    def resolve_distance(self) -> DistanceResult:
+        """
+        Resolve the encounter distance.
+
+        Distance is determined by:
+        - Dungeon: 2d6 × 10 feet (20-120 feet)
+        - Outdoors: 2d6 × 30 feet (60-360 feet, or 20-120 yards)
+
+        If both sides are surprised (mutual surprise), multiply by 1d4
+        to represent the closer encounter.
+
+        Returns:
+            DistanceResult with encounter distance
+        """
+        if not self._state:
+            return DistanceResult(
+                distance_feet=60,
+                base_roll=6,
+                multiplier=10,
+                is_outdoor=True,
+                message="No active encounter"
+            )
+
+        is_outdoor = self._state.origin == EncounterOrigin.WILDERNESS
+
+        # Roll 2d6 for base distance
+        base_roll = self.dice.roll("2d6", "encounter distance")
+
+        # Determine multiplier based on location
+        if is_outdoor:
+            multiplier = 30  # 60-360 feet outdoors
+        else:
+            multiplier = 10  # 20-120 feet in dungeon
+
+        distance = base_roll.total * multiplier
+
+        result = DistanceResult(
+            distance_feet=distance,
+            base_roll=base_roll.total,
+            multiplier=multiplier,
+            is_outdoor=is_outdoor,
+        )
+
+        # If mutual surprise, roll 1d4 multiplier for closer encounter
+        if (self._state.surprise and
+            self._state.surprise.surprise_status == SurpriseStatus.MUTUAL_SURPRISE):
+            surprise_mult = self.dice.roll_d6(1, "surprise distance modifier")
+            # Use 1-4 range (reroll 5-6)
+            mult_value = min(surprise_mult.total, 4)
+            result.distance_feet = distance // mult_value
+            result.adjusted_for_surprise = True
+            result.message = (
+                f"Mutual surprise! Distance reduced to "
+                f"{result.distance_feet} feet (÷{mult_value})"
+            )
+        else:
+            result.message = f"Encounter at {distance} feet"
+
+        # Update encounter state
+        self._state.encounter.distance = result.distance_feet
+        self._state.distance = result
+        self._state.current_phase = EncounterPhase.INITIATIVE
+
+        return result
+
+    # =========================================================================
+    # PHASE 4: INITIATIVE
+    # =========================================================================
+
+    def resolve_initiative(
+        self,
+        party_modifier: int = 0,
+        enemy_modifier: int = 0,
+    ) -> InitiativeResult:
+        """
+        Resolve initiative for the encounter.
+
+        Each side rolls 1d6. Highest roll acts first. Ties mean simultaneous
+        action declaration and resolution.
+
+        Args:
+            party_modifier: Bonus to party's initiative roll
+            enemy_modifier: Bonus to enemy's initiative roll
+
+        Returns:
+            InitiativeResult with initiative order
+        """
+        if not self._state:
+            return InitiativeResult(
+                party_initiative=0,
+                enemy_initiative=0,
+                first_to_act="simultaneous",
+                message="No active encounter"
+            )
+
+        # Roll initiative
+        party_roll = self.dice.roll_d6(1, "party initiative")
+        enemy_roll = self.dice.roll_d6(1, "enemy initiative")
+
+        party_init = party_roll.total + party_modifier
+        enemy_init = enemy_roll.total + enemy_modifier
+
+        result = InitiativeResult(
+            party_initiative=party_init,
+            enemy_initiative=enemy_init,
+            first_to_act="simultaneous",
+        )
+
+        if party_init > enemy_init:
+            result.first_to_act = "party"
+            result.message = f"Party wins initiative ({party_init} vs {enemy_init})"
+        elif enemy_init > party_init:
+            result.first_to_act = "enemy"
+            result.message = f"Enemies win initiative ({enemy_init} vs {party_init})"
+        else:
+            result.first_to_act = "simultaneous"
+            result.message = f"Tied initiative ({party_init}) - simultaneous actions"
+
+        # Update encounter state
+        self._state.encounter.party_initiative = party_init
+        self._state.encounter.enemy_initiative = enemy_init
+        self._state.initiative = result
+        self._state.current_phase = EncounterPhase.ACTIONS
+
+        return result
+
+    # =========================================================================
+    # PHASE 5: ACTIONS
+    # =========================================================================
+
+    def execute_action(
+        self,
+        action: EncounterAction,
+        actor: str = "party",
+        target: Optional[str] = None,
+        parameters: Optional[dict[str, Any]] = None,
+    ) -> EncounterRoundResult:
+        """
+        Execute an encounter action.
+
+        Available actions:
+        - ATTACK: Initiates combat (transitions to COMBAT state)
+        - PARLEY: Attempts communication (may transition to SOCIAL_INTERACTION)
+        - EVASION: Attempts to flee/avoid the encounter
+        - WAIT: Holds position, observes the situation
+
+        Args:
+            action: The action to take
+            actor: "party" or "enemy"
+            target: Optional target for the action
+            parameters: Additional parameters
+
+        Returns:
+            EncounterRoundResult with action resolution
+        """
+        if not self._state:
+            return EncounterRoundResult(
+                phase=EncounterPhase.ACTIONS,
+                success=False,
+                messages=["No active encounter"]
+            )
+
+        parameters = parameters or {}
+        result = EncounterRoundResult(
+            phase=EncounterPhase.ACTIONS,
+            success=True,
+        )
+
+        declaration = ActionDeclaration(
+            side=actor,
+            action=action,
+            target=target,
+            parameters=parameters,
+        )
+        result.actions_declared.append(declaration)
+
+        # Handle the action
+        if action == EncounterAction.ATTACK:
+            result = self._handle_attack(actor, result)
+        elif action == EncounterAction.PARLEY:
+            result = self._handle_parley(actor, result)
+        elif action == EncounterAction.EVASION:
+            result = self._handle_evasion(actor, result)
+        elif action == EncounterAction.WAIT:
+            result = self._handle_wait(actor, result)
+
+        return result
+
+    def _handle_attack(
+        self,
+        actor: str,
+        result: EncounterRoundResult
+    ) -> EncounterRoundResult:
+        """Handle attack action - transitions to combat."""
+        if not self._state:
+            return result
+
+        result.messages.append(f"{actor.capitalize()} attacks!")
+        result.encounter_ended = True
+        result.end_reason = "combat_initiated"
+        result.transition_to = "encounter_to_combat"
+
+        # Transition to combat
+        self.controller.transition(
+            "encounter_to_combat",
+            context={
+                "attacker": actor,
+                "origin": self._state.origin.value,
+            }
+        )
+
+        self._state.current_phase = EncounterPhase.ENDED
+
+        return result
+
+    def _handle_parley(
+        self,
+        actor: str,
+        result: EncounterRoundResult
+    ) -> EncounterRoundResult:
+        """Handle parley action - roll reaction and potentially transition to social."""
+        if not self._state:
+            return result
+
+        result.messages.append(f"{actor.capitalize()} attempts to parley...")
+
+        # Roll 2d6 reaction
+        reaction_roll = self.dice.roll_2d6("reaction roll")
+        result.reaction_roll = reaction_roll.total
+
+        # Interpret reaction result
+        # 2: Hostile - attacks immediately
+        # 3-5: Unfriendly - may attack
+        # 6-8: Neutral - uncertain
+        # 9-11: Friendly - open to negotiation
+        # 12: Helpful - actively assists
+        if reaction_roll.total <= 2:
+            result.reaction_result = ReactionResult.HOSTILE
+            result.messages.append(f"Hostile! ({reaction_roll.total}) - They attack!")
+            result.encounter_ended = True
+            result.end_reason = "hostile_reaction"
+            result.transition_to = "encounter_to_combat"
+            self.controller.transition(
+                "encounter_to_combat",
+                context={"reason": "hostile_reaction"}
+            )
+        elif reaction_roll.total <= 5:
+            result.reaction_result = ReactionResult.UNFRIENDLY
+            result.messages.append(
+                f"Unfriendly ({reaction_roll.total}) - They are suspicious and hostile"
+            )
+            # May escalate or allow further parley
+        elif reaction_roll.total <= 8:
+            result.reaction_result = ReactionResult.NEUTRAL
+            result.messages.append(
+                f"Neutral ({reaction_roll.total}) - They wait cautiously"
+            )
+        elif reaction_roll.total <= 11:
+            result.reaction_result = ReactionResult.FRIENDLY
+            result.messages.append(
+                f"Friendly ({reaction_roll.total}) - They are open to talking"
+            )
+            result.encounter_ended = True
+            result.end_reason = "parley_success"
+            result.transition_to = "encounter_to_parley"
+            self.controller.transition(
+                "encounter_to_parley",
+                context={"reaction": "friendly"}
+            )
+        else:  # 12+
+            result.reaction_result = ReactionResult.HELPFUL
+            result.messages.append(
+                f"Helpful ({reaction_roll.total}) - They are eager to assist!"
+            )
+            result.encounter_ended = True
+            result.end_reason = "parley_success"
+            result.transition_to = "encounter_to_parley"
+            self.controller.transition(
+                "encounter_to_parley",
+                context={"reaction": "helpful"}
+            )
+
+        # Update encounter state
+        self._state.encounter.reaction_result = result.reaction_result
+        self._state.reaction_attempted = True
+
+        if result.encounter_ended:
+            self._state.current_phase = EncounterPhase.ENDED
+
+        return result
+
+    def _handle_evasion(
+        self,
+        actor: str,
+        result: EncounterRoundResult
+    ) -> EncounterRoundResult:
+        """Handle evasion action - attempt to flee the encounter."""
+        if not self._state:
+            return result
+
+        result.messages.append(f"{actor.capitalize()} attempts to evade...")
+
+        # Evasion success depends on:
+        # - Surprise status (can't evade if surprised)
+        # - Distance (easier at greater distance)
+        # - Relative movement rates
+
+        surprise = self._state.encounter.surprise_status
+
+        # Can't evade if surprised
+        if (actor == "party" and surprise == SurpriseStatus.PARTY_SURPRISED):
+            result.success = False
+            result.messages.append("Cannot evade while surprised!")
+            return result
+        if (actor == "enemy" and surprise == SurpriseStatus.ENEMIES_SURPRISED):
+            result.success = False
+            result.messages.append("Enemies cannot evade while surprised!")
+            return result
+
+        # Base 50% chance, modified by distance
+        distance = self._state.encounter.distance
+        distance_mod = distance // 60  # +1 per 60 feet
+
+        # Roll d6: need 4+ to evade, modified by distance
+        evasion_roll = self.dice.roll_d6(1, "evasion attempt")
+        target = max(1, 4 - distance_mod)  # Easier at greater distance
+
+        if evasion_roll.total >= target:
+            result.success = True
+            result.messages.append(
+                f"Evasion successful! (rolled {evasion_roll.total}, "
+                f"needed {target}+)"
+            )
+            result.encounter_ended = True
+            result.end_reason = "evaded"
+
+            # Transition back to origin state
+            if self._state.origin == EncounterOrigin.WILDERNESS:
+                result.transition_to = "encounter_end_wilderness"
+                self.controller.transition("encounter_end_wilderness")
+            elif self._state.origin == EncounterOrigin.DUNGEON:
+                result.transition_to = "encounter_end_dungeon"
+                self.controller.transition("encounter_end_dungeon")
+            else:
+                result.transition_to = "encounter_end_settlement"
+                self.controller.transition("encounter_end_settlement")
+
+            self._state.current_phase = EncounterPhase.ENDED
+        else:
+            result.success = False
+            result.messages.append(
+                f"Evasion failed! (rolled {evasion_roll.total}, "
+                f"needed {target}+)"
+            )
+            # Other side may react
+
+        return result
+
+    def _handle_wait(
+        self,
+        actor: str,
+        result: EncounterRoundResult
+    ) -> EncounterRoundResult:
+        """Handle wait action - observe and hold position."""
+        if not self._state:
+            return result
+
+        result.messages.append(f"{actor.capitalize()} waits and observes...")
+        result.success = True
+
+        # Waiting grants +1 to reaction if other side acts
+        result.actions_resolved.append({
+            "action": "wait",
+            "actor": actor,
+            "effect": "reaction_bonus",
+            "value": 1,
+        })
+
+        return result
+
+    # =========================================================================
+    # PHASE 6: CONCLUSION
+    # =========================================================================
+
+    def conclude_encounter(self, reason: str = "resolved") -> dict[str, Any]:
+        """
+        Conclude the encounter.
+
+        One turn (10 minutes) passes after encounter resolution.
+        The game state returns to the origin state.
+
+        Args:
+            reason: Reason for conclusion
+
+        Returns:
+            Dictionary with conclusion details
+        """
+        if not self._state:
+            return {"error": "No active encounter"}
+
+        result = {
+            "encounter_concluded": True,
+            "reason": reason,
+            "origin": self._state.origin.value,
+            "turns_passed": 1,
+        }
+
+        # Advance time by one turn
+        time_result = self.controller.advance_time(1)
+        result["time_result"] = time_result
+
+        # Clear encounter
+        self.controller.clear_encounter()
+
+        # Determine return trigger
+        if self._state.origin == EncounterOrigin.WILDERNESS:
+            trigger = "encounter_end_wilderness"
+        elif self._state.origin == EncounterOrigin.DUNGEON:
+            trigger = "encounter_end_dungeon"
+        else:
+            trigger = "encounter_end_settlement"
+
+        # Only transition if still in ENCOUNTER state
+        if self.controller.current_state == GameState.ENCOUNTER:
+            self.controller.transition(trigger, context=result)
+
+        result["returned_to"] = self._state.origin.value
+
+        # Clear engine state
+        self._state = None
+
+        return result
+
+    # =========================================================================
+    # HELPER METHODS
+    # =========================================================================
+
+    def get_current_phase(self) -> Optional[EncounterPhase]:
+        """Get the current encounter phase."""
+        return self._state.current_phase if self._state else None
+
+    def get_encounter_state(self) -> Optional[EncounterEngineState]:
+        """Get the current encounter engine state."""
+        return self._state
+
+    def is_active(self) -> bool:
+        """Check if an encounter is active."""
+        return self._state is not None
+
+    def get_origin(self) -> Optional[EncounterOrigin]:
+        """Get the origin of the current encounter."""
+        return self._state.origin if self._state else None
+
+    def get_encounter_summary(self) -> dict[str, Any]:
+        """Get summary of current encounter."""
+        if not self._state:
+            return {"active": False}
+
+        return {
+            "active": True,
+            "origin": self._state.origin.value,
+            "current_phase": self._state.current_phase.value,
+            "encounter_type": self._state.encounter.encounter_type.value,
+            "distance": self._state.encounter.distance,
+            "surprise_status": self._state.encounter.surprise_status.value,
+            "reaction": (
+                self._state.encounter.reaction_result.value
+                if self._state.encounter.reaction_result else None
+            ),
+            "actors": self._state.encounter.actors,
+            "round": self._state.current_round,
+        }
+
+    def auto_run_phases(
+        self,
+        party_aware: bool = False,
+        enemies_aware: bool = False,
+        party_surprise_mod: int = 0,
+        enemy_surprise_mod: int = 0,
+        party_init_mod: int = 0,
+        enemy_init_mod: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Automatically run through all pre-action phases.
+
+        This is a convenience method that runs:
+        1. Surprise resolution
+        2. Distance determination
+        3. Initiative resolution
+
+        After this, the encounter is ready for action declarations.
+
+        Args:
+            party_aware: Whether party was aware beforehand
+            enemies_aware: Whether enemies were aware beforehand
+            party_surprise_mod: Modifier to party's surprise roll
+            enemy_surprise_mod: Modifier to enemy's surprise roll
+            party_init_mod: Modifier to party's initiative
+            enemy_init_mod: Modifier to enemy's initiative
+
+        Returns:
+            Dictionary with all phase results
+        """
+        if not self._state:
+            return {"error": "No active encounter"}
+
+        result = {}
+
+        # Run surprise if in that phase
+        if self._state.current_phase == EncounterPhase.SURPRISE:
+            result["surprise"] = self.resolve_surprise(
+                party_surprise_mod,
+                enemy_surprise_mod
+            )
+
+        # Run distance if in that phase
+        if self._state.current_phase == EncounterPhase.DISTANCE:
+            result["distance"] = self.resolve_distance()
+
+        # Run initiative if in that phase
+        if self._state.current_phase == EncounterPhase.INITIATIVE:
+            result["initiative"] = self.resolve_initiative(
+                party_init_mod,
+                enemy_init_mod
+            )
+
+        result["current_phase"] = self._state.current_phase.value
+        result["ready_for_action"] = (
+            self._state.current_phase == EncounterPhase.ACTIONS
+        )
+
+        return result

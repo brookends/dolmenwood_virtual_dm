@@ -702,9 +702,10 @@ class DungeonEngine:
             )
 
             self.controller.set_encounter(encounter)
-            self.controller.transition("wandering_monster", context={
+            self.controller.transition("encounter_triggered", context={
                 "dungeon_id": self._dungeon_state.dungeon_id,
                 "room_id": self._dungeon_state.current_room,
+                "source": "wandering_monster",
             })
 
             return encounter
@@ -802,6 +803,9 @@ class DungeonEngine:
         """
         Handle encounter outcome and return trigger for state transition.
 
+        Note: This method is deprecated. Use the EncounterEngine instead for
+        handling encounter outcomes with the unified ENCOUNTER state.
+
         Args:
             reaction: Reaction roll result
 
@@ -809,17 +813,17 @@ class DungeonEngine:
             Trigger name for state transition
         """
         if reaction == ReactionResult.HOSTILE:
-            return "reaction_hostile"
+            return "encounter_to_combat"
         elif reaction in {ReactionResult.FRIENDLY, ReactionResult.HELPFUL}:
-            return "reaction_parley"
+            return "encounter_to_parley"
         elif reaction == ReactionResult.UNFRIENDLY:
             # More likely to attack in dungeon
             roll = self.dice.roll_d6(1, "unfriendly action")
             if roll.total <= 3:
-                return "reaction_hostile"
-            return "encounter_avoided"
+                return "encounter_to_combat"
+            return "encounter_end_dungeon"
         else:
-            return "encounter_avoided"
+            return "encounter_end_dungeon"
 
     # =========================================================================
     # ROOM MANAGEMENT

@@ -296,13 +296,14 @@ class HexCrawlEngine:
             result.encounter_occurred = True
             result.encounter = self._generate_encounter(result.actual_hex, terrain)
 
-            # Transition to WILDERNESS_ENCOUNTER state
+            # Transition to unified ENCOUNTER state
             self.controller.transition(
-                "encounter_roll_success",
+                "encounter_triggered",
                 context={
                     "hex_id": result.actual_hex,
                     "terrain": terrain.value,
                     "encounter_type": result.encounter.encounter_type.value,
+                    "source": "wilderness_travel",
                 }
             )
             result.messages.append("Encounter!")
@@ -585,6 +586,9 @@ class HexCrawlEngine:
         """
         Handle the outcome of an encounter based on reaction.
 
+        Note: This method is deprecated. Use the EncounterEngine instead for
+        handling encounter outcomes with the unified ENCOUNTER state.
+
         Args:
             reaction: The reaction roll result
 
@@ -593,23 +597,26 @@ class HexCrawlEngine:
         """
         if reaction == ReactionResult.HOSTILE:
             # Transition to combat
-            return "reaction_hostile"
+            return "encounter_to_combat"
         elif reaction in {ReactionResult.FRIENDLY, ReactionResult.HELPFUL}:
             # May lead to social interaction
-            return "reaction_parley"
+            return "encounter_to_parley"
         elif reaction == ReactionResult.UNFRIENDLY:
             # Could go either way - might attack
             roll = self.dice.roll_d6(1, "unfriendly escalation")
             if roll.total <= 2:
-                return "reaction_hostile"
-            return "encounter_avoided"
+                return "encounter_to_combat"
+            return "encounter_end_wilderness"
         else:
             # Neutral - cautious, watching
-            return "encounter_avoided"
+            return "encounter_end_wilderness"
 
     def avoid_encounter(self) -> bool:
         """
         Attempt to avoid current encounter.
+
+        Note: This method is deprecated. Use the EncounterEngine.execute_action()
+        with EncounterAction.EVASION instead.
 
         Success depends on:
         - Distance
@@ -638,7 +645,7 @@ class HexCrawlEngine:
 
         if roll.total >= target:
             self.controller.clear_encounter()
-            self.controller.transition("encounter_avoided")
+            self.controller.transition("encounter_end_wilderness")
             return True
 
         return False
