@@ -1,0 +1,114 @@
+{
+  "metadata": {
+    "table_id": "magic_item_type",
+    "name": "Magic Item Type",
+    "table_type": "treasure_magic_item",
+    "die_type": "d100",
+    "num_dice": 1,
+    "source_book": "Campaign Book",
+    "page_number": 393,
+    "category": "treasure",
+    "subcategory": "magic_items",
+    "description": "Determines the category of magic item found."
+  },
+  "entries": [
+    {
+      "roll_min": 1,
+      "roll_max": 20,
+      "result": "Potion",
+      "data": {"category": "potion"},
+      "sub_tables": ["potion"]
+    },
+    {
+      "roll_min": 21,
+      "roll_max": 30,
+      "result": "Spell Scroll",
+      "data": {"category": "spell_scroll"},
+      "sub_tables": ["spell_scroll_count", "spell_scroll_rank", "scroll_language"]
+    },
+    {
+      "roll_min": 31,
+      "roll_max": 35,
+      "result": "Spell Book",
+      "data": {"category": "spell_book"},
+      "sub_tables": ["spell_book", "spell_book_appearance", "scroll_language"]
+    },
+    {
+      "roll_min": 36,
+      "roll_max": 40,
+      "result": "Ring",
+      "data": {"category": "ring"},
+      "sub_tables": ["ring", "ring_appearance"]
+    },
+    {
+      "roll_min": 41,
+      "roll_max": 43,
+      "result": "Rod",
+      "data": {"category": "rod"},
+      "sub_tables": ["rod", "rod_appearance", "rod_power"]
+    },
+    {
+      "roll_min": 44,
+      "roll_max": 47,
+      "result": "Staff",
+      "data": {"category": "staff"},
+      "sub_tables": ["staff", "staff_appearance", "staff_power"]
+    },
+    {
+      "roll_min": 48,
+      "roll_max": 52,
+      "result": "Wand",
+      "data": {"category": "wand"},
+      "sub_tables": ["wand", "wand_appearance", "wand_spell"]
+    },
+    {
+      "roll_min": 53,
+      "roll_max": 57,
+      "result": "Amulet/Talisman",
+      "data": {"category": "amulet_talisman"},
+      "sub_tables": ["amulet_talisman", "amulet_appearance"]
+    },
+    {
+      "roll_min": 58,
+      "roll_max": 67,
+      "result": "Weapon",
+      "data": {"category": "weapon"},
+      "sub_tables": ["weapon_type", "weapon_enchantment"]
+    },
+    {
+      "roll_min": 68,
+      "roll_max": 77,
+      "result": "Armour",
+      "data": {"category": "armour"},
+      "sub_tables": ["armour_type", "armour_enchantment"]
+    },
+    {
+      "roll_min": 78,
+      "roll_max": 82,
+      "result": "Magic Garment",
+      "data": {"category": "magic_garment"},
+      "sub_tables": ["magic_garment"]
+    },
+    {
+      "roll_min": 83,
+      "roll_max": 87,
+      "result": "Magic Crystal",
+      "data": {"category": "magic_crystal"},
+      "sub_tables": ["magic_crystal"]
+    },
+    {
+      "roll_min": 88,
+      "roll_max": 92,
+      "result": "Magic Balm/Oil",
+      "data": {"category": "magic_balm_oil"},
+      "sub_tables": ["magic_balm_oil"]
+    },
+    {
+      "roll_min": 93,
+      "roll_max": 100,
+      "result": "Wondrous Item",
+      "data": {"category": "wondrous_item"},
+      "sub_tables": ["wondrous_item"]
+    }
+  ]
+}

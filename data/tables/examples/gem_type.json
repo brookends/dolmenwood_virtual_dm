@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "table_id": "gem_type",
+    "name": "Gem Type",
+    "table_type": "treasure_gem",
+    "die_type": "d20",
+    "num_dice": 1,
+    "source_book": "Campaign Book",
+    "page_number": 394,
+    "category": "treasure",
+    "subcategory": "gems",
+    "description": "Determines the type of gem found in treasure."
+  },
+  "entries": [
+    {"roll_min": 1, "roll_max": 1, "result": "Agate", "data": {"color": "banded brown"}},
+    {"roll_min": 2, "roll_max": 2, "result": "Amethyst", "data": {"color": "purple"}},
+    {"roll_min": 3, "roll_max": 3, "result": "Aquamarine", "data": {"color": "pale blue"}},
+    {"roll_min": 4, "roll_max": 4, "result": "Bloodstone", "data": {"color": "dark green with red spots"}},
+    {"roll_min": 5, "roll_max": 5, "result": "Carnelian", "data": {"color": "orange-red"}},
+    {"roll_min": 6, "roll_max": 6, "result": "Crystal", "data": {"color": "clear"}},
+    {"roll_min": 7, "roll_max": 7, "result": "Diamond", "data": {"color": "clear", "rare": true}},
+    {"roll_min": 8, "roll_max": 8, "result": "Emerald", "data": {"color": "green", "rare": true}},
+    {"roll_min": 9, "roll_max": 9, "result": "Garnet", "data": {"color": "deep red"}},
+    {"roll_min": 10, "roll_max": 10, "result": "Jade", "data": {"color": "green"}},
+    {"roll_min": 11, "roll_max": 11, "result": "Jasper", "data": {"color": "mottled brown"}},
+    {"roll_min": 12, "roll_max": 12, "result": "Jet", "data": {"color": "black"}},
+    {"roll_min": 13, "roll_max": 13, "result": "Moonstone", "data": {"color": "pale blue shimmer"}},
+    {"roll_min": 14, "roll_max": 14, "result": "Obsidian", "data": {"color": "black glass"}},
+    {"roll_min": 15, "roll_max": 15, "result": "Onyx", "data": {"color": "black and white bands"}},
+    {"roll_min": 16, "roll_max": 16, "result": "Opal", "data": {"color": "iridescent", "rare": true}},
+    {"roll_min": 17, "roll_max": 17, "result": "Pearl", "data": {"color": "white or cream"}},
+    {"roll_min": 18, "roll_max": 18, "result": "Ruby", "data": {"color": "red", "rare": true}},
+    {"roll_min": 19, "roll_max": 19, "result": "Sapphire", "data": {"color": "blue", "rare": true}},
+    {"roll_min": 20, "roll_max": 20, "result": "Topaz", "data": {"color": "golden yellow"}}
+  ]
+}

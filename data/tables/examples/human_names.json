@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "table_id": "human_names",
+    "name": "Human Names",
+    "table_type": "character_name",
+    "die_type": "d20",
+    "num_dice": 1,
+    "source_book": "Player Book",
+    "page_number": 44,
+    "category": "character",
+    "subcategory": "human",
+    "conditions": {"kindred": "human"},
+    "description": "Name tables for human characters in Dolmenwood."
+  },
+  "entries": [
+    {
+      "roll_min": 1,
+      "roll_max": 20,
+      "result": "Name columns",
+      "data": {
+        "columns": {
+          "male": [
+            "Aldric", "Bram", "Cedric", "Dunstan", "Edmund",
+            "Fulke", "Godwin", "Harold", "Ivan", "Jasper",
+            "Kenric", "Leofric", "Malcolm", "Norbert", "Osric",
+            "Percival", "Quentin", "Roland", "Silas", "Thom"
+          ],
+          "female": [
+            "Agnes", "Beatrice", "Cecily", "Drusilla", "Edith",
+            "Frieda", "Gwendolyn", "Hilda", "Isolde", "Joan",
+            "Katherine", "Lettice", "Margery", "Nest", "Osanna",
+            "Petronilla", "Rohese", "Sabina", "Thomasina", "Ursula"
+          ],
+          "unisex": [
+            "Aelfric", "Blair", "Carey", "Dale", "Ellis",
+            "Florian", "Garnet", "Hollis", "Ira", "Jules",
+            "Kerry", "Linden", "Morgan", "Noel", "Oakley",
+            "Perry", "Quinn", "Raven", "Shannon", "Terry"
+          ],
+          "surname": [
+            "Ashford", "Baker", "Cooper", "Draper", "Fletcher",
+            "Greenwood", "Harper", "Ironside", "Joiner", "Keller",
+            "Lockwood", "Miller", "Northcott", "Oakenshield", "Potter",
+            "Quarry", "Roper", "Smith", "Thatcher", "Weaver"
+          ]
+        }
+      }
+    }
+  ]
+}

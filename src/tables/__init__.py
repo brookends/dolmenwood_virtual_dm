@@ -20,6 +20,22 @@ from src.tables.table_types import (
     Kindred,
     NameColumn,
     CharacterAspectType,
+    # Encounter enums
+    EncounterLocationType,
+    EncounterTimeOfDay,
+    EncounterSeason,
+    EncounterTableCategory,
+    NestedTableConditionType,
+    DolmenwoodRegion,
+    DolmenwoodSettlement,
+    EncounterResultType,
+    # Treasure enums
+    TreasureTableCategory,
+    TreasureType,
+    CoinType,
+    MagicItemCategory,
+    # Database-driven roll table enums
+    RollTableType,
     # Data classes
     TableEntry,
     DolmenwoodTable,
@@ -31,9 +47,36 @@ from src.tables.table_types import (
     CharacterAspectTable,
     CharacterAspectResult,
     GeneratedCharacterAspects,
+    # Encounter data classes
+    NestedTableCondition,
+    NestedTableSelector,
+    EncounterTableContext,
+    EncounterEntry,
+    EncounterTable,
+    EncounterResult,
+    # Treasure data classes
+    TreasureEntry,
+    TreasureTableContext,
+    TreasureNestedTableSelector,
+    TreasureTable,
+    TreasureComponent,
+    GeneratedTreasureItem,
+    TreasureResult,
+    # Database-driven roll table data classes
+    RollTableEntry,
+    RollTableMetadata,
+    RollTable,
+    RollTableReference,
+    RollResult,
+    # Hex-embedded roll table classes
+    HexTableCategory,
+    HexRollTableEntry,
+    HexRollTable,
     # Functions
     interpret_reaction_roll,
     check_morale,
+    parse_hex_roll_tables,
+    convert_hex_tables_to_roll_tables,
 )
 
 from src.tables.character_tables import (
@@ -84,6 +127,16 @@ from src.tables.procedure_triggers import (
     fire_combat_round,
 )
 
+from src.tables.encounter_tables import (
+    EncounterTableManager,
+    get_encounter_table_manager,
+)
+
+from src.tables.treasure_tables import (
+    TreasureTableManager,
+    get_treasure_table_manager,
+)
+
 __all__ = [
     # Table types
     "TableCategory",
@@ -106,9 +159,55 @@ __all__ = [
     "GeneratedCharacterAspects",
     "interpret_reaction_roll",
     "check_morale",
+    # Encounter types
+    "EncounterLocationType",
+    "EncounterTimeOfDay",
+    "EncounterSeason",
+    "EncounterTableCategory",
+    "NestedTableConditionType",
+    "DolmenwoodRegion",
+    "DolmenwoodSettlement",
+    "EncounterResultType",
+    "NestedTableCondition",
+    "NestedTableSelector",
+    "EncounterTableContext",
+    "EncounterEntry",
+    "EncounterTable",
+    "EncounterResult",
+    # Treasure types
+    "TreasureTableCategory",
+    "TreasureType",
+    "CoinType",
+    "MagicItemCategory",
+    "TreasureEntry",
+    "TreasureTableContext",
+    "TreasureNestedTableSelector",
+    "TreasureTable",
+    "TreasureComponent",
+    "GeneratedTreasureItem",
+    "TreasureResult",
+    # Database-driven roll tables
+    "RollTableType",
+    "RollTableEntry",
+    "RollTableMetadata",
+    "RollTable",
+    "RollTableReference",
+    "RollResult",
+    # Hex-embedded roll tables
+    "HexTableCategory",
+    "HexRollTableEntry",
+    "HexRollTable",
+    "parse_hex_roll_tables",
+    "convert_hex_tables_to_roll_tables",
     # Character tables
     "CharacterTableManager",
     "get_character_table_manager",
+    # Encounter tables
+    "EncounterTableManager",
+    "get_encounter_table_manager",
+    # Treasure tables
+    "TreasureTableManager",
+    "get_treasure_table_manager",
     # Table manager
     "TableManager",
     "get_table_manager",

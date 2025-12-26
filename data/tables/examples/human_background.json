@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "table_id": "human_background",
+    "name": "Human Background",
+    "table_type": "character_aspect",
+    "die_type": "d10",
+    "num_dice": 1,
+    "source_book": "Player Book",
+    "page_number": 45,
+    "category": "character",
+    "subcategory": "human",
+    "conditions": {"kindred": "human", "aspect_type": "background"},
+    "description": "Background options for human characters in Dolmenwood."
+  },
+  "entries": [
+    {
+      "roll_min": 1,
+      "roll_max": 1,
+      "result": "Farmer's child seeking fortune",
+      "data": {"starting_equipment": ["pitchfork", "sack of turnips"]}
+    },
+    {
+      "roll_min": 2,
+      "roll_max": 2,
+      "result": "Disgraced soldier",
+      "data": {"starting_equipment": ["dented helm", "broken sword"]}
+    },
+    {
+      "roll_min": 3,
+      "roll_max": 3,
+      "result": "Runaway apprentice",
+      "data": {"starting_equipment": ["artisan tools", "unfinished work"]}
+    },
+    {
+      "roll_min": 4,
+      "roll_max": 4,
+      "result": "Orphan of the plague years",
+      "data": {"starting_equipment": ["tattered blanket", "lucky charm"]}
+    },
+    {
+      "roll_min": 5,
+      "roll_max": 5,
+      "result": "Former servant to nobility",
+      "data": {"starting_equipment": ["livery (faded)", "silver spoon"]}
+    },
+    {
+      "roll_min": 6,
+      "roll_max": 6,
+      "result": "Traveling peddler",
+      "data": {"starting_equipment": ["pack of wares", "handcart"]}
+    },
+    {
+      "roll_min": 7,
+      "roll_max": 7,
+      "result": "Failed priest or nun",
+      "data": {"starting_equipment": ["holy symbol", "prayer book"]}
+    },
+    {
+      "roll_min": 8,
+      "roll_max": 8,
+      "result": "Hunter and trapper",
+      "data": {"starting_equipment": ["snares (3)", "skinning knife"]}
+    },
+    {
+      "roll_min": 9,
+      "roll_max": 9,
+      "result": "Village wise-woman's student",
+      "data": {"starting_equipment": ["herb pouch", "grandmother's recipes"]}
+    },
+    {
+      "roll_min": 10,
+      "roll_max": 10,
+      "result": "Refugee from a burned village",
+      "data": {"starting_equipment": ["charred family keepsake", "burning hatred"]}
+    }
+  ]
+}
