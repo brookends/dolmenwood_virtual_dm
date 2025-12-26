@@ -283,26 +283,9 @@ class EncounterTableManager:
             number_appearing_rolled=num_appearing,
         )
 
-        # Handle sub-table references
-        if entry.regional_table and context.region:
-            regional_result = self._roll_regional(context)
-            if regional_result:
-                result.sub_result = regional_result
-
-        elif entry.sub_table:
-            sub_table = self._tables.get(entry.sub_table)
-            if sub_table:
-                sub_roll, sub_entry = sub_table.roll(context)
-                result.sub_result = EncounterResult(
-                    table_id=sub_table.table_id,
-                    table_name=sub_table.name,
-                    roll=sub_roll,
-                    entry=sub_entry,
-                    location_type=context.location_type,
-                    time_of_day=context.time_of_day,
-                    season=context.season,
-                    description=sub_entry.result,
-                )
+        # Note: Encounter tables do not chain to other encounter tables.
+        # The Python code handles table selection (common, regional, seasonal, hex)
+        # via _select_table() which randomly picks from all eligible tables.
 
         return result
 
@@ -391,24 +374,6 @@ class EncounterTableManager:
             eligible.append(self._by_season[context.season])
 
         return eligible
-
-    def _roll_regional(self, context: EncounterTableContext) -> Optional[EncounterResult]:
-        """Roll on the regional table for the current context."""
-        if context.region and context.region in self._by_region:
-            table = self._tables.get(self._by_region[context.region])
-            if table:
-                roll, entry = table.roll(context)
-                return EncounterResult(
-                    table_id=table.table_id,
-                    table_name=table.name,
-                    roll=roll,
-                    entry=entry,
-                    location_type=context.location_type,
-                    time_of_day=context.time_of_day,
-                    season=context.season,
-                    description=entry.result,
-                )
-        return None
 
     # =========================================================================
     # CONVENIENCE METHODS
