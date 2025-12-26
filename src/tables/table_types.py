@@ -1165,3 +1165,749 @@ class EncounterResult:
             lines.append(self.sub_result.describe())
 
         return "\n".join(lines)
+
+
+# =============================================================================
+# TREASURE TABLES
+# =============================================================================
+
+
+class TreasureTableCategory(str, Enum):
+    """Categories of treasure tables for organization."""
+    # Main treasure tables (p.393)
+    COINS = "coins"                        # Coin quantities
+    RICHES = "riches"                      # Gems, jewelry, art
+    MAGIC_ITEM = "magic_item"              # Magic item determination
+    MAGIC_ITEM_TYPE = "magic_item_type"    # Type of magic item
+
+    # Detail tables for gems/jewelry/art (p.394)
+    GEM_VALUE = "gem_value"
+    GEM_TYPE = "gem_type"
+    JEWELRY = "jewelry"
+    ART_OBJECT = "art_object"
+    PRECIOUS_MATERIAL = "precious_material"
+    EMBELLISHMENT = "embellishment"
+    PROVENANCE = "provenance"
+
+    # Magic item detail tables - Amulet/Talisman (p.398)
+    AMULET_TALISMAN = "amulet_talisman"
+    AMULET_APPEARANCE = "amulet_appearance"
+
+    # Magic item detail tables - Armour (p.400)
+    ARMOUR_TYPE = "armour_type"
+    ARMOUR_ENCHANTMENT = "armour_enchantment"
+    ARMOUR_SPECIAL_POWER = "armour_special_power"
+    ARMOUR_ODDITY = "armour_oddity"
+
+    # Magic item detail tables - Magic Garments
+    MAGIC_GARMENT = "magic_garment"
+
+    # Magic item detail tables - Instrument (p.408)
+    INSTRUMENT_TYPE = "instrument_type"
+    INSTRUMENT_ENCHANTMENT = "instrument_enchantment"
+
+    # Magic item detail tables - Ring (p.410)
+    RING = "ring"
+    RING_APPEARANCE = "ring_appearance"
+
+    # Magic item detail tables - Weapon (p.412)
+    WEAPON_TYPE = "weapon_type"
+    WEAPON_ENCHANTMENT = "weapon_enchantment"
+    WEAPON_SPECIAL_POWER = "weapon_special_power"
+    WEAPON_ODDITY = "weapon_oddity"
+
+    # Magic item detail tables - Rod/Staff/Wand (p.416)
+    ROD = "rod"
+    STAFF = "staff"
+    WAND = "wand"
+    ROD_APPEARANCE = "rod_appearance"
+    STAFF_APPEARANCE = "staff_appearance"
+    WAND_APPEARANCE = "wand_appearance"
+    ROD_POWER = "rod_power"
+    STAFF_POWER = "staff_power"
+    WAND_SPELL = "wand_spell"
+
+    # Magic item detail tables - Scroll/Book (p.418-419)
+    SPELL_BOOK = "spell_book"
+    SPELL_BOOK_APPEARANCE = "spell_book_appearance"
+    SPELL_SCROLL = "spell_scroll"
+    SPELL_SCROLL_COUNT = "spell_scroll_count"
+    SPELL_SCROLL_RANK = "spell_scroll_rank"
+    SCROLL_LANGUAGE = "scroll_language"
+
+    # Magic item detail tables - Potions
+    POTION = "potion"
+
+    # Magic item detail tables - Crystals, Balms/Oils
+    MAGIC_CRYSTAL = "magic_crystal"
+    MAGIC_BALM_OIL = "magic_balm_oil"
+
+    # Magic item detail tables - Wondrous Items
+    WONDROUS_ITEM = "wondrous_item"
+
+    # Arcane trade goods (p.423)
+    ARCANE_TRADE_GOODS = "arcane_trade_goods"
+
+
+class TreasureType(str, Enum):
+    """Types of treasure items."""
+    COINS = "coins"
+    GEMS = "gems"
+    JEWELRY = "jewelry"
+    ART_OBJECT = "art_object"
+    MAGIC_ITEM = "magic_item"
+
+
+class CoinType(str, Enum):
+    """Types of coins in Dolmenwood."""
+    COPPER = "cp"
+    SILVER = "sp"
+    GOLD = "gp"
+    PELLUCIDIUM = "pp"  # Dolmenwood-specific precious coin
+
+
+class MagicItemCategory(str, Enum):
+    """Categories of magic items in Dolmenwood."""
+    ARMOUR = "armour"
+    AMULET_TALISMAN = "amulet_talisman"
+    WEAPON = "weapon"
+    RING = "ring"
+    ROD = "rod"
+    STAFF = "staff"
+    WAND = "wand"
+    SPELL_BOOK = "spell_book"
+    SPELL_SCROLL = "spell_scroll"
+    MAGIC_GARMENT = "magic_garment"
+    POTION = "potion"
+    MAGIC_CRYSTAL = "magic_crystal"
+    MAGIC_BALM_OIL = "magic_balm_oil"
+    WONDROUS_ITEM = "wondrous_item"
+
+
+@dataclass
+class TreasureEntry:
+    """
+    A single entry in a treasure table.
+
+    Supports variable roll ranges and references to sub-tables.
+    """
+    # Roll range (inclusive)
+    roll_min: int
+    roll_max: int
+
+    # Result
+    result: str
+    result_type: TreasureType = TreasureType.COINS
+
+    # Value (for gems, jewelry, art)
+    value_gp: Optional[int] = None           # Base value in gold pieces
+    value_dice: Optional[str] = None         # Dice notation for value
+
+    # Magic item specifics
+    magic_item_category: Optional[MagicItemCategory] = None
+    magic_item_ref: Optional[str] = None     # Specific magic item ID
+
+    # Sub-tables for further detail
+    sub_table: Optional[str] = None          # Reference to another table
+    sub_tables: list[str] = field(default_factory=list)  # Multiple sub-tables
+
+    # Quantity (if this entry can appear multiple times)
+    quantity_dice: Optional[str] = None      # e.g., "1d6" gems
+
+    # Coin type (for coin entries)
+    coin_type: Optional[CoinType] = None
+    coin_multiplier: int = 1                 # e.g., x1000 for "1d6 x 1000cp"
+
+    # Descriptive details
+    description: Optional[str] = None
+    properties: dict[str, Any] = field(default_factory=dict)
+
+    def matches_roll(self, roll: int) -> bool:
+        """Check if a roll value falls within this entry's range."""
+        return self.roll_min <= roll <= self.roll_max
+
+
+@dataclass
+class TreasureTableContext:
+    """
+    Context for treasure generation.
+
+    Provides information about the source of treasure
+    and any modifiers to treasure rolls.
+    """
+    # Source context
+    treasure_type_code: Optional[str] = None  # e.g., "A", "B", "H" etc.
+    source_monster: Optional[str] = None      # Monster that dropped it
+    source_location: Optional[str] = None     # Where treasure was found
+
+    # Modifiers
+    value_multiplier: float = 1.0             # Multiply all values
+    quantity_modifier: int = 0                # Add to quantity rolls
+    magic_item_bonus: int = 0                 # Bonus to magic item chance
+
+    # Extra conditions for nested table selection
+    extra_conditions: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class TreasureNestedTableSelector:
+    """
+    Defines a nested sub-table with its selection conditions.
+
+    Used when a treasure table has conditional sub-tables
+    (e.g., different tables based on item type).
+    """
+    conditions: dict[str, Any]               # Conditions to match
+    table_id: str                            # The table to use when matched
+
+    def matches(self, context: TreasureTableContext) -> bool:
+        """Check if all conditions match the given context."""
+        for key, value in self.conditions.items():
+            if context.extra_conditions.get(key) != value:
+                return False
+        return True
+
+
+@dataclass
+class TreasureTable:
+    """
+    A treasure table for random treasure determination.
+
+    Supports:
+    - Variable length tables (any die type, any number of entries)
+    - Nested conditional tables (sub-tables for detail)
+    - Percentage chance rolls
+    - Quantity dice rolls
+    """
+    table_id: str
+    name: str
+    category: TreasureTableCategory
+
+    # Die configuration - supports any die type for variable length
+    die_type: DieType = DieType.D100
+    num_dice: int = 1
+
+    # Entries (for tables with actual results)
+    entries: list[TreasureEntry] = field(default_factory=list)
+
+    # Nested tables (for container tables with conditional sub-tables)
+    nested_tables: list[TreasureNestedTableSelector] = field(default_factory=list)
+    is_container: bool = False
+
+    # Metadata
+    description: str = ""
+    source_reference: str = "Campaign Book"
+    page_number: Optional[int] = None
+
+    def get_max_roll(self) -> int:
+        """Get the maximum possible roll for this table."""
+        die_size = int(self.die_type.value[1:])
+        return self.num_dice * die_size
+
+    def get_min_roll(self) -> int:
+        """Get the minimum possible roll for this table."""
+        return self.num_dice
+
+    def roll(self, context: Optional[TreasureTableContext] = None) -> tuple[int, TreasureEntry]:
+        """
+        Roll on this treasure table.
+
+        If this is a container table, selects the appropriate nested table
+        based on context and rolls on that instead.
+        """
+        die_size = int(self.die_type.value[1:])
+        rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
+        total = sum(rolls)
+
+        for entry in self.entries:
+            if entry.matches_roll(total):
+                return total, entry
+
+        # Fallback
+        if self.entries:
+            return total, self.entries[-1]
+
+        return total, TreasureEntry(
+            roll_min=total, roll_max=total,
+            result="No treasure"
+        )
+
+
+@dataclass
+class TreasureComponent:
+    """
+    A component of a treasure type with chance and quantity.
+
+    Represents one line in a treasure type definition, e.g.:
+    "25% chance of 1d6 x 1000 cp"
+    """
+    treasure_type: TreasureType
+    chance_percent: int                      # Percentage chance (roll d100)
+    quantity_dice: str                       # Dice for quantity, e.g., "1d6"
+    multiplier: int = 1                      # e.g., x1000 for coins
+
+    # For coins
+    coin_type: Optional[CoinType] = None
+
+    # For gems, jewelry, art - reference detail table
+    detail_table: Optional[str] = None
+
+    # For magic items
+    magic_item_category: Optional[MagicItemCategory] = None
+    specific_table: Optional[str] = None     # Specific magic item table
+
+    def roll_present(self) -> bool:
+        """Roll to see if this component is present."""
+        return random.randint(1, 100) <= self.chance_percent
+
+
+@dataclass
+class GeneratedTreasureItem:
+    """A single generated treasure item with all details."""
+    treasure_type: TreasureType
+    quantity: int = 1
+
+    # For coins
+    coin_type: Optional[CoinType] = None
+    coin_value: int = 0                      # Total coin value
+
+    # For gems/jewelry/art
+    item_name: Optional[str] = None
+    base_value_gp: int = 0
+    material: Optional[str] = None
+    embellishment: Optional[str] = None
+    provenance: Optional[str] = None
+
+    # For magic items
+    magic_item_category: Optional[MagicItemCategory] = None
+    magic_item_name: Optional[str] = None
+    enchantment: Optional[str] = None
+    special_powers: list[str] = field(default_factory=list)
+    oddities: list[str] = field(default_factory=list)
+    appearance: Optional[str] = None
+
+    # Roll history for reference
+    rolls: dict[str, int] = field(default_factory=dict)
+    sub_results: list["GeneratedTreasureItem"] = field(default_factory=list)
+
+    def total_value_gp(self) -> int:
+        """Calculate total value in gold pieces."""
+        if self.treasure_type == TreasureType.COINS:
+            # Convert coins to GP (Dolmenwood rates: 10cp=1sp, 10sp=1gp, 5gp=1pp)
+            conversion = {
+                CoinType.COPPER: 0.01,      # 100 cp = 1 gp
+                CoinType.SILVER: 0.1,       # 10 sp = 1 gp
+                CoinType.GOLD: 1.0,         # 1 gp = 1 gp
+                CoinType.PELLUCIDIUM: 5.0,  # 1 pp = 5 gp
+            }
+            if self.coin_type:
+                return int(self.coin_value * conversion.get(self.coin_type, 1.0))
+            return self.coin_value
+        return self.base_value_gp * self.quantity
+
+    def describe(self) -> str:
+        """Get a formatted description of this treasure item."""
+        if self.treasure_type == TreasureType.COINS:
+            return f"{self.coin_value:,} {self.coin_type.value if self.coin_type else 'coins'}"
+
+        elif self.treasure_type == TreasureType.GEMS:
+            desc = f"{self.quantity}x Gem"
+            if self.item_name:
+                desc = f"{self.quantity}x {self.item_name}"
+            desc += f" ({self.base_value_gp} gp each)"
+            return desc
+
+        elif self.treasure_type in [TreasureType.JEWELRY, TreasureType.ART_OBJECT]:
+            desc = self.item_name or self.treasure_type.value
+            if self.material:
+                desc = f"{self.material} {desc}"
+            if self.embellishment:
+                desc += f" with {self.embellishment}"
+            if self.provenance:
+                desc += f" ({self.provenance})"
+            desc += f" - {self.base_value_gp} gp"
+            return desc
+
+        elif self.treasure_type == TreasureType.MAGIC_ITEM:
+            desc = self.magic_item_name or "Magic Item"
+            if self.enchantment:
+                desc += f" ({self.enchantment})"
+            if self.special_powers:
+                desc += f" [Powers: {', '.join(self.special_powers)}]"
+            return desc
+
+        return f"{self.quantity}x {self.item_name or self.treasure_type.value}"
+
+
+@dataclass
+class TreasureResult:
+    """Complete result of treasure generation."""
+    treasure_type_code: Optional[str] = None  # The treasure type rolled
+
+    # Generated items by type
+    coins: list[GeneratedTreasureItem] = field(default_factory=list)
+    gems: list[GeneratedTreasureItem] = field(default_factory=list)
+    jewelry: list[GeneratedTreasureItem] = field(default_factory=list)
+    art_objects: list[GeneratedTreasureItem] = field(default_factory=list)
+    magic_items: list[GeneratedTreasureItem] = field(default_factory=list)
+
+    # Roll history
+    component_rolls: dict[str, bool] = field(default_factory=dict)  # Which components were present
+
+    def total_value_gp(self) -> int:
+        """Calculate total treasure value in gold pieces."""
+        total = 0
+        for items in [self.coins, self.gems, self.jewelry, self.art_objects]:
+            for item in items:
+                total += item.total_value_gp()
+        # Magic items don't have standard GP value
+        return total
+
+    def describe(self) -> str:
+        """Get a formatted description of all treasure."""
+        lines = []
+
+        if self.treasure_type_code:
+            lines.append(f"Treasure Type {self.treasure_type_code}")
+            lines.append("")
+
+        if self.coins:
+            lines.append("Coins:")
+            for item in self.coins:
+                lines.append(f"  {item.describe()}")
+
+        if self.gems:
+            lines.append("Gems:")
+            for item in self.gems:
+                lines.append(f"  {item.describe()}")
+
+        if self.jewelry:
+            lines.append("Jewelry:")
+            for item in self.jewelry:
+                lines.append(f"  {item.describe()}")
+
+        if self.art_objects:
+            lines.append("Art Objects:")
+            for item in self.art_objects:
+                lines.append(f"  {item.describe()}")
+
+        if self.magic_items:
+            lines.append("Magic Items:")
+            for item in self.magic_items:
+                lines.append(f"  {item.describe()}")
+
+        if not any([self.coins, self.gems, self.jewelry, self.art_objects, self.magic_items]):
+            lines.append("No treasure found.")
+
+        lines.append("")
+        lines.append(f"Total Value: {self.total_value_gp():,} gp (excluding magic items)")
+
+        return "\n".join(lines)
+
+
+# =============================================================================
+# DATABASE-DRIVEN ROLL TABLE SYSTEM
+# =============================================================================
+# All game tables (character, encounter, treasure, rumor, dungeon, flavor, etc.)
+# are stored as JSON files and loaded into SQLite/ChromaDB databases.
+# These structures support loading and rolling against tables from the database.
+
+
+class RollTableType(str, Enum):
+    """Types of roll tables in the game system."""
+    # Character tables
+    CHARACTER_NAME = "character_name"
+    CHARACTER_ASPECT = "character_aspect"
+    CHARACTER_BACKGROUND = "character_background"
+
+    # Encounter tables
+    ENCOUNTER_COMMON = "encounter_common"
+    ENCOUNTER_REGIONAL = "encounter_regional"
+    ENCOUNTER_SETTLEMENT = "encounter_settlement"
+    ENCOUNTER_FAIRY_ROAD = "encounter_fairy_road"
+    ENCOUNTER_SEASONAL = "encounter_seasonal"
+    ENCOUNTER_HEX = "encounter_hex"
+
+    # Treasure tables
+    TREASURE_COINS = "treasure_coins"
+    TREASURE_RICHES = "treasure_riches"
+    TREASURE_MAGIC_ITEM = "treasure_magic_item"
+    TREASURE_GEM = "treasure_gem"
+    TREASURE_JEWELRY = "treasure_jewelry"
+    TREASURE_ART = "treasure_art"
+
+    # Magic item detail tables
+    MAGIC_ITEM_DETAIL = "magic_item_detail"
+
+    # Rumor tables
+    RUMOR = "rumor"
+
+    # Dungeon tables
+    DUNGEON_ROOM = "dungeon_room"
+    DUNGEON_FEATURE = "dungeon_feature"
+    DUNGEON_HAZARD = "dungeon_hazard"
+
+    # Flavor/Atmosphere tables
+    FLAVOR = "flavor"
+    WEATHER = "weather"
+    NPC_REACTION = "npc_reaction"
+
+    # Generic
+    CUSTOM = "custom"
+
+
+@dataclass
+class RollTableEntry:
+    """
+    A single entry in a database-loaded roll table.
+
+    This is a generic structure that can represent any table entry
+    loaded from JSON and stored in the database.
+    """
+    # Roll range (inclusive)
+    roll_min: int
+    roll_max: int
+
+    # Primary result
+    result: str
+
+    # Optional structured data (loaded from JSON)
+    data: dict[str, Any] = field(default_factory=dict)
+
+    # Sub-table references (table_id strings)
+    sub_tables: list[str] = field(default_factory=list)
+
+    # Dice expressions for quantities, values, etc.
+    dice_expressions: dict[str, str] = field(default_factory=dict)
+
+    def matches_roll(self, roll: int) -> bool:
+        """Check if a roll value falls within this entry's range."""
+        return self.roll_min <= roll <= self.roll_max
+
+    def get_data(self, key: str, default: Any = None) -> Any:
+        """Get a value from the data dictionary."""
+        return self.data.get(key, default)
+
+    @classmethod
+    def from_json(cls, json_data: dict[str, Any]) -> "RollTableEntry":
+        """Create a RollTableEntry from JSON data."""
+        return cls(
+            roll_min=json_data.get("roll_min", 1),
+            roll_max=json_data.get("roll_max", 1),
+            result=json_data.get("result", ""),
+            data=json_data.get("data", {}),
+            sub_tables=json_data.get("sub_tables", []),
+            dice_expressions=json_data.get("dice", {}),
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        """Convert to JSON-serializable dictionary."""
+        return {
+            "roll_min": self.roll_min,
+            "roll_max": self.roll_max,
+            "result": self.result,
+            "data": self.data,
+            "sub_tables": self.sub_tables,
+            "dice": self.dice_expressions,
+        }
+
+
+@dataclass
+class RollTableMetadata:
+    """
+    Metadata for a roll table stored in the database.
+
+    Contains information about the table but not the entries themselves.
+    """
+    table_id: str                          # Unique identifier
+    name: str                              # Human-readable name
+    table_type: RollTableType              # Type classification
+
+    # Die configuration
+    die_type: str = "d20"                  # e.g., "d6", "d8", "d12", "d100"
+    num_dice: int = 1
+
+    # Source reference
+    source_book: str = "Campaign Book"
+    page_number: Optional[int] = None
+
+    # Category for filtering/organization
+    category: Optional[str] = None         # e.g., "regional", "settlement"
+    subcategory: Optional[str] = None      # e.g., "aldweald", "prigwort"
+
+    # Conditions for table applicability
+    conditions: dict[str, Any] = field(default_factory=dict)
+
+    # Nested table configuration
+    is_container: bool = False             # True if contains conditional sub-tables
+    nested_conditions: list[dict[str, Any]] = field(default_factory=list)
+
+    # Description
+    description: str = ""
+
+    @classmethod
+    def from_json(cls, json_data: dict[str, Any]) -> "RollTableMetadata":
+        """Create RollTableMetadata from JSON data."""
+        return cls(
+            table_id=json_data.get("table_id", ""),
+            name=json_data.get("name", ""),
+            table_type=RollTableType(json_data.get("table_type", "custom")),
+            die_type=json_data.get("die_type", "d20"),
+            num_dice=json_data.get("num_dice", 1),
+            source_book=json_data.get("source_book", "Campaign Book"),
+            page_number=json_data.get("page_number"),
+            category=json_data.get("category"),
+            subcategory=json_data.get("subcategory"),
+            conditions=json_data.get("conditions", {}),
+            is_container=json_data.get("is_container", False),
+            nested_conditions=json_data.get("nested_conditions", []),
+            description=json_data.get("description", ""),
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        """Convert to JSON-serializable dictionary."""
+        return {
+            "table_id": self.table_id,
+            "name": self.name,
+            "table_type": self.table_type.value,
+            "die_type": self.die_type,
+            "num_dice": self.num_dice,
+            "source_book": self.source_book,
+            "page_number": self.page_number,
+            "category": self.category,
+            "subcategory": self.subcategory,
+            "conditions": self.conditions,
+            "is_container": self.is_container,
+            "nested_conditions": self.nested_conditions,
+            "description": self.description,
+        }
+
+
+@dataclass
+class RollTable:
+    """
+    A complete roll table with metadata and entries.
+
+    This is the primary structure for database-loaded tables.
+    Entries can be loaded lazily from the database as needed.
+    """
+    metadata: RollTableMetadata
+    entries: list[RollTableEntry] = field(default_factory=list)
+
+    # Database reference (for lazy loading)
+    _entries_loaded: bool = field(default=False, repr=False)
+
+    @property
+    def table_id(self) -> str:
+        return self.metadata.table_id
+
+    @property
+    def name(self) -> str:
+        return self.metadata.name
+
+    def get_die_size(self) -> int:
+        """Get the die size from the die_type string."""
+        die_type = self.metadata.die_type.lower()
+        if die_type.startswith('d'):
+            return int(die_type[1:])
+        return 20  # Default
+
+    def get_max_roll(self) -> int:
+        """Get the maximum possible roll for this table."""
+        return self.metadata.num_dice * self.get_die_size()
+
+    def get_min_roll(self) -> int:
+        """Get the minimum possible roll for this table."""
+        return self.metadata.num_dice
+
+    def roll(self) -> tuple[int, Optional[RollTableEntry]]:
+        """
+        Roll on this table and return the result.
+
+        Returns (roll_value, entry) or (roll_value, None) if no match.
+        """
+        die_size = self.get_die_size()
+        rolls = [random.randint(1, die_size) for _ in range(self.metadata.num_dice)]
+        total = sum(rolls)
+
+        for entry in self.entries:
+            if entry.matches_roll(total):
+                return total, entry
+
+        # Fallback to last entry if no match
+        if self.entries:
+            return total, self.entries[-1]
+
+        return total, None
+
+    @classmethod
+    def from_json(cls, json_data: dict[str, Any]) -> "RollTable":
+        """Create a RollTable from JSON data."""
+        metadata = RollTableMetadata.from_json(json_data.get("metadata", json_data))
+        entries = [
+            RollTableEntry.from_json(e)
+            for e in json_data.get("entries", [])
+        ]
+        return cls(metadata=metadata, entries=entries, _entries_loaded=True)
+
+    def to_json(self) -> dict[str, Any]:
+        """Convert to JSON-serializable dictionary."""
+        return {
+            "metadata": self.metadata.to_json(),
+            "entries": [e.to_json() for e in self.entries],
+        }
+
+
+@dataclass
+class RollTableReference:
+    """
+    A lightweight reference to a table in the database.
+
+    Used when you need to reference a table without loading all entries.
+    """
+    table_id: str
+    table_type: RollTableType
+    name: str = ""
+
+    # Optional filter conditions for the reference
+    conditions: dict[str, Any] = field(default_factory=dict)
+
+    def __str__(self) -> str:
+        return f"TableRef({self.table_id})"
+
+
+@dataclass
+class RollResult:
+    """
+    The result of rolling on one or more tables.
+
+    Captures the full roll history including any sub-table rolls.
+    """
+    table_id: str
+    table_name: str
+    roll: int
+    entry: Optional[RollTableEntry]
+
+    # Sub-results from referenced sub-tables
+    sub_results: list["RollResult"] = field(default_factory=list)
+
+    # Additional resolved data
+    resolved_data: dict[str, Any] = field(default_factory=dict)
+
+    def describe(self) -> str:
+        """Get a formatted description of this roll result."""
+        lines = [f"[{self.table_name}] Roll: {self.roll}"]
+
+        if self.entry:
+            lines.append(f"Result: {self.entry.result}")
+
+            # Add any extra data
+            for key, value in self.entry.data.items():
+                lines.append(f"  {key}: {value}")
+
+        for sub in self.sub_results:
+            lines.append("")
+            lines.append("Sub-table:")
+            lines.append(sub.describe())
+
+        return "\n".join(lines)

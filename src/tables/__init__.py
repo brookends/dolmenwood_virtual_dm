@@ -29,6 +29,13 @@ from src.tables.table_types import (
     DolmenwoodRegion,
     DolmenwoodSettlement,
     EncounterResultType,
+    # Treasure enums
+    TreasureTableCategory,
+    TreasureType,
+    CoinType,
+    MagicItemCategory,
+    # Database-driven roll table enums
+    RollTableType,
     # Data classes
     TableEntry,
     DolmenwoodTable,
@@ -47,6 +54,20 @@ from src.tables.table_types import (
     EncounterEntry,
     EncounterTable,
     EncounterResult,
+    # Treasure data classes
+    TreasureEntry,
+    TreasureTableContext,
+    TreasureNestedTableSelector,
+    TreasureTable,
+    TreasureComponent,
+    GeneratedTreasureItem,
+    TreasureResult,
+    # Database-driven roll table data classes
+    RollTableEntry,
+    RollTableMetadata,
+    RollTable,
+    RollTableReference,
+    RollResult,
     # Functions
     interpret_reaction_roll,
     check_morale,
@@ -105,6 +126,11 @@ from src.tables.encounter_tables import (
     get_encounter_table_manager,
 )
 
+from src.tables.treasure_tables import (
+    TreasureTableManager,
+    get_treasure_table_manager,
+)
+
 __all__ = [
     # Table types
     "TableCategory",
@@ -142,12 +168,34 @@ __all__ = [
     "EncounterEntry",
     "EncounterTable",
     "EncounterResult",
+    # Treasure types
+    "TreasureTableCategory",
+    "TreasureType",
+    "CoinType",
+    "MagicItemCategory",
+    "TreasureEntry",
+    "TreasureTableContext",
+    "TreasureNestedTableSelector",
+    "TreasureTable",
+    "TreasureComponent",
+    "GeneratedTreasureItem",
+    "TreasureResult",
+    # Database-driven roll tables
+    "RollTableType",
+    "RollTableEntry",
+    "RollTableMetadata",
+    "RollTable",
+    "RollTableReference",
+    "RollResult",
     # Character tables
     "CharacterTableManager",
     "get_character_table_manager",
     # Encounter tables
     "EncounterTableManager",
     "get_encounter_table_manager",
+    # Treasure tables
+    "TreasureTableManager",
+    "get_treasure_table_manager",
     # Table manager
     "TableManager",
     "get_table_manager",
