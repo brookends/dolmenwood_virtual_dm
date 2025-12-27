@@ -27,6 +27,7 @@ from src.data_models import (
     EncounterType,
     SurpriseStatus,
     ReactionResult,
+    MovementCalculator,
 )
 
 
@@ -682,7 +683,14 @@ class EncounterEngine:
         actor: str,
         result: EncounterRoundResult
     ) -> EncounterRoundResult:
-        """Handle evasion action - attempt to flee the encounter."""
+        """
+        Handle evasion action - attempt to flee the encounter.
+
+        Per Dolmenwood rules (p146-147):
+        - Evasion success depends on surprise, distance, and movement rates
+        - Running speed = Speed × 3 per round
+        - Faster party can evade slower enemies
+        """
         if not self._state:
             return result
 
@@ -705,22 +713,53 @@ class EncounterEngine:
             result.messages.append("Enemies cannot evade while surprised!")
             return result
 
-        # Base 50% chance, modified by distance
+        # Get movement rates (p146-147)
+        # Default party speed of 30, running = 90'/round
+        party_speed = 30  # TODO: Get from party state
+        party_running_speed = MovementCalculator.get_running_movement(party_speed)
+
+        # Assume enemy speed similar for now
+        enemy_speed = 30  # TODO: Get from encounter actors
+        enemy_running_speed = MovementCalculator.get_running_movement(enemy_speed)
+
+        # Calculate evasion chance based on:
+        # 1. Distance (easier at greater distance)
+        # 2. Relative speed (faster party = easier evasion)
         distance = self._state.encounter.distance
         distance_mod = distance // 60  # +1 per 60 feet
 
-        # Roll d6: need 4+ to evade, modified by distance
+        # Speed comparison modifier
+        speed_diff = party_running_speed - enemy_running_speed
+        speed_mod = speed_diff // 30  # +1/-1 per 30' speed difference
+
+        # Roll d6: need 4+ to evade, modified by distance and speed
         evasion_roll = self.dice.roll_d6(1, "evasion attempt")
-        target = max(1, 4 - distance_mod)  # Easier at greater distance
+        base_target = 4
+        target = max(1, min(6, base_target - distance_mod - speed_mod))
+
+        result_detail = {
+            "roll": evasion_roll.total,
+            "target": target,
+            "distance": distance,
+            "distance_mod": distance_mod,
+            "party_speed": party_running_speed,
+            "enemy_speed": enemy_running_speed,
+            "speed_mod": speed_mod,
+        }
 
         if evasion_roll.total >= target:
             result.success = True
             result.messages.append(
                 f"Evasion successful! (rolled {evasion_roll.total}, "
-                f"needed {target}+)"
+                f"needed {target}+, running at {party_running_speed}'/round)"
             )
             result.encounter_ended = True
             result.end_reason = "evaded"
+            result.actions_resolved.append({
+                "action": "evasion",
+                "success": True,
+                **result_detail
+            })
 
             # Transition back to origin state
             if self._state.origin == EncounterOrigin.WILDERNESS:
@@ -740,6 +779,11 @@ class EncounterEngine:
                 f"Evasion failed! (rolled {evasion_roll.total}, "
                 f"needed {target}+)"
             )
+            result.actions_resolved.append({
+                "action": "evasion",
+                "success": False,
+                **result_detail
+            })
             # Other side may react
 
         return result

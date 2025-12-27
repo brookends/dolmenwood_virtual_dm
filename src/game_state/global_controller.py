@@ -387,6 +387,64 @@ class GlobalController:
         """Get all conscious, active characters."""
         return [c for c in self._characters.values() if c.is_conscious()]
 
+    def get_party_speed(self) -> int:
+        """
+        Get party movement speed per Dolmenwood rules (p146, p148-149).
+
+        Party speed is determined by the slowest member's encumbered speed.
+
+        Returns:
+            Party movement speed (slowest member's encumbered speed)
+        """
+        characters = self.get_active_characters()
+        if not characters:
+            return 40  # Default unencumbered speed
+
+        # Update party state with current member speeds
+        self.party_state.update_member_speeds(characters)
+
+        return self.party_state.get_movement_rate()
+
+    def update_party_encumbrance(self) -> dict[str, Any]:
+        """
+        Update party encumbrance state from all characters.
+
+        Call this after any inventory changes.
+
+        Returns:
+            Dictionary with encumbrance status for each character
+        """
+        characters = self.get_all_characters()
+        self.party_state.update_member_speeds(characters)
+
+        result = {
+            "party_speed": self.party_state.get_movement_rate(),
+            "total_weight": self.party_state.encumbrance_total,
+            "members": {}
+        }
+
+        for char in characters:
+            enc_state = char.get_encumbrance_state()
+            result["members"][char.character_id] = {
+                "name": char.name,
+                "speed": char.get_encumbered_speed(),
+                "weight": enc_state.total_weight,
+                "equipped_slots": enc_state.equipped_slots,
+                "stowed_slots": enc_state.stowed_slots,
+                "over_capacity": char.is_over_capacity()
+            }
+
+        return result
+
+    def is_party_over_capacity(self) -> bool:
+        """
+        Check if any party member is over carrying capacity.
+
+        Returns:
+            True if any member is over capacity
+        """
+        return self.party_state.any_over_capacity(self.get_all_characters())
+
     def remove_character(self, character_id: str) -> Optional[CharacterState]:
         """Remove a character from the roster."""
         character = self._characters.pop(character_id, None)
