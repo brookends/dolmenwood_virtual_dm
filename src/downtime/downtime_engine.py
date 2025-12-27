@@ -1,10 +1,31 @@
 """
 Downtime Engine for Dolmenwood Virtual DM.
 
-Handles downtime activities including rest, healing, spell recovery,
-training, crafting, research, and faction advancement.
+Implements camping and downtime per Dolmenwood rules (p158-159).
+Handles rest, healing, spell recovery, training, crafting, research,
+and faction advancement.
 
-Downtime can occur in settlements or safe wilderness locations.
+Camping Procedure (p158):
+1. Setup activities: Prepare campsite, fetch firewood, fetch water
+2. Camp activities: Build fire, optionally cook meal and entertain
+3. Watches through the night
+4. Wandering monsters: Check for nighttime random encounter
+5. Sleep: Constitution check may be required based on conditions
+6. Waking up: Characters who slept well heal 1 HP, spell-casters prepare spells
+
+Sleep Difficulty (p159) - based on fire, bedding, and season:
+- Easy: Good night's rest automatically
+- Moderate: Constitution check required
+- Difficult: Constitution check with -2 penalty
+- Impossible: Fail to get good night's rest
+
+Good Night's Rest Effects (p159):
+- Heal 1 HP
+- Spell-casters may prepare new spells
+
+Failed Rest Effects (p159):
+- Exhaustion until good rest (cumulative -1 per day)
+- Spell preparation: 1-in-6 failure chance per spell
 """
 
 from dataclasses import dataclass, field
@@ -46,6 +67,82 @@ class RestType(str, Enum):
     SHORT_REST = "short_rest"   # 1 turn (10 minutes)
     LONG_REST = "long_rest"     # 8 hours
     FULL_REST = "full_rest"     # 24 hours complete bed rest
+
+
+class SleepDifficulty(str, Enum):
+    """
+    Sleep difficulty levels per Dolmenwood rules (p159).
+
+    Based on fire, bedding, and season combination.
+    """
+    EASY = "easy"              # Good night's rest automatically
+    MODERATE = "moderate"      # Constitution check required
+    DIFFICULT = "difficult"    # Constitution check with -2 penalty
+    IMPOSSIBLE = "impossible"  # Fail to get good night's rest
+
+
+class BeddingType(str, Enum):
+    """Types of camping bedding per Dolmenwood rules (p159)."""
+    NONE = "none"                   # No bedding
+    BEDROLL_ONLY = "bedroll_only"   # Bedroll or tent
+    BEDROLL_AND_TENT = "bedroll_and_tent"  # Bedroll and tent
+
+
+# Sleep Difficulty Table per Dolmenwood rules (p159)
+# Key: (has_fire, bedding_type, season) -> SleepDifficulty
+SLEEP_DIFFICULTY_TABLE: dict[tuple[bool, BeddingType, Season], SleepDifficulty] = {
+    # No fire, No bedding
+    (False, BeddingType.NONE, Season.WINTER): SleepDifficulty.IMPOSSIBLE,
+    (False, BeddingType.NONE, Season.SPRING): SleepDifficulty.DIFFICULT,
+    (False, BeddingType.NONE, Season.SUMMER): SleepDifficulty.MODERATE,
+    (False, BeddingType.NONE, Season.AUTUMN): SleepDifficulty.DIFFICULT,
+    # No fire, Bedroll or tent
+    (False, BeddingType.BEDROLL_ONLY, Season.WINTER): SleepDifficulty.IMPOSSIBLE,
+    (False, BeddingType.BEDROLL_ONLY, Season.SPRING): SleepDifficulty.MODERATE,
+    (False, BeddingType.BEDROLL_ONLY, Season.SUMMER): SleepDifficulty.EASY,
+    (False, BeddingType.BEDROLL_ONLY, Season.AUTUMN): SleepDifficulty.MODERATE,
+    # No fire, Bedroll and tent
+    (False, BeddingType.BEDROLL_AND_TENT, Season.WINTER): SleepDifficulty.DIFFICULT,
+    (False, BeddingType.BEDROLL_AND_TENT, Season.SPRING): SleepDifficulty.MODERATE,
+    (False, BeddingType.BEDROLL_AND_TENT, Season.SUMMER): SleepDifficulty.EASY,
+    (False, BeddingType.BEDROLL_AND_TENT, Season.AUTUMN): SleepDifficulty.MODERATE,
+    # Campfire, No bedding
+    (True, BeddingType.NONE, Season.WINTER): SleepDifficulty.IMPOSSIBLE,
+    (True, BeddingType.NONE, Season.SPRING): SleepDifficulty.DIFFICULT,
+    (True, BeddingType.NONE, Season.SUMMER): SleepDifficulty.MODERATE,
+    (True, BeddingType.NONE, Season.AUTUMN): SleepDifficulty.DIFFICULT,
+    # Campfire, Bedroll or tent
+    (True, BeddingType.BEDROLL_ONLY, Season.WINTER): SleepDifficulty.DIFFICULT,
+    (True, BeddingType.BEDROLL_ONLY, Season.SPRING): SleepDifficulty.EASY,
+    (True, BeddingType.BEDROLL_ONLY, Season.SUMMER): SleepDifficulty.EASY,
+    (True, BeddingType.BEDROLL_ONLY, Season.AUTUMN): SleepDifficulty.EASY,
+    # Campfire, Bedroll and tent
+    (True, BeddingType.BEDROLL_AND_TENT, Season.WINTER): SleepDifficulty.MODERATE,
+    (True, BeddingType.BEDROLL_AND_TENT, Season.SPRING): SleepDifficulty.EASY,
+    (True, BeddingType.BEDROLL_AND_TENT, Season.SUMMER): SleepDifficulty.EASY,
+    (True, BeddingType.BEDROLL_AND_TENT, Season.AUTUMN): SleepDifficulty.EASY,
+}
+
+
+@dataclass
+class CampState:
+    """
+    State of a wilderness camp per Dolmenwood rules (p158-159).
+
+    Tracks all camping conditions that affect rest quality.
+    """
+    has_fire: bool = False
+    fire_hours_remaining: int = 0
+    bedding: BeddingType = BeddingType.NONE
+    campsite_prepared: bool = False
+    water_available: bool = False
+    # Camp activity bonuses
+    meal_bonus: int = 0  # +1 from good cooking (p158)
+    camaraderie_bonus: int = 0  # +1 from entertainment (p158)
+    camaraderie_penalty: int = 0  # -1 from failed entertainment (p158)
+    # Watch tracking
+    watch_assignments: list[str] = field(default_factory=list)  # Character IDs per watch
+    characters_on_watch: set[str] = field(default_factory=set)  # Who took a watch
 
 
 class FactionStanding(str, Enum):
@@ -94,11 +191,13 @@ class TrainingProgress:
 
 class DowntimeEngine:
     """
-    Engine for downtime activities.
+    Engine for downtime and camping per Dolmenwood rules (p158-159).
 
     Manages:
-    - Rest and healing
-    - Spell recovery
+    - Wilderness camping with full procedure (p158)
+    - Sleep difficulty based on conditions (p159)
+    - Rest and healing (1 HP per good night's rest)
+    - Spell recovery with difficulty after bad rest
     - Training and advancement
     - Crafting and research
     - Faction advancement
@@ -124,6 +223,9 @@ class DowntimeEngine:
         # Location context
         self._in_safe_location: bool = False
         self._location_type: str = ""  # "settlement", "wilderness_camp", etc.
+
+        # Camping state per Dolmenwood rules (p158-159)
+        self._camp_state: Optional[CampState] = None
 
         # Callbacks
         self._event_callback: Optional[Callable] = None
@@ -357,6 +459,677 @@ class DowntimeEngine:
         """Check for encounter during rest."""
         roll = self.dice.roll_d6(1, "rest encounter")
         return roll.total == 1  # 1-in-6 chance
+
+    # =========================================================================
+    # WILDERNESS CAMPING (p158-159)
+    # =========================================================================
+
+    def setup_camp(
+        self,
+        bedding: BeddingType = BeddingType.NONE,
+        has_tent: bool = False,
+        has_bedroll: bool = False
+    ) -> dict[str, Any]:
+        """
+        Set up a wilderness camp per Dolmenwood rules (p158).
+
+        At least one character must remain at campsite to prepare it.
+
+        Args:
+            bedding: Type of bedding available
+            has_tent: Whether party has a tent
+            has_bedroll: Whether party has bedrolls
+
+        Returns:
+            Dictionary with camp setup results
+        """
+        # Determine bedding type from equipment
+        if has_tent and has_bedroll:
+            actual_bedding = BeddingType.BEDROLL_AND_TENT
+        elif has_tent or has_bedroll:
+            actual_bedding = BeddingType.BEDROLL_ONLY
+        else:
+            actual_bedding = bedding
+
+        # Initialize camp state
+        self._camp_state = CampState(
+            bedding=actual_bedding,
+            campsite_prepared=True,
+            water_available=True,  # Easy to find water in Dolmenwood (p158)
+        )
+
+        self._location_type = "wilderness_camp"
+
+        return {
+            "campsite_prepared": True,
+            "bedding": actual_bedding.value,
+            "water_available": True,
+        }
+
+    def fetch_firewood(
+        self,
+        character_id: str,
+        weather_modifier: int = 0
+    ) -> dict[str, Any]:
+        """
+        Fetch firewood for the campfire per Dolmenwood rules (p158).
+
+        Each character fetching wood collects 1d6 hours worth.
+        Weather modifiers: -1 damp, -2 snow, -4 heavy rain.
+
+        Args:
+            character_id: Character fetching wood
+            weather_modifier: Modifier based on weather conditions
+
+        Returns:
+            Dictionary with firewood collection results
+        """
+        roll = self.dice.roll("1d6", f"firewood for {character_id}")
+        hours = max(0, roll.total + weather_modifier)
+
+        if self._camp_state:
+            self._camp_state.fire_hours_remaining += hours
+
+        return {
+            "character_id": character_id,
+            "hours_collected": hours,
+            "roll": roll.total,
+            "weather_modifier": weather_modifier,
+            "total_fire_hours": self._camp_state.fire_hours_remaining if self._camp_state else hours,
+        }
+
+    def build_fire(self, bad_conditions: bool = False) -> dict[str, Any]:
+        """
+        Build a campfire per Dolmenwood rules (p158).
+
+        Normally auto-succeeds. In bad conditions, 4-in-6 chance.
+
+        Args:
+            bad_conditions: Whether conditions are troublesome
+
+        Returns:
+            Dictionary with fire building results
+        """
+        if not self._camp_state:
+            return {"success": False, "error": "No camp set up"}
+
+        if self._camp_state.fire_hours_remaining <= 0:
+            return {"success": False, "error": "No firewood available"}
+
+        success = True
+        roll_result = None
+
+        if bad_conditions:
+            roll = self.dice.roll_d6(1, "build fire (bad conditions)")
+            roll_result = roll.total
+            success = roll.total <= 4  # 4-in-6 chance
+
+        if success:
+            self._camp_state.has_fire = True
+
+        return {
+            "success": success,
+            "bad_conditions": bad_conditions,
+            "roll": roll_result,
+            "fire_hours_available": self._camp_state.fire_hours_remaining,
+        }
+
+    def cook_meal(self, cook_character_id: str) -> dict[str, Any]:
+        """
+        Cook a meal at camp per Dolmenwood rules (p158).
+
+        Requires fire, cooking pots, and ingredients.
+        Cook makes Wisdom check:
+        - Success: +1 bonus to Constitution checks for rest
+        - Natural 1: Save vs Doom or meal is ruined
+
+        Args:
+            cook_character_id: Character doing the cooking
+
+        Returns:
+            Dictionary with cooking results
+        """
+        if not self._camp_state:
+            return {"success": False, "error": "No camp set up"}
+
+        if not self._camp_state.has_fire:
+            return {"success": False, "error": "No fire to cook with"}
+
+        # Wisdom check (assume DC 10)
+        roll = self.dice.roll("1d20", f"cooking wisdom check for {cook_character_id}")
+
+        if roll.total == 1:
+            # Natural 1 - Save vs Doom or meal ruined
+            save_roll = self.dice.roll("1d20", "save vs doom (ruined meal)")
+            if save_roll.total < 14:  # Failed save
+                return {
+                    "success": False,
+                    "roll": roll.total,
+                    "natural_one": True,
+                    "save_roll": save_roll.total,
+                    "meal_ruined": True,
+                    "message": "Meal ruined! Ingredients wasted.",
+                }
+            else:
+                # Saved - meal is just bad
+                return {
+                    "success": False,
+                    "roll": roll.total,
+                    "natural_one": True,
+                    "save_roll": save_roll.total,
+                    "meal_ruined": False,
+                    "message": "Palatable but not exemplary dish.",
+                }
+
+        # Add Wisdom modifier (assuming we can get character)
+        character = self.controller.get_character(cook_character_id)
+        wis_mod = character.get_ability_modifier("wisdom") if character else 0
+        check_total = roll.total + wis_mod
+
+        if check_total >= 10:  # Success
+            if self._camp_state:
+                self._camp_state.meal_bonus = 1
+            return {
+                "success": True,
+                "roll": roll.total,
+                "modifier": wis_mod,
+                "total": check_total,
+                "bonus": 1,
+                "message": "Tasty dish provides +1 to Constitution checks for rest!",
+            }
+        else:
+            return {
+                "success": False,
+                "roll": roll.total,
+                "modifier": wis_mod,
+                "total": check_total,
+                "message": "Palatable but not exemplary dish.",
+            }
+
+    def entertain_camp(self, entertainer_id: str) -> dict[str, Any]:
+        """
+        Entertain the camp for camaraderie per Dolmenwood rules (p158).
+
+        Character makes Charisma check:
+        - Success: +1 bonus to Constitution checks for rest
+        - Natural 1: Save vs Doom or -1 penalty to rest checks
+
+        Args:
+            entertainer_id: Character providing entertainment
+
+        Returns:
+            Dictionary with entertainment results
+        """
+        if not self._camp_state:
+            return {"success": False, "error": "No camp set up"}
+
+        # Charisma check
+        roll = self.dice.roll("1d20", f"camaraderie check for {entertainer_id}")
+
+        if roll.total == 1:
+            # Natural 1 - Save vs Doom or ridicule
+            save_roll = self.dice.roll("1d20", "save vs doom (ridicule)")
+            if save_roll.total < 14:  # Failed save
+                if self._camp_state:
+                    self._camp_state.camaraderie_penalty = 1
+                return {
+                    "success": False,
+                    "roll": roll.total,
+                    "natural_one": True,
+                    "save_roll": save_roll.total,
+                    "penalty": -1,
+                    "message": "Entertainment fell flat! Ridicule incurs -1 to Constitution checks.",
+                }
+            else:
+                return {
+                    "success": False,
+                    "roll": roll.total,
+                    "natural_one": True,
+                    "save_roll": save_roll.total,
+                    "message": "Entertainment attempt falls flat but avoided ridicule.",
+                }
+
+        # Add Charisma modifier
+        character = self.controller.get_character(entertainer_id)
+        cha_mod = character.get_ability_modifier("charisma") if character else 0
+        check_total = roll.total + cha_mod
+
+        if check_total >= 10:  # Success
+            if self._camp_state:
+                self._camp_state.camaraderie_bonus = 1
+            return {
+                "success": True,
+                "roll": roll.total,
+                "modifier": cha_mod,
+                "total": check_total,
+                "bonus": 1,
+                "message": "Spirits lifted! +1 to Constitution checks for rest.",
+            }
+        else:
+            return {
+                "success": False,
+                "roll": roll.total,
+                "modifier": cha_mod,
+                "total": check_total,
+                "message": "Entertainment attempt falls flat.",
+            }
+
+    def set_watches(self, watch_assignments: list[str]) -> dict[str, Any]:
+        """
+        Set up watch rotation for the night per Dolmenwood rules (p159).
+
+        Typically 4 watches of 2 hours each during 8-hour rest.
+        Characters who sleep less than 6 hours fail to get good rest.
+        Spell-casters interrupted by watch have difficulty preparing spells.
+
+        Args:
+            watch_assignments: List of character IDs for each watch
+
+        Returns:
+            Dictionary with watch setup results
+        """
+        if not self._camp_state:
+            return {"success": False, "error": "No camp set up"}
+
+        self._camp_state.watch_assignments = watch_assignments
+        self._camp_state.characters_on_watch = set(watch_assignments)
+
+        # Check for characters with multiple watches (less than 6 hours sleep)
+        watch_counts: dict[str, int] = {}
+        for char_id in watch_assignments:
+            watch_counts[char_id] = watch_counts.get(char_id, 0) + 1
+
+        insufficient_sleep = [
+            char_id for char_id, count in watch_counts.items()
+            if count >= 2  # 2+ watches = 4+ hours watching = less than 6 hours sleep
+        ]
+
+        return {
+            "success": True,
+            "watches_set": len(watch_assignments),
+            "characters_on_watch": list(self._camp_state.characters_on_watch),
+            "insufficient_sleep": insufficient_sleep,
+        }
+
+    def check_falling_asleep_on_watch(
+        self,
+        character_id: str,
+        constitution: int
+    ) -> dict[str, Any]:
+        """
+        Check if character falls asleep on watch per Dolmenwood optional rule (p159).
+
+        Base 1-in-10 chance.
+        Constitution 15+: 1-in-20 chance.
+        Constitution 6-: 1-in-6 chance.
+
+        Args:
+            character_id: Character on watch
+            constitution: Character's Constitution score
+
+        Returns:
+            Dictionary with watch vigilance results
+        """
+        if constitution >= 15:
+            # 1-in-20 chance
+            roll = self.dice.roll("1d20", f"falling asleep check for {character_id}")
+            fell_asleep = roll.total == 1
+            chance = "1-in-20"
+        elif constitution <= 6:
+            # 1-in-6 chance
+            roll = self.dice.roll_d6(1, f"falling asleep check for {character_id}")
+            fell_asleep = roll.total == 1
+            chance = "1-in-6"
+        else:
+            # 1-in-10 chance
+            roll = self.dice.roll("1d10", f"falling asleep check for {character_id}")
+            fell_asleep = roll.total == 1
+            chance = "1-in-10"
+
+        return {
+            "character_id": character_id,
+            "fell_asleep": fell_asleep,
+            "roll": roll.total,
+            "chance": chance,
+            "constitution": constitution,
+        }
+
+    def check_nighttime_encounter(
+        self,
+        terrain_encounter_chance: int = 1
+    ) -> dict[str, Any]:
+        """
+        Check for nighttime wandering monster per Dolmenwood rules (p159).
+
+        One check per night. Chance depends on terrain.
+        Distance: 2d6 × 30' (or 1d4 × 30' if both sides surprised).
+
+        Args:
+            terrain_encounter_chance: Encounter chance based on terrain (X-in-6)
+
+        Returns:
+            Dictionary with encounter check results
+        """
+        roll = self.dice.roll_d6(1, "nighttime wandering monster")
+        encounter = roll.total <= terrain_encounter_chance
+
+        result = {
+            "encounter": encounter,
+            "roll": roll.total,
+            "terrain_chance": terrain_encounter_chance,
+        }
+
+        if encounter:
+            # Determine distance (2d6 × 30')
+            distance_roll = self.dice.roll("2d6", "encounter distance")
+            result["distance_feet"] = distance_roll.total * 30
+            result["distance_roll"] = distance_roll.total
+
+        return result
+
+    def get_sleep_difficulty(self, season: Optional[Season] = None) -> SleepDifficulty:
+        """
+        Get sleep difficulty based on camp conditions per Dolmenwood rules (p159).
+
+        Uses the Sleep Difficulty table considering fire, bedding, and season.
+
+        Args:
+            season: Current season (defaults to controller's world state)
+
+        Returns:
+            SleepDifficulty level
+        """
+        if not self._camp_state:
+            return SleepDifficulty.IMPOSSIBLE
+
+        if season is None:
+            season = self.controller.world_state.season
+
+        key = (
+            self._camp_state.has_fire,
+            self._camp_state.bedding,
+            season
+        )
+
+        return SLEEP_DIFFICULTY_TABLE.get(key, SleepDifficulty.MODERATE)
+
+    def resolve_sleep(
+        self,
+        character_id: str,
+        constitution: int,
+        season: Optional[Season] = None
+    ) -> dict[str, Any]:
+        """
+        Resolve sleep for a character per Dolmenwood rules (p159).
+
+        Checks sleep difficulty and applies Constitution check if needed.
+        Applies bonuses from cooking and camaraderie.
+
+        Args:
+            character_id: Character sleeping
+            constitution: Character's Constitution score
+            season: Current season
+
+        Returns:
+            Dictionary with sleep results
+        """
+        difficulty = self.get_sleep_difficulty(season)
+
+        # Calculate Constitution modifier
+        con_mod = (constitution - 10) // 2
+
+        # Add camp activity bonuses
+        bonus = 0
+        if self._camp_state:
+            bonus += self._camp_state.meal_bonus
+            bonus += self._camp_state.camaraderie_bonus
+            bonus -= self._camp_state.camaraderie_penalty
+
+        # Check if character was on watch (spell-caster concern)
+        on_watch = False
+        if self._camp_state and character_id in self._camp_state.characters_on_watch:
+            on_watch = True
+
+        result = {
+            "character_id": character_id,
+            "difficulty": difficulty.value,
+            "constitution": constitution,
+            "con_modifier": con_mod,
+            "camp_bonus": bonus,
+            "on_watch": on_watch,
+        }
+
+        if difficulty == SleepDifficulty.EASY:
+            result["good_rest"] = True
+            result["message"] = "Good night's rest achieved."
+
+        elif difficulty == SleepDifficulty.IMPOSSIBLE:
+            result["good_rest"] = False
+            result["message"] = "Impossible to get good rest in these conditions."
+
+        elif difficulty == SleepDifficulty.MODERATE:
+            # Constitution check required
+            roll = self.dice.roll("1d20", f"sleep constitution check for {character_id}")
+            total = roll.total + con_mod + bonus
+            result["roll"] = roll.total
+            result["check_total"] = total
+            result["good_rest"] = total >= 10
+            if result["good_rest"]:
+                result["message"] = "Passed Constitution check - good night's rest."
+            else:
+                result["message"] = "Failed Constitution check - poor rest."
+
+        elif difficulty == SleepDifficulty.DIFFICULT:
+            # Constitution check with -2 penalty
+            roll = self.dice.roll("1d20", f"sleep constitution check for {character_id}")
+            total = roll.total + con_mod + bonus - 2
+            result["roll"] = roll.total
+            result["penalty"] = -2
+            result["check_total"] = total
+            result["good_rest"] = total >= 10
+            if result["good_rest"]:
+                result["message"] = "Passed difficult Constitution check - good night's rest."
+            else:
+                result["message"] = "Failed Constitution check - poor rest."
+
+        return result
+
+    def apply_rest_effects(
+        self,
+        character_id: str,
+        good_rest: bool,
+        is_spellcaster: bool = False,
+        on_watch: bool = False
+    ) -> dict[str, Any]:
+        """
+        Apply effects of rest per Dolmenwood rules (p159).
+
+        Good Rest:
+        - Heal 1 HP
+        - Spell-casters may prepare spells normally
+
+        Poor Rest:
+        - Exhaustion (cumulative -1 per day)
+        - Spell preparation: 1-in-6 failure chance per spell
+
+        Args:
+            character_id: Character receiving effects
+            good_rest: Whether character got good rest
+            is_spellcaster: Whether character is a spell-caster
+            on_watch: Whether character took a watch (affects spell prep)
+
+        Returns:
+            Dictionary with rest effects
+        """
+        result = {
+            "character_id": character_id,
+            "good_rest": good_rest,
+        }
+
+        if good_rest:
+            # Heal 1 HP per Dolmenwood rules (p159)
+            heal_result = self.controller.heal_character(character_id, 1)
+            result["healing"] = 1
+            result["new_hp"] = heal_result.get("hp_current", 0)
+
+            # Spell-casters prepare spells normally (unless on watch)
+            if is_spellcaster and on_watch:
+                result["spell_prep_difficulty"] = True
+                result["spell_prep_note"] = "Watch interrupted sleep - difficulty preparing spells"
+        else:
+            # Exhaustion penalty per Dolmenwood rules (p159)
+            result["exhaustion"] = True
+            result["exhaustion_note"] = "Exhausted until good night's rest (-1 cumulative per day)"
+
+            # Add exhaustion condition
+            character = self.controller.get_character(character_id)
+            if character:
+                from src.data_models import Condition
+                exhaustion = Condition(
+                    condition_type=ConditionType.EXHAUSTED,
+                    description="Failed to get good night's rest (p159)",
+                    source="camping",
+                )
+                character.conditions.append(exhaustion)
+
+            # Spell preparation difficulty (p159)
+            if is_spellcaster:
+                result["spell_prep_difficulty"] = True
+                result["spell_prep_failure_chance"] = "1-in-6 per spell"
+
+        return result
+
+    def check_spell_preparation(
+        self,
+        character_id: str,
+        spells_to_prepare: int,
+        poor_rest: bool = False
+    ) -> dict[str, Any]:
+        """
+        Check spell preparation after rest per Dolmenwood rules (p159).
+
+        After poor rest, each spell has 1-in-6 chance of failure.
+
+        Args:
+            character_id: Character preparing spells
+            spells_to_prepare: Number of spells to prepare
+            poor_rest: Whether character had poor rest
+
+        Returns:
+            Dictionary with spell preparation results
+        """
+        result = {
+            "character_id": character_id,
+            "spells_attempted": spells_to_prepare,
+            "poor_rest": poor_rest,
+        }
+
+        if not poor_rest:
+            result["spells_prepared"] = spells_to_prepare
+            result["spells_failed"] = 0
+            return result
+
+        # Check each spell for failure (1-in-6)
+        prepared = 0
+        failed = 0
+        failed_slots = []
+
+        for slot in range(spells_to_prepare):
+            roll = self.dice.roll_d6(1, f"spell preparation slot {slot + 1}")
+            if roll.total == 1:
+                failed += 1
+                failed_slots.append(slot + 1)
+            else:
+                prepared += 1
+
+        result["spells_prepared"] = prepared
+        result["spells_failed"] = failed
+        result["failed_slots"] = failed_slots
+
+        return result
+
+    def process_wilderness_night(
+        self,
+        season: Optional[Season] = None,
+        terrain_encounter_chance: int = 1,
+        use_quick_camping: bool = False
+    ) -> dict[str, Any]:
+        """
+        Process a full wilderness night per Dolmenwood camping procedure (p158).
+
+        Full procedure:
+        1. Setup activities (already done via setup_camp)
+        2. Camp activities (fire, cooking, entertainment)
+        3. Watches through the night
+        4. Wandering monsters check
+        5. Sleep resolution
+        6. Waking up effects
+
+        Quick Camping (optional rule): If party has suitable camping gear,
+        automatically succeed at getting good rest.
+
+        Args:
+            season: Current season
+            terrain_encounter_chance: Encounter chance for terrain
+            use_quick_camping: Use optional quick camping rule
+
+        Returns:
+            Dictionary with night results
+        """
+        result = {
+            "procedure": "full" if not use_quick_camping else "quick",
+        }
+
+        # Check for wandering monsters (one check per night)
+        encounter_result = self.check_nighttime_encounter(terrain_encounter_chance)
+        result["encounter_check"] = encounter_result
+
+        if encounter_result["encounter"]:
+            result["encounter_occurred"] = True
+            result["encounter_distance"] = encounter_result["distance_feet"]
+            # If sleeping characters, they are automatically surprised (p159)
+            result["sleeping_characters_surprised"] = True
+            return result
+
+        # Resolve sleep for all characters
+        if use_quick_camping and self._camp_state:
+            # Quick camping - auto success if proper gear (p158)
+            if self._camp_state.bedding != BeddingType.NONE:
+                result["quick_camping_success"] = True
+                result["all_rested_well"] = True
+                return result
+
+        # Get all characters and resolve sleep
+        characters = self.controller.get_all_characters()
+        sleep_results = []
+
+        for character in characters:
+            if not character:
+                continue
+
+            con = character.abilities.get("constitution", 10)
+            sleep_result = self.resolve_sleep(character.character_id, con, season)
+            sleep_results.append(sleep_result)
+
+        result["sleep_results"] = sleep_results
+
+        # Advance time (8 hours = 48 turns)
+        self.controller.advance_time(48)
+
+        return result
+
+    def clear_camp(self) -> dict[str, Any]:
+        """
+        Clear the current camp state.
+
+        Returns:
+            Dictionary confirming camp cleared
+        """
+        self._camp_state = None
+        if self._location_type == "wilderness_camp":
+            self._location_type = ""
+
+        return {"camp_cleared": True}
 
     # =========================================================================
     # RECUPERATION
@@ -894,8 +1667,12 @@ class DowntimeEngine:
     # =========================================================================
 
     def get_downtime_summary(self) -> dict[str, Any]:
-        """Get summary of current downtime state."""
-        return {
+        """
+        Get summary of current downtime state per Dolmenwood rules (p158-159).
+
+        Includes camping state and all downtime tracking.
+        """
+        summary = {
             "in_downtime": self.controller.current_state == GameState.DOWNTIME,
             "location_type": self._location_type,
             "is_safe": self._in_safe_location,
@@ -915,3 +1692,19 @@ class DowntimeEngine:
                 for key, prog in self._training_progress.items()
             },
         }
+
+        # Add camping state per Dolmenwood rules (p158-159)
+        if self._camp_state:
+            summary["camp"] = {
+                "campsite_prepared": self._camp_state.campsite_prepared,
+                "has_fire": self._camp_state.has_fire,
+                "fire_hours_remaining": self._camp_state.fire_hours_remaining,
+                "bedding": self._camp_state.bedding.value,
+                "water_available": self._camp_state.water_available,
+                "meal_bonus": self._camp_state.meal_bonus,
+                "camaraderie_bonus": self._camp_state.camaraderie_bonus,
+                "camaraderie_penalty": self._camp_state.camaraderie_penalty,
+                "characters_on_watch": list(self._camp_state.characters_on_watch),
+            }
+
+        return summary
