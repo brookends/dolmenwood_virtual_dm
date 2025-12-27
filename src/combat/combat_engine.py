@@ -35,6 +35,14 @@ from src.data_models import (
     RunningState,
     MAX_RUNNING_ROUNDS,
     RUNNING_REST_TURNS,
+    CharacterState,
+)
+from src.narrative.spell_resolver import (
+    SpellResolver,
+    SpellData,
+    SpellCastResult,
+    ActiveSpellEffect,
+    DurationType,
 )
 
 
@@ -191,15 +199,23 @@ class CombatEngine:
     - Combat state transitions
     """
 
-    def __init__(self, controller: GlobalController):
+    def __init__(
+        self,
+        controller: GlobalController,
+        spell_resolver: Optional[SpellResolver] = None
+    ):
         """
         Initialize the combat engine.
 
         Args:
             controller: The global game controller
+            spell_resolver: Optional spell resolver for combat spell casting
         """
         self.controller = controller
         self.dice = DiceRoller()
+
+        # Spell resolution for combat casting
+        self.spell_resolver = spell_resolver or SpellResolver()
 
         # Combat state
         self._combat_state: Optional[CombatState] = None
@@ -720,15 +736,121 @@ class CombatEngine:
         return result
 
     def _resolve_spell_action(self, action: CombatAction, disrupted: bool) -> AttackResult:
-        """Resolve spell or rune usage with disruption handling."""
-        special = ["spell_disrupted"] if disrupted else []
+        """
+        Resolve spell or rune usage with disruption handling.
+
+        Integrates with SpellResolver for actual spell mechanics:
+        - Spell lookup and validation
+        - Slot consumption
+        - Effect application
+        - Concentration management
+
+        Per Dolmenwood rules (p167), spells are disrupted if the caster:
+        - Takes damage before acting AND
+        - Lost initiative
+        """
+        caster_id = action.combatant_id
+        target_id = action.target_id or ""
+
+        # Handle disruption first
+        if disrupted:
+            return AttackResult(
+                attacker_id=caster_id,
+                defender_id=target_id,
+                action_type=CombatActionType.CAST_SPELL,
+                hit=False,
+                disrupted=True,
+                special_effects=["spell_disrupted", "took damage before acting"],
+            )
+
+        # Get spell info from action parameters
+        spell_id = action.parameters.get("spell_id")
+        spell_name = action.parameters.get("spell_name")
+
+        # Look up the spell
+        spell: Optional[SpellData] = None
+        if spell_id:
+            spell = self.spell_resolver.lookup_spell(spell_id)
+        elif spell_name:
+            spell = self.spell_resolver.lookup_spell_by_name(spell_name)
+
+        if not spell:
+            return AttackResult(
+                attacker_id=caster_id,
+                defender_id=target_id,
+                action_type=CombatActionType.CAST_SPELL,
+                hit=False,
+                special_effects=[f"unknown spell: {spell_name or spell_id}"],
+            )
+
+        # Get caster character state
+        caster = self._get_combatant(caster_id)
+        caster_state: Optional[CharacterState] = None
+
+        # Try to get CharacterState from controller for party members
+        if caster and caster.side == "party":
+            caster_state = self.controller.get_character(caster_id)
+
+        if not caster_state:
+            # Create minimal CharacterState for spell casting validation
+            # This handles NPC/monster spellcasters
+            return AttackResult(
+                attacker_id=caster_id,
+                defender_id=target_id,
+                action_type=CombatActionType.CAST_SPELL,
+                hit=True,  # NPC/monster spells generally succeed
+                special_effects=[f"cast {spell.name}", "NPC/monster spellcaster"],
+            )
+
+        # Resolve the spell through SpellResolver
+        target_desc = action.parameters.get("target_description")
+        result = self.spell_resolver.resolve_spell(
+            caster=caster_state,
+            spell=spell,
+            target_id=target_id if target_id else None,
+            target_description=target_desc,
+            dice_roller=self.dice,
+        )
+
+        # Build attack result with spell outcomes
+        special_effects = []
+
+        if result.success:
+            special_effects.append(f"cast {spell.name}")
+
+            if result.slot_consumed:
+                special_effects.append(f"used level {result.slot_level} slot")
+
+            if result.effect_created:
+                special_effects.append(f"effect: {result.effect_created.duration_type.value}")
+                if result.effect_created.requires_concentration:
+                    special_effects.append("concentration required")
+
+            if result.save_required:
+                special_effects.append(f"save required: {result.save_result}")
+
+            # Handle damage spells
+            if result.damage_dealt:
+                damage_total = result.damage_dealt.get("total", 0)
+                return AttackResult(
+                    attacker_id=caster_id,
+                    defender_id=target_id,
+                    action_type=CombatActionType.CAST_SPELL,
+                    hit=True,
+                    damage_roll=damage_total,
+                    damage_dealt=damage_total,
+                    special_effects=special_effects,
+                )
+        else:
+            special_effects.append(f"failed to cast {spell.name}")
+            special_effects.append(result.reason or result.error or "unknown error")
+
         return AttackResult(
-            attacker_id=action.combatant_id,
-            defender_id=action.target_id or "",
+            attacker_id=caster_id,
+            defender_id=target_id,
             action_type=CombatActionType.CAST_SPELL,
-            hit=not disrupted,
-            disrupted=disrupted,
-            special_effects=special,
+            hit=result.success,
+            special_effects=special_effects,
         )
 
     def _apply_attack_results(self, results: list[AttackResult]) -> set[str]:
@@ -1403,6 +1525,137 @@ class CombatEngine:
                 "adjusted": adjusted,
                 "message": "Enemies refuse to parley",
             }
+
+    # =========================================================================
+    # SPELL CASTING
+    # =========================================================================
+
+    def cast_spell(
+        self,
+        caster_id: str,
+        spell_name: Optional[str] = None,
+        spell_id: Optional[str] = None,
+        target_id: Optional[str] = None,
+        target_description: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Cast a spell during combat.
+
+        This is the main entry point for combat spell casting. It handles:
+        - Spell lookup and validation
+        - Slot consumption
+        - Effect application (damage, conditions, buffs)
+        - Concentration management
+
+        Args:
+            caster_id: ID of the spellcaster
+            spell_name: Name of the spell to cast
+            spell_id: Alternative: ID of the spell to cast
+            target_id: Optional target combatant ID
+            target_description: Optional description of target for narration
+
+        Returns:
+            Dictionary with spell casting results
+        """
+        if not self._combat_state:
+            return {"success": False, "error": "No active combat"}
+
+        # Build combat action for spell
+        action = CombatAction(
+            combatant_id=caster_id,
+            action_type=CombatActionType.CAST_SPELL,
+            target_id=target_id,
+            parameters={
+                "spell_name": spell_name,
+                "spell_id": spell_id,
+                "target_description": target_description,
+            },
+        )
+
+        # Check if caster was damaged before acting (for disruption)
+        # In a full round, this would be tracked; for single action, assume not disrupted
+        disrupted = False
+        status = self._combat_state.combatant_status.get(caster_id)
+        if status and status.took_damage_this_round:
+            # Check if caster lost initiative
+            caster = self._get_combatant(caster_id)
+            if caster and caster.side == "party":
+                if self._combat_state.party_initiative < self._combat_state.enemy_initiative:
+                    disrupted = True
+            elif caster and caster.side == "enemy":
+                if self._combat_state.enemy_initiative < self._combat_state.party_initiative:
+                    disrupted = True
+
+        # Resolve the spell
+        result = self._resolve_spell_action(action, disrupted)
+
+        # Apply spell damage if any
+        if result.hit and result.damage_dealt > 0:
+            self._apply_attack_results([result])
+
+        return {
+            "success": result.hit,
+            "disrupted": result.disrupted,
+            "spell_name": spell_name or spell_id,
+            "target_id": target_id,
+            "damage_dealt": result.damage_dealt,
+            "special_effects": result.special_effects,
+        }
+
+    def get_available_spells(self, caster_id: str) -> list[dict[str, Any]]:
+        """
+        Get list of spells available to a combatant.
+
+        Args:
+            caster_id: ID of the spellcaster
+
+        Returns:
+            List of available spell information
+        """
+        caster = self._get_combatant(caster_id)
+        if not caster or caster.side != "party":
+            return []
+
+        # Get character state from controller
+        char_state = self.controller.get_character(caster_id)
+        if not char_state:
+            return []
+
+        available = []
+        for spell_entry in char_state.spells:
+            if not spell_entry.cast_today:
+                spell_data = self.spell_resolver.lookup_spell(spell_entry.spell_id)
+                if spell_data:
+                    available.append({
+                        "spell_id": spell_entry.spell_id,
+                        "name": spell_data.name,
+                        "level": spell_data.level,
+                        "range": spell_data.range,
+                        "duration": spell_data.duration,
+                        "requires_concentration": spell_data.requires_concentration,
+                    })
+                else:
+                    # Spell not in resolver cache, return basic info
+                    available.append({
+                        "spell_id": spell_entry.spell_id,
+                        "name": spell_entry.spell_id,
+                        "cast_today": False,
+                    })
+
+        return available
+
+    def break_caster_concentration(self, caster_id: str) -> list[str]:
+        """
+        Break concentration for a spellcaster (called when they take damage).
+
+        Args:
+            caster_id: ID of the caster
+
+        Returns:
+            List of spell names whose concentration was broken
+        """
+        broken = self.spell_resolver.break_concentration(caster_id)
+        return [effect.spell_name for effect in broken]
 
     # =========================================================================
     # STATE QUERIES

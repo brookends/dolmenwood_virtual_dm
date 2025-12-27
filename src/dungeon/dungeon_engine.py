@@ -33,7 +33,15 @@ from src.data_models import (
     MovementMode,
     MINUTES_PER_TURN,
     TURNS_PER_HOUR,
+    CharacterState,
 )
+from src.narrative.narrative_resolver import (
+    NarrativeResolver,
+    ResolutionResult,
+    NarrationContext,
+)
+from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
+from src.narrative.spell_resolver import SpellResolver
 
 
 logger = logging.getLogger(__name__)
@@ -172,15 +180,26 @@ class DungeonEngine:
     - Established safe paths for fast travel (p162)
     """
 
-    def __init__(self, controller: GlobalController):
+    def __init__(
+        self,
+        controller: GlobalController,
+        narrative_resolver: Optional[NarrativeResolver] = None,
+        spell_resolver: Optional[SpellResolver] = None,
+    ):
         """
         Initialize the dungeon engine.
 
         Args:
             controller: The global game controller
+            narrative_resolver: Optional resolver for player actions (hazards, etc.)
+            spell_resolver: Optional resolver for spell casting in dungeon
         """
         self.controller = controller
         self.dice = DiceRoller()
+
+        # Narrative resolution for player actions (climbing, swimming, etc.)
+        self.narrative_resolver = narrative_resolver or NarrativeResolver(controller)
+        self.spell_resolver = spell_resolver or SpellResolver()
 
         # Current dungeon state
         self._dungeon_state: Optional[DungeonState] = None
@@ -889,16 +908,75 @@ class DungeonEngine:
         }
 
     def _handle_cast_spell(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Handle casting a spell."""
-        spell_name = params.get("spell_name")
-        character_id = params.get("character_id")
+        """
+        Handle casting a spell during dungeon exploration.
 
-        # Spell casting would be handled by character/magic system
-        return {
-            "success": True,
-            "message": f"Cast {spell_name}",
+        Integrates with SpellResolver for actual spell mechanics:
+        - Spell lookup and validation
+        - Slot consumption
+        - Effect application
+        - Concentration management
+        """
+        spell_name = params.get("spell_name")
+        spell_id = params.get("spell_id")
+        character_id = params.get("character_id")
+        target_id = params.get("target_id")
+        target_description = params.get("target_description")
+
+        if not character_id:
+            return {"success": False, "message": "No caster specified"}
+
+        # Get character state
+        character = self.controller.get_character(character_id)
+        if not character:
+            return {"success": False, "message": f"Character not found: {character_id}"}
+
+        # Look up the spell
+        spell = None
+        if spell_id:
+            spell = self.spell_resolver.lookup_spell(spell_id)
+        elif spell_name:
+            spell = self.spell_resolver.lookup_spell_by_name(spell_name)
+
+        if not spell:
+            return {
+                "success": False,
+                "message": f"Unknown spell: {spell_name or spell_id}",
+            }
+
+        # Resolve the spell through SpellResolver
+        result = self.spell_resolver.resolve_spell(
+            caster=character,
+            spell=spell,
+            target_id=target_id,
+            target_description=target_description,
+            dice_roller=self.dice,
+        )
+
+        # Build response
+        response = {
+            "success": result.success,
+            "spell_name": spell.name,
+            "caster": character.name,
             "noise": 2,  # Most spells make some noise
         }
+
+        if result.success:
+            response["message"] = f"Cast {spell.name}"
+            if result.slot_consumed:
+                response["slot_consumed"] = result.slot_level
+            if result.effect_created:
+                response["effect_created"] = {
+                    "duration_type": result.effect_created.duration_type.value,
+                    "duration_remaining": result.effect_created.duration_remaining,
+                    "requires_concentration": result.effect_created.requires_concentration,
+                }
+            if result.save_required:
+                response["save_required"] = result.save_result
+        else:
+            response["message"] = result.reason or result.error
+
+        return response
 
     def _handle_map(self, params: dict[str, Any]) -> dict[str, Any]:
         """Handle mapping the current area."""
@@ -1365,3 +1443,232 @@ class DungeonEngine:
             "explored_rooms": list(self._dungeon_state.explored_rooms),
             "safe_path_to_exit": self._dungeon_state.safe_path_to_exit,
         }
+
+    # =========================================================================
+    # PLAYER ACTION HANDLING (via NarrativeResolver for hazards)
+    # =========================================================================
+
+    def handle_player_action(
+        self,
+        player_input: str,
+        character_id: str,
+        context: Optional[dict[str, Any]] = None,
+    ) -> ResolutionResult:
+        """
+        Handle a player action during dungeon exploration via NarrativeResolver.
+
+        This routes non-standard actions to the NarrativeResolver for resolution:
+        - Climbing (walls, pits)
+        - Swimming (underwater areas)
+        - Jumping (gaps, chasms)
+        - Other environmental hazards
+
+        Note: Standard dungeon actions (search, listen, open_door, etc.) use
+        the hardcoded implementations via execute_turn() for consistency
+        with Dolmenwood rules (p162-163).
+
+        Args:
+            player_input: The player's action description
+            character_id: ID of the character performing the action
+            context: Optional additional context
+
+        Returns:
+            ResolutionResult with outcomes and narration context
+        """
+        from src.narrative.intent_parser import ActionCategory, ActionType, ParsedIntent
+
+        # Get character state
+        character = self.controller.get_character(character_id)
+        if not character:
+            return ResolutionResult(
+                success=False,
+                narration_context=NarrationContext(
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                    player_input=player_input,
+                    success=False,
+                    errors=[f"Character not found: {character_id}"],
+                ),
+                parsed_intent=ParsedIntent(
+                    raw_input=player_input,
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                ),
+            )
+
+        # Build context with dungeon-specific information
+        action_context = context or {}
+        action_context.update({
+            "game_state": "dungeon_exploration",
+            "current_room": self._dungeon_state.current_room if self._dungeon_state else "unknown",
+            "dungeon_id": self._dungeon_state.dungeon_id if self._dungeon_state else "unknown",
+            "light_level": self._check_light_status().get("level", "dark") if self._dungeon_state else "dark",
+            "turns_in_dungeon": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
+        })
+
+        # Resolve through NarrativeResolver
+        result = self.narrative_resolver.resolve_player_input(
+            player_input=player_input,
+            character=character,
+            context=action_context,
+        )
+
+        # Apply any damage from the action
+        for target_id, damage in result.apply_damage:
+            self.controller.apply_damage(target_id, damage, "environmental")
+
+        return result
+
+    def attempt_climb(
+        self,
+        character_id: str,
+        height_feet: int = 10,
+        is_trivial: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to climb in dungeon per Dolmenwood rules (p150).
+
+        Args:
+            character_id: ID of the climbing character
+            height_feet: Height of the climb in feet
+            is_trivial: Whether this is a trivial climb (no roll needed)
+            difficulty: DC for the climb check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        from src.narrative.intent_parser import ActionType
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.CLIMBING,
+                action_type=ActionType.CLIMB,
+                description="Character not found",
+            )
+
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.CLIMBING,
+            character=character,
+            height_feet=height_feet,
+            is_trivial=is_trivial,
+            difficulty=difficulty,
+        )
+
+        # Apply any damage from falling
+        if result.damage_dealt > 0:
+            self.controller.apply_damage(character_id, result.damage_dealt, "falling")
+
+        return result
+
+    def attempt_swim(
+        self,
+        character_id: str,
+        armor_weight: str = "unarmoured",
+        rough_waters: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to swim in dungeon per Dolmenwood rules (p154).
+
+        Args:
+            character_id: ID of the swimming character
+            armor_weight: Weight of armor
+            rough_waters: Whether waters are rough/turbulent
+            difficulty: DC for the swim check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        from src.narrative.intent_parser import ActionType
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.SWIMMING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.SWIMMING,
+            character=character,
+            armor_weight=armor_weight,
+            rough_waters=rough_waters,
+            difficulty=difficulty,
+        )
+
+    def attempt_jump(
+        self,
+        character_id: str,
+        distance_feet: int = 5,
+        is_high_jump: bool = False,
+        has_runup: bool = True,
+        armor_weight: str = "unarmoured",
+    ) -> HazardResult:
+        """
+        Attempt a jump in dungeon per Dolmenwood rules (p153).
+
+        Args:
+            character_id: ID of the jumping character
+            distance_feet: Distance to jump in feet
+            is_high_jump: Whether this is a vertical jump
+            has_runup: Whether character has 20' run-up
+            armor_weight: Weight of armor
+
+        Returns:
+            HazardResult with outcomes
+        """
+        from src.narrative.intent_parser import ActionType
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.JUMPING,
+                action_type=ActionType.JUMP,
+                description="Character not found",
+            )
+
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.JUMPING,
+            character=character,
+            distance_feet=distance_feet,
+            is_high_jump=is_high_jump,
+            has_runup=has_runup,
+            armor_weight=armor_weight,
+        )
+
+    def cast_spell(
+        self,
+        character_id: str,
+        spell_name: Optional[str] = None,
+        spell_id: Optional[str] = None,
+        target_id: Optional[str] = None,
+        target_description: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Cast a spell during dungeon exploration.
+
+        Convenience method that wraps _handle_cast_spell.
+
+        Args:
+            character_id: ID of the spellcaster
+            spell_name: Name of the spell to cast
+            spell_id: Alternative: ID of the spell to cast
+            target_id: Optional target ID
+            target_description: Optional description of target
+
+        Returns:
+            Dictionary with spell casting results
+        """
+        return self._handle_cast_spell({
+            "character_id": character_id,
+            "spell_name": spell_name,
+            "spell_id": spell_id,
+            "target_id": target_id,
+            "target_description": target_description,
+        })

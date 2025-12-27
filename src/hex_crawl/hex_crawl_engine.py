@@ -34,7 +34,14 @@ from src.data_models import (
     TimeOfDay,
     MovementCalculator,
     MovementMode,
+    CharacterState,
 )
+from src.narrative.narrative_resolver import (
+    NarrativeResolver,
+    ResolutionResult,
+    NarrationContext,
+)
+from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
 
 
 logger = logging.getLogger(__name__)
@@ -171,15 +178,23 @@ class HexCrawlEngine:
     - Hex entry/search costs by terrain
     """
 
-    def __init__(self, controller: GlobalController):
+    def __init__(
+        self,
+        controller: GlobalController,
+        narrative_resolver: Optional[NarrativeResolver] = None,
+    ):
         """
         Initialize the hex crawl engine.
 
         Args:
             controller: The global game controller
+            narrative_resolver: Optional resolver for player actions (hazards, foraging, etc.)
         """
         self.controller = controller
         self.dice = DiceRoller()
+
+        # Narrative resolution for player actions (climbing, swimming, foraging, etc.)
+        self.narrative_resolver = narrative_resolver or NarrativeResolver(controller)
 
         # Hex data storage (would be populated from content manager)
         self._hex_data: dict[str, HexLocation] = {}
@@ -643,3 +658,247 @@ class HexCrawlEngine:
             Weather.BLIZZARD: "Extreme danger, must seek shelter",
         }
         return effects.get(weather)
+
+    # =========================================================================
+    # PLAYER ACTION HANDLING (via NarrativeResolver)
+    # =========================================================================
+
+    def handle_player_action(
+        self,
+        player_input: str,
+        character_id: str,
+        context: Optional[dict[str, Any]] = None,
+    ) -> ResolutionResult:
+        """
+        Handle a player action during wilderness travel via NarrativeResolver.
+
+        This routes non-travel actions to the NarrativeResolver for resolution:
+        - Climbing (cliffs, trees, obstacles)
+        - Swimming (rivers, lakes)
+        - Jumping (ravines, gaps)
+        - Foraging, Fishing, Hunting
+        - Other environmental hazards
+
+        For travel-specific actions (move to hex, search hex), use the
+        dedicated methods like travel_to_hex() and search_hex().
+
+        Args:
+            player_input: The player's action description
+            character_id: ID of the character performing the action
+            context: Optional additional context
+
+        Returns:
+            ResolutionResult with outcomes and narration context
+        """
+        # Get character state
+        character = self.controller.get_character(character_id)
+        if not character:
+            from src.narrative.intent_parser import ActionCategory, ActionType, ParsedIntent
+            return ResolutionResult(
+                success=False,
+                narration_context=NarrationContext(
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                    player_input=player_input,
+                    success=False,
+                    errors=[f"Character not found: {character_id}"],
+                ),
+                parsed_intent=ParsedIntent(
+                    raw_input=player_input,
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                ),
+            )
+
+        # Build context with wilderness-specific information
+        action_context = context or {}
+        action_context.update({
+            "game_state": "wilderness_travel",
+            "current_hex": str(self.controller.party_state.location),
+            "terrain": self.get_terrain_for_hex(
+                str(self.controller.party_state.location)
+            ).value if self.controller.party_state else "unknown",
+            "weather": self.controller.world_state.weather.value if self.controller.world_state else "clear",
+            "season": self.controller.world_state.season.value if self.controller.world_state else "normal",
+            "time_of_day": self.controller.world_state.time_of_day.value if self.controller.world_state else "day",
+        })
+
+        # Resolve through NarrativeResolver
+        result = self.narrative_resolver.resolve_player_input(
+            player_input=player_input,
+            character=character,
+            context=action_context,
+        )
+
+        # Apply any damage from the action
+        for target_id, damage in result.apply_damage:
+            self.controller.apply_damage(target_id, damage, "environmental")
+
+        # Apply any conditions
+        for target_id, condition in result.apply_conditions:
+            # Apply condition through controller if available
+            pass  # Condition handling would go through controller
+
+        return result
+
+    def attempt_climb(
+        self,
+        character_id: str,
+        height_feet: int = 10,
+        is_trivial: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to climb an obstacle per Dolmenwood rules (p150).
+
+        Args:
+            character_id: ID of the climbing character
+            height_feet: Height of the climb in feet
+            is_trivial: Whether this is a trivial climb (no roll needed)
+            difficulty: DC for the climb check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.CLIMBING,
+                action_type=ActionType.CLIMB,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.CLIMBING,
+            character=character,
+            height_feet=height_feet,
+            is_trivial=is_trivial,
+            difficulty=difficulty,
+        )
+
+        # Apply any damage from falling
+        if result.damage_dealt > 0:
+            self.controller.apply_damage(character_id, result.damage_dealt, "falling")
+
+        return result
+
+    def attempt_swim(
+        self,
+        character_id: str,
+        armor_weight: str = "unarmoured",
+        rough_waters: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to swim per Dolmenwood rules (p154).
+
+        Args:
+            character_id: ID of the swimming character
+            armor_weight: Weight of armor (unarmoured, light, medium, heavy)
+            rough_waters: Whether waters are rough/turbulent
+            difficulty: DC for the swim check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.SWIMMING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.SWIMMING,
+            character=character,
+            armor_weight=armor_weight,
+            rough_waters=rough_waters,
+            difficulty=difficulty,
+        )
+
+    def attempt_jump(
+        self,
+        character_id: str,
+        distance_feet: int = 5,
+        is_high_jump: bool = False,
+        has_runup: bool = True,
+        armor_weight: str = "unarmoured",
+    ) -> HazardResult:
+        """
+        Attempt a jump per Dolmenwood rules (p153).
+
+        Args:
+            character_id: ID of the jumping character
+            distance_feet: Distance to jump in feet
+            is_high_jump: Whether this is a vertical jump
+            has_runup: Whether character has 20' run-up
+            armor_weight: Weight of armor
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.JUMPING,
+                action_type=ActionType.JUMP,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.JUMPING,
+            character=character,
+            distance_feet=distance_feet,
+            is_high_jump=is_high_jump,
+            has_runup=has_runup,
+            armor_weight=armor_weight,
+        )
+
+    def attempt_forage(
+        self,
+        character_id: str,
+        method: str = "foraging",
+        full_day: bool = False,
+    ) -> HazardResult:
+        """
+        Attempt to find food in the wild per Dolmenwood rules (p152).
+
+        Args:
+            character_id: ID of the foraging character
+            method: "foraging", "fishing", or "hunting"
+            full_day: Whether spending full day foraging (+2 bonus)
+
+        Returns:
+            HazardResult with outcomes including rations found
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.HUNGER,
+                action_type=ActionType.FORAGE,
+                description="Character not found",
+            )
+
+        # Determine season from world state
+        season = "normal"
+        if self.controller.world_state:
+            if self.controller.world_state.season == Season.WINTER:
+                season = "winter"
+            elif self.controller.world_state.season == Season.AUTUMN:
+                season = "autumn"
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_foraging(
+            character=character,
+            method=method,
+            season=season,
+            full_day=full_day,
+        )
