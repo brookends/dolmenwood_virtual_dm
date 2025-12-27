@@ -1,21 +1,14 @@
 """
 Dungeon Engine for Dolmenwood Virtual DM.
 
-Implements the Dungeon Exploration Loop per Dolmenwood rules (p162-163).
-Handles 10-minute turn tracking, light depletion, wandering monsters, and room exploration.
+Implements the Dolmenwood dungeon exploration loop (10-minute turns):
+1) Party declares actions (move, search, listen, etc.)
+2) Wandering monster check as applicable (typically every 2 turns, 1-in-6)
+3) Describe outcomes / apply action results
+4) End of turn bookkeeping: time, light, rest cadence, noise, spell durations
 
-The dungeon exploration procedure per Turn (p162):
-1. Decide actions: Party decides what to do (moving, searching, listening, entering rooms)
-2. Wandering monsters: Referee checks for random encounters
-3. Description: Referee describes what happens
-4. End of Turn: Update time records (light sources, spell durations, rest needs)
-
-Key rules:
-- Movement: 3× Speed per Turn (exploration), 10× Speed in explored areas (p162)
-- Rest: 1 Turn rest per 5 Turns exploration or become exhausted (p163)
-- Wandering monsters: Check every 2 Turns, 1-in-6 chance (p163)
-- Encounter distance: 2d6 × 10' (or 1d4 × 10' if both surprised) (p163)
-- Food spoilage: Fresh rations 1 day, preserved 1 week in dungeons (p163)
+Also handles light depletion, movement between rooms, search/listen odds,
+and rest cadence (1 Turn of rest per 5 Turns of activity to avoid exhaustion).
 """
 
 from dataclasses import dataclass, field
@@ -183,6 +176,7 @@ class DungeonEngine:
         # Wandering monster check frequency (p163)
         self._wandering_check_interval: int = 2  # Every 2 turns
         self._turns_since_check: int = 0
+        self._turns_since_rest: int = 0  # Must rest 1 turn per 5 or risk exhaustion
 
         # Rest requirement tracking (p163)
         self._rest_interval: int = 5  # Must rest after 5 turns of exploration
@@ -336,6 +330,7 @@ class DungeonEngine:
         # 1. Advance time
         time_result = self.controller.advance_time(1)
         self._dungeon_state.turns_in_dungeon += 1
+        self._turns_since_rest += 1
 
         # Track rest requirement (p163) - 5 turns exploration, 1 turn rest
         if action != DungeonActionType.REST:
@@ -359,6 +354,12 @@ class DungeonEngine:
         if not action_result.get("success", True):
             result.success = False
             result.messages.append(action_result.get("message", "Action failed"))
+
+        # Rest cadence: 1 Turn rest per 5 Turns of activity
+        if action == DungeonActionType.REST:
+            self._turns_since_rest = 0
+        elif self._turns_since_rest >= 5:
+            result.warnings.append("Fatigue looming: rest for 1 Turn to avoid exhaustion.")
 
         # Track noise from action
         result.noise_generated = action_result.get("noise", 0)
@@ -857,19 +858,17 @@ class DungeonEngine:
         Returns:
             EncounterState if encounter triggered, None otherwise
         """
-        threshold = 1 + self._dungeon_state.alert_level
-
         roll = self.dice.roll_d6(1, "wandering monster")
 
-        if roll.total <= threshold:
-            # Determine surprise first, as it affects distance (p163)
-            surprise_status = self._check_dungeon_surprise()
+        # Standard Dolmenwood check: 1-in-6 every 2 Turns
+        if roll.total <= 1:
+            surprise = self._check_dungeon_surprise()
+            distance = self._roll_dungeon_distance(mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE)
 
-            # Generate encounter
             encounter = EncounterState(
                 encounter_type=EncounterType.MONSTER,
-                distance=self._roll_dungeon_distance(surprise_status),
-                surprise_status=surprise_status,
+                distance=distance,
+                surprise_status=surprise,
                 context="wandering",
             )
 
@@ -884,19 +883,13 @@ class DungeonEngine:
 
         return None
 
-    def _roll_dungeon_distance(self, surprise: SurpriseStatus) -> int:
-        """
-        Roll encounter distance in dungeon per Dolmenwood rules (p163).
-
-        Distance: 2d6 × 10' normally
-        If both sides are surprised: 1d4 × 10'
-        """
-        if surprise == SurpriseStatus.MUTUAL_SURPRISE:
+    def _roll_dungeon_distance(self, mutual_surprise: bool = False) -> int:
+        """Roll encounter distance in dungeon (typically close)."""
+        if mutual_surprise:
             roll = self.dice.roll("1d4", "dungeon distance (mutual surprise)")
-            return roll.total * 10  # 10-40 feet
         else:
             roll = self.dice.roll("2d6", "dungeon distance")
-            return roll.total * 10  # 20-120 feet
+        return roll.total * 10  # 10-120 feet
 
     def _check_dungeon_surprise(self) -> SurpriseStatus:
         """Check for surprise in dungeon encounter."""
