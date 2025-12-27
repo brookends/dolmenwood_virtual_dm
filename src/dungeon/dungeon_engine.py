@@ -1,18 +1,14 @@
 """
 Dungeon Engine for Dolmenwood Virtual DM.
 
-Implements the Dungeon Exploration Loop from Section 5.3 of the specification.
-Handles 10-minute turn tracking, light depletion, wandering monsters, and room exploration.
+Implements the Dolmenwood dungeon exploration loop (10-minute turns):
+1) Party declares actions (move, search, listen, etc.)
+2) Wandering monster check as applicable (typically every 2 turns, 1-in-6)
+3) Describe outcomes / apply action results
+4) End of turn bookkeeping: time, light, rest cadence, noise, spell durations
 
-The dungeon exploration loop per 10-minute turn:
-1. Advance time
-2. Deplete light sources
-3. Resolve declared player action
-4. Check wandering monsters
-5. If encounter -> Transition to DUNGEON_ENCOUNTER
-6. Apply noise & consequence flags
-7. Update dungeon state
-8. Request LLM description (room details only)
+Also handles light depletion, movement between rooms, search/listen odds,
+and rest cadence (1 Turn of rest per 5 Turns of activity to avoid exhaustion).
 """
 
 from dataclasses import dataclass, field
@@ -146,6 +142,7 @@ class DungeonEngine:
         # Wandering monster check frequency
         self._wandering_check_interval: int = 2  # Every 2 turns
         self._turns_since_check: int = 0
+        self._turns_since_rest: int = 0  # Must rest 1 turn per 5 or risk exhaustion
 
         # Noise thresholds
         self._noise_alert_threshold: int = 10
@@ -292,6 +289,7 @@ class DungeonEngine:
         # 1. Advance time
         time_result = self.controller.advance_time(1)
         self._dungeon_state.turns_in_dungeon += 1
+        self._turns_since_rest += 1
 
         # 2. Deplete light sources
         if self.controller.party_state.active_light_source:
@@ -307,6 +305,12 @@ class DungeonEngine:
         if not action_result.get("success", True):
             result.success = False
             result.messages.append(action_result.get("message", "Action failed"))
+
+        # Rest cadence: 1 Turn rest per 5 Turns of activity
+        if action == DungeonActionType.REST:
+            self._turns_since_rest = 0
+        elif self._turns_since_rest >= 5:
+            result.warnings.append("Fatigue looming: rest for 1 Turn to avoid exhaustion.")
 
         # Track noise from action
         result.noise_generated = action_result.get("noise", 0)
@@ -688,16 +692,17 @@ class DungeonEngine:
         Returns:
             EncounterState if encounter triggered, None otherwise
         """
-        threshold = 1 + self._dungeon_state.alert_level
-
         roll = self.dice.roll_d6(1, "wandering monster")
 
-        if roll.total <= threshold:
-            # Generate encounter
+        # Standard Dolmenwood check: 1-in-6 every 2 Turns
+        if roll.total <= 1:
+            surprise = self._check_dungeon_surprise()
+            distance = self._roll_dungeon_distance(mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE)
+
             encounter = EncounterState(
                 encounter_type=EncounterType.MONSTER,
-                distance=self._roll_dungeon_distance(),
-                surprise_status=self._check_dungeon_surprise(),
+                distance=distance,
+                surprise_status=surprise,
                 context="wandering",
             )
 
@@ -712,10 +717,13 @@ class DungeonEngine:
 
         return None
 
-    def _roll_dungeon_distance(self) -> int:
+    def _roll_dungeon_distance(self, mutual_surprise: bool = False) -> int:
         """Roll encounter distance in dungeon (typically close)."""
-        roll = self.dice.roll("2d6", "dungeon distance")
-        return roll.total * 10  # 20-120 feet
+        if mutual_surprise:
+            roll = self.dice.roll("1d4", "dungeon distance (mutual surprise)")
+        else:
+            roll = self.dice.roll("2d6", "dungeon distance")
+        return roll.total * 10  # 10-120 feet
 
     def _check_dungeon_surprise(self) -> SurpriseStatus:
         """Check for surprise in dungeon encounter."""
