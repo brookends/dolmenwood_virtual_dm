@@ -1355,6 +1355,52 @@ class PointOfInterest:
     is_dungeon: bool = False
     dungeon_levels: Optional[int] = None
 
+    # Visibility and discovery
+    hidden: bool = False  # Must be searched for to find
+    discovered: bool = False  # Has been found (for hidden POIs)
+    visible_from_distance: bool = True  # Can be seen from elsewhere in hex
+    approach_required: bool = True  # Must approach before entering
+
+    # Time-of-day variant descriptions
+    description_day: Optional[str] = None  # Description during daylight
+    description_night: Optional[str] = None  # Description at night
+    interior_day: Optional[str] = None  # Interior during day
+    interior_night: Optional[str] = None  # Interior at night
+    entering_day: Optional[str] = None  # Entering during day
+    entering_night: Optional[str] = None  # Entering at night
+
+    def is_visible(self) -> bool:
+        """Check if POI is currently visible to players."""
+        return not self.hidden or self.discovered
+
+    def get_description(self, is_night: bool = False) -> str:
+        """Get appropriate description based on time of day."""
+        if is_night and self.description_night:
+            return self.description_night
+        if not is_night and self.description_day:
+            return self.description_day
+        return self.description
+
+    def get_entering_description(self, is_night: bool = False) -> Optional[str]:
+        """Get appropriate entering description based on time of day."""
+        if is_night and self.entering_night:
+            return self.entering_night
+        if not is_night and self.entering_day:
+            return self.entering_day
+        return self.entering
+
+    def get_interior_description(self, is_night: bool = False) -> Optional[str]:
+        """Get appropriate interior description based on time of day."""
+        if is_night and self.interior_night:
+            return self.interior_night
+        if not is_night and self.interior_day:
+            return self.interior_day
+        return self.interior
+
+    def mark_discovered(self) -> None:
+        """Mark this POI as discovered."""
+        self.discovered = True
+
 
 @dataclass
 class HexNPC:
