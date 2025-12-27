@@ -470,6 +470,10 @@ class StatBlock:
     morale: int = 7  # 2-12 scale
     save_as: str = ""  # e.g., "Fighter 4"
     special_abilities: list[str] = field(default_factory=list)
+    # Dolmenwood combat modifiers (p166-169)
+    shield_bonus: int = 0  # Shield AC bonus, negated by rear/fleeing attacks (p167)
+    strength_mod: int = 0  # STR modifier for melee attack/damage and parrying (p167, p169)
+    dexterity_mod: int = 0  # DEX modifier for missile attacks only (p167)
 
 
 @dataclass

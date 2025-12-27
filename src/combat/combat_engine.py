@@ -58,6 +58,25 @@ class MoraleCheckTrigger(str, Enum):
     LEADER_KILLED = "leader_killed"
     OVERWHELMING_MAGIC = "overwhelming_magic"
     OUTNUMBERED = "outnumbered"
+    # Dolmenwood solo creature triggers (p167)
+    SOLO_FIRST_HARMED = "solo_first_harmed"
+    SOLO_QUARTER_HP = "solo_quarter_hp"
+
+
+class MissileRange(str, Enum):
+    """Missile attack range bands (p167)."""
+    SHORT = "short"   # +1 Attack
+    MEDIUM = "medium"  # No modifier
+    LONG = "long"     # -1 Attack
+
+
+class CoverType(str, Enum):
+    """Cover levels affecting missile attacks (p167)."""
+    NONE = "none"         # No penalty
+    QUARTER = "quarter"   # -1 Attack
+    HALF = "half"         # -2 Attack
+    THREE_QUARTER = "three_quarter"  # -3 Attack
+    FULL = "full"         # -4 Attack (or cannot target)
 
 
 @dataclass
@@ -67,6 +86,40 @@ class CombatAction:
     action_type: CombatActionType
     target_id: Optional[str] = None
     parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class CombatantStatus:
+    """
+    Per-combatant status tracking for Dolmenwood combat rules.
+
+    Tracks morale successes (two = fight to death), fleeing/parrying/charging
+    flags, and non-lethal damage separately from lethal damage.
+    """
+    combatant_id: str
+    # Morale tracking (p167)
+    successful_morale_checks: int = 0  # Two successes = fight to death
+    is_fleeing: bool = False
+    # Declaration tracking
+    is_parrying: bool = False
+    is_charging: bool = False
+    declared_spell: bool = False
+    # Damage tracking
+    took_damage_this_round: bool = False
+    first_harmed: bool = False  # For solo creature morale
+    non_lethal_damage: int = 0  # Non-lethal damage tracked separately (p169)
+
+
+@dataclass
+class AttackModifierResult:
+    """
+    Calculated attack modifiers for a single attack (p167).
+
+    Combines STR/DEX modifiers, range, cover, and situational bonuses.
+    """
+    attack_bonus: int = 0  # Total attack roll modifier
+    damage_bonus: int = 0  # Total damage modifier (STR for melee only)
+    details: list[str] = field(default_factory=list)  # Description of modifiers
 
 
 @dataclass
@@ -115,6 +168,10 @@ class CombatState:
     enemy_starting_count: int = 0
     enemy_casualties: int = 0
     party_casualties: int = 0
+    # Dolmenwood per-combatant status tracking
+    combatant_status: dict[str, CombatantStatus] = field(default_factory=dict)
+    # Solo creature tracking (p167) - only one enemy at start
+    is_solo_creature: bool = False
 
 
 class CombatEngine:
@@ -172,11 +229,19 @@ class CombatEngine:
         self._return_state = return_state
 
         # Initialize combat state
+        enemy_count = len(encounter.get_enemy_combatants())
         self._combat_state = CombatState(
             encounter=encounter,
             round_number=0,
-            enemy_starting_count=len(encounter.get_enemy_combatants()),
+            enemy_starting_count=enemy_count,
+            is_solo_creature=(enemy_count == 1),  # Solo creature morale rules (p167)
         )
+
+        # Initialize per-combatant status tracking
+        for combatant in encounter.combatants:
+            self._combat_state.combatant_status[combatant.combatant_id] = CombatantStatus(
+                combatant_id=combatant.combatant_id
+            )
 
         # Handle surprise
         surprise_result = self._handle_surprise(encounter.surprise_status)
@@ -437,6 +502,109 @@ class CombatEngine:
 
         return results, damaged_this_resolution
 
+    def _calculate_attack_modifiers(
+        self,
+        attacker: Combatant,
+        defender: Combatant,
+        action: CombatAction,
+        round_modifiers: dict[str, Any],
+    ) -> AttackModifierResult:
+        """
+        Calculate all attack modifiers per Dolmenwood rules (p167).
+
+        - Melee: +STR to attack and damage
+        - Missile: +DEX to attack only (NOT damage)
+        - Range: +1 short, 0 medium, -1 long
+        - Cover: -1 to -4 based on cover level
+        - Charging: +2 attack (already in round_modifiers)
+        - Fleeing target: +2 attack, ignore shield (p167)
+        """
+        result = AttackModifierResult()
+
+        if not attacker.stat_block:
+            return result
+
+        is_melee = action.action_type == CombatActionType.MELEE_ATTACK
+        is_missile = action.action_type == CombatActionType.MISSILE_ATTACK
+
+        # STR modifier for melee attacks (attack and damage)
+        if is_melee:
+            str_mod = attacker.stat_block.strength_mod
+            if str_mod != 0:
+                result.attack_bonus += str_mod
+                result.damage_bonus += str_mod
+                result.details.append(f"STR {'+' if str_mod > 0 else ''}{str_mod}")
+
+        # DEX modifier for missile attacks (attack only, NOT damage)
+        if is_missile:
+            dex_mod = attacker.stat_block.dexterity_mod
+            if dex_mod != 0:
+                result.attack_bonus += dex_mod
+                result.details.append(f"DEX {'+' if dex_mod > 0 else ''}{dex_mod}")
+
+            # Range modifiers
+            range_band = action.parameters.get("range", MissileRange.MEDIUM)
+            if isinstance(range_band, str):
+                range_band = MissileRange(range_band) if range_band in [r.value for r in MissileRange] else MissileRange.MEDIUM
+            if range_band == MissileRange.SHORT:
+                result.attack_bonus += 1
+                result.details.append("Short range +1")
+            elif range_band == MissileRange.LONG:
+                result.attack_bonus -= 1
+                result.details.append("Long range -1")
+
+            # Cover modifiers
+            cover = action.parameters.get("cover", CoverType.NONE)
+            if isinstance(cover, str):
+                cover = CoverType(cover) if cover in [c.value for c in CoverType] else CoverType.NONE
+            cover_penalties = {
+                CoverType.QUARTER: -1,
+                CoverType.HALF: -2,
+                CoverType.THREE_QUARTER: -3,
+                CoverType.FULL: -4,
+            }
+            if cover in cover_penalties:
+                penalty = cover_penalties[cover]
+                result.attack_bonus += penalty
+                result.details.append(f"Cover {penalty}")
+
+        return result
+
+    def _get_effective_ac(
+        self,
+        defender: Combatant,
+        attacker: Combatant,
+        round_modifiers: dict[str, Any],
+    ) -> int:
+        """
+        Calculate effective AC considering shields, parrying, and fleeing (p167).
+
+        - Fleeing targets: ignore shield bonus
+        - Parrying: +parry bonus to AC
+        - Rear attacks: ignore shield bonus
+        """
+        if not defender.stat_block:
+            return 10
+
+        base_ac = defender.stat_block.armor_class
+        defender_id = defender.combatant_id
+
+        # Apply AC bonuses (parrying)
+        base_ac += round_modifiers["ac_bonus"].get(defender_id, 0)
+
+        # Apply AC penalties (charging)
+        base_ac -= round_modifiers["ac_penalty"].get(defender_id, 0)
+
+        # Fleeing targets lose shield bonus (p167)
+        if defender_id in round_modifiers["fleeing"]:
+            shield_bonus = defender.stat_block.shield_bonus
+            base_ac -= shield_bonus  # Remove shield from AC
+
+        # Rear attacks also ignore shield (p167) - check parameter
+        # (This would be set in action.parameters if attacking from rear)
+
+        return base_ac
+
     def _resolve_attack(
         self,
         action: CombatAction,
@@ -444,9 +612,10 @@ class CombatEngine:
         declarations: Optional[dict[str, set[str]]] = None,
     ) -> AttackResult:
         """
-        Resolve a single attack.
+        Resolve a single attack using Dolmenwood rules (p167-169).
 
         Uses ascending AC: d20 + attack bonus vs AC.
+        Includes STR/DEX modifiers, range, cover, and situational bonuses.
         """
         attacker_id = action.combatant_id
         defender_id = action.target_id
@@ -465,20 +634,32 @@ class CombatEngine:
         round_modifiers = round_modifiers or self._init_round_modifiers()
         declarations = declarations or {}
 
-        defender_ac = defender.stat_block.armor_class if defender.stat_block else 10
-        defender_ac -= round_modifiers["ac_penalty"].get(defender_id, 0)
-        defender_ac += round_modifiers["ac_bonus"].get(defender_id, 0)
+        # Calculate effective defender AC (handles shield, parrying, fleeing)
+        defender_ac = self._get_effective_ac(defender, attacker, round_modifiers)
+
+        # Calculate attack modifiers (STR/DEX, range, cover)
+        modifiers = self._calculate_attack_modifiers(
+            attacker, defender, action, round_modifiers
+        )
 
         # Roll attack
         attack_roll = self.dice.roll_d20(f"{attacker.name} attacks {defender.name}")
+
+        # Base attack bonus from stat block
         attack_bonus = 0
         if attacker.stat_block and attacker.stat_block.attacks:
             attack_bonus = attacker.stat_block.attacks[0].get("bonus", 0)
+
+        # Add calculated modifiers
+        attack_bonus += modifiers.attack_bonus
+
+        # Add round modifiers (charging bonus)
         attack_bonus += round_modifiers["attack_bonus"].get(attacker_id, 0)
 
-        # Fleeing targets grant +2 to attacks against them
+        # Fleeing targets grant +2 to attacks against them (p167)
         if defender_id in round_modifiers["fleeing"]:
             attack_bonus += 2
+            modifiers.details.append("Fleeing target +2")
 
         # Check for hit
         total_attack = attack_roll.total + attack_bonus
@@ -497,16 +678,38 @@ class CombatEngine:
             hit=hit or critical,
             critical=critical,
             fumble=fumble,
+            special_effects=modifiers.details.copy(),
         )
 
         # Roll damage if hit
         if result.hit and attacker.stat_block:
-            # Get attack damage
-            attack_info = attacker.stat_block.attacks[0] if attacker.stat_block.attacks else {"damage": "1d6"}
-            damage_dice = attack_info.get("damage", "1d6")
-            damage_roll = self.dice.roll(damage_dice, "damage")
-            result.damage_roll = damage_roll.total
-            result.damage_dealt = damage_roll.total
+            # Handle unarmed attacks (p169) - 1d2 + STR
+            is_unarmed = action.parameters.get("unarmed", False)
+            if is_unarmed:
+                damage_roll = self.dice.roll("1d2", "unarmed damage")
+                result.damage_roll = damage_roll.total
+                result.damage_dealt = max(1, damage_roll.total + modifiers.damage_bonus)
+                result.special_effects.append("Unarmed (1d2)")
+            else:
+                # Get attack damage from stat block
+                attack_info = attacker.stat_block.attacks[0] if attacker.stat_block.attacks else {"damage": "1d6"}
+                damage_dice = attack_info.get("damage", "1d6")
+                damage_roll = self.dice.roll(damage_dice, "damage")
+                result.damage_roll = damage_roll.total
+                # Add STR modifier to melee damage (p167)
+                result.damage_dealt = max(1, damage_roll.total + modifiers.damage_bonus)
+
+            # Handle charging with braced weapon (p168)
+            # If defender has braced weapon and attacker is charging, double damage to charger
+            if attacker_id in round_modifiers.get("charging_combatants", set()):
+                defender_braced = action.parameters.get("defender_braced", False)
+                if defender_braced:
+                    result.damage_dealt *= 2
+                    result.special_effects.append("Braced weapon vs charge (2x damage)")
+
+            # Track non-lethal damage separately if specified (p169)
+            if action.parameters.get("non_lethal", False):
+                result.special_effects.append("Non-lethal")
 
         return result
 
@@ -523,23 +726,52 @@ class CombatEngine:
         )
 
     def _apply_attack_results(self, results: list[AttackResult]) -> set[str]:
-        """Apply damage from attack results."""
+        """
+        Apply damage from attack results.
+
+        Handles:
+        - Normal lethal damage
+        - Non-lethal damage tracked separately (p169)
+        - Damage tracking for morale triggers (solo creatures)
+        """
         damaged: set[str] = set()
 
         for result in results:
             if result.hit and result.damage_dealt > 0:
-                # Apply damage through controller
-                self.controller.apply_damage(
-                    result.defender_id,
-                    result.damage_dealt,
-                    "physical"
-                )
-
-                # Also update combatant in encounter
                 defender = self._get_combatant(result.defender_id)
-                if defender and defender.stat_block:
+                if not defender or not defender.stat_block:
+                    continue
+
+                # Check if non-lethal damage
+                is_non_lethal = "Non-lethal" in result.special_effects
+
+                if is_non_lethal and self._combat_state:
+                    # Track non-lethal damage separately (p169)
+                    status = self._combat_state.combatant_status.get(result.defender_id)
+                    if status:
+                        status.non_lethal_damage += result.damage_dealt
+                        # If non-lethal exceeds current HP, target is unconscious (not dead)
+                        if status.non_lethal_damage >= defender.stat_block.hp_current:
+                            result.special_effects.append("Knocked unconscious")
+                else:
+                    # Apply lethal damage through controller
+                    self.controller.apply_damage(
+                        result.defender_id,
+                        result.damage_dealt,
+                        "physical"
+                    )
+                    # Also update combatant in encounter
                     defender.stat_block.hp_current -= result.damage_dealt
-                    damaged.add(result.defender_id)
+
+                damaged.add(result.defender_id)
+
+                # Track damage for morale purposes (solo creature triggers)
+                if self._combat_state:
+                    status = self._combat_state.combatant_status.get(result.defender_id)
+                    if status:
+                        status.took_damage_this_round = True
+                        if not status.first_harmed:
+                            status.first_harmed = True
 
         return damaged
 
@@ -665,7 +897,17 @@ class CombatEngine:
     # =========================================================================
 
     def _check_morale_triggers(self) -> list[MoraleCheckTrigger]:
-        """Check for morale triggers this round."""
+        """
+        Check for morale triggers this round (p167).
+
+        Standard triggers:
+        - First death on side
+        - Half casualties
+
+        Solo creature triggers (p167):
+        - When first harmed
+        - When reduced to 1/4 HP or less
+        """
         triggers = []
 
         if not self._combat_state:
@@ -682,42 +924,107 @@ class CombatEngine:
             if casualty_ratio >= 0.5 and self._combat_state.round_number > 1:
                 triggers.append(MoraleCheckTrigger.HALF_CASUALTIES)
 
+        # Solo creature morale triggers (p167)
+        if self._combat_state.is_solo_creature:
+            enemies = self._combat_state.encounter.get_active_enemies()
+            if enemies:
+                solo = enemies[0]
+                status = self._combat_state.combatant_status.get(solo.combatant_id)
+
+                if status and solo.stat_block:
+                    # First harmed trigger - only once
+                    if status.first_harmed and status.took_damage_this_round:
+                        # Check if this is the first time being harmed
+                        prev_rounds = self._combat_state.round_results[:-1] if self._combat_state.round_results else []
+                        was_previously_harmed = any(
+                            solo.combatant_id in [r.defender_id for r in round.actions_resolved if r.hit]
+                            for round in prev_rounds
+                        )
+                        if not was_previously_harmed:
+                            triggers.append(MoraleCheckTrigger.SOLO_FIRST_HARMED)
+
+                    # Quarter HP trigger
+                    hp_ratio = solo.stat_block.hp_current / solo.stat_block.hp_max
+                    if hp_ratio <= 0.25 and status.took_damage_this_round:
+                        triggers.append(MoraleCheckTrigger.SOLO_QUARTER_HP)
+
         return triggers
 
     def _roll_morale_check(self, trigger: MoraleCheckTrigger) -> dict[str, Any]:
         """
-        Roll morale check for enemy side.
+        Roll morale check for enemy side per Dolmenwood rules (p167).
 
         2d6 vs morale score. If roll > morale, enemies flee.
+
+        Special rules:
+        - Morale 12: Never checks morale, always fights to death
+        - Two successful morale checks: Fights to death for rest of combat
         """
         result = {
             "trigger": trigger.value,
             "failed": False,
             "fleeing": [],
+            "auto_pass": False,
         }
 
         if not self._combat_state:
             return result
 
-        # Get average morale of remaining enemies
+        # Get remaining enemies
         enemies = self._combat_state.encounter.get_active_enemies()
         if not enemies:
             return result
 
+        # Check each enemy's morale status
+        enemies_to_check = []
+        for enemy in enemies:
+            status = self._combat_state.combatant_status.get(enemy.combatant_id)
+            morale = enemy.stat_block.morale if enemy.stat_block else 7
+
+            # Morale 12 never checks (p167)
+            if morale >= 12:
+                result["auto_pass"] = True
+                continue
+
+            # Two successful morale checks = fight to death (p167)
+            if status and status.successful_morale_checks >= 2:
+                continue
+
+            enemies_to_check.append(enemy)
+
+        if not enemies_to_check:
+            # All enemies auto-pass or fight to death
+            return result
+
+        # Get average morale of enemies that need to check
         morale_scores = [
             e.stat_block.morale if e.stat_block else 7
-            for e in enemies
+            for e in enemies_to_check
         ]
         avg_morale = sum(morale_scores) // len(morale_scores)
 
         # Roll morale
         roll = self.dice.roll_2d6(f"morale check ({trigger.value})")
+        result["roll"] = roll.total
+        result["morale"] = avg_morale
 
         if roll.total > avg_morale:
+            # Morale failed - enemies flee
             result["failed"] = True
-            result["roll"] = roll.total
-            result["morale"] = avg_morale
-            result["fleeing"] = [e.combatant_id for e in enemies]
+            result["fleeing"] = [e.combatant_id for e in enemies_to_check]
+            # Mark them as fleeing
+            for enemy in enemies_to_check:
+                status = self._combat_state.combatant_status.get(enemy.combatant_id)
+                if status:
+                    status.is_fleeing = True
+        else:
+            # Morale passed - track successful check
+            for enemy in enemies_to_check:
+                status = self._combat_state.combatant_status.get(enemy.combatant_id)
+                if status:
+                    status.successful_morale_checks += 1
+                    if status.successful_morale_checks >= 2:
+                        result.setdefault("fight_to_death", []).append(enemy.combatant_id)
 
         return result
 
@@ -830,15 +1137,24 @@ class CombatEngine:
 
     def attempt_flee(self, character_id: str) -> dict[str, Any]:
         """
-        Attempt to flee from combat.
+        Attempt to flee from melee combat per Dolmenwood rules (p167).
 
-        Fleeing allows free attacks from enemies.
+        Fleeing must be declared before initiative.
+        Enemies get +2 Attack and ignore shield AC bonus.
         Success based on movement rate comparison.
         """
         if not self._combat_state:
             return {"success": False, "error": "No active combat"}
 
-        # Free attacks from engaged enemies
+        fleeing_combatant = self._get_combatant(character_id)
+        if not fleeing_combatant:
+            return {"success": False, "error": "Combatant not found"}
+
+        # Mark as fleeing in round modifiers
+        round_modifiers = self._init_round_modifiers()
+        round_modifiers["fleeing"].add(character_id)
+
+        # Free attacks from engaged enemies with +2 bonus and ignore shield
         free_attacks = []
         for enemy in self._combat_state.encounter.get_active_enemies():
             attack = CombatAction(
@@ -846,22 +1162,142 @@ class CombatEngine:
                 action_type=CombatActionType.MELEE_ATTACK,
                 target_id=character_id,
             )
-            result = self._resolve_attack(attack)
+            result = self._resolve_attack(attack, round_modifiers)
             free_attacks.append(result)
 
         # Apply free attack damage
         self._apply_attack_results(free_attacks)
 
-        # Roll to escape (1d6, 4+ to escape)
-        escape_roll = self.dice.roll_d6(1, "escape attempt")
-        escaped = escape_roll.total >= 4
+        # Compare movement rates - faster character escapes
+        fleeing_movement = fleeing_combatant.stat_block.movement if fleeing_combatant.stat_block else 30
+        enemies = self._combat_state.encounter.get_active_enemies()
+        if enemies:
+            fastest_enemy = max(
+                (e.stat_block.movement if e.stat_block else 30 for e in enemies)
+            )
+            escaped = fleeing_movement >= fastest_enemy
+        else:
+            escaped = True
+
+        # Mark fleeing status
+        status = self._combat_state.combatant_status.get(character_id)
+        if status:
+            status.is_fleeing = True
 
         return {
             "success": escaped,
             "free_attacks": len(free_attacks),
             "damage_taken": sum(a.damage_dealt for a in free_attacks if a.hit),
-            "roll": escape_roll.total,
+            "movement_comparison": f"{fleeing_movement} vs {fastest_enemy if enemies else 0}",
         }
+
+    def attempt_charge(self, character_id: str, target_id: str) -> dict[str, Any]:
+        """
+        Attempt a charging attack per Dolmenwood rules (p168).
+
+        Charging must be declared before initiative.
+        Grants +2 Attack but -1 AC.
+        If target has braced weapon, charger takes double damage.
+        """
+        if not self._combat_state:
+            return {"success": False, "error": "No active combat"}
+
+        charger = self._get_combatant(character_id)
+        target = self._get_combatant(target_id)
+        if not charger or not target:
+            return {"success": False, "error": "Combatant not found"}
+
+        # Apply charge modifiers
+        round_modifiers = self._init_round_modifiers()
+        round_modifiers["attack_bonus"][character_id] = 2
+        round_modifiers["ac_penalty"][character_id] = 1
+        round_modifiers["charging_combatants"] = {character_id}
+
+        # Mark charging status
+        status = self._combat_state.combatant_status.get(character_id)
+        if status:
+            status.is_charging = True
+
+        # Execute the charge attack
+        attack = CombatAction(
+            combatant_id=character_id,
+            action_type=CombatActionType.MELEE_ATTACK,
+            target_id=target_id,
+        )
+        result = self._resolve_attack(attack, round_modifiers)
+        result.special_effects.append("Charge (+2 Attack, -1 AC)")
+
+        # Apply damage
+        self._apply_attack_results([result])
+
+        return {
+            "success": result.hit,
+            "attack_result": result,
+            "modifiers": "+2 Attack, -1 AC",
+        }
+
+    def attempt_push(self, character_id: str, target_id: str) -> dict[str, Any]:
+        """
+        Attempt a push attack per Dolmenwood rules (p169).
+
+        Push attacks suffer -4 Attack penalty.
+        If hit, target must Save vs Hold or be pushed back/knocked down.
+        """
+        if not self._combat_state:
+            return {"success": False, "error": "No active combat"}
+
+        pusher = self._get_combatant(character_id)
+        target = self._get_combatant(target_id)
+        if not pusher or not target:
+            return {"success": False, "error": "Combatant not found"}
+
+        # Apply push penalty
+        round_modifiers = self._init_round_modifiers()
+        round_modifiers["attack_bonus"][character_id] = -4
+
+        # Execute push attack (no damage, just hit check)
+        attack = CombatAction(
+            combatant_id=character_id,
+            action_type=CombatActionType.MELEE_ATTACK,
+            target_id=target_id,
+            parameters={"push_attack": True},
+        )
+        attack_roll = self.dice.roll_d20(f"{pusher.name} attempts to push {target.name}")
+        attack_bonus = 0
+        if pusher.stat_block and pusher.stat_block.attacks:
+            attack_bonus = pusher.stat_block.attacks[0].get("bonus", 0)
+        attack_bonus -= 4  # Push penalty
+
+        target_ac = target.stat_block.armor_class if target.stat_block else 10
+        hit = (attack_roll.total + attack_bonus) >= target_ac
+
+        result = {
+            "hit": hit,
+            "attack_roll": attack_roll.total,
+            "attack_bonus": attack_bonus,
+            "target_ac": target_ac,
+            "pushed": False,
+        }
+
+        if hit:
+            # Target must Save vs Hold
+            save_roll = self.dice.roll_d20(f"{target.name} saves vs Hold")
+            # Default save target is 16 (can be adjusted based on creature)
+            save_target = 16
+            if target.stat_block and hasattr(target.stat_block, 'save_hold'):
+                save_target = target.stat_block.save_hold
+
+            if save_roll.total < save_target:
+                result["pushed"] = True
+                result["save_roll"] = save_roll.total
+                result["save_needed"] = save_target
+                result["effect"] = "Target pushed back and/or knocked down"
+            else:
+                result["save_roll"] = save_roll.total
+                result["save_needed"] = save_target
+                result["effect"] = "Target resisted push"
+
+        return result
 
     def attempt_parley(self) -> dict[str, Any]:
         """
