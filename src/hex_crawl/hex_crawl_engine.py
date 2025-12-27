@@ -34,10 +34,72 @@ from src.data_models import (
     TimeOfDay,
     MovementCalculator,
     MovementMode,
+    CharacterState,
+    PointOfInterest,
 )
+from src.narrative.narrative_resolver import (
+    NarrativeResolver,
+    ResolutionResult,
+    NarrationContext,
+)
+from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
 
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# POI EXPLORATION STATE
+# =============================================================================
+
+
+class POIExplorationState(str, Enum):
+    """State of POI exploration within a hex."""
+    DISTANT = "distant"  # Visible from afar
+    APPROACHING = "approaching"  # Moving toward POI
+    AT_ENTRANCE = "at_entrance"  # At the entrance
+    INSIDE = "inside"  # Exploring interior
+    LEAVING = "leaving"  # Departing
+
+
+@dataclass
+class POIVisit:
+    """Tracks a visit to a point of interest."""
+    poi_name: str
+    state: POIExplorationState = POIExplorationState.DISTANT
+    entered: bool = False
+    rooms_explored: list[str] = field(default_factory=list)
+    npcs_encountered: list[str] = field(default_factory=list)
+    items_found: list[str] = field(default_factory=list)
+    time_spent_turns: int = 0
+
+
+@dataclass
+class HexOverview:
+    """
+    Player-facing overview of a hex.
+
+    Contains only information the characters would perceive,
+    without meta-information like hex IDs or location names.
+    """
+    # What the characters see
+    terrain_description: str
+    atmosphere: str  # Weather/time of day mood
+    visible_features: list[str]  # Obvious landscape features
+
+    # Visible points of interest (without revealing hidden ones)
+    visible_locations: list[dict[str, Any]]
+
+    # Travel information
+    terrain_difficulty: str  # Easy/Moderate/Difficult
+    travel_points_to_cross: int
+
+    # Current conditions
+    is_night: bool
+    weather_effects: Optional[str]
+
+    # Special time-of-day observations
+    time_specific_observations: list[str]
 
 
 class RouteType(str, Enum):
@@ -135,6 +197,10 @@ class TravelSegmentResult:
     # Mount/vehicle restrictions (p157)
     mount_restriction: Optional[str] = None
     vehicle_restriction: Optional[str] = None
+    # Player-facing hex description (no meta info like hex IDs)
+    hex_overview: Optional[HexOverview] = None
+    # First time entering this hex?
+    first_visit: bool = False
 
 
 @dataclass
@@ -171,15 +237,23 @@ class HexCrawlEngine:
     - Hex entry/search costs by terrain
     """
 
-    def __init__(self, controller: GlobalController):
+    def __init__(
+        self,
+        controller: GlobalController,
+        narrative_resolver: Optional[NarrativeResolver] = None,
+    ):
         """
         Initialize the hex crawl engine.
 
         Args:
             controller: The global game controller
+            narrative_resolver: Optional resolver for player actions (hazards, foraging, etc.)
         """
         self.controller = controller
         self.dice = DiceRoller()
+
+        # Narrative resolution for player actions (climbing, swimming, foraging, etc.)
+        self.narrative_resolver = narrative_resolver or NarrativeResolver(controller)
 
         # Hex data storage (would be populated from content manager)
         self._hex_data: dict[str, HexLocation] = {}
@@ -199,6 +273,11 @@ class HexCrawlEngine:
         # Current travel state
         self._has_guide: bool = False
         self._has_map: bool = False
+
+        # POI exploration state
+        self._current_poi: Optional[str] = None  # Name of POI currently at/in
+        self._poi_state: POIExplorationState = POIExplorationState.DISTANT
+        self._poi_visits: dict[str, POIVisit] = {}  # hex_id:poi_name -> visit state
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -338,6 +417,10 @@ class HexCrawlEngine:
         if not result.encounter_occurred:
             self.controller.set_party_location(LocationType.HEX, result.actual_hex)
 
+        # Check if this is first visit
+        first_visit = result.actual_hex not in self._explored_hexes
+        result.first_visit = first_visit
+
         # Mark hex as explored
         self._explored_hexes.add(result.actual_hex)
 
@@ -347,6 +430,14 @@ class HexCrawlEngine:
         if weather_effect:
             result.weather_effect = weather_effect
             result.messages.append(f"Weather: {weather_effect}")
+
+        # Get hex overview for player-facing description (no hex IDs or names)
+        result.hex_overview = self.get_hex_overview(result.actual_hex)
+
+        # Clear any previous POI state when entering a new hex
+        if first_visit or result.actual_hex != destination_hex:
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
 
         # Request description if callback registered
         if self._description_callback and not result.encounter_occurred:
@@ -643,3 +734,796 @@ class HexCrawlEngine:
             Weather.BLIZZARD: "Extreme danger, must seek shelter",
         }
         return effects.get(weather)
+
+    # =========================================================================
+    # PLAYER ACTION HANDLING (via NarrativeResolver)
+    # =========================================================================
+
+    def handle_player_action(
+        self,
+        player_input: str,
+        character_id: str,
+        context: Optional[dict[str, Any]] = None,
+    ) -> ResolutionResult:
+        """
+        Handle a player action during wilderness travel via NarrativeResolver.
+
+        This routes non-travel actions to the NarrativeResolver for resolution:
+        - Climbing (cliffs, trees, obstacles)
+        - Swimming (rivers, lakes)
+        - Jumping (ravines, gaps)
+        - Foraging, Fishing, Hunting
+        - Other environmental hazards
+
+        For travel-specific actions (move to hex, search hex), use the
+        dedicated methods like travel_to_hex() and search_hex().
+
+        Args:
+            player_input: The player's action description
+            character_id: ID of the character performing the action
+            context: Optional additional context
+
+        Returns:
+            ResolutionResult with outcomes and narration context
+        """
+        # Get character state
+        character = self.controller.get_character(character_id)
+        if not character:
+            from src.narrative.intent_parser import ActionCategory, ActionType, ParsedIntent
+            return ResolutionResult(
+                success=False,
+                narration_context=NarrationContext(
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                    player_input=player_input,
+                    success=False,
+                    errors=[f"Character not found: {character_id}"],
+                ),
+                parsed_intent=ParsedIntent(
+                    raw_input=player_input,
+                    action_category=ActionCategory.UNKNOWN,
+                    action_type=ActionType.UNKNOWN,
+                ),
+            )
+
+        # Build context with wilderness-specific information
+        action_context = context or {}
+        action_context.update({
+            "game_state": "wilderness_travel",
+            "current_hex": str(self.controller.party_state.location),
+            "terrain": self.get_terrain_for_hex(
+                str(self.controller.party_state.location)
+            ).value if self.controller.party_state else "unknown",
+            "weather": self.controller.world_state.weather.value if self.controller.world_state else "clear",
+            "season": self.controller.world_state.season.value if self.controller.world_state else "normal",
+            "time_of_day": self.controller.world_state.time_of_day.value if self.controller.world_state else "day",
+        })
+
+        # Resolve through NarrativeResolver
+        result = self.narrative_resolver.resolve_player_input(
+            player_input=player_input,
+            character=character,
+            context=action_context,
+        )
+
+        # Apply any damage from the action
+        for target_id, damage in result.apply_damage:
+            self.controller.apply_damage(target_id, damage, "environmental")
+
+        # Apply any conditions
+        for target_id, condition in result.apply_conditions:
+            # Apply condition through controller if available
+            pass  # Condition handling would go through controller
+
+        return result
+
+    def attempt_climb(
+        self,
+        character_id: str,
+        height_feet: int = 10,
+        is_trivial: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to climb an obstacle per Dolmenwood rules (p150).
+
+        Args:
+            character_id: ID of the climbing character
+            height_feet: Height of the climb in feet
+            is_trivial: Whether this is a trivial climb (no roll needed)
+            difficulty: DC for the climb check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.CLIMBING,
+                action_type=ActionType.CLIMB,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.CLIMBING,
+            character=character,
+            height_feet=height_feet,
+            is_trivial=is_trivial,
+            difficulty=difficulty,
+        )
+
+        # Apply any damage from falling
+        if result.damage_dealt > 0:
+            self.controller.apply_damage(character_id, result.damage_dealt, "falling")
+
+        return result
+
+    def attempt_swim(
+        self,
+        character_id: str,
+        armor_weight: str = "unarmoured",
+        rough_waters: bool = False,
+        difficulty: int = 10,
+    ) -> HazardResult:
+        """
+        Attempt to swim per Dolmenwood rules (p154).
+
+        Args:
+            character_id: ID of the swimming character
+            armor_weight: Weight of armor (unarmoured, light, medium, heavy)
+            rough_waters: Whether waters are rough/turbulent
+            difficulty: DC for the swim check
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.SWIMMING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.SWIMMING,
+            character=character,
+            armor_weight=armor_weight,
+            rough_waters=rough_waters,
+            difficulty=difficulty,
+        )
+
+    def attempt_jump(
+        self,
+        character_id: str,
+        distance_feet: int = 5,
+        is_high_jump: bool = False,
+        has_runup: bool = True,
+        armor_weight: str = "unarmoured",
+    ) -> HazardResult:
+        """
+        Attempt a jump per Dolmenwood rules (p153).
+
+        Args:
+            character_id: ID of the jumping character
+            distance_feet: Distance to jump in feet
+            is_high_jump: Whether this is a vertical jump
+            has_runup: Whether character has 20' run-up
+            armor_weight: Weight of armor
+
+        Returns:
+            HazardResult with outcomes
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.JUMPING,
+                action_type=ActionType.JUMP,
+                description="Character not found",
+            )
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.JUMPING,
+            character=character,
+            distance_feet=distance_feet,
+            is_high_jump=is_high_jump,
+            has_runup=has_runup,
+            armor_weight=armor_weight,
+        )
+
+    def attempt_forage(
+        self,
+        character_id: str,
+        method: str = "foraging",
+        full_day: bool = False,
+    ) -> HazardResult:
+        """
+        Attempt to find food in the wild per Dolmenwood rules (p152).
+
+        Args:
+            character_id: ID of the foraging character
+            method: "foraging", "fishing", or "hunting"
+            full_day: Whether spending full day foraging (+2 bonus)
+
+        Returns:
+            HazardResult with outcomes including rations found
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.HUNGER,
+                action_type=ActionType.FORAGE,
+                description="Character not found",
+            )
+
+        # Determine season from world state
+        season = "normal"
+        if self.controller.world_state:
+            if self.controller.world_state.season == Season.WINTER:
+                season = "winter"
+            elif self.controller.world_state.season == Season.AUTUMN:
+                season = "autumn"
+
+        from src.narrative.intent_parser import ActionType
+        return self.narrative_resolver.hazard_resolver.resolve_foraging(
+            character=character,
+            method=method,
+            season=season,
+            full_day=full_day,
+        )
+
+    # =========================================================================
+    # HEX OVERVIEW AND POI VISIBILITY
+    # =========================================================================
+
+    def _is_night(self) -> bool:
+        """Check if it's currently night time."""
+        if not self.controller.world_state:
+            return False
+        time_of_day = self.controller.world_state.time_of_day
+        return time_of_day in (TimeOfDay.DUSK, TimeOfDay.NIGHT, TimeOfDay.MIDNIGHT)
+
+    def _get_terrain_difficulty_description(self, terrain: TerrainType) -> str:
+        """Get human-readable terrain difficulty description."""
+        terrain_info = self.get_terrain_info(terrain)
+        if terrain_info.travel_point_cost <= 2:
+            return "easy"
+        elif terrain_info.travel_point_cost == 3:
+            return "moderate"
+        else:
+            return "difficult"
+
+    def _get_atmosphere_description(self) -> str:
+        """Generate atmospheric description based on time and weather."""
+        parts = []
+
+        # Time of day
+        if self.controller.world_state:
+            time_of_day = self.controller.world_state.time_of_day
+            time_descriptions = {
+                TimeOfDay.DAWN: "The first light of dawn spreads across the land",
+                TimeOfDay.MORNING: "Morning light filters through",
+                TimeOfDay.MIDDAY: "The sun hangs high overhead",
+                TimeOfDay.AFTERNOON: "Afternoon shadows begin to lengthen",
+                TimeOfDay.DUSK: "The fading light of dusk casts long shadows",
+                TimeOfDay.EVENING: "Evening settles over the landscape",
+                TimeOfDay.NIGHT: "Darkness blankets the land",
+                TimeOfDay.MIDNIGHT: "Deep night shrouds everything in darkness",
+            }
+            if time_of_day in time_descriptions:
+                parts.append(time_descriptions[time_of_day])
+
+            # Weather
+            weather = self.controller.world_state.weather
+            weather_descriptions = {
+                Weather.CLEAR: "",
+                Weather.OVERCAST: "under an overcast sky",
+                Weather.FOG: "as mist hangs heavy in the air",
+                Weather.RAIN: "as rain patters down steadily",
+                Weather.STORM: "as thunder rumbles in the distance",
+                Weather.SNOW: "as snow drifts down silently",
+                Weather.BLIZZARD: "as a howling blizzard reduces visibility",
+            }
+            if weather in weather_descriptions and weather_descriptions[weather]:
+                parts.append(weather_descriptions[weather])
+
+        return ", ".join(parts) + "." if parts else "The area stretches before you."
+
+    def _get_time_specific_observations(
+        self,
+        hex_data: HexLocation,
+        is_night: bool
+    ) -> list[str]:
+        """
+        Get observations specific to the current time of day.
+
+        Examines POI special_features for time-dependent descriptions.
+        """
+        observations = []
+
+        for poi in hex_data.points_of_interest:
+            if not poi.is_visible():
+                continue
+
+            # Look for time-specific special features
+            for feature in poi.special_features:
+                feature_lower = feature.lower()
+                if is_night and any(
+                    keyword in feature_lower
+                    for keyword in ["at night", "nighttime", "darkness", "hours of darkness"]
+                ):
+                    # Extract the visible description
+                    observations.append(feature)
+                elif not is_night and any(
+                    keyword in feature_lower
+                    for keyword in ["daytime", "daylight", "during the day"]
+                ):
+                    observations.append(feature)
+
+        return observations
+
+    def get_hex_overview(self, hex_id: str) -> HexOverview:
+        """
+        Get a player-facing overview of a hex.
+
+        Returns only information the characters would perceive,
+        without meta-information like hex IDs or named locations.
+        Characters see what's visible, not what the map says.
+
+        Args:
+            hex_id: The hex identifier (internal use only)
+
+        Returns:
+            HexOverview with player-perceivable information
+        """
+        hex_data = self._hex_data.get(hex_id)
+        is_night = self._is_night()
+
+        if not hex_data:
+            # Unknown hex - provide generic description based on terrain
+            terrain = self.get_terrain_for_hex(hex_id)
+            terrain_info = self.get_terrain_info(terrain)
+            return HexOverview(
+                terrain_description=terrain_info.description,
+                atmosphere=self._get_atmosphere_description(),
+                visible_features=[],
+                visible_locations=[],
+                terrain_difficulty=self._get_terrain_difficulty_description(terrain),
+                travel_points_to_cross=terrain_info.travel_point_cost,
+                is_night=is_night,
+                weather_effects=self._apply_weather_effects(
+                    self.controller.world_state.weather
+                ) if self.controller.world_state else None,
+                time_specific_observations=[],
+            )
+
+        # Build terrain description (use tagline, not hex name)
+        terrain_desc = hex_data.tagline or hex_data.description or hex_data.terrain_description
+
+        # Get visible features from the landscape
+        visible_features = []
+
+        # Add visible landmarks
+        for landmark in getattr(hex_data, "landmarks", []):
+            if hasattr(landmark, "name"):
+                visible_features.append(landmark.name)
+
+        # Get visible POIs (not hidden, or discovered)
+        visible_locations = self.get_visible_pois(hex_id)
+
+        # Get time-specific observations
+        time_observations = self._get_time_specific_observations(hex_data, is_night)
+
+        terrain = self.get_terrain_for_hex(hex_id)
+        terrain_info = self.get_terrain_info(terrain)
+
+        return HexOverview(
+            terrain_description=terrain_desc,
+            atmosphere=self._get_atmosphere_description(),
+            visible_features=visible_features,
+            visible_locations=visible_locations,
+            terrain_difficulty=self._get_terrain_difficulty_description(terrain),
+            travel_points_to_cross=terrain_info.travel_point_cost,
+            is_night=is_night,
+            weather_effects=self._apply_weather_effects(
+                self.controller.world_state.weather
+            ) if self.controller.world_state else None,
+            time_specific_observations=time_observations,
+        )
+
+    def get_visible_pois(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get list of visible points of interest in a hex.
+
+        A POI is visible if:
+        - It's not marked as hidden, OR
+        - It has been discovered through searching
+
+        Does NOT include hex names or IDs - only what characters can see.
+
+        Args:
+            hex_id: The hex identifier
+
+        Returns:
+            List of visible POI information for players
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        is_night = self._is_night()
+        visible = []
+
+        for poi in hex_data.points_of_interest:
+            if not poi.is_visible():
+                continue
+
+            # Build player-facing POI info
+            poi_info = {
+                "type": poi.poi_type,
+                "description": poi.get_description(is_night),
+                "can_approach": poi.visible_from_distance,
+                "is_dungeon": poi.is_dungeon,
+            }
+
+            # Add tagline if available (short evocative description)
+            if poi.tagline:
+                poi_info["brief"] = poi.tagline
+
+            # Add time-specific observations
+            if is_night:
+                night_features = [
+                    f for f in poi.special_features
+                    if any(
+                        kw in f.lower()
+                        for kw in ["at night", "nighttime", "darkness", "hours of darkness"]
+                    )
+                ]
+                if night_features:
+                    poi_info["notable"] = night_features[0]
+
+            visible.append(poi_info)
+
+        return visible
+
+    def discover_poi(self, hex_id: str, poi_name: str) -> bool:
+        """
+        Mark a hidden POI as discovered.
+
+        Called when a search roll succeeds in finding a hidden location.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI to discover
+
+        Returns:
+            True if POI was found and marked discovered
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return False
+
+        for poi in hex_data.points_of_interest:
+            if poi.name.lower() == poi_name.lower():
+                poi.mark_discovered()
+                return True
+
+        return False
+
+    # =========================================================================
+    # POI APPROACH AND EXPLORATION
+    # =========================================================================
+
+    def approach_poi(
+        self,
+        hex_id: str,
+        poi_index: int,
+    ) -> dict[str, Any]:
+        """
+        Approach a visible point of interest within a hex.
+
+        This moves the party from the general hex to the specific location,
+        potentially triggering approach descriptions and hazards.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_index: Index of the POI in visible_locations list
+
+        Returns:
+            Dictionary with approach results and description
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Get visible POIs
+        visible_pois = [poi for poi in hex_data.points_of_interest if poi.is_visible()]
+        if poi_index < 0 or poi_index >= len(visible_pois):
+            return {"success": False, "error": "Invalid location index"}
+
+        poi = visible_pois[poi_index]
+        is_night = self._is_night()
+
+        # Update POI exploration state
+        self._current_poi = poi.name
+        self._poi_state = POIExplorationState.APPROACHING
+
+        # Track visit
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+
+        # Build approach description
+        description_parts = []
+
+        # Add POI description based on time
+        description_parts.append(poi.get_description(is_night))
+
+        # Add exploring description if available
+        if poi.exploring:
+            description_parts.append(poi.exploring)
+
+        # Check for approach hazards in special_features
+        hazards = []
+        for feature in poi.special_features:
+            feature_lower = feature.lower()
+            if any(
+                kw in feature_lower
+                for kw in ["climbing", "thorns", "dangerous", "treacherous"]
+            ):
+                hazards.append(feature)
+
+        result = {
+            "success": True,
+            "poi_type": poi.poi_type,
+            "description": "\n\n".join(description_parts),
+            "can_enter": poi.entering is not None or poi.interior is not None,
+            "is_dungeon": poi.is_dungeon,
+            "hazards": hazards,
+            "state": POIExplorationState.APPROACHING.value,
+        }
+
+        # If there are inhabitants, note them (without revealing secrets)
+        if poi.inhabitants and not is_night:
+            # Some inhabitants might only be present at certain times
+            result["activity_noted"] = True
+
+        return result
+
+    def enter_poi(self, hex_id: str) -> dict[str, Any]:
+        """
+        Enter the currently approached POI.
+
+        Must have called approach_poi first.
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            Dictionary with entry results and interior description
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location - approach first"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        is_night = self._is_night()
+
+        # Check if this is a dungeon - if so, should transition state
+        if poi.is_dungeon:
+            return {
+                "success": False,
+                "is_dungeon": True,
+                "message": "This location requires dungeon exploration mode",
+                "dungeon_levels": poi.dungeon_levels,
+            }
+
+        # Update state
+        self._poi_state = POIExplorationState.AT_ENTRANCE
+
+        # Build entry description
+        description_parts = []
+
+        # Add entering description
+        entering_desc = poi.get_entering_description(is_night)
+        if entering_desc:
+            description_parts.append(entering_desc)
+
+        # Add interior description
+        interior_desc = poi.get_interior_description(is_night)
+        if interior_desc:
+            description_parts.append(interior_desc)
+
+        # Track visit
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key in self._poi_visits:
+            self._poi_visits[visit_key].entered = True
+
+        result = {
+            "success": True,
+            "poi_type": poi.poi_type,
+            "description": "\n\n".join(description_parts),
+            "state": POIExplorationState.AT_ENTRANCE.value,
+        }
+
+        # Include relevant special features for exploration
+        explorable_features = []
+        for feature in poi.special_features:
+            # Filter for features relevant to current time
+            feature_lower = feature.lower()
+            if is_night:
+                if "daytime" in feature_lower or "(daytime)" in feature_lower:
+                    continue
+            else:
+                if "nighttime" in feature_lower or "(nighttime)" in feature_lower:
+                    continue
+                if "at night" in feature_lower:
+                    continue
+            explorable_features.append(feature)
+
+        if explorable_features:
+            result["features_to_explore"] = explorable_features
+
+        # Note NPCs present (if any)
+        if poi.npcs:
+            result["npcs_present"] = True
+            result["npc_count"] = len(poi.npcs)
+
+        return result
+
+    def explore_poi_feature(
+        self,
+        hex_id: str,
+        feature_description: str,
+    ) -> dict[str, Any]:
+        """
+        Examine or interact with a specific feature within a POI.
+
+        Args:
+            hex_id: The hex containing the POI
+            feature_description: Description/name of the feature to examine
+
+        Returns:
+            Dictionary with examination results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        is_night = self._is_night()
+
+        # Find matching feature
+        feature_lower = feature_description.lower()
+        matching_features = []
+        for feature in poi.special_features:
+            if feature_lower in feature.lower() or feature.lower() in feature_lower:
+                matching_features.append(feature)
+
+        if not matching_features:
+            return {
+                "success": False,
+                "error": "That feature is not present or visible",
+            }
+
+        # Check time-appropriateness
+        feature = matching_features[0]
+        if is_night and "(daytime)" in feature.lower():
+            return {
+                "success": False,
+                "error": "This feature is not visible at night",
+            }
+        if not is_night and "at night" in feature.lower():
+            return {
+                "success": True,
+                "description": "Nothing notable is happening here at this time of day.",
+                "hint": "This location may be different at other times.",
+            }
+
+        # Track feature exploration
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key in self._poi_visits:
+            if feature not in self._poi_visits[visit_key].rooms_explored:
+                self._poi_visits[visit_key].rooms_explored.append(feature)
+
+        return {
+            "success": True,
+            "description": feature,
+            "is_time_specific": any(
+                kw in feature.lower()
+                for kw in ["night", "day", "darkness", "light"]
+            ),
+        }
+
+    def leave_poi(self, hex_id: str) -> dict[str, Any]:
+        """
+        Leave the current POI and return to hex exploration.
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            Dictionary with departure results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            # Still allow leaving even without data
+            poi_name = self._current_poi
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+            return {
+                "success": True,
+                "message": f"You depart from the {poi_name}.",
+            }
+
+        # Find the current POI for leaving description
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        # Update state
+        poi_name = self._current_poi
+        self._current_poi = None
+        self._poi_state = POIExplorationState.DISTANT
+
+        result = {
+            "success": True,
+            "message": f"You depart and return to the surrounding terrain.",
+        }
+
+        if poi and poi.leaving:
+            result["description"] = poi.leaving
+
+        return result
+
+    def get_current_poi_state(self) -> dict[str, Any]:
+        """
+        Get the current POI exploration state.
+
+        Returns:
+            Dictionary with current POI info or None if not at a POI
+        """
+        if not self._current_poi:
+            return {"at_poi": False}
+
+        return {
+            "at_poi": True,
+            "poi_name": self._current_poi,
+            "state": self._poi_state.value,
+        }
