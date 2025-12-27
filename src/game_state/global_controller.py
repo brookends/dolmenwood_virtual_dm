@@ -30,7 +30,18 @@ from src.data_models import (
     Condition,
     ConditionType,
     LightSourceType,
+    AreaEffect,
+    PolymorphOverlay,
 )
+
+# Import NarrativeResolver (optional, may not be initialized yet)
+try:
+    from src.narrative import NarrativeResolver, ActiveSpellEffect
+    NARRATIVE_AVAILABLE = True
+except ImportError:
+    NARRATIVE_AVAILABLE = False
+    NarrativeResolver = None
+    ActiveSpellEffect = None
 
 
 # Configure logging
@@ -266,6 +277,11 @@ class GlobalController:
         # Current encounter (if any)
         self._current_encounter: Optional[EncounterState] = None
 
+        # Narrative resolver for effect tracking (optional)
+        self._narrative_resolver: Optional["NarrativeResolver"] = None
+        if NARRATIVE_AVAILABLE:
+            self._narrative_resolver = NarrativeResolver(controller=self)
+
         # Session log
         self._session_log: list[dict[str, Any]] = []
 
@@ -461,6 +477,8 @@ class GlobalController:
         """
         Apply damage to a character.
 
+        Automatically breaks concentration per Dolmenwood rules.
+
         Args:
             character_id: The character to damage
             damage: Amount of damage
@@ -483,6 +501,14 @@ class GlobalController:
             "hp_remaining": character.hp_current,
             "hp_max": character.hp_max,
         }
+
+        # Break concentration on damage (per Dolmenwood rules)
+        if actual_damage > 0 and self._narrative_resolver:
+            broken_effects = self._narrative_resolver.break_concentration(character_id)
+            if broken_effects:
+                result["concentration_broken"] = [
+                    effect.spell_name for effect in broken_effects
+                ]
 
         if character.hp_current <= 0:
             character.conditions.append(
@@ -763,6 +789,301 @@ class GlobalController:
         return new_weather
 
     # =========================================================================
+    # EFFECT MANAGEMENT
+    # =========================================================================
+
+    def get_narrative_resolver(self) -> Optional["NarrativeResolver"]:
+        """Get the narrative resolver for effect tracking."""
+        return self._narrative_resolver
+
+    def tick_spell_effects(self, time_unit: str = "turns") -> list[dict[str, Any]]:
+        """
+        Tick all spell effects and return expired ones.
+
+        Args:
+            time_unit: "rounds" or "turns"
+
+        Returns:
+            List of expired effect info
+        """
+        if not self._narrative_resolver:
+            return []
+
+        expired_effects = self._narrative_resolver.tick_effects(time_unit)
+
+        return [
+            {
+                "effect_id": e.effect_id,
+                "spell_name": e.spell_name,
+                "caster_id": e.caster_id,
+                "target_id": e.target_id,
+            }
+            for e in expired_effects
+        ]
+
+    def tick_location_effects(self, location_id: str) -> list[dict[str, Any]]:
+        """
+        Tick all area effects at a location and return expired ones.
+
+        Args:
+            location_id: The location to tick effects for
+
+        Returns:
+            List of expired effect info
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return []
+
+        expired_effects = location.tick_effects()
+
+        return [
+            {
+                "effect_id": e.effect_id,
+                "name": e.name,
+                "effect_type": e.effect_type.value,
+            }
+            for e in expired_effects
+        ]
+
+    def tick_polymorph_effects(self) -> list[dict[str, Any]]:
+        """
+        Tick all polymorph overlays and return expired ones.
+
+        Returns:
+            List of expired polymorph info
+        """
+        expired = []
+
+        for character in self._characters.values():
+            if character.polymorph_overlay and character.polymorph_overlay.is_active:
+                if character.polymorph_overlay.tick():
+                    expired.append({
+                        "character_id": character.character_id,
+                        "character_name": character.name,
+                        "form_name": character.polymorph_overlay.form_name,
+                    })
+                    character.polymorph_overlay = None
+
+        return expired
+
+    def add_area_effect(
+        self,
+        location_id: str,
+        effect: AreaEffect
+    ) -> dict[str, Any]:
+        """
+        Add an area effect to a location.
+
+        Args:
+            location_id: The location to add the effect to
+            effect: The area effect to add
+
+        Returns:
+            Result of adding the effect
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        location.add_area_effect(effect)
+
+        result = {
+            "effect_id": effect.effect_id,
+            "name": effect.name,
+            "location_id": location_id,
+            "duration_turns": effect.duration_turns,
+        }
+
+        self._log_event("area_effect_added", result)
+        return result
+
+    def remove_area_effect(
+        self,
+        location_id: str,
+        effect_id: str
+    ) -> dict[str, Any]:
+        """
+        Remove an area effect from a location.
+
+        Args:
+            location_id: The location to remove the effect from
+            effect_id: The effect ID to remove
+
+        Returns:
+            Result of removing the effect
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        effect = location.remove_area_effect(effect_id)
+        if not effect:
+            return {"error": f"Effect {effect_id} not found"}
+
+        result = {
+            "effect_id": effect_id,
+            "name": effect.name,
+            "location_id": location_id,
+        }
+
+        self._log_event("area_effect_removed", result)
+        return result
+
+    def apply_polymorph(
+        self,
+        character_id: str,
+        overlay: PolymorphOverlay
+    ) -> dict[str, Any]:
+        """
+        Apply a polymorph transformation to a character.
+
+        Args:
+            character_id: The character to transform
+            overlay: The polymorph overlay to apply
+
+        Returns:
+            Result of applying the transformation
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Remove existing polymorph if any
+        old_form = None
+        if character.polymorph_overlay:
+            old_form = character.polymorph_overlay.form_name
+
+        character.apply_polymorph(overlay)
+
+        result = {
+            "character_id": character_id,
+            "character_name": character.name,
+            "new_form": overlay.form_name,
+            "previous_form": old_form,
+            "duration_turns": overlay.duration_turns,
+        }
+
+        self._log_event("polymorph_applied", result)
+        return result
+
+    def remove_polymorph(self, character_id: str) -> dict[str, Any]:
+        """
+        Remove a polymorph transformation from a character.
+
+        Args:
+            character_id: The character to restore
+
+        Returns:
+            Result of removing the transformation
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        overlay = character.remove_polymorph()
+        if not overlay:
+            return {"error": f"Character {character_id} is not polymorphed"}
+
+        result = {
+            "character_id": character_id,
+            "character_name": character.name,
+            "restored_from": overlay.form_name,
+        }
+
+        self._log_event("polymorph_removed", result)
+        return result
+
+    def get_active_effects_on_character(
+        self,
+        character_id: str
+    ) -> dict[str, Any]:
+        """
+        Get all active effects on a character.
+
+        Args:
+            character_id: The character to check
+
+        Returns:
+            Dictionary with all active effects
+        """
+        result = {
+            "character_id": character_id,
+            "spell_effects": [],
+            "polymorph": None,
+            "conditions": [],
+        }
+
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Spell effects from narrative resolver
+        if self._narrative_resolver:
+            spell_effects = self._narrative_resolver.get_active_effects(character_id)
+            result["spell_effects"] = [
+                {
+                    "effect_id": e.effect_id,
+                    "spell_name": e.spell_name,
+                    "duration_remaining": e.duration_remaining,
+                    "requires_concentration": e.requires_concentration,
+                }
+                for e in spell_effects
+            ]
+
+        # Polymorph overlay
+        if character.polymorph_overlay and character.polymorph_overlay.is_active:
+            result["polymorph"] = {
+                "form_name": character.polymorph_overlay.form_name,
+                "duration_remaining": character.polymorph_overlay.duration_turns,
+            }
+
+        # Conditions
+        result["conditions"] = [
+            {
+                "type": c.condition_type.value,
+                "duration": c.duration_turns,
+                "source": c.source,
+            }
+            for c in character.conditions
+        ]
+
+        return result
+
+    def get_location_effects(self, location_id: str) -> dict[str, Any]:
+        """
+        Get all area effects at a location.
+
+        Args:
+            location_id: The location to check
+
+        Returns:
+            Dictionary with all active area effects
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        return {
+            "location_id": location_id,
+            "effects": [
+                {
+                    "effect_id": e.effect_id,
+                    "name": e.name,
+                    "effect_type": e.effect_type.value,
+                    "duration_remaining": e.duration_turns,
+                    "blocks_movement": e.blocks_movement,
+                    "blocks_vision": e.blocks_vision,
+                    "blocks_sound": e.blocks_sound,
+                }
+                for e in location.get_active_effects()
+            ],
+            "has_blocking_movement": location.has_blocking_effect("movement"),
+            "has_blocking_vision": location.has_blocking_effect("vision"),
+            "has_blocking_sound": location.has_blocking_effect("sound"),
+        }
+
+    # =========================================================================
     # INTERNAL CALLBACKS
     # =========================================================================
 
@@ -783,7 +1104,14 @@ class GlobalController:
 
     def _on_turn_advance(self, turns: int) -> None:
         """Called when exploration turns advance."""
-        pass  # Override in subclasses if needed
+        # Tick spell effects
+        for _ in range(turns):
+            self.tick_spell_effects("turns")
+            self.tick_polymorph_effects()
+
+            # Tick area effects at current location
+            if self.party_state.location:
+                self.tick_location_effects(self.party_state.location.location_id)
 
     def _on_watch_advance(self, watches: int) -> None:
         """Called when watches advance."""

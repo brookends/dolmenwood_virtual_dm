@@ -1616,10 +1616,27 @@ class CharacterState:
     # Encumbrance tracking (p148-149)
     encumbrance_system: EncumbranceSystem = EncumbranceSystem.WEIGHT
     armor_weight: ArmorWeight = ArmorWeight.UNARMOURED
+    # Polymorph overlay for transformations
+    polymorph_overlay: Optional["PolymorphOverlay"] = None
+
+    def get_ability_score(self, ability: str) -> int:
+        """
+        Get effective ability score, applying polymorph overlay if active.
+
+        Args:
+            ability: Ability name (STR, DEX, CON, INT, WIS, CHA)
+
+        Returns:
+            Effective ability score
+        """
+        base_score = self.ability_scores.get(ability.upper(), 10)
+        if self.polymorph_overlay and self.polymorph_overlay.is_active:
+            return self.polymorph_overlay.get_effective_ability(ability, base_score)
+        return base_score
 
     def get_ability_modifier(self, ability: str) -> int:
         """Get B/X-style ability modifier."""
-        score = self.ability_scores.get(ability.upper(), 10)
+        score = self.get_ability_score(ability)
         if score <= 3:
             return -3
         elif score <= 5:
@@ -1634,6 +1651,44 @@ class CharacterState:
             return 2
         else:
             return 3
+
+    def get_effective_ac(self) -> int:
+        """Get effective armor class, applying polymorph overlay if active."""
+        if self.polymorph_overlay and self.polymorph_overlay.is_active:
+            if self.polymorph_overlay.armor_class is not None:
+                return self.polymorph_overlay.armor_class
+        return self.armor_class
+
+    def get_effective_movement(self) -> int:
+        """Get effective movement rate, applying polymorph overlay if active."""
+        if self.polymorph_overlay and self.polymorph_overlay.is_active:
+            if self.polymorph_overlay.movement_rate is not None:
+                return self.polymorph_overlay.movement_rate
+        return self.get_encumbered_speed()
+
+    def get_effective_attacks(self) -> list[dict]:
+        """Get available attacks, using polymorph form attacks if active."""
+        if self.polymorph_overlay and self.polymorph_overlay.is_active:
+            if self.polymorph_overlay.attacks:
+                return self.polymorph_overlay.attacks
+        # Default attacks would come from class/equipment
+        return []
+
+    def apply_polymorph(self, overlay: "PolymorphOverlay") -> None:
+        """Apply a polymorph transformation overlay."""
+        overlay.character_id = self.character_id
+        self.polymorph_overlay = overlay
+
+    def remove_polymorph(self) -> Optional["PolymorphOverlay"]:
+        """Remove and return the current polymorph overlay."""
+        overlay = self.polymorph_overlay
+        self.polymorph_overlay = None
+        return overlay
+
+    def is_polymorphed(self) -> bool:
+        """Check if character currently has an active polymorph effect."""
+        return (self.polymorph_overlay is not None and
+                self.polymorph_overlay.is_active)
 
     def is_alive(self) -> bool:
         """Check if character is alive."""
@@ -1730,6 +1785,220 @@ class CharacterState:
 # =============================================================================
 
 
+class AreaEffectType(str, Enum):
+    """Types of area effects that can exist in locations."""
+    WEB = "web"                     # Restricts movement
+    FOG = "fog"                     # Obscures vision
+    DARKNESS = "darkness"           # Magical darkness
+    LIGHT = "light"                 # Magical light
+    SILENCE = "silence"             # Blocks sound/spells with verbal components
+    STINKING_CLOUD = "stinking_cloud"  # Nauseating gas
+    GREASE = "grease"               # Slippery surface
+    ENTANGLE = "entangle"           # Plants restrain creatures
+    ILLUSION = "illusion"           # Illusory terrain/objects
+    CUSTOM = "custom"               # Custom effect
+
+
+@dataclass
+class AreaEffect:
+    """
+    An effect that applies to an area (location).
+
+    Used for spells like Web, Fog Cloud, Silence, etc. that create
+    persistent effects in a specific location.
+    """
+    effect_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    effect_type: AreaEffectType = AreaEffectType.CUSTOM
+    name: str = ""
+    description: str = ""
+
+    # Source tracking
+    source_spell_id: Optional[str] = None
+    caster_id: Optional[str] = None
+
+    # Location
+    location_id: str = ""
+    location_type: LocationType = LocationType.DUNGEON_ROOM
+    area_radius_feet: int = 0  # 0 = entire location
+
+    # Duration (tied to turn/time system)
+    duration_turns: Optional[int] = None  # None = permanent until dispelled
+    is_permanent: bool = False
+    created_at: datetime = field(default_factory=datetime.now)
+
+    # Mechanical effects
+    blocks_movement: bool = False
+    blocks_vision: bool = False
+    blocks_sound: bool = False
+    blocks_magic: bool = False
+    damage_per_turn: Optional[str] = None  # Dice notation, e.g., "1d6"
+    damage_type: Optional[str] = None
+    save_type: Optional[str] = None  # "doom", "ray", "hold", "blast", "spell"
+    save_negates: bool = False
+    save_halves_damage: bool = False
+
+    # For entering/exiting the area
+    enter_effect: Optional[str] = None  # Description of effect on entry
+    exit_effect: Optional[str] = None   # Description of effect on exit
+
+    # State
+    is_active: bool = True
+    dismissed: bool = False
+
+    def tick(self) -> bool:
+        """
+        Advance time by one turn.
+
+        Returns:
+            True if effect has expired
+        """
+        if not self.is_active:
+            return True
+
+        if self.is_permanent:
+            return False
+
+        if self.duration_turns is not None:
+            self.duration_turns -= 1
+            if self.duration_turns <= 0:
+                self.is_active = False
+                return True
+
+        return False
+
+    def dismiss(self) -> bool:
+        """
+        Dismiss the area effect.
+
+        Returns:
+            True if successfully dismissed
+        """
+        if self.is_active:
+            self.dismissed = True
+            self.is_active = False
+            return True
+        return False
+
+
+@dataclass
+class PolymorphOverlay:
+    """
+    Temporary stat overlay for polymorph-style transformations.
+
+    When a character is polymorphed, this overlay temporarily replaces
+    their physical stats (STR, DEX, CON, AC, attacks) while preserving
+    their mental stats (INT, WIS, CHA) and identity.
+
+    The overlay is applied on top of the character's base stats and
+    is removed when the polymorph effect ends.
+    """
+    overlay_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+    # What triggered this transformation
+    source_effect_id: Optional[str] = None
+    source_spell_id: Optional[str] = None
+    caster_id: Optional[str] = None
+
+    # Target character
+    character_id: str = ""
+
+    # New form description
+    form_name: str = ""
+    form_description: str = ""
+
+    # Overridden physical stats
+    # None means use original stat
+    strength: Optional[int] = None
+    dexterity: Optional[int] = None
+    constitution: Optional[int] = None
+    armor_class: Optional[int] = None
+    movement_rate: Optional[int] = None
+    hp_max: Optional[int] = None  # Some polymorphs change HP
+
+    # New attack options (replaces character's normal attacks)
+    attacks: list[dict] = field(default_factory=list)  # [{"name": "Claw", "damage": "1d6", "bonus": 2}]
+
+    # Special abilities gained in this form
+    special_abilities: list[str] = field(default_factory=list)
+    immunities: list[str] = field(default_factory=list)
+    vulnerabilities: list[str] = field(default_factory=list)
+
+    # Movement modes
+    can_fly: bool = False
+    fly_speed: Optional[int] = None
+    can_swim: bool = False
+    swim_speed: Optional[int] = None
+    can_burrow: bool = False
+    burrow_speed: Optional[int] = None
+
+    # Restrictions in this form
+    can_speak: bool = True
+    can_cast_spells: bool = True
+    can_use_items: bool = True
+
+    # Duration tracking
+    duration_turns: Optional[int] = None
+    is_permanent: bool = False
+    created_at: datetime = field(default_factory=datetime.now)
+
+    # State
+    is_active: bool = True
+
+    def tick(self) -> bool:
+        """
+        Advance time by one turn.
+
+        Returns:
+            True if transformation has ended
+        """
+        if not self.is_active:
+            return True
+
+        if self.is_permanent:
+            return False
+
+        if self.duration_turns is not None:
+            self.duration_turns -= 1
+            if self.duration_turns <= 0:
+                self.is_active = False
+                return True
+
+        return False
+
+    def end_transformation(self) -> bool:
+        """
+        End the transformation early (dispel, caster's choice, etc.).
+
+        Returns:
+            True if successfully ended
+        """
+        if self.is_active:
+            self.is_active = False
+            return True
+        return False
+
+    def get_effective_ability(self, ability: str, base_value: int) -> int:
+        """
+        Get the effective ability score, applying overlay if applicable.
+
+        Args:
+            ability: Ability name (STR, DEX, CON, INT, WIS, CHA)
+            base_value: Character's base ability score
+
+        Returns:
+            Effective ability score (overlaid or base)
+        """
+        ability_upper = ability.upper()
+        if ability_upper == "STR" and self.strength is not None:
+            return self.strength
+        elif ability_upper == "DEX" and self.dexterity is not None:
+            return self.dexterity
+        elif ability_upper == "CON" and self.constitution is not None:
+            return self.constitution
+        # Mental stats are never overridden
+        return base_value
+
+
 @dataclass
 class LocationState:
     """
@@ -1760,6 +2029,63 @@ class LocationState:
     buildings: list[str] = field(default_factory=list)
     services: list[str] = field(default_factory=list)
     population: Optional[int] = None
+
+    # Area effects (spells, environmental hazards affecting the location)
+    area_effects: list[AreaEffect] = field(default_factory=list)
+
+    def add_area_effect(self, effect: AreaEffect) -> None:
+        """Add an area effect to this location."""
+        effect.location_id = self.location_id
+        effect.location_type = self.location_type
+        self.area_effects.append(effect)
+
+    def remove_area_effect(self, effect_id: str) -> Optional[AreaEffect]:
+        """Remove an area effect by ID."""
+        for i, effect in enumerate(self.area_effects):
+            if effect.effect_id == effect_id:
+                return self.area_effects.pop(i)
+        return None
+
+    def get_active_effects(self) -> list[AreaEffect]:
+        """Get all active area effects."""
+        return [e for e in self.area_effects if e.is_active]
+
+    def tick_effects(self) -> list[AreaEffect]:
+        """
+        Advance time for all area effects.
+
+        Returns:
+            List of effects that expired
+        """
+        expired = []
+        for effect in self.area_effects:
+            if effect.tick():
+                expired.append(effect)
+
+        # Clean up expired effects
+        self.area_effects = [e for e in self.area_effects if e.is_active]
+        return expired
+
+    def has_blocking_effect(self, block_type: str) -> bool:
+        """
+        Check if location has an effect blocking something.
+
+        Args:
+            block_type: "movement", "vision", "sound", "magic"
+
+        Returns:
+            True if such a blocking effect exists
+        """
+        for effect in self.get_active_effects():
+            if block_type == "movement" and effect.blocks_movement:
+                return True
+            elif block_type == "vision" and effect.blocks_vision:
+                return True
+            elif block_type == "sound" and effect.blocks_sound:
+                return True
+            elif block_type == "magic" and effect.blocks_magic:
+                return True
+        return False
 
 
 # =============================================================================
