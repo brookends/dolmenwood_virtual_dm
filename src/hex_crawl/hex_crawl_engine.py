@@ -49,78 +49,168 @@ class NavigationResult(str, Enum):
 class TravelPace(str, Enum):
     """Travel pace affecting speed and encounters."""
     CAUTIOUS = "cautious"  # Half speed, +1 surprise others
-    NORMAL = "normal"
-    FAST = "fast"  # 1.5x speed, -1 surprise check
+    NORMAL = "normal"  # 8 hours travel, 4 hours rest (p156)
+    FORCED_MARCH = "forced_march"  # 12 hours travel, 50% more Travel Points (p156)
+
+
+class TerrainDifficulty(str, Enum):
+    """Terrain difficulty categories per Dolmenwood rules (p157)."""
+    LIGHT = "light"      # 2 TP to enter/search, 1-in-6 lost/encounters
+    MODERATE = "moderate"  # 3 TP to enter/search, 2-in-6 lost/encounters
+    DIFFICULT = "difficult"  # 4 TP to enter/search, 3-in-6 lost/encounters
+    ROAD = "road"        # 2 TP per 6 miles, no lost chance
+    TRACK = "track"      # 2 TP per 6 miles, 1-in-6 lost chance
+
+
+class MountVehicleRestriction(str, Enum):
+    """Mount and vehicle restrictions by terrain (p157)."""
+    ALLOWED = "allowed"  # Mounts and vehicles may enter
+    MOUNTS_LED = "mounts_led"  # Mounts must be led, no vehicles
+    NONE = "none"  # No mounts or vehicles
 
 
 @dataclass
 class TerrainInfo:
-    """Information about terrain type."""
+    """
+    Information about terrain type per Dolmenwood rules (p157).
+
+    Terrain is categorized as Light, Moderate, or Difficult:
+    - Light: 2 TP, 1-in-6 lost/encounters, mounts/vehicles allowed
+    - Moderate: 3 TP, 2-in-6 lost/encounters, mounts led only
+    - Difficult: 4 TP, 3-in-6 lost/encounters, no mounts/vehicles
+    """
     terrain_type: TerrainType
-    movement_cost: float  # Multiplier (1.0 = normal, 2.0 = half speed)
-    encounter_chance: int  # X in 1-in-X chance (6 = 1-in-6)
-    navigation_difficulty: int  # Modifier to navigation check
+    difficulty: TerrainDifficulty
+    travel_points: int  # Travel Points to enter/search hex (p157)
+    lost_chance: int  # X-in-6 chance of getting lost (p157)
+    encounter_chance: int  # X-in-6 chance of encounter (p157)
+    mount_vehicle: MountVehicleRestriction
     description: str = ""
 
 
-# Terrain definitions
+# Terrain definitions per Dolmenwood rules (p157)
 TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
+    # Roads and Tracks (p156) - 2 TP per 6 miles
     TerrainType.ROAD: TerrainInfo(
-        TerrainType.ROAD, 0.5, 8, -2,
-        "Well-maintained road through the woods"
+        TerrainType.ROAD,
+        TerrainDifficulty.ROAD,
+        travel_points=2,  # Per 6 miles
+        lost_chance=0,  # No chance of getting lost on roads
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Well-maintained road through the woods"
     ),
     TerrainType.TRAIL: TerrainInfo(
-        TerrainType.TRAIL, 0.75, 6, -1,
-        "Winding forest trail"
+        TerrainType.TRAIL,
+        TerrainDifficulty.TRACK,
+        travel_points=2,  # Per 6 miles
+        lost_chance=1,  # 1-in-6 on tracks (p157)
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Winding forest trail"
     ),
-    TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST, 1.0, 6, 0,
-        "Dense Dolmenwood forest"
-    ),
-    TerrainType.DEEP_FOREST: TerrainInfo(
-        TerrainType.DEEP_FOREST, 1.5, 4, 2,
-        "Primeval deep forest with ancient trees"
-    ),
-    TerrainType.MOOR: TerrainInfo(
-        TerrainType.MOOR, 1.25, 6, 1,
-        "Misty moorland"
-    ),
-    TerrainType.RIVER: TerrainInfo(
-        TerrainType.RIVER, 2.0, 4, 0,
-        "River crossing required"
-    ),
-    TerrainType.LAKE: TerrainInfo(
-        TerrainType.LAKE, 3.0, 4, 0,
-        "Lake - requires boat or detour"
+    # Light Terrain (p157) - 2 TP, 1-in-6
+    TerrainType.FARMLAND: TerrainInfo(
+        TerrainType.FARMLAND,
+        TerrainDifficulty.LIGHT,
+        travel_points=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Tilled fields and lanes"
     ),
     TerrainType.HILLS: TerrainInfo(
-        TerrainType.HILLS, 1.5, 6, 1,
-        "Wooded hills"
+        TerrainType.HILLS,
+        TerrainDifficulty.LIGHT,
+        travel_points=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Undulating grassland"
+    ),
+    TerrainType.FOREST: TerrainInfo(
+        TerrainType.FOREST,
+        TerrainDifficulty.LIGHT,
+        travel_points=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Light, airy woods (open forest)"
+    ),
+    # Moderate Terrain (p157) - 3 TP, 2-in-6
+    TerrainType.MOOR: TerrainInfo(
+        TerrainType.MOOR,
+        TerrainDifficulty.MODERATE,
+        travel_points=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_vehicle=MountVehicleRestriction.MOUNTS_LED,
+        description="Treeless mire (bog)"
+    ),
+    TerrainType.DEEP_FOREST: TerrainInfo(
+        TerrainType.DEEP_FOREST,
+        TerrainDifficulty.MODERATE,
+        travel_points=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_vehicle=MountVehicleRestriction.MOUNTS_LED,
+        description="Dense, gloomy tangled forest"
+    ),
+    TerrainType.RIVER: TerrainInfo(
+        TerrainType.RIVER,
+        TerrainDifficulty.MODERATE,
+        travel_points=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_vehicle=MountVehicleRestriction.MOUNTS_LED,
+        description="River crossing required"
+    ),
+    # Difficult Terrain (p157) - 4 TP, 3-in-6
+    TerrainType.SWAMP: TerrainInfo(
+        TerrainType.SWAMP,
+        TerrainDifficulty.DIFFICULT,
+        travel_points=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_vehicle=MountVehicleRestriction.NONE,
+        description="Wetland with sparse trees"
     ),
     TerrainType.MOUNTAINS: TerrainInfo(
-        TerrainType.MOUNTAINS, 2.0, 4, 2,
-        "Mountain terrain"
+        TerrainType.MOUNTAINS,
+        TerrainDifficulty.DIFFICULT,
+        travel_points=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_vehicle=MountVehicleRestriction.NONE,
+        description="Craggy forest with broken terrain"
     ),
-    TerrainType.SWAMP: TerrainInfo(
-        TerrainType.SWAMP, 2.0, 3, 2,
-        "Treacherous swampland"
-    ),
-    TerrainType.FARMLAND: TerrainInfo(
-        TerrainType.FARMLAND, 0.75, 8, -1,
-        "Cultivated farmland"
+    TerrainType.LAKE: TerrainInfo(
+        TerrainType.LAKE,
+        TerrainDifficulty.DIFFICULT,
+        travel_points=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_vehicle=MountVehicleRestriction.NONE,
+        description="Lake - requires boat or detour"
     ),
     TerrainType.SETTLEMENT: TerrainInfo(
-        TerrainType.SETTLEMENT, 0.5, 12, -2,
-        "Settled area"
+        TerrainType.SETTLEMENT,
+        TerrainDifficulty.LIGHT,
+        travel_points=2,
+        lost_chance=0,
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Settled area"
     ),
 }
 
 
 @dataclass
 class TravelSegmentResult:
-    """Result of processing one travel segment."""
+    """Result of processing one travel segment per Dolmenwood rules (p156-157)."""
     success: bool
-    time_spent_turns: int
+    travel_points_spent: int  # Travel Points consumed (p156)
+    travel_points_remaining: int  # TP remaining for the day
     navigation_result: NavigationResult
     encounter_occurred: bool
     encounter: Optional[EncounterState] = None
@@ -131,18 +221,44 @@ class TravelSegmentResult:
     resource_consumed: dict[str, float] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     messages: list[str] = field(default_factory=list)
+    # Mount/vehicle restrictions (p157)
+    mount_restriction: Optional[str] = None
+    vehicle_restriction: Optional[str] = None
+
+
+@dataclass
+class TravelDayState:
+    """
+    Tracks travel state for a single day per Dolmenwood rules (p156).
+
+    Travel Points per day = Speed / 5:
+    - Speed 40 (mounted): 8 TP normal, 12 TP forced march
+    - Speed 30 (cart/wagon): 6 TP normal, 9 TP forced march
+    - Speed 20: 4 TP normal, 6 TP forced march
+    """
+    base_speed: int = 30  # Party base speed
+    travel_points_max: int = 6  # TP for the day (speed / 5)
+    travel_points_remaining: int = 6
+    is_forced_march: bool = False
+    days_since_rest: int = 0  # For weekly rest requirement (p157)
+    consecutive_forced_marches: int = 0  # For cumulative exhaustion (p156)
+    lost_check_made: bool = False  # One lost check per day (p157)
+    encounter_check_made: bool = False  # One encounter check per day (p157)
 
 
 class HexCrawlEngine:
     """
-    Engine for wilderness/hex crawl exploration.
+    Engine for wilderness/hex crawl exploration per Dolmenwood rules (p156-157).
 
     Manages:
-    - Movement between hexes
-    - Navigation checks
-    - Random encounter checks
+    - Travel Points system (Speed / 5 per day)
+    - Movement between hexes (2-4 TP depending on terrain)
+    - Navigation checks (X-in-6 based on terrain, visibility modifiers)
+    - Random encounter checks (X-in-6 based on terrain)
     - Weather and terrain effects
-    - Resource consumption during travel
+    - Forced march and exhaustion
+    - Weekly rest requirements
+    - Mount and vehicle restrictions
     """
 
     def __init__(self, controller: GlobalController):
@@ -161,17 +277,101 @@ class HexCrawlEngine:
         # Track exploration
         self._explored_hexes: set[str] = set()
 
-        # Current travel state
-        self._travel_pace: TravelPace = TravelPace.NORMAL
+        # Current travel state per Dolmenwood rules (p156)
+        self._travel_day: TravelDayState = TravelDayState()
+        self._is_mounted: bool = False  # Mounted party has Speed 40 (p156)
+        self._has_vehicle: bool = False  # Cart/wagon = Speed 30 (p156)
         self._has_guide: bool = False
         self._has_map: bool = False
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
 
-    def set_travel_pace(self, pace: TravelPace) -> None:
-        """Set the current travel pace."""
-        self._travel_pace = pace
+    # =========================================================================
+    # TRAVEL POINTS MANAGEMENT (p156)
+    # =========================================================================
+
+    def start_travel_day(self, forced_march: bool = False) -> TravelDayState:
+        """
+        Start a new travel day and calculate Travel Points.
+
+        Travel Points = Speed / 5 (p156)
+        - Speed 40 (mounted): 8 TP normal, 12 TP forced march
+        - Speed 30 (cart/wagon): 6 TP normal, 9 TP forced march
+        - Speed 20: 4 TP normal, 6 TP forced march
+
+        Forced march adds 50% more TP but requires rest next day (p156).
+        """
+        # Determine base speed
+        if self._is_mounted:
+            base_speed = 40
+        elif self._has_vehicle:
+            base_speed = 30
+        else:
+            base_speed = 30  # Default walking speed
+
+        # Calculate Travel Points
+        base_tp = base_speed // 5
+        if forced_march:
+            travel_points = int(base_tp * 1.5)  # 50% more for forced march
+        else:
+            travel_points = base_tp
+
+        # Check for forced march exhaustion (p156)
+        warnings = []
+        if self._travel_day.is_forced_march and not forced_march:
+            # Previous day was forced march, need rest or exhaustion
+            warnings.append("Must rest today after forced march or become exhausted")
+
+        # Check weekly rest requirement (p157)
+        if self._travel_day.days_since_rest >= 6:
+            warnings.append("Must rest - 6 days of travel without rest causes exhaustion")
+
+        self._travel_day = TravelDayState(
+            base_speed=base_speed,
+            travel_points_max=travel_points,
+            travel_points_remaining=travel_points,
+            is_forced_march=forced_march,
+            days_since_rest=self._travel_day.days_since_rest + 1,
+            consecutive_forced_marches=(
+                self._travel_day.consecutive_forced_marches + 1 if forced_march
+                else 0
+            ),
+        )
+
+        return self._travel_day
+
+    def get_travel_points_remaining(self) -> int:
+        """Get remaining Travel Points for today."""
+        return self._travel_day.travel_points_remaining
+
+    def rest_day(self) -> dict[str, Any]:
+        """
+        Take a rest day (p157).
+
+        Characters must rest 1 day per week (6 days travel, 1 day rest)
+        or become exhausted.
+        """
+        result = {
+            "rested": True,
+            "days_since_rest_before": self._travel_day.days_since_rest,
+            "forced_march_recovery": self._travel_day.is_forced_march,
+        }
+
+        self._travel_day.days_since_rest = 0
+        self._travel_day.consecutive_forced_marches = 0
+        self._travel_day.is_forced_march = False
+        self._travel_day.travel_points_remaining = 0
+
+        return result
+
+    def set_mounted(self, mounted: bool) -> None:
+        """Set whether party is mounted (Speed 40)."""
+        self._is_mounted = mounted
+
+    def set_has_vehicle(self, has_vehicle: bool) -> None:
+        """Set whether party has cart/wagon (Speed 30)."""
+        self._has_vehicle = has_vehicle
 
     def set_has_guide(self, has_guide: bool) -> None:
         """Set whether party has a local guide."""
@@ -205,7 +405,7 @@ class HexCrawlEngine:
         return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.FOREST])
 
     # =========================================================================
-    # MAIN TRAVEL LOOP (Section 5.2)
+    # MAIN TRAVEL LOOP (p156-157)
     # =========================================================================
 
     def travel_to_hex(
@@ -214,9 +414,15 @@ class HexCrawlEngine:
         terrain_override: Optional[TerrainType] = None
     ) -> TravelSegmentResult:
         """
-        Execute one travel segment to an adjacent hex.
+        Execute one travel segment to an adjacent hex per Dolmenwood rules (p156-157).
 
-        Implements the Wilderness Travel Loop from Section 5.2.
+        Travel Procedure Per Day:
+        1. Weather (determined by Referee)
+        2. Decide course
+        3. Losing direction check (once per day)
+        4. Wandering monster check (once per day)
+        5. Description of terrain and sites
+        6. End of day - camping, time updates
 
         Args:
             destination_hex: Target hex ID
@@ -229,84 +435,102 @@ class HexCrawlEngine:
         if self.controller.current_state != GameState.WILDERNESS_TRAVEL:
             return TravelSegmentResult(
                 success=False,
-                time_spent_turns=0,
+                travel_points_spent=0,
+                travel_points_remaining=self._travel_day.travel_points_remaining,
                 navigation_result=NavigationResult.SUCCESS,
                 encounter_occurred=False,
                 warnings=["Not in WILDERNESS_TRAVEL state"]
             )
 
+        # Get terrain info
+        terrain = terrain_override or self.get_terrain_for_hex(destination_hex)
+        terrain_info = self.get_terrain_info(terrain)
+
+        # Check mount/vehicle restrictions (p157)
+        restriction_result = self._check_mount_vehicle_restrictions(terrain_info)
+        if not restriction_result["allowed"]:
+            return TravelSegmentResult(
+                success=False,
+                travel_points_spent=0,
+                travel_points_remaining=self._travel_day.travel_points_remaining,
+                navigation_result=NavigationResult.SUCCESS,
+                encounter_occurred=False,
+                warnings=[restriction_result["reason"]],
+                mount_restriction=restriction_result.get("mount_restriction"),
+                vehicle_restriction=restriction_result.get("vehicle_restriction"),
+            )
+
+        # Check if enough Travel Points remain
+        tp_cost = terrain_info.travel_points
+        if self._travel_day.travel_points_remaining < tp_cost:
+            # Not enough TP - partial progress (p157)
+            partial_tp = self._travel_day.travel_points_remaining
+            self._travel_day.travel_points_remaining = 0
+            return TravelSegmentResult(
+                success=False,
+                travel_points_spent=partial_tp,
+                travel_points_remaining=0,
+                navigation_result=NavigationResult.SUCCESS,
+                encounter_occurred=False,
+                destination_hex=destination_hex,
+                actual_hex="",  # Didn't reach destination
+                messages=[
+                    f"Not enough Travel Points to enter hex. "
+                    f"Spent {partial_tp} TP, need {tp_cost - partial_tp} more tomorrow."
+                ],
+            )
+
         result = TravelSegmentResult(
             success=True,
-            time_spent_turns=0,
+            travel_points_spent=tp_cost,
+            travel_points_remaining=self._travel_day.travel_points_remaining - tp_cost,
             navigation_result=NavigationResult.SUCCESS,
             encounter_occurred=False,
             destination_hex=destination_hex,
             actual_hex=destination_hex,
         )
 
-        # Get terrain info
-        terrain = terrain_override or self.get_terrain_for_hex(destination_hex)
-        terrain_info = self.get_terrain_info(terrain)
-
-        # 1. Calculate and advance time
-        base_turns = 24  # 4 hours base for one hex
-        pace_modifier = {
-            TravelPace.CAUTIOUS: 2.0,
-            TravelPace.NORMAL: 1.0,
-            TravelPace.FAST: 0.67,
-        }
-        time_multiplier = terrain_info.movement_cost * pace_modifier[self._travel_pace]
-        result.time_spent_turns = int(base_turns * time_multiplier)
-
-        time_result = self.controller.advance_time(result.time_spent_turns)
+        # Spend Travel Points
+        self._travel_day.travel_points_remaining -= tp_cost
         result.messages.append(
-            f"Travel time: {result.time_spent_turns // 6} hours "
-            f"({result.time_spent_turns} turns)"
+            f"Spent {tp_cost} Travel Points ({result.travel_points_remaining} remaining)"
         )
 
-        # 2. Check for resource consumption (handled by controller on day boundary)
-        if time_result.get("days_passed", 0) > 0:
-            result.resource_consumed["food_days"] = time_result["days_passed"]
-            result.resource_consumed["water_days"] = time_result["days_passed"]
+        # 3. Navigation/lost check (once per day at start) (p157)
+        if not self._travel_day.lost_check_made:
+            nav_result = self._check_navigation(terrain_info)
+            result.navigation_result = nav_result
+            self._travel_day.lost_check_made = True
 
-        # Check light expiration
-        if time_result.get("light_extinguished"):
-            result.warnings.append(
-                f"Light source ({time_result['light_source']}) has gone out!"
-            )
+            if nav_result == NavigationResult.LOST:
+                result.actual_hex = self._get_random_adjacent_hex(destination_hex)
+                result.warnings.append("The party has become lost!")
+                result.messages.append(f"Wandered to hex {result.actual_hex} instead")
+            elif nav_result == NavigationResult.VEERED:
+                result.actual_hex = self._get_veered_hex(destination_hex)
+                result.warnings.append("The party veered off course")
+                result.messages.append(f"Arrived at hex {result.actual_hex} instead")
 
-        # 3. Navigation check
-        nav_result = self._check_navigation(terrain_info)
-        result.navigation_result = nav_result
+        # 4. Encounter check (once per day) (p157)
+        if not self._travel_day.encounter_check_made:
+            encounter_roll = self._check_encounter(terrain_info)
+            self._travel_day.encounter_check_made = True
 
-        if nav_result == NavigationResult.LOST:
-            # Roll for random adjacent hex
-            result.actual_hex = self._get_random_adjacent_hex(destination_hex)
-            result.warnings.append("The party has become lost!")
-            result.messages.append(f"Wandered to hex {result.actual_hex} instead")
-        elif nav_result == NavigationResult.VEERED:
-            # Went to a different adjacent hex
-            result.actual_hex = self._get_veered_hex(destination_hex)
-            result.warnings.append("The party veered off course")
-            result.messages.append(f"Arrived at hex {result.actual_hex} instead")
+            if encounter_roll:
+                result.encounter_occurred = True
+                result.encounter = self._generate_encounter(result.actual_hex, terrain)
 
-        # 4. Encounter check
-        encounter_roll = self._check_encounter(terrain_info)
-        if encounter_roll:
-            result.encounter_occurred = True
-            result.encounter = self._generate_encounter(result.actual_hex, terrain)
-
-            # Transition to unified ENCOUNTER state
-            self.controller.transition(
-                "encounter_triggered",
-                context={
-                    "hex_id": result.actual_hex,
-                    "terrain": terrain.value,
-                    "encounter_type": result.encounter.encounter_type.value,
-                    "source": "wilderness_travel",
-                }
-            )
-            result.messages.append("Encounter!")
+                # Transition to unified ENCOUNTER state
+                self.controller.transition(
+                    "encounter_triggered",
+                    context={
+                        "hex_id": result.actual_hex,
+                        "terrain": terrain.value,
+                        "encounter_type": result.encounter.encounter_type.value,
+                        "source": "wilderness_travel",
+                    }
+                )
+                result.messages.append("Encounter!")
 
         # 5. Apply weather effects
         weather = self.controller.world_state.weather
@@ -342,71 +566,116 @@ class HexCrawlEngine:
 
         return result
 
+    def _check_mount_vehicle_restrictions(
+        self, terrain_info: TerrainInfo
+    ) -> dict[str, Any]:
+        """
+        Check if mounts and vehicles can enter terrain (p157).
+
+        - Light terrain: Mounts and vehicles may enter
+        - Moderate terrain: Mounts must be led, no vehicles
+        - Difficult terrain: No mounts or vehicles
+        """
+        result = {"allowed": True}
+
+        restriction = terrain_info.mount_vehicle
+
+        if restriction == MountVehicleRestriction.NONE:
+            if self._is_mounted:
+                result["allowed"] = False
+                result["reason"] = "Mounts cannot enter this terrain"
+                result["mount_restriction"] = "not_allowed"
+            if self._has_vehicle:
+                result["allowed"] = False
+                result["reason"] = "Vehicles cannot enter this terrain"
+                result["vehicle_restriction"] = "not_allowed"
+        elif restriction == MountVehicleRestriction.MOUNTS_LED:
+            if self._has_vehicle:
+                result["allowed"] = False
+                result["reason"] = "Vehicles cannot enter this terrain"
+                result["vehicle_restriction"] = "not_allowed"
+            if self._is_mounted:
+                result["mount_restriction"] = "must_be_led"
+                result["allowed"] = True  # Can enter but must lead mount
+
+        return result
+
     def _check_navigation(self, terrain_info: TerrainInfo) -> NavigationResult:
         """
-        Check if party navigates successfully.
+        Check if party gets lost per Dolmenwood rules (p157).
 
-        Navigation check is 1d6, must roll above navigation difficulty.
+        Chance of getting lost:
+        - Roads: No chance (0-in-6)
+        - Tracks: 1-in-6
+        - Light terrain: 1-in-6
+        - Moderate terrain: 2-in-6
+        - Difficult terrain: 3-in-6
+
+        Visibility modifiers:
+        - Fog/blizzard: +1 to lost chance
+        - Darkness: +2 to lost chance
+
         Modifiers:
-        - Guide: -2 to difficulty
-        - Map: -1 to difficulty
-        - Ranger/Woodgrue in party: -1 to difficulty
+        - Guide: -1 to lost chance
+        - Map: -1 to lost chance
 
         Returns:
             NavigationResult indicating success/failure
         """
-        difficulty = terrain_info.navigation_difficulty
+        lost_chance = terrain_info.lost_chance
 
-        # Apply modifiers
+        # Roads never get lost (p157)
+        if terrain_info.difficulty == TerrainDifficulty.ROAD:
+            return NavigationResult.SUCCESS
+
+        # Visibility modifiers (p157)
+        weather = self.controller.world_state.weather
+        if weather in {Weather.FOG, Weather.BLIZZARD}:
+            lost_chance += 1  # +1 for reduced visibility
+        if not self.controller.time_tracker.game_time.is_daylight():
+            lost_chance += 2  # +2 for darkness
+
+        # Apply helper modifiers
         if self._has_guide:
-            difficulty -= 2
+            lost_chance -= 1
         if self._has_map:
-            difficulty -= 1
+            lost_chance -= 1
 
-        # Roll navigation
-        roll = self.dice.roll_d6(1, "navigation check")
+        # Clamp to valid range
+        lost_chance = max(0, min(6, lost_chance))
 
-        if roll.total <= difficulty:
-            # Failed - determine severity
-            severity_roll = self.dice.roll_d6(1, "navigation severity")
-            if severity_roll.total <= 2:
-                return NavigationResult.LOST
-            else:
-                return NavigationResult.VEERED
+        if lost_chance == 0:
+            return NavigationResult.SUCCESS
+
+        # Roll for getting lost (X-in-6 chance)
+        roll = self.dice.roll_d6(1, "lost check")
+
+        if roll.total <= lost_chance:
+            # Lost - effects described in Dolmenwood Campaign Book
+            return NavigationResult.LOST
 
         return NavigationResult.SUCCESS
 
     def _check_encounter(self, terrain_info: TerrainInfo) -> bool:
         """
-        Check for random encounter.
+        Check for wandering monsters per Dolmenwood rules (p157).
 
-        Base chance is 1-in-X where X is terrain_info.encounter_chance.
-        Modifiers:
-        - Cautious pace: -1 to roll (less likely to encounter)
-        - Fast pace: +1 to roll (more likely to encounter)
-        - Night: +1 to roll (more likely)
+        Chance of encounter (X-in-6):
+        - Light terrain: 1-in-6
+        - Moderate terrain: 2-in-6
+        - Difficult terrain: 3-in-6
+
+        One check per day, made at start, middle, or end of travel day.
 
         Returns:
             True if encounter occurs
         """
-        encounter_threshold = terrain_info.encounter_chance
+        encounter_chance = terrain_info.encounter_chance
 
-        # Roll for encounter
-        roll = self.dice.roll_d6(1, "encounter check")
+        # Roll for encounter (X-in-6 chance)
+        roll = self.dice.roll_d6(1, "wandering monster check")
 
-        modifier = 0
-        if self._travel_pace == TravelPace.CAUTIOUS:
-            modifier -= 1
-        elif self._travel_pace == TravelPace.FAST:
-            modifier += 1
-
-        if not self.controller.time_tracker.game_time.is_daylight():
-            modifier += 1
-
-        adjusted_roll = roll.total + modifier
-
-        # Encounter on 1 (or modified 1)
-        return adjusted_roll <= 1
+        return roll.total <= encounter_chance
 
     def _generate_encounter(
         self,
@@ -414,15 +683,15 @@ class HexCrawlEngine:
         terrain: TerrainType
     ) -> EncounterState:
         """
-        Generate an encounter for the current hex.
+        Generate an encounter for the current hex per Dolmenwood rules (p157).
 
-        Would normally use encounter tables from the Campaign Book.
+        Uses encounter tables from the Campaign Book.
         """
-        # Determine distance
-        distance = self._roll_encounter_distance(terrain)
-
-        # Determine surprise
+        # Determine surprise first (affects distance)
         surprise = self._check_surprise()
+
+        # Determine distance based on surprise (p157)
+        distance = self._roll_encounter_distance(surprise)
 
         # Create encounter state
         encounter = EncounterState(
@@ -436,15 +705,17 @@ class HexCrawlEngine:
         self.controller.set_encounter(encounter)
         return encounter
 
-    def _roll_encounter_distance(self, terrain: TerrainType) -> int:
-        """Roll initial encounter distance based on terrain."""
-        # Dense terrain = closer encounters
-        if terrain in {TerrainType.DEEP_FOREST, TerrainType.SWAMP}:
-            return self.dice.roll("2d6", "encounter distance").total * 10
-        elif terrain in {TerrainType.FOREST, TerrainType.HILLS}:
-            return self.dice.roll("4d6", "encounter distance").total * 10
-        else:  # Open terrain
-            return self.dice.roll("6d6", "encounter distance").total * 10
+    def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
+        """
+        Roll initial encounter distance per Dolmenwood rules (p157).
+
+        Distance: 2d6 × 30'
+        If both sides are surprised: 1d4 × 30'
+        """
+        if surprise == SurpriseStatus.MUTUAL_SURPRISE:
+            return self.dice.roll("1d4", "encounter distance (mutual surprise)").total * 30
+        else:
+            return self.dice.roll("2d6", "encounter distance").total * 30
 
     def _check_surprise(self) -> SurpriseStatus:
         """Check for surprise on both sides."""
@@ -656,23 +927,35 @@ class HexCrawlEngine:
 
     def search_hex(self, hex_id: str) -> dict[str, Any]:
         """
-        Search current hex for hidden features.
+        Search current hex for hidden features per Dolmenwood rules (p157).
 
-        Takes 1 turn (10 minutes) per search attempt.
+        Searching costs the same Travel Points as entering the hex.
 
         Returns:
             Dictionary with search results
         """
-        # Advance time for search
-        self.controller.advance_time(1)
+        terrain = self.get_terrain_for_hex(hex_id)
+        terrain_info = self.get_terrain_info(terrain)
+        tp_cost = terrain_info.travel_points
 
         result = {
             "hex_id": hex_id,
             "features_found": [],
             "lairs_found": [],
             "landmarks_found": [],
-            "time_spent": 1,
+            "travel_points_spent": 0,
+            "travel_points_remaining": self._travel_day.travel_points_remaining,
         }
+
+        # Check if enough Travel Points
+        if self._travel_day.travel_points_remaining < tp_cost:
+            result["message"] = f"Not enough Travel Points to search. Need {tp_cost}, have {self._travel_day.travel_points_remaining}"
+            return result
+
+        # Spend Travel Points
+        self._travel_day.travel_points_remaining -= tp_cost
+        result["travel_points_spent"] = tp_cost
+        result["travel_points_remaining"] = self._travel_day.travel_points_remaining
 
         hex_data = self._hex_data.get(hex_id)
         if not hex_data:
@@ -690,7 +973,7 @@ class HexCrawlEngine:
         # Check for lairs
         for lair in hex_data.lairs:
             if not lair.discovered:
-                roll = self.dice.roll_d6(1, f"find lair")
+                roll = self.dice.roll_d6(1, "find lair")
                 if roll.total == 6:  # 1-in-6 chance
                     lair.discovered = True
                     result["lairs_found"].append(lair.monster_type)
@@ -716,12 +999,22 @@ class HexCrawlEngine:
         return landmarks
 
     def get_exploration_summary(self) -> dict[str, Any]:
-        """Get summary of exploration progress."""
+        """Get summary of exploration progress and travel state."""
         return {
             "explored_hexes": list(self._explored_hexes),
             "total_explored": len(self._explored_hexes),
             "current_location": str(self.controller.party_state.location),
-            "travel_pace": self._travel_pace.value,
+            # Travel Points state (p156)
+            "travel_points_remaining": self._travel_day.travel_points_remaining,
+            "travel_points_max": self._travel_day.travel_points_max,
+            "is_forced_march": self._travel_day.is_forced_march,
+            "days_since_rest": self._travel_day.days_since_rest,
+            # Party configuration
+            "is_mounted": self._is_mounted,
+            "has_vehicle": self._has_vehicle,
             "has_guide": self._has_guide,
             "has_map": self._has_map,
+            # Daily check status
+            "lost_check_made": self._travel_day.lost_check_made,
+            "encounter_check_made": self._travel_day.encounter_check_made,
         }
