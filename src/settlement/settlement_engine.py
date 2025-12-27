@@ -1,4 +1,4 @@
-"""
+""" 
 Settlement Engine for Dolmenwood Virtual DM.
 
 Handles settlement exploration, NPC interactions, and social encounters.
@@ -25,6 +25,7 @@ from src.data_models import (
     ReactionResult,
     LocationType,
     SourceReference,
+    TimeOfDay,
 )
 
 
@@ -293,6 +294,107 @@ class SettlementEngine:
         self._current_settlement = None
 
         return result
+
+    # =========================================================================
+    # DAILY SETTLEMENT LOOP
+    # =========================================================================
+
+    def process_settlement_day(
+        self,
+        planned_actions: list[str],
+        active_at_night: bool = False
+    ) -> dict[str, Any]:
+        """
+        Execute one settlement day following Dolmenwood procedures.
+
+        Steps:
+        1. Note weather (from world state)
+        2. Players choose actions (provided via planned_actions)
+        3. Daytime random encounter (2-in-6)
+        4. Describe outcome (optional callback)
+        5. Advance day, apply rest healing if applicable
+        6. Night random encounter if characters are active (1-in-6)
+        """
+        if self.controller.current_state != GameState.SETTLEMENT_EXPLORATION:
+            return {"error": "Not in settlement exploration state"}
+
+        weather = self.controller.world_state.weather.value
+        daytime_encounter = self._check_settlement_encounter(TimeOfDay.MIDDAY)
+
+        # Advance a full day (144 turns) and sync world state
+        time_result = self.controller.advance_time(144)
+
+        healing_info = self._apply_rest_healing(
+            full_day_rest="full_rest" in planned_actions,
+            nights=1,
+            apply=True,
+        )
+
+        night_encounter = None
+        if active_at_night:
+            night_encounter = self._check_settlement_encounter(TimeOfDay.MIDNIGHT, night=True)
+
+        summary = {
+            "weather": weather,
+            "planned_actions": planned_actions,
+            "daytime_encounter": daytime_encounter,
+            "nighttime_encounter": night_encounter,
+            "healing": healing_info,
+            "time_advanced": time_result,
+        }
+
+        if self._description_callback:
+            self._description_callback(
+                settlement_id=self._current_settlement,
+                name=self.get_current_settlement().name if self.get_current_settlement() else "",
+                size=self.get_current_settlement().size.value if self.get_current_settlement() else "",
+                time_of_day=self.controller.time_tracker.game_time.get_time_of_day().value,
+            )
+
+        return summary
+
+    def _check_settlement_encounter(self, time_of_day: TimeOfDay, night: bool = False) -> Optional[dict[str, Any]]:
+        """
+        Settlement random encounter check.
+
+        Day: 2-in-6; Night: 1-in-6.
+        """
+        chance = 1 if night else 2
+        roll = self.dice.roll_d6(1, f"settlement encounter {time_of_day.value}")
+        if roll.total <= chance:
+            return {
+                "time_of_day": time_of_day.value,
+                "roll": roll.total,
+                "encounter": "Random settlement encounter",
+            }
+        return None
+
+    def _apply_rest_healing(
+        self,
+        full_day_rest: bool,
+        nights: int = 1,
+        apply: bool = False
+    ) -> dict[str, Any]:
+        """
+        Apply rest healing while in settlement.
+
+        full_day_rest: heals 1d3 HP per day; otherwise 1 HP per night.
+        """
+        healing_per_character: dict[str, int] = {}
+
+        for _ in range(nights):
+            heal_amount = self.dice.roll("1d3", "full day rest").total if full_day_rest else 1
+            for character in self.controller.get_all_characters():
+                healing_per_character.setdefault(character.character_id, 0)
+                healing_per_character[character.character_id] += heal_amount
+                if apply:
+                    self.controller.heal_character(character.character_id, heal_amount)
+
+        return {
+            "full_day_rest": full_day_rest,
+            "nights": nights,
+            "healing_per_character": healing_per_character,
+        }
 
     def visit_building(self, building_id: str) -> dict[str, Any]:
         """
@@ -736,9 +838,11 @@ class SettlementEngine:
         """Use inn services (lodging)."""
         nights = params.get("nights", 1)
         room_type = params.get("room_type", "common")
+        full_day_rest = params.get("full_day_rest", False)
 
         base_cost = {"common": 1, "private": 5, "suite": 20}
         cost = base_cost.get(room_type, 1) * nights * building.prices_modifier
+        healing = self._apply_rest_healing(full_day_rest=full_day_rest, nights=nights, apply=True)
 
         return {
             "service": "lodging",
@@ -747,6 +851,7 @@ class SettlementEngine:
             "room_type": room_type,
             "cost_gp": cost,
             "includes_meals": room_type != "common",
+            "healing": healing,
         }
 
     def _use_tavern(self, building: Building, params: dict) -> dict[str, Any]:
