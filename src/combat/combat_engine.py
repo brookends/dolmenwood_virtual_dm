@@ -71,16 +71,18 @@ class CombatAction:
 
 @dataclass
 class AttackResult:
-    """Result of an attack roll."""
+    """Result of an action resolved during combat."""
     attacker_id: str
     defender_id: str
-    attack_roll: int
-    needed_to_hit: int
-    hit: bool
+    action_type: CombatActionType
+    attack_roll: int = 0
+    needed_to_hit: int = 0
+    hit: bool = False
     damage_roll: int = 0
     damage_dealt: int = 0
     critical: bool = False
     fumble: bool = False
+    disrupted: bool = False  # For spells/runes disrupted before acting
     special_effects: list[str] = field(default_factory=list)
 
 
@@ -278,25 +280,59 @@ class CombatEngine:
         if enemy_actions is None:
             enemy_actions = self._generate_enemy_actions()
 
-        # Store actions
+        # Build declaration map (spells/runes/charge/flee/parry) for rule enforcement
+        declarations = self._collect_declarations(party_actions + enemy_actions)
         self._combat_state.actions_declared = party_actions + enemy_actions
+        round_modifiers = self._init_round_modifiers()
+        self._apply_declared_modifiers(
+            party_actions + enemy_actions,
+            round_modifiers,
+        )
 
         # 3. Resolve actions in order
+        damaged_so_far: set[str] = set()
+
         for side in action_order:
             if side == "simultaneous":
                 # Resolve all actions, apply damage after
-                party_results = self._resolve_side_actions(party_actions)
-                enemy_results = self._resolve_side_actions(enemy_actions)
+                party_results, party_damage = self._resolve_side_actions(
+                    party_actions,
+                    round_modifiers,
+                    damaged_prior=damaged_so_far,
+                    losing_side=False,
+                    declarations=declarations,
+                )
+                enemy_results, enemy_damage = self._resolve_side_actions(
+                    enemy_actions,
+                    round_modifiers,
+                    damaged_prior=damaged_so_far,
+                    losing_side=False,
+                    declarations=declarations,
+                )
                 result.actions_resolved.extend(party_results)
                 result.actions_resolved.extend(enemy_results)
             elif side == "party":
-                party_results = self._resolve_side_actions(party_actions)
+                losing = result.first_side != "party"
+                party_results, party_damage = self._resolve_side_actions(
+                    party_actions,
+                    round_modifiers,
+                    damaged_prior=damaged_so_far,
+                    losing_side=losing,
+                    declarations=declarations,
+                )
                 result.actions_resolved.extend(party_results)
-                self._apply_attack_results(party_results)
+                damaged_so_far.update(party_damage)
             else:
-                enemy_results = self._resolve_side_actions(enemy_actions)
+                losing = result.first_side != "enemy"
+                enemy_results, enemy_damage = self._resolve_side_actions(
+                    enemy_actions,
+                    round_modifiers,
+                    damaged_prior=damaged_so_far,
+                    losing_side=losing,
+                    declarations=declarations,
+                )
                 result.actions_resolved.extend(enemy_results)
-                self._apply_attack_results(enemy_results)
+                damaged_so_far.update(enemy_damage)
 
         # If simultaneous, apply all damage now
         if result.first_side == "simultaneous":
@@ -335,28 +371,82 @@ class CombatEngine:
 
         return result
 
-    def _resolve_side_actions(self, actions: list[CombatAction]) -> list[AttackResult]:
-        """Resolve actions for one side."""
-        results = []
+    def _resolve_side_actions(
+        self,
+        actions: list[CombatAction],
+        round_modifiers: dict[str, Any],
+        damaged_prior: set[str],
+        losing_side: bool,
+        declarations: dict[str, set[str]],
+    ) -> tuple[list[AttackResult], set[str]]:
+        """
+        Resolve actions for one side following Dolmenwood sequencing.
 
-        for action in actions:
-            if action.action_type in {CombatActionType.MELEE_ATTACK, CombatActionType.MISSILE_ATTACK}:
-                attack_result = self._resolve_attack(action)
-                results.append(attack_result)
-            elif action.action_type == CombatActionType.CAST_SPELL:
-                # Spell resolution would go here
-                pass
-            elif action.action_type == CombatActionType.FLEE:
-                # Handle flee attempt
-                pass
+        Movement -> missile -> magic -> melee.
+        """
+        results: list[AttackResult] = []
+        damaged_this_resolution: set[str] = set()
 
-        return results
+        movement_actions = [
+            a for a in actions if a.action_type in {
+                CombatActionType.MOVE, CombatActionType.CHARGE,
+                CombatActionType.WITHDRAW, CombatActionType.FLEE
+            }
+        ]
+        missile_actions = [
+            a for a in actions if a.action_type == CombatActionType.MISSILE_ATTACK
+        ]
+        magic_actions = [
+            a for a in actions if a.action_type == CombatActionType.CAST_SPELL
+        ]
+        melee_actions = [
+            a for a in actions if a.action_type in {
+                CombatActionType.MELEE_ATTACK, CombatActionType.DEFEND
+            }
+        ]
 
-    def _resolve_attack(self, action: CombatAction) -> AttackResult:
+        # Movement phase (apply round modifiers like charge/flee/parry)
+        for action in movement_actions:
+            self._apply_movement_modifiers(action, round_modifiers)
+
+        # Missile phase
+        missile_results = [
+            self._resolve_attack(action, round_modifiers)
+            for action in missile_actions
+        ]
+        damaged_this_resolution.update(self._apply_attack_results(missile_results))
+        results.extend(missile_results)
+
+        # Magic phase (can be disrupted if harmed before acting and lost init)
+        for action in magic_actions:
+            disrupted = losing_side and action.combatant_id in damaged_prior
+            spell_result = self._resolve_spell_action(action, disrupted)
+            results.append(spell_result)
+        # Magic does not deal damage directly in this simplified engine
+
+        # Melee/defend phase
+        melee_results = []
+        for action in melee_actions:
+            if action.action_type == CombatActionType.DEFEND:
+                self._apply_parry_modifiers(action, round_modifiers)
+                continue
+            melee_results.append(self._resolve_attack(action, round_modifiers, declarations))
+
+        damaged_this_resolution.update(self._apply_attack_results(melee_results))
+        results.extend(melee_results)
+
+        return results, damaged_this_resolution
+
+    def _resolve_attack(
+        self,
+        action: CombatAction,
+        round_modifiers: Optional[dict[str, Any]] = None,
+        declarations: Optional[dict[str, set[str]]] = None,
+    ) -> AttackResult:
         """
         Resolve a single attack.
 
-        Uses B/X attack matrix: Roll d20, compare to target AC.
+        Uses ascending AC: d20 + attack bonus vs AC.
         """
         attacker_id = action.combatant_id
         defender_id = action.target_id
@@ -369,23 +459,30 @@ class CombatEngine:
             return AttackResult(
                 attacker_id=attacker_id,
                 defender_id=defender_id or "",
-                attack_roll=0,
-                needed_to_hit=0,
-                hit=False,
+                action_type=action.action_type,
             )
 
-        # Calculate needed roll
-        attacker_thac0 = self._get_thac0(attacker)
-        defender_ac = defender.stat_block.armor_class if defender.stat_block else 9
+        round_modifiers = round_modifiers or self._init_round_modifiers()
+        declarations = declarations or {}
 
-        # THAC0 - AC = needed roll
-        needed_to_hit = attacker_thac0 - defender_ac
+        defender_ac = defender.stat_block.armor_class if defender.stat_block else 10
+        defender_ac -= round_modifiers["ac_penalty"].get(defender_id, 0)
+        defender_ac += round_modifiers["ac_bonus"].get(defender_id, 0)
 
         # Roll attack
         attack_roll = self.dice.roll_d20(f"{attacker.name} attacks {defender.name}")
+        attack_bonus = 0
+        if attacker.stat_block and attacker.stat_block.attacks:
+            attack_bonus = attacker.stat_block.attacks[0].get("bonus", 0)
+        attack_bonus += round_modifiers["attack_bonus"].get(attacker_id, 0)
+
+        # Fleeing targets grant +2 to attacks against them
+        if defender_id in round_modifiers["fleeing"]:
+            attack_bonus += 2
 
         # Check for hit
-        hit = attack_roll.total >= needed_to_hit
+        total_attack = attack_roll.total + attack_bonus
+        hit = total_attack >= defender_ac
 
         # Check for natural 20/1
         critical = attack_roll.total == 20
@@ -394,8 +491,9 @@ class CombatEngine:
         result = AttackResult(
             attacker_id=attacker_id,
             defender_id=defender_id,
-            attack_roll=attack_roll.total,
-            needed_to_hit=needed_to_hit,
+            action_type=action.action_type,
+            attack_roll=total_attack,
+            needed_to_hit=defender_ac,
             hit=hit or critical,
             critical=critical,
             fumble=fumble,
@@ -412,12 +510,26 @@ class CombatEngine:
 
         return result
 
-    def _apply_attack_results(self, results: list[AttackResult]) -> None:
+    def _resolve_spell_action(self, action: CombatAction, disrupted: bool) -> AttackResult:
+        """Resolve spell or rune usage with disruption handling."""
+        special = ["spell_disrupted"] if disrupted else []
+        return AttackResult(
+            attacker_id=action.combatant_id,
+            defender_id=action.target_id or "",
+            action_type=CombatActionType.CAST_SPELL,
+            hit=not disrupted,
+            disrupted=disrupted,
+            special_effects=special,
+        )
+
+    def _apply_attack_results(self, results: list[AttackResult]) -> set[str]:
         """Apply damage from attack results."""
+        damaged: set[str] = set()
+
         for result in results:
             if result.hit and result.damage_dealt > 0:
                 # Apply damage through controller
-                damage_result = self.controller.apply_damage(
+                self.controller.apply_damage(
                     result.defender_id,
                     result.damage_dealt,
                     "physical"
@@ -427,6 +539,9 @@ class CombatEngine:
                 defender = self._get_combatant(result.defender_id)
                 if defender and defender.stat_block:
                     defender.stat_block.hp_current -= result.damage_dealt
+                    damaged.add(result.defender_id)
+
+        return damaged
 
     def _get_combatant(self, combatant_id: str) -> Optional[Combatant]:
         """Get a combatant by ID."""
@@ -439,18 +554,77 @@ class CombatEngine:
 
         return None
 
-    def _get_thac0(self, combatant: Combatant) -> int:
-        """
-        Get THAC0 (To Hit Armor Class 0) for a combatant.
+    def _init_round_modifiers(self) -> dict[str, Any]:
+        """Initialize round modifier tracking."""
+        return {
+            "attack_bonus": {},
+            "ac_bonus": {},
+            "ac_penalty": {},
+            "fleeing": set(),
+        }
 
-        B/X uses descending AC and attack matrices.
-        Normal man THAC0 = 19
-        Fighter 1 THAC0 = 19
-        Improves by 2 per 3 levels typically
+    def _collect_declarations(self, actions: list[CombatAction]) -> dict[str, set[str]]:
         """
-        # Would look up from class/level
-        # Default to normal man THAC0
-        return 19
+        Track declarations that must be made before initiative:
+        - CAST_SPELL / rune usage
+        - FLEE from melee
+        - CHARGE into melee
+        - DEFEND (parry)
+        """
+        decl_map: dict[str, set[str]] = {}
+        for action in actions:
+            if action.action_type in {
+                CombatActionType.CAST_SPELL,
+                CombatActionType.FLEE,
+                CombatActionType.CHARGE,
+                CombatActionType.DEFEND,
+            }:
+                decl_map.setdefault(action.action_type.value, set()).add(action.combatant_id)
+        return decl_map
+
+    def _apply_movement_modifiers(
+        self,
+        action: CombatAction,
+        round_modifiers: dict[str, Any],
+    ) -> None:
+        """Apply movement-phase modifiers such as charge or flee."""
+        if action.action_type in {CombatActionType.CHARGE, CombatActionType.FLEE}:
+            # Already applied at declaration; no further effect here
+            return
+
+    def _apply_parry_modifiers(
+        self,
+        action: CombatAction,
+        round_modifiers: dict[str, Any],
+    ) -> None:
+        """Apply parry (defend) AC bonus for the round."""
+        if action.combatant_id in round_modifiers["ac_bonus"]:
+            return
+        parry_bonus = max(action.parameters.get("parry_bonus", 1), 1)
+        round_modifiers["ac_bonus"][action.combatant_id] = \
+            round_modifiers["ac_bonus"].get(action.combatant_id, 0) + parry_bonus
+
+    def _apply_declared_modifiers(
+        self,
+        actions: list[CombatAction],
+        round_modifiers: dict[str, Any],
+    ) -> None:
+        """
+        Apply modifiers that take effect as soon as declarations are made,
+        regardless of initiative order.
+        """
+        for action in actions:
+            if action.action_type == CombatActionType.CHARGE:
+                round_modifiers["attack_bonus"][action.combatant_id] = \
+                    round_modifiers["attack_bonus"].get(action.combatant_id, 0) + 2
+                round_modifiers["ac_penalty"][action.combatant_id] = \
+                    round_modifiers["ac_penalty"].get(action.combatant_id, 0) + 1
+            elif action.action_type == CombatActionType.FLEE:
+                round_modifiers["fleeing"].add(action.combatant_id)
+            elif action.action_type == CombatActionType.DEFEND:
+                parry_bonus = max(action.parameters.get("parry_bonus", 1), 1)
+                round_modifiers["ac_bonus"][action.combatant_id] = \
+                    round_modifiers["ac_bonus"].get(action.combatant_id, 0) + parry_bonus
 
     # =========================================================================
     # ENEMY AI
