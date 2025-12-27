@@ -71,6 +71,16 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         TerrainType.FOREST, travel_point_cost=2, lost_chance=1, encounter_chance=1,
         mount_allowed=True, vehicle_allowed=True, description="Open forest"
     ),
+    TerrainType.FOREST: TerrainInfo(
+        TerrainType.FOREST,
+        TerrainDifficulty.LIGHT,
+        travel_points=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_vehicle=MountVehicleRestriction.ALLOWED,
+        description="Light, airy woods (open forest)"
+    ),
+    # Moderate Terrain (p157) - 3 TP, 2-in-6
     TerrainType.MOOR: TerrainInfo(
         TerrainType.MOOR, travel_point_cost=3, lost_chance=2, encounter_chance=2,
         mount_allowed=True, vehicle_allowed=False, description="Boggy or hilly forest/moor"
@@ -108,7 +118,7 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
 
 @dataclass
 class TravelSegmentResult:
-    """Result of processing one travel segment."""
+    """Result of processing one travel segment per Dolmenwood rules (p156-157)."""
     success: bool
     travel_points_spent: int
     remaining_travel_points: int
@@ -120,11 +130,34 @@ class TravelSegmentResult:
     weather_effect: Optional[str] = None
     warnings: list[str] = field(default_factory=list)
     messages: list[str] = field(default_factory=list)
+    # Mount/vehicle restrictions (p157)
+    mount_restriction: Optional[str] = None
+    vehicle_restriction: Optional[str] = None
+
+
+@dataclass
+class TravelDayState:
+    """
+    Tracks travel state for a single day per Dolmenwood rules (p156).
+
+    Travel Points per day = Speed / 5:
+    - Speed 40 (mounted): 8 TP normal, 12 TP forced march
+    - Speed 30 (cart/wagon): 6 TP normal, 9 TP forced march
+    - Speed 20: 4 TP normal, 6 TP forced march
+    """
+    base_speed: int = 30  # Party base speed
+    travel_points_max: int = 6  # TP for the day (speed / 5)
+    travel_points_remaining: int = 6
+    is_forced_march: bool = False
+    days_since_rest: int = 0  # For weekly rest requirement (p157)
+    consecutive_forced_marches: int = 0  # For cumulative exhaustion (p156)
+    lost_check_made: bool = False  # One lost check per day (p157)
+    encounter_check_made: bool = False  # One encounter check per day (p157)
 
 
 class HexCrawlEngine:
     """
-    Engine for wilderness/hex crawl exploration.
+    Engine for wilderness/hex crawl exploration per Dolmenwood rules (p156-157).
 
     Manages:
     - Daily travel points spending
@@ -198,7 +231,7 @@ class HexCrawlEngine:
         return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.FOREST])
 
     # =========================================================================
-    # MAIN TRAVEL LOOP (Section 5.2)
+    # MAIN TRAVEL LOOP (p156-157)
     # =========================================================================
 
     def travel_to_hex(
@@ -368,15 +401,15 @@ class HexCrawlEngine:
         terrain: TerrainType
     ) -> EncounterState:
         """
-        Generate an encounter for the current hex.
+        Generate an encounter for the current hex per Dolmenwood rules (p157).
 
-        Would normally use encounter tables from the Campaign Book.
+        Uses encounter tables from the Campaign Book.
         """
-        # Determine distance
-        distance = self._roll_encounter_distance(terrain)
-
-        # Determine surprise
+        # Determine surprise first (affects distance)
         surprise = self._check_surprise()
+
+        # Determine distance based on surprise (p157)
+        distance = self._roll_encounter_distance(surprise)
 
         # Create encounter state
         encounter = EncounterState(
@@ -390,15 +423,17 @@ class HexCrawlEngine:
         self.controller.set_encounter(encounter)
         return encounter
 
-    def _roll_encounter_distance(self, terrain: TerrainType) -> int:
-        """Roll initial encounter distance based on terrain."""
-        # Dense terrain = closer encounters
-        if terrain in {TerrainType.DEEP_FOREST, TerrainType.SWAMP}:
-            return self.dice.roll("2d6", "encounter distance").total * 10
-        elif terrain in {TerrainType.FOREST, TerrainType.HILLS}:
-            return self.dice.roll("4d6", "encounter distance").total * 10
-        else:  # Open terrain
-            return self.dice.roll("6d6", "encounter distance").total * 10
+    def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
+        """
+        Roll initial encounter distance per Dolmenwood rules (p157).
+
+        Distance: 2d6 × 30'
+        If both sides are surprised: 1d4 × 30'
+        """
+        if surprise == SurpriseStatus.MUTUAL_SURPRISE:
+            return self.dice.roll("1d4", "encounter distance (mutual surprise)").total * 30
+        else:
+            return self.dice.roll("2d6", "encounter distance").total * 30
 
     def _check_surprise(self) -> SurpriseStatus:
         """Check for surprise on both sides."""
@@ -507,6 +542,16 @@ class HexCrawlEngine:
             "travel_points_spent": cost,
         }
 
+        # Check if enough Travel Points
+        if self._travel_day.travel_points_remaining < tp_cost:
+            result["message"] = f"Not enough Travel Points to search. Need {tp_cost}, have {self._travel_day.travel_points_remaining}"
+            return result
+
+        # Spend Travel Points
+        self._travel_day.travel_points_remaining -= tp_cost
+        result["travel_points_spent"] = tp_cost
+        result["travel_points_remaining"] = self._travel_day.travel_points_remaining
+
         hex_data = self._hex_data.get(hex_id)
         if not hex_data:
             result["message"] = "No detailed hex data available"
@@ -539,7 +584,7 @@ class HexCrawlEngine:
         return hex_id in self._explored_hexes
 
     def get_exploration_summary(self) -> dict[str, Any]:
-        """Get summary of exploration progress."""
+        """Get summary of exploration progress and travel state."""
         return {
             "explored_hexes": list(self._explored_hexes),
             "total_explored": len(self._explored_hexes),
@@ -549,6 +594,9 @@ class HexCrawlEngine:
             "encounter_checked_today": self._encounter_checked_today,
             "has_guide": self._has_guide,
             "has_map": self._has_map,
+            # Daily check status
+            "lost_check_made": self._travel_day.lost_check_made,
+            "encounter_check_made": self._travel_day.encounter_check_made,
         }
 
     def _get_veered_hex(self, intended_hex: str) -> str:

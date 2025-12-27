@@ -1,8 +1,30 @@
-""" 
+"""
 Settlement Engine for Dolmenwood Virtual DM.
 
+Implements settlement exploration per Dolmenwood rules (p160-161).
 Handles settlement exploration, NPC interactions, and social encounters.
 Manages services, shopping, rumors, and faction interactions.
+
+Settlement Procedure Per Day (p160):
+1. Weather: Referee determines day's weather
+2. Decide actions: Players decide on actions (resting, shopping, researching)
+3. Random encounters: Daytime encounter check (2-in-6 when active)
+4. Description: Referee describes what happens
+5. End of day: Update time, ongoing downtime activities
+6. Random encounters: Nighttime check if active (1-in-6)
+
+Settlement Sizes (p161):
+- Hamlet: 20-49 inhabitants
+- Village: 50-999 inhabitants
+- Small town: 1,000-3,999 inhabitants
+- Large town: 4,000-7,999 inhabitants
+- City: 8,000+ inhabitants
+
+Lifestyle Expenses (Optional Rule, p161):
+- Wretched: Free, no healing
+- Poor: 5sp/day, 15gp/month
+- Common: 2gp/day, 60gp/month
+- Fancy: 10gp/day, 300gp/month
 
 Settlement exploration transitions:
 - SETTLEMENT_EXPLORATION -> SOCIAL_INTERACTION (initiate_conversation)
@@ -33,15 +55,66 @@ logger = logging.getLogger(__name__)
 
 
 class SettlementSize(str, Enum):
-    """Size categories for settlements."""
-    HAMLET = "hamlet"       # 50-200 inhabitants
-    VILLAGE = "village"     # 200-1000 inhabitants
-    TOWN = "town"           # 1000-5000 inhabitants
-    CITY = "city"           # 5000+ inhabitants
+    """
+    Size categories for settlements per Dolmenwood rules (p161).
+
+    Population ranges determine available services and encounter tables.
+    """
+    HAMLET = "hamlet"           # 20-49 inhabitants
+    VILLAGE = "village"         # 50-999 inhabitants
+    SMALL_TOWN = "small_town"   # 1,000-3,999 inhabitants
+    LARGE_TOWN = "large_town"   # 4,000-7,999 inhabitants
+    CITY = "city"               # 8,000+ inhabitants
+
+
+class LifestyleType(str, Enum):
+    """
+    Lifestyle expense categories per Dolmenwood rules (p161).
+
+    Optional rule for abstracting daily living expenses.
+    Affects healing and costs during settlement stays.
+    """
+    WRETCHED = "wretched"  # Free, sleeping in alleys/begging - NO HEALING
+    POOR = "poor"          # 5sp/day, 15gp/month - poor quality inns
+    COMMON = "common"      # 2gp/day, 60gp/month - common quality inns
+    FANCY = "fancy"        # 10gp/day, 300gp/month - fancy quality inns
+
+
+# Lifestyle costs and effects per Dolmenwood rules (p161)
+LIFESTYLE_DATA: dict[LifestyleType, dict[str, Any]] = {
+    LifestyleType.WRETCHED: {
+        "cost_per_day_sp": 0,
+        "cost_per_month_gp": 0,
+        "allows_healing": False,  # Wretched characters do not heal (p161)
+        "description": "Sleeping in back alleys, begging, eating scraps",
+    },
+    LifestyleType.POOR: {
+        "cost_per_day_sp": 5,
+        "cost_per_month_gp": 15,
+        "allows_healing": True,
+        "description": "Poor quality inns or rented rooms in older part of town",
+    },
+    LifestyleType.COMMON: {
+        "cost_per_day_sp": 20,  # 2gp = 20sp
+        "cost_per_month_gp": 60,
+        "allows_healing": True,
+        "description": "Common quality inns or rented cottage in quiet part of town",
+    },
+    LifestyleType.FANCY: {
+        "cost_per_day_sp": 100,  # 10gp = 100sp
+        "cost_per_month_gp": 300,
+        "allows_healing": True,
+        "description": "Fancy quality inns or spacious rented house in nicest part of town",
+    },
+}
 
 
 class ServiceType(str, Enum):
-    """Types of services available in settlements."""
+    """
+    Types of services available in settlements per Dolmenwood rules (p161).
+
+    Settlement services include common shops and specialists.
+    """
     INN = "inn"
     TAVERN = "tavern"
     BLACKSMITH = "blacksmith"
@@ -54,9 +127,11 @@ class ServiceType(str, Enum):
     STABLES = "stables"
     ARMORER = "armorer"
     WEAPONSMITH = "weaponsmith"
-    APOTHECARY = "apothecary"
-    MONEYLENDER = "moneylender"
-    HIRELING_HALL = "hireling_hall"
+    # Dolmenwood-specific services (p161)
+    APOTHECARY = "apothecary"        # Herbalist - identify 5gp, buy/sell at 50% (p161)
+    MONEY_CHANGER = "money_changer"  # Banking - 3% exchange, storage, loans (p161)
+    JEWELER = "jeweler"              # Gems/jewelry - sell at 100%, buy at 80% (p161)
+    HIRELING_HALL = "hireling_hall"  # Find specialists/retainers (p160)
 
 
 class BuildingType(str, Enum):
@@ -134,14 +209,17 @@ class ConversationState:
 
 class SettlementEngine:
     """
-    Engine for settlement exploration and social interaction.
+    Engine for settlement exploration per Dolmenwood rules (p160-161).
 
     Manages:
-    - Settlement exploration
-    - NPC conversations
-    - Services and shopping
+    - Settlement exploration with daily procedure (p160)
+    - Rest and healing (1 HP/night, 1d3 HP/full day rest)
+    - Lifestyle expenses (optional rule, p161)
+    - Earning money using class capabilities (3d6sp/day, p160)
+    - NPC conversations and social interaction
+    - Services: banking, jewelers, apothecaries, etc. (p161)
+    - Random encounters (2-in-6 day, 1-in-6 night when active)
     - Rumors and information gathering
-    - Faction interactions
     """
 
     def __init__(self, controller: GlobalController):
@@ -163,6 +241,10 @@ class SettlementEngine:
 
         # Active conversation
         self._conversation: Optional[ConversationState] = None
+
+        # Lifestyle tracking per Dolmenwood rules (p161)
+        self._current_lifestyle: LifestyleType = LifestyleType.COMMON
+        self._days_in_settlement: int = 0
 
         # Callbacks
         self._dialogue_callback: Optional[Callable] = None
@@ -296,40 +378,165 @@ class SettlementEngine:
         return result
 
     # =========================================================================
-    # DAILY SETTLEMENT LOOP
+    # LIFESTYLE MANAGEMENT (p161)
+    # =========================================================================
+
+    def set_lifestyle(self, lifestyle: LifestyleType) -> dict[str, Any]:
+        """
+        Set the party's lifestyle for settlement stays (p161).
+
+        Lifestyle affects daily costs and healing:
+        - Wretched: Free, no healing
+        - Poor: 5sp/day, 15gp/month
+        - Common: 2gp/day, 60gp/month
+        - Fancy: 10gp/day, 300gp/month
+
+        Args:
+            lifestyle: The lifestyle tier to use
+
+        Returns:
+            Dictionary with lifestyle info
+        """
+        self._current_lifestyle = lifestyle
+        lifestyle_info = LIFESTYLE_DATA[lifestyle]
+
+        return {
+            "lifestyle": lifestyle.value,
+            "cost_per_day_sp": lifestyle_info["cost_per_day_sp"],
+            "cost_per_month_gp": lifestyle_info["cost_per_month_gp"],
+            "allows_healing": lifestyle_info["allows_healing"],
+            "description": lifestyle_info["description"],
+        }
+
+    def get_lifestyle_cost(self, days: int = 1) -> dict[str, Any]:
+        """
+        Calculate lifestyle expenses for a number of days (p161).
+
+        Args:
+            days: Number of days to calculate costs for
+
+        Returns:
+            Dictionary with cost breakdown
+        """
+        lifestyle_info = LIFESTYLE_DATA[self._current_lifestyle]
+        daily_cost_sp = lifestyle_info["cost_per_day_sp"]
+
+        # Monthly rate is cheaper - use if staying 30+ days
+        if days >= 30:
+            months = days // 30
+            remaining_days = days % 30
+            monthly_cost_gp = lifestyle_info["cost_per_month_gp"]
+            total_cost_gp = (months * monthly_cost_gp) + (remaining_days * daily_cost_sp / 10)
+        else:
+            total_cost_gp = (days * daily_cost_sp) / 10  # Convert sp to gp
+
+        return {
+            "lifestyle": self._current_lifestyle.value,
+            "days": days,
+            "total_cost_gp": total_cost_gp,
+            "allows_healing": lifestyle_info["allows_healing"],
+        }
+
+    # =========================================================================
+    # EARNING MONEY (p160)
+    # =========================================================================
+
+    def earn_money_using_class(self, character_id: str, days: int = 1) -> dict[str, Any]:
+        """
+        Earn money using class capabilities per Dolmenwood rules (p160).
+
+        Characters can earn 3d6sp per day using their class abilities:
+        - Bards performing in taverns
+        - Thieves picking pockets at markets
+        - etc.
+
+        Args:
+            character_id: ID of character earning money
+            days: Number of days spent earning
+
+        Returns:
+            Dictionary with earnings
+        """
+        total_sp = 0
+        daily_earnings = []
+
+        for day in range(days):
+            roll = self.dice.roll("3d6", f"day {day + 1} earnings")
+            total_sp += roll.total
+            daily_earnings.append(roll.total)
+
+        return {
+            "character_id": character_id,
+            "days_worked": days,
+            "daily_earnings_sp": daily_earnings,
+            "total_sp": total_sp,
+            "total_gp": total_sp / 10,
+        }
+
+    # =========================================================================
+    # DAILY SETTLEMENT LOOP (p160)
     # =========================================================================
 
     def process_settlement_day(
         self,
         planned_actions: list[str],
-        active_at_night: bool = False
+        active_at_night: bool = False,
+        lifestyle: Optional[LifestyleType] = None
     ) -> dict[str, Any]:
         """
-        Execute one settlement day following Dolmenwood procedures.
+        Execute one settlement day following Dolmenwood procedures (p160).
 
-        Steps:
-        1. Note weather (from world state)
-        2. Players choose actions (provided via planned_actions)
-        3. Daytime random encounter (2-in-6)
-        4. Describe outcome (optional callback)
-        5. Advance day, apply rest healing if applicable
-        6. Night random encounter if characters are active (1-in-6)
+        Settlement Procedure Per Day:
+        1. Weather: Determine day's weather
+        2. Decide actions: Players choose activities
+        3. Random encounters: Daytime check (2-in-6 when active)
+        4. Description: Describe what happens
+        5. End of day: Update time records, apply lifestyle costs
+        6. Random encounters: Nighttime check if active (1-in-6)
+
+        Args:
+            planned_actions: List of planned activities
+            active_at_night: Whether party is active at night
+            lifestyle: Optional lifestyle override for the day
+
+        Returns:
+            Dictionary with day summary
         """
         if self.controller.current_state != GameState.SETTLEMENT_EXPLORATION:
             return {"error": "Not in settlement exploration state"}
 
+        # Apply lifestyle if specified
+        if lifestyle:
+            self._current_lifestyle = lifestyle
+
+        # 1. Weather (from world state)
         weather = self.controller.world_state.weather.value
-        daytime_encounter = self._check_settlement_encounter(TimeOfDay.MIDDAY)
 
-        # Advance a full day (144 turns) and sync world state
+        # 3. Daytime random encounter (2-in-6) - only when active
+        is_just_resting = planned_actions == ["full_rest"]
+        daytime_encounter = None
+        if not is_just_resting:
+            daytime_encounter = self._check_settlement_encounter(TimeOfDay.MIDDAY)
+
+        # 5. End of day - advance time (144 turns = 1 day)
         time_result = self.controller.advance_time(144)
+        self._days_in_settlement += 1
 
+        # Apply lifestyle costs
+        lifestyle_info = LIFESTYLE_DATA[self._current_lifestyle]
+        lifestyle_cost = {
+            "lifestyle": self._current_lifestyle.value,
+            "cost_sp": lifestyle_info["cost_per_day_sp"],
+        }
+
+        # Apply rest healing (respects lifestyle healing rules)
         healing_info = self._apply_rest_healing(
             full_day_rest="full_rest" in planned_actions,
             nights=1,
             apply=True,
         )
 
+        # 6. Nighttime random encounter (1-in-6) - only when active at night
         night_encounter = None
         if active_at_night:
             night_encounter = self._check_settlement_encounter(TimeOfDay.MIDNIGHT, night=True)
@@ -340,6 +547,8 @@ class SettlementEngine:
             "daytime_encounter": daytime_encounter,
             "nighttime_encounter": night_encounter,
             "healing": healing_info,
+            "lifestyle": lifestyle_cost,
+            "days_in_settlement": self._days_in_settlement,
             "time_advanced": time_result,
         }
 
@@ -355,9 +564,13 @@ class SettlementEngine:
 
     def _check_settlement_encounter(self, time_of_day: TimeOfDay, night: bool = False) -> Optional[dict[str, Any]]:
         """
-        Settlement random encounter check.
+        Settlement random encounter check per Dolmenwood rules (p160).
 
-        Day: 2-in-6; Night: 1-in-6.
+        When PCs are active in a settlement (not just resting in an inn):
+        - Daytime: 2-in-6 chance
+        - Nighttime: 1-in-6 chance
+
+        This is in addition to NPCs encountered at settlement locations.
         """
         chance = 1 if night else 2
         roll = self.dice.roll_d6(1, f"settlement encounter {time_of_day.value}")
@@ -376,10 +589,24 @@ class SettlementEngine:
         apply: bool = False
     ) -> dict[str, Any]:
         """
-        Apply rest healing while in settlement.
+        Apply rest healing while in settlement per Dolmenwood rules (p160).
 
-        full_day_rest: heals 1d3 HP per day; otherwise 1 HP per night.
+        Healing overnight: 1 HP per night in settlement
+        Full days of rest: 1d3 HP per day (precludes strenuous activity)
+
+        Note: Wretched lifestyle prevents all healing (p161).
         """
+        # Check if lifestyle allows healing (p161)
+        lifestyle_info = LIFESTYLE_DATA[self._current_lifestyle]
+        if not lifestyle_info["allows_healing"]:
+            return {
+                "full_day_rest": full_day_rest,
+                "nights": nights,
+                "healing_per_character": {},
+                "lifestyle": self._current_lifestyle.value,
+                "no_healing_reason": "Wretched lifestyle prevents healing",
+            }
+
         healing_per_character: dict[str, int] = {}
 
         for _ in range(nights):
@@ -829,6 +1056,10 @@ class SettlementEngine:
             ServiceType.HEALER: self._use_healer,
             ServiceType.STABLES: self._use_stables,
             ServiceType.HIRELING_HALL: self._use_hireling_hall,
+            # Dolmenwood-specific services (p161)
+            ServiceType.APOTHECARY: self._use_apothecary,
+            ServiceType.MONEY_CHANGER: self._use_money_changer,
+            ServiceType.JEWELER: self._use_jeweler,
         }
 
         handler = handlers.get(service_type, self._use_generic_service)
@@ -894,12 +1125,34 @@ class SettlementEngine:
         }
 
     def _use_general_store(self, building: Building, params: dict) -> dict[str, Any]:
-        """Use general store services."""
+        """
+        Use general store services per Dolmenwood rules (p161).
+
+        Buying and Selling Equipment:
+        - Buying: Common adventuring gear at standard prices
+        - Selling used equipment: 50% of normal value (if good condition)
+        """
+        service = params.get("service", "buy")
+        item_value = params.get("item_value", 0)
+
+        if service == "sell":
+            # Sell used equipment at 50% value (p161)
+            sell_value = item_value * 0.5
+            return {
+                "service": "sell",
+                "building": building.name,
+                "item_value": item_value,
+                "sell_price_gp": sell_value,
+                "sell_rate": "50%",
+                "condition_required": "good condition",
+            }
+
         return {
             "service": "shopping",
             "building": building.name,
             "prices_modifier": building.prices_modifier,
             "available_items": ["standard adventuring gear"],
+            "sell_rate_for_used": "50%",
         }
 
     def _use_temple(self, building: Building, params: dict) -> dict[str, Any]:
@@ -949,7 +1202,11 @@ class SettlementEngine:
         }
 
     def _use_hireling_hall(self, building: Building, params: dict) -> dict[str, Any]:
-        """Use hireling hall to find hirelings."""
+        """
+        Use hireling hall to find specialists or retainers (p160).
+
+        Characters may ask around to find specialists or retainers for hire.
+        """
         hireling_type = params.get("type", "porter")
 
         # Roll for availability
@@ -963,6 +1220,157 @@ class SettlementEngine:
             "hireling_type": hireling_type,
             "available": available,
             "daily_wage": 1 if hireling_type == "porter" else 2,
+        }
+
+    def _use_apothecary(self, building: Building, params: dict) -> dict[str, Any]:
+        """
+        Use apothecary/herbalist services per Dolmenwood rules (p161).
+
+        Apothecaries and Herbalists:
+        - Buying fungi/herbs: Standard prices
+        - Identifying fungi/herbs: 5gp fee
+        - Selling fungi/herbs: 50% of normal value (useful specimens only)
+        """
+        service = params.get("service", "identify")
+        item_value = params.get("item_value", 0)  # For selling
+
+        if service == "identify":
+            return {
+                "service": "identify",
+                "building": building.name,
+                "cost_gp": 5,  # 5gp fee per Dolmenwood rules (p161)
+                "result": "Herbalist examines and identifies specimen",
+            }
+        elif service == "sell":
+            # Herbalists buy at 50% value (p161)
+            sell_value = item_value * 0.5
+            return {
+                "service": "sell",
+                "building": building.name,
+                "item_value": item_value,
+                "sell_price_gp": sell_value,
+                "sell_rate": "50%",
+                "note": "Only useful (non-poisonous) specimens accepted",
+            }
+        elif service == "buy":
+            return {
+                "service": "buy",
+                "building": building.name,
+                "prices_modifier": building.prices_modifier,
+                "available_items": ["common fungi", "common herbs"],
+            }
+
+        return {
+            "service": service,
+            "building": building.name,
+        }
+
+    def _use_money_changer(self, building: Building, params: dict) -> dict[str, Any]:
+        """
+        Use money changer/banking services per Dolmenwood rules (p161).
+
+        Banking services (towns and cities):
+        - Money changing: 3% fee
+        - Safe storage: Free if 1+ month, 10% fee otherwise
+        - Loans: 10% interest per month, requires deposit of double value
+        """
+        service = params.get("service", "exchange")
+        amount = params.get("amount", 0)
+        duration_months = params.get("duration_months", 0)
+
+        if service == "exchange":
+            # 3% fee for exchanging coinage (p161)
+            fee = amount * 0.03
+            return {
+                "service": "exchange",
+                "building": building.name,
+                "amount_exchanged": amount,
+                "fee_gp": fee,
+                "fee_rate": "3%",
+                "result": f"Exchanged {amount}gp worth of coins (fee: {fee}gp)",
+            }
+        elif service == "storage":
+            # Free if 1+ month, 10% otherwise (p161)
+            if duration_months >= 1:
+                fee = 0
+                fee_note = "Free (1+ month storage)"
+            else:
+                fee = amount * 0.10
+                fee_note = "10% fee (less than 1 month)"
+            return {
+                "service": "storage",
+                "building": building.name,
+                "amount_stored": amount,
+                "duration_months": duration_months,
+                "fee_gp": fee,
+                "fee_note": fee_note,
+                "token_provided": True,
+            }
+        elif service == "loan":
+            # 10% interest per month, double value deposit required (p161)
+            interest_per_month = amount * 0.10
+            deposit_required = amount * 2
+            return {
+                "service": "loan",
+                "building": building.name,
+                "loan_amount": amount,
+                "interest_rate": "10% per month",
+                "interest_per_month_gp": interest_per_month,
+                "deposit_required_gp": deposit_required,
+                "deposit_note": "Item of double loan value required",
+                "reduced_rate_available": "For high-level characters with land",
+            }
+
+        return {
+            "service": service,
+            "building": building.name,
+        }
+
+    def _use_jeweler(self, building: Building, params: dict) -> dict[str, Any]:
+        """
+        Use jeweler services per Dolmenwood rules (p161).
+
+        Jewelers (towns and cities):
+        - Buying gems/jewelry: 100% value (full price)
+        - Selling gems/jewelry: 80% value
+        - Valuation (optional): 3% fee
+        """
+        service = params.get("service", "sell")
+        item_value = params.get("item_value", 0)
+
+        if service == "sell":
+            # Jewelers buy at 80% (p161)
+            sell_value = item_value * 0.8
+            return {
+                "service": "sell",
+                "building": building.name,
+                "item_value": item_value,
+                "sell_price_gp": sell_value,
+                "sell_rate": "80%",
+            }
+        elif service == "buy":
+            # Jewelers sell at 100% (p161)
+            return {
+                "service": "buy",
+                "building": building.name,
+                "prices": "full value",
+                "available_items": ["gems", "jewelry", "art objects"],
+            }
+        elif service == "valuation":
+            # 3% fee for appraisal (p161)
+            fee = item_value * 0.03
+            return {
+                "service": "valuation",
+                "building": building.name,
+                "item_value": item_value,
+                "fee_gp": fee,
+                "fee_rate": "3%",
+                "note": "Optional - PCs may appraise items themselves",
+            }
+
+        return {
+            "service": service,
+            "building": building.name,
         }
 
     def _use_generic_service(self, building: Building, params: dict) -> dict[str, Any]:
@@ -988,13 +1396,19 @@ class SettlementEngine:
         return self._conversation
 
     def get_settlement_summary(self) -> dict[str, Any]:
-        """Get summary of current settlement state."""
+        """
+        Get summary of current settlement state per Dolmenwood rules (p160-161).
+
+        Includes lifestyle tracking and days spent in settlement.
+        """
         if not self._current_settlement:
             return {"in_settlement": False}
 
         settlement = self._settlements.get(self._current_settlement)
         if not settlement:
             return {"in_settlement": True, "error": "Settlement data not found"}
+
+        lifestyle_info = LIFESTYLE_DATA[self._current_lifestyle]
 
         return {
             "in_settlement": True,
@@ -1006,4 +1420,9 @@ class SettlementEngine:
             "buildings_count": len(settlement.buildings),
             "known_npcs": len(settlement.npcs),
             "active_conversation": self._conversation is not None,
+            # Dolmenwood-specific tracking (p161)
+            "current_lifestyle": self._current_lifestyle.value,
+            "lifestyle_cost_sp_per_day": lifestyle_info["cost_per_day_sp"],
+            "lifestyle_allows_healing": lifestyle_info["allows_healing"],
+            "days_in_settlement": self._days_in_settlement,
         }

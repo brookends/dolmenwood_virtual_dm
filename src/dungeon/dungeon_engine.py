@@ -43,10 +43,29 @@ class DungeonActionType(str, Enum):
     OPEN_DOOR = "open_door"  # Open/force door
     PICK_LOCK = "pick_lock"  # Pick a lock
     DISARM_TRAP = "disarm_trap"  # Disarm detected trap
-    REST = "rest"  # Short rest (1 turn)
+    REST = "rest"  # Short rest (1 turn) - required 1 per 5 turns (p163)
     INTERACT = "interact"  # Interact with feature
     CAST_SPELL = "cast_spell"  # Cast a spell
     MAP = "map"  # Map the current area
+    FAST_TRAVEL = "fast_travel"  # Use established safe path (p162)
+
+
+class DungeonDoomResult(str, Enum):
+    """
+    Dungeon Doom table results for failed escape saves (p163).
+
+    Used when characters fail to exit dungeon via the escape roll option.
+    """
+    ESCAPED_LOST_ITEMS = "escaped_lost_items"  # 1: Escaped, 1d6 items lost
+    ESCAPED_1HP = "escaped_1hp"  # 2: Escaped, 1 HP remaining
+    ESCAPED_1HP_ABILITY_LOSS = "escaped_1hp_ability_loss"  # 3: Escaped, 1 HP, -1 random ability
+    LOST_WANDERING = "lost_wandering"  # 4: Lost, wandering alone or captured
+    LOST_TRANSFORMED = "lost_transformed"  # 5: Transformed into or controlled by monster
+    DEAD_BODY_LOOTED = "dead_body_looted"  # 6: Dead, companions looted body
+    DEAD_BODY_KNOWN = "dead_body_known"  # 7: Dead, companions know body location
+    DEAD_BODY_UNKNOWN = "dead_body_unknown"  # 8: Dead, body location unknown
+    DEAD_DESTROYED = "dead_destroyed"  # 9: Dead, body and equipment destroyed
+    BETRAYAL = "betrayal"  # 10: Roll again, can switch fate with companion
 
 
 class DoorState(str, Enum):
@@ -103,7 +122,11 @@ class DungeonTurnResult:
 
 @dataclass
 class DungeonState:
-    """Overall state of the dungeon."""
+    """
+    Overall state of the dungeon per Dolmenwood rules (p162-163).
+
+    Tracks exploration state, rest requirements, and escape modifiers.
+    """
     dungeon_id: str
     name: str = ""
     current_room: str = ""
@@ -112,18 +135,29 @@ class DungeonState:
     turns_in_dungeon: int = 0
     noise_accumulator: int = 0
     monsters_alerted: set[str] = field(default_factory=set)
+    # Dolmenwood dungeon exploration tracking (p162-163)
+    dungeon_level: int = 1  # Current dungeon level, affects escape roll (p163)
+    turns_since_rest: int = 0  # For 5 turns exploration / 1 turn rest rule (p163)
+    has_map: bool = False  # +2 to escape save if mapped (p163)
+    known_exit_path: bool = False  # +4 to escape save if safe path known (p163)
+    explored_rooms: set[str] = field(default_factory=set)  # For fast travel (p162)
+    safe_path_to_exit: list[str] = field(default_factory=list)  # Room IDs of safe path
 
 
 class DungeonEngine:
     """
-    Engine for dungeon exploration.
+    Engine for dungeon exploration per Dolmenwood rules (p162-163).
 
     Manages:
     - 10-minute exploration turns
+    - Movement: 3× Speed per Turn (exploration), 10× Speed in explored areas (p162)
+    - Rest requirement: 1 Turn rest per 5 Turns exploration (p163)
     - Light source tracking and depletion
-    - Wandering monster checks
+    - Wandering monster checks every 2 Turns, 1-in-6 chance (p163)
+    - Encounter distance: 2d6 × 10' (or 1d4 × 10' if mutual surprise) (p163)
     - Room state and discovery
-    - Noise consequences
+    - Dungeon escape roll and Doom table (p163)
+    - Established safe paths for fast travel (p162)
     """
 
     def __init__(self, controller: GlobalController):
@@ -139,10 +173,13 @@ class DungeonEngine:
         # Current dungeon state
         self._dungeon_state: Optional[DungeonState] = None
 
-        # Wandering monster check frequency
+        # Wandering monster check frequency (p163)
         self._wandering_check_interval: int = 2  # Every 2 turns
         self._turns_since_check: int = 0
         self._turns_since_rest: int = 0  # Must rest 1 turn per 5 or risk exhaustion
+
+        # Rest requirement tracking (p163)
+        self._rest_interval: int = 5  # Must rest after 5 turns of exploration
 
         # Noise thresholds
         self._noise_alert_threshold: int = 10
@@ -253,9 +290,13 @@ class DungeonEngine:
         action_params: Optional[dict[str, Any]] = None
     ) -> DungeonTurnResult:
         """
-        Execute one dungeon exploration turn.
+        Execute one dungeon exploration turn per Dolmenwood rules (p162).
 
-        Implements the Dungeon Exploration Loop from Section 5.3.
+        Dungeon Exploration Procedure Per Turn:
+        1. Decide actions (handled by caller)
+        2. Wandering monsters check
+        3. Description (via callback)
+        4. End of Turn: Update time, light sources, spell durations, rest needs
 
         Args:
             action: The action to perform this turn
@@ -291,6 +332,14 @@ class DungeonEngine:
         self._dungeon_state.turns_in_dungeon += 1
         self._turns_since_rest += 1
 
+        # Track rest requirement (p163) - 5 turns exploration, 1 turn rest
+        if action != DungeonActionType.REST:
+            self._dungeon_state.turns_since_rest += 1
+            if self._dungeon_state.turns_since_rest >= self._rest_interval:
+                result.warnings.append(
+                    "Party needs rest! Must rest 1 Turn or become exhausted (p163)"
+                )
+
         # 2. Deplete light sources
         if self.controller.party_state.active_light_source:
             result.light_remaining = self.controller.party_state.light_remaining_turns
@@ -316,7 +365,11 @@ class DungeonEngine:
         result.noise_generated = action_result.get("noise", 0)
         self._dungeon_state.noise_accumulator += result.noise_generated
 
-        # 4. Check wandering monsters
+        # Mark room as explored for fast travel (p162)
+        if action == DungeonActionType.MOVE and action_result.get("success"):
+            self._dungeon_state.explored_rooms.add(self._dungeon_state.current_room)
+
+        # 4. Check wandering monsters (p163) - every 2 Turns, 1-in-6 chance
         self._turns_since_check += 1
         if self._turns_since_check >= self._wandering_check_interval:
             self._turns_since_check = 0
@@ -364,6 +417,7 @@ class DungeonEngine:
             DungeonActionType.INTERACT: self._handle_interact,
             DungeonActionType.CAST_SPELL: self._handle_cast_spell,
             DungeonActionType.MAP: self._handle_map,
+            DungeonActionType.FAST_TRAVEL: self._handle_fast_travel,
         }
 
         handler = handlers.get(action)
@@ -618,10 +672,121 @@ class DungeonEngine:
         }
 
     def _handle_rest(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Handle short rest (1 turn)."""
+        """
+        Handle short rest (1 turn) per Dolmenwood rules (p163).
+
+        Characters must rest 1 Turn per hour (5 Turns exploration, 1 Turn rest)
+        or become exhausted.
+        """
+        # Reset the rest counter
+        self._dungeon_state.turns_since_rest = 0
+
         return {
             "success": True,
-            "message": "Rested for one turn",
+            "message": "Rested for one turn (rest requirement fulfilled)",
+            "noise": 0,
+            "rest_fulfilled": True,
+        }
+
+    def _handle_fast_travel(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Handle established safe path travel per Dolmenwood rules (p162).
+
+        To speed up play, the Referee may accelerate travel along safe,
+        previously explored routes:
+        1. Gauge route length
+        2. Calculate Turns required (route length / 10× Speed)
+        3. Check resources (light sources)
+        4. Make wandering monster checks for each Turn
+        5. Brief journey description (if no encounter)
+
+        Args:
+            params: Must include "route" (list of room IDs) or "destination"
+
+        Returns:
+            Result of fast travel attempt
+        """
+        destination = params.get("destination")
+        route = params.get("route", [])
+
+        if not route and not destination:
+            return {"success": False, "message": "Must specify route or destination"}
+
+        # If only destination provided, try to find route through explored rooms
+        if not route and destination:
+            if destination not in self._dungeon_state.explored_rooms:
+                return {
+                    "success": False,
+                    "message": "Cannot fast travel to unexplored area"
+                }
+            # Simplified: direct travel if destination is explored
+            route = [self._dungeon_state.current_room, destination]
+
+        # Verify all rooms in route are explored
+        for room_id in route:
+            if room_id not in self._dungeon_state.explored_rooms:
+                return {
+                    "success": False,
+                    "message": f"Route includes unexplored room: {room_id}"
+                }
+
+        # Calculate Turns required (simplified: 1 Turn per room transition)
+        turns_required = len(route) - 1
+        if turns_required <= 0:
+            return {"success": False, "message": "Invalid route"}
+
+        # Check resources - do we have enough light?
+        light_remaining = self.controller.party_state.light_remaining_turns
+        if light_remaining < turns_required:
+            return {
+                "success": False,
+                "message": f"Not enough light. Need {turns_required} Turns, have {light_remaining}"
+            }
+
+        # Make wandering monster checks for the journey
+        encounters = []
+        for turn in range(turns_required):
+            self._turns_since_check += 1
+            if self._turns_since_check >= self._wandering_check_interval:
+                self._turns_since_check = 0
+                # Check for wandering monster
+                roll = self.dice.roll_d6(1, f"fast travel monster check {turn + 1}")
+                if roll.total <= (1 + self._dungeon_state.alert_level):
+                    encounters.append({
+                        "turn": turn + 1,
+                        "room": route[turn + 1] if turn + 1 < len(route) else route[-1]
+                    })
+                    break  # Stop at first encounter
+
+        if encounters:
+            # Generate encounter at that point
+            encounter_room = encounters[0]["room"]
+            self._dungeon_state.current_room = encounter_room
+            encounter = self._check_wandering_monster()
+            return {
+                "success": False,
+                "message": f"Encountered monsters at {encounter_room}!",
+                "turns_traveled": encounters[0]["turn"],
+                "encounter": True,
+                "noise": 0,
+            }
+
+        # Successful fast travel
+        self._dungeon_state.current_room = route[-1]
+        self._dungeon_state.turns_in_dungeon += turns_required
+
+        # Update party location
+        self.controller.set_party_location(
+            LocationType.DUNGEON_ROOM,
+            route[-1],
+            sub_location=self._dungeon_state.dungeon_id
+        )
+
+        return {
+            "success": True,
+            "message": f"Traveled safely to {route[-1]} ({turns_required} Turns)",
+            "turns_used": turns_required,
+            "destination": route[-1],
             "noise": 0,
         }
 
@@ -683,8 +848,9 @@ class DungeonEngine:
 
     def _check_wandering_monster(self) -> Optional[EncounterState]:
         """
-        Check for wandering monster encounter.
+        Check for wandering monster encounter per Dolmenwood rules (p163).
 
+        Check every 2 Turns, 1-in-6 chance of encounter.
         Base 1-in-6 chance, modified by:
         - Alert level (+1 per level)
         - Recent noise
@@ -834,6 +1000,237 @@ class DungeonEngine:
             return "encounter_end_dungeon"
 
     # =========================================================================
+    # DUNGEON ESCAPE ROLL (p163)
+    # =========================================================================
+
+    def attempt_escape_roll(self, character_id: str) -> dict[str, Any]:
+        """
+        Attempt dungeon escape roll per Dolmenwood rules (p163).
+
+        When a character becomes lost or cannot find their way out of a dungeon,
+        they may attempt an escape roll: Save vs Doom with modifiers.
+
+        Modifiers:
+        - -1 per dungeon level
+        - +2 if the character has a map
+        - +4 if the character knows a safe path to the exit
+
+        On success: Character escapes safely
+        On failure: Roll on Dungeon Doom table
+
+        Args:
+            character_id: ID of character attempting escape
+
+        Returns:
+            Result of escape attempt including Doom table result if failed
+        """
+        if not self._dungeon_state:
+            return {"success": False, "error": "No active dungeon"}
+
+        # Calculate modifiers
+        level_penalty = -(self._dungeon_state.dungeon_level - 1)  # -1 per level below 1
+        map_bonus = 2 if self._dungeon_state.has_map else 0
+        path_bonus = 4 if self._dungeon_state.known_exit_path else 0
+        total_modifier = level_penalty + map_bonus + path_bonus
+
+        # Save vs Doom roll (assume base save of 14, modified)
+        roll = self.dice.roll("1d20", "escape save vs doom")
+        target = 14 - total_modifier  # Lower target is better for player
+
+        escaped = roll.total >= target
+
+        result = {
+            "character_id": character_id,
+            "roll": roll.total,
+            "target": target,
+            "modifier": total_modifier,
+            "modifier_breakdown": {
+                "dungeon_level": level_penalty,
+                "has_map": map_bonus,
+                "known_exit_path": path_bonus,
+            },
+            "escaped": escaped,
+        }
+
+        if escaped:
+            result["message"] = "Successfully escaped the dungeon!"
+            # Exit dungeon
+            self.exit_dungeon()
+        else:
+            # Roll on Dungeon Doom table
+            doom_result = self._roll_dungeon_doom()
+            result["doom_result"] = doom_result
+            result["message"] = f"Failed to escape! {doom_result['description']}"
+
+        return result
+
+    def _roll_dungeon_doom(self) -> dict[str, Any]:
+        """
+        Roll on the Dungeon Doom table per Dolmenwood rules (p163).
+
+        d10 results:
+        1: Escaped, 1d6 items lost
+        2: Escaped, 1 HP remaining
+        3: Escaped, 1 HP remaining, -1 to random ability score
+        4: Lost (wandering alone, captured, etc.)
+        5: Lost (transformed/controlled by monster)
+        6: Dead (companions looted body)
+        7: Dead (companions know body location)
+        8: Dead (body location unknown)
+        9: Dead (body and equipment destroyed)
+        10: Roll again, may switch fate with companion
+
+        Returns:
+            Dictionary with doom result details
+        """
+        roll = self.dice.roll("1d10", "dungeon doom")
+
+        doom_results = {
+            1: {
+                "result": DungeonDoomResult.ESCAPED_LOST_ITEMS,
+                "description": "Escaped, but lost 1d6 items along the way",
+                "items_lost": self.dice.roll("1d6", "items lost").total,
+                "escaped": True,
+                "alive": True,
+            },
+            2: {
+                "result": DungeonDoomResult.ESCAPED_1HP,
+                "description": "Escaped, barely alive with only 1 HP remaining",
+                "hp_remaining": 1,
+                "escaped": True,
+                "alive": True,
+            },
+            3: {
+                "result": DungeonDoomResult.ESCAPED_1HP_ABILITY_LOSS,
+                "description": "Escaped with 1 HP, permanently lost 1 point from a random ability",
+                "hp_remaining": 1,
+                "ability_loss": self.dice.roll("1d6", "ability affected").total,
+                "escaped": True,
+                "alive": True,
+            },
+            4: {
+                "result": DungeonDoomResult.LOST_WANDERING,
+                "description": "Lost in the dungeon - wandering alone, captured, or worse",
+                "escaped": False,
+                "alive": True,  # Potentially
+                "status": "lost",
+            },
+            5: {
+                "result": DungeonDoomResult.LOST_TRANSFORMED,
+                "description": "Transformed into or controlled by a dungeon monster",
+                "escaped": False,
+                "alive": False,  # Effectively
+                "status": "transformed",
+            },
+            6: {
+                "result": DungeonDoomResult.DEAD_BODY_LOOTED,
+                "description": "Dead - companions found and looted the body",
+                "escaped": False,
+                "alive": False,
+                "body_recovered": True,
+                "equipment_recovered": True,
+            },
+            7: {
+                "result": DungeonDoomResult.DEAD_BODY_KNOWN,
+                "description": "Dead - companions know where the body lies",
+                "escaped": False,
+                "alive": False,
+                "body_location_known": True,
+            },
+            8: {
+                "result": DungeonDoomResult.DEAD_BODY_UNKNOWN,
+                "description": "Dead - body location unknown to companions",
+                "escaped": False,
+                "alive": False,
+                "body_location_known": False,
+            },
+            9: {
+                "result": DungeonDoomResult.DEAD_DESTROYED,
+                "description": "Dead - body and all equipment utterly destroyed",
+                "escaped": False,
+                "alive": False,
+                "body_destroyed": True,
+            },
+            10: {
+                "result": DungeonDoomResult.BETRAYAL,
+                "description": "Roll again - may switch fate with a companion",
+                "reroll": True,
+            },
+        }
+
+        result = doom_results[roll.total]
+        result["roll"] = roll.total
+
+        # Handle result 10 - roll again
+        if result.get("reroll"):
+            reroll_result = self._roll_dungeon_doom()
+            result["switched_fate"] = reroll_result
+            # Keep the BETRAYAL as main result but include what they would face
+
+        return result
+
+    def update_escape_modifiers(
+        self,
+        has_map: Optional[bool] = None,
+        known_exit_path: Optional[bool] = None,
+        dungeon_level: Optional[int] = None
+    ) -> None:
+        """
+        Update escape roll modifiers for the current dungeon.
+
+        Args:
+            has_map: Whether party has mapped the dungeon (+2 to escape)
+            known_exit_path: Whether party knows safe path to exit (+4 to escape)
+            dungeon_level: Current dungeon level (-1 per level to escape)
+        """
+        if not self._dungeon_state:
+            return
+
+        if has_map is not None:
+            self._dungeon_state.has_map = has_map
+        if known_exit_path is not None:
+            self._dungeon_state.known_exit_path = known_exit_path
+        if dungeon_level is not None:
+            self._dungeon_state.dungeon_level = dungeon_level
+
+    def establish_safe_path(self, room_ids: list[str]) -> dict[str, Any]:
+        """
+        Establish a safe path to the exit for fast travel and escape bonus.
+
+        Per Dolmenwood rules (p162), a safe path through explored areas
+        allows for accelerated travel and provides +4 to escape rolls.
+
+        Args:
+            room_ids: List of room IDs forming the safe path to exit
+
+        Returns:
+            Result of establishing the path
+        """
+        if not self._dungeon_state:
+            return {"success": False, "error": "No active dungeon"}
+
+        # Verify all rooms are explored
+        unexplored = [
+            room_id for room_id in room_ids
+            if room_id not in self._dungeon_state.explored_rooms
+        ]
+
+        if unexplored:
+            return {
+                "success": False,
+                "error": f"Cannot establish path through unexplored rooms: {unexplored}"
+            }
+
+        self._dungeon_state.safe_path_to_exit = room_ids
+        self._dungeon_state.known_exit_path = True
+
+        return {
+            "success": True,
+            "message": f"Safe path established through {len(room_ids)} rooms",
+            "path": room_ids,
+        }
+
+    # =========================================================================
     # ROOM MANAGEMENT
     # =========================================================================
 
@@ -859,7 +1256,11 @@ class DungeonEngine:
         return self._dungeon_state
 
     def get_exploration_summary(self) -> dict[str, Any]:
-        """Get summary of dungeon exploration."""
+        """
+        Get summary of dungeon exploration per Dolmenwood rules (p162-163).
+
+        Includes all Dolmenwood-specific tracking fields.
+        """
         if not self._dungeon_state:
             return {"active": False}
 
@@ -867,6 +1268,10 @@ class DungeonEngine:
             room_id for room_id, room in self._dungeon_state.rooms.items()
             if room.visited
         ]
+
+        # Calculate turns until rest needed (p163)
+        turns_until_rest = max(0, self._rest_interval - self._dungeon_state.turns_since_rest)
+        needs_rest = self._dungeon_state.turns_since_rest >= self._rest_interval
 
         return {
             "active": True,
@@ -878,4 +1283,13 @@ class DungeonEngine:
             "turns_in_dungeon": self._dungeon_state.turns_in_dungeon,
             "alert_level": self._dungeon_state.alert_level,
             "light_status": self._check_light_status(),
+            # Dolmenwood-specific tracking (p162-163)
+            "dungeon_level": self._dungeon_state.dungeon_level,
+            "turns_since_rest": self._dungeon_state.turns_since_rest,
+            "turns_until_rest_required": turns_until_rest,
+            "needs_rest": needs_rest,
+            "has_map": self._dungeon_state.has_map,
+            "known_exit_path": self._dungeon_state.known_exit_path,
+            "explored_rooms": list(self._dungeon_state.explored_rooms),
+            "safe_path_to_exit": self._dungeon_state.safe_path_to_exit,
         }
