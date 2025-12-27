@@ -140,6 +140,15 @@ class WatchPeriod(str, Enum):
     SIXTH_WATCH = "sixth_watch"     # 8pm to Midnight
 
 
+class MovementMode(str, Enum):
+    """Movement modes per Dolmenwood rules (p146-147)."""
+    ENCOUNTER = "encounter"       # Combat/encounter: Speed per round
+    EXPLORATION = "exploration"   # Dungeon exploration: Speed × 3 per turn
+    FAMILIAR = "familiar"         # Known areas: Speed × 10 per turn
+    RUNNING = "running"           # Running: Speed × 3 per round (max 30 rounds)
+    OVERLAND = "overland"         # Wilderness travel: Speed ÷ 5 = TP/day
+
+
 class SourceType(str, Enum):
     """Content source types with priority."""
     CORE_RULEBOOK = "core_rulebook"        # Priority 1 (Highest)
@@ -407,6 +416,235 @@ class GameTime:
 
     def __str__(self) -> str:
         return f"{self.hour:02d}:{self.minute:02d}"
+
+
+# =============================================================================
+# TIME AND MOVEMENT CONSTANTS (p146-147)
+# =============================================================================
+
+# Time unit conversions per Dolmenwood rules (p146)
+MINUTES_PER_TURN = 10       # 1 Turn = 10 minutes
+SECONDS_PER_ROUND = 10      # 1 Round = 10 seconds
+TURNS_PER_HOUR = 6          # 6 Turns per hour (60 min ÷ 10 min)
+ROUNDS_PER_TURN = 60        # 60 Rounds per Turn (600 sec ÷ 10 sec)
+ROUNDS_PER_MINUTE = 6       # 6 Rounds per minute (60 sec ÷ 10 sec)
+
+# Running exhaustion rules (p147)
+MAX_RUNNING_ROUNDS = 30     # Can run for 30 rounds before exhaustion
+RUNNING_REST_TURNS = 3      # Must rest 3 turns after running to exhaustion
+
+# Weight system (p147)
+COINS_PER_POUND = 10        # 10 coins = 1 pound
+
+
+@dataclass
+class RunningState:
+    """Tracks running exhaustion per Dolmenwood rules (p147)."""
+    rounds_run: int = 0
+    is_exhausted: bool = False
+    rest_turns_remaining: int = 0
+
+    def run_round(self) -> bool:
+        """
+        Record one round of running.
+
+        Returns:
+            True if can continue running, False if exhausted
+        """
+        if self.is_exhausted:
+            return False
+
+        self.rounds_run += 1
+        if self.rounds_run >= MAX_RUNNING_ROUNDS:
+            self.is_exhausted = True
+            self.rest_turns_remaining = RUNNING_REST_TURNS
+            return False
+        return True
+
+    def rest_turn(self) -> None:
+        """Record one turn of rest to recover from running."""
+        if self.rest_turns_remaining > 0:
+            self.rest_turns_remaining -= 1
+            if self.rest_turns_remaining == 0:
+                self.is_exhausted = False
+                self.rounds_run = 0
+
+    def can_run(self) -> bool:
+        """Check if character can run."""
+        return not self.is_exhausted and self.rounds_run < MAX_RUNNING_ROUNDS
+
+
+class MovementCalculator:
+    """
+    Calculate movement rates per Dolmenwood rules (p146-147).
+
+    Movement rates are derived from base Speed:
+    - Encounter (per round): Speed feet
+    - Exploration (per turn): Speed × 3 feet
+    - Familiar areas (per turn): Speed × 10 feet
+    - Running (per round): Speed × 3 feet (max 30 rounds)
+    - Overland (Travel Points/day): Speed ÷ 5
+    """
+
+    # Movement multipliers per mode (p146-147)
+    ENCOUNTER_MULTIPLIER = 1        # Speed per round
+    EXPLORATION_MULTIPLIER = 3      # Speed × 3 per turn
+    FAMILIAR_MULTIPLIER = 10        # Speed × 10 per turn
+    RUNNING_MULTIPLIER = 3          # Speed × 3 per round
+
+    @classmethod
+    def get_encounter_movement(cls, speed: int) -> int:
+        """
+        Get encounter/combat movement rate (feet per round).
+
+        Per Dolmenwood rules (p146): Speed per round.
+        Example: Speed 30 = 30'/round
+        """
+        return speed * cls.ENCOUNTER_MULTIPLIER
+
+    @classmethod
+    def get_exploration_movement(cls, speed: int) -> int:
+        """
+        Get dungeon exploration movement rate (feet per turn).
+
+        Per Dolmenwood rules (p146): Speed × 3 per turn.
+        Example: Speed 30 = 90'/turn
+        """
+        return speed * cls.EXPLORATION_MULTIPLIER
+
+    @classmethod
+    def get_familiar_movement(cls, speed: int) -> int:
+        """
+        Get movement rate in familiar/explored areas (feet per turn).
+
+        Per Dolmenwood rules (p146): Speed × 10 per turn.
+        Example: Speed 30 = 300'/turn
+        """
+        return speed * cls.FAMILIAR_MULTIPLIER
+
+    @classmethod
+    def get_running_movement(cls, speed: int) -> int:
+        """
+        Get running movement rate (feet per round).
+
+        Per Dolmenwood rules (p147): Speed × 3 per round.
+        Can only run for 30 rounds before needing 3 turns rest.
+        Example: Speed 30 = 90'/round
+        """
+        return speed * cls.RUNNING_MULTIPLIER
+
+    @classmethod
+    def get_travel_points(cls, speed: int) -> int:
+        """
+        Get Travel Points per day for overland travel.
+
+        Per Dolmenwood rules (p147): Speed ÷ 5 = TP/day.
+        Example: Speed 30 = 6 TP/day
+        """
+        return speed // 5
+
+    @classmethod
+    def get_forced_march_travel_points(cls, speed: int) -> int:
+        """
+        Get Travel Points per day for forced march.
+
+        Per Dolmenwood rules (p156): Forced march grants 50% more TP.
+        """
+        base_tp = cls.get_travel_points(speed)
+        return base_tp + (base_tp // 2)  # 1.5x base, rounded down
+
+    @classmethod
+    def get_movement_rate(cls, speed: int, mode: "MovementMode") -> int:
+        """
+        Get movement rate for a specific mode.
+
+        Args:
+            speed: Base movement speed in feet
+            mode: Movement mode (encounter, exploration, etc.)
+
+        Returns:
+            Movement rate in feet (per round or per turn depending on mode)
+        """
+        handlers = {
+            MovementMode.ENCOUNTER: cls.get_encounter_movement,
+            MovementMode.EXPLORATION: cls.get_exploration_movement,
+            MovementMode.FAMILIAR: cls.get_familiar_movement,
+            MovementMode.RUNNING: cls.get_running_movement,
+        }
+        handler = handlers.get(mode)
+        if handler:
+            return handler(speed)
+        # For OVERLAND, return travel points (different unit)
+        if mode == MovementMode.OVERLAND:
+            return cls.get_travel_points(speed)
+        return speed
+
+    @classmethod
+    def get_party_speed(cls, member_speeds: list[int]) -> int:
+        """
+        Get party movement speed (slowest member).
+
+        Per Dolmenwood rules (p146): Party speed = slowest member's speed.
+
+        Args:
+            member_speeds: List of movement speeds for all party members
+
+        Returns:
+            Party speed (minimum of all member speeds)
+        """
+        if not member_speeds:
+            return 30  # Default speed
+        return min(member_speeds)
+
+    @classmethod
+    def calculate_turns_for_distance(
+        cls,
+        distance_feet: int,
+        speed: int,
+        mode: MovementMode
+    ) -> int:
+        """
+        Calculate turns needed to travel a distance.
+
+        Args:
+            distance_feet: Distance to travel in feet
+            speed: Base movement speed
+            mode: Movement mode
+
+        Returns:
+            Number of turns needed (rounded up)
+        """
+        movement_per_turn = cls.get_movement_rate(speed, mode)
+        if movement_per_turn <= 0:
+            return 0
+        return (distance_feet + movement_per_turn - 1) // movement_per_turn
+
+    @classmethod
+    def calculate_rounds_for_distance(
+        cls,
+        distance_feet: int,
+        speed: int,
+        running: bool = False
+    ) -> int:
+        """
+        Calculate rounds needed to travel a distance (combat/encounter).
+
+        Args:
+            distance_feet: Distance to travel in feet
+            speed: Base movement speed
+            running: Whether running (3× speed)
+
+        Returns:
+            Number of rounds needed (rounded up)
+        """
+        if running:
+            movement_per_round = cls.get_running_movement(speed)
+        else:
+            movement_per_round = cls.get_encounter_movement(speed)
+
+        if movement_per_round <= 0:
+            return 0
+        return (distance_feet + movement_per_round - 1) // movement_per_round
 
 
 # =============================================================================

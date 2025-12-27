@@ -29,6 +29,10 @@ from src.data_models import (
     LightSourceType,
     Feature,
     Hazard,
+    MovementCalculator,
+    MovementMode,
+    MINUTES_PER_TURN,
+    TURNS_PER_HOUR,
 )
 
 
@@ -146,7 +150,15 @@ class DungeonState:
 
 class DungeonEngine:
     """
-    Engine for dungeon exploration per Dolmenwood rules (p162-163).
+    Engine for dungeon exploration per Dolmenwood rules (p146-147, p162-163).
+
+    Movement Rates (p146-147):
+    - Exploration: Speed × 3 per Turn (e.g., Speed 30 = 90' per 10-minute Turn)
+    - Familiar/Explored Areas: Speed × 10 per Turn (e.g., Speed 30 = 300' per Turn)
+
+    Time Units (p146):
+    - 1 Turn = 10 minutes (6 Turns per hour)
+    - 1 Round = 10 seconds (60 Rounds per Turn)
 
     Manages:
     - 10-minute exploration turns
@@ -186,6 +198,66 @@ class DungeonEngine:
 
         # Callbacks
         self._description_callback: Optional[Callable] = None
+
+    def _get_party_speed(self) -> int:
+        """
+        Get party movement speed per Dolmenwood rules (p146).
+
+        Party speed is determined by the slowest member.
+
+        Returns:
+            Party base speed in feet
+        """
+        # TODO: Integrate with character state to get actual member speeds
+        return 30  # Default human movement speed
+
+    def get_exploration_movement_per_turn(self) -> int:
+        """
+        Get exploration movement rate per Dolmenwood rules (p146-147).
+
+        Exploration movement = Speed × 3 per Turn.
+
+        Returns:
+            Movement rate in feet per 10-minute turn
+        """
+        speed = self._get_party_speed()
+        return MovementCalculator.get_exploration_movement(speed)
+
+    def get_familiar_movement_per_turn(self) -> int:
+        """
+        Get familiar/explored area movement rate per Dolmenwood rules (p146-147).
+
+        Familiar area movement = Speed × 10 per Turn.
+        Used for fast travel through previously explored areas.
+
+        Returns:
+            Movement rate in feet per 10-minute turn
+        """
+        speed = self._get_party_speed()
+        return MovementCalculator.get_familiar_movement(speed)
+
+    def calculate_turns_for_route(
+        self,
+        distance_feet: int,
+        is_explored: bool = False
+    ) -> int:
+        """
+        Calculate turns needed to travel a route.
+
+        Per Dolmenwood rules (p146-147):
+        - Unexplored areas: Speed × 3 per turn
+        - Explored/familiar areas: Speed × 10 per turn
+
+        Args:
+            distance_feet: Distance to travel in feet
+            is_explored: Whether the area is explored/familiar
+
+        Returns:
+            Number of turns needed (rounded up)
+        """
+        speed = self._get_party_speed()
+        mode = MovementMode.FAMILIAR if is_explored else MovementMode.EXPLORATION
+        return MovementCalculator.calculate_turns_for_distance(distance_feet, speed, mode)
 
     def enter_dungeon(
         self,

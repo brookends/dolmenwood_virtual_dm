@@ -31,6 +31,10 @@ from src.data_models import (
     ActionType,
     ConditionType,
     Condition,
+    MovementCalculator,
+    RunningState,
+    MAX_RUNNING_ROUNDS,
+    RUNNING_REST_TURNS,
 )
 
 
@@ -94,7 +98,7 @@ class CombatantStatus:
     Per-combatant status tracking for Dolmenwood combat rules.
 
     Tracks morale successes (two = fight to death), fleeing/parrying/charging
-    flags, and non-lethal damage separately from lethal damage.
+    flags, non-lethal damage, and running exhaustion (p147, p167).
     """
     combatant_id: str
     # Morale tracking (p167)
@@ -108,6 +112,8 @@ class CombatantStatus:
     took_damage_this_round: bool = False
     first_harmed: bool = False  # For solo creature morale
     non_lethal_damage: int = 0  # Non-lethal damage tracked separately (p169)
+    # Running exhaustion tracking (p147)
+    running_state: RunningState = field(default_factory=RunningState)
 
 
 @dataclass
@@ -1135,13 +1141,25 @@ class CombatEngine:
     # SPECIAL ACTIONS
     # =========================================================================
 
-    def attempt_flee(self, character_id: str) -> dict[str, Any]:
+    def attempt_flee(self, character_id: str, running: bool = True) -> dict[str, Any]:
         """
-        Attempt to flee from melee combat per Dolmenwood rules (p167).
+        Attempt to flee from melee combat per Dolmenwood rules (p147, p167).
 
         Fleeing must be declared before initiative.
         Enemies get +2 Attack and ignore shield AC bonus.
         Success based on movement rate comparison.
+
+        Running (p147):
+        - Running speed = Speed × 3 per round
+        - Can only run for 30 rounds before exhaustion
+        - Must rest 3 turns after running to exhaustion
+
+        Args:
+            character_id: ID of the fleeing character
+            running: Whether to run (3× speed) vs normal movement
+
+        Returns:
+            Result of flee attempt with running/exhaustion info
         """
         if not self._combat_state:
             return {"success": False, "error": "No active combat"}
@@ -1149,6 +1167,21 @@ class CombatEngine:
         fleeing_combatant = self._get_combatant(character_id)
         if not fleeing_combatant:
             return {"success": False, "error": "Combatant not found"}
+
+        # Get combatant status for running tracking
+        status = self._combat_state.combatant_status.get(character_id)
+
+        # Check if can run (not exhausted)
+        can_run = True
+        if status and running:
+            can_run = status.running_state.can_run()
+            if not can_run:
+                return {
+                    "success": False,
+                    "error": "Too exhausted to run! Must rest for 3 turns.",
+                    "exhausted": True,
+                    "rest_turns_remaining": status.running_state.rest_turns_remaining,
+                }
 
         # Mark as fleeing in round modifiers
         round_modifiers = self._init_round_modifiers()
@@ -1168,28 +1201,58 @@ class CombatEngine:
         # Apply free attack damage
         self._apply_attack_results(free_attacks)
 
-        # Compare movement rates - faster character escapes
-        fleeing_movement = fleeing_combatant.stat_block.movement if fleeing_combatant.stat_block else 30
+        # Calculate movement rates using MovementCalculator (p146-147)
+        base_speed = fleeing_combatant.stat_block.movement if fleeing_combatant.stat_block else 30
+        if running:
+            fleeing_movement = MovementCalculator.get_running_movement(base_speed)
+        else:
+            fleeing_movement = MovementCalculator.get_encounter_movement(base_speed)
+
+        # Compare with fastest enemy
         enemies = self._combat_state.encounter.get_active_enemies()
         if enemies:
-            fastest_enemy = max(
-                (e.stat_block.movement if e.stat_block else 30 for e in enemies)
-            )
+            # Assume enemies also run if pursuing
+            enemy_speeds = []
+            for e in enemies:
+                e_speed = e.stat_block.movement if e.stat_block else 30
+                if running:
+                    enemy_speeds.append(MovementCalculator.get_running_movement(e_speed))
+                else:
+                    enemy_speeds.append(MovementCalculator.get_encounter_movement(e_speed))
+            fastest_enemy = max(enemy_speeds)
             escaped = fleeing_movement >= fastest_enemy
         else:
+            fastest_enemy = 0
             escaped = True
 
-        # Mark fleeing status
-        status = self._combat_state.combatant_status.get(character_id)
+        # Track running state (p147)
         if status:
             status.is_fleeing = True
+            if running:
+                # Record running round
+                can_continue = status.running_state.run_round()
+                if not can_continue:
+                    # Became exhausted this round
+                    pass  # Still escaped if faster, but now exhausted
 
-        return {
+        result = {
             "success": escaped,
             "free_attacks": len(free_attacks),
             "damage_taken": sum(a.damage_dealt for a in free_attacks if a.hit),
-            "movement_comparison": f"{fleeing_movement} vs {fastest_enemy if enemies else 0}",
+            "fleeing_speed": fleeing_movement,
+            "enemy_speed": fastest_enemy,
+            "running": running,
         }
+
+        # Add running exhaustion info
+        if status and running:
+            result["rounds_run"] = status.running_state.rounds_run
+            result["max_running_rounds"] = MAX_RUNNING_ROUNDS
+            result["exhausted"] = status.running_state.is_exhausted
+            if status.running_state.is_exhausted:
+                result["rest_turns_needed"] = RUNNING_REST_TURNS
+
+        return result
 
     def attempt_charge(self, character_id: str, target_id: str) -> dict[str, Any]:
         """

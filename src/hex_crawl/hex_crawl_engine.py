@@ -32,6 +32,8 @@ from src.data_models import (
     HexLocation,
     Season,
     TimeOfDay,
+    MovementCalculator,
+    MovementMode,
 )
 
 
@@ -138,15 +140,17 @@ class TravelSegmentResult:
 @dataclass
 class TravelDayState:
     """
-    Tracks travel state for a single day per Dolmenwood rules (p156).
+    Tracks travel state for a single day per Dolmenwood rules (p146-147, p156).
 
-    Travel Points per day = Speed / 5:
+    Travel Points per day = Speed ÷ 5 (p147):
     - Speed 40 (mounted): 8 TP normal, 12 TP forced march
     - Speed 30 (cart/wagon): 6 TP normal, 9 TP forced march
-    - Speed 20: 4 TP normal, 6 TP forced march
+    - Speed 20 (encumbered): 4 TP normal, 6 TP forced march
+
+    Forced march grants 50% more TP but requires exhaustion checks.
     """
-    base_speed: int = 30  # Party base speed
-    travel_points_max: int = 6  # TP for the day (speed / 5)
+    base_speed: int = 30  # Party base speed (slowest member per p146)
+    travel_points_max: int = 6  # TP for the day (speed ÷ 5)
     travel_points_remaining: int = 6
     is_forced_march: bool = False
     days_since_rest: int = 0  # For weekly rest requirement (p157)
@@ -356,15 +360,26 @@ class HexCrawlEngine:
         return result
 
     def _start_travel_day(self, forced_march: bool, route_type: RouteType) -> None:
-        """Initialize daily travel points, lost and encounter checks."""
-        speed = 30  # default Dolmenwood overland speed
+        """
+        Initialize daily travel points, lost and encounter checks.
+
+        Per Dolmenwood rules (p146-147):
+        - Party speed = slowest member's speed
+        - Travel Points = Speed ÷ 5
+        - Forced march = 50% more TP
+        """
         self._forced_march = forced_march
         self._route_type = route_type
 
-        # Calculate Travel Points per day
-        travel_points_table = {40: (8, 12), 30: (6, 9), 20: (4, 6), 10: (2, 3)}
-        normal, forced = travel_points_table.get(speed, (6, 9))
-        self._travel_points_total = forced if forced_march else normal
+        # Get party speed from slowest member (p146)
+        party_speed = self._get_party_speed()
+
+        # Calculate Travel Points per day using MovementCalculator (p147)
+        if forced_march:
+            self._travel_points_total = MovementCalculator.get_forced_march_travel_points(party_speed)
+        else:
+            self._travel_points_total = MovementCalculator.get_travel_points(party_speed)
+
         self._travel_points_remaining = self._travel_points_total
         self._pending_entry_cost = self._pending_entry_cost  # carry-over from prior day
         self._encounter_checked_today = False
@@ -385,6 +400,20 @@ class HexCrawlEngine:
             self._lost_today = nav_roll.total <= lost_chance
         else:
             self._lost_today = False
+
+    def _get_party_speed(self) -> int:
+        """
+        Get party movement speed per Dolmenwood rules (p146).
+
+        Party speed is determined by the slowest member.
+
+        Returns:
+            Party base speed in feet
+        """
+        # Get character speeds from controller if available
+        # For now, use default speed of 30
+        # TODO: Integrate with character state to get actual member speeds
+        return 30  # Default human movement speed
 
     def _check_encounter(self, terrain_info: TerrainInfo, route_type: RouteType) -> bool:
         """Daily wandering monster check based on terrain and route."""
