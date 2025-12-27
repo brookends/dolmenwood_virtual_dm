@@ -1,18 +1,16 @@
 """
 Hex Crawl Engine for Dolmenwood Virtual DM.
 
-Implements the Wilderness Travel Loop from Section 5.2 of the specification.
-Handles overland movement, navigation checks, encounter rolls, and terrain effects.
+Implements Dolmenwood wilderness travel using daily Travel Points, terrain
+costs, getting lost checks, and daily encounter checks.
 
-The hex crawl loop per travel segment:
-1. Advance time (segment length depends on terrain)
-2. Consume food/water if threshold crossed
-3. Check navigation (lost check)
-4. Check encounter (1-in-X)
-5. If encounter -> Generate encounter -> Transition to WILDERNESS_ENCOUNTER
-6. Apply weather & terrain effects
-7. Update party location
-8. Request LLM description (terrain + atmosphere only)
+Daily travel loop (per Campaign Book travel rules):
+1. Weather already set on WorldState
+2. Choose course (destination hex/route type)
+3. Getting lost check (terrain dependent; none on roads, 1-in-6 on tracks)
+4. Wandering monster check once per travel day (terrain-based chance)
+5. Spend Travel Points to enter/search hexes; log descriptions
+6. End of day: if still in wild, camp and carry over any partial entry cost
 """
 
 from dataclasses import dataclass, field
@@ -33,85 +31,77 @@ from src.data_models import (
     LocationType,
     HexLocation,
     Season,
+    TimeOfDay,
 )
 
 
 logger = logging.getLogger(__name__)
 
 
-class NavigationResult(str, Enum):
-    """Result of navigation check."""
-    SUCCESS = "success"
-    VEERED = "veered"  # Went to adjacent hex instead
-    LOST = "lost"  # Wandered randomly
-
-
-class TravelPace(str, Enum):
-    """Travel pace affecting speed and encounters."""
-    CAUTIOUS = "cautious"  # Half speed, +1 surprise others
-    NORMAL = "normal"
-    FAST = "fast"  # 1.5x speed, -1 surprise check
+class RouteType(str, Enum):
+    """Travel context."""
+    ROAD = "road"
+    TRACK = "track"
+    WILD = "wild"
 
 
 @dataclass
 class TerrainInfo:
-    """Information about terrain type."""
+    """Dolmenwood travel data per terrain category."""
     terrain_type: TerrainType
-    movement_cost: float  # Multiplier (1.0 = normal, 2.0 = half speed)
-    encounter_chance: int  # X in 1-in-X chance (6 = 1-in-6)
-    navigation_difficulty: int  # Modifier to navigation check
+    travel_point_cost: int  # points to enter/search hex
+    lost_chance: int  # X-in-6
+    encounter_chance: int  # X-in-6
+    mount_allowed: bool
+    vehicle_allowed: bool
     description: str = ""
 
 
-# Terrain definitions
+# Terrain definitions per Dolmenwood travel table
 TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
-    TerrainType.ROAD: TerrainInfo(
-        TerrainType.ROAD, 0.5, 8, -2,
-        "Well-maintained road through the woods"
+    TerrainType.FARMLAND: TerrainInfo(
+        TerrainType.FARMLAND, travel_point_cost=2, lost_chance=1, encounter_chance=1,
+        mount_allowed=True, vehicle_allowed=True, description="Tilled fields and lanes"
     ),
-    TerrainType.TRAIL: TerrainInfo(
-        TerrainType.TRAIL, 0.75, 6, -1,
-        "Winding forest trail"
+    TerrainType.MEADOW if hasattr(TerrainType, "MEADOW") else TerrainType.FARMLAND: TerrainInfo(  # type: ignore[attr-defined]
+        TerrainType.FARMLAND, travel_point_cost=2, lost_chance=1, encounter_chance=1,
+        mount_allowed=True, vehicle_allowed=True, description="Open meadow or grassland"
     ),
     TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST, 1.0, 6, 0,
-        "Dense Dolmenwood forest"
-    ),
-    TerrainType.DEEP_FOREST: TerrainInfo(
-        TerrainType.DEEP_FOREST, 1.5, 4, 2,
-        "Primeval deep forest with ancient trees"
+        TerrainType.FOREST, travel_point_cost=2, lost_chance=1, encounter_chance=1,
+        mount_allowed=True, vehicle_allowed=True, description="Open forest"
     ),
     TerrainType.MOOR: TerrainInfo(
-        TerrainType.MOOR, 1.25, 6, 1,
-        "Misty moorland"
-    ),
-    TerrainType.RIVER: TerrainInfo(
-        TerrainType.RIVER, 2.0, 4, 0,
-        "River crossing required"
-    ),
-    TerrainType.LAKE: TerrainInfo(
-        TerrainType.LAKE, 3.0, 4, 0,
-        "Lake - requires boat or detour"
+        TerrainType.MOOR, travel_point_cost=3, lost_chance=2, encounter_chance=2,
+        mount_allowed=True, vehicle_allowed=False, description="Boggy or hilly forest/moor"
     ),
     TerrainType.HILLS: TerrainInfo(
-        TerrainType.HILLS, 1.5, 6, 1,
-        "Wooded hills"
+        TerrainType.HILLS, travel_point_cost=3, lost_chance=2, encounter_chance=2,
+        mount_allowed=True, vehicle_allowed=False, description="Hilly forest/terrain"
     ),
-    TerrainType.MOUNTAINS: TerrainInfo(
-        TerrainType.MOUNTAINS, 2.0, 4, 2,
-        "Mountain terrain"
+    TerrainType.DEEP_FOREST: TerrainInfo(
+        TerrainType.DEEP_FOREST, travel_point_cost=4, lost_chance=3, encounter_chance=3,
+        mount_allowed=False, vehicle_allowed=False, description="Tangled or thorny forest"
     ),
     TerrainType.SWAMP: TerrainInfo(
-        TerrainType.SWAMP, 2.0, 3, 2,
-        "Treacherous swampland"
+        TerrainType.SWAMP, travel_point_cost=4, lost_chance=3, encounter_chance=3,
+        mount_allowed=False, vehicle_allowed=False, description="Wetland or bog"
     ),
-    TerrainType.FARMLAND: TerrainInfo(
-        TerrainType.FARMLAND, 0.75, 8, -1,
-        "Cultivated farmland"
+    TerrainType.MOUNTAINS: TerrainInfo(
+        TerrainType.MOUNTAINS, travel_point_cost=4, lost_chance=3, encounter_chance=3,
+        mount_allowed=False, vehicle_allowed=False, description="Craggy forest or steep slopes"
     ),
     TerrainType.SETTLEMENT: TerrainInfo(
-        TerrainType.SETTLEMENT, 0.5, 12, -2,
-        "Settled area"
+        TerrainType.SETTLEMENT, travel_point_cost=2, lost_chance=0, encounter_chance=0,
+        mount_allowed=True, vehicle_allowed=True, description="Settled area"
+    ),
+    TerrainType.TRAIL: TerrainInfo(  # Treated as track context
+        TerrainType.TRAIL, travel_point_cost=2, lost_chance=1, encounter_chance=1,
+        mount_allowed=True, vehicle_allowed=True, description="Track"
+    ),
+    TerrainType.ROAD: TerrainInfo(
+        TerrainType.ROAD, travel_point_cost=2, lost_chance=0, encounter_chance=0,
+        mount_allowed=True, vehicle_allowed=True, description="Road"
     ),
 }
 
@@ -120,15 +110,14 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
 class TravelSegmentResult:
     """Result of processing one travel segment."""
     success: bool
-    time_spent_turns: int
-    navigation_result: NavigationResult
+    travel_points_spent: int
+    remaining_travel_points: int
     encounter_occurred: bool
     encounter: Optional[EncounterState] = None
     destination_hex: str = ""
-    actual_hex: str = ""  # May differ if lost/veered
+    actual_hex: str = ""  # May differ if lost
+    lost_today: bool = False
     weather_effect: Optional[str] = None
-    terrain_effect: Optional[str] = None
-    resource_consumed: dict[str, float] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     messages: list[str] = field(default_factory=list)
 
@@ -138,11 +127,11 @@ class HexCrawlEngine:
     Engine for wilderness/hex crawl exploration.
 
     Manages:
-    - Movement between hexes
-    - Navigation checks
-    - Random encounter checks
+    - Daily travel points spending
+    - Getting lost checks (per day)
+    - Daily wandering encounter checks
     - Weather and terrain effects
-    - Resource consumption during travel
+    - Hex entry/search costs by terrain
     """
 
     def __init__(self, controller: GlobalController):
@@ -161,17 +150,21 @@ class HexCrawlEngine:
         # Track exploration
         self._explored_hexes: set[str] = set()
 
+        # Travel day state
+        self._forced_march: bool = False
+        self._travel_points_total: int = 0
+        self._travel_points_remaining: int = 0
+        self._pending_entry_cost: int = 0
+        self._lost_today: bool = False
+        self._encounter_checked_today: bool = False
+        self._route_type: RouteType = RouteType.WILD
+
         # Current travel state
-        self._travel_pace: TravelPace = TravelPace.NORMAL
         self._has_guide: bool = False
         self._has_map: bool = False
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
-
-    def set_travel_pace(self, pace: TravelPace) -> None:
-        """Set the current travel pace."""
-        self._travel_pace = pace
 
     def set_has_guide(self, has_guide: bool) -> None:
         """Set whether party has a local guide."""
@@ -211,127 +204,114 @@ class HexCrawlEngine:
     def travel_to_hex(
         self,
         destination_hex: str,
-        terrain_override: Optional[TerrainType] = None
+        route_type: RouteType = RouteType.WILD,
+        terrain_override: Optional[TerrainType] = None,
+        forced_march: bool = False,
     ) -> TravelSegmentResult:
         """
-        Execute one travel segment to an adjacent hex.
-
-        Implements the Wilderness Travel Loop from Section 5.2.
+        Spend Travel Points to enter an adjacent hex per Dolmenwood rules.
 
         Args:
             destination_hex: Target hex ID
+            route_type: Road, track, or wild travel
             terrain_override: Override terrain type (for special situations)
+            forced_march: Use forced march Travel Points for the day
 
         Returns:
             TravelSegmentResult with all outcomes
         """
-        # Validate we're in the right state
         if self.controller.current_state != GameState.WILDERNESS_TRAVEL:
             return TravelSegmentResult(
                 success=False,
-                time_spent_turns=0,
-                navigation_result=NavigationResult.SUCCESS,
+                travel_points_spent=0,
+                remaining_travel_points=self._travel_points_remaining,
                 encounter_occurred=False,
-                warnings=["Not in WILDERNESS_TRAVEL state"]
+                warnings=["Not in WILDERNESS_TRAVEL state"],
+                destination_hex=destination_hex,
+                actual_hex=destination_hex,
             )
+
+        # Initialize day if not already done
+        if self._travel_points_total == 0 or forced_march != self._forced_march:
+            self._start_travel_day(forced_march, route_type)
 
         result = TravelSegmentResult(
             success=True,
-            time_spent_turns=0,
-            navigation_result=NavigationResult.SUCCESS,
+            travel_points_spent=0,
+            remaining_travel_points=self._travel_points_remaining,
             encounter_occurred=False,
             destination_hex=destination_hex,
             actual_hex=destination_hex,
+            lost_today=self._lost_today,
         )
 
-        # Get terrain info
         terrain = terrain_override or self.get_terrain_for_hex(destination_hex)
         terrain_info = self.get_terrain_info(terrain)
 
-        # 1. Calculate and advance time
-        base_turns = 24  # 4 hours base for one hex
-        pace_modifier = {
-            TravelPace.CAUTIOUS: 2.0,
-            TravelPace.NORMAL: 1.0,
-            TravelPace.FAST: 0.67,
-        }
-        time_multiplier = terrain_info.movement_cost * pace_modifier[self._travel_pace]
-        result.time_spent_turns = int(base_turns * time_multiplier)
+        # Determine cost based on route type
+        cost = 2 if route_type in {RouteType.ROAD, RouteType.TRACK} else terrain_info.travel_point_cost
 
-        time_result = self.controller.advance_time(result.time_spent_turns)
-        result.messages.append(
-            f"Travel time: {result.time_spent_turns // 6} hours "
-            f"({result.time_spent_turns} turns)"
-        )
+        # Apply pending cost carry-over
+        if self._pending_entry_cost > 0:
+            cost = self._pending_entry_cost
 
-        # 2. Check for resource consumption (handled by controller on day boundary)
-        if time_result.get("days_passed", 0) > 0:
-            result.resource_consumed["food_days"] = time_result["days_passed"]
-            result.resource_consumed["water_days"] = time_result["days_passed"]
-
-        # Check light expiration
-        if time_result.get("light_extinguished"):
-            result.warnings.append(
-                f"Light source ({time_result['light_source']}) has gone out!"
+        # Spend travel points
+        if self._travel_points_remaining < cost:
+            # Not enough points; spend what remains and carry over
+            result.travel_points_spent = self._travel_points_remaining
+            self._pending_entry_cost = cost - self._travel_points_remaining
+            self._travel_points_remaining = 0
+            result.remaining_travel_points = 0
+            result.messages.append(
+                f"Not enough Travel Points to enter hex. {self._pending_entry_cost} needed next day."
             )
+            return result
 
-        # 3. Navigation check
-        nav_result = self._check_navigation(terrain_info)
-        result.navigation_result = nav_result
+        self._travel_points_remaining -= cost
+        result.travel_points_spent = cost
+        result.remaining_travel_points = self._travel_points_remaining
+        self._pending_entry_cost = 0
 
-        if nav_result == NavigationResult.LOST:
-            # Roll for random adjacent hex
+        # Apply lost result once per day when leaving course
+        if self._lost_today:
             result.actual_hex = self._get_random_adjacent_hex(destination_hex)
-            result.warnings.append("The party has become lost!")
-            result.messages.append(f"Wandered to hex {result.actual_hex} instead")
-        elif nav_result == NavigationResult.VEERED:
-            # Went to a different adjacent hex
-            result.actual_hex = self._get_veered_hex(destination_hex)
-            result.warnings.append("The party veered off course")
-            result.messages.append(f"Arrived at hex {result.actual_hex} instead")
+            result.warnings.append("The party is lost and strays into another hex.")
 
-        # 4. Encounter check
-        encounter_roll = self._check_encounter(terrain_info)
-        if encounter_roll:
-            result.encounter_occurred = True
-            result.encounter = self._generate_encounter(result.actual_hex, terrain)
+        # Daily encounter check (only once per day)
+        if not self._encounter_checked_today:
+            encounter_roll = self._check_encounter(terrain_info, route_type)
+            self._encounter_checked_today = True
+            if encounter_roll:
+                result.encounter_occurred = True
+                result.encounter = self._generate_encounter(result.actual_hex, terrain)
 
-            # Transition to unified ENCOUNTER state
-            self.controller.transition(
-                "encounter_triggered",
-                context={
-                    "hex_id": result.actual_hex,
-                    "terrain": terrain.value,
-                    "encounter_type": result.encounter.encounter_type.value,
-                    "source": "wilderness_travel",
-                }
-            )
-            result.messages.append("Encounter!")
+                # Transition to unified ENCOUNTER state
+                self.controller.transition(
+                    "encounter_triggered",
+                    context={
+                        "hex_id": result.actual_hex,
+                        "terrain": terrain.value,
+                        "encounter_type": result.encounter.encounter_type.value,
+                        "source": "wilderness_travel",
+                    }
+                )
+                result.messages.append("Encounter!")
 
-        # 5. Apply weather effects
+        # Update party location if no active encounter
+        if not result.encounter_occurred:
+            self.controller.set_party_location(LocationType.HEX, result.actual_hex)
+
+        # Mark hex as explored
+        self._explored_hexes.add(result.actual_hex)
+
+        # Weather and terrain notes
         weather = self.controller.world_state.weather
         weather_effect = self._apply_weather_effects(weather)
         if weather_effect:
             result.weather_effect = weather_effect
             result.messages.append(f"Weather: {weather_effect}")
 
-        # 6. Apply terrain effects
-        terrain_effect = self._apply_terrain_effects(terrain_info)
-        if terrain_effect:
-            result.terrain_effect = terrain_effect
-            result.messages.append(f"Terrain: {terrain_effect}")
-
-        # 7. Update party location (if no encounter, or after encounter resolves)
-        if not result.encounter_occurred:
-            self.controller.set_party_location(
-                LocationType.HEX,
-                result.actual_hex
-            )
-
-        # Mark hex as explored
-        self._explored_hexes.add(result.actual_hex)
-
-        # 8. Request description (if callback registered)
+        # Request description if callback registered
         if self._description_callback and not result.encounter_occurred:
             self._description_callback(
                 location=result.actual_hex,
@@ -342,71 +322,45 @@ class HexCrawlEngine:
 
         return result
 
-    def _check_navigation(self, terrain_info: TerrainInfo) -> NavigationResult:
-        """
-        Check if party navigates successfully.
+    def _start_travel_day(self, forced_march: bool, route_type: RouteType) -> None:
+        """Initialize daily travel points, lost and encounter checks."""
+        speed = 30  # default Dolmenwood overland speed
+        self._forced_march = forced_march
+        self._route_type = route_type
 
-        Navigation check is 1d6, must roll above navigation difficulty.
-        Modifiers:
-        - Guide: -2 to difficulty
-        - Map: -1 to difficulty
-        - Ranger/Woodgrue in party: -1 to difficulty
+        # Calculate Travel Points per day
+        travel_points_table = {40: (8, 12), 30: (6, 9), 20: (4, 6), 10: (2, 3)}
+        normal, forced = travel_points_table.get(speed, (6, 9))
+        self._travel_points_total = forced if forced_march else normal
+        self._travel_points_remaining = self._travel_points_total
+        self._pending_entry_cost = self._pending_entry_cost  # carry-over from prior day
+        self._encounter_checked_today = False
 
-        Returns:
-            NavigationResult indicating success/failure
-        """
-        difficulty = terrain_info.navigation_difficulty
+        # Lost check once per day (none on roads, 1-in-6 on tracks, terrain-based in wild)
+        lost_chance = 0
+        if route_type == RouteType.TRACK:
+            lost_chance = 1
+        elif route_type == RouteType.WILD:
+            # Use current terrain if available
+            current_hex = self.controller.party_state.location.location_id
+            terrain = self.get_terrain_for_hex(current_hex)
+            lost_chance = self.get_terrain_info(terrain).lost_chance
 
-        # Apply modifiers
-        if self._has_guide:
-            difficulty -= 2
-        if self._has_map:
-            difficulty -= 1
+        # Visibility modifiers could increase lost_chance; handled externally if needed
+        if lost_chance > 0:
+            nav_roll = self.dice.roll_d6(1, "lost check")
+            self._lost_today = nav_roll.total <= lost_chance
+        else:
+            self._lost_today = False
 
-        # Roll navigation
-        roll = self.dice.roll_d6(1, "navigation check")
+    def _check_encounter(self, terrain_info: TerrainInfo, route_type: RouteType) -> bool:
+        """Daily wandering monster check based on terrain and route."""
+        if route_type == RouteType.ROAD:
+            return False
 
-        if roll.total <= difficulty:
-            # Failed - determine severity
-            severity_roll = self.dice.roll_d6(1, "navigation severity")
-            if severity_roll.total <= 2:
-                return NavigationResult.LOST
-            else:
-                return NavigationResult.VEERED
-
-        return NavigationResult.SUCCESS
-
-    def _check_encounter(self, terrain_info: TerrainInfo) -> bool:
-        """
-        Check for random encounter.
-
-        Base chance is 1-in-X where X is terrain_info.encounter_chance.
-        Modifiers:
-        - Cautious pace: -1 to roll (less likely to encounter)
-        - Fast pace: +1 to roll (more likely to encounter)
-        - Night: +1 to roll (more likely)
-
-        Returns:
-            True if encounter occurs
-        """
-        encounter_threshold = terrain_info.encounter_chance
-
-        # Roll for encounter
-        roll = self.dice.roll_d6(1, "encounter check")
-
-        modifier = 0
-        if self._travel_pace == TravelPace.CAUTIOUS:
-            modifier -= 1
-        elif self._travel_pace == TravelPace.FAST:
-            modifier += 1
-
-        if not self.controller.time_tracker.game_time.is_daylight():
-            modifier += 1
-
-        adjusted_roll = roll.total + modifier
-
-        # Encounter on 1 (or modified 1)
-        return adjusted_roll <= 1
+        chance = terrain_info.encounter_chance
+        roll = self.dice.roll_d6(1, "wandering encounter")
+        return roll.total <= chance
 
     def _generate_encounter(
         self,
@@ -451,12 +405,8 @@ class HexCrawlEngine:
         party_roll = self.dice.roll_d6(1, "party surprise check")
         enemy_roll = self.dice.roll_d6(1, "enemy surprise check")
 
-        # Cautious pace gives bonus
         party_threshold = 2
         enemy_threshold = 2
-
-        if self._travel_pace == TravelPace.CAUTIOUS:
-            enemy_threshold = 3  # Easier to surprise enemies
 
         party_surprised = party_roll.total <= party_threshold
         enemy_surprised = enemy_roll.total <= enemy_threshold
@@ -508,6 +458,99 @@ class HexCrawlEngine:
         except (ValueError, IndexError):
             return intended_hex
 
+    # =========================================================================
+    # DAY MANAGEMENT AND SEARCH
+    # =========================================================================
+
+    def end_travel_day(self) -> dict[str, Any]:
+        """
+        End the travel day, advance time by one day, and reset daily flags.
+        """
+        time_result = self.controller.advance_time(144)  # 12 hours travel + rest window
+        summary = {
+            "travel_points_spent": self._travel_points_total - self._travel_points_remaining,
+            "travel_points_total": self._travel_points_total,
+            "remaining_travel_points": self._travel_points_remaining,
+            "pending_entry_cost": self._pending_entry_cost,
+            "time_advanced": time_result,
+        }
+
+        # Reset daily flags
+        self._travel_points_total = 0
+        self._travel_points_remaining = 0
+        self._encounter_checked_today = False
+        self._lost_today = False
+        return summary
+
+    def search_hex(self, hex_id: str, terrain_override: Optional[TerrainType] = None) -> dict[str, Any]:
+        """
+        Search a hex for hidden features. Costs Travel Points equal to terrain entry cost.
+        """
+        terrain = terrain_override or self.get_terrain_for_hex(hex_id)
+        terrain_info = self.get_terrain_info(terrain)
+        cost = terrain_info.travel_point_cost
+
+        if self._travel_points_remaining < cost:
+            return {
+                "success": False,
+                "travel_points_needed": cost - self._travel_points_remaining,
+                "message": "Not enough Travel Points to search hex today.",
+            }
+
+        self._travel_points_remaining -= cost
+
+        result = {
+            "hex_id": hex_id,
+            "features_found": [],
+            "lairs_found": [],
+            "landmarks_found": [],
+            "travel_points_spent": cost,
+        }
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            result["message"] = "No detailed hex data available"
+            return result
+
+        # Search roll for each hidden feature (2-in-6)
+        for feature in hex_data.features:
+            if getattr(feature, "hidden", False) and not getattr(feature, "discovered", False):
+                roll = self.dice.roll_d6(1, f"search for {feature.name}")
+                if roll.total >= 5:
+                    feature.discovered = True
+                    result["features_found"].append(feature.name)
+
+        # Check for lairs (1-in-6)
+        for lair in getattr(hex_data, "lairs", []):
+            if not getattr(lair, "discovered", False):
+                roll = self.dice.roll_d6(1, "find lair")
+                if roll.total == 6:
+                    lair.discovered = True
+                    result["lairs_found"].append(getattr(lair, "monster_type", "lair"))
+
+        # Visible landmarks
+        for landmark in getattr(hex_data, "landmarks", []):
+            result["landmarks_found"].append(getattr(landmark, "name", "landmark"))
+
+        return result
+
+    def is_hex_explored(self, hex_id: str) -> bool:
+        """Check if hex has been explored."""
+        return hex_id in self._explored_hexes
+
+    def get_exploration_summary(self) -> dict[str, Any]:
+        """Get summary of exploration progress."""
+        return {
+            "explored_hexes": list(self._explored_hexes),
+            "total_explored": len(self._explored_hexes),
+            "current_location": str(self.controller.party_state.location),
+            "travel_points_remaining": self._travel_points_remaining,
+            "lost_today": self._lost_today,
+            "encounter_checked_today": self._encounter_checked_today,
+            "has_guide": self._has_guide,
+            "has_map": self._has_map,
+        }
+
     def _get_veered_hex(self, intended_hex: str) -> str:
         """Get adjacent hex when veered off course."""
         # Similar to lost but only one hex off
@@ -525,203 +568,3 @@ class HexCrawlEngine:
             Weather.BLIZZARD: "Extreme danger, must seek shelter",
         }
         return effects.get(weather)
-
-    def _apply_terrain_effects(self, terrain_info: TerrainInfo) -> Optional[str]:
-        """Apply terrain-specific effects."""
-        if terrain_info.terrain_type == TerrainType.SWAMP:
-            # Check for disease/environmental hazard
-            roll = self.dice.roll_d6(1, "swamp hazard")
-            if roll.total == 1:
-                return "Miasma - save vs poison or become ill"
-        elif terrain_info.terrain_type == TerrainType.DEEP_FOREST:
-            # Fairy influence check
-            roll = self.dice.roll_d6(1, "fairy influence")
-            if roll.total == 1:
-                return "Strange lights glimpsed between the trees"
-        return None
-
-    # =========================================================================
-    # ENCOUNTER RESOLUTION
-    # =========================================================================
-
-    def resolve_encounter_reaction(self) -> ReactionResult:
-        """
-        Roll reaction for current encounter.
-
-        2d6 Reaction Table:
-        2: Hostile, attacks
-        3-5: Unfriendly, may attack
-        6-8: Neutral, uncertain
-        9-11: Friendly, may help
-        12: Helpful, will assist
-
-        Returns:
-            ReactionResult
-        """
-        encounter = self.controller.get_encounter()
-        if not encounter:
-            return ReactionResult.NEUTRAL
-
-        roll = self.dice.roll_2d6("reaction roll")
-
-        # Apply modifiers based on party charisma, etc.
-        # (Would get from party leader's CHA modifier)
-        total = roll.total
-
-        if total <= 2:
-            result = ReactionResult.HOSTILE
-        elif total <= 5:
-            result = ReactionResult.UNFRIENDLY
-        elif total <= 8:
-            result = ReactionResult.NEUTRAL
-        elif total <= 11:
-            result = ReactionResult.FRIENDLY
-        else:
-            result = ReactionResult.HELPFUL
-
-        encounter.reaction_result = result
-        return result
-
-    def handle_encounter_outcome(self, reaction: ReactionResult) -> str:
-        """
-        Handle the outcome of an encounter based on reaction.
-
-        Note: This method is deprecated. Use the EncounterEngine instead for
-        handling encounter outcomes with the unified ENCOUNTER state.
-
-        Args:
-            reaction: The reaction roll result
-
-        Returns:
-            Trigger name for state transition
-        """
-        if reaction == ReactionResult.HOSTILE:
-            # Transition to combat
-            return "encounter_to_combat"
-        elif reaction in {ReactionResult.FRIENDLY, ReactionResult.HELPFUL}:
-            # May lead to social interaction
-            return "encounter_to_parley"
-        elif reaction == ReactionResult.UNFRIENDLY:
-            # Could go either way - might attack
-            roll = self.dice.roll_d6(1, "unfriendly escalation")
-            if roll.total <= 2:
-                return "encounter_to_combat"
-            return "encounter_end_wilderness"
-        else:
-            # Neutral - cautious, watching
-            return "encounter_end_wilderness"
-
-    def avoid_encounter(self) -> bool:
-        """
-        Attempt to avoid current encounter.
-
-        Note: This method is deprecated. Use the EncounterEngine.execute_action()
-        with EncounterAction.EVASION instead.
-
-        Success depends on:
-        - Distance
-        - Surprise status
-        - Terrain
-        - Party movement rate
-
-        Returns:
-            True if successfully avoided
-        """
-        encounter = self.controller.get_encounter()
-        if not encounter:
-            return True
-
-        # Can't avoid if party is surprised
-        if encounter.surprise_status == SurpriseStatus.PARTY_SURPRISED:
-            return False
-
-        # Easier to avoid at greater distance
-        distance_mod = encounter.distance // 30  # +1 per 30 feet
-
-        # Roll to avoid
-        roll = self.dice.roll_d6(1, "avoid encounter")
-        target = 4 - distance_mod
-        target = max(1, min(6, target))  # Clamp to 1-6
-
-        if roll.total >= target:
-            self.controller.clear_encounter()
-            self.controller.transition("encounter_end_wilderness")
-            return True
-
-        return False
-
-    # =========================================================================
-    # EXPLORATION FEATURES
-    # =========================================================================
-
-    def search_hex(self, hex_id: str) -> dict[str, Any]:
-        """
-        Search current hex for hidden features.
-
-        Takes 1 turn (10 minutes) per search attempt.
-
-        Returns:
-            Dictionary with search results
-        """
-        # Advance time for search
-        self.controller.advance_time(1)
-
-        result = {
-            "hex_id": hex_id,
-            "features_found": [],
-            "lairs_found": [],
-            "landmarks_found": [],
-            "time_spent": 1,
-        }
-
-        hex_data = self._hex_data.get(hex_id)
-        if not hex_data:
-            result["message"] = "No detailed hex data available"
-            return result
-
-        # Search roll for each hidden feature
-        for feature in hex_data.features:
-            if feature.hidden and not feature.discovered:
-                roll = self.dice.roll_d6(1, f"search for {feature.name}")
-                if roll.total >= 5:  # Base 2-in-6 chance
-                    feature.discovered = True
-                    result["features_found"].append(feature.name)
-
-        # Check for lairs
-        for lair in hex_data.lairs:
-            if not lair.discovered:
-                roll = self.dice.roll_d6(1, f"find lair")
-                if roll.total == 6:  # 1-in-6 chance
-                    lair.discovered = True
-                    result["lairs_found"].append(lair.monster_type)
-
-        return result
-
-    def is_hex_explored(self, hex_id: str) -> bool:
-        """Check if hex has been explored."""
-        return hex_id in self._explored_hexes
-
-    def get_visible_landmarks(self, hex_id: str) -> list[str]:
-        """Get landmarks visible from current hex."""
-        landmarks = []
-        hex_data = self._hex_data.get(hex_id)
-
-        if hex_data:
-            for landmark in hex_data.landmarks:
-                landmarks.append(landmark.name)
-
-        # Also check adjacent hexes for visible landmarks
-        # (Would implement hex adjacency logic)
-
-        return landmarks
-
-    def get_exploration_summary(self) -> dict[str, Any]:
-        """Get summary of exploration progress."""
-        return {
-            "explored_hexes": list(self._explored_hexes),
-            "total_explored": len(self._explored_hexes),
-            "current_location": str(self.controller.party_state.location),
-            "travel_pace": self._travel_pace.value,
-            "has_guide": self._has_guide,
-            "has_map": self._has_map,
-        }
