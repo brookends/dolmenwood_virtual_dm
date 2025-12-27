@@ -201,15 +201,15 @@ class DungeonEngine:
 
     def _get_party_speed(self) -> int:
         """
-        Get party movement speed per Dolmenwood rules (p146).
+        Get party movement speed per Dolmenwood rules (p146, p148-149).
 
-        Party speed is determined by the slowest member.
+        Party speed is determined by the slowest member's encumbered speed.
 
         Returns:
-            Party base speed in feet
+            Party movement speed in feet (encumbrance-adjusted)
         """
-        # TODO: Integrate with character state to get actual member speeds
-        return 30  # Default human movement speed
+        # Get encumbrance-adjusted party speed from controller
+        return self.controller.get_party_speed()
 
     def get_exploration_movement_per_turn(self) -> int:
         """

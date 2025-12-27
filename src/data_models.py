@@ -437,6 +437,138 @@ RUNNING_REST_TURNS = 3      # Must rest 3 turns after running to exhaustion
 COINS_PER_POUND = 10        # 10 coins = 1 pound
 
 
+# =============================================================================
+# ENCUMBRANCE SYSTEM (p148-149)
+# =============================================================================
+
+
+class EncumbranceSystem(str, Enum):
+    """Encumbrance tracking system per Dolmenwood rules (p148-149)."""
+    WEIGHT = "weight"           # Detailed weight tracking in coins
+    BASIC_WEIGHT = "basic_weight"  # Simplified weight tracking (treasure only)
+    SLOT = "slot"               # Abstract slot-based system
+
+
+class ArmorWeight(str, Enum):
+    """Armor weight categories for encumbrance (p148)."""
+    UNARMOURED = "unarmoured"   # No armor
+    LIGHT = "light"             # Light armor (leather, etc.)
+    MEDIUM = "medium"           # Medium armor (chain, etc.)
+    HEAVY = "heavy"             # Heavy armor (plate, etc.)
+
+
+class GearSlotType(str, Enum):
+    """Gear slot types for slot encumbrance system (p149)."""
+    EQUIPPED = "equipped"       # Worn/held items (max 10 slots)
+    STOWED = "stowed"           # Items in containers (max 16 slots)
+
+
+# Encumbrance constants (p148)
+MAX_WEIGHT_CAPACITY = 1600      # Maximum weight in coins a character can carry
+MAX_EQUIPPED_SLOTS = 10         # Maximum equipped gear slots
+MAX_STOWED_SLOTS = 16           # Maximum stowed gear slots total
+STOWED_SLOTS_PER_CONTAINER = 10 # Each container holds 10 stowed items
+
+
+# Weight thresholds for speed calculation (p148)
+# Format: (max_weight, speed)
+WEIGHT_ENCUMBRANCE_THRESHOLDS = [
+    (400, 40),   # ≤400 coins: Speed 40
+    (600, 30),   # ≤600 coins: Speed 30
+    (800, 20),   # ≤800 coins: Speed 20
+    (1600, 10),  # ≤1600 coins: Speed 10
+]
+
+
+# Slot encumbrance thresholds for speed calculation (p149)
+# Format: (max_equipped, max_stowed, speed)
+SLOT_ENCUMBRANCE_THRESHOLDS = [
+    (3, 10, 40),   # 0-3 equipped / 0-10 stowed: Speed 40
+    (5, 12, 30),   # 4-5 equipped / 11-12 stowed: Speed 30
+    (7, 14, 20),   # 6-7 equipped / 13-14 stowed: Speed 20
+    (10, 16, 10),  # 8-10 equipped / 15-16 stowed: Speed 10
+]
+
+
+# Treasure weights in coins (p148)
+TREASURE_WEIGHTS: dict[str, int] = {
+    "coin": 1,
+    "gem": 1,
+    "jewellery": 10,
+    "jewelry": 10,  # Alternate spelling
+    "potion": 10,
+    "rod": 20,
+    "scroll": 1,
+    "staff": 40,
+    "wand": 10,
+}
+
+
+# Armor weights by category (p148)
+# Format: armor_weight -> coins
+ARMOR_WEIGHTS: dict[str, int] = {
+    ArmorWeight.UNARMOURED.value: 0,
+    ArmorWeight.LIGHT.value: 200,   # ~20 lbs
+    ArmorWeight.MEDIUM.value: 400,  # ~40 lbs
+    ArmorWeight.HEAVY.value: 600,   # ~60 lbs
+}
+
+
+# Gear slots by item type (p149)
+# Format: item_type -> slots
+GEAR_SLOTS: dict[str, int] = {
+    # Weapons
+    "dagger": 1,
+    "sword": 1,
+    "longsword": 1,
+    "short_sword": 1,
+    "axe": 1,
+    "hand_axe": 1,
+    "battle_axe": 2,
+    "mace": 1,
+    "hammer": 1,
+    "war_hammer": 2,
+    "spear": 1,
+    "polearm": 2,
+    "halberd": 2,
+    "staff": 1,
+    "bow": 1,
+    "shortbow": 1,
+    "longbow": 2,
+    "crossbow": 2,
+    "sling": 1,
+    # Armor
+    "leather_armor": 1,
+    "chain_mail": 2,
+    "plate_mail": 3,
+    "shield": 1,
+    "helmet": 1,
+    # Containers
+    "backpack": 1,
+    "sack": 1,
+    "pouch": 0,
+    "belt_pouch": 0,
+    # Misc equipment
+    "rope": 1,
+    "lantern": 1,
+    "torch": 1,
+    "quiver": 1,
+    # Bundled items (10 = 1 slot)
+    "arrows_20": 1,
+    "bolts_20": 1,
+    "rations_7": 1,
+    "torches_6": 1,
+    # Tiny items (no slot)
+    "coin": 0,
+    "gem": 0,
+    "scroll": 0,
+    "key": 0,
+    "ring": 0,
+    # Default for unknown items
+    "default": 1,
+}
+
+
 @dataclass
 class RunningState:
     """Tracks running exhaustion per Dolmenwood rules (p147)."""
@@ -647,6 +779,264 @@ class MovementCalculator:
         return (distance_feet + movement_per_round - 1) // movement_per_round
 
 
+class EncumbranceCalculator:
+    """
+    Calculate encumbrance and speed per Dolmenwood rules (p148-149).
+
+    Supports three encumbrance systems:
+    - Weight: Detailed tracking of weight in coins (10 coins = 1 lb)
+    - Basic Weight: Simplified tracking (only treasure weight matters)
+    - Slot: Abstract slot-based system (equipped + stowed slots)
+    """
+
+    @classmethod
+    def get_speed_from_weight(cls, total_weight: int) -> int:
+        """
+        Calculate movement speed based on weight encumbrance (p148).
+
+        Args:
+            total_weight: Total carried weight in coins
+
+        Returns:
+            Movement speed (40, 30, 20, or 10)
+        """
+        for max_weight, speed in WEIGHT_ENCUMBRANCE_THRESHOLDS:
+            if total_weight <= max_weight:
+                return speed
+        # Over maximum capacity
+        return 0
+
+    @classmethod
+    def get_speed_from_slots(cls, equipped_slots: int, stowed_slots: int) -> int:
+        """
+        Calculate movement speed based on slot encumbrance (p149).
+
+        Uses the WORSE of equipped or stowed encumbrance.
+
+        Args:
+            equipped_slots: Number of equipped gear slots used
+            stowed_slots: Number of stowed gear slots used
+
+        Returns:
+            Movement speed (40, 30, 20, or 10)
+        """
+        equipped_speed = 40
+        stowed_speed = 40
+
+        # Find speed based on equipped slots
+        for max_equipped, _, speed in SLOT_ENCUMBRANCE_THRESHOLDS:
+            if equipped_slots <= max_equipped:
+                equipped_speed = speed
+                break
+        else:
+            equipped_speed = 0  # Over maximum
+
+        # Find speed based on stowed slots
+        for _, max_stowed, speed in SLOT_ENCUMBRANCE_THRESHOLDS:
+            if stowed_slots <= max_stowed:
+                stowed_speed = speed
+                break
+        else:
+            stowed_speed = 0  # Over maximum
+
+        # Use the worse (slower) of the two
+        return min(equipped_speed, stowed_speed)
+
+    @classmethod
+    def get_treasure_weight(cls, treasure_type: str, quantity: int = 1) -> int:
+        """
+        Get weight of treasure items in coins (p148).
+
+        Args:
+            treasure_type: Type of treasure (coin, gem, jewellery, etc.)
+            quantity: Number of items
+
+        Returns:
+            Total weight in coins
+        """
+        weight_per_item = TREASURE_WEIGHTS.get(treasure_type.lower(), 1)
+        return weight_per_item * quantity
+
+    @classmethod
+    def get_armor_weight(cls, armor_weight: ArmorWeight) -> int:
+        """
+        Get weight of armor in coins (p148).
+
+        Args:
+            armor_weight: Armor weight category
+
+        Returns:
+            Weight in coins
+        """
+        return ARMOR_WEIGHTS.get(armor_weight.value, 0)
+
+    @classmethod
+    def get_item_slots(cls, item_type: str) -> int:
+        """
+        Get gear slots required for an item type (p149).
+
+        Args:
+            item_type: Type of item
+
+        Returns:
+            Number of gear slots required
+        """
+        return GEAR_SLOTS.get(item_type.lower(), GEAR_SLOTS["default"])
+
+    @classmethod
+    def is_over_weight_capacity(cls, total_weight: int) -> bool:
+        """
+        Check if weight exceeds maximum capacity (p148).
+
+        Args:
+            total_weight: Total carried weight in coins
+
+        Returns:
+            True if over capacity (1600 coins)
+        """
+        return total_weight > MAX_WEIGHT_CAPACITY
+
+    @classmethod
+    def is_over_slot_capacity(
+        cls,
+        equipped_slots: int,
+        stowed_slots: int
+    ) -> bool:
+        """
+        Check if slot usage exceeds maximum capacity (p149).
+
+        Args:
+            equipped_slots: Number of equipped gear slots used
+            stowed_slots: Number of stowed gear slots used
+
+        Returns:
+            True if over capacity
+        """
+        return (equipped_slots > MAX_EQUIPPED_SLOTS or
+                stowed_slots > MAX_STOWED_SLOTS)
+
+    @classmethod
+    def calculate_encumbrance_level(
+        cls,
+        total_weight: int = 0,
+        equipped_slots: int = 0,
+        stowed_slots: int = 0,
+        system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+    ) -> tuple[int, bool]:
+        """
+        Calculate encumbrance level and over-capacity status.
+
+        Args:
+            total_weight: Total weight in coins (for WEIGHT system)
+            equipped_slots: Equipped slots used (for SLOT system)
+            stowed_slots: Stowed slots used (for SLOT system)
+            system: Which encumbrance system to use
+
+        Returns:
+            Tuple of (movement_speed, is_over_capacity)
+        """
+        if system == EncumbranceSystem.WEIGHT:
+            speed = cls.get_speed_from_weight(total_weight)
+            over_capacity = cls.is_over_weight_capacity(total_weight)
+        elif system == EncumbranceSystem.BASIC_WEIGHT:
+            # Basic weight only tracks treasure weight
+            speed = cls.get_speed_from_weight(total_weight)
+            over_capacity = cls.is_over_weight_capacity(total_weight)
+        else:  # SLOT system
+            speed = cls.get_speed_from_slots(equipped_slots, stowed_slots)
+            over_capacity = cls.is_over_slot_capacity(equipped_slots, stowed_slots)
+
+        return speed, over_capacity
+
+    @classmethod
+    def get_remaining_capacity(
+        cls,
+        total_weight: int = 0,
+        equipped_slots: int = 0,
+        stowed_slots: int = 0,
+        system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+    ) -> dict[str, int]:
+        """
+        Get remaining capacity before reaching limits.
+
+        Args:
+            total_weight: Current weight in coins
+            equipped_slots: Current equipped slots used
+            stowed_slots: Current stowed slots used
+            system: Which encumbrance system to use
+
+        Returns:
+            Dict with remaining capacity values
+        """
+        if system in (EncumbranceSystem.WEIGHT, EncumbranceSystem.BASIC_WEIGHT):
+            return {
+                "weight_remaining": max(0, MAX_WEIGHT_CAPACITY - total_weight),
+            }
+        else:  # SLOT system
+            return {
+                "equipped_remaining": max(0, MAX_EQUIPPED_SLOTS - equipped_slots),
+                "stowed_remaining": max(0, MAX_STOWED_SLOTS - stowed_slots),
+            }
+
+
+@dataclass
+class EncumbranceState:
+    """
+    Tracks encumbrance for a character per Dolmenwood rules (p148-149).
+
+    Supports both weight-based and slot-based encumbrance systems.
+    """
+    # Weight-based tracking
+    total_weight: int = 0  # In coins
+
+    # Slot-based tracking
+    equipped_slots: int = 0
+    stowed_slots: int = 0
+
+    # Current system in use
+    system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+
+    def get_speed(self) -> int:
+        """Get movement speed based on current encumbrance."""
+        if self.system in (EncumbranceSystem.WEIGHT, EncumbranceSystem.BASIC_WEIGHT):
+            return EncumbranceCalculator.get_speed_from_weight(self.total_weight)
+        else:
+            return EncumbranceCalculator.get_speed_from_slots(
+                self.equipped_slots, self.stowed_slots
+            )
+
+    def is_over_capacity(self) -> bool:
+        """Check if over maximum capacity."""
+        if self.system in (EncumbranceSystem.WEIGHT, EncumbranceSystem.BASIC_WEIGHT):
+            return EncumbranceCalculator.is_over_weight_capacity(self.total_weight)
+        else:
+            return EncumbranceCalculator.is_over_slot_capacity(
+                self.equipped_slots, self.stowed_slots
+            )
+
+    def add_weight(self, weight: int) -> None:
+        """Add weight to encumbrance."""
+        self.total_weight += weight
+
+    def remove_weight(self, weight: int) -> None:
+        """Remove weight from encumbrance."""
+        self.total_weight = max(0, self.total_weight - weight)
+
+    def add_item_slots(self, slots: int, equipped: bool = True) -> None:
+        """Add item slots to encumbrance."""
+        if equipped:
+            self.equipped_slots += slots
+        else:
+            self.stowed_slots += slots
+
+    def remove_item_slots(self, slots: int, equipped: bool = True) -> None:
+        """Remove item slots from encumbrance."""
+        if equipped:
+            self.equipped_slots = max(0, self.equipped_slots - slots)
+        else:
+            self.stowed_slots = max(0, self.stowed_slots - slots)
+
+
 # =============================================================================
 # GAME ENTITIES
 # =============================================================================
@@ -675,7 +1065,11 @@ class Condition:
 
 @dataclass
 class Item:
-    """An item in inventory."""
+    """
+    An item in inventory.
+
+    Supports both weight-based and slot-based encumbrance systems (p148-149).
+    """
     item_id: str
     name: str
     weight: float  # In coins (10 coins = 1 lb)
@@ -684,6 +1078,21 @@ class Item:
     charges: Optional[int] = None
     light_source: Optional[LightSourceType] = None
     light_remaining_turns: Optional[int] = None
+    # Encumbrance system fields (p148-149)
+    item_type: str = ""  # Used to look up slot size in GEAR_SLOTS
+    slot_size: int = 1   # Number of gear slots required (for slot encumbrance)
+    is_container: bool = False  # True for backpacks, sacks, etc.
+
+    def get_total_weight(self) -> float:
+        """Get total weight of this item stack (weight × quantity)."""
+        return self.weight * self.quantity
+
+    def get_total_slots(self) -> int:
+        """Get total gear slots required for this item."""
+        # Tiny items (slot_size 0) don't consume slots even with quantity
+        if self.slot_size == 0:
+            return 0
+        return self.slot_size * self.quantity
 
 
 @dataclass
@@ -1109,25 +1518,71 @@ class Location:
 class PartyState:
     """
     Current party state including position and shared resources.
+
+    Per Dolmenwood rules (p146): Party speed = slowest member's speed.
     """
     location: Location
     marching_order: list[str] = field(default_factory=list)  # character_ids
     resources: PartyResources = field(default_factory=PartyResources)
-    encumbrance_total: int = 0
+    encumbrance_total: int = 0  # Legacy: total weight in coins
     active_conditions: list[Condition] = field(default_factory=list)
     active_light_source: Optional[LightSourceType] = None
     light_remaining_turns: int = 0
+    # Member encumbrance tracking (p148-149)
+    member_speeds: list[int] = field(default_factory=list)  # Encumbered speeds
 
-    def get_movement_rate(self, base_rate: int = 120) -> int:
-        """Calculate movement rate based on encumbrance."""
-        # Simplified encumbrance rules
-        if self.encumbrance_total > 2400:  # Severely encumbered
-            return base_rate // 4
-        elif self.encumbrance_total > 1600:  # Heavily encumbered
-            return base_rate // 2
-        elif self.encumbrance_total > 800:  # Encumbered
-            return (base_rate * 3) // 4
-        return base_rate
+    def get_movement_rate(self, base_rate: int = 40) -> int:
+        """
+        Calculate party movement rate per Dolmenwood rules (p146, p148-149).
+
+        Party speed is determined by the slowest member's encumbered speed.
+        Default base_rate of 40 represents unencumbered human speed.
+
+        Args:
+            base_rate: Fallback rate if no member speeds tracked
+
+        Returns:
+            Party movement speed (slowest member)
+        """
+        if self.member_speeds:
+            # Party speed = slowest member (p146)
+            return min(self.member_speeds)
+
+        # Legacy fallback using encumbrance_total
+        return EncumbranceCalculator.get_speed_from_weight(self.encumbrance_total)
+
+    def update_member_speeds(self, characters: list["CharacterState"]) -> None:
+        """
+        Update member speeds from character states.
+
+        Call this after any inventory changes to recalculate party speed.
+
+        Args:
+            characters: List of party member CharacterStates
+        """
+        self.member_speeds = [char.get_encumbered_speed() for char in characters]
+        # Also update legacy encumbrance_total
+        self.encumbrance_total = sum(char.calculate_encumbrance() for char in characters)
+
+    def get_slowest_member_speed(self) -> int:
+        """Get the speed of the slowest party member."""
+        if self.member_speeds:
+            return min(self.member_speeds)
+        return EncumbranceCalculator.get_speed_from_weight(self.encumbrance_total)
+
+    def any_over_capacity(self, characters: list["CharacterState"]) -> bool:
+        """
+        Check if any party member is over carrying capacity.
+
+        Over capacity means the party cannot move.
+
+        Args:
+            characters: List of party member CharacterStates
+
+        Returns:
+            True if any member is over capacity
+        """
+        return any(char.is_over_capacity() for char in characters)
 
 
 # =============================================================================
@@ -1140,6 +1595,8 @@ class CharacterState:
     """
     Individual character state.
     Covers both PCs and retainers/hirelings.
+
+    Supports Dolmenwood encumbrance rules (p148-149).
     """
     character_id: str
     name: str
@@ -1149,13 +1606,16 @@ class CharacterState:
     hp_current: int
     hp_max: int
     armor_class: int
-    movement_rate: int
+    movement_rate: int  # Base movement rate (unencumbered)
     inventory: list[Item] = field(default_factory=list)
     spells: list[Spell] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
     morale: Optional[int] = None  # For retainers (2-12 scale)
     is_retainer: bool = False
     employer_id: Optional[str] = None  # For retainers
+    # Encumbrance tracking (p148-149)
+    encumbrance_system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+    armor_weight: ArmorWeight = ArmorWeight.UNARMOURED
 
     def get_ability_modifier(self, ability: str) -> int:
         """Get B/X-style ability modifier."""
@@ -1188,8 +1648,81 @@ class CharacterState:
         )
 
     def calculate_encumbrance(self) -> int:
-        """Calculate total encumbrance from inventory."""
-        return sum(item.weight * item.quantity for item in self.inventory)
+        """
+        Calculate total weight encumbrance from inventory (p148).
+
+        Returns total weight in coins.
+        """
+        return int(sum(item.get_total_weight() for item in self.inventory))
+
+    def calculate_slot_encumbrance(self) -> tuple[int, int]:
+        """
+        Calculate slot encumbrance from inventory (p149).
+
+        Returns:
+            Tuple of (equipped_slots, stowed_slots)
+        """
+        equipped_slots = 0
+        stowed_slots = 0
+
+        for item in self.inventory:
+            slots = item.get_total_slots()
+            if item.equipped:
+                equipped_slots += slots
+            else:
+                stowed_slots += slots
+
+        return equipped_slots, stowed_slots
+
+    def get_encumbrance_state(self) -> "EncumbranceState":
+        """
+        Get current encumbrance state for this character.
+
+        Returns:
+            EncumbranceState with current weight and slot usage
+        """
+        total_weight = self.calculate_encumbrance()
+        equipped_slots, stowed_slots = self.calculate_slot_encumbrance()
+
+        return EncumbranceState(
+            total_weight=total_weight,
+            equipped_slots=equipped_slots,
+            stowed_slots=stowed_slots,
+            system=self.encumbrance_system
+        )
+
+    def get_encumbered_speed(self) -> int:
+        """
+        Get movement speed accounting for encumbrance (p148-149).
+
+        Returns:
+            Movement speed based on current encumbrance level
+        """
+        if self.encumbrance_system in (
+            EncumbranceSystem.WEIGHT,
+            EncumbranceSystem.BASIC_WEIGHT
+        ):
+            total_weight = self.calculate_encumbrance()
+            return EncumbranceCalculator.get_speed_from_weight(total_weight)
+        else:  # SLOT system
+            equipped, stowed = self.calculate_slot_encumbrance()
+            return EncumbranceCalculator.get_speed_from_slots(equipped, stowed)
+
+    def is_over_capacity(self) -> bool:
+        """
+        Check if character is over maximum carrying capacity (p148-149).
+
+        Over capacity means the character cannot move.
+        """
+        if self.encumbrance_system in (
+            EncumbranceSystem.WEIGHT,
+            EncumbranceSystem.BASIC_WEIGHT
+        ):
+            total_weight = self.calculate_encumbrance()
+            return EncumbranceCalculator.is_over_weight_capacity(total_weight)
+        else:  # SLOT system
+            equipped, stowed = self.calculate_slot_encumbrance()
+            return EncumbranceCalculator.is_over_slot_capacity(equipped, stowed)
 
 
 # =============================================================================
