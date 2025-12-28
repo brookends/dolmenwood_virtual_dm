@@ -107,6 +107,8 @@ class ConditionType(str, Enum):
     LOST = "lost"
     STARVING = "starving"
     DEHYDRATED = "dehydrated"
+    # Environmental/magical conditions
+    DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
 
 
 class LightSourceType(str, Enum):
@@ -1228,11 +1230,44 @@ class EncumbranceState:
 
 @dataclass
 class Condition:
-    """A condition affecting a character or creature."""
+    """
+    A condition affecting a character or creature.
+
+    Supports simple turn-based durations as well as complex conditions with:
+    - Day-based durations (for long-term afflictions like dreamlessness)
+    - Periodic effects (e.g., -1 Wisdom every 2 days)
+    - Recovery conditions (how the condition ends)
+    - Spell effects (penalties to certain spell types)
+    """
     condition_type: ConditionType
     duration_turns: Optional[int] = None  # None = permanent until cured
     source: str = ""
     severity: int = 1  # For conditions like exhaustion
+
+    # Day-based tracking (for multi-day conditions)
+    duration_days: Optional[int] = None  # Days remaining (for conditions like dreamlessness)
+    days_elapsed: int = 0  # Days since condition started
+
+    # Periodic effects that trigger over time
+    # Format: {stat: "wisdom", amount: -1, frequency_days: 2, description: "..."}
+    periodic_effect: Optional[dict[str, Any]] = None
+
+    # Recovery conditions - how this condition can end
+    # Format: {type: "rest_with_dreams", description: "Once dreams return..."}
+    # Types: "rest", "rest_with_dreams", "spell", "item", "time", "custom"
+    recovery_condition: Optional[dict[str, Any]] = None
+
+    # Recovery rate after condition ends (for stat damage)
+    # Format: {stat: "wisdom", amount: 1, per: "night_rest"}
+    recovery_rate: Optional[dict[str, Any]] = None
+
+    # Spell effect penalties
+    # Format: {spell_types: ["illusion"], effect: "save_to_memorize", save_type: "spell"}
+    spell_effects: Optional[dict[str, Any]] = None
+
+    # Threshold effect - what happens at extreme values
+    # Format: {stat: "wisdom", threshold: 0, effect: "incapacitated", description: "..."}
+    threshold_effect: Optional[dict[str, Any]] = None
 
     def tick(self) -> bool:
         """
@@ -1245,6 +1280,132 @@ class Condition:
             self.duration_turns -= 1
             return self.duration_turns <= 0
         return False
+
+    def tick_day(self) -> dict[str, Any]:
+        """
+        Process a day passing for this condition.
+
+        Returns:
+            Dict with:
+            - expired: True if condition has ended
+            - periodic_triggered: True if periodic effect should trigger
+            - effect: The periodic effect details if triggered
+        """
+        self.days_elapsed += 1
+        result = {
+            "expired": False,
+            "periodic_triggered": False,
+            "effect": None,
+        }
+
+        # Check day-based duration
+        if self.duration_days is not None:
+            self.duration_days -= 1
+            if self.duration_days <= 0:
+                result["expired"] = True
+                return result
+
+        # Check periodic effects
+        if self.periodic_effect:
+            frequency = self.periodic_effect.get("frequency_days", 1)
+            if self.days_elapsed % frequency == 0:
+                result["periodic_triggered"] = True
+                result["effect"] = self.periodic_effect
+
+        return result
+
+    def check_threshold(self, current_stat_value: int) -> Optional[dict[str, Any]]:
+        """
+        Check if a threshold effect should trigger.
+
+        Args:
+            current_stat_value: Current value of the affected stat
+
+        Returns:
+            Threshold effect details if triggered, None otherwise
+        """
+        if not self.threshold_effect:
+            return None
+
+        threshold = self.threshold_effect.get("threshold", 0)
+        if current_stat_value <= threshold:
+            return self.threshold_effect
+        return None
+
+    def get_spell_memorization_check(self, spell_type: str) -> Optional[dict[str, Any]]:
+        """
+        Check if a spell type requires a save to memorize.
+
+        Args:
+            spell_type: Type of spell being memorized (e.g., "illusion")
+
+        Returns:
+            Save details if required, None otherwise
+        """
+        if not self.spell_effects:
+            return None
+
+        affected_types = self.spell_effects.get("spell_types", [])
+        if spell_type.lower() in [t.lower() for t in affected_types]:
+            return {
+                "required": True,
+                "save_type": self.spell_effects.get("save_type", "spell"),
+                "effect": self.spell_effects.get("effect", "fail_to_memorize"),
+            }
+        return None
+
+    @classmethod
+    def create_dreamlessness(cls, duration_days: int, source: str = "") -> "Condition":
+        """
+        Create a Dreamlessness condition (as per hex 0102 Reedwall).
+
+        Effects:
+        - Duration: specified days
+        - Wisdom loss: -1 every second day
+        - 0 Wisdom: character becomes vacant, lost in phantasms
+        - Difficulty memorizing illusion spells: Save vs Spell or fail
+        - Recovery: 1 Wisdom per night's rest once dreams return
+
+        Args:
+            duration_days: Number of days the condition lasts
+            source: Source of the condition (e.g., "Reedwall mist")
+
+        Returns:
+            Configured Condition instance
+        """
+        return cls(
+            condition_type=ConditionType.DREAMLESS,
+            source=source,
+            duration_days=duration_days,
+            periodic_effect={
+                "stat": "wisdom",
+                "amount": -1,
+                "frequency_days": 2,
+                "description": "The dreamless nights drain your mind",
+            },
+            threshold_effect={
+                "stat": "wisdom",
+                "threshold": 0,
+                "effect": "incapacitated",
+                "description": "utterly vacant, lost in a world of phantasms",
+            },
+            spell_effects={
+                "spell_types": ["illusion", "phantasm", "invisibility"],
+                "effect": "save_to_memorize",
+                "save_type": "spell",
+                "description": "The dreamless state makes illusions difficult to grasp",
+            },
+            recovery_condition={
+                "type": "time",
+                "description": "Once dreams return after the duration ends",
+            },
+            recovery_rate={
+                "stat": "wisdom",
+                "amount": 1,
+                "per": "night_rest",
+                "description": "Lost Wisdom recovers at 1 point per night's rest",
+            },
+        )
 
 
 @dataclass
@@ -1478,6 +1639,17 @@ class HexProcedural:
     # Contextual encounter modifiers that apply to all wilderness encounters in this hex
     # Each modifier has: chance (e.g., "2-in-6"), result (creature/event), context (flavor)
     encounter_modifiers: list[dict[str, Any]] = field(default_factory=list)
+
+    # Extended lost behavior for maze-like hexes
+    # Format: {type: "maze", description: "...", escape_requires: "successful_lost_check"}
+    # Types: "normal" (default), "maze" (stuck until check succeeds), "trap" (can't leave at all)
+    lost_behavior: Optional[dict[str, Any]] = None
+
+    # Night hazards - effects that trigger when resting/sleeping in this hex
+    # Format: [{trigger: "sleep", save_type: "doom", save_dc: None,
+    #           on_fail: {condition: "dreamless", duration_dice: "2d6", duration_unit: "days"},
+    #           description: "Wisps of mauve mist drift from the mire..."}]
+    night_hazards: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

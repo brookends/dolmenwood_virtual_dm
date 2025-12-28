@@ -1017,6 +1017,9 @@ class HazardResolver:
         Fishing: 2d6 rations on success
         Foraging: 1d6 (1d4 winter, 1d8 autumn)
         Hunting: Triggers combat with game animals
+
+        Hex-specific foraging_special yields are added on successful foraging.
+        Example: "Sage Toe (1d3 portions)" from hex 0102.
         """
         # Survival check
         # TODO: Get best Survival skill in party
@@ -1063,16 +1066,74 @@ class HazardResolver:
 
         yield_roll = self.dice.roll(yield_dice, f"{method} yield")
 
-        return HazardResult(
+        # Process hex-specific foraging special yields
+        foraging_special = kwargs.get("foraging_special", [])
+        special_yields = []
+        special_descriptions = []
+
+        for special in foraging_special:
+            # Parse format like "Sage Toe (1d3 portions)"
+            special_result = self._parse_and_roll_special_yield(special)
+            if special_result:
+                special_yields.append(special_result)
+                special_descriptions.append(
+                    f"{special_result['quantity']} {special_result['item']}"
+                )
+
+        # Build description
+        base_desc = f"Found {yield_roll.total} rations while {method}"
+        if special_descriptions:
+            base_desc += f", plus {', '.join(special_descriptions)}"
+
+        # Build narrative hints
+        hints = [
+            f"gathered {yield_roll.total} fresh rations",
+            "basket fills with edibles" if method == "foraging" else "fish on the line"
+        ]
+        if special_yields:
+            for special in special_yields:
+                hints.append(f"discovered {special['item']} growing nearby")
+
+        result = HazardResult(
             success=True,
             hazard_type=HazardType.HUNGER,
             action_type=ActionType.FORAGE if method != "fishing" else ActionType.FISH,
-            description=f"Found {yield_roll.total} rations while {method}",
+            description=base_desc,
             check_made=True,
             check_result=roll.total + bonus,
             check_target=target,
-            narrative_hints=[
-                f"gathered {yield_roll.total} fresh rations",
-                "basket fills with edibles" if method == "foraging" else "fish on the line"
-            ]
+            narrative_hints=hints
         )
+
+        # Store special yields in result for caller
+        if special_yields:
+            result.items_found = special_yields
+
+        return result
+
+    def _parse_and_roll_special_yield(self, special_str: str) -> Optional[dict[str, Any]]:
+        """
+        Parse a special foraging yield string and roll for quantity.
+
+        Args:
+            special_str: Format like "Sage Toe (1d3 portions)" or "Moonwort (2d4)"
+
+        Returns:
+            Dict with item name and rolled quantity, or None if parsing fails
+        """
+        import re
+
+        # Match patterns like "Item Name (XdY portions)" or "Item Name (XdY)"
+        match = re.match(r"(.+?)\s*\((\d+d\d+)(?:\s+\w+)?\)", special_str)
+        if not match:
+            # Simple format without dice, like "Rare Herb"
+            return {"item": special_str.strip(), "quantity": 1}
+
+        item_name = match.group(1).strip()
+        dice_expr = match.group(2)
+
+        try:
+            quantity_roll = self.dice.roll(dice_expr, f"special yield: {item_name}")
+            return {"item": item_name, "quantity": quantity_roll.total}
+        except Exception:
+            return {"item": item_name, "quantity": 1}

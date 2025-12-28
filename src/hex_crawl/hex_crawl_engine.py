@@ -304,6 +304,10 @@ class HexCrawlEngine:
         self._encounter_checked_today: bool = False
         self._route_type: RouteType = RouteType.WILD
 
+        # Maze/trap hex state - party stuck until lost check succeeds
+        self._trapped_in_maze: bool = False
+        self._maze_hex_id: Optional[str] = None
+
         # Current travel state
         self._has_guide: bool = False
         self._has_map: bool = False
@@ -401,6 +405,20 @@ class HexCrawlEngine:
                 destination_hex=destination_hex,
                 actual_hex=destination_hex,
             )
+
+        # Check if trapped in maze hex - cannot leave until lost check succeeds
+        if self._trapped_in_maze:
+            current_hex = self.controller.party_state.location.location_id
+            if current_hex == self._maze_hex_id:
+                return TravelSegmentResult(
+                    success=False,
+                    travel_points_spent=0,
+                    remaining_travel_points=0,
+                    encounter_occurred=False,
+                    warnings=["Party is trapped in a maze and must wait for next day's navigation check"],
+                    destination_hex=destination_hex,
+                    actual_hex=current_hex,
+                )
 
         # Initialize day if not already done
         if self._travel_points_total == 0 or forced_march != self._forced_march:
@@ -530,15 +548,21 @@ class HexCrawlEngine:
         self._pending_entry_cost = self._pending_entry_cost  # carry-over from prior day
         self._encounter_checked_today = False
 
-        # Lost check once per day (none on roads, 1-in-6 on tracks, terrain-based in wild)
+        # Get current hex data for lost chance and maze behavior
+        current_hex = self.controller.party_state.location.location_id
+        hex_data = self._get_hex_data(current_hex)
+
+        # Determine lost chance
         lost_chance = 0
         if route_type == RouteType.TRACK:
             lost_chance = 1
         elif route_type == RouteType.WILD:
-            # Use current terrain if available
-            current_hex = self.controller.party_state.location.location_id
             terrain = self.get_terrain_for_hex(current_hex)
             lost_chance = self.get_terrain_info(terrain).lost_chance
+
+        # Check hex-specific lost_chance override
+        if hex_data and hex_data.procedural and hex_data.procedural.lost_chance:
+            lost_chance = self._parse_x_in_6_chance(hex_data.procedural.lost_chance)
 
         # Visibility modifiers could increase lost_chance; handled externally if needed
         if lost_chance > 0:
@@ -546,6 +570,40 @@ class HexCrawlEngine:
             self._lost_today = nav_roll.total <= lost_chance
         else:
             self._lost_today = False
+
+        # Handle maze/trap hex behavior
+        if self._trapped_in_maze and current_hex == self._maze_hex_id:
+            if self._lost_today:
+                # Still lost - remain trapped in maze
+                self._travel_points_remaining = 0  # Entire day spent wandering
+                return {
+                    "maze_trapped": True,
+                    "hex_id": current_hex,
+                    "message": "The party wanders in circles through the maze, unable to find a way out.",
+                    "travel_points": 0,
+                }
+            else:
+                # Escaped the maze!
+                self._trapped_in_maze = False
+                self._maze_hex_id = None
+                # Note: Travel points remain available for normal travel
+
+        # Check if getting lost in a maze hex
+        if self._lost_today and hex_data and hex_data.procedural:
+            lost_behavior = hex_data.procedural.lost_behavior
+            if lost_behavior and lost_behavior.get("type") == "maze":
+                self._trapped_in_maze = True
+                self._maze_hex_id = current_hex
+                self._travel_points_remaining = 0  # Entire day spent wandering
+                return {
+                    "maze_trapped": True,
+                    "hex_id": current_hex,
+                    "message": lost_behavior.get(
+                        "description",
+                        "The party becomes lost in the labyrinthine terrain, spending the day wandering in circles."
+                    ),
+                    "travel_points": 0,
+                }
 
     def _get_party_speed(self) -> int:
         """
@@ -873,6 +931,9 @@ class HexCrawlEngine:
             # Daily check status
             "lost_check_made": self._travel_day.lost_check_made,
             "encounter_check_made": self._travel_day.encounter_check_made,
+            # Maze/trap hex state
+            "trapped_in_maze": self._trapped_in_maze,
+            "maze_hex_id": self._maze_hex_id,
         }
 
     def _get_veered_hex(self, intended_hex: str) -> str:
@@ -1104,13 +1165,16 @@ class HexCrawlEngine:
         """
         Attempt to find food in the wild per Dolmenwood rules (p152).
 
+        Includes hex-specific foraging_special yields when available.
+        For example, hex 0102 yields Sage Toe in addition to normal foraging.
+
         Args:
             character_id: ID of the foraging character
             method: "foraging", "fishing", or "hunting"
             full_day: Whether spending full day foraging (+2 bonus)
 
         Returns:
-            HazardResult with outcomes including rations found
+            HazardResult with outcomes including rations found and special yields
         """
         character = self.controller.get_character(character_id)
         if not character:
@@ -1129,12 +1193,21 @@ class HexCrawlEngine:
             elif self.controller.world_state.season == Season.AUTUMN:
                 season = "autumn"
 
+        # Get hex-specific foraging special yields
+        foraging_special = []
+        current_hex = self._state.current_hex
+        if current_hex:
+            hex_data = self._get_hex_data(current_hex)
+            if hex_data and hex_data.procedural and hex_data.procedural.foraging_special:
+                foraging_special = hex_data.procedural.foraging_special
+
         from src.narrative.intent_parser import ActionType
         return self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=season,
             full_day=full_day,
+            foraging_special=foraging_special,
         )
 
     # =========================================================================

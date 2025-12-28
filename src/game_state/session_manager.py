@@ -69,6 +69,10 @@ class POIStateDelta:
     # Items taken from this POI
     items_taken: list[str] = field(default_factory=list)
 
+    # Roll table entries found: {table_name: [roll_values found]}
+    # For unique-item tables where entries can only be found once
+    found_roll_table_entries: dict[str, list[int]] = field(default_factory=dict)
+
     # Custom state changes
     custom_state: dict[str, Any] = field(default_factory=dict)
 
@@ -82,6 +86,7 @@ class POIStateDelta:
             "found_concealed_items": self.found_concealed_items,
             "variable_inhabitants_roll": self.variable_inhabitants_roll,
             "items_taken": self.items_taken,
+            "found_roll_table_entries": self.found_roll_table_entries,
             "custom_state": self.custom_state,
         }
 
@@ -96,6 +101,7 @@ class POIStateDelta:
             found_concealed_items={int(k): v for k, v in data.get("found_concealed_items", {}).items()},
             variable_inhabitants_roll=data.get("variable_inhabitants_roll"),
             items_taken=data.get("items_taken", []),
+            found_roll_table_entries=data.get("found_roll_table_entries", {}),
             custom_state=data.get("custom_state", {}),
         )
 
@@ -855,6 +861,94 @@ class SessionManager:
         delta = self.get_poi_delta(hex_id, poi_name)
         if item_name not in delta.items_taken:
             delta.items_taken.append(item_name)
+
+    def mark_roll_table_entry_found(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        roll_value: int,
+    ) -> None:
+        """
+        Mark a roll table entry as found (for unique-item tables).
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            roll_value: The roll value that was found
+        """
+        delta = self.get_poi_delta(hex_id, poi_name)
+        if table_name not in delta.found_roll_table_entries:
+            delta.found_roll_table_entries[table_name] = []
+        if roll_value not in delta.found_roll_table_entries[table_name]:
+            delta.found_roll_table_entries[table_name].append(roll_value)
+
+    def is_roll_table_entry_found(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        roll_value: int,
+    ) -> bool:
+        """
+        Check if a roll table entry has been found.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            roll_value: The roll value to check
+
+        Returns:
+            True if this entry has been found, False otherwise
+        """
+        if not self._current_session:
+            return False
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return False
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return False
+
+        found_entries = poi_delta.found_roll_table_entries.get(table_name, [])
+        return roll_value in found_entries
+
+    def get_unfound_roll_table_entries(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        all_roll_values: list[int],
+    ) -> list[int]:
+        """
+        Get roll values that haven't been found yet.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            all_roll_values: All possible roll values in the table
+
+        Returns:
+            List of roll values not yet found
+        """
+        if not self._current_session:
+            return all_roll_values
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return all_roll_values
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return all_roll_values
+
+        found_entries = poi_delta.found_roll_table_entries.get(table_name, [])
+        return [v for v in all_roll_values if v not in found_entries]
 
     def mark_hex_explored(self, hex_id: str) -> None:
         """Mark a hex as explored."""

@@ -1048,6 +1048,82 @@ class DowntimeEngine:
 
         return result
 
+    def check_hex_night_hazards(
+        self,
+        character_id: str,
+        hex_procedural: Optional[Any] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Check for hex-specific night hazards affecting a sleeping character.
+
+        Some hexes have environmental hazards that affect those who sleep there.
+        For example, hex 0102 (Reedwall) has mist that causes dreamlessness.
+
+        Args:
+            character_id: Character sleeping
+            hex_procedural: HexProcedural data for current hex (or None)
+
+        Returns:
+            List of triggered hazard effects
+        """
+        triggered_hazards = []
+
+        if not hex_procedural or not hex_procedural.night_hazards:
+            return triggered_hazards
+
+        for hazard in hex_procedural.night_hazards:
+            trigger = hazard.get("trigger", "sleep")
+
+            # Currently only supporting sleep trigger
+            if trigger != "sleep":
+                continue
+
+            # Make saving throw
+            save_type = hazard.get("save_type", "doom")
+            save_roll = self.dice.roll("1d20", f"save vs {save_type} ({hazard.get('description', 'night hazard')})")
+
+            # For now, assume standard B/X save thresholds (could be enhanced)
+            # Using a baseline of 12 as a moderate save DC
+            save_dc = hazard.get("save_dc", 12)
+            save_success = save_roll.total >= save_dc
+
+            hazard_result = {
+                "character_id": character_id,
+                "hazard": hazard,
+                "save_type": save_type,
+                "save_roll": save_roll.total,
+                "save_dc": save_dc,
+                "save_success": save_success,
+                "description": hazard.get("description", ""),
+            }
+
+            if not save_success:
+                on_fail = hazard.get("on_fail", {})
+                condition_type = on_fail.get("condition")
+                duration_dice = on_fail.get("duration_dice", "1d6")
+                duration_unit = on_fail.get("duration_unit", "days")
+
+                # Roll duration
+                duration_roll = self.dice.roll(duration_dice, f"{condition_type} duration")
+                duration = duration_roll.total
+
+                hazard_result["condition_applied"] = condition_type
+                hazard_result["duration"] = duration
+                hazard_result["duration_unit"] = duration_unit
+
+                # Create the condition if it's dreamlessness
+                if condition_type == "dreamless":
+                    from src.data_models import Condition
+                    dreamless = Condition.create_dreamlessness(
+                        duration_days=duration,
+                        source=hazard.get("description", "hex night hazard"),
+                    )
+                    hazard_result["condition_object"] = dreamless
+
+            triggered_hazards.append(hazard_result)
+
+        return triggered_hazards
+
     def process_wilderness_night(
         self,
         season: Optional[Season] = None,
