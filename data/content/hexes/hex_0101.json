@@ -238,7 +238,22 @@
       "is_combatant": true
     }
   ],
-  "items": [],
+  "items": [
+    {
+      "item_id": "violin_of_lord_hobbled",
+      "name": "Magical Violin of Lord Hobbled-and-Blackened",
+      "description": "A beautifully crafted violin of pale wood and silver strings. When played skilfully, it can cast the arcane spell Dominate once a week.",
+      "weight": 20,
+      "value": 10000,
+      "is_unique": true,
+      "unique_item_id": "violin_of_lord_hobbled_and_blackened",
+      "magical": true,
+      "location": "The Spectral Manse",
+      "owner": "Lord Hobbled-and-Blackened",
+      "acquisition": "Offered as payment for delivering a letter to Ygraine Mordlin",
+      "notes": "One of Lord Hobbled-and-Blackened's possessions - does not evaporate when leaving the manse"
+    }
+  ],
   "secrets": [],
   "dm_notes": "",
   "adjacent_hexes": [],

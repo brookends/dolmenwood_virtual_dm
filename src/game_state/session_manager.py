@@ -13,7 +13,7 @@ This ensures base content can be updated without breaking existing saves,
 and saves remain small by only storing differences from defaults.
 """
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, fields
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -33,6 +33,10 @@ from src.data_models import (
     Condition,
     ConditionType,
     LightSourceType,
+    Item,
+    Spell,
+    EncumbranceSystem,
+    ArmorWeight,
 )
 
 logger = logging.getLogger(__name__)
@@ -229,7 +233,11 @@ class HexStateDelta:
 
 @dataclass
 class SerializableCharacter:
-    """Serializable version of character state."""
+    """
+    Serializable version of character state.
+
+    Properly handles Item serialization with all unique item fields.
+    """
     character_id: str
     name: str
     character_class: str
@@ -237,41 +245,90 @@ class SerializableCharacter:
     hp_max: int
     hp_current: int
     armor_class: int
+    movement_rate: int = 120  # Base movement rate
 
-    # Abilities
-    strength: int = 10
-    dexterity: int = 10
-    constitution: int = 10
-    intelligence: int = 10
-    wisdom: int = 10
-    charisma: int = 10
+    # Abilities (stored as dict for compatibility with CharacterState)
+    ability_scores: dict[str, int] = field(default_factory=lambda: {
+        "STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10
+    })
 
-    # Equipment and resources
+    # Equipment and resources - Items serialized with all fields
     inventory: list[dict[str, Any]] = field(default_factory=list)
-    equipped: dict[str, str] = field(default_factory=dict)
-    gold: int = 0
 
     # Spells
-    spells_known: list[str] = field(default_factory=list)
-    spells_prepared: list[str] = field(default_factory=list)
-    spell_slots_remaining: dict[int, int] = field(default_factory=dict)
+    spells: list[dict[str, Any]] = field(default_factory=list)
 
-    # Conditions
+    # Conditions (with extended fields for dreamlessness, etc.)
     conditions: list[dict[str, Any]] = field(default_factory=list)
 
-    # Experience
-    xp: int = 0
+    # Retainer info
+    morale: Optional[int] = None
+    is_retainer: bool = False
+    employer_id: Optional[str] = None
+
+    # Encumbrance settings
+    encumbrance_system: str = "weight"
+    armor_weight: str = "unarmoured"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SerializableCharacter":
-        return cls(**data)
+        # Handle legacy format with individual ability scores
+        if "strength" in data and "ability_scores" not in data:
+            data["ability_scores"] = {
+                "STR": data.pop("strength", 10),
+                "DEX": data.pop("dexterity", 10),
+                "CON": data.pop("constitution", 10),
+                "INT": data.pop("intelligence", 10),
+                "WIS": data.pop("wisdom", 10),
+                "CHA": data.pop("charisma", 10),
+            }
+        # Remove any legacy fields not in dataclass
+        known_fields = {f.name for f in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in known_fields}
+        return cls(**filtered_data)
 
     @classmethod
     def from_character_state(cls, char: CharacterState) -> "SerializableCharacter":
         """Convert from CharacterState to serializable form."""
+        # Serialize inventory items using Item.to_dict()
+        serialized_inventory = []
+        for item in char.inventory:
+            if hasattr(item, 'to_dict'):
+                serialized_inventory.append(item.to_dict())
+            elif hasattr(item, '__dataclass_fields__'):
+                serialized_inventory.append(asdict(item))
+            else:
+                serialized_inventory.append(item)
+
+        # Serialize spells
+        serialized_spells = []
+        for spell in char.spells:
+            if hasattr(spell, '__dataclass_fields__'):
+                serialized_spells.append(asdict(spell))
+            else:
+                serialized_spells.append(spell)
+
+        # Serialize conditions with all extended fields
+        serialized_conditions = []
+        for c in char.conditions:
+            cond_dict = {
+                "condition_type": c.condition_type.value,
+                "duration_turns": c.duration_turns,
+                "source": c.source,
+                "severity": c.severity,
+                "duration_days": c.duration_days,
+                "days_elapsed": c.days_elapsed,
+                "periodic_effect": c.periodic_effect,
+                "recovery_condition": c.recovery_condition,
+                "recovery_rate": c.recovery_rate,
+                "spell_effects": c.spell_effects,
+                "threshold_effect": c.threshold_effect,
+            }
+            serialized_conditions.append(cond_dict)
+
         return cls(
             character_id=char.character_id,
             name=char.name,
@@ -280,36 +337,73 @@ class SerializableCharacter:
             hp_max=char.hp_max,
             hp_current=char.hp_current,
             armor_class=char.armor_class,
-            strength=char.strength,
-            dexterity=char.dexterity,
-            constitution=char.constitution,
-            intelligence=char.intelligence,
-            wisdom=char.wisdom,
-            charisma=char.charisma,
-            inventory=[asdict(item) if hasattr(item, '__dataclass_fields__') else item
-                      for item in char.inventory],
-            equipped=char.equipped,
-            gold=char.gold,
-            spells_known=char.spells.copy() if char.spells else [],
-            spells_prepared=char.spells_prepared.copy() if char.spells_prepared else [],
-            spell_slots_remaining=char.spell_slots_remaining.copy() if char.spell_slots_remaining else {},
-            conditions=[
-                {"type": c.condition_type.value, "duration": c.duration_remaining, "source": c.source}
-                for c in char.conditions
-            ],
-            xp=char.xp,
+            movement_rate=char.movement_rate,
+            ability_scores=char.ability_scores.copy(),
+            inventory=serialized_inventory,
+            spells=serialized_spells,
+            conditions=serialized_conditions,
+            morale=char.morale,
+            is_retainer=char.is_retainer,
+            employer_id=char.employer_id,
+            encumbrance_system=char.encumbrance_system.value if hasattr(char.encumbrance_system, 'value') else str(char.encumbrance_system),
+            armor_weight=char.armor_weight.value if hasattr(char.armor_weight, 'value') else str(char.armor_weight),
         )
 
     def to_character_state(self) -> CharacterState:
-        """Convert back to CharacterState."""
-        conditions = [
-            Condition(
-                condition_type=ConditionType(c["type"]),
-                duration_remaining=c.get("duration", -1),
-                source=c.get("source", ""),
-            )
-            for c in self.conditions
-        ]
+        """Convert back to CharacterState with proper Item objects."""
+        # Deserialize inventory items using Item.from_dict()
+        inventory_items = []
+        for item_data in self.inventory:
+            if isinstance(item_data, dict):
+                inventory_items.append(Item.from_dict(item_data))
+            else:
+                inventory_items.append(item_data)
+
+        # Deserialize spells
+        spell_objects = []
+        for spell_data in self.spells:
+            if isinstance(spell_data, dict):
+                spell_objects.append(Spell(
+                    spell_id=spell_data.get("spell_id", ""),
+                    name=spell_data.get("name", ""),
+                    level=spell_data.get("level", 1),
+                    prepared=spell_data.get("prepared", True),
+                    cast_today=spell_data.get("cast_today", False),
+                ))
+            else:
+                spell_objects.append(spell_data)
+
+        # Deserialize conditions with extended fields
+        condition_objects = []
+        for c in self.conditions:
+            if isinstance(c, dict):
+                condition_objects.append(Condition(
+                    condition_type=ConditionType(c.get("condition_type", c.get("type", "exhausted"))),
+                    duration_turns=c.get("duration_turns", c.get("duration")),
+                    source=c.get("source", ""),
+                    severity=c.get("severity", 1),
+                    duration_days=c.get("duration_days"),
+                    days_elapsed=c.get("days_elapsed", 0),
+                    periodic_effect=c.get("periodic_effect"),
+                    recovery_condition=c.get("recovery_condition"),
+                    recovery_rate=c.get("recovery_rate"),
+                    spell_effects=c.get("spell_effects"),
+                    threshold_effect=c.get("threshold_effect"),
+                ))
+            else:
+                condition_objects.append(c)
+
+        # Parse encumbrance system
+        try:
+            enc_system = EncumbranceSystem(self.encumbrance_system)
+        except (ValueError, KeyError):
+            enc_system = EncumbranceSystem.WEIGHT
+
+        # Parse armor weight
+        try:
+            arm_weight = ArmorWeight(self.armor_weight)
+        except (ValueError, KeyError):
+            arm_weight = ArmorWeight.UNARMOURED
 
         return CharacterState(
             character_id=self.character_id,
@@ -319,20 +413,16 @@ class SerializableCharacter:
             hp_max=self.hp_max,
             hp_current=self.hp_current,
             armor_class=self.armor_class,
-            strength=self.strength,
-            dexterity=self.dexterity,
-            constitution=self.constitution,
-            intelligence=self.intelligence,
-            wisdom=self.wisdom,
-            charisma=self.charisma,
-            inventory=self.inventory,
-            equipped=self.equipped,
-            gold=self.gold,
-            spells=self.spells_known,
-            spells_prepared=self.spells_prepared,
-            spell_slots_remaining=self.spell_slots_remaining,
-            conditions=conditions,
-            xp=self.xp,
+            movement_rate=self.movement_rate,
+            ability_scores=self.ability_scores.copy(),
+            inventory=inventory_items,
+            spells=spell_objects,
+            conditions=condition_objects,
+            morale=self.morale,
+            is_retainer=self.is_retainer,
+            employer_id=self.employer_id,
+            encumbrance_system=enc_system,
+            armor_weight=arm_weight,
         )
 
 
