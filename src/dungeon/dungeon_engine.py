@@ -1076,6 +1076,10 @@ class DungeonEngine:
                 "dungeon_id": self._dungeon_state.dungeon_id,
                 "room_id": self._dungeon_state.current_room,
                 "source": "wandering_monster",
+                # Pass roll tables for EncounterEngine to use
+                "roll_tables": self._dungeon_state.roll_tables,
+                "poi_name": self._dungeon_state.poi_name,
+                "hex_id": self._dungeon_state.hex_id,
             })
 
             return encounter
@@ -1976,3 +1980,43 @@ class DungeonEngine:
         if not self._dungeon_state or not self._dungeon_state.roll_tables:
             return []
         return [table.name for table in self._dungeon_state.roll_tables]
+
+    def get_encounter_context(self) -> dict[str, Any]:
+        """
+        Get context data for passing to EncounterEngine when starting an encounter.
+
+        This method provides all the information needed to start an encounter
+        with full POI context, including roll tables, location info, and
+        pending effects.
+
+        Returns:
+            Dictionary with:
+            - roll_tables: List of RollTable objects from the POI
+            - poi_name: Name of the POI (dungeon)
+            - hex_id: Hex where the dungeon is located
+            - pending_time_effects: Any time effects that should carry over
+
+        Example usage:
+            context = dungeon_engine.get_encounter_context()
+            encounter_engine.start_encounter(
+                encounter=encounter,
+                origin=EncounterOrigin.DUNGEON,
+                roll_tables=context["roll_tables"],
+                poi_name=context["poi_name"],
+                hex_id=context["hex_id"],
+            )
+        """
+        if not self._dungeon_state:
+            return {
+                "roll_tables": [],
+                "poi_name": None,
+                "hex_id": None,
+                "pending_time_effects": [],
+            }
+
+        return {
+            "roll_tables": self._dungeon_state.roll_tables,
+            "poi_name": self._dungeon_state.poi_name,
+            "hex_id": self._dungeon_state.hex_id,
+            "pending_time_effects": list(self._dungeon_state.pending_time_effects),
+        }
