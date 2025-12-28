@@ -1,0 +1,735 @@
+{
+  "category": "adventuring_gear",
+  "subcategory": "woodgrue_trinkets",
+  "items": [
+    {
+      "item_id": "bag_of_boiled_sweets",
+      "name": "A bag of delicious boiled sweets",
+      "description": "A bag of delicious boiled sweets.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "basket_of_snakes",
+      "name": "A basket of snakes, intended for juggling",
+      "description": "A basket of snakes, intended for juggling.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "battered_hat_with_swan_head",
+      "name": "A battered hat with a stuffed swan's head stitched proudly at the summit",
+      "description": "A battered hat with a stuffed swan's head stitched proudly at the summit.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "bone_whistle",
+      "name": "A bone whistle",
+      "description": "A bone whistle. When blown at night, it sends nearby bats and night birds into a frenzy.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "bottle_of_dirty_water",
+      "name": "A bottle containing dirty water from the Baths of Astralon",
+      "description": "A bottle containing dirty water from the Baths of Astralon.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "spilling_ink_bottle",
+      "name": "A bottle of ink that always seems to spill everywhere when opened",
+      "description": "A bottle of ink that always seems to spill everywhere when opened.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "bronze_chimera_statuette",
+      "name": "A bronze statuette of a chimera made up of a dozen different animals",
+      "description": "A bronze statuette of a chimera made up of a dozen different animals. The person who gave it to you insists it depicts a real creature.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "burial_shroud_with_face",
+      "name": "A burial shroud seemingly imprinted with a face",
+      "description": "A burial shroud seemingly imprinted with a face. The face becomes more distinguishable every day.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "musical_ceramic_plate",
+      "name": "A ceramic plate that emits a simple tune when scratched",
+      "description": "A ceramic plate that emits a simple tune when scratched.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "collection_of_fungi",
+      "name": "A collection of fungi, loaned to you by a mossling",
+      "description": "A collection of fungi, loaned to you by a mossling.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "dead_crow_in_bag",
+      "name": "A dead crow in a bag",
+      "description": "A dead crow in a bag. Before you killed it, you were pretty sure it was spying on you.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "fake_moustache",
+      "name": "A fake moustache",
+      "description": "A fake moustache. When worn, you appear to have a full beard.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "forbidden_treatise",
+      "name": "A forbidden treatise claiming grimalkins and woodgrues share the same ancestors",
+      "description": "A forbidden treatise claiming grimalkins and woodgrues share the same ancestors.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "glass_case_with_moth",
+      "name": "A glass case with a giant moth pinned inside",
+      "description": "A glass case with a giant moth pinned inside.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "duck_shaped_harp",
+      "name": "A harp shaped like a duck",
+      "description": "A harp shaped like a duck. Playing it attracts the attention of nearby waterfowl.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "bloody_harp_string",
+      "name": "A harp string, sharp and tinged with blood",
+      "description": "A harp string, sharp and tinged with blood.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "moth_wing_cloak",
+      "name": "A hooded cloak made from thousands of moth wings stitched together",
+      "description": "A hooded cloak made from thousands of moth wings stitched together.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "sticky_mead_tankard",
+      "name": "A mead tankard that is perpetually sticky",
+      "description": "A mead tankard that is perpetually sticky.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "misshapen_ocarina",
+      "name": "A misshapen ocarina",
+      "description": "A misshapen ocarina. Each note sounds eerily similar to a baby's cries.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "nostalgic_mossling_pipe",
+      "name": "A mossling pipe you found in a pile of compost",
+      "description": "A mossling pipe you found in a pile of compost. Its smoke makes people nostalgic.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "mr_fox_note",
+      "name": "A note promising that a \"Mr Fox\" will come to your aid in your hour of greatest need",
+      "description": "A note promising that a \"Mr Fox\" will come to your aid in your hour of greatest need.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "staring_eyeballs",
+      "name": "A pair of matching eyeballs",
+      "description": "A pair of matching eyeballs. Whenever possible, they rotate to stare at you.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "bronze_cymbals",
+      "name": "A pair of small, bronze cymbals",
+      "description": "A pair of small, bronze cymbals.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "feast_invitation",
+      "name": "A personalised invitation to \"THE FEAST.\"",
+      "description": "A personalised invitation to \"THE FEAST.\" No further details are provided.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "snickering_joke_book",
+      "name": "A pocketbook of bad jokes",
+      "description": "A pocketbook of bad jokes. Emits the occasional snicker.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "circus_performance_poster",
+      "name": "A poster for your parent's last, ill-fated circus performance",
+      "description": "A poster for your parent's last, ill-fated circus performance.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "stirge_owl_quill",
+      "name": "A quill made from a stirge-owl feather",
+      "description": "A quill made from a stirge-owl feather.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "hair_rope",
+      "name": "A rope woven from a mix of human and breggle hair",
+      "description": "A rope woven from a mix of human and breggle hair.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "arson_accusation_letters",
+      "name": "A stack of angry letters, all accusing you of arson",
+      "description": "A stack of angry letters, all accusing you of arson.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "flatulence_disk",
+      "name": "A strange disk that produces the sound of flatulence whenever a weight is placed atop it",
+      "description": "A strange disk that produces the sound of flatulence whenever a weight is placed atop it.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "self_raising_tent",
+      "name": "A tent that slowly raises itself when you loudly sing it a jaunty song",
+      "description": "A tent that slowly raises itself when you loudly sing it a jaunty song.",
+      "weight": null,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical",
+        "large"
+      ]
+    },
+    {
+      "item_id": "vial_of_guano",
+      "name": "A vial of guano",
+      "description": "A vial of guano. Your last reminder of a deceased loved one.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "jester_sceptre",
+      "name": "A wooden sceptre topped with a jester's head",
+      "description": "A wooden sceptre topped with a jester's head. When struck, the head tells an ill-considered joke.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "fire_solution_book",
+      "name": "An advice book that ultimately suggests a liberal application of fire as the solution to every problem",
+      "description": "An advice book that ultimately suggests a liberal application of fire as the solution to every problem.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "cold_ancient_coin",
+      "name": "An ancient coin, stolen from a grave",
+      "description": "An ancient coin, stolen from a grave. Far colder to the touch than it should be.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "empty_pan_flute_case",
+      "name": "An empty pan flute case, its contents stolen",
+      "description": "An empty pan flute case, its contents stolen.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "untested_firework",
+      "name": "An enormous firework with a tag that reads \"Untested.\"",
+      "description": "An enormous firework with a tag that reads \"Untested.\"",
+      "weight": null,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "large"
+      ]
+    },
+    {
+      "item_id": "stolen_elf_wig",
+      "name": "An extravagant wig, stolen from the head of an elf noble",
+      "description": "An extravagant wig, stolen from the head of an elf noble.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "leech_bucket",
+      "name": "An ordinary-looking metal bucket",
+      "description": "An ordinary-looking metal bucket. When filled with water, leeches appear inside.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "ancestral_flute",
+      "name": "An ornate flute, said to be handed down by your ancestors since before they left Fairy",
+      "description": "An ornate flute, said to be handed down by your ancestors since before they left Fairy.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "blood_sweating_egg",
+      "name": "An unhatched egg that sweats blood",
+      "description": "An unhatched egg that sweats blood.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "updating_wronged_list",
+      "name": "Faded parchment that lists the names of everyone you've ever wronged",
+      "description": "Faded parchment that lists the names of everyone you've ever wronged. It updates itself periodically.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "cursed"
+      ]
+    },
+    {
+      "item_id": "captured_fireworks_light",
+      "name": "Light from a fireworks display, caught in a shard of glass",
+      "description": "Light from a fireworks display, caught in a shard of glass.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket",
+        "magical"
+      ]
+    },
+    {
+      "item_id": "moon_rodent_lyrics",
+      "name": "Lyrics to a half-written song about rodents visiting from the moon",
+      "description": "Lyrics to a half-written song about rodents visiting from the moon.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "mood_cure_syrups",
+      "name": "Small vials of syrups, each labelled with the type of mood they're supposed to cure",
+      "description": "Small vials of syrups, each labelled with the type of mood they're supposed to cure.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "dressed_mouse_corpse",
+      "name": "The corpse of a mouse, dressed in tiny clothes",
+      "description": "The corpse of a mouse, dressed in tiny clothes.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "unknown_longhorn_crest",
+      "name": "The crest of an unknown longhorn noble house, found on a dead breggle",
+      "description": "The crest of an unknown longhorn noble house, found on a dead breggle.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "maggot_chess_pieces",
+      "name": "The squirming pieces for maggot chess",
+      "description": "The squirming pieces for maggot chess.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "woollen_ear_warmers",
+      "name": "Woollen ear warmers, knitted by your grandmother",
+      "description": "Woollen ear warmers, knitted by your grandmother.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    },
+    {
+      "item_id": "moth_cake_recipe",
+      "name": "Your uncle's famed recipe for moth cakes",
+      "description": "Your uncle's famed recipe for moth cakes.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "trinket"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      56
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,676 @@
+{
+  "category": "adventuring_gear",
+  "subcategory": "elf_trinkets",
+  "items": [
+    {
+      "item_id": "bag_of_caterpillars",
+      "name": "A bag of caterpillars whose flesh have hallucinogenic properties",
+      "description": "A bag of caterpillars whose flesh have hallucinogenic properties.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "hallucinogenic"
+      ]
+    },
+    {
+      "item_id": "bag_of_sticky_sweets",
+      "name": "A bag of sticky sweets that never get any smaller when sucked on",
+      "description": "A bag of sticky sweets that never get any smaller when sucked on.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "magical"
+      ]
+    },
+    {
+      "item_id": "ball_of_silvery_twine",
+      "name": "A ball of silvery twine that is invisible in moonlight",
+      "description": "A ball of silvery twine that is invisible in moonlight.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "invisible_in_moonlight"
+      ]
+    },
+    {
+      "item_id": "ball_of_yarn",
+      "name": "A ball of yarn, gifted to you by a grateful grimalkin",
+      "description": "A ball of yarn, gifted to you by a grateful grimalkin.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "black_rose",
+      "name": "A black rose that never wilts",
+      "description": "A black rose that never wilts.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "never_wilts"
+      ]
+    },
+    {
+      "item_id": "block_of_chocolate",
+      "name": "A block of chocolate made with cocoa harvested from a mossling",
+      "description": "A block of chocolate made with cocoa harvested from a mossling.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "book_of_amateur_poetry",
+      "name": "A book of amateur poetry",
+      "description": "A book of amateur poetry. You suspect the author to be a powerful Fairy noble.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "crown_of_holly_and_poison_ivy",
+      "name": "A crown woven from holly and poison ivy",
+      "description": "A crown woven from holly and poison ivy.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "glowing_daisy",
+      "name": "A daisy that glows in moonlight",
+      "description": "A daisy that glows in moonlight.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "glows_in_moonlight"
+      ]
+    },
+    {
+      "item_id": "fancy_hat_with_elk_antlers",
+      "name": "A fancy hat topped with elk antlers",
+      "description": "A fancy hat topped with elk antlers.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "fragment_of_glowing_crystal",
+      "name": "A fragment of glowing crystal that you found in a dream",
+      "description": "A fragment of glowing crystal that you found in a dream.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "glowing"
+      ]
+    },
+    {
+      "item_id": "fragment_of_evil_unicorn_horn",
+      "name": "A fragment of horn from an evil unicorn",
+      "description": "A fragment of horn from an evil unicorn.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "annihilating_glass_bottle",
+      "name": "A glass bottle that annihilates any liquid poured into it",
+      "description": "A glass bottle that annihilates any liquid poured into it.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "annihilates_liquid"
+      ]
+    },
+    {
+      "item_id": "glass_jar_with_frozen_sister",
+      "name": "A glass jar containing the tiny, frozen form of your only sister",
+      "description": "A glass jar containing the tiny, frozen form of your only sister.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "bloodstained_glass_slipper",
+      "name": "A glass slipper, stained with blood",
+      "description": "A glass slipper, stained with blood.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "mood_inappropriate_harp",
+      "name": "A harp that plays mood-inappropriate music",
+      "description": "A harp that, if left unattended, plays mood-inappropriate music with the skill of an enthusiastic amateur.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "self_playing"
+      ]
+    },
+    {
+      "item_id": "chapes_holy_symbol",
+      "name": "A Chapes (holy symbol of the Pluritine Church)",
+      "description": "A Chapes (holy symbol of the Pluritine Church), given to you by a dying friar decades ago.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "holy_symbol"
+      ]
+    },
+    {
+      "item_id": "ice_key",
+      "name": "A key fashioned from ice",
+      "description": "A key fashioned from ice. It melts in the warmth, and reforms in cold weather.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "melts_and_reforms"
+      ]
+    },
+    {
+      "item_id": "cold_flame_lantern",
+      "name": "A lantern that burns with a cold, blue flame when lit",
+      "description": "A lantern that burns with a cold, blue flame when lit.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "cold_flame"
+      ]
+    },
+    {
+      "item_id": "death_threat_letter",
+      "name": "A letter promising your imminent demise",
+      "description": "A letter promising your imminent demise, written in High Elfish. Delivered over a hundred years ago.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "mortals_heart",
+      "name": "A mortal's heart, freely given",
+      "description": "A mortal's heart, freely given.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "trapped_sunlight_crystal",
+      "name": "A mote of sunlight, trapped in a scintillating crystal",
+      "description": "A mote of sunlight, trapped in a scintillating crystal.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "scintillating"
+      ]
+    },
+    {
+      "item_id": "honeybee_necklace",
+      "name": "A necklace composed of honeybees",
+      "description": "A necklace composed of honeybees.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "bottled_nightmare",
+      "name": "A nightmare, sealed inside a bottle",
+      "description": "A nightmare, sealed inside a bottle.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "sealed"
+      ]
+    },
+    {
+      "item_id": "stolen_pan_flute",
+      "name": "A pan flute stolen from a woodgrue",
+      "description": "A pan flute stolen from a woodgrue. A single pipe is missing.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "missing_pipe"
+      ]
+    },
+    {
+      "item_id": "blinking_peacock_feather",
+      "name": "A peacock feather whose eye intermittently blinks",
+      "description": "A peacock feather whose eye intermittently blinks.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "blinking_eye"
+      ]
+    },
+    {
+      "item_id": "distilled_dream_liquor",
+      "name": "A pleasant dream, distilled into a liquor",
+      "description": "A pleasant dream, distilled into a liquor.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "distilled_dream"
+      ]
+    },
+    {
+      "item_id": "fairy_library_receipt",
+      "name": "A receipt for a loan of four rare and expensive tomes from a Fairy library",
+      "description": "A receipt for a loan of four rare and expensive tomes from a Fairy library. You no longer have any of these books.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "knights_scabbard",
+      "name": "A scabbard taken from the fallen body of a great knight",
+      "description": "A scabbard taken from the fallen body of a great knight.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "sealed_goblin_king_scroll",
+      "name": "A sealed scroll",
+      "description": "A sealed scroll. Allegedly contains one of the Goblin King's myriad names, never spoken.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "sealed"
+      ]
+    },
+    {
+      "item_id": "screaming_acorn",
+      "name": "A seemingly ordinary acorn",
+      "description": "A seemingly ordinary acorn. Screams when its cap is removed.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "screams"
+      ]
+    },
+    {
+      "item_id": "centaur_horseshoes",
+      "name": "A set of horseshoes, designed for a centaur",
+      "description": "A set of horseshoes, designed for a centaur.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "honey_dripping_spoon",
+      "name": "A silver spoon that drips honey on command",
+      "description": "A silver spoon that drips honey on command.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "drips_honey"
+      ]
+    },
+    {
+      "item_id": "queen_of_blackbirds_feather",
+      "name": "A single crow feather, taken from the cloak of the Queen of Blackbirds",
+      "description": "A single crow feather, taken from the cloak of the Queen of Blackbirds.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "prophetic_skeletal_finger",
+      "name": "A skeletal finger that scrapes and scratches at dusk",
+      "description": "A skeletal finger that scrapes and scratches at dusk. If provided with a means of making marks (e.g. dipped in ink or blood, a surface that can be scratched), it writes macabre prophecies.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "prophetic",
+        "writes_at_dusk"
+      ]
+    },
+    {
+      "item_id": "breggle_eye_bell",
+      "name": "A small bell shaped like a breggle's eye",
+      "description": "A small bell shaped like a breggle's eye. Faint bleating accompanies its ringing.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "bleating_sound"
+      ]
+    },
+    {
+      "item_id": "clothing_weaving_spider",
+      "name": "A spider that slowly weaves webs in the shape of clothing",
+      "description": "A spider that slowly weaves webs in the shape of clothing.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "weaves_clothing"
+      ]
+    },
+    {
+      "item_id": "night_sea_spyglass",
+      "name": "A spyglass that always shows a view of a sea at night",
+      "description": "A spyglass that always shows a view of a sea at night.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "shows_night_sea"
+      ]
+    },
+    {
+      "item_id": "liqueur_filled_thimble",
+      "name": "A thimble that is always magically full of sweet liqueur",
+      "description": "A thimble that is always magically full of sweet liqueur.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "always_full"
+      ]
+    },
+    {
+      "item_id": "darkness_creating_parasol",
+      "name": "A white-and-gold parasol that creates darkness directly underneath it",
+      "description": "A white-and-gold parasol that creates darkness directly underneath it.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "creates_darkness"
+      ]
+    },
+    {
+      "item_id": "salivating_wolf_pelt_cloak",
+      "name": "A wolf pelt cloak",
+      "description": "A wolf pelt cloak. The wolf's head is still attached and occasionally salivates.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "salivates"
+      ]
+    },
+    {
+      "item_id": "ancient_bronze_mask",
+      "name": "An ancient bronze mask depicting a bearded face",
+      "description": "An ancient bronze mask depicting a bearded face.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "liquid_drawing_wine_bottle",
+      "name": "An empty wine bottle",
+      "description": "An empty wine bottle. When held over a liquid, it draws it inside until full.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "draws_liquid"
+      ]
+    },
+    {
+      "item_id": "one_way_hourglass",
+      "name": "An hourglass which constantly flows in one direction",
+      "description": "An hourglass which constantly flows in one direction. It cannot be inverted.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "cannot_invert"
+      ]
+    },
+    {
+      "item_id": "never_melting_icicle",
+      "name": "An icicle that never melts",
+      "description": "An icicle that never melts.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "never_melts"
+      ]
+    },
+    {
+      "item_id": "ghost_detecting_chimes",
+      "name": "Bronze chimes that tinkle in the presence of both ghosts and strong breezes",
+      "description": "Bronze chimes that tinkle in the presence of both ghosts and strong breezes.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "detects_ghosts"
+      ]
+    },
+    {
+      "item_id": "cold_sculpting_tools",
+      "name": "Sculpting tools, preternaturally cold to the touch",
+      "description": "Sculpting tools, preternaturally cold to the touch.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": [
+        "cold_to_touch"
+      ]
+    },
+    {
+      "item_id": "six_vials_of_kindred_blood",
+      "name": "Six vials of blood, each drawn from a different Kindred",
+      "description": "Six vials of blood, each drawn from a different Kindred.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "unknown_star_charts",
+      "name": "Star charts that match no sky seen from Dolmenwood",
+      "description": "Star charts that match no sky seen from Dolmenwood.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    },
+    {
+      "item_id": "fairy_horse_tail",
+      "name": "The severed tail of a fairy horse",
+      "description": "The severed tail of a fairy horse.",
+      "weight": 10,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      40
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
