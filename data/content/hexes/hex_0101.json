@@ -258,7 +258,30 @@
       ],
       "location": "The Spectral Manse",
       "stat_reference": "frost elf courtier (DMB)",
-      "is_combatant": true
+      "is_combatant": true,
+      "relationships": [
+        {
+          "npc_id": "prince_mallowheart",
+          "relationship_type": "employer",
+          "description": "Former court musician to Prince Mallowheart. Imprisoned by the Prince for falling in love with his fosterling daughter.",
+          "hex_id": null,
+          "notes": "Prince Mallowheart is referenced on p34 of the Campaign Book"
+        },
+        {
+          "npc_id": "ygraine_mordlin",
+          "relationship_type": "love_interest",
+          "description": "Desperately in love with Ygraine Mordlin, the Prince's fosterling daughter. His love for her led to his imprisonment.",
+          "hex_id": null,
+          "notes": "Ygraine Mordlin is referenced on p84 of the Campaign Book"
+        }
+      ],
+      "binding": {
+        "bound_to": "The Spectral Manse",
+        "release_condition": "Ygraine's intervention or breaking the Prince's enchantment",
+        "captor": "Prince Mallowheart",
+        "can_leave": false,
+        "description": "Imprisoned in the Spectral Manse by Prince Mallowheart for the crime of falling in love with Ygraine Mordlin"
+      }
     }
   ],
   "items": [
