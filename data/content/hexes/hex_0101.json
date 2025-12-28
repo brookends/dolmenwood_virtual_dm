@@ -114,7 +114,15 @@
               "items": [
                 "magical violin"
               ],
-              "mechanical_effect": null
+              "mechanical_effect": null,
+              "quest_hook": {
+                "quest_id": "deliver_letter_to_ygraine",
+                "trigger": "on_accept",
+                "reward_items": ["violin_of_lord_hobbled", "letter_to_ygraine"],
+                "accept_prompt": "Will you take the letter to Ygraine Mordlin?",
+                "accept_response": "Lord Hobbled-and-Blackened's eyes light up with desperate hope. He thrusts the sealed letter and his precious violin into your hands, babbling rapid thanks in High Elfish.",
+                "decline_response": "The frost elf's manic energy falters. His fingers continue to play, but the music turns mournful as he retreats into the shadows."
+              }
             },
             {
               "roll": 2,
@@ -200,6 +208,21 @@
       ],
       "special_features": [],
       "secrets": [],
+      "quest_hooks": [
+        {
+          "quest_id": "deliver_letter_to_ygraine",
+          "title": "A Letter for Ygraine",
+          "description": "Lord Hobbled-and-Blackened, imprisoned in the Spectral Manse for his forbidden love, beseeches you to deliver a letter declaring his love to Ygraine Mordlin and pleading for her aid in escaping. In return, he offers his magical violin.",
+          "quest_giver": "lord_hobbled_and_blackened",
+          "objective": "Deliver the letter to Ygraine Mordlin",
+          "destination_npc": "ygraine_mordlin",
+          "destination_location": "Ygraine Mordlin's location",
+          "reward_items": ["violin_of_lord_hobbled", "letter_to_ygraine"],
+          "reward_description": "The magical violin (worth 10,000gp) - can cast Dominate once per week when played skilfully",
+          "conditions": {},
+          "notes": "The violin and letter are given upfront as a gesture of trust. The quest is completed when the letter is delivered to Ygraine."
+        }
+      ],
       "is_dungeon": true,
       "dungeon_levels": null
     }
@@ -252,6 +275,21 @@
       "owner": "Lord Hobbled-and-Blackened",
       "acquisition": "Offered as payment for delivering a letter to Ygraine Mordlin",
       "notes": "One of Lord Hobbled-and-Blackened's possessions - does not evaporate when leaving the manse"
+    },
+    {
+      "item_id": "letter_to_ygraine",
+      "name": "Lord Hobbled-and-Blackened's Letter to Ygraine",
+      "description": "A sealed letter of pale vellum, cold to the touch and edged with frost. The seal bears the sigil of a frozen rose. It contains Lord Hobbled-and-Blackened's declaration of love to Ygraine Mordlin and a desperate plea for her help in escaping his imprisonment in the Spectral Manse.",
+      "weight": 0,
+      "value": 0,
+      "is_unique": true,
+      "unique_item_id": "letter_to_ygraine_from_lord_hobbled",
+      "magical": false,
+      "location": "The Spectral Manse",
+      "owner": "Lord Hobbled-and-Blackened",
+      "quest_item": true,
+      "quest_id": "deliver_letter_to_ygraine",
+      "notes": "Quest item - must be delivered to Ygraine Mordlin to complete the quest. One of Lord Hobbled-and-Blackened's possessions - does not evaporate when leaving the manse."
     }
   ],
   "secrets": [],

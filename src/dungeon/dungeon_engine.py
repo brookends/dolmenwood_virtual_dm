@@ -1973,6 +1973,7 @@ class DungeonEngine:
             "items": entry.items,
             "mechanical_effect": entry.mechanical_effect,
             "sub_table": entry.sub_table,
+            "quest_hook": entry.quest_hook,
         }
 
     def get_available_tables(self) -> list[str]:

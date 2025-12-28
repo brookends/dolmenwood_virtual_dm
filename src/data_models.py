@@ -1770,6 +1770,12 @@ class RollTableEntry:
     # Used for locations where time flows differently
     time_effect: Optional[dict[str, Any]] = None
 
+    # Quest hook triggered by this encounter
+    # Format: {quest_id: "...", trigger: "on_encounter|on_accept", reward_items: [...]}
+    # When trigger is "on_accept", items are given when player accepts the quest
+    # Links to quest definition in POI's quest_hooks list
+    quest_hook: Optional[dict[str, Any]] = None
+
 
 @dataclass
 class RollTable:
