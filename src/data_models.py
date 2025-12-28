@@ -1596,6 +1596,41 @@ class PointOfInterest:
     # once_per_character: if True, can only be granted once to each character
     ability_grants: list[dict[str, Any]] = field(default_factory=list)
 
+    # Alert/alarm systems - triggered by specific actions
+    # Format: [{trigger, condition, effect, description, triggered}]
+    # trigger: "on_enter", "on_enter_unauthorized", "on_item_taken", "on_combat"
+    # condition: optional condition that must be met (e.g., "without_permission")
+    # effect: "alert_inhabitants", "summon_guards", "lock_exits", "sound_alarm"
+    # triggered: whether this alert has already fired (for one-time alerts)
+    alerts: list[dict[str, Any]] = field(default_factory=list)
+
+    # Concealed items hidden within fixtures/decorations
+    # Format: [{name, hidden_in, search_dc, description, found}]
+    # hidden_in: what the item is concealed in (e.g., "trophies", "bookshelf")
+    # search_dc: difficulty to find (1-6 for d6, or "thorough" for careful search)
+    # found: whether the item has been discovered
+    concealed_items: list[dict[str, Any]] = field(default_factory=list)
+
+    # Variable inhabitant counts (roll-based population)
+    # Format: {base_inhabitants: [...], variable: [{roll, description}]}
+    # base_inhabitants: always-present NPCs
+    # variable: additional NPCs determined by roll (e.g., "1d6 hunters")
+    variable_inhabitants: Optional[dict[str, Any]] = None
+
+    # Entry conditions - requirements or encounters when entering
+    # Format: {type, description, check_type, npc_id, outcomes}
+    # type: "permission_required", "interrogation", "toll", "challenge"
+    # check_type: "social", "payment", "password", "none"
+    # npc_id: NPC who handles the entry check
+    # outcomes: {success: ..., failure: ..., hostile: ...}
+    entry_conditions: Optional[dict[str, Any]] = None
+
+    # Quest hooks available at this POI
+    # Format: [{quest_id, title, description, conditions, destination_hex, reward}]
+    # conditions: requirements to receive the quest (e.g., {"disposition": "friendly"})
+    # destination_hex: target hex for the quest (for cross-hex quests)
+    quest_hooks: list[dict[str, Any]] = field(default_factory=list)
+
     # Time-of-day variant descriptions
     description_day: Optional[str] = None  # Description during daylight
     description_night: Optional[str] = None  # Description at night
@@ -2034,6 +2069,336 @@ class PointOfInterest:
     def mark_discovered(self) -> None:
         """Mark this POI as discovered."""
         self.discovered = True
+
+    # =========================================================================
+    # ALERT/ALARM METHODS
+    # =========================================================================
+
+    def get_alerts_for_trigger(self, trigger: str) -> list[dict[str, Any]]:
+        """
+        Get alerts that should fire for a specific trigger.
+
+        Args:
+            trigger: The trigger event (on_enter, on_enter_unauthorized, etc.)
+
+        Returns:
+            List of alert definitions that match this trigger
+        """
+        return [
+            alert for alert in self.alerts
+            if alert.get("trigger") == trigger and not alert.get("triggered", False)
+        ]
+
+    def trigger_alert(self, alert_index: int) -> dict[str, Any]:
+        """
+        Mark an alert as triggered and return its effect.
+
+        Args:
+            alert_index: Index of the alert in the alerts list
+
+        Returns:
+            The alert definition with effect details
+        """
+        if 0 <= alert_index < len(self.alerts):
+            alert = self.alerts[alert_index]
+            # Mark one-time alerts as triggered
+            if alert.get("one_time", True):
+                self.alerts[alert_index]["triggered"] = True
+            return alert
+        return {}
+
+    def has_active_alerts(self, trigger: str) -> bool:
+        """Check if there are any untriggered alerts for a given trigger."""
+        return len(self.get_alerts_for_trigger(trigger)) > 0
+
+    # =========================================================================
+    # CONCEALED ITEM METHODS
+    # =========================================================================
+
+    def get_concealed_items(self, include_found: bool = False) -> list[dict[str, Any]]:
+        """
+        Get concealed items at this POI.
+
+        Args:
+            include_found: If True, include already-found items
+
+        Returns:
+            List of concealed item definitions
+        """
+        if include_found:
+            return self.concealed_items
+        return [item for item in self.concealed_items if not item.get("found", False)]
+
+    def search_for_concealed(
+        self,
+        location: str,
+        search_roll: int,
+        thorough: bool = False,
+    ) -> list[dict[str, Any]]:
+        """
+        Search a specific location for concealed items.
+
+        Args:
+            location: Where to search (e.g., "trophies", "bookshelf")
+            search_roll: The d6 search roll result
+            thorough: If True, this is a thorough/careful search
+
+        Returns:
+            List of found items
+        """
+        found = []
+        for i, item in enumerate(self.concealed_items):
+            if item.get("found", False):
+                continue
+
+            hidden_in = item.get("hidden_in", "").lower()
+            if location.lower() not in hidden_in and hidden_in not in location.lower():
+                continue
+
+            search_dc = item.get("search_dc", 3)
+            if search_dc == "thorough":
+                if thorough:
+                    self.concealed_items[i]["found"] = True
+                    found.append(item)
+            elif isinstance(search_dc, int):
+                if search_roll >= search_dc:
+                    self.concealed_items[i]["found"] = True
+                    found.append(item)
+
+        return found
+
+    def reveal_concealed_item(self, item_name: str) -> bool:
+        """
+        Mark a concealed item as found.
+
+        Args:
+            item_name: Name of the item to reveal
+
+        Returns:
+            True if item was found and marked
+        """
+        for i, item in enumerate(self.concealed_items):
+            if item.get("name", "").lower() == item_name.lower():
+                self.concealed_items[i]["found"] = True
+                return True
+        return False
+
+    # =========================================================================
+    # VARIABLE INHABITANTS METHODS
+    # =========================================================================
+
+    def get_current_inhabitants(
+        self,
+        dice_roller: Optional[Any] = None,
+        cached_roll: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Get the current inhabitants, resolving variable counts.
+
+        Args:
+            dice_roller: DiceRoller instance for rolling variable counts
+            cached_roll: Previously rolled value (to maintain consistency)
+
+        Returns:
+            Dict with base_inhabitants and variable_inhabitants lists
+        """
+        result = {
+            "base_inhabitants": self.npcs.copy(),
+            "variable_inhabitants": [],
+            "variable_count": 0,
+        }
+
+        if not self.variable_inhabitants:
+            return result
+
+        result["base_inhabitants"] = self.variable_inhabitants.get(
+            "base_inhabitants", self.npcs
+        ).copy()
+
+        variable = self.variable_inhabitants.get("variable", [])
+        for var in variable:
+            roll_expr = var.get("roll", "0")
+            description = var.get("description", "")
+
+            if cached_roll is not None:
+                count = cached_roll
+            elif dice_roller:
+                count = dice_roller.roll(roll_expr).total
+            else:
+                # Default to parsing the dice expression for average
+                # e.g., "1d6" -> 3
+                count = 3
+
+            result["variable_inhabitants"].append({
+                "count": count,
+                "description": description,
+                "roll_expression": roll_expr,
+            })
+            result["variable_count"] += count
+
+        return result
+
+    # =========================================================================
+    # ENTRY CONDITIONS METHODS
+    # =========================================================================
+
+    def has_entry_conditions(self) -> bool:
+        """Check if this POI has entry conditions."""
+        return self.entry_conditions is not None
+
+    def get_entry_condition_type(self) -> Optional[str]:
+        """Get the type of entry condition (permission, interrogation, etc.)."""
+        if self.entry_conditions:
+            return self.entry_conditions.get("type")
+        return None
+
+    def check_entry_allowed(
+        self,
+        has_permission: bool = False,
+        payment_offered: int = 0,
+        password_given: Optional[str] = None,
+        social_result: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Check if entry is allowed based on conditions.
+
+        Args:
+            has_permission: Whether the party has permission to enter
+            payment_offered: Amount of payment offered (for toll)
+            password_given: Password provided (for password check)
+            social_result: Result of social check (success, failure, hostile)
+
+        Returns:
+            Dict with allowed, outcome, and description
+        """
+        if not self.entry_conditions:
+            return {"allowed": True, "outcome": "none", "description": ""}
+
+        cond_type = self.entry_conditions.get("type", "none")
+        outcomes = self.entry_conditions.get("outcomes", {})
+
+        if cond_type == "permission_required":
+            if has_permission:
+                return {
+                    "allowed": True,
+                    "outcome": "success",
+                    "description": outcomes.get("success", "Entry granted"),
+                }
+            else:
+                return {
+                    "allowed": False,
+                    "outcome": "failure",
+                    "description": outcomes.get("failure", "Entry denied"),
+                    "triggers_alert": True,
+                }
+
+        elif cond_type == "interrogation":
+            if social_result == "success":
+                return {
+                    "allowed": True,
+                    "outcome": "success",
+                    "description": outcomes.get("success", "You may pass"),
+                }
+            elif social_result == "hostile":
+                return {
+                    "allowed": False,
+                    "outcome": "hostile",
+                    "description": outcomes.get("hostile", "Combat ensues"),
+                    "triggers_combat": True,
+                }
+            else:
+                return {
+                    "allowed": False,
+                    "outcome": "failure",
+                    "description": outcomes.get("failure", "Move along"),
+                }
+
+        elif cond_type == "toll":
+            toll_amount = self.entry_conditions.get("toll_amount", 0)
+            if payment_offered >= toll_amount:
+                return {
+                    "allowed": True,
+                    "outcome": "success",
+                    "description": outcomes.get("success", "Toll accepted"),
+                    "payment_taken": toll_amount,
+                }
+            else:
+                return {
+                    "allowed": False,
+                    "outcome": "failure",
+                    "description": outcomes.get("failure", "Insufficient payment"),
+                }
+
+        elif cond_type == "password":
+            correct_password = self.entry_conditions.get("password", "")
+            if password_given and password_given.lower() == correct_password.lower():
+                return {
+                    "allowed": True,
+                    "outcome": "success",
+                    "description": outcomes.get("success", "Password accepted"),
+                }
+            else:
+                return {
+                    "allowed": False,
+                    "outcome": "failure",
+                    "description": outcomes.get("failure", "Incorrect password"),
+                }
+
+        return {"allowed": True, "outcome": "none", "description": ""}
+
+    # =========================================================================
+    # QUEST HOOK METHODS
+    # =========================================================================
+
+    def get_available_quests(
+        self,
+        party_disposition: str = "neutral",
+        party_level: int = 1,
+        completed_quests: Optional[set[str]] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Get quest hooks available to the party.
+
+        Args:
+            party_disposition: Party's disposition with POI (friendly, neutral, hostile)
+            party_level: Average party level (for level requirements)
+            completed_quests: Set of quest IDs already completed
+
+        Returns:
+            List of available quest definitions
+        """
+        completed = completed_quests or set()
+        available = []
+
+        for quest in self.quest_hooks:
+            quest_id = quest.get("quest_id", "")
+
+            # Skip completed quests
+            if quest_id in completed:
+                continue
+
+            # Check conditions
+            conditions = quest.get("conditions", {})
+
+            # Check disposition requirement
+            required_disposition = conditions.get("disposition")
+            if required_disposition:
+                disposition_order = ["hostile", "neutral", "friendly"]
+                if disposition_order.index(party_disposition) < disposition_order.index(required_disposition):
+                    continue
+
+            # Check level requirement
+            min_level = conditions.get("min_level", 0)
+            if party_level < min_level:
+                continue
+
+            available.append(quest)
+
+        return available
+
+    def has_quest_hooks(self) -> bool:
+        """Check if this POI has any quest hooks."""
+        return len(self.quest_hooks) > 0
 
 
 @dataclass
@@ -2729,6 +3094,39 @@ class HexNPC:
     # Combat
     stat_reference: Optional[str] = None  # Reference to stat block
     is_combatant: bool = False
+
+    # Relationship network
+    # Format: [{npc_id, relationship_type, description, hex_id}]
+    # relationship_type: "family", "employer", "ally", "rival", "enemy", "subordinate"
+    # hex_id: hex where the related NPC can be found (for cross-hex relationships)
+    relationships: list[dict[str, Any]] = field(default_factory=list)
+
+    # Faction loyalty vs personal feelings
+    # faction: official faction/employer they serve
+    # loyalty: "loyal", "bought", "coerced", "secret_traitor"
+    # personal_feelings: how they actually feel (may differ from loyalty)
+    faction: Optional[str] = None
+    loyalty: str = "loyal"
+    personal_feelings: Optional[str] = None  # e.g., "loathes employer"
+
+    def get_relationship(self, npc_id: str) -> Optional[dict[str, Any]]:
+        """Get relationship to a specific NPC."""
+        for rel in self.relationships:
+            if rel.get("npc_id") == npc_id:
+                return rel
+        return None
+
+    def get_relationships_by_type(self, rel_type: str) -> list[dict[str, Any]]:
+        """Get all relationships of a specific type."""
+        return [r for r in self.relationships if r.get("relationship_type") == rel_type]
+
+    def is_secretly_disloyal(self) -> bool:
+        """Check if NPC is secretly disloyal to their faction."""
+        return self.loyalty in ["bought", "coerced", "secret_traitor"]
+
+    def get_cross_hex_connections(self) -> list[dict[str, Any]]:
+        """Get relationships to NPCs in other hexes."""
+        return [r for r in self.relationships if r.get("hex_id")]
 
 
 @dataclass

@@ -1596,6 +1596,16 @@ class HexCrawlEngine:
                 "dungeon_levels": poi.dungeon_levels,
             }
 
+        # Check for entry conditions
+        if poi.has_entry_conditions():
+            return {
+                "success": False,
+                "requires_entry_check": True,
+                "entry_condition_type": poi.get_entry_condition_type(),
+                "entry_conditions": poi.entry_conditions,
+                "message": "This location has entry requirements",
+            }
+
         # Update state
         self._poi_state = POIExplorationState.AT_ENTRANCE
 
@@ -1620,6 +1630,12 @@ class HexCrawlEngine:
         # Check for entry hazards
         entry_hazards = poi.get_hazards_for_trigger("on_enter")
 
+        # Check for entry alerts
+        entry_alerts = poi.get_alerts_for_trigger("on_enter")
+
+        # Get variable inhabitants if any
+        inhabitants = poi.get_current_inhabitants(self.dice)
+
         result = {
             "success": True,
             "poi_type": poi.poi_type,
@@ -1627,6 +1643,8 @@ class HexCrawlEngine:
             "state": POIExplorationState.AT_ENTRANCE.value,
             "entry_hazards": entry_hazards,
             "requires_hazard_resolution": len(entry_hazards) > 0,
+            "entry_alerts": entry_alerts,
+            "inhabitants": inhabitants,
         }
 
         # Include relevant special features for exploration
@@ -1728,6 +1746,281 @@ class HexCrawlEngine:
                 kw in feature.lower()
                 for kw in ["night", "day", "darkness", "light"]
             ),
+        }
+
+    def enter_poi_with_conditions(
+        self,
+        hex_id: str,
+        has_permission: bool = False,
+        payment_offered: int = 0,
+        password_given: Optional[str] = None,
+        social_result: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to enter a POI that has entry conditions.
+
+        Used when enter_poi returns requires_entry_check=True.
+
+        Args:
+            hex_id: The hex containing the POI
+            has_permission: Whether party has permission
+            payment_offered: Payment for toll entry
+            password_given: Password if required
+            social_result: Result of social encounter (success, failure, hostile)
+
+        Returns:
+            Dictionary with entry results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Check entry conditions
+        entry_result = poi.check_entry_allowed(
+            has_permission=has_permission,
+            payment_offered=payment_offered,
+            password_given=password_given,
+            social_result=social_result,
+        )
+
+        if not entry_result.get("allowed", False):
+            # Check if unauthorized entry triggers an alert
+            if entry_result.get("triggers_alert"):
+                alerts = poi.get_alerts_for_trigger("on_enter_unauthorized")
+                entry_result["alerts_triggered"] = alerts
+                # Trigger the alerts
+                for i, alert in enumerate(poi.alerts):
+                    if alert.get("trigger") == "on_enter_unauthorized":
+                        poi.trigger_alert(i)
+
+            return entry_result
+
+        # Entry allowed - proceed with normal entry
+        # Clear entry conditions temporarily to allow normal entry
+        saved_conditions = poi.entry_conditions
+        poi.entry_conditions = None
+        result = self.enter_poi(hex_id)
+        poi.entry_conditions = saved_conditions
+
+        result["entry_outcome"] = entry_result.get("outcome")
+        if entry_result.get("payment_taken"):
+            result["payment_taken"] = entry_result["payment_taken"]
+
+        return result
+
+    def search_poi_location(
+        self,
+        hex_id: str,
+        search_location: str,
+        thorough: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Search a specific location within the current POI for concealed items.
+
+        Args:
+            hex_id: The hex containing the POI
+            search_location: What to search (e.g., "trophies", "bookshelf")
+            thorough: If True, perform a thorough/careful search
+
+        Returns:
+            Dictionary with search results and any found items
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Roll for search
+        search_roll = self.dice.roll("1d6").total
+
+        # Check for concealed items
+        found_items = poi.search_for_concealed(
+            location=search_location,
+            search_roll=search_roll,
+            thorough=thorough,
+        )
+
+        # Check if searching triggers any alerts
+        search_alerts = poi.get_alerts_for_trigger("on_search")
+        for i, alert in enumerate(poi.alerts):
+            if alert.get("trigger") == "on_search":
+                poi.trigger_alert(i)
+
+        result = {
+            "success": True,
+            "search_location": search_location,
+            "search_roll": search_roll,
+            "thorough": thorough,
+            "items_found": found_items,
+            "found_count": len(found_items),
+        }
+
+        if search_alerts:
+            result["alerts_triggered"] = search_alerts
+
+        if not found_items:
+            result["message"] = "You find nothing of interest."
+        else:
+            item_names = [item.get("name", "unknown") for item in found_items]
+            result["message"] = f"You discover: {', '.join(item_names)}"
+
+        return result
+
+    def get_poi_quests(
+        self,
+        hex_id: str,
+        party_disposition: str = "neutral",
+        party_level: int = 1,
+    ) -> dict[str, Any]:
+        """
+        Get available quest hooks at the current POI.
+
+        Args:
+            hex_id: The hex containing the POI
+            party_disposition: Party's standing (friendly, neutral, hostile)
+            party_level: Average party level
+
+        Returns:
+            Dictionary with available quests
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Get completed quests from tracking
+        completed_quests = getattr(self, "_completed_quests", set())
+
+        available_quests = poi.get_available_quests(
+            party_disposition=party_disposition,
+            party_level=party_level,
+            completed_quests=completed_quests,
+        )
+
+        return {
+            "success": True,
+            "quests_available": len(available_quests) > 0,
+            "quests": available_quests,
+        }
+
+    def trigger_poi_alert(
+        self,
+        hex_id: str,
+        trigger_type: str,
+    ) -> dict[str, Any]:
+        """
+        Manually trigger alerts at the current POI.
+
+        Args:
+            hex_id: The hex containing the POI
+            trigger_type: Type of trigger (on_enter, on_combat, etc.)
+
+        Returns:
+            Dictionary with triggered alert effects
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Get and trigger alerts
+        alerts = poi.get_alerts_for_trigger(trigger_type)
+        triggered = []
+
+        for i, alert in enumerate(poi.alerts):
+            if alert.get("trigger") == trigger_type and not alert.get("triggered", False):
+                triggered_alert = poi.trigger_alert(i)
+                triggered.append(triggered_alert)
+
+        return {
+            "success": True,
+            "trigger_type": trigger_type,
+            "alerts_triggered": triggered,
+            "alert_count": len(triggered),
+        }
+
+    def get_npc_relationships(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Get relationships for a specific NPC.
+
+        Args:
+            hex_id: The hex containing the NPC
+            npc_id: ID of the NPC
+
+        Returns:
+            Dictionary with NPC relationship information
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        npc = None
+        for n in hex_data.npcs:
+            if n.npc_id == npc_id:
+                npc = n
+                break
+
+        if not npc:
+            return {"success": False, "error": "NPC not found"}
+
+        return {
+            "success": True,
+            "npc_id": npc_id,
+            "npc_name": npc.name,
+            "relationships": npc.relationships,
+            "faction": npc.faction,
+            "loyalty": npc.loyalty,
+            "is_secretly_disloyal": npc.is_secretly_disloyal(),
+            "cross_hex_connections": npc.get_cross_hex_connections(),
         }
 
     def leave_poi(self, hex_id: str) -> dict[str, Any]:
