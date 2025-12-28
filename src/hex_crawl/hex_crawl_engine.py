@@ -38,6 +38,13 @@ from src.data_models import (
     PointOfInterest,
     HexStateChange,
     WorldStateChanges,
+    EventScheduler,
+    ScheduledEvent,
+    EventType,
+    GameDate,
+    AbilityGrantTracker,
+    GrantedAbility,
+    AbilityType,
 )
 from src.narrative.narrative_resolver import (
     NarrativeResolver,
@@ -320,6 +327,12 @@ class HexCrawlEngine:
 
         # Diving state tracking per character
         self._diving_states: dict[str, DivingState] = {}
+
+        # Scheduled events and invitations
+        self._event_scheduler: EventScheduler = EventScheduler()
+
+        # Granted abilities tracker
+        self._ability_tracker: AbilityGrantTracker = AbilityGrantTracker()
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -1235,6 +1248,107 @@ class HexCrawlEngine:
 
         return visible
 
+    def get_sensory_hints(
+        self,
+        hex_id: str,
+        include_adjacent: bool = True,
+    ) -> dict[str, list[dict[str, Any]]]:
+        """
+        Get sensory discovery hints from POIs in the current and adjacent hexes.
+
+        These hints help players discover hidden POIs through sound, smell, or
+        visual cues even before they search for them.
+
+        Args:
+            hex_id: The hex the party is currently in
+            include_adjacent: Whether to include hints from adjacent hexes
+
+        Returns:
+            Dict with keys 'nearby', 'adjacent', 'distant' containing hint lists
+        """
+        is_night = self._is_night()
+        hints: dict[str, list[dict[str, Any]]] = {
+            "nearby": [],
+            "adjacent": [],
+            "distant": [],
+        }
+
+        # Get hints from current hex
+        hex_data = self._hex_data.get(hex_id)
+        if hex_data:
+            for poi in hex_data.points_of_interest:
+                poi_hints = poi.get_active_discovery_hints(
+                    is_night=is_night,
+                    current_range="nearby",
+                )
+                for hint in poi_hints:
+                    hint["hex_id"] = hex_id
+                    hints["nearby"].append(hint)
+
+        # Get hints from adjacent hexes
+        if include_adjacent and hex_data:
+            adjacent_hexes = hex_data.adjacent_hexes or []
+            for adj_hex_id in adjacent_hexes:
+                adj_hex = self._hex_data.get(adj_hex_id)
+                if not adj_hex:
+                    continue
+
+                for poi in adj_hex.points_of_interest:
+                    # Only get hints that carry to adjacent range
+                    poi_hints = poi.get_active_discovery_hints(
+                        is_night=is_night,
+                        current_range="adjacent",
+                    )
+                    for hint in poi_hints:
+                        hint["hex_id"] = adj_hex_id
+                        hints["adjacent"].append(hint)
+
+        return hints
+
+    def describe_sensory_hints(self, hex_id: str) -> list[str]:
+        """
+        Get narrative descriptions of sensory hints for the current location.
+
+        Returns atmospheric text suitable for reading to players that hints
+        at nearby discoverable POIs without revealing their names.
+
+        Args:
+            hex_id: The hex the party is currently in
+
+        Returns:
+            List of narrative description strings
+        """
+        hints = self.get_sensory_hints(hex_id)
+        descriptions = []
+
+        # Process nearby hints (strongest)
+        for hint in hints["nearby"]:
+            sense = hint["sense_type"]
+            desc = hint["description"]
+            if sense == "sound":
+                descriptions.append(f"You hear {desc}")
+            elif sense == "smell":
+                descriptions.append(f"You catch the scent of {desc}")
+            elif sense == "visual":
+                descriptions.append(f"You notice {desc}")
+            else:
+                descriptions.append(desc)
+
+        # Process adjacent hints (fainter)
+        for hint in hints["adjacent"]:
+            sense = hint["sense_type"]
+            desc = hint["description"]
+            if sense == "sound":
+                descriptions.append(f"Faintly, in the distance, you hear {desc}")
+            elif sense == "smell":
+                descriptions.append(f"A faint scent of {desc} drifts on the wind")
+            elif sense == "visual":
+                descriptions.append(f"In the distance, you can just make out {desc}")
+            else:
+                descriptions.append(f"From somewhere nearby: {desc}")
+
+        return descriptions
+
     def discover_poi(self, hex_id: str, poi_name: str) -> bool:
         """
         Mark a hidden POI as discovered.
@@ -1312,15 +1426,18 @@ class HexCrawlEngine:
         if poi.exploring:
             description_parts.append(poi.exploring)
 
-        # Check for approach hazards in special_features
-        hazards = []
+        # Get approach hazards from the hazards field
+        approach_hazards = poi.get_hazards_for_trigger("on_approach")
+
+        # Also check for hazards in special_features (legacy support)
+        feature_hazards = []
         for feature in poi.special_features:
             feature_lower = feature.lower()
             if any(
                 kw in feature_lower
                 for kw in ["climbing", "thorns", "dangerous", "treacherous"]
             ):
-                hazards.append(feature)
+                feature_hazards.append(feature)
 
         result = {
             "success": True,
@@ -1328,8 +1445,10 @@ class HexCrawlEngine:
             "description": "\n\n".join(description_parts),
             "can_enter": poi.entering is not None or poi.interior is not None,
             "is_dungeon": poi.is_dungeon,
-            "hazards": hazards,
+            "hazards": feature_hazards,  # Legacy feature hazards
+            "approach_hazards": approach_hazards,  # Proper hazard definitions
             "state": POIExplorationState.APPROACHING.value,
+            "requires_hazard_resolution": len(approach_hazards) > 0,
         }
 
         # If there are inhabitants, note them (without revealing secrets)
@@ -1338,6 +1457,104 @@ class HexCrawlEngine:
             result["activity_noted"] = True
 
         return result
+
+    def resolve_poi_hazard(
+        self,
+        hex_id: str,
+        hazard_index: int,
+        character_id: str,
+        approach_method: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Resolve a hazard required to access a POI.
+
+        Uses the narrative resolver to handle climbing, swimming, or
+        other hazards that must be overcome to reach a POI.
+
+        Args:
+            hex_id: The hex containing the POI
+            hazard_index: Index of the hazard in the approach_hazards list
+            character_id: Character attempting to overcome the hazard
+            approach_method: Optional method being used (e.g., "rope", "flying")
+
+        Returns:
+            HazardResult-style dictionary with success/failure and consequences
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not approaching any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "POI not found"}
+
+        # Get approach hazards
+        approach_hazards = poi.get_hazards_for_trigger("on_approach")
+        if hazard_index < 0 or hazard_index >= len(approach_hazards):
+            return {"success": False, "error": "Invalid hazard index"}
+
+        hazard = approach_hazards[hazard_index]
+        hazard_type = hazard.get("hazard_type", "environmental")
+        difficulty = hazard.get("difficulty", "moderate")
+
+        # Get character
+        character = self._get_character(character_id)
+        if not character:
+            return {"success": False, "error": "Character not found"}
+
+        # Resolve using narrative resolver if available
+        if self.narrative_resolver:
+            # Map hazard type to HazardType enum
+            try:
+                h_type = HazardType(hazard_type.upper())
+            except ValueError:
+                h_type = HazardType.ENVIRONMENTAL
+
+            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+                character=character,
+                hazard_type=h_type,
+                difficulty=difficulty,
+                context={
+                    "poi_name": poi.name,
+                    "hazard_description": hazard.get("description", ""),
+                    "approach_method": approach_method,
+                },
+            )
+
+            return {
+                "success": result.success,
+                "hazard_type": hazard_type,
+                "description": hazard.get("description", ""),
+                "damage": result.damage_taken,
+                "effect": result.effect_applied,
+                "narrative": result.narrative,
+                "can_proceed": result.success,
+            }
+        else:
+            # Basic resolution without narrative resolver
+            roll = self.dice.roll("1d6").total
+            difficulty_threshold = {"easy": 2, "moderate": 3, "hard": 4, "extreme": 5}
+            threshold = difficulty_threshold.get(difficulty, 3)
+
+            success = roll >= threshold
+
+            return {
+                "success": success,
+                "hazard_type": hazard_type,
+                "description": hazard.get("description", ""),
+                "roll": roll,
+                "threshold": threshold,
+                "can_proceed": success,
+            }
 
     def enter_poi(self, hex_id: str) -> dict[str, Any]:
         """
@@ -1400,11 +1617,16 @@ class HexCrawlEngine:
         if visit_key in self._poi_visits:
             self._poi_visits[visit_key].entered = True
 
+        # Check for entry hazards
+        entry_hazards = poi.get_hazards_for_trigger("on_enter")
+
         result = {
             "success": True,
             "poi_type": poi.poi_type,
             "description": "\n\n".join(description_parts),
             "state": POIExplorationState.AT_ENTRANCE.value,
+            "entry_hazards": entry_hazards,
+            "requires_hazard_resolution": len(entry_hazards) > 0,
         }
 
         # Include relevant special features for exploration
@@ -3013,6 +3235,359 @@ class HexCrawlEngine:
             Current value or None if not changed
         """
         return self._world_state_changes.get_current_state(hex_id, state_key, poi_name)
+
+    # =========================================================================
+    # SCHEDULED EVENTS AND INVITATIONS
+    # =========================================================================
+
+    def issue_invitation(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_ids: list[str],
+        title: str,
+        player_message: str,
+        effect_type: str,
+        effect_details: dict[str, Any],
+        trigger_condition: str = "return",
+        expiry_days: Optional[int] = None,
+    ) -> ScheduledEvent:
+        """
+        Issue an invitation for characters to return to a location for a reward.
+
+        Used when POIs offer delayed benefits (e.g., healing, blessings,
+        magical item grants) to worthy visitors.
+
+        Args:
+            hex_id: Source hex
+            poi_name: Source POI
+            character_ids: Characters who receive the invitation
+            title: Event title (e.g., "The Grove's Blessing")
+            player_message: Message told to players (e.g., "Return when in need")
+            effect_type: Type of effect (healing, spell_grant, item_grant)
+            effect_details: Effect parameters
+            trigger_condition: When effect triggers (default: "return")
+            expiry_days: Days until invitation expires (None = never)
+
+        Returns:
+            The created ScheduledEvent
+        """
+        current_date = self._get_current_date()
+        return self._event_scheduler.create_invitation(
+            source_hex=hex_id,
+            source_poi=poi_name,
+            character_ids=character_ids,
+            title=title,
+            player_message=player_message,
+            effect_type=effect_type,
+            effect_details=effect_details,
+            current_date=current_date,
+            trigger_condition=trigger_condition,
+            expiry_days=expiry_days,
+        )
+
+    def check_scheduled_events(
+        self,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+        conditions_met: Optional[dict[str, bool]] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Check for and trigger any scheduled events that should fire.
+
+        Called when entering a hex, approaching a POI, or on date changes.
+
+        Args:
+            hex_id: Current hex (if any)
+            poi_name: Current POI (if any)
+            conditions_met: Dict of event_id -> bool for narrative conditions
+
+        Returns:
+            List of triggered event effects
+        """
+        current_date = self._get_current_date()
+        return self._event_scheduler.check_triggers(
+            current_date=current_date,
+            current_hex=hex_id,
+            current_poi=poi_name,
+            conditions_met=conditions_met,
+        )
+
+    def get_pending_invitations(
+        self,
+        character_id: Optional[str] = None,
+    ) -> list[ScheduledEvent]:
+        """
+        Get pending invitations.
+
+        Args:
+            character_id: If provided, filter to this character only
+
+        Returns:
+            List of pending invitation events
+        """
+        current_date = self._get_current_date()
+
+        if character_id:
+            return self._event_scheduler.get_active_events_for_character(
+                character_id, current_date
+            )
+        else:
+            return self._event_scheduler.get_pending_invitations(current_date)
+
+    def get_invitations_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+    ) -> list[ScheduledEvent]:
+        """
+        Get invitations tied to a specific location.
+
+        Args:
+            hex_id: Hex to check
+            poi_name: POI to check
+
+        Returns:
+            List of events at this location
+        """
+        return self._event_scheduler.get_events_at_location(hex_id, poi_name)
+
+    def _get_current_date(self) -> GameDate:
+        """Get the current game date from the controller."""
+        world_state = self.controller.get_world_state()
+        if world_state and world_state.date:
+            return world_state.date
+        # Default date if not set
+        return GameDate(year=1, month=1, day=1)
+
+    # =========================================================================
+    # ABILITY GRANTING FROM POI FEATURES
+    # =========================================================================
+
+    def get_available_ability_grants(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_id: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Get abilities that can be granted to a character at this POI.
+
+        Returns only abilities the character hasn't already received
+        and that meet any requirements.
+
+        Args:
+            hex_id: Current hex
+            poi_name: POI name
+            character_id: Character to check eligibility for
+
+        Returns:
+            List of grantable ability definitions
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi or not poi.ability_grants:
+            return []
+
+        available = []
+        current_date = self._get_current_date()
+
+        for grant in poi.ability_grants:
+            ability_name = grant.get("name", "")
+            once_per = grant.get("once_per_character", True)
+
+            # Check if already granted
+            if once_per and self._ability_tracker.was_ability_granted(
+                character_id, hex_id, poi_name, ability_name
+            ):
+                continue
+
+            # Check requirements (if any)
+            requirements = grant.get("requirements", {})
+            if requirements:
+                # Get character data
+                character = self._get_character(character_id)
+                if character:
+                    # Check alignment requirement
+                    if "alignment" in requirements:
+                        # Would need alignment from character - skip for now
+                        pass
+                    # Check class requirement
+                    if "class" in requirements:
+                        if character.character_class.lower() != requirements["class"].lower():
+                            continue
+
+            available.append(grant)
+
+        return available
+
+    def grant_ability_to_character(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_id: str,
+        ability_name: str,
+    ) -> dict[str, Any]:
+        """
+        Grant a specific ability from a POI to a character.
+
+        Args:
+            hex_id: Current hex
+            poi_name: POI name
+            character_id: Character receiving the ability
+            ability_name: Name of the ability to grant
+
+        Returns:
+            Dict with success status and details
+        """
+        # Find the POI and ability
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "POI not found"}
+
+        grant_def = None
+        for g in poi.ability_grants:
+            if g.get("name", "").lower() == ability_name.lower():
+                grant_def = g
+                break
+
+        if not grant_def:
+            return {"success": False, "error": "Ability not found at this POI"}
+
+        # Check if already granted
+        once_per = grant_def.get("once_per_character", True)
+        if once_per and self._ability_tracker.was_ability_granted(
+            character_id, hex_id, poi_name, ability_name
+        ):
+            return {"success": False, "error": "Ability already granted to this character"}
+
+        # Grant the ability
+        current_date = self._get_current_date()
+        ability_type_str = grant_def.get("ability_type", "spell")
+        try:
+            ability_type = AbilityType(ability_type_str)
+        except ValueError:
+            ability_type = AbilityType.SPECIAL
+
+        granted = self._ability_tracker.grant_ability(
+            character_id=character_id,
+            ability_name=ability_name,
+            ability_type=ability_type,
+            source_hex_id=hex_id,
+            source_poi_name=poi_name,
+            description=grant_def.get("description", ""),
+            current_date=current_date,
+            duration=grant_def.get("duration", "permanent"),
+            spell_level=grant_def.get("spell_level"),
+            spell_school=grant_def.get("spell_school"),
+            spell_data=grant_def.get("spell_data"),
+            uses=grant_def.get("uses"),
+            once_per_character=once_per,
+        )
+
+        if granted:
+            return {
+                "success": True,
+                "ability": ability_name,
+                "ability_type": ability_type.value,
+                "description": granted.description,
+                "duration": granted.duration,
+                "message": f"Granted {ability_name} to character",
+            }
+        else:
+            return {"success": False, "error": "Failed to grant ability"}
+
+    def get_character_granted_abilities(
+        self,
+        character_id: str,
+        ability_type: Optional[str] = None,
+    ) -> list[GrantedAbility]:
+        """
+        Get all granted abilities for a character.
+
+        Args:
+            character_id: Character to check
+            ability_type: Filter to specific type (spell, blessing, etc.)
+
+        Returns:
+            List of GrantedAbility objects
+        """
+        current_date = self._get_current_date()
+        abilities = self._ability_tracker.get_character_abilities(
+            character_id, current_date
+        )
+
+        if ability_type:
+            try:
+                filter_type = AbilityType(ability_type)
+                abilities = [a for a in abilities if a.ability_type == filter_type]
+            except ValueError:
+                pass
+
+        return abilities
+
+    def use_granted_ability(
+        self,
+        character_id: str,
+        ability_name: str,
+    ) -> dict[str, Any]:
+        """
+        Use a granted ability (for limited-use abilities).
+
+        Args:
+            character_id: Character using the ability
+            ability_name: Name of the ability to use
+
+        Returns:
+            Dict with success status and remaining uses
+        """
+        current_date = self._get_current_date()
+        abilities = self._ability_tracker.get_character_abilities(
+            character_id, current_date
+        )
+
+        for ability in abilities:
+            if ability.ability_name.lower() == ability_name.lower():
+                if ability.use():
+                    return {
+                        "success": True,
+                        "ability": ability_name,
+                        "uses_remaining": ability.uses_remaining,
+                        "still_active": ability.is_active,
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": "Ability already exhausted",
+                    }
+
+        return {"success": False, "error": "Ability not found"}
+
+    def _get_character(self, character_id: str) -> Optional[CharacterState]:
+        """Get a character from the controller."""
+        party_state = self.controller.get_party_state()
+        if party_state:
+            for char in party_state.characters:
+                if char.character_id == character_id:
+                    return char
+        return None
 
     # =========================================================================
     # SUB-LOCATION EXPLORATION

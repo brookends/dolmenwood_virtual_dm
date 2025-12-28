@@ -305,29 +305,136 @@ class DiceResult:
 
 
 # =============================================================================
+# DOLMENWOOD CALENDAR SYSTEM
+# =============================================================================
+
+# Moon phases in Dolmenwood - each month has its own named moon
+class MoonPhase(str, Enum):
+    """Moon phases in the Dolmenwood calendar."""
+    GRINNING_MOON = "grinning_moon"  # Grimvold (month 1)
+    DEAD_MOON = "dead_moon"          # Lymewald (month 2)
+    BEAST_MOON = "beast_moon"        # Haggryme (month 3)
+    WAXING_MOON = "waxing_moon"      # Brewmont (month 4)
+    BLOSSOM_MOON = "blossom_moon"    # Plothmont (month 5)
+    FIRST_MOON = "first_moon"        # Greenmont (month 6)
+    RED_MOON = "red_moon"            # Moltmont (month 7)
+    WYRM_MOON = "wyrm_moon"          # Midsummer (month 8)
+    WANE_MOON = "wane_moon"          # Hautmont (month 9)
+    FAT_MOON = "fat_moon"            # Harvestmont (month 10)
+    WITHER_MOON = "wither_moon"      # Fogmont (month 11)
+    BLACK_MOON = "black_moon"        # Braghold (month 12)
+
+
+@dataclass
+class DolmenwoodMonth:
+    """A month in the Dolmenwood calendar."""
+    number: int           # 1-12
+    name: str            # Month name (e.g., "Grimvold")
+    season_desc: str     # Season description (e.g., "The onset of winter")
+    days: int            # Number of days (28 or 30)
+    wysendays: list[str]  # Holy days/festivals in this month
+    moon: MoonPhase      # Associated moon phase
+
+
+# The Dolmenwood Calendar - 12 months with varying lengths and festivals
+DOLMENWOOD_CALENDAR: dict[int, DolmenwoodMonth] = {
+    1: DolmenwoodMonth(
+        number=1, name="Grimvold", season_desc="The onset of winter",
+        days=30, wysendays=["Hanglemas", "Dyboll's Day"], moon=MoonPhase.GRINNING_MOON
+    ),
+    2: DolmenwoodMonth(
+        number=2, name="Lymewald", season_desc="Deep winter",
+        days=28, wysendays=[], moon=MoonPhase.DEAD_MOON
+    ),
+    3: DolmenwoodMonth(
+        number=3, name="Haggryme", season_desc="The fading of winter",
+        days=30, wysendays=["Yarl's Day", "The Day of Virgins"], moon=MoonPhase.BEAST_MOON
+    ),
+    4: DolmenwoodMonth(
+        number=4, name="Brewmont", season_desc="The onset of spring",
+        days=30, wysendays=["Shunning Day", "Hob's Day", "The Day of Doors"], moon=MoonPhase.WAXING_MOON
+    ),
+    5: DolmenwoodMonth(
+        number=5, name="Plothmont", season_desc="Springtide",
+        days=30, wysendays=[], moon=MoonPhase.BLOSSOM_MOON
+    ),
+    6: DolmenwoodMonth(
+        number=6, name="Greenmont", season_desc="The fading of spring",
+        days=28, wysendays=[], moon=MoonPhase.FIRST_MOON
+    ),
+    7: DolmenwoodMonth(
+        number=7, name="Moltmont", season_desc="The onset of summer",
+        days=30, wysendays=[], moon=MoonPhase.RED_MOON
+    ),
+    8: DolmenwoodMonth(
+        number=8, name="Midsummer", season_desc="High summer",
+        days=30, wysendays=["The Day of the Falling Stars", "Frith's Day"], moon=MoonPhase.WYRM_MOON
+    ),
+    9: DolmenwoodMonth(
+        number=9, name="Hautmont", season_desc="The fading of summer",
+        days=30, wysendays=[], moon=MoonPhase.WANE_MOON
+    ),
+    10: DolmenwoodMonth(
+        number=10, name="Harvestmont", season_desc="The onset of autumn",
+        days=28, wysendays=[], moon=MoonPhase.FAT_MOON
+    ),
+    11: DolmenwoodMonth(
+        number=11, name="Fogmont", season_desc="Deep autumn",
+        days=30, wysendays=["All Souls' Eve", "All Souls' Day"], moon=MoonPhase.WITHER_MOON
+    ),
+    12: DolmenwoodMonth(
+        number=12, name="Braghold", season_desc="The fading of autumn",
+        days=30, wysendays=["The Day of Doors", "Dolmenday"], moon=MoonPhase.BLACK_MOON
+    ),
+}
+
+
+def get_dolmenwood_year_length() -> int:
+    """Get total days in a Dolmenwood year (352 days)."""
+    return sum(m.days for m in DOLMENWOOD_CALENDAR.values())
+
+
+# =============================================================================
 # TIME TRACKING
 # =============================================================================
 
 
 @dataclass
 class GameDate:
-    """Dolmenwood calendar date."""
+    """Dolmenwood calendar date with proper month lengths and moon phases."""
     year: int
     month: int  # 1-12
-    day: int    # 1-30 (simplified)
+    day: int    # 1-28 or 1-30 depending on month
+
+    def get_month_info(self) -> DolmenwoodMonth:
+        """Get the DolmenwoodMonth info for the current month."""
+        return DOLMENWOOD_CALENDAR[self.month]
+
+    def get_days_in_month(self) -> int:
+        """Get the number of days in the current month."""
+        return self.get_month_info().days
 
     def advance_days(self, days: int) -> "GameDate":
-        """Advance the date by a number of days."""
+        """Advance the date by a number of days, respecting proper month lengths."""
         new_day = self.day + days
         new_month = self.month
         new_year = self.year
 
-        while new_day > 30:
-            new_day -= 30
+        # Handle positive days
+        while new_day > DOLMENWOOD_CALENDAR[new_month].days:
+            new_day -= DOLMENWOOD_CALENDAR[new_month].days
             new_month += 1
             if new_month > 12:
                 new_month = 1
                 new_year += 1
+
+        # Handle negative days (going backwards)
+        while new_day < 1:
+            new_month -= 1
+            if new_month < 1:
+                new_month = 12
+                new_year -= 1
+            new_day += DOLMENWOOD_CALENDAR[new_month].days
 
         return GameDate(year=new_year, month=new_month, day=new_day)
 
@@ -342,8 +449,85 @@ class GameDate:
         else:
             return Season.WINTER
 
+    def get_moon_phase(self) -> MoonPhase:
+        """
+        Get the current moon phase based on the month.
+
+        Each month in Dolmenwood has its own named moon that governs
+        the entire month. The moon's influence waxes and wanes during
+        the month but the name remains constant.
+        """
+        return self.get_month_info().moon
+
+    def get_moon_phase_name(self) -> str:
+        """Get human-readable moon phase name."""
+        moon = self.get_moon_phase()
+        # Convert enum value to title case
+        return moon.value.replace("_", " ").title()
+
+    def get_month_name(self) -> str:
+        """Get the current month's name (e.g., 'Grimvold')."""
+        return self.get_month_info().name
+
+    def get_wysendays(self) -> list[str]:
+        """Get the holy days/festivals in the current month."""
+        return self.get_month_info().wysendays.copy()
+
+    def is_wysenday(self, wysenday_name: Optional[str] = None) -> bool:
+        """
+        Check if the current date is a Wysenday (holy day).
+
+        Args:
+            wysenday_name: Specific wysenday to check for. If None, returns
+                          True if any wysenday is today.
+
+        Note: Specific dates for Wysendays would need to be defined.
+        For now, this returns True if the month has any wysendays.
+        """
+        wysendays = self.get_wysendays()
+        if not wysendays:
+            return False
+        if wysenday_name:
+            return wysenday_name in wysendays
+        # Without specific date mappings, return True on day 1 and 15
+        # (symbolic - can be refined with actual Wysenday dates)
+        return len(wysendays) > 0 and self.day in [1, 15]
+
+    def get_moon_intensity(self) -> str:
+        """
+        Get the moon's intensity based on day of month.
+
+        Returns: "new", "waxing", "full", "waning"
+        """
+        days_in_month = self.get_days_in_month()
+        quarter = days_in_month // 4
+
+        if self.day <= quarter:
+            return "new"
+        elif self.day <= quarter * 2:
+            return "waxing"
+        elif self.day <= quarter * 3:
+            return "full"
+        else:
+            return "waning"
+
+    def is_full_moon(self) -> bool:
+        """Check if it's currently a full moon (mid-month)."""
+        return self.get_moon_intensity() == "full"
+
+    def is_new_moon(self) -> bool:
+        """Check if it's currently a new moon (start of month)."""
+        return self.get_moon_intensity() == "new"
+
     def __str__(self) -> str:
-        return f"Year {self.year}, Month {self.month}, Day {self.day}"
+        month_name = self.get_month_name()
+        return f"{self.day} {month_name}, Year {self.year}"
+
+    def format_full(self) -> str:
+        """Get a full formatted date with moon phase."""
+        moon = self.get_moon_phase_name()
+        intensity = self.get_moon_intensity()
+        return f"{self} (The {moon}, {intensity})"
 
 
 @dataclass
@@ -1397,6 +1581,21 @@ class PointOfInterest:
     # visible_from: "surface", "underwater", "inside", "always"
     sub_locations: list[dict[str, Any]] = field(default_factory=list)
 
+    # Sensory discovery hints - clues that draw players toward this POI
+    # Format: {sense_type: {description, range, conditions}}
+    # sense_type: "sound", "smell", "visual"
+    # range: "nearby" (same hex), "adjacent" (1 hex away), "distant" (2+ hexes)
+    # conditions: optional list of conditions, e.g., ["night_only", "wind_direction"]
+    discovery_hints: dict[str, dict[str, Any]] = field(default_factory=dict)
+
+    # Ability grants - spells, skills, or effects that can be granted to characters
+    # Format: [{name, ability_type, description, requirements, duration, once_per_character}]
+    # ability_type: "spell", "skill", "blessing", "curse", "transformation"
+    # requirements: optional dict with requirements (e.g., {"alignment": "Lawful"})
+    # duration: "permanent", "until_rest", "1_day", "1_week", "until_used"
+    # once_per_character: if True, can only be granted once to each character
+    ability_grants: list[dict[str, Any]] = field(default_factory=list)
+
     # Time-of-day variant descriptions
     description_day: Optional[str] = None  # Description during daylight
     description_night: Optional[str] = None  # Description at night
@@ -1767,6 +1966,71 @@ class PointOfInterest:
             return self.interior_day
         return self.interior
 
+    # =========================================================================
+    # SENSORY DISCOVERY HINTS
+    # =========================================================================
+
+    def get_active_discovery_hints(
+        self,
+        is_night: bool = False,
+        wind_from: Optional[str] = None,
+        current_range: str = "nearby",
+    ) -> list[dict[str, Any]]:
+        """
+        Get discovery hints that are currently perceivable.
+
+        Args:
+            is_night: Whether it's nighttime
+            wind_from: Direction the wind is blowing from (for smell propagation)
+            current_range: How far the observer is ("nearby", "adjacent", "distant")
+
+        Returns:
+            List of active hint definitions with sense_type, description, and range
+        """
+        active_hints = []
+        range_priority = {"nearby": 0, "adjacent": 1, "distant": 2}
+        current_priority = range_priority.get(current_range, 0)
+
+        for sense_type, hint_data in self.discovery_hints.items():
+            hint_range = hint_data.get("range", "nearby")
+            hint_priority = range_priority.get(hint_range, 0)
+
+            # Skip if hint doesn't carry this far
+            if hint_priority < current_priority:
+                continue
+
+            # Check conditions
+            conditions = hint_data.get("conditions", [])
+            if conditions:
+                condition_met = True
+                for condition in conditions:
+                    if condition == "night_only" and not is_night:
+                        condition_met = False
+                        break
+                    elif condition == "day_only" and is_night:
+                        condition_met = False
+                        break
+                    elif condition == "wind_direction" and wind_from:
+                        # Smell only carries if wind is favorable
+                        # This could be expanded with actual wind logic
+                        pass
+                if not condition_met:
+                    continue
+
+            active_hints.append({
+                "sense_type": sense_type,
+                "description": hint_data.get("description", ""),
+                "range": hint_range,
+                "poi_name": self.name,
+                "hidden": self.hidden,
+            })
+
+        return active_hints
+
+    def has_discovery_hints(self) -> bool:
+        """Check if this POI has any sensory discovery hints."""
+        return len(self.discovery_hints) > 0
+
     def mark_discovered(self) -> None:
         """Mark this POI as discovered."""
         self.discovered = True
@@ -1892,6 +2156,547 @@ class WorldStateChanges:
         # Check for lifting/removal of condition
         lifted_types = [f"{condition}_lifted", f"{condition}_removed", f"remove_{condition}"]
         return not any(c.change_type in lifted_types for c in changes)
+
+
+# =============================================================================
+# SCHEDULED EVENTS AND INVITATIONS
+# =============================================================================
+
+
+class EventType(str, Enum):
+    """Types of scheduled events."""
+    INVITATION = "invitation"        # Invitation to return to a location
+    BLESSING = "blessing"            # Temporary blessing expires
+    CURSE = "curse"                  # Curse takes effect or expires
+    MEETING = "meeting"              # Scheduled meeting with NPC
+    FESTIVAL = "festival"            # Seasonal or Wysenday festival
+    TRANSFORMATION = "transformation"  # Time-triggered transformation
+    QUEST_DEADLINE = "quest_deadline"  # Quest timer expires
+
+
+@dataclass
+class ScheduledEvent:
+    """
+    An event scheduled to occur at a specific time or condition.
+
+    Used for invitations, delayed rewards, timed curses, and other
+    future-triggered game events.
+    """
+    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    event_type: EventType = EventType.INVITATION
+
+    # When issued
+    created_at: Optional["GameDate"] = None
+
+    # Who/what is affected
+    character_ids: list[str] = field(default_factory=list)  # Empty = entire party
+
+    # Source of the event
+    source_hex_id: Optional[str] = None
+    source_poi_name: Optional[str] = None
+    source_npc_id: Optional[str] = None
+
+    # Event trigger conditions (at least one must be set)
+    trigger_date: Optional["GameDate"] = None  # Specific date
+    trigger_moon_phase: Optional[MoonPhase] = None  # Specific moon phase
+    trigger_condition: Optional[str] = None  # Narrative condition (e.g., "return to grove")
+    days_until_trigger: Optional[int] = None  # Days from creation
+
+    # Event details
+    title: str = ""
+    description: str = ""  # Full description for DM
+    player_message: str = ""  # What players were told
+
+    # Reward/effect when triggered
+    effect_type: str = ""  # e.g., "healing", "spell_grant", "item_grant", "curse_removal"
+    effect_details: dict[str, Any] = field(default_factory=dict)
+
+    # State tracking
+    triggered: bool = False
+    triggered_at: Optional["GameDate"] = None
+    expired: bool = False
+    expiry_date: Optional["GameDate"] = None
+
+    def is_active(self, current_date: "GameDate") -> bool:
+        """Check if the event is still active (not triggered or expired)."""
+        if self.triggered or self.expired:
+            return False
+        if self.expiry_date and self._date_compare(current_date, self.expiry_date) > 0:
+            return False
+        return True
+
+    def check_trigger(
+        self,
+        current_date: "GameDate",
+        current_hex: Optional[str] = None,
+        current_poi: Optional[str] = None,
+        condition_met: bool = False,
+    ) -> bool:
+        """
+        Check if the event should trigger.
+
+        Args:
+            current_date: Current game date
+            current_hex: Hex the party is currently in
+            current_poi: POI the party is currently at
+            condition_met: Whether narrative condition is met
+
+        Returns:
+            True if the event should trigger now
+        """
+        if not self.is_active(current_date):
+            return False
+
+        # Check date trigger
+        if self.trigger_date and self._date_compare(current_date, self.trigger_date) >= 0:
+            return True
+
+        # Check days elapsed trigger
+        if self.days_until_trigger is not None and self.created_at:
+            target_date = self.created_at.advance_days(self.days_until_trigger)
+            if self._date_compare(current_date, target_date) >= 0:
+                return True
+
+        # Check moon phase trigger
+        if self.trigger_moon_phase:
+            if current_date.get_moon_phase() == self.trigger_moon_phase:
+                return True
+
+        # Check location-based trigger (return to place)
+        if self.trigger_condition == "return to grove" or self.trigger_condition == "return":
+            if current_hex == self.source_hex_id:
+                if current_poi == self.source_poi_name or self.source_poi_name is None:
+                    return True
+
+        # Check custom condition
+        if self.trigger_condition and condition_met:
+            return True
+
+        return False
+
+    def trigger(self, current_date: "GameDate") -> dict[str, Any]:
+        """
+        Mark the event as triggered and return the effect.
+
+        Returns:
+            Dict with effect_type and effect_details for processing
+        """
+        self.triggered = True
+        self.triggered_at = current_date
+
+        return {
+            "event_id": self.event_id,
+            "event_type": self.event_type.value,
+            "title": self.title,
+            "description": self.description,
+            "player_message": self.player_message,
+            "effect_type": self.effect_type,
+            "effect_details": self.effect_details,
+            "character_ids": self.character_ids,
+        }
+
+    def _date_compare(self, d1: "GameDate", d2: "GameDate") -> int:
+        """Compare two dates. Returns -1, 0, or 1."""
+        if d1.year != d2.year:
+            return -1 if d1.year < d2.year else 1
+        if d1.month != d2.month:
+            return -1 if d1.month < d2.month else 1
+        if d1.day != d2.day:
+            return -1 if d1.day < d2.day else 1
+        return 0
+
+
+@dataclass
+class EventScheduler:
+    """
+    Manages all scheduled events for the campaign.
+
+    Tracks invitations, delayed rewards, and timed effects.
+    """
+    events: list[ScheduledEvent] = field(default_factory=list)
+
+    # Indices for quick lookup
+    _by_character: dict[str, list[ScheduledEvent]] = field(default_factory=dict)
+    _by_source: dict[str, list[ScheduledEvent]] = field(default_factory=dict)
+
+    def add_event(self, event: ScheduledEvent) -> None:
+        """Add a scheduled event."""
+        self.events.append(event)
+
+        # Index by character
+        for char_id in event.character_ids:
+            if char_id not in self._by_character:
+                self._by_character[char_id] = []
+            self._by_character[char_id].append(event)
+
+        # Index by source
+        source_key = f"{event.source_hex_id}:{event.source_poi_name}"
+        if source_key not in self._by_source:
+            self._by_source[source_key] = []
+        self._by_source[source_key].append(event)
+
+    def create_invitation(
+        self,
+        source_hex: str,
+        source_poi: str,
+        character_ids: list[str],
+        title: str,
+        player_message: str,
+        effect_type: str,
+        effect_details: dict[str, Any],
+        current_date: "GameDate",
+        trigger_condition: str = "return",
+        expiry_days: Optional[int] = None,
+    ) -> ScheduledEvent:
+        """
+        Create an invitation for characters to return for a reward.
+
+        Args:
+            source_hex: Hex issuing the invitation
+            source_poi: POI issuing the invitation
+            character_ids: Characters who received the invitation
+            title: Event title
+            player_message: What the players were told
+            effect_type: Type of reward (healing, spell_grant, etc.)
+            effect_details: Details of the reward
+            current_date: When the invitation was issued
+            trigger_condition: What triggers the reward (default: "return")
+            expiry_days: Days until invitation expires (None = never)
+
+        Returns:
+            The created ScheduledEvent
+        """
+        expiry = current_date.advance_days(expiry_days) if expiry_days else None
+
+        event = ScheduledEvent(
+            event_type=EventType.INVITATION,
+            created_at=current_date,
+            character_ids=character_ids,
+            source_hex_id=source_hex,
+            source_poi_name=source_poi,
+            trigger_condition=trigger_condition,
+            title=title,
+            player_message=player_message,
+            effect_type=effect_type,
+            effect_details=effect_details,
+            expiry_date=expiry,
+        )
+
+        self.add_event(event)
+        return event
+
+    def get_events_for_character(self, character_id: str) -> list[ScheduledEvent]:
+        """Get all events affecting a character."""
+        return self._by_character.get(character_id, [])
+
+    def get_active_events_for_character(
+        self,
+        character_id: str,
+        current_date: "GameDate",
+    ) -> list[ScheduledEvent]:
+        """Get active (non-triggered, non-expired) events for a character."""
+        return [
+            e for e in self.get_events_for_character(character_id)
+            if e.is_active(current_date)
+        ]
+
+    def get_events_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+    ) -> list[ScheduledEvent]:
+        """Get events tied to a specific location."""
+        source_key = f"{hex_id}:{poi_name}"
+        return self._by_source.get(source_key, [])
+
+    def check_triggers(
+        self,
+        current_date: "GameDate",
+        current_hex: Optional[str] = None,
+        current_poi: Optional[str] = None,
+        conditions_met: Optional[dict[str, bool]] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Check all events for triggers and return triggered effects.
+
+        Args:
+            current_date: Current game date
+            current_hex: Current hex location
+            current_poi: Current POI (if any)
+            conditions_met: Dict mapping event IDs to condition status
+
+        Returns:
+            List of triggered event effects
+        """
+        triggered = []
+        conditions = conditions_met or {}
+
+        for event in self.events:
+            if not event.is_active(current_date):
+                continue
+
+            condition_met = conditions.get(event.event_id, False)
+
+            if event.check_trigger(current_date, current_hex, current_poi, condition_met):
+                effect = event.trigger(current_date)
+                triggered.append(effect)
+
+        return triggered
+
+    def get_pending_invitations(self, current_date: "GameDate") -> list[ScheduledEvent]:
+        """Get all pending (active) invitations."""
+        return [
+            e for e in self.events
+            if e.event_type == EventType.INVITATION and e.is_active(current_date)
+        ]
+
+
+# =============================================================================
+# GRANTED ABILITIES TRACKING
+# =============================================================================
+
+
+class AbilityType(str, Enum):
+    """Types of grantable abilities."""
+    SPELL = "spell"              # Magic spell added to character's repertoire
+    SKILL = "skill"              # Skill or proficiency
+    BLESSING = "blessing"        # Divine or nature blessing (temporary bonus)
+    CURSE = "curse"              # Curse or negative effect
+    TRANSFORMATION = "transformation"  # Physical or magical transformation
+    SPECIAL = "special"          # Unique ability specific to the source
+
+
+@dataclass
+class GrantedAbility:
+    """
+    An ability granted to a character by a hex feature, POI, or NPC.
+
+    Tracks spells, blessings, curses, and other abilities that can
+    be granted to characters through exploration and interaction.
+    """
+    grant_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    character_id: str = ""
+
+    # Source of the grant
+    source_hex_id: str = ""
+    source_poi_name: Optional[str] = None
+    source_description: str = ""  # Human-readable source
+
+    # The ability
+    ability_name: str = ""
+    ability_type: AbilityType = AbilityType.SPELL
+    description: str = ""
+
+    # For spells, the spell details
+    spell_level: Optional[int] = None
+    spell_school: Optional[str] = None
+    spell_data: Optional[dict[str, Any]] = None  # Full spell definition
+
+    # Duration and tracking
+    duration: str = "permanent"  # permanent, until_rest, 1_day, 1_week, until_used
+    uses_remaining: Optional[int] = None  # For limited-use abilities
+    granted_at: Optional["GameDate"] = None
+    expires_at: Optional["GameDate"] = None
+
+    # State
+    is_active: bool = True
+    used: bool = False  # For "until_used" abilities
+
+    def is_expired(self, current_date: "GameDate") -> bool:
+        """Check if this granted ability has expired."""
+        if not self.is_active:
+            return True
+        if self.duration == "until_used" and self.used:
+            return True
+        if self.expires_at:
+            return self._date_compare(current_date, self.expires_at) > 0
+        return False
+
+    def use(self) -> bool:
+        """
+        Mark the ability as used (for limited-use abilities).
+
+        Returns True if successfully used, False if already exhausted.
+        """
+        if self.uses_remaining is not None:
+            if self.uses_remaining <= 0:
+                return False
+            self.uses_remaining -= 1
+            if self.uses_remaining <= 0:
+                self.is_active = False
+            return True
+        elif self.duration == "until_used":
+            if self.used:
+                return False
+            self.used = True
+            self.is_active = False
+            return True
+        return True  # Permanent abilities can always be used
+
+    def _date_compare(self, d1: "GameDate", d2: "GameDate") -> int:
+        """Compare two dates. Returns -1, 0, or 1."""
+        if d1.year != d2.year:
+            return -1 if d1.year < d2.year else 1
+        if d1.month != d2.month:
+            return -1 if d1.month < d2.month else 1
+        if d1.day != d2.day:
+            return -1 if d1.day < d2.day else 1
+        return 0
+
+
+@dataclass
+class AbilityGrantTracker:
+    """
+    Tracks all granted abilities across the campaign.
+
+    Manages spell grants, blessings, curses, and other abilities
+    given to characters by hex features, POIs, and NPCs.
+    """
+    granted_abilities: list[GrantedAbility] = field(default_factory=list)
+
+    # Track which abilities have been granted to prevent double-grants
+    # Format: {(character_id, source_key, ability_name)}
+    _grants_issued: set[tuple[str, str, str]] = field(default_factory=set)
+
+    def grant_ability(
+        self,
+        character_id: str,
+        ability_name: str,
+        ability_type: AbilityType,
+        source_hex_id: str,
+        source_poi_name: Optional[str],
+        description: str,
+        current_date: "GameDate",
+        duration: str = "permanent",
+        spell_level: Optional[int] = None,
+        spell_school: Optional[str] = None,
+        spell_data: Optional[dict[str, Any]] = None,
+        uses: Optional[int] = None,
+        once_per_character: bool = True,
+    ) -> Optional[GrantedAbility]:
+        """
+        Grant an ability to a character.
+
+        Args:
+            character_id: Character receiving the ability
+            ability_name: Name of the ability/spell
+            ability_type: Type of ability
+            source_hex_id: Hex where ability was granted
+            source_poi_name: POI that granted the ability
+            description: Description of the ability
+            current_date: Current game date
+            duration: How long the ability lasts
+            spell_level: For spells, the spell level
+            spell_school: For spells, the school of magic
+            spell_data: Full spell definition if applicable
+            uses: Number of uses (None = unlimited)
+            once_per_character: If True, cannot grant same ability twice
+
+        Returns:
+            The GrantedAbility if granted, None if already granted
+        """
+        source_key = f"{source_hex_id}:{source_poi_name}"
+
+        # Check for duplicate grants
+        if once_per_character:
+            grant_key = (character_id, source_key, ability_name)
+            if grant_key in self._grants_issued:
+                return None
+            self._grants_issued.add(grant_key)
+
+        # Calculate expiry date
+        expires_at = None
+        if duration == "1_day":
+            expires_at = current_date.advance_days(1)
+        elif duration == "1_week":
+            expires_at = current_date.advance_days(7)
+
+        # Create the granted ability
+        granted = GrantedAbility(
+            character_id=character_id,
+            source_hex_id=source_hex_id,
+            source_poi_name=source_poi_name,
+            source_description=f"{source_poi_name or 'Unknown'} in hex {source_hex_id}",
+            ability_name=ability_name,
+            ability_type=ability_type,
+            description=description,
+            spell_level=spell_level,
+            spell_school=spell_school,
+            spell_data=spell_data,
+            duration=duration,
+            uses_remaining=uses,
+            granted_at=current_date,
+            expires_at=expires_at,
+        )
+
+        self.granted_abilities.append(granted)
+        return granted
+
+    def get_character_abilities(
+        self,
+        character_id: str,
+        current_date: Optional["GameDate"] = None,
+        include_expired: bool = False,
+    ) -> list[GrantedAbility]:
+        """Get all granted abilities for a character."""
+        abilities = [
+            a for a in self.granted_abilities
+            if a.character_id == character_id
+        ]
+
+        if not include_expired and current_date:
+            abilities = [a for a in abilities if not a.is_expired(current_date)]
+
+        return abilities
+
+    def get_character_spells(
+        self,
+        character_id: str,
+        current_date: Optional["GameDate"] = None,
+    ) -> list[GrantedAbility]:
+        """Get granted spells for a character."""
+        return [
+            a for a in self.get_character_abilities(character_id, current_date)
+            if a.ability_type == AbilityType.SPELL
+        ]
+
+    def has_ability(
+        self,
+        character_id: str,
+        ability_name: str,
+        current_date: Optional["GameDate"] = None,
+    ) -> bool:
+        """Check if a character has a specific granted ability."""
+        return any(
+            a.ability_name == ability_name
+            for a in self.get_character_abilities(character_id, current_date)
+        )
+
+    def was_ability_granted(
+        self,
+        character_id: str,
+        source_hex: str,
+        source_poi: Optional[str],
+        ability_name: str,
+    ) -> bool:
+        """Check if a specific ability was ever granted from a source."""
+        source_key = f"{source_hex}:{source_poi}"
+        grant_key = (character_id, source_key, ability_name)
+        return grant_key in self._grants_issued
+
+    def expire_rest_based(self, character_id: str) -> int:
+        """
+        Expire abilities that expire on rest.
+
+        Returns number of abilities expired.
+        """
+        count = 0
+        for ability in self.granted_abilities:
+            if ability.character_id == character_id and ability.duration == "until_rest":
+                if ability.is_active:
+                    ability.is_active = False
+                    count += 1
+        return count
 
 
 @dataclass
