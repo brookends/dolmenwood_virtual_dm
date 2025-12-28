@@ -657,6 +657,12 @@ class GameSession:
     # Format: {unique_item_id: {name, acquired_by, acquired_at_hex, acquired_at_poi, acquired_date}}
     unique_items_acquired: dict[str, dict[str, Any]] = field(default_factory=dict)
 
+    # Materialized item properties - stores generated random properties for template magic items
+    # Format: {unique_item_id: {enchantment_type, special_powers, oddities, appearance, ...}}
+    # When a template item is first encountered, its random properties are rolled and stored here
+    # to ensure consistency if the same item is encountered again (e.g., after save/load)
+    materialized_items: dict[str, dict[str, Any]] = field(default_factory=dict)
+
     # Custom session data (for extensions)
     custom_data: dict[str, Any] = field(default_factory=dict)
 
@@ -681,6 +687,7 @@ class GameSession:
             "completed_quests": self.completed_quests,
             "poi_visits": self.poi_visits,
             "unique_items_acquired": self.unique_items_acquired,
+            "materialized_items": self.materialized_items,
             "custom_data": self.custom_data,
         }
 
@@ -706,8 +713,39 @@ class GameSession:
             completed_quests=data.get("completed_quests", []),
             poi_visits=data.get("poi_visits", {}),
             unique_items_acquired=data.get("unique_items_acquired", {}),
+            materialized_items=data.get("materialized_items", {}),
             custom_data=data.get("custom_data", {}),
         )
+
+    def get_materialized_properties(self, unique_item_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get previously materialized properties for an item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            Dict of materialized properties, or None if not yet materialized
+        """
+        return self.materialized_items.get(unique_item_id)
+
+    def store_materialized_properties(
+        self,
+        unique_item_id: str,
+        properties: dict[str, Any],
+    ) -> None:
+        """
+        Store materialized properties for an item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+            properties: The generated properties to store
+        """
+        self.materialized_items[unique_item_id] = properties
+
+    def is_item_materialized(self, unique_item_id: str) -> bool:
+        """Check if an item has already been materialized."""
+        return unique_item_id in self.materialized_items
 
 
 # =============================================================================
