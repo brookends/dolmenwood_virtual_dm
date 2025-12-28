@@ -3317,20 +3317,42 @@ class HexCrawlEngine:
                                 )
 
                         # Create Item object for character inventory
+                        # Normalize field variations from hex JSON data
                         from src.data_models import Item
+
+                        # Normalize value (value_gp, value, cost, cost_sp -> value_gp)
+                        value_gp = item.get("value_gp") or item.get("value")
+                        if value_gp is None and item.get("cost_sp"):
+                            # Convert silver pieces to gold pieces (10 sp = 1 gp)
+                            value_gp = item.get("cost_sp") / 10.0
+                        elif value_gp is None and item.get("cost"):
+                            value_gp = item.get("cost")
+
+                        # Normalize weight (weight, weight_coins)
+                        weight = item.get("weight") or item.get("weight_coins", 0)
+
                         new_item = Item(
                             item_id=item.get("item_id", item.get("name", "").lower().replace(" ", "_")),
                             name=item.get("name"),
-                            weight=item.get("weight", 0),
+                            weight=weight,
                             quantity=item.get("quantity", 1),
                             is_unique=is_unique,
                             unique_item_id=unique_item_id,
                             source_hex=hex_id,
                             source_poi=self._current_poi,
                             description=item.get("description"),
-                            value_gp=item.get("value"),
+                            value_gp=value_gp,
                             magical=item.get("magical", False),
                             cursed=item.get("cursed", False),
+                            # Magic item properties (if present in hex data)
+                            enchantment_type=item.get("enchantment_type"),
+                            special_powers=item.get("special_powers", []),
+                            oddities=item.get("oddities", []),
+                            appearance=item.get("appearance"),
+                            magic_item_category=item.get("magic_item_category"),
+                            # Materialization (for template items)
+                            is_materialized=item.get("is_materialized", True),
+                            materialization_template=item.get("materialization_template"),
                         )
 
                         # Add to character inventory

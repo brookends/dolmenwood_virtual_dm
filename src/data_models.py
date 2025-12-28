@@ -8,7 +8,10 @@ Follows the specifications in Section 6 of the implementation spec.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.tables.table_types import GeneratedTreasureItem
 import random
 import uuid
 
@@ -1445,6 +1448,17 @@ class Item:
     cursed: bool = False  # Whether item is cursed
     identified: bool = True  # Whether item properties are known
 
+    # Magic item properties (for generated/materialized magic items)
+    enchantment_type: Optional[str] = None  # "arcane", "fairy", or "holy"
+    special_powers: list[str] = field(default_factory=list)  # List of special powers
+    oddities: list[str] = field(default_factory=list)  # List of oddities/quirks
+    appearance: Optional[str] = None  # Visual appearance description
+    magic_item_category: Optional[str] = None  # weapon, armour, potion, scroll, etc.
+
+    # Materialization tracking (for template items with random properties)
+    is_materialized: bool = True  # False = needs random properties generated on first encounter
+    materialization_template: Optional[str] = None  # Template ID for generating properties
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1494,6 +1508,15 @@ class Item:
             "magical": self.magical,
             "cursed": self.cursed,
             "identified": self.identified,
+            # Magic item properties
+            "enchantment_type": self.enchantment_type,
+            "special_powers": self.special_powers if self.special_powers else [],
+            "oddities": self.oddities if self.oddities else [],
+            "appearance": self.appearance,
+            "magic_item_category": self.magic_item_category,
+            # Materialization tracking
+            "is_materialized": self.is_materialized,
+            "materialization_template": self.materialization_template,
         }
 
     @classmethod
@@ -1524,6 +1547,95 @@ class Item:
             magical=data.get("magical", False),
             cursed=data.get("cursed", False),
             identified=data.get("identified", True),
+            # Magic item properties
+            enchantment_type=data.get("enchantment_type"),
+            special_powers=data.get("special_powers", []),
+            oddities=data.get("oddities", []),
+            appearance=data.get("appearance"),
+            magic_item_category=data.get("magic_item_category"),
+            # Materialization tracking
+            is_materialized=data.get("is_materialized", True),
+            materialization_template=data.get("materialization_template"),
+        )
+
+    @classmethod
+    def from_generated_treasure(
+        cls,
+        treasure: "GeneratedTreasureItem",
+        source_hex: Optional[str] = None,
+        source_poi: Optional[str] = None,
+    ) -> "Item":
+        """
+        Convert a GeneratedTreasureItem from the treasure tables into an Item.
+
+        This bridges the treasure generation system with the inventory system.
+
+        Args:
+            treasure: The generated treasure item from TreasureTableManager
+            source_hex: Hex ID where the item was found
+            source_poi: POI name where the item was found
+
+        Returns:
+            An Item suitable for adding to character inventory
+        """
+        from src.tables.table_types import TreasureType
+
+        # Generate a unique item_id
+        item_id = str(uuid.uuid4())[:8]
+
+        # Determine name and category based on treasure type
+        if treasure.treasure_type == TreasureType.MAGIC_ITEM:
+            name = treasure.magic_item_name or "Magic Item"
+            category = treasure.magic_item_category.value if treasure.magic_item_category else None
+            is_magical = True
+        elif treasure.treasure_type == TreasureType.GEMS:
+            name = treasure.item_name or "Gem"
+            category = "gem"
+            is_magical = False
+        elif treasure.treasure_type == TreasureType.JEWELRY:
+            name = treasure.item_name or "Jewelry"
+            category = "jewelry"
+            is_magical = False
+        elif treasure.treasure_type == TreasureType.ART_OBJECTS:
+            name = treasure.item_name or "Art Object"
+            category = "art_object"
+            is_magical = False
+        else:
+            name = treasure.item_name or "Treasure"
+            category = None
+            is_magical = False
+
+        # Build description from available details
+        description_parts = []
+        if treasure.material:
+            description_parts.append(f"Material: {treasure.material}")
+        if treasure.embellishment:
+            description_parts.append(f"Embellishment: {treasure.embellishment}")
+        if treasure.provenance:
+            description_parts.append(f"Provenance: {treasure.provenance}")
+        if treasure.appearance:
+            description_parts.append(treasure.appearance)
+
+        description = ". ".join(description_parts) if description_parts else None
+
+        return cls(
+            item_id=item_id,
+            name=name,
+            weight=0,  # Gems/jewelry typically negligible weight
+            quantity=treasure.quantity,
+            description=description,
+            value_gp=float(treasure.total_value_gp()),
+            magical=is_magical,
+            identified=False,  # Magic items start unidentified
+            source_hex=source_hex,
+            source_poi=source_poi,
+            # Magic item properties
+            enchantment_type=treasure.enchantment,
+            special_powers=treasure.special_powers.copy() if treasure.special_powers else [],
+            oddities=treasure.oddities.copy() if treasure.oddities else [],
+            appearance=treasure.appearance,
+            magic_item_category=category,
+            is_materialized=True,  # Generated items are already materialized
         )
 
 

@@ -1,0 +1,146 @@
+{
+  "category": "weapons",
+  "subcategory": "melee",
+  "items": [
+    {
+      "item_id": "dagger",
+      "name": "Dagger",
+      "description": "A small, easily concealed blade.",
+      "weight": 10,
+      "cost_sp": 30,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d4",
+        "type": "melee",
+        "qualities": ["light", "throwable"]
+      }
+    },
+    {
+      "item_id": "short_sword",
+      "name": "Short Sword",
+      "description": "A one-handed blade about two feet in length.",
+      "weight": 30,
+      "cost_sp": 70,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d6",
+        "type": "melee",
+        "qualities": ["one-handed"]
+      }
+    },
+    {
+      "item_id": "long_sword",
+      "name": "Long Sword",
+      "description": "A versatile blade favored by knights and warriors.",
+      "weight": 40,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d8",
+        "type": "melee",
+        "qualities": ["one-handed"]
+      }
+    },
+    {
+      "item_id": "two_handed_sword",
+      "name": "Two-Handed Sword",
+      "description": "A massive blade requiring both hands to wield.",
+      "weight": 100,
+      "cost_sp": 150,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d10",
+        "type": "melee",
+        "qualities": ["two-handed", "heavy"]
+      }
+    },
+    {
+      "item_id": "hand_axe",
+      "name": "Hand Axe",
+      "description": "A small axe suitable for combat or utility.",
+      "weight": 30,
+      "cost_sp": 40,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d6",
+        "type": "melee",
+        "qualities": ["one-handed", "throwable"]
+      }
+    },
+    {
+      "item_id": "battle_axe",
+      "name": "Battle Axe",
+      "description": "A heavy axe designed for war.",
+      "weight": 60,
+      "cost_sp": 70,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d8",
+        "type": "melee",
+        "qualities": ["one-handed", "two-handed versatile"]
+      }
+    },
+    {
+      "item_id": "mace",
+      "name": "Mace",
+      "description": "A heavy club with a weighted head.",
+      "weight": 30,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d6",
+        "type": "melee",
+        "qualities": ["one-handed", "bludgeoning"]
+      }
+    },
+    {
+      "item_id": "staff",
+      "name": "Staff",
+      "description": "A simple wooden staff, favored by travelers and spellcasters.",
+      "weight": 40,
+      "cost_sp": 20,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d6",
+        "type": "melee",
+        "qualities": ["two-handed", "bludgeoning"]
+      }
+    },
+    {
+      "item_id": "spear",
+      "name": "Spear",
+      "description": "A pole weapon with a pointed tip.",
+      "weight": 40,
+      "cost_sp": 30,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d6",
+        "type": "melee",
+        "qualities": ["one-handed", "throwable", "reach"]
+      }
+    },
+    {
+      "item_id": "pole_arm",
+      "name": "Pole Arm",
+      "description": "A long-hafted weapon such as a halberd or glaive.",
+      "weight": 100,
+      "cost_sp": 70,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "properties": {
+        "damage": "1d10",
+        "type": "melee",
+        "qualities": ["two-handed", "reach", "heavy"]
+      }
+    }
+  ]
+}
