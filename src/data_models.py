@@ -1372,6 +1372,22 @@ class PointOfInterest:
     # Items and treasures at this location
     items: list[dict[str, Any]] = field(default_factory=list)  # [{name, description, value, taken}]
 
+    # Automatic hazards triggered on approach/entry
+    # Format: [{trigger, hazard_type, difficulty, description, save_type, damage}]
+    # trigger: "on_approach", "on_enter", "on_exit", "always"
+    # hazard_type: "swimming", "climbing", "jumping", "trap", "environmental"
+    hazards: list[dict[str, Any]] = field(default_factory=list)
+
+    # Locks/barriers preventing access
+    # Format: [{type, requirement, description, bypassed}]
+    # type: "magical", "physical", "puzzle", "key"
+    # requirement: spell name, item name, key ID, or puzzle solution
+    locks: list[dict[str, Any]] = field(default_factory=list)
+
+    # Dungeon linkage (for POIs that lead to dungeons)
+    dungeon_id: Optional[str] = None  # ID of dungeon to transition to
+    dungeon_entrance_room: Optional[str] = None  # Starting room in dungeon
+
     # Time-of-day variant descriptions
     description_day: Optional[str] = None  # Description during daylight
     description_night: Optional[str] = None  # Description at night
@@ -1417,6 +1433,93 @@ class PointOfInterest:
 
         # If has parent, must be at or inside that parent
         return current_poi == self.parent_poi
+
+    def get_hazards_for_trigger(self, trigger: str) -> list[dict[str, Any]]:
+        """
+        Get hazards that trigger at a specific point.
+
+        Args:
+            trigger: "on_approach", "on_enter", "on_exit", "always"
+
+        Returns:
+            List of hazard definitions that trigger at this point
+        """
+        return [h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"]
+
+    def get_active_locks(self) -> list[dict[str, Any]]:
+        """Get locks that haven't been bypassed."""
+        return [lock for lock in self.locks if not lock.get("bypassed", False)]
+
+    def has_active_locks(self) -> bool:
+        """Check if there are any active locks preventing access."""
+        return len(self.get_active_locks()) > 0
+
+    def check_lock_requirement(
+        self,
+        lock: dict[str, Any],
+        available_spells: list[str],
+        available_items: list[str],
+        available_keys: list[str],
+    ) -> bool:
+        """
+        Check if a lock's requirement is satisfied.
+
+        Args:
+            lock: Lock definition dict
+            available_spells: List of spell names the party can cast
+            available_items: List of magic item names the party has
+            available_keys: List of key IDs the party possesses
+
+        Returns:
+            True if the lock can be bypassed
+        """
+        lock_type = lock.get("type", "physical")
+        requirement = lock.get("requirement", "")
+
+        if lock_type == "magical":
+            # Check if party has the required spell or magic item
+            req_lower = requirement.lower()
+            for spell in available_spells:
+                if spell.lower() == req_lower or req_lower in spell.lower():
+                    return True
+            for item in available_items:
+                if item.lower() == req_lower or req_lower in item.lower():
+                    return True
+            return False
+
+        elif lock_type == "key":
+            # Check if party has the required key
+            return requirement in available_keys
+
+        elif lock_type == "physical":
+            # Physical locks might require strength check or lockpicking
+            # Return False here - actual check happens in engine
+            return False
+
+        elif lock_type == "puzzle":
+            # Puzzles are resolved through gameplay
+            return False
+
+        return False
+
+    def bypass_lock(self, lock_index: int) -> bool:
+        """
+        Mark a lock as bypassed.
+
+        Args:
+            lock_index: Index of the lock in the locks list
+
+        Returns:
+            True if successfully bypassed
+        """
+        if 0 <= lock_index < len(self.locks):
+            self.locks[lock_index]["bypassed"] = True
+            return True
+        return False
+
+    def leads_to_dungeon(self) -> bool:
+        """Check if this POI leads to a dungeon."""
+        return self.is_dungeon or self.dungeon_id is not None
 
     def get_description(self, is_night: bool = False) -> str:
         """Get appropriate description based on time of day."""

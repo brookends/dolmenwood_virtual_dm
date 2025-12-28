@@ -2335,3 +2335,537 @@ class HexCrawlEngine:
             "secrets_found": visit.secrets_discovered,
             "time_spent_turns": visit.time_spent_turns,
         }
+
+    # =========================================================================
+    # AUTOMATIC HAZARD TRIGGERS
+    # =========================================================================
+
+    def trigger_poi_hazards(
+        self,
+        hex_id: str,
+        trigger: str,
+        character_id: str,
+    ) -> list[HazardResult]:
+        """
+        Trigger automatic hazards at a POI.
+
+        Called when approaching, entering, or exiting a POI to check
+        for hazards that trigger automatically (e.g., turbulent waters,
+        collapsing floors, magical wards).
+
+        Args:
+            hex_id: Current hex
+            trigger: "on_approach", "on_enter", "on_exit"
+            character_id: Character facing the hazard
+
+        Returns:
+            List of HazardResults for each triggered hazard
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return []
+
+        results = []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                hazards = poi.get_hazards_for_trigger(trigger)
+
+                for hazard in hazards:
+                    result = self._resolve_hazard(hazard, character)
+                    results.append(result)
+
+                    # Apply damage if any
+                    if result.damage_dealt > 0:
+                        self.controller.apply_damage(
+                            character_id,
+                            result.damage_dealt,
+                            hazard.get("hazard_type", "environmental")
+                        )
+
+                break
+
+        return results
+
+    def _resolve_hazard(
+        self,
+        hazard: dict[str, Any],
+        character: CharacterState,
+    ) -> HazardResult:
+        """
+        Resolve a single hazard check.
+
+        Args:
+            hazard: Hazard definition dict
+            character: Character facing the hazard
+
+        Returns:
+            HazardResult with outcomes
+        """
+        hazard_type_str = hazard.get("hazard_type", "environmental")
+        difficulty = hazard.get("difficulty", 10)
+        description = hazard.get("description", "You encounter a hazard.")
+        save_type = hazard.get("save_type", "DEX")
+        damage = hazard.get("damage", "1d6")
+
+        # Map string to HazardType enum
+        hazard_type_map = {
+            "swimming": HazardType.SWIMMING,
+            "climbing": HazardType.CLIMBING,
+            "jumping": HazardType.JUMPING,
+            "trap": HazardType.TRAP,
+            "falling": HazardType.FALLING,
+            "environmental": HazardType.ENVIRONMENTAL,
+        }
+        hazard_type = hazard_type_map.get(hazard_type_str, HazardType.ENVIRONMENTAL)
+
+        # Use the narrative resolver's hazard resolver
+        if hazard_type == HazardType.SWIMMING:
+            armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+                hazard_type=HazardType.SWIMMING,
+                character=character,
+                armor_weight=armor_weight,
+                rough_waters=True,
+                difficulty=difficulty,
+            )
+        elif hazard_type == HazardType.CLIMBING:
+            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+                hazard_type=HazardType.CLIMBING,
+                character=character,
+                height_feet=hazard.get("height", 20),
+                is_trivial=False,
+                difficulty=difficulty,
+            )
+        elif hazard_type == HazardType.TRAP:
+            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+                hazard_type=HazardType.TRAP,
+                character=character,
+                difficulty=difficulty,
+                damage_dice=damage,
+                save_type=save_type,
+            )
+        else:
+            # Generic environmental hazard - saving throw
+            ability_mod = character.get_ability_modifier(save_type)
+            roll = self.dice.roll_d20(f"hazard save ({save_type})")
+            total = roll.total + ability_mod
+            success = total >= difficulty
+
+            damage_dealt = 0
+            if not success and damage:
+                damage_roll = self.dice.roll(damage, "hazard damage")
+                damage_dealt = damage_roll.total
+
+            from src.narrative.intent_parser import ActionType
+            return HazardResult(
+                success=success,
+                hazard_type=hazard_type,
+                action_type=ActionType.UNKNOWN,
+                description=description,
+                damage_dealt=damage_dealt,
+                save_made=success,
+                roll_total=total,
+            )
+
+    def get_poi_hazards(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get all hazards at the current POI.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of hazard definitions
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                return [
+                    {
+                        "trigger": h.get("trigger", "always"),
+                        "type": h.get("hazard_type", "environmental"),
+                        "difficulty": h.get("difficulty", 10),
+                        "description": h.get("description", ""),
+                    }
+                    for h in poi.hazards
+                ]
+
+        return []
+
+    # =========================================================================
+    # LOCK AND BARRIER SYSTEM
+    # =========================================================================
+
+    def get_poi_locks(self, hex_id: str, poi_name: Optional[str] = None) -> list[dict[str, Any]]:
+        """
+        Get active locks at a POI.
+
+        Args:
+            hex_id: Current hex
+            poi_name: Specific POI to check (or current POI if None)
+
+        Returns:
+            List of active lock definitions
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                return [
+                    {
+                        "index": i,
+                        "type": lock.get("type", "physical"),
+                        "requirement": lock.get("requirement", ""),
+                        "description": lock.get("description", "A locked barrier"),
+                        "bypassed": lock.get("bypassed", False),
+                    }
+                    for i, lock in enumerate(poi.locks)
+                    if not lock.get("bypassed", False)
+                ]
+
+        return []
+
+    def check_poi_access(
+        self,
+        hex_id: str,
+        poi_name: str,
+        available_spells: Optional[list[str]] = None,
+        available_items: Optional[list[str]] = None,
+        available_keys: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Check if party can access a POI (checking locks).
+
+        Args:
+            hex_id: Current hex
+            poi_name: Name of POI to check
+            available_spells: Spells the party can cast
+            available_items: Magic items the party has
+            available_keys: Keys the party possesses
+
+        Returns:
+            Dictionary with access status and blocking locks
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"can_access": False, "error": "Hex data not found"}
+
+        spells = available_spells or []
+        items = available_items or []
+        keys = available_keys or []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == poi_name:
+                active_locks = poi.get_active_locks()
+
+                if not active_locks:
+                    return {"can_access": True, "locks": []}
+
+                blocking_locks = []
+                for i, lock in enumerate(active_locks):
+                    can_bypass = poi.check_lock_requirement(lock, spells, items, keys)
+                    if not can_bypass:
+                        blocking_locks.append({
+                            "index": i,
+                            "type": lock.get("type"),
+                            "description": lock.get("description", "A barrier blocks your way"),
+                            "requirement_hint": self._get_lock_hint(lock),
+                        })
+
+                return {
+                    "can_access": len(blocking_locks) == 0,
+                    "locks": blocking_locks,
+                }
+
+        return {"can_access": False, "error": "POI not found"}
+
+    def _get_lock_hint(self, lock: dict[str, Any]) -> str:
+        """Generate a hint about how to bypass a lock."""
+        lock_type = lock.get("type", "physical")
+
+        if lock_type == "magical":
+            return "This barrier seems to respond to magical power."
+        elif lock_type == "key":
+            return "A keyhole suggests the need for a specific key."
+        elif lock_type == "physical":
+            return "A sturdy lock that might be picked or forced."
+        elif lock_type == "puzzle":
+            return "Some kind of mechanism or puzzle controls this barrier."
+        return "Something blocks the way forward."
+
+    def attempt_bypass_lock(
+        self,
+        hex_id: str,
+        poi_name: str,
+        lock_index: int,
+        method: str,
+        character_id: str,
+        **kwargs,
+    ) -> dict[str, Any]:
+        """
+        Attempt to bypass a lock using a specific method.
+
+        Args:
+            hex_id: Current hex
+            poi_name: POI with the lock
+            lock_index: Index of the lock to bypass
+            method: "spell", "item", "key", "pick", "force", "puzzle"
+            character_id: Character making the attempt
+            **kwargs: Additional parameters (spell_name, item_name, etc.)
+
+        Returns:
+            Dictionary with bypass attempt result
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return {"success": False, "error": "Character not found"}
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == poi_name:
+                if lock_index >= len(poi.locks):
+                    return {"success": False, "error": "Invalid lock index"}
+
+                lock = poi.locks[lock_index]
+                if lock.get("bypassed", False):
+                    return {"success": True, "message": "Already bypassed"}
+
+                lock_type = lock.get("type", "physical")
+
+                # Handle different bypass methods
+                if method == "spell":
+                    spell_name = kwargs.get("spell_name", "")
+                    if lock_type == "magical" and spell_name:
+                        requirement = lock.get("requirement", "").lower()
+                        if requirement in spell_name.lower() or spell_name.lower() in requirement:
+                            poi.bypass_lock(lock_index)
+                            return {
+                                "success": True,
+                                "message": f"The {spell_name} spell causes the barrier to dissipate.",
+                            }
+                        return {
+                            "success": False,
+                            "message": "The spell has no effect on this barrier.",
+                        }
+
+                elif method == "item":
+                    item_name = kwargs.get("item_name", "")
+                    if lock_type == "magical" and item_name:
+                        requirement = lock.get("requirement", "").lower()
+                        if requirement in item_name.lower() or item_name.lower() in requirement:
+                            poi.bypass_lock(lock_index)
+                            return {
+                                "success": True,
+                                "message": f"The {item_name} reacts with the barrier, opening the way.",
+                            }
+                        return {
+                            "success": False,
+                            "message": "The item has no effect on this barrier.",
+                        }
+
+                elif method == "key":
+                    key_id = kwargs.get("key_id", "")
+                    if lock_type == "key":
+                        if key_id == lock.get("requirement"):
+                            poi.bypass_lock(lock_index)
+                            return {
+                                "success": True,
+                                "message": "The key turns smoothly and the lock opens.",
+                            }
+                        return {
+                            "success": False,
+                            "message": "This key doesn't fit the lock.",
+                        }
+
+                elif method == "pick":
+                    if lock_type == "physical":
+                        # Lockpicking check using DEX
+                        difficulty = lock.get("difficulty", 15)
+                        dex_mod = character.get_ability_modifier("DEX")
+                        roll = self.dice.roll_d20("lockpicking")
+                        total = roll.total + dex_mod
+
+                        if total >= difficulty:
+                            poi.bypass_lock(lock_index)
+                            return {
+                                "success": True,
+                                "roll": total,
+                                "message": "You successfully pick the lock.",
+                            }
+                        return {
+                            "success": False,
+                            "roll": total,
+                            "message": "You fail to pick the lock.",
+                        }
+
+                elif method == "force":
+                    if lock_type == "physical":
+                        # Force check using STR
+                        difficulty = lock.get("difficulty", 18)
+                        str_mod = character.get_ability_modifier("STR")
+                        roll = self.dice.roll_d20("forcing lock")
+                        total = roll.total + str_mod
+
+                        if total >= difficulty:
+                            poi.bypass_lock(lock_index)
+                            return {
+                                "success": True,
+                                "roll": total,
+                                "message": "You force the barrier open with a mighty effort.",
+                            }
+                        return {
+                            "success": False,
+                            "roll": total,
+                            "message": "The barrier holds firm against your efforts.",
+                        }
+
+                return {
+                    "success": False,
+                    "error": f"Cannot bypass a {lock_type} lock using {method}",
+                }
+
+        return {"success": False, "error": "POI not found"}
+
+    # =========================================================================
+    # DUNGEON ACCESS THROUGH POI
+    # =========================================================================
+
+    def enter_dungeon_from_poi(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Transition from a POI to dungeon exploration.
+
+        Called when entering a POI that leads to a dungeon, triggering
+        a state transition to DUNGEON_EXPLORATION.
+
+        Args:
+            hex_id: Current hex
+            poi_name: POI leading to dungeon (or current POI if None)
+
+        Returns:
+            Dictionary with transition details
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return {"success": False, "error": "Not at any POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                if not poi.leads_to_dungeon():
+                    return {
+                        "success": False,
+                        "error": "This location does not lead to a dungeon",
+                    }
+
+                # Check for locks first
+                if poi.has_active_locks():
+                    locks = poi.get_active_locks()
+                    return {
+                        "success": False,
+                        "blocked": True,
+                        "locks": [
+                            {
+                                "type": lock.get("type"),
+                                "description": lock.get("description"),
+                            }
+                            for lock in locks
+                        ],
+                        "message": "The way is blocked.",
+                    }
+
+                # Trigger entry hazards
+                # (Would trigger hazard resolution here in practice)
+
+                dungeon_id = poi.dungeon_id or poi.name
+                entrance_room = poi.dungeon_entrance_room or "entrance"
+
+                # Transition to dungeon state
+                self.controller.transition(
+                    "enter_dungeon",
+                    context={
+                        "from_hex": hex_id,
+                        "from_poi": target_poi,
+                        "dungeon_id": dungeon_id,
+                        "entrance_room": entrance_room,
+                    }
+                )
+
+                return {
+                    "success": True,
+                    "dungeon_id": dungeon_id,
+                    "entrance_room": entrance_room,
+                    "message": f"You enter the depths of {target_poi}...",
+                    "state_changed": True,
+                }
+
+        return {"success": False, "error": "POI not found"}
+
+    def get_dungeon_access_info(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get information about dungeon access points in the current hex.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of POIs that lead to dungeons with access info
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        dungeon_pois = []
+        for poi in hex_data.points_of_interest:
+            if poi.leads_to_dungeon() and poi.is_visible(self._discovered_secrets):
+                poi_info = {
+                    "poi_name": poi.name,
+                    "dungeon_id": poi.dungeon_id or poi.name,
+                    "entrance_room": poi.dungeon_entrance_room,
+                    "is_accessible": poi.is_accessible_from(self._current_poi),
+                    "has_locks": poi.has_active_locks(),
+                    "has_hazards": len(poi.hazards) > 0,
+                }
+
+                if poi.has_active_locks():
+                    poi_info["locks"] = [
+                        lock.get("type") for lock in poi.get_active_locks()
+                    ]
+
+                if poi.hazards:
+                    poi_info["hazards"] = [
+                        h.get("hazard_type") for h in poi.hazards
+                    ]
+
+                dungeon_pois.append(poi_info)
+
+        return dungeon_pois
