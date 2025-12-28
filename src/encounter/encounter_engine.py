@@ -141,6 +141,21 @@ class EncounterEngineState:
     enemy_acted: bool = False
     reaction_attempted: bool = False
 
+    # POI context for dungeon/location encounters
+    poi_name: Optional[str] = None
+    hex_id: Optional[str] = None
+
+    # Roll tables inherited from POI (for dungeon encounters)
+    roll_tables: list = field(default_factory=list)
+
+    # Pending time effects to apply when encounter concludes
+    # Format: [{time_passes: "1d12 days", trigger: "on_exit", description: "..."}]
+    pending_time_effects: list[dict[str, Any]] = field(default_factory=list)
+
+    # Transportation effects that may trigger during encounter
+    # Format: [{save_type: "Hold", destination: "Prince's Road", triggered: False}]
+    pending_transportation: list[dict[str, Any]] = field(default_factory=list)
+
 
 class EncounterEngine:
     """
@@ -188,6 +203,9 @@ class EncounterEngine:
         origin: EncounterOrigin,
         party_aware: bool = False,
         enemies_aware: bool = False,
+        roll_tables: Optional[list] = None,
+        poi_name: Optional[str] = None,
+        hex_id: Optional[str] = None,
     ) -> dict[str, Any]:
         """
         Start a new encounter.
@@ -200,6 +218,9 @@ class EncounterEngine:
             origin: Where the encounter originated (wilderness/dungeon/settlement)
             party_aware: Whether the party was already aware of the encounter
             enemies_aware: Whether enemies were already aware of the party
+            roll_tables: Optional list of RollTable objects from POI for dungeon encounters
+            poi_name: Optional POI name for location context
+            hex_id: Optional hex ID for location context
 
         Returns:
             Dictionary with encounter initialization results
@@ -212,6 +233,9 @@ class EncounterEngine:
             encounter=encounter,
             origin=origin,
             current_phase=EncounterPhase.AWARENESS,
+            roll_tables=roll_tables or [],
+            poi_name=poi_name,
+            hex_id=hex_id,
         )
 
         # Transition to ENCOUNTER state
@@ -220,6 +244,8 @@ class EncounterEngine:
             context={
                 "origin": origin.value,
                 "encounter_type": encounter.encounter_type.value,
+                "poi_name": poi_name,
+                "hex_id": hex_id,
             }
         )
 
@@ -230,6 +256,8 @@ class EncounterEngine:
             "actors": encounter.actors,
             "context": encounter.context,
             "current_phase": EncounterPhase.AWARENESS.value,
+            "poi_name": poi_name,
+            "hex_id": hex_id,
         }
 
         # Run awareness phase immediately
@@ -962,3 +990,210 @@ class EncounterEngine:
         )
 
         return result
+
+    # =========================================================================
+    # ROLL TABLE OPERATIONS
+    # =========================================================================
+
+    def roll_on_table(
+        self,
+        table_name: str,
+    ) -> Optional[dict[str, Any]]:
+        """
+        Roll on a roll table inherited from the POI.
+
+        Used for dungeon encounters with room/encounter tables like
+        The Spectral Manse's "Rooms" and "Encounters" tables.
+
+        Args:
+            table_name: Name of the table to roll on
+
+        Returns:
+            Dictionary with roll result or None if table not found
+        """
+        if not self._state or not self._state.roll_tables:
+            return None
+
+        # Find the table
+        target_table = None
+        for table in self._state.roll_tables:
+            if table.name.lower() == table_name.lower():
+                target_table = table
+                break
+
+        if not target_table:
+            return None
+
+        # Roll on the table
+        die_type = target_table.die_type  # e.g., "d6", "d8"
+        roll = self.dice.roll(f"1{die_type}", f"roll on {table_name}")
+
+        # Find the entry
+        entry = None
+        for e in target_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return {"roll": roll.total, "table": table_name, "entry": None}
+
+        result = {
+            "roll": roll.total,
+            "table": table_name,
+            "title": entry.title,
+            "description": entry.description,
+            "monsters": entry.monsters,
+            "npcs": entry.npcs,
+            "items": entry.items,
+            "mechanical_effect": entry.mechanical_effect,
+        }
+
+        # Check for reaction conditions (alignment-based)
+        if entry.reaction_conditions:
+            result["reaction_conditions"] = entry.reaction_conditions
+
+        # Check for transportation effects
+        if entry.transportation_effect:
+            self._state.pending_transportation.append(entry.transportation_effect)
+            result["transportation_effect"] = entry.transportation_effect
+
+        # Check for time effects
+        if entry.time_effect:
+            self._state.pending_time_effects.append(entry.time_effect)
+            result["time_effect"] = entry.time_effect
+
+        # Check for sub-table
+        if entry.sub_table:
+            result["sub_table"] = entry.sub_table
+            result["sub_table_text"] = entry.sub_table
+
+        return result
+
+    def get_available_tables(self) -> list[str]:
+        """Get names of available roll tables for this encounter."""
+        if not self._state or not self._state.roll_tables:
+            return []
+        return [table.name for table in self._state.roll_tables]
+
+    # =========================================================================
+    # TRANSPORTATION EFFECTS
+    # =========================================================================
+
+    def resolve_transportation_save(
+        self,
+        character_id: str,
+        save_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Resolve a transportation save for a pending transportation effect.
+
+        Used for effects like "Save Versus Hold or be whisked away
+        into the Prince's Road".
+
+        Args:
+            character_id: ID of the character making the save
+            save_modifier: Modifier to the save roll
+
+        Returns:
+            Dictionary with save result and consequences
+        """
+        if not self._state or not self._state.pending_transportation:
+            return {"error": "No pending transportation effect"}
+
+        effect = self._state.pending_transportation[0]
+        save_type = effect.get("save_type", "Hold")
+        destination = effect.get("destination", "unknown location")
+        failure_desc = effect.get("failure_desc", "transported away")
+
+        # Roll save (assume base target of 14 for "vs Hold")
+        roll = self.dice.roll("1d20", f"save vs {save_type}")
+        target = 14 - save_modifier  # Lower target is better
+
+        success = roll.total >= target
+
+        result = {
+            "character_id": character_id,
+            "save_type": save_type,
+            "roll": roll.total,
+            "target": target,
+            "success": success,
+        }
+
+        if success:
+            result["message"] = f"Saved vs {save_type}!"
+            # Remove the resolved effect
+            self._state.pending_transportation.pop(0)
+        else:
+            result["message"] = failure_desc
+            result["destination"] = destination
+            result["transported"] = True
+            # Character is transported - this would trigger state change
+            self._state.pending_transportation.pop(0)
+
+        return result
+
+    # =========================================================================
+    # TIME EFFECTS
+    # =========================================================================
+
+    def apply_pending_time_effects(self) -> dict[str, Any]:
+        """
+        Apply any pending time effects when leaving the encounter location.
+
+        Used for effects like "Upon returning to the mortal world,
+        1d12 days have passed".
+
+        Returns:
+            Dictionary with time passage results
+        """
+        if not self._state or not self._state.pending_time_effects:
+            return {"time_passed": False, "days": 0}
+
+        total_days = 0
+        effects_applied = []
+
+        for effect in self._state.pending_time_effects:
+            time_str = effect.get("time_passes", "")
+            trigger = effect.get("trigger_condition", "on_exit")
+
+            # Only apply on_exit effects here
+            if trigger == "on_exit" and time_str:
+                # Parse time string (e.g., "1d12 days", "2d6 hours")
+                if "day" in time_str.lower():
+                    # Extract dice notation
+                    import re
+                    dice_match = re.match(r"(\d+d\d+)", time_str)
+                    if dice_match:
+                        roll = self.dice.roll(dice_match.group(1), "time dilation")
+                        total_days += roll.total
+                        effects_applied.append({
+                            "effect": time_str,
+                            "rolled": roll.total,
+                            "description": effect.get("description", ""),
+                        })
+
+        # Apply time passage to the controller
+        if total_days > 0:
+            # Convert days to turns (6 turns per hour, 24 hours per day)
+            turns = total_days * 24 * 6
+            self.controller.advance_time(turns)
+
+        # Clear applied effects
+        self._state.pending_time_effects = []
+
+        return {
+            "time_passed": total_days > 0,
+            "days": total_days,
+            "effects": effects_applied,
+        }
+
+    def has_pending_effects(self) -> dict[str, bool]:
+        """Check if there are pending effects to resolve."""
+        if not self._state:
+            return {"transportation": False, "time": False}
+
+        return {
+            "transportation": len(self._state.pending_transportation) > 0,
+            "time": len(self._state.pending_time_effects) > 0,
+        }

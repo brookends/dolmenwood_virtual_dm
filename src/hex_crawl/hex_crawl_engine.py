@@ -576,8 +576,13 @@ class HexCrawlEngine:
         """
         Generate an encounter for the current hex per Dolmenwood rules (p157).
 
-        Uses encounter tables from the Campaign Book.
+        Uses encounter tables from the Campaign Book, modified by contextual
+        encounter modifiers from nearby POIs (e.g., "2-in-6 likely to be a
+        bewildered banshee heading to a ball at the Spectral Manse").
         """
+        # Check for contextual encounter modifiers from POIs in this hex
+        contextual_result = self._apply_contextual_encounter_modifiers(hex_id)
+
         # Determine surprise first (affects distance)
         surprise = self._check_surprise()
 
@@ -585,16 +590,95 @@ class HexCrawlEngine:
         distance = self._roll_encounter_distance(surprise)
 
         # Create encounter state
-        encounter = EncounterState(
-            encounter_type=EncounterType.MONSTER,  # Default, would be rolled
-            distance=distance,
-            surprise_status=surprise,
-            terrain=terrain.value,
-            context=self._determine_encounter_context(),
-        )
+        if contextual_result:
+            # Use the contextual encounter from a POI
+            encounter = EncounterState(
+                encounter_type=EncounterType.MONSTER,
+                distance=distance,
+                surprise_status=surprise,
+                terrain=terrain.value,
+                context=contextual_result.get("context", ""),
+                actors=[contextual_result.get("result", "unknown creature")],
+            )
+        else:
+            # Standard encounter
+            encounter = EncounterState(
+                encounter_type=EncounterType.MONSTER,
+                distance=distance,
+                surprise_status=surprise,
+                terrain=terrain.value,
+                context=self._determine_encounter_context(),
+            )
 
         self.controller.set_encounter(encounter)
         return encounter
+
+    def _apply_contextual_encounter_modifiers(
+        self,
+        hex_id: str
+    ) -> Optional[dict[str, Any]]:
+        """
+        Check POIs in the current hex for contextual encounter modifiers.
+
+        POIs can define encounter_modifiers that affect random encounters
+        in the hex. For example, The Spectral Manse has:
+        "Encounters are 2-in-6 likely to be with a bewildered banshee
+        heading to a ball at the Spectral Manse"
+
+        Args:
+            hex_id: The current hex ID
+
+        Returns:
+            Dictionary with contextual encounter details if triggered, None otherwise
+        """
+        hex_data = self._get_hex_data(hex_id)
+        if not hex_data:
+            return None
+
+        # Check each POI for encounter modifiers
+        for poi in hex_data.points_of_interest:
+            for modifier in poi.encounter_modifiers:
+                # Parse the chance (e.g., "2-in-6")
+                chance_str = modifier.get("chance", "")
+                chance = self._parse_x_in_6_chance(chance_str)
+
+                if chance > 0:
+                    roll = self.dice.roll_d6(1, f"contextual encounter: {poi.name}")
+                    if roll.total <= chance:
+                        return {
+                            "triggered": True,
+                            "poi_name": poi.name,
+                            "result": modifier.get("result", "unknown creature"),
+                            "context": modifier.get("context", ""),
+                            "modifier": modifier,
+                        }
+
+        return None
+
+    def _parse_x_in_6_chance(self, chance_str: str) -> int:
+        """
+        Parse a chance string like "2-in-6" or "3-in-6" to an integer.
+
+        Args:
+            chance_str: String in format "X-in-6"
+
+        Returns:
+            Integer value of X, or 0 if parsing fails
+        """
+        if not chance_str:
+            return 0
+        try:
+            # Handle formats like "2-in-6", "3 in 6", "2/6"
+            chance_str = chance_str.lower().strip()
+            if "-in-" in chance_str:
+                return int(chance_str.split("-in-")[0])
+            elif " in " in chance_str:
+                return int(chance_str.split(" in ")[0])
+            elif "/" in chance_str:
+                return int(chance_str.split("/")[0])
+            return 0
+        except (ValueError, IndexError):
+            return 0
 
     def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
         """
@@ -1193,6 +1277,111 @@ class HexCrawlEngine:
             time_specific_observations=time_observations,
         )
 
+    def check_poi_availability(
+        self,
+        poi: "PointOfInterest"
+    ) -> dict[str, Any]:
+        """
+        Check if a POI is currently available based on its availability conditions.
+
+        POIs can have availability conditions like:
+        - Moon phase requirements (e.g., only visible during full moon)
+        - Time of day requirements
+        - Seasonal requirements
+        - Conditional requirements
+
+        Args:
+            poi: The PointOfInterest to check
+
+        Returns:
+            Dictionary with availability status and message
+        """
+        if not poi.availability:
+            return {"available": True}
+
+        availability = poi.availability
+        avail_type = availability.get("type", "")
+        required = availability.get("required", "")
+        hidden_message = availability.get(
+            "hidden_message",
+            "This location is not currently accessible."
+        )
+
+        # Check based on availability type
+        if avail_type == "moon_phase":
+            if self.controller.world_state and self.controller.world_state.current_date:
+                current_moon = self.controller.world_state.current_date.get_moon_phase()
+                # Handle required as string or list
+                required_phases = [required] if isinstance(required, str) else required
+                # Check if current moon matches any required phase
+                for phase in required_phases:
+                    # Match by name (e.g., "full_moon", "grinning_moon")
+                    if phase.lower().replace(" ", "_") == current_moon.value:
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "moon_phase",
+                    "required": required,
+                    "current": current_moon.value,
+                    "message": hidden_message,
+                }
+            # No date tracking - assume available
+            return {"available": True}
+
+        elif avail_type == "time_of_day":
+            is_night = self._is_night()
+            if required == "night" and not is_night:
+                return {
+                    "available": False,
+                    "type": "time_of_day",
+                    "required": "night",
+                    "message": hidden_message,
+                }
+            elif required == "day" and is_night:
+                return {
+                    "available": False,
+                    "type": "time_of_day",
+                    "required": "day",
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        elif avail_type == "seasonal":
+            if self.controller.world_state and self.controller.world_state.current_date:
+                current_season = self.controller.world_state.current_date.get_season()
+                required_seasons = [required] if isinstance(required, str) else required
+                for season in required_seasons:
+                    if season.lower() == current_season.value:
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "seasonal",
+                    "required": required,
+                    "current": current_season.value,
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        elif avail_type == "condition":
+            # Condition-based availability - check world state
+            condition_key = availability.get("condition_key", "")
+            if condition_key and self.controller.world_state:
+                # Check if condition is met in world state
+                # This would be tracked in hex state changes
+                if hasattr(self.controller.world_state, "conditions"):
+                    if self.controller.world_state.conditions.get(condition_key):
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "condition",
+                    "required": condition_key,
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        # Unknown type - assume available
+        return {"available": True}
+
     def get_visible_pois(self, hex_id: str) -> list[dict[str, Any]]:
         """
         Get list of visible points of interest in a hex.
@@ -1584,6 +1773,16 @@ class HexCrawlEngine:
 
         if not poi:
             return {"success": False, "error": "Current location not found"}
+
+        # Check POI availability (e.g., moon phase requirements)
+        availability_check = self.check_poi_availability(poi)
+        if not availability_check["available"]:
+            return {
+                "success": False,
+                "unavailable": True,
+                "message": availability_check.get("message", "This location is not currently accessible"),
+                "availability": availability_check,
+            }
 
         is_night = self._is_night()
 
@@ -2720,6 +2919,181 @@ class HexCrawlEngine:
 
                 return encounter
 
+        return None
+
+    def evaluate_reaction_conditions(
+        self,
+        reaction_conditions: dict[str, Any],
+        party_alignments: list[str],
+    ) -> dict[str, Any]:
+        """
+        Evaluate alignment-based reaction conditions for a roll table entry.
+
+        This is used by the ENCOUNTERS state to determine creature reactions
+        based on party member alignments (e.g., "attacks non-Neutral characters").
+
+        Args:
+            reaction_conditions: The reaction_conditions from RollTableEntry
+                Format: {hostile_if: {alignment_not: ["Neutral"]},
+                        friendly_if: {alignment: ["Lawful"]}}
+            party_alignments: List of party member alignments
+
+        Returns:
+            Dictionary with reaction modification:
+            {
+                "hostile": True/False,
+                "friendly": True/False,
+                "affected_alignments": [...],
+                "description": str
+            }
+        """
+        result = {
+            "hostile": False,
+            "friendly": False,
+            "affected_alignments": [],
+            "description": "",
+        }
+
+        if not reaction_conditions or not party_alignments:
+            return result
+
+        # Check hostile conditions
+        hostile_if = reaction_conditions.get("hostile_if", {})
+        if hostile_if:
+            # Check alignment_not condition (hostile to those NOT in list)
+            alignment_not = hostile_if.get("alignment_not", [])
+            if alignment_not:
+                non_matching = [
+                    align for align in party_alignments
+                    if align not in alignment_not
+                ]
+                if non_matching:
+                    result["hostile"] = True
+                    result["affected_alignments"] = non_matching
+                    result["description"] = (
+                        f"Hostile toward {', '.join(alignment_not)}-aligned characters"
+                    )
+
+            # Check alignment condition (hostile to those IN list)
+            alignment_match = hostile_if.get("alignment", [])
+            if alignment_match:
+                matching = [
+                    align for align in party_alignments
+                    if align in alignment_match
+                ]
+                if matching:
+                    result["hostile"] = True
+                    result["affected_alignments"] = matching
+                    result["description"] = (
+                        f"Hostile toward {', '.join(matching)}-aligned characters"
+                    )
+
+        # Check friendly conditions
+        friendly_if = reaction_conditions.get("friendly_if", {})
+        if friendly_if:
+            alignment_match = friendly_if.get("alignment", [])
+            if alignment_match:
+                matching = [
+                    align for align in party_alignments
+                    if align in alignment_match
+                ]
+                if matching:
+                    result["friendly"] = True
+                    if not result["hostile"]:
+                        result["affected_alignments"] = matching
+                        result["description"] = (
+                            f"Friendly toward {', '.join(matching)}-aligned characters"
+                        )
+
+        return result
+
+    def get_poi_roll_tables(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None
+    ) -> list["RollTable"]:
+        """
+        Get roll tables from a POI for use in ENCOUNTERS or DUNGEON states.
+
+        This allows encounters and dungeon exploration to use POI-specific
+        room tables and encounter tables.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            List of RollTable objects from the POI
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                return poi.roll_tables
+
+        return []
+
+    def get_poi_dungeon_config(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get dungeon configuration for a POI with dynamic layout.
+
+        Returns the dynamic_layout, item_persistence, and roll_tables
+        needed for the DUNGEON_EXPLORATION state.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with dungeon configuration or None
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return None
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                if not poi.is_dungeon:
+                    return None
+
+                return {
+                    "poi_name": poi.name,
+                    "dungeon_levels": poi.dungeon_levels,
+                    "dynamic_layout": poi.dynamic_layout,
+                    "item_persistence": poi.item_persistence,
+                    "roll_tables": poi.roll_tables,
+                    "room_table": self._find_table_by_name(poi.roll_tables, "Rooms"),
+                    "encounter_table": self._find_table_by_name(poi.roll_tables, "Encounters"),
+                    "interior": poi.interior,
+                    "exploring": poi.exploring,
+                    "leaving": poi.leaving,
+                }
+
+        return None
+
+    def _find_table_by_name(
+        self,
+        tables: list["RollTable"],
+        name: str
+    ) -> Optional["RollTable"]:
+        """Find a roll table by name (case-insensitive)."""
+        for table in tables:
+            if table.name.lower() == name.lower():
+                return table
         return None
 
     # =========================================================================

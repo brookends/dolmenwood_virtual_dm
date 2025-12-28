@@ -1493,6 +1493,21 @@ class RollTableEntry:
     mechanical_effect: Optional[str] = None  # Game mechanical effects
     sub_table: Optional[str] = None  # Reference to a sub-table to roll on
 
+    # Alignment-based reaction conditions
+    # Format: {hostile_if: {alignment_not: ["Neutral"]}, friendly_if: {alignment: ["Lawful"]}}
+    # Creatures may attack or react differently based on party alignment
+    reaction_conditions: Optional[dict[str, Any]] = None
+
+    # Transportation effect triggered by this entry (for ENCOUNTERS state)
+    # Format: {save_type: "Hold", destination: "Prince's Road", failure_desc: "whisked away"}
+    # Used for magical effects that may transport characters to other locations
+    transportation_effect: Optional[dict[str, Any]] = None
+
+    # Time dilation effect when this entry is triggered (for ENCOUNTERS state)
+    # Format: {time_passes: "1d12 days", trigger_condition: "on_exit", description: "..."}
+    # Used for locations where time flows differently
+    time_effect: Optional[dict[str, Any]] = None
+
 
 @dataclass
 class RollTable:
@@ -1638,6 +1653,27 @@ class PointOfInterest:
     interior_night: Optional[str] = None  # Interior at night
     entering_day: Optional[str] = None  # Entering during day
     entering_night: Optional[str] = None  # Entering at night
+
+    # POI availability conditions (for ENCOUNTERS/DUNGEON states)
+    # Format: {type: "moon_phase", required: "full_moon", hidden_message: "The manor has vanished..."}
+    # Types: "moon_phase", "time_of_day", "seasonal", "condition"
+    # When not available, POI cannot be entered and hidden_message is shown
+    availability: Optional[dict[str, Any]] = None
+
+    # Contextual encounter modifiers - affects hex-level random encounters
+    # Format: [{chance: "2-in-6", result: "bewildered banshee", context: "heading to a ball"}]
+    # When rolling hex encounters, these modifiers may replace or supplement standard results
+    encounter_modifiers: list[dict[str, Any]] = field(default_factory=list)
+
+    # Item persistence rules for this POI (for DUNGEON state)
+    # Format: {default: "evaporate", exceptions: [{owner_npc: "lord_hobbled...", persists: True}]}
+    # Controls what happens to items taken from this location
+    item_persistence: Optional[dict[str, Any]] = None
+
+    # Dynamic room generation for procedural dungeons (for DUNGEON state)
+    # Format: {connections_per_room: "1d3", room_table: "Rooms", encounter_table: "Encounters"}
+    # Enables randomly generated room connections instead of fixed maps
+    dynamic_layout: Optional[dict[str, Any]] = None
 
     def is_visible(self, discovered_secrets: Optional[set[str]] = None) -> bool:
         """
@@ -3109,6 +3145,12 @@ class HexNPC:
     loyalty: str = "loyal"
     personal_feelings: Optional[str] = None  # e.g., "loathes employer"
 
+    # Magical binding or imprisonment
+    # Format: {bound_to: "The Spectral Manse", release_condition: "Ygraine's intervention",
+    #          captor: "Prince Mallowheart", can_leave: False}
+    # NPCs with binding cannot leave their bound location until condition is met
+    binding: Optional[dict[str, Any]] = None
+
     def get_relationship(self, npc_id: str) -> Optional[dict[str, Any]]:
         """Get relationship to a specific NPC."""
         for rel in self.relationships:
@@ -3127,6 +3169,28 @@ class HexNPC:
     def get_cross_hex_connections(self) -> list[dict[str, Any]]:
         """Get relationships to NPCs in other hexes."""
         return [r for r in self.relationships if r.get("hex_id")]
+
+    def is_bound(self) -> bool:
+        """Check if NPC is magically bound to a location."""
+        return self.binding is not None
+
+    def can_leave_location(self) -> bool:
+        """Check if NPC can leave their current location."""
+        if not self.binding:
+            return True
+        return self.binding.get("can_leave", False)
+
+    def get_bound_location(self) -> Optional[str]:
+        """Get the location this NPC is bound to."""
+        if self.binding:
+            return self.binding.get("bound_to")
+        return None
+
+    def get_release_condition(self) -> Optional[str]:
+        """Get the condition required to release this NPC from binding."""
+        if self.binding:
+            return self.binding.get("release_condition")
+        return None
 
 
 @dataclass

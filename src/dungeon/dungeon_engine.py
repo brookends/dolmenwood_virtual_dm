@@ -155,6 +155,29 @@ class DungeonState:
     explored_rooms: set[str] = field(default_factory=set)  # For fast travel (p162)
     safe_path_to_exit: list[str] = field(default_factory=list)  # Room IDs of safe path
 
+    # POI-inherited configuration
+    poi_name: Optional[str] = None  # Source POI name
+    hex_id: Optional[str] = None  # Source hex ID
+
+    # Roll tables inherited from POI (for room/encounter generation)
+    roll_tables: list = field(default_factory=list)
+    room_table: Optional[Any] = None  # RollTable for room generation
+    encounter_table: Optional[Any] = None  # RollTable for encounters
+
+    # Dynamic layout configuration (for procedural dungeons like The Spectral Manse)
+    # Format: {connections_per_room: "1d3", room_table: "Rooms", encounter_table: "Encounters"}
+    dynamic_layout: Optional[dict[str, Any]] = None
+
+    # Item persistence rules (for locations like The Spectral Manse)
+    # Format: {default: "evaporate", exceptions: [{owner_npc: "lord_hobbled...", persists: True}]}
+    item_persistence: Optional[dict[str, Any]] = None
+
+    # Exit effects (text and mechanics from POI "leaving" field)
+    leaving_description: Optional[str] = None
+
+    # Pending time effects to apply on dungeon exit
+    pending_time_effects: list[dict[str, Any]] = field(default_factory=list)
+
 
 class DungeonEngine:
     """
@@ -282,7 +305,8 @@ class DungeonEngine:
         self,
         dungeon_id: str,
         entry_room: str,
-        dungeon_data: Optional[DungeonState] = None
+        dungeon_data: Optional[DungeonState] = None,
+        poi_config: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """
         Enter a dungeon and begin exploration.
@@ -291,6 +315,8 @@ class DungeonEngine:
             dungeon_id: Unique identifier for the dungeon
             entry_room: Starting room ID
             dungeon_data: Pre-loaded dungeon data (optional)
+            poi_config: Optional POI configuration from get_poi_dungeon_config()
+                Contains roll_tables, dynamic_layout, item_persistence, etc.
 
         Returns:
             Dictionary with entry results
@@ -311,6 +337,21 @@ class DungeonEngine:
                 current_room=entry_room,
             )
 
+        # Apply POI configuration if provided
+        if poi_config:
+            self._dungeon_state.poi_name = poi_config.get("poi_name")
+            self._dungeon_state.hex_id = poi_config.get("hex_id")
+            self._dungeon_state.roll_tables = poi_config.get("roll_tables", [])
+            self._dungeon_state.room_table = poi_config.get("room_table")
+            self._dungeon_state.encounter_table = poi_config.get("encounter_table")
+            self._dungeon_state.dynamic_layout = poi_config.get("dynamic_layout")
+            self._dungeon_state.item_persistence = poi_config.get("item_persistence")
+            self._dungeon_state.leaving_description = poi_config.get("leaving")
+
+            # If dynamic layout, generate initial room
+            if self._dungeon_state.dynamic_layout:
+                self._generate_dynamic_room(entry_room)
+
         # Add entry room if not exists
         if entry_room not in self._dungeon_state.rooms:
             self._dungeon_state.rooms[entry_room] = DungeonRoom(room_id=entry_room)
@@ -319,6 +360,7 @@ class DungeonEngine:
         self.controller.transition("enter_dungeon", context={
             "dungeon_id": dungeon_id,
             "entry_room": entry_room,
+            "poi_name": poi_config.get("poi_name") if poi_config else None,
         })
 
         # Update party location
@@ -331,12 +373,19 @@ class DungeonEngine:
         # Check if party has light
         light_status = self._check_light_status()
 
-        return {
+        result = {
             "dungeon_id": dungeon_id,
             "entry_room": entry_room,
             "light_status": light_status,
             "state": GameState.DUNGEON_EXPLORATION.value,
         }
+
+        # Add dynamic layout info if applicable
+        if self._dungeon_state.dynamic_layout:
+            result["dynamic_layout"] = True
+            result["exploring_description"] = poi_config.get("exploring") if poi_config else None
+
+        return result
 
     def exit_dungeon(self) -> dict[str, Any]:
         """
@@ -1672,3 +1721,258 @@ class DungeonEngine:
             "target_id": target_id,
             "target_description": target_description,
         })
+
+    # =========================================================================
+    # DYNAMIC ROOM GENERATION (for POIs like The Spectral Manse)
+    # =========================================================================
+
+    def _generate_dynamic_room(self, room_id: str) -> Optional[DungeonRoom]:
+        """
+        Generate a room dynamically using the POI's room table.
+
+        Used for dungeons with dynamic_layout like The Spectral Manse where
+        "Each room connects to 1d3 other rooms, via crooked doors and lurching hallways."
+
+        Args:
+            room_id: The room ID to generate
+
+        Returns:
+            Generated DungeonRoom or None if generation fails
+        """
+        if not self._dungeon_state or not self._dungeon_state.room_table:
+            return None
+
+        room_table = self._dungeon_state.room_table
+        dynamic_layout = self._dungeon_state.dynamic_layout or {}
+
+        # Roll on room table
+        die_type = room_table.die_type
+        roll = self.dice.roll(f"1{die_type}", "generate room")
+
+        # Find entry
+        entry = None
+        for e in room_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return None
+
+        # Create the room
+        room = DungeonRoom(
+            room_id=room_id,
+            name=entry.title or f"Room {roll.total}",
+            description=entry.description,
+        )
+
+        # Generate exits based on dynamic layout
+        connections_dice = dynamic_layout.get("connections_per_room", "1d3")
+        num_exits = self.dice.roll(connections_dice, "room connections").total
+
+        # Create exits to new rooms
+        directions = ["north", "south", "east", "west", "up", "down"]
+        for i in range(min(num_exits, len(directions))):
+            direction = directions[i]
+            new_room_id = f"room_{len(self._dungeon_state.rooms) + i + 1}"
+            room.exits[direction] = new_room_id
+            room.doors[f"{room_id}_{direction}"] = DoorState.CLOSED
+
+        # Add items from the entry
+        for item_name in entry.items:
+            room.treasure.append({"name": item_name, "found": False})
+
+        # Store the room
+        self._dungeon_state.rooms[room_id] = room
+
+        return room
+
+    def generate_room_encounter(self) -> Optional[dict[str, Any]]:
+        """
+        Generate an encounter for the current room using the POI's encounter table.
+
+        Used for procedural dungeons where encounters are rolled per room.
+
+        Returns:
+            Dictionary with encounter result or None
+        """
+        if not self._dungeon_state or not self._dungeon_state.encounter_table:
+            return None
+
+        encounter_table = self._dungeon_state.encounter_table
+
+        # Roll on encounter table
+        die_type = encounter_table.die_type
+        roll = self.dice.roll(f"1{die_type}", "room encounter")
+
+        # Find entry
+        entry = None
+        for e in encounter_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return {"roll": roll.total, "encounter": None}
+
+        result = {
+            "roll": roll.total,
+            "title": entry.title,
+            "description": entry.description,
+            "monsters": entry.monsters,
+            "npcs": entry.npcs,
+            "items": entry.items,
+            "mechanical_effect": entry.mechanical_effect,
+        }
+
+        # Check for special effects
+        if entry.reaction_conditions:
+            result["reaction_conditions"] = entry.reaction_conditions
+
+        if entry.transportation_effect:
+            self._dungeon_state.pending_time_effects.append(entry.transportation_effect)
+            result["transportation_effect"] = entry.transportation_effect
+
+        if entry.time_effect:
+            self._dungeon_state.pending_time_effects.append(entry.time_effect)
+            result["time_effect"] = entry.time_effect
+
+        if entry.sub_table:
+            result["sub_table"] = entry.sub_table
+
+        return result
+
+    # =========================================================================
+    # ITEM PERSISTENCE (for locations like The Spectral Manse)
+    # =========================================================================
+
+    def check_item_persistence(
+        self,
+        item_name: str,
+        owner_npc: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Check if an item persists when taken from this dungeon.
+
+        For locations like The Spectral Manse where "items from the manse
+        evaporate into mist when taken into the real world" except for
+        items belonging to specific NPCs.
+
+        Args:
+            item_name: Name of the item
+            owner_npc: Optional NPC ID who owns the item
+
+        Returns:
+            Dictionary with persistence status
+        """
+        if not self._dungeon_state or not self._dungeon_state.item_persistence:
+            return {"persists": True, "reason": "No persistence rules"}
+
+        persistence = self._dungeon_state.item_persistence
+        default = persistence.get("default", "persists")
+        exceptions = persistence.get("exceptions", [])
+
+        # Check exceptions
+        for exception in exceptions:
+            # Check NPC ownership exception
+            if owner_npc and exception.get("owner_npc") == owner_npc:
+                return {
+                    "persists": exception.get("persists", True),
+                    "reason": f"Exception: owned by {owner_npc}",
+                    "owner_npc": owner_npc,
+                }
+
+            # Check item name exception
+            if exception.get("item_name") == item_name:
+                return {
+                    "persists": exception.get("persists", True),
+                    "reason": f"Exception: {item_name} is special",
+                }
+
+        # Apply default
+        if default == "evaporate":
+            return {
+                "persists": False,
+                "reason": "Items from this location evaporate when taken outside",
+                "effect": persistence.get("effect_description", "evaporates into mist"),
+            }
+
+        return {"persists": True, "reason": "Default persistence"}
+
+    def get_leaving_effects(self) -> dict[str, Any]:
+        """
+        Get effects that occur when leaving this dungeon.
+
+        Returns:
+            Dictionary with leaving effects and description
+        """
+        if not self._dungeon_state:
+            return {}
+
+        result = {}
+
+        if self._dungeon_state.leaving_description:
+            result["description"] = self._dungeon_state.leaving_description
+
+        if self._dungeon_state.pending_time_effects:
+            result["pending_time_effects"] = self._dungeon_state.pending_time_effects
+
+        if self._dungeon_state.item_persistence:
+            result["item_persistence"] = self._dungeon_state.item_persistence
+
+        return result
+
+    def roll_on_table(self, table_name: str) -> Optional[dict[str, Any]]:
+        """
+        Roll on a roll table inherited from the POI.
+
+        Args:
+            table_name: Name of the table to roll on
+
+        Returns:
+            Dictionary with roll result or None if table not found
+        """
+        if not self._dungeon_state or not self._dungeon_state.roll_tables:
+            return None
+
+        # Find the table
+        target_table = None
+        for table in self._dungeon_state.roll_tables:
+            if table.name.lower() == table_name.lower():
+                target_table = table
+                break
+
+        if not target_table:
+            return None
+
+        # Roll on the table
+        die_type = target_table.die_type
+        roll = self.dice.roll(f"1{die_type}", f"roll on {table_name}")
+
+        # Find the entry
+        entry = None
+        for e in target_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return {"roll": roll.total, "table": table_name, "entry": None}
+
+        return {
+            "roll": roll.total,
+            "table": table_name,
+            "title": entry.title,
+            "description": entry.description,
+            "monsters": entry.monsters,
+            "npcs": entry.npcs,
+            "items": entry.items,
+            "mechanical_effect": entry.mechanical_effect,
+            "sub_table": entry.sub_table,
+        }
+
+    def get_available_tables(self) -> list[str]:
+        """Get names of available roll tables for this dungeon."""
+        if not self._dungeon_state or not self._dungeon_state.roll_tables:
+            return []
+        return [table.name for table in self._dungeon_state.roll_tables]
