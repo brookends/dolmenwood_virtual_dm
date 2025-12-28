@@ -1361,6 +1361,17 @@ class PointOfInterest:
     visible_from_distance: bool = True  # Can be seen from elsewhere in hex
     approach_required: bool = True  # Must approach before entering
 
+    # POI relationships and gated discovery
+    parent_poi: Optional[str] = None  # Name of parent POI (for nested locations)
+    requires_discovery: Optional[str] = None  # Secret name that must be found first
+    child_pois: list[str] = field(default_factory=list)  # Names of child POIs within this one
+
+    # Hex-level magical effects that apply at this POI
+    magical_effects: list[str] = field(default_factory=list)  # e.g., ["no_teleportation", "no_scrying"]
+
+    # Items and treasures at this location
+    items: list[dict[str, Any]] = field(default_factory=list)  # [{name, description, value, taken}]
+
     # Time-of-day variant descriptions
     description_day: Optional[str] = None  # Description during daylight
     description_night: Optional[str] = None  # Description at night
@@ -1369,9 +1380,43 @@ class PointOfInterest:
     entering_day: Optional[str] = None  # Entering during day
     entering_night: Optional[str] = None  # Entering at night
 
-    def is_visible(self) -> bool:
-        """Check if POI is currently visible to players."""
-        return not self.hidden or self.discovered
+    def is_visible(self, discovered_secrets: Optional[set[str]] = None) -> bool:
+        """
+        Check if POI is currently visible to players.
+
+        Args:
+            discovered_secrets: Set of secret names that have been discovered
+
+        Returns:
+            True if visible (not hidden or has been discovered, and requirements met)
+        """
+        # Basic visibility check
+        if self.hidden and not self.discovered:
+            return False
+
+        # Check if a secret must be discovered first
+        if self.requires_discovery:
+            if discovered_secrets is None or self.requires_discovery not in discovered_secrets:
+                return False
+
+        return True
+
+    def is_accessible_from(self, current_poi: Optional[str]) -> bool:
+        """
+        Check if this POI can be accessed from the current location.
+
+        Args:
+            current_poi: Name of the current POI (None if in general hex)
+
+        Returns:
+            True if accessible from current location
+        """
+        # If no parent, accessible from hex-level
+        if not self.parent_poi:
+            return current_poi is None
+
+        # If has parent, must be at or inside that parent
+        return current_poi == self.parent_poi
 
     def get_description(self, is_night: bool = False) -> str:
         """Get appropriate description based on time of day."""

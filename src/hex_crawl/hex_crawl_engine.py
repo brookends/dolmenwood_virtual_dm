@@ -71,7 +71,39 @@ class POIVisit:
     rooms_explored: list[str] = field(default_factory=list)
     npcs_encountered: list[str] = field(default_factory=list)
     items_found: list[str] = field(default_factory=list)
+    items_taken: list[str] = field(default_factory=list)  # Items picked up
+    secrets_discovered: list[str] = field(default_factory=list)  # Secrets found here
     time_spent_turns: int = 0
+
+
+@dataclass
+class SecretCheck:
+    """Result of checking for a secret."""
+    secret_name: str
+    found: bool
+    ability_used: str  # e.g., "INT", "WIS", "perception"
+    roll_result: Optional[int] = None
+    dc: int = 10
+    description: Optional[str] = None
+
+
+@dataclass
+class HexMagicalEffects:
+    """
+    Magical effects active in a hex or POI.
+
+    Based on Dolmenwood lore - areas like the Falls of Naon
+    may have anti-teleportation effects.
+    """
+    no_teleportation: bool = False
+    no_scrying: bool = False
+    no_divination: bool = False
+    no_summoning: bool = False
+    wild_magic_zone: bool = False
+    fairy_realm_overlay: bool = False
+    enhanced_healing: bool = False
+    suppressed_magic: bool = False
+    custom_effects: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -278,6 +310,12 @@ class HexCrawlEngine:
         self._current_poi: Optional[str] = None  # Name of POI currently at/in
         self._poi_state: POIExplorationState = POIExplorationState.DISTANT
         self._poi_visits: dict[str, POIVisit] = {}  # hex_id:poi_name -> visit state
+
+        # Secret discovery tracking (global across hexes)
+        self._discovered_secrets: set[str] = set()
+
+        # NPC interaction tracking
+        self._met_npcs: set[str] = set()  # NPC IDs we've interacted with
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -1049,7 +1087,7 @@ class HexCrawlEngine:
         observations = []
 
         for poi in hex_data.points_of_interest:
-            if not poi.is_visible():
+            if not poi.is_visible(self._discovered_secrets):
                 continue
 
             # Look for time-specific special features
@@ -1162,7 +1200,7 @@ class HexCrawlEngine:
         visible = []
 
         for poi in hex_data.points_of_interest:
-            if not poi.is_visible():
+            if not poi.is_visible(self._discovered_secrets):
                 continue
 
             # Build player-facing POI info
@@ -1526,4 +1564,774 @@ class HexCrawlEngine:
             "at_poi": True,
             "poi_name": self._current_poi,
             "state": self._poi_state.value,
+        }
+
+    # =========================================================================
+    # SECRET DISCOVERY SYSTEM
+    # =========================================================================
+
+    def check_for_secret(
+        self,
+        hex_id: str,
+        character_id: str,
+        secret_name: Optional[str] = None,
+        ability: str = "INT",
+        dc: int = 10,
+    ) -> SecretCheck:
+        """
+        Attempt to discover a secret using an ability check.
+
+        Per Dolmenwood rules, secrets may require specific ability checks
+        (INT for noticing patterns, WIS for intuition, etc.).
+
+        Args:
+            hex_id: The hex containing the secret
+            character_id: Character attempting the check
+            secret_name: Specific secret to check for (or None for general search)
+            ability: Ability score to use (INT, WIS, etc.)
+            dc: Difficulty class for the check
+
+        Returns:
+            SecretCheck with results
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return SecretCheck(
+                secret_name=secret_name or "unknown",
+                found=False,
+                ability_used=ability,
+                dc=dc,
+                description="Character not found",
+            )
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return SecretCheck(
+                secret_name=secret_name or "unknown",
+                found=False,
+                ability_used=ability,
+                dc=dc,
+                description="No secrets to find here",
+            )
+
+        # Get ability modifier
+        ability_mod = character.get_ability_modifier(ability)
+
+        # Roll the check
+        roll = self.dice.roll_d20(f"secret check ({ability})")
+        total = roll.total + ability_mod
+
+        # Determine which secret(s) could be found
+        secrets_to_check = []
+        if secret_name:
+            secrets_to_check = [secret_name]
+        else:
+            # Check all secrets at current POI
+            if self._current_poi:
+                for poi in hex_data.points_of_interest:
+                    if poi.name == self._current_poi:
+                        secrets_to_check.extend(poi.secrets)
+                        break
+            else:
+                # Check hex-level secrets
+                secrets_to_check.extend(hex_data.secrets)
+
+        if not secrets_to_check:
+            return SecretCheck(
+                secret_name="none",
+                found=False,
+                ability_used=ability,
+                roll_result=total,
+                dc=dc,
+                description="You search carefully but find nothing hidden.",
+            )
+
+        # Check if roll beats DC
+        found = total >= dc
+        found_secret = secrets_to_check[0] if found and secrets_to_check else None
+
+        if found and found_secret:
+            # Mark secret as discovered
+            self._discovered_secrets.add(found_secret)
+
+            # Track in POI visit
+            if self._current_poi:
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    if found_secret not in self._poi_visits[visit_key].secrets_discovered:
+                        self._poi_visits[visit_key].secrets_discovered.append(found_secret)
+
+            return SecretCheck(
+                secret_name=found_secret,
+                found=True,
+                ability_used=ability,
+                roll_result=total,
+                dc=dc,
+                description=f"You discover: {found_secret}",
+            )
+        else:
+            return SecretCheck(
+                secret_name=secret_name or "unknown",
+                found=False,
+                ability_used=ability,
+                roll_result=total,
+                dc=dc,
+                description="Your search reveals nothing of note.",
+            )
+
+    def get_discovered_secrets(self) -> set[str]:
+        """Get all secrets discovered by the party."""
+        return self._discovered_secrets.copy()
+
+    def has_discovered_secret(self, secret_name: str) -> bool:
+        """Check if a specific secret has been discovered."""
+        return secret_name in self._discovered_secrets
+
+    # =========================================================================
+    # POI-TO-POI NAVIGATION
+    # =========================================================================
+
+    def get_accessible_pois(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get POIs accessible from the current location.
+
+        Handles nested POIs - if inside a POI with children,
+        shows those children. If at hex level, shows top-level POIs.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of accessible POI information
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        accessible = []
+        is_night = self._is_night()
+
+        for poi in hex_data.points_of_interest:
+            # Check visibility with discovered secrets
+            if not poi.is_visible(self._discovered_secrets):
+                continue
+
+            # Check accessibility from current location
+            if not poi.is_accessible_from(self._current_poi):
+                continue
+
+            poi_info = {
+                "name": poi.name,
+                "type": poi.poi_type,
+                "description": poi.get_description(is_night),
+                "is_dungeon": poi.is_dungeon,
+                "has_children": len(poi.child_pois) > 0,
+            }
+
+            if poi.tagline:
+                poi_info["brief"] = poi.tagline
+
+            accessible.append(poi_info)
+
+        return accessible
+
+    def navigate_to_child_poi(
+        self,
+        hex_id: str,
+        child_poi_name: str,
+    ) -> dict[str, Any]:
+        """
+        Navigate from current POI to a child POI within it.
+
+        For example, navigating from "Falls of Naon" to "Embassy" inside it.
+
+        Args:
+            hex_id: Current hex
+            child_poi_name: Name of the child POI to enter
+
+        Returns:
+            Dictionary with navigation results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Must be at a location first"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        current = None
+        child = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                current = poi
+            if poi.name == child_poi_name:
+                child = poi
+
+        if not current:
+            return {"success": False, "error": "Current location not found"}
+
+        if not child:
+            return {"success": False, "error": f"'{child_poi_name}' not found"}
+
+        # Verify this is actually a child of current POI
+        if child.parent_poi != self._current_poi:
+            return {
+                "success": False,
+                "error": f"'{child_poi_name}' is not accessible from here",
+            }
+
+        # Check visibility with secrets
+        if not child.is_visible(self._discovered_secrets):
+            return {
+                "success": False,
+                "error": "You cannot find a way to access that location",
+            }
+
+        is_night = self._is_night()
+
+        # Navigate to child POI
+        self._current_poi = child.name
+        self._poi_state = POIExplorationState.AT_ENTRANCE
+
+        # Track visit
+        visit_key = f"{hex_id}:{child.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=child.name)
+
+        description_parts = []
+        entering_desc = child.get_entering_description(is_night)
+        if entering_desc:
+            description_parts.append(entering_desc)
+
+        interior_desc = child.get_interior_description(is_night)
+        if interior_desc:
+            description_parts.append(interior_desc)
+
+        return {
+            "success": True,
+            "poi_name": child.name,
+            "poi_type": child.poi_type,
+            "description": "\n\n".join(description_parts) or child.get_description(is_night),
+            "is_dungeon": child.is_dungeon,
+            "state": POIExplorationState.AT_ENTRANCE.value,
+        }
+
+    def navigate_to_parent_poi(self, hex_id: str) -> dict[str, Any]:
+        """
+        Navigate from current POI back to its parent POI.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            Dictionary with navigation results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            # Still allow leaving
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+            return {
+                "success": True,
+                "message": "You leave and return to the surrounding area.",
+            }
+
+        # Find the current POI
+        current = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                current = poi
+                break
+
+        if not current or not current.parent_poi:
+            # No parent, go back to hex level
+            return self.leave_poi(hex_id)
+
+        # Find parent POI
+        parent = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == current.parent_poi:
+                parent = poi
+                break
+
+        if not parent:
+            return self.leave_poi(hex_id)
+
+        is_night = self._is_night()
+
+        # Navigate to parent
+        self._current_poi = parent.name
+        self._poi_state = POIExplorationState.INSIDE
+
+        return {
+            "success": True,
+            "poi_name": parent.name,
+            "poi_type": parent.poi_type,
+            "description": parent.get_interior_description(is_night) or parent.get_description(is_night),
+            "state": POIExplorationState.INSIDE.value,
+        }
+
+    # =========================================================================
+    # HEX-LEVEL MAGICAL EFFECTS
+    # =========================================================================
+
+    def get_hex_magical_effects(self, hex_id: str) -> HexMagicalEffects:
+        """
+        Get magical effects active in a hex.
+
+        Checks both hex-level effects and current POI effects.
+
+        Args:
+            hex_id: The hex to check
+
+        Returns:
+            HexMagicalEffects with all active restrictions
+        """
+        effects = HexMagicalEffects()
+        hex_data = self._hex_data.get(hex_id)
+
+        if not hex_data:
+            return effects
+
+        # Check hex-level effects (from secrets or special features)
+        for secret in hex_data.secrets:
+            self._apply_magical_effect_from_text(secret, effects)
+
+        # Check current POI effects
+        if self._current_poi:
+            for poi in hex_data.points_of_interest:
+                if poi.name == self._current_poi:
+                    for effect in poi.magical_effects:
+                        self._apply_magical_effect_from_text(effect, effects)
+                    # Also check special features
+                    for feature in poi.special_features:
+                        self._apply_magical_effect_from_text(feature, effects)
+                    break
+
+        return effects
+
+    def _apply_magical_effect_from_text(
+        self,
+        text: str,
+        effects: HexMagicalEffects
+    ) -> None:
+        """Parse text for magical effect keywords and apply them."""
+        text_lower = text.lower()
+
+        if "no teleport" in text_lower or "teleportation impossible" in text_lower:
+            effects.no_teleportation = True
+        if "no scrying" in text_lower or "scrying fails" in text_lower:
+            effects.no_scrying = True
+        if "no divination" in text_lower or "divination blocked" in text_lower:
+            effects.no_divination = True
+        if "no summoning" in text_lower or "summoning fails" in text_lower:
+            effects.no_summoning = True
+        if "wild magic" in text_lower:
+            effects.wild_magic_zone = True
+        if "fairy realm" in text_lower or "faerie overlay" in text_lower:
+            effects.fairy_realm_overlay = True
+        if "enhanced healing" in text_lower:
+            effects.enhanced_healing = True
+        if "magic suppressed" in text_lower or "no magic" in text_lower:
+            effects.suppressed_magic = True
+
+        # Any other magical note becomes a custom effect
+        magical_keywords = ["magic", "enchant", "spell", "curse", "bless"]
+        if any(kw in text_lower for kw in magical_keywords):
+            if text not in effects.custom_effects:
+                effects.custom_effects.append(text)
+
+    def check_spell_allowed(
+        self,
+        hex_id: str,
+        spell_type: str,
+    ) -> tuple[bool, Optional[str]]:
+        """
+        Check if a spell type is allowed in the current location.
+
+        Args:
+            hex_id: Current hex
+            spell_type: Type of spell (teleportation, scrying, summoning, etc.)
+
+        Returns:
+            Tuple of (allowed, reason_if_blocked)
+        """
+        effects = self.get_hex_magical_effects(hex_id)
+
+        spell_lower = spell_type.lower()
+
+        if effects.suppressed_magic:
+            return False, "All magic is suppressed in this area"
+
+        if "teleport" in spell_lower and effects.no_teleportation:
+            return False, "Teleportation magic fails in this area"
+
+        if "scry" in spell_lower and effects.no_scrying:
+            return False, "Scrying magic is blocked here"
+
+        if "divin" in spell_lower and effects.no_divination:
+            return False, "Divination magic does not function here"
+
+        if "summon" in spell_lower and effects.no_summoning:
+            return False, "Summoning magic fails in this area"
+
+        return True, None
+
+    # =========================================================================
+    # NPC INTERACTION AT POIs
+    # =========================================================================
+
+    def get_npcs_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get NPCs present at the current POI.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of NPC information for interaction
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        is_night = self._is_night()
+        npcs = []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Get NPCs from POI
+                for npc_ref in poi.npcs:
+                    # Try to find full NPC data in hex
+                    npc_data = None
+                    for hex_npc in hex_data.npcs:
+                        if hex_npc.npc_id == npc_ref or hex_npc.name == npc_ref:
+                            npc_data = hex_npc
+                            break
+
+                    if npc_data:
+                        npc_info = {
+                            "npc_id": npc_data.npc_id,
+                            "name": npc_data.name,
+                            "description": npc_data.description,
+                            "kindred": npc_data.kindred,
+                            "met_before": npc_data.npc_id in self._met_npcs,
+                        }
+                        if npc_data.title:
+                            npc_info["title"] = npc_data.title
+                        if npc_data.demeanor:
+                            npc_info["demeanor"] = npc_data.demeanor[0] if npc_data.demeanor else None
+                        npcs.append(npc_info)
+                    else:
+                        # Minimal info from reference
+                        npcs.append({
+                            "name": npc_ref,
+                            "met_before": npc_ref in self._met_npcs,
+                        })
+
+                # Check inhabitants field for additional NPCs
+                if poi.inhabitants:
+                    # Parse inhabitants string for NPC info
+                    # This might be a dice notation like "1d4 bandits"
+                    npcs.append({
+                        "inhabitants": poi.inhabitants,
+                        "is_group": True,
+                    })
+
+                break
+
+        return npcs
+
+    def interact_with_npc(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Begin interaction with an NPC at the current POI.
+
+        This transitions to SOCIAL_INTERACTION state if appropriate.
+
+        Args:
+            hex_id: Current hex
+            npc_id: ID or name of NPC to interact with
+
+        Returns:
+            Dictionary with interaction setup
+        """
+        npcs = self.get_npcs_at_poi(hex_id)
+        if not npcs:
+            return {"success": False, "error": "No NPCs present here"}
+
+        # Find the NPC
+        target_npc = None
+        for npc in npcs:
+            if npc.get("npc_id") == npc_id or npc.get("name") == npc_id:
+                target_npc = npc
+                break
+
+        if not target_npc:
+            return {"success": False, "error": f"NPC '{npc_id}' not found here"}
+
+        # Mark as met
+        self._met_npcs.add(npc_id)
+
+        # Track in POI visit
+        visit_key = f"{hex_id}:{self._current_poi}"
+        if visit_key in self._poi_visits:
+            if npc_id not in self._poi_visits[visit_key].npcs_encountered:
+                self._poi_visits[visit_key].npcs_encountered.append(npc_id)
+
+        # Get full NPC data if available
+        hex_data = self._hex_data.get(hex_id)
+        npc_data = None
+        if hex_data:
+            for hex_npc in hex_data.npcs:
+                if hex_npc.npc_id == npc_id or hex_npc.name == npc_id:
+                    npc_data = hex_npc
+                    break
+
+        result = {
+            "success": True,
+            "npc_id": npc_id,
+            "npc_name": target_npc.get("name", npc_id),
+            "first_meeting": npc_id not in self._met_npcs,
+        }
+
+        if npc_data:
+            result.update({
+                "description": npc_data.description,
+                "demeanor": npc_data.demeanor,
+                "speech": npc_data.speech,
+                "desires": npc_data.desires,  # What they want
+            })
+
+        # Trigger transition to SOCIAL_INTERACTION
+        self.controller.transition(
+            "npc_interaction_started",
+            context={
+                "npc_id": npc_id,
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+            }
+        )
+
+        return result
+
+    # =========================================================================
+    # ENCOUNTER GENERATION FOR POI INHABITANTS
+    # =========================================================================
+
+    def generate_poi_encounter(
+        self,
+        hex_id: str,
+    ) -> Optional[EncounterState]:
+        """
+        Generate an encounter with inhabitants at the current POI.
+
+        If inhabitants field uses dice notation (e.g., "2d6 bandits"),
+        rolls for number appearing and creates an encounter.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            EncounterState if inhabitants present, None otherwise
+        """
+        if not self._current_poi:
+            return None
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                if not poi.inhabitants:
+                    return None
+
+                # Parse inhabitants string
+                inhabitants = poi.inhabitants
+                number_appearing = 1
+                creature_type = inhabitants
+
+                # Check for dice notation (e.g., "2d6 orcs", "1d4+1 guards")
+                import re
+                dice_match = re.match(r"(\d+d\d+(?:[+-]\d+)?)\s+(.+)", inhabitants)
+                if dice_match:
+                    dice_notation = dice_match.group(1)
+                    creature_type = dice_match.group(2)
+                    roll_result = self.dice.roll(dice_notation, f"inhabitants at {poi.name}")
+                    number_appearing = roll_result.total
+
+                # Check surprise
+                surprise = self._check_surprise()
+                distance = self._roll_encounter_distance(surprise)
+
+                encounter = EncounterState(
+                    encounter_type=EncounterType.NPC,  # Could be MONSTER depending on creature
+                    distance=distance,
+                    surprise_status=surprise,
+                    actors=[creature_type],
+                    context=f"encountered at {poi.name}",
+                    terrain=hex_data.terrain_type,
+                )
+
+                # Store number appearing in encounter
+                encounter.context = f"{number_appearing} {creature_type} at {poi.name}"
+
+                # Transition to encounter state
+                self.controller.set_encounter(encounter)
+                self.controller.transition(
+                    "encounter_triggered",
+                    context={
+                        "hex_id": hex_id,
+                        "poi_name": poi.name,
+                        "creatures": creature_type,
+                        "number": number_appearing,
+                    }
+                )
+
+                return encounter
+
+        return None
+
+    # =========================================================================
+    # ITEM AND TREASURE TRACKING AT POIs
+    # =========================================================================
+
+    def get_items_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get visible items at the current POI.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of items available at this POI
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Filter out already taken items
+                visit_key = f"{hex_id}:{self._current_poi}"
+                taken_items = []
+                if visit_key in self._poi_visits:
+                    taken_items = self._poi_visits[visit_key].items_taken
+
+                available_items = []
+                for item in poi.items:
+                    item_name = item.get("name", "unknown")
+                    if item_name not in taken_items and not item.get("taken", False):
+                        available_items.append({
+                            "name": item_name,
+                            "description": item.get("description", ""),
+                            "value": item.get("value"),
+                        })
+
+                return available_items
+
+        return []
+
+    def take_item(
+        self,
+        hex_id: str,
+        item_name: str,
+        character_id: str,
+    ) -> dict[str, Any]:
+        """
+        Take an item from the current POI.
+
+        Args:
+            hex_id: Current hex
+            item_name: Name of item to take
+            character_id: Character taking the item
+
+        Returns:
+            Dictionary with result and item details
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Find the item
+                for item in poi.items:
+                    if item.get("name", "").lower() == item_name.lower():
+                        if item.get("taken", False):
+                            return {"success": False, "error": "Item already taken"}
+
+                        # Mark as taken
+                        item["taken"] = True
+
+                        # Track in visit
+                        visit_key = f"{hex_id}:{self._current_poi}"
+                        if visit_key in self._poi_visits:
+                            self._poi_visits[visit_key].items_taken.append(item.get("name"))
+                            if item.get("name") not in self._poi_visits[visit_key].items_found:
+                                self._poi_visits[visit_key].items_found.append(item.get("name"))
+
+                        return {
+                            "success": True,
+                            "item_name": item.get("name"),
+                            "description": item.get("description", ""),
+                            "value": item.get("value"),
+                            "message": f"You take the {item.get('name')}.",
+                        }
+
+                return {"success": False, "error": f"Item '{item_name}' not found here"}
+
+        return {"success": False, "error": "Current location not found"}
+
+    def get_poi_visit_summary(self, hex_id: str) -> dict[str, Any]:
+        """
+        Get a summary of the current POI visit.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            Dictionary with visit summary
+        """
+        if not self._current_poi:
+            return {"at_poi": False}
+
+        visit_key = f"{hex_id}:{self._current_poi}"
+        visit = self._poi_visits.get(visit_key)
+
+        if not visit:
+            return {
+                "at_poi": True,
+                "poi_name": self._current_poi,
+                "first_visit": True,
+            }
+
+        return {
+            "at_poi": True,
+            "poi_name": self._current_poi,
+            "state": visit.state.value,
+            "entered": visit.entered,
+            "features_explored": visit.rooms_explored,
+            "npcs_met": visit.npcs_encountered,
+            "items_found": visit.items_found,
+            "items_taken": visit.items_taken,
+            "secrets_found": visit.secrets_discovered,
+            "time_spent_turns": visit.time_spent_turns,
         }
