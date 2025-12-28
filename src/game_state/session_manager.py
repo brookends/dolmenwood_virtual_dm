@@ -563,6 +563,10 @@ class GameSession:
     # POI visit tracking
     poi_visits: dict[str, dict[str, Any]] = field(default_factory=dict)
 
+    # Unique item registry - tracks unique items acquired to prevent duplicates
+    # Format: {unique_item_id: {name, acquired_by, acquired_at_hex, acquired_at_poi, acquired_date}}
+    unique_items_acquired: dict[str, dict[str, Any]] = field(default_factory=dict)
+
     # Custom session data (for extensions)
     custom_data: dict[str, Any] = field(default_factory=dict)
 
@@ -586,6 +590,7 @@ class GameSession:
             "world_changes": [c.to_dict() for c in self.world_changes],
             "completed_quests": self.completed_quests,
             "poi_visits": self.poi_visits,
+            "unique_items_acquired": self.unique_items_acquired,
             "custom_data": self.custom_data,
         }
 
@@ -610,6 +615,7 @@ class GameSession:
             world_changes=[SerializableWorldChange.from_dict(c) for c in data.get("world_changes", [])],
             completed_quests=data.get("completed_quests", []),
             poi_visits=data.get("poi_visits", {}),
+            unique_items_acquired=data.get("unique_items_acquired", {}),
             custom_data=data.get("custom_data", {}),
         )
 
@@ -989,6 +995,161 @@ class SessionManager:
 
         if quest_id not in self._current_session.completed_quests:
             self._current_session.completed_quests.append(quest_id)
+
+    # =========================================================================
+    # UNIQUE ITEM REGISTRY
+    # =========================================================================
+
+    def is_unique_item_acquired(self, unique_item_id: str) -> bool:
+        """
+        Check if a unique item has already been acquired.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            True if the item has been acquired, False otherwise
+        """
+        if not self._current_session:
+            return False
+        return unique_item_id in self._current_session.unique_items_acquired
+
+    def register_unique_item(
+        self,
+        unique_item_id: str,
+        item_name: str,
+        acquired_by: str,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Register a unique item as acquired.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+            item_name: Display name of the item
+            acquired_by: Character ID who acquired the item
+            hex_id: Hex where item was acquired
+            poi_name: POI where item was acquired
+
+        Returns:
+            True if registration succeeded, False if item was already acquired
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id in self._current_session.unique_items_acquired:
+            return False  # Already acquired
+
+        self._current_session.unique_items_acquired[unique_item_id] = {
+            "name": item_name,
+            "acquired_by": acquired_by,
+            "acquired_at_hex": hex_id,
+            "acquired_at_poi": poi_name,
+            "acquired_date": datetime.now().isoformat(),
+        }
+        return True
+
+    def get_unique_item_info(self, unique_item_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get information about an acquired unique item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            Dictionary with item info or None if not acquired
+        """
+        if not self._current_session:
+            return None
+        return self._current_session.unique_items_acquired.get(unique_item_id)
+
+    def get_unique_item_owner(self, unique_item_id: str) -> Optional[str]:
+        """
+        Get the character ID of who owns a unique item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            Character ID or None if item not acquired
+        """
+        info = self.get_unique_item_info(unique_item_id)
+        return info.get("acquired_by") if info else None
+
+    def transfer_unique_item(
+        self,
+        unique_item_id: str,
+        new_owner: str,
+    ) -> bool:
+        """
+        Transfer ownership of a unique item to another character.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+            new_owner: Character ID of new owner
+
+        Returns:
+            True if transfer succeeded, False if item not found
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id not in self._current_session.unique_items_acquired:
+            return False
+
+        self._current_session.unique_items_acquired[unique_item_id]["acquired_by"] = new_owner
+        return True
+
+    def remove_unique_item_from_world(self, unique_item_id: str) -> bool:
+        """
+        Remove a unique item from the registry (e.g., if destroyed or consumed).
+
+        Note: This allows the item to potentially be found again if it respawns.
+        For permanent removal, keep it in the registry with a "destroyed" flag.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            True if removal succeeded, False if item not found
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id in self._current_session.unique_items_acquired:
+            del self._current_session.unique_items_acquired[unique_item_id]
+            return True
+        return False
+
+    def get_all_unique_items(self) -> dict[str, dict[str, Any]]:
+        """
+        Get all acquired unique items.
+
+        Returns:
+            Dictionary mapping unique_item_id to item info
+        """
+        if not self._current_session:
+            return {}
+        return self._current_session.unique_items_acquired.copy()
+
+    def get_unique_items_by_owner(self, character_id: str) -> list[str]:
+        """
+        Get all unique items owned by a specific character.
+
+        Args:
+            character_id: The character's ID
+
+        Returns:
+            List of unique_item_ids owned by the character
+        """
+        if not self._current_session:
+            return []
+
+        return [
+            uid for uid, info in self._current_session.unique_items_acquired.items()
+            if info.get("acquired_by") == character_id
+        ]
 
     # =========================================================================
     # STATE EXTRACTION (from running game)

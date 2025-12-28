@@ -1414,6 +1414,10 @@ class Item:
     An item in inventory.
 
     Supports both weight-based and slot-based encumbrance systems (p148-149).
+
+    Unique items (is_unique=True) can only exist once in the game world.
+    When picked up, they are registered in the UniqueItemRegistry to prevent
+    duplicates from being acquired.
     """
     item_id: str
     name: str
@@ -1428,6 +1432,19 @@ class Item:
     slot_size: int = 1   # Number of gear slots required (for slot encumbrance)
     is_container: bool = False  # True for backpacks, sacks, etc.
 
+    # Unique item tracking
+    is_unique: bool = False  # True for one-of-a-kind items
+    unique_item_id: Optional[str] = None  # Global unique identifier (e.g., "hand_of_st_howarth")
+    source_hex: Optional[str] = None  # Hex where item was found
+    source_poi: Optional[str] = None  # POI where item was found
+
+    # Item properties
+    description: Optional[str] = None  # Detailed item description
+    value_gp: Optional[float] = None  # Value in gold pieces
+    magical: bool = False  # Whether item is magical
+    cursed: bool = False  # Whether item is cursed
+    identified: bool = True  # Whether item properties are known
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1438,6 +1455,76 @@ class Item:
         if self.slot_size == 0:
             return 0
         return self.slot_size * self.quantity
+
+    def get_unique_key(self) -> Optional[str]:
+        """
+        Get the unique key for this item if it's unique.
+
+        Returns unique_item_id if set, otherwise constructs from source location.
+        """
+        if not self.is_unique:
+            return None
+        if self.unique_item_id:
+            return self.unique_item_id
+        # Fallback: construct from source location
+        if self.source_hex and self.source_poi:
+            return f"{self.source_hex}:{self.source_poi}:{self.item_id}"
+        return self.item_id
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize item to dictionary for saving."""
+        return {
+            "item_id": self.item_id,
+            "name": self.name,
+            "weight": self.weight,
+            "quantity": self.quantity,
+            "equipped": self.equipped,
+            "charges": self.charges,
+            "light_source": self.light_source.value if self.light_source else None,
+            "light_remaining_turns": self.light_remaining_turns,
+            "item_type": self.item_type,
+            "slot_size": self.slot_size,
+            "is_container": self.is_container,
+            "is_unique": self.is_unique,
+            "unique_item_id": self.unique_item_id,
+            "source_hex": self.source_hex,
+            "source_poi": self.source_poi,
+            "description": self.description,
+            "value_gp": self.value_gp,
+            "magical": self.magical,
+            "cursed": self.cursed,
+            "identified": self.identified,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Item":
+        """Deserialize item from dictionary."""
+        light_source = None
+        if data.get("light_source"):
+            light_source = LightSourceType(data["light_source"])
+
+        return cls(
+            item_id=data["item_id"],
+            name=data["name"],
+            weight=data.get("weight", 0),
+            quantity=data.get("quantity", 1),
+            equipped=data.get("equipped", False),
+            charges=data.get("charges"),
+            light_source=light_source,
+            light_remaining_turns=data.get("light_remaining_turns"),
+            item_type=data.get("item_type", ""),
+            slot_size=data.get("slot_size", 1),
+            is_container=data.get("is_container", False),
+            is_unique=data.get("is_unique", False),
+            unique_item_id=data.get("unique_item_id"),
+            source_hex=data.get("source_hex"),
+            source_poi=data.get("source_poi"),
+            description=data.get("description"),
+            value_gp=data.get("value_gp"),
+            magical=data.get("magical", False),
+            cursed=data.get("cursed", False),
+            identified=data.get("identified", True),
+        )
 
 
 @dataclass
@@ -3758,6 +3845,220 @@ class CharacterState:
         else:  # SLOT system
             equipped, stowed = self.calculate_slot_encumbrance()
             return EncumbranceCalculator.is_over_slot_capacity(equipped, stowed)
+
+    # =========================================================================
+    # INVENTORY MANAGEMENT
+    # =========================================================================
+
+    def add_item(self, item: Item) -> bool:
+        """
+        Add an item to the character's inventory.
+
+        Args:
+            item: The Item to add
+
+        Returns:
+            True if item was added successfully
+        """
+        # For stackable items (quantity > 1 and not unique), try to merge
+        if not item.is_unique and item.quantity > 0:
+            for existing in self.inventory:
+                if (existing.item_id == item.item_id and
+                    not existing.is_unique and
+                    existing.name == item.name):
+                    existing.quantity += item.quantity
+                    return True
+
+        self.inventory.append(item)
+        return True
+
+    def remove_item(self, item_id: str, quantity: int = 1) -> Optional[Item]:
+        """
+        Remove an item from inventory.
+
+        Args:
+            item_id: ID of the item to remove
+            quantity: Number to remove (for stackable items)
+
+        Returns:
+            The removed Item or None if not found
+        """
+        for i, item in enumerate(self.inventory):
+            if item.item_id == item_id:
+                if item.quantity > quantity:
+                    # Reduce stack
+                    item.quantity -= quantity
+                    removed = Item(
+                        item_id=item.item_id,
+                        name=item.name,
+                        weight=item.weight,
+                        quantity=quantity,
+                        is_unique=item.is_unique,
+                        unique_item_id=item.unique_item_id,
+                    )
+                    return removed
+                else:
+                    # Remove entire item
+                    return self.inventory.pop(i)
+        return None
+
+    def remove_item_by_unique_id(self, unique_item_id: str) -> Optional[Item]:
+        """
+        Remove a unique item from inventory by its unique ID.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            The removed Item or None if not found
+        """
+        for i, item in enumerate(self.inventory):
+            if item.is_unique and item.unique_item_id == unique_item_id:
+                return self.inventory.pop(i)
+        return None
+
+    def get_item(self, item_id: str) -> Optional[Item]:
+        """
+        Get an item from inventory by ID.
+
+        Args:
+            item_id: ID of the item
+
+        Returns:
+            The Item or None if not found
+        """
+        for item in self.inventory:
+            if item.item_id == item_id:
+                return item
+        return None
+
+    def get_item_by_unique_id(self, unique_item_id: str) -> Optional[Item]:
+        """
+        Get a unique item from inventory by its unique ID.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            The Item or None if not found
+        """
+        for item in self.inventory:
+            if item.is_unique and item.unique_item_id == unique_item_id:
+                return item
+        return None
+
+    def get_item_by_name(self, name: str) -> Optional[Item]:
+        """
+        Get an item from inventory by name (case-insensitive).
+
+        Args:
+            name: Name of the item
+
+        Returns:
+            The first matching Item or None if not found
+        """
+        name_lower = name.lower()
+        for item in self.inventory:
+            if item.name.lower() == name_lower:
+                return item
+        return None
+
+    def has_item(self, item_id: str, quantity: int = 1) -> bool:
+        """
+        Check if character has an item in sufficient quantity.
+
+        Args:
+            item_id: ID of the item
+            quantity: Minimum quantity required
+
+        Returns:
+            True if character has the item in sufficient quantity
+        """
+        for item in self.inventory:
+            if item.item_id == item_id and item.quantity >= quantity:
+                return True
+        return False
+
+    def has_unique_item(self, unique_item_id: str) -> bool:
+        """
+        Check if character has a specific unique item.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            True if character has the unique item
+        """
+        return any(
+            item.is_unique and item.unique_item_id == unique_item_id
+            for item in self.inventory
+        )
+
+    def get_unique_items(self) -> list[Item]:
+        """
+        Get all unique items in inventory.
+
+        Returns:
+            List of unique Items
+        """
+        return [item for item in self.inventory if item.is_unique]
+
+    def get_inventory_value(self) -> float:
+        """
+        Calculate total value of inventory in gold pieces.
+
+        Returns:
+            Total value in GP
+        """
+        total = 0.0
+        for item in self.inventory:
+            if item.value_gp:
+                total += item.value_gp * item.quantity
+        return total
+
+    def transfer_item_to(
+        self,
+        other: "CharacterState",
+        item_id: str,
+        quantity: int = 1,
+    ) -> bool:
+        """
+        Transfer an item to another character.
+
+        Args:
+            other: The recipient character
+            item_id: ID of the item to transfer
+            quantity: Number to transfer
+
+        Returns:
+            True if transfer succeeded
+        """
+        item = self.remove_item(item_id, quantity)
+        if item:
+            other.add_item(item)
+            return True
+        return False
+
+    def transfer_unique_item_to(
+        self,
+        other: "CharacterState",
+        unique_item_id: str,
+    ) -> bool:
+        """
+        Transfer a unique item to another character.
+
+        Args:
+            other: The recipient character
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            True if transfer succeeded
+        """
+        item = self.remove_item_by_unique_id(unique_item_id)
+        if item:
+            other.add_item(item)
+            return True
+        return False
 
 
 # =============================================================================

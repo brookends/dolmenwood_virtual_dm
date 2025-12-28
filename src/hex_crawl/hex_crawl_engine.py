@@ -3238,7 +3238,10 @@ class HexCrawlEngine:
         character_id: str,
     ) -> dict[str, Any]:
         """
-        Take an item from the current POI.
+        Take an item from the current POI and add to character inventory.
+
+        For unique items, checks the unique item registry to prevent duplicates.
+        Unique items are registered globally when acquired.
 
         Args:
             hex_id: Current hex
@@ -3263,6 +3266,24 @@ class HexCrawlEngine:
                         if item.get("taken", False):
                             return {"success": False, "error": "Item already taken"}
 
+                        # Check if this is a unique item
+                        is_unique = item.get("is_unique", False)
+                        unique_item_id = item.get("unique_item_id")
+
+                        # Construct unique ID if not provided but marked unique
+                        if is_unique and not unique_item_id:
+                            unique_item_id = f"{hex_id}:{self._current_poi}:{item.get('name')}"
+
+                        # Check unique item registry if applicable
+                        if is_unique and unique_item_id:
+                            if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                                if self.controller.session_manager.is_unique_item_acquired(unique_item_id):
+                                    return {
+                                        "success": False,
+                                        "error": "This unique item has already been acquired",
+                                        "unique_item_id": unique_item_id,
+                                    }
+
                         # Mark as taken
                         item["taken"] = True
 
@@ -3273,11 +3294,47 @@ class HexCrawlEngine:
                             if item.get("name") not in self._poi_visits[visit_key].items_found:
                                 self._poi_visits[visit_key].items_found.append(item.get("name"))
 
+                        # Register unique item if applicable
+                        if is_unique and unique_item_id:
+                            if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                                self.controller.session_manager.register_unique_item(
+                                    unique_item_id=unique_item_id,
+                                    item_name=item.get("name"),
+                                    acquired_by=character_id,
+                                    hex_id=hex_id,
+                                    poi_name=self._current_poi,
+                                )
+
+                        # Create Item object for character inventory
+                        from src.data_models import Item
+                        new_item = Item(
+                            item_id=item.get("item_id", item.get("name", "").lower().replace(" ", "_")),
+                            name=item.get("name"),
+                            weight=item.get("weight", 0),
+                            quantity=item.get("quantity", 1),
+                            is_unique=is_unique,
+                            unique_item_id=unique_item_id,
+                            source_hex=hex_id,
+                            source_poi=self._current_poi,
+                            description=item.get("description"),
+                            value_gp=item.get("value"),
+                            magical=item.get("magical", False),
+                            cursed=item.get("cursed", False),
+                        )
+
+                        # Add to character inventory
+                        character = self.controller.get_character(character_id)
+                        if character:
+                            character.inventory.append(new_item)
+
                         return {
                             "success": True,
                             "item_name": item.get("name"),
                             "description": item.get("description", ""),
                             "value": item.get("value"),
+                            "is_unique": is_unique,
+                            "unique_item_id": unique_item_id,
+                            "added_to_inventory": character is not None,
                             "message": f"You take the {item.get('name')}.",
                         }
 
