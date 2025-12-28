@@ -868,6 +868,50 @@ class SessionManager:
         if item_name not in delta.items_taken:
             delta.items_taken.append(item_name)
 
+    def get_items_taken_from_poi(self, hex_id: str, poi_name: str) -> list[str]:
+        """
+        Get list of items that have been taken from a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+
+        Returns:
+            List of item names that have been taken
+        """
+        if not self._current_session:
+            return []
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return []
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return []
+
+        return poi_delta.items_taken.copy()
+
+    def is_item_taken_from_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        item_name: str,
+    ) -> bool:
+        """
+        Check if a specific item has been taken from a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            item_name: Name of the item to check
+
+        Returns:
+            True if the item has been taken
+        """
+        taken_items = self.get_items_taken_from_poi(hex_id, poi_name)
+        return item_name in taken_items
+
     def mark_roll_table_entry_found(
         self,
         hex_id: str,

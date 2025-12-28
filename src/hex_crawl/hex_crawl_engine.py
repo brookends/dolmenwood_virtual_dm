@@ -3211,11 +3211,23 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                # Filter out already taken items
+                # Filter out already taken items from multiple sources:
+                # 1. Engine-local visit tracking
+                # 2. Persistent session delta
+                # 3. Item's own "taken" flag
                 visit_key = f"{hex_id}:{self._current_poi}"
-                taken_items = []
+                taken_items = set()
+
+                # Check engine-local visit state
                 if visit_key in self._poi_visits:
-                    taken_items = self._poi_visits[visit_key].items_taken
+                    taken_items.update(self._poi_visits[visit_key].items_taken)
+
+                # Check persistent session delta
+                if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                    session_taken = self.controller.session_manager.get_items_taken_from_poi(
+                        hex_id, self._current_poi
+                    )
+                    taken_items.update(session_taken)
 
                 available_items = []
                 for item in poi.items:
@@ -3225,6 +3237,7 @@ class HexCrawlEngine:
                             "name": item_name,
                             "description": item.get("description", ""),
                             "value": item.get("value"),
+                            "is_unique": item.get("is_unique", False),
                         })
 
                 return available_items
@@ -3240,8 +3253,8 @@ class HexCrawlEngine:
         """
         Take an item from the current POI and add to character inventory.
 
-        For unique items, checks the unique item registry to prevent duplicates.
-        Unique items are registered globally when acquired.
+        Items are tracked at the hex/POI level so they no longer appear
+        once taken. Unique items are also registered globally.
 
         Args:
             hex_id: Current hex
@@ -3263,8 +3276,9 @@ class HexCrawlEngine:
                 # Find the item
                 for item in poi.items:
                     if item.get("name", "").lower() == item_name.lower():
+                        # Check if already taken (shouldn't appear in available items, but safety check)
                         if item.get("taken", False):
-                            return {"success": False, "error": "Item already taken"}
+                            return {"success": False, "error": "Item not found here"}
 
                         # Check if this is a unique item
                         is_unique = item.get("is_unique", False)
@@ -3274,29 +3288,26 @@ class HexCrawlEngine:
                         if is_unique and not unique_item_id:
                             unique_item_id = f"{hex_id}:{self._current_poi}:{item.get('name')}"
 
-                        # Check unique item registry if applicable
-                        if is_unique and unique_item_id:
-                            if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
-                                if self.controller.session_manager.is_unique_item_acquired(unique_item_id):
-                                    return {
-                                        "success": False,
-                                        "error": "This unique item has already been acquired",
-                                        "unique_item_id": unique_item_id,
-                                    }
-
-                        # Mark as taken
+                        # Mark as taken in POI data
                         item["taken"] = True
 
-                        # Track in visit
+                        # Track in engine-local visit state
                         visit_key = f"{hex_id}:{self._current_poi}"
                         if visit_key in self._poi_visits:
                             self._poi_visits[visit_key].items_taken.append(item.get("name"))
                             if item.get("name") not in self._poi_visits[visit_key].items_found:
                                 self._poi_visits[visit_key].items_found.append(item.get("name"))
 
-                        # Register unique item if applicable
-                        if is_unique and unique_item_id:
-                            if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                        # Persist to session manager (for cross-session tracking)
+                        if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                            self.controller.session_manager.add_item_taken(
+                                hex_id=hex_id,
+                                poi_name=self._current_poi,
+                                item_name=item.get("name"),
+                            )
+
+                            # Also register in unique item registry for global tracking
+                            if is_unique and unique_item_id:
                                 self.controller.session_manager.register_unique_item(
                                     unique_item_id=unique_item_id,
                                     item_name=item.get("name"),
