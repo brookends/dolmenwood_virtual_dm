@@ -1475,6 +1475,9 @@ class HexProcedural:
     encounter_notes: str = ""  # Special notes about encounters
     foraging_results: str = ""  # Description of foraging results
     foraging_special: list[str] = field(default_factory=list)  # Special foraging yields
+    # Contextual encounter modifiers that apply to all wilderness encounters in this hex
+    # Each modifier has: chance (e.g., "2-in-6"), result (creature/event), context (flavor)
+    encounter_modifiers: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

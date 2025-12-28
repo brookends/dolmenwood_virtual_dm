@@ -618,10 +618,10 @@ class HexCrawlEngine:
         hex_id: str
     ) -> Optional[dict[str, Any]]:
         """
-        Check POIs in the current hex for contextual encounter modifiers.
+        Check hex-level and POI-level contextual encounter modifiers.
 
-        POIs can define encounter_modifiers that affect random encounters
-        in the hex. For example, The Spectral Manse has:
+        Hex-level modifiers are checked first (from procedural.encounter_modifiers),
+        then POI-level modifiers. For example, hex 0101 has:
         "Encounters are 2-in-6 likely to be with a bewildered banshee
         heading to a ball at the Spectral Manse"
 
@@ -635,7 +635,25 @@ class HexCrawlEngine:
         if not hex_data:
             return None
 
-        # Check each POI for encounter modifiers
+        # First check hex-level encounter modifiers (procedural.encounter_modifiers)
+        if hex_data.procedural and hex_data.procedural.encounter_modifiers:
+            for modifier in hex_data.procedural.encounter_modifiers:
+                chance_str = modifier.get("chance", "")
+                chance = self._parse_x_in_6_chance(chance_str)
+
+                if chance > 0:
+                    roll = self.dice.roll_d6(1, f"hex contextual encounter: {hex_id}")
+                    if roll.total <= chance:
+                        return {
+                            "triggered": True,
+                            "source": "hex",
+                            "hex_id": hex_id,
+                            "result": modifier.get("result", "unknown creature"),
+                            "context": modifier.get("context", ""),
+                            "modifier": modifier,
+                        }
+
+        # Then check each POI for encounter modifiers
         for poi in hex_data.points_of_interest:
             for modifier in poi.encounter_modifiers:
                 # Parse the chance (e.g., "2-in-6")
@@ -643,10 +661,11 @@ class HexCrawlEngine:
                 chance = self._parse_x_in_6_chance(chance_str)
 
                 if chance > 0:
-                    roll = self.dice.roll_d6(1, f"contextual encounter: {poi.name}")
+                    roll = self.dice.roll_d6(1, f"POI contextual encounter: {poi.name}")
                     if roll.total <= chance:
                         return {
                             "triggered": True,
+                            "source": "poi",
                             "poi_name": poi.name,
                             "result": modifier.get("result", "unknown creature"),
                             "context": modifier.get("context", ""),
