@@ -1379,9 +1379,12 @@ class PointOfInterest:
     hazards: list[dict[str, Any]] = field(default_factory=list)
 
     # Locks/barriers preventing access
-    # Format: [{type, requirement, description, bypassed}]
+    # Format: [{type, requirement, description, bypassed, hidden, detected, magic_school}]
     # type: "magical", "physical", "puzzle", "key"
     # requirement: spell name, item name, key ID, or puzzle solution
+    # hidden: if True, lock is not obvious - requires magic detection to find
+    # detected: if True, hidden lock has been revealed by detection
+    # magic_school: optional school of magic for magical locks (e.g., "abjuration", "illusion")
     locks: list[dict[str, Any]] = field(default_factory=list)
 
     # Dungeon linkage (for POIs that lead to dungeons)
@@ -1446,9 +1449,96 @@ class PointOfInterest:
         """
         return [h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"]
 
-    def get_active_locks(self) -> list[dict[str, Any]]:
-        """Get locks that haven't been bypassed."""
-        return [lock for lock in self.locks if not lock.get("bypassed", False)]
+    def get_active_locks(self, include_hidden: bool = False) -> list[dict[str, Any]]:
+        """
+        Get locks that haven't been bypassed.
+
+        Args:
+            include_hidden: If True, include hidden locks that haven't been detected
+
+        Returns:
+            List of active lock definitions
+        """
+        result = []
+        for lock in self.locks:
+            if lock.get("bypassed", False):
+                continue
+            # Hidden locks only show if detected or include_hidden is True
+            if lock.get("hidden", False) and not lock.get("detected", False):
+                if include_hidden:
+                    result.append(lock)
+                continue
+            result.append(lock)
+        return result
+
+    def get_visible_locks(self) -> list[dict[str, Any]]:
+        """Get locks that are visible (not hidden, or hidden but detected)."""
+        return self.get_active_locks(include_hidden=False)
+
+    def get_hidden_locks(self) -> list[dict[str, Any]]:
+        """Get hidden locks that haven't been detected yet."""
+        return [
+            lock for lock in self.locks
+            if not lock.get("bypassed", False)
+            and lock.get("hidden", False)
+            and not lock.get("detected", False)
+        ]
+
+    def get_magical_properties(self) -> list[dict[str, Any]]:
+        """
+        Get all magical properties at this POI for magic detection.
+
+        Returns list of magical elements including:
+        - Magical locks/barriers
+        - Magical effects
+        - Magic items
+        """
+        magical = []
+
+        # Magical locks
+        for i, lock in enumerate(self.locks):
+            if lock.get("type") == "magical" and not lock.get("bypassed", False):
+                magical.append({
+                    "category": "lock",
+                    "index": i,
+                    "hidden": lock.get("hidden", False),
+                    "detected": lock.get("detected", False),
+                    "school": lock.get("magic_school"),
+                    "description": lock.get("description", "A magical barrier"),
+                })
+
+        # Magical effects at the POI
+        for effect in self.magical_effects:
+            magical.append({
+                "category": "effect",
+                "description": effect,
+            })
+
+        # Magic items (if any are present and not taken)
+        for item in self.items:
+            if item.get("magical", False) and not item.get("taken", False):
+                magical.append({
+                    "category": "item",
+                    "name": item.get("name"),
+                    "hidden": item.get("hidden", False),
+                })
+
+        return magical
+
+    def reveal_magical_lock(self, lock_index: int) -> bool:
+        """
+        Mark a hidden magical lock as detected.
+
+        Args:
+            lock_index: Index of the lock in the locks list
+
+        Returns:
+            True if successfully revealed
+        """
+        if 0 <= lock_index < len(self.locks):
+            self.locks[lock_index]["detected"] = True
+            return True
+        return False
 
     def has_active_locks(self) -> bool:
         """Check if there are any active locks preventing access."""
