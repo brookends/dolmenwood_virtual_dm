@@ -46,9 +46,11 @@ class TestGameDate:
 
     def test_advance_days_month_rollover(self):
         """Test advancing date across month boundary."""
+        # Month 6 (Greenmont) has 28 days in Dolmenwood calendar
         date = GameDate(year=1, month=6, day=28)
         new_date = date.advance_days(5)
-        assert new_date.day == 3
+        # 28 + 5 = 33, which is 5 days into month 7 (Moltmont, 30 days)
+        assert new_date.day == 5
         assert new_date.month == 7
         assert new_date.year == 1
 
@@ -84,11 +86,13 @@ class TestGameDate:
             assert date.get_season() == Season.WINTER
 
     def test_str_representation(self):
-        """Test string representation."""
+        """Test string representation using Dolmenwood calendar format."""
         date = GameDate(year=1, month=6, day=15)
-        assert "Year 1" in str(date)
-        assert "Month 6" in str(date)
-        assert "Day 15" in str(date)
+        date_str = str(date)
+        # New format: "15 Greenmont, Year 1"
+        assert "Year 1" in date_str
+        assert "Greenmont" in date_str  # Month 6 is Greenmont
+        assert "15" in date_str
 
 
 class TestGameTime:

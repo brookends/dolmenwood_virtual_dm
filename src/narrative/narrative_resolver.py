@@ -28,7 +28,7 @@ from src.narrative.spell_resolver import (
     SpellResolver, SpellData, SpellCastResult, ActiveSpellEffect
 )
 from src.narrative.hazard_resolver import (
-    HazardResolver, HazardType, HazardResult, DarknessLevel
+    HazardResolver, HazardType, HazardResult, DarknessLevel, DivingState
 )
 from src.narrative.creative_resolver import (
     CreativeSolutionResolver, CreativeSolution, CreativeResolutionResult,
