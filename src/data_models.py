@@ -2779,6 +2779,11 @@ class HexLocation:
     items: list[Any] = field(default_factory=list)  # Notable items in this hex
     secrets: list[str] = field(default_factory=list)  # Hidden information
 
+    # Item location mapping: maps hex-level items to their POI/sub-location paths
+    # Format: {"item_name": {"poi": "POI Name", "sub_location": "Sub-Location Name"}}
+    # If sub_location is None, item is at the POI level
+    item_locations: dict[str, dict[str, Optional[str]]] = field(default_factory=dict)
+
     # Navigation
     adjacent_hexes: list[str] = field(default_factory=list)  # Adjacent hex IDs
     roads: list[str] = field(default_factory=list)  # Roads through hex
@@ -2828,6 +2833,162 @@ class HexLocation:
             self.tagline = self.flavour_text
         elif self.tagline and not self.flavour_text:
             self.flavour_text = self.tagline
+
+    # =========================================================================
+    # ITEM LOCATION MANAGEMENT
+    # =========================================================================
+
+    def set_item_location(
+        self,
+        item_name: str,
+        poi_name: str,
+        sub_location_name: Optional[str] = None,
+    ) -> None:
+        """
+        Set the POI/sub-location where a hex-level item is found.
+
+        Args:
+            item_name: Name of the item from the hex's items list
+            poi_name: Name of the POI containing the item
+            sub_location_name: Optional sub-location within the POI
+        """
+        self.item_locations[item_name] = {
+            "poi": poi_name,
+            "sub_location": sub_location_name,
+        }
+
+    def get_item_location(self, item_name: str) -> Optional[dict[str, Optional[str]]]:
+        """
+        Get the location of a hex-level item.
+
+        Args:
+            item_name: Name of the item
+
+        Returns:
+            Dict with 'poi' and 'sub_location' keys, or None if not mapped
+        """
+        return self.item_locations.get(item_name)
+
+    def migrate_item_to_poi(
+        self,
+        item_name: str,
+        poi_name: str,
+        sub_location_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Migrate a hex-level item to a POI or sub-location.
+
+        Moves the item from the hex's items list to the specified POI/sub-location.
+
+        Args:
+            item_name: Name of the item to migrate
+            poi_name: Target POI name
+            sub_location_name: Optional sub-location within the POI
+
+        Returns:
+            True if item was migrated, False if not found
+        """
+        # Find the item in hex-level items
+        item_to_migrate = None
+        for item in self.items:
+            if isinstance(item, dict):
+                if item.get("name", "").lower() == item_name.lower():
+                    item_to_migrate = item
+                    break
+            elif isinstance(item, str):
+                if item.lower() == item_name.lower():
+                    item_to_migrate = {"name": item, "description": ""}
+                    break
+
+        if not item_to_migrate:
+            return False
+
+        # Find the target POI
+        target_poi = None
+        for poi in self.points_of_interest:
+            if poi.name.lower() == poi_name.lower():
+                target_poi = poi
+                break
+
+        if not target_poi:
+            return False
+
+        # Migrate to sub-location or POI
+        if sub_location_name:
+            sub_loc = target_poi.get_sub_location_by_name(sub_location_name)
+            if sub_loc:
+                if "items" not in sub_loc:
+                    sub_loc["items"] = []
+                sub_loc["items"].append(item_to_migrate)
+            else:
+                # Sub-location not found, add to POI items
+                target_poi.items.append(item_to_migrate)
+        else:
+            target_poi.items.append(item_to_migrate)
+
+        # Remove from hex-level items
+        self.items = [i for i in self.items if i != item_to_migrate and
+                      (not isinstance(i, str) or i.lower() != item_name.lower())]
+
+        # Track the migration
+        self.set_item_location(item_name, poi_name, sub_location_name)
+
+        return True
+
+    def get_items_at_poi(self, poi_name: str) -> list[dict[str, Any]]:
+        """
+        Get all items at a specific POI (including migrated hex-level items).
+
+        Args:
+            poi_name: Name of the POI
+
+        Returns:
+            List of items at the POI
+        """
+        for poi in self.points_of_interest:
+            if poi.name.lower() == poi_name.lower():
+                return poi.items.copy()
+        return []
+
+    def get_items_at_sub_location(
+        self,
+        poi_name: str,
+        sub_location_name: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Get all items at a specific sub-location.
+
+        Args:
+            poi_name: Name of the POI
+            sub_location_name: Name of the sub-location
+
+        Returns:
+            List of items at the sub-location
+        """
+        for poi in self.points_of_interest:
+            if poi.name.lower() == poi_name.lower():
+                sub_loc = poi.get_sub_location_by_name(sub_location_name)
+                if sub_loc:
+                    return sub_loc.get("items", []).copy()
+        return []
+
+    def get_unmapped_hex_items(self) -> list[Any]:
+        """
+        Get hex-level items that haven't been mapped to POI locations.
+
+        Returns:
+            List of items without location mappings
+        """
+        unmapped = []
+        for item in self.items:
+            if isinstance(item, dict):
+                item_name = item.get("name", "")
+            else:
+                item_name = str(item)
+
+            if item_name and item_name not in self.item_locations:
+                unmapped.append(item)
+        return unmapped
 
 
 # =============================================================================

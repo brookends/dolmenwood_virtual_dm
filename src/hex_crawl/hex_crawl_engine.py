@@ -3405,3 +3405,181 @@ class HexCrawlEngine:
             char_id for char_id, state in self._diving_states.items()
             if state.is_diving
         ]
+
+    # =========================================================================
+    # HEX-LEVEL TO POI-LEVEL ITEM MIGRATION
+    # =========================================================================
+
+    def migrate_hex_item_to_poi(
+        self,
+        hex_id: str,
+        item_name: str,
+        poi_name: str,
+        sub_location_name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Migrate a hex-level item to a POI or sub-location.
+
+        Used to move items from the hex's top-level items list to the
+        appropriate POI/sub-location where they should be found through
+        exploration.
+
+        Args:
+            hex_id: Hex containing the item
+            item_name: Name of the item to migrate
+            poi_name: Target POI name
+            sub_location_name: Optional sub-location within the POI
+
+        Returns:
+            Dict with migration result
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        success = hex_data.migrate_item_to_poi(item_name, poi_name, sub_location_name)
+
+        if success:
+            location_desc = poi_name
+            if sub_location_name:
+                location_desc += f" / {sub_location_name}"
+            return {
+                "success": True,
+                "item_name": item_name,
+                "location": location_desc,
+                "message": f"Migrated '{item_name}' to {location_desc}",
+            }
+
+        return {
+            "success": False,
+            "error": f"Could not migrate '{item_name}' - item or POI not found",
+        }
+
+    def get_hex_item_location(
+        self,
+        hex_id: str,
+        item_name: str,
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get the POI/sub-location where a hex-level item is found.
+
+        Args:
+            hex_id: Hex to check
+            item_name: Name of the item
+
+        Returns:
+            Dict with 'poi' and 'sub_location' keys, or None if not mapped
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        return hex_data.get_item_location(item_name)
+
+    def get_unmapped_hex_items(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get hex-level items that haven't been mapped to POI locations.
+
+        Args:
+            hex_id: Hex to check
+
+        Returns:
+            List of items without location mappings
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        return hex_data.get_unmapped_hex_items()
+
+    def auto_migrate_hex_items(
+        self,
+        hex_id: str,
+        item_mappings: dict[str, dict[str, Optional[str]]],
+    ) -> dict[str, Any]:
+        """
+        Automatically migrate multiple hex-level items based on a mapping.
+
+        Args:
+            hex_id: Hex containing the items
+            item_mappings: Dict mapping item names to their locations
+                          Format: {"item_name": {"poi": "POI Name", "sub_location": "Sub-Location"}}
+
+        Returns:
+            Dict with migration results
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        results = {"migrated": [], "failed": []}
+
+        for item_name, location in item_mappings.items():
+            poi_name = location.get("poi")
+            sub_location_name = location.get("sub_location")
+
+            if not poi_name:
+                results["failed"].append({
+                    "item": item_name,
+                    "error": "No POI specified",
+                })
+                continue
+
+            success = hex_data.migrate_item_to_poi(item_name, poi_name, sub_location_name)
+
+            if success:
+                results["migrated"].append({
+                    "item": item_name,
+                    "poi": poi_name,
+                    "sub_location": sub_location_name,
+                })
+            else:
+                results["failed"].append({
+                    "item": item_name,
+                    "error": "Item or POI not found",
+                })
+
+        return {
+            "success": len(results["failed"]) == 0,
+            "migrated_count": len(results["migrated"]),
+            "failed_count": len(results["failed"]),
+            "details": results,
+        }
+
+    def get_items_at_current_location(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get items at the current exploration location.
+
+        Returns items based on current POI and exploration context.
+        If diving, only returns items at underwater sub-locations.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of accessible items
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        # Get items from current POI
+        poi_items = hex_data.get_items_at_poi(self._current_poi)
+
+        # If in a specific exploration context, also check sub-locations
+        if self._exploration_context in ("diving", "underwater"):
+            for poi in hex_data.points_of_interest:
+                if poi.name == self._current_poi:
+                    # Get items from underwater sub-locations
+                    for sub_loc in poi.get_sub_locations("underwater"):
+                        sub_items = sub_loc.get("items", [])
+                        for item in sub_items:
+                            if item not in poi_items and not item.get("taken", False):
+                                poi_items.append(item)
+                    break
+
+        # Filter out taken items
+        return [item for item in poi_items if not item.get("taken", False)]
