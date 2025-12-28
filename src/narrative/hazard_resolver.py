@@ -27,6 +27,7 @@ class HazardType(str, Enum):
     CLIMBING = "climbing"           # p150
     COLD = "cold"                   # p150
     DARKNESS = "darkness"           # p150
+    DIVING = "diving"               # Swimming underwater with breath tracking
     DOOR_STUCK = "door_stuck"       # p151
     DOOR_LOCKED = "door_locked"     # p151
     DOOR_LISTEN = "door_listen"     # p151
@@ -78,6 +79,90 @@ class HazardResult:
 
     # Nested results (e.g., for traps that deal damage)
     nested_results: list["HazardResult"] = field(default_factory=list)
+
+    # Diving-specific
+    rounds_underwater: int = 0
+    rounds_remaining: int = 0
+
+
+@dataclass
+class DivingState:
+    """
+    Tracks diving/underwater exploration state for a character.
+
+    Per Dolmenwood rules (p154):
+    - A character can survive for up to 1 Round (10 seconds) per point of CON
+      before suffocating to death
+    - Swimming is at half speed
+    - Armor imposes penalties on swimming checks
+    """
+    character_id: str
+    rounds_underwater: int = 0
+    max_rounds: int = 10  # Will be set from CON score
+
+    # Diving status
+    is_diving: bool = False
+    depth_feet: int = 0
+
+    # Swimming check results
+    last_swim_check_success: bool = True
+
+    def start_dive(self, con_score: int) -> None:
+        """Start diving, calculating max breath time from CON."""
+        self.is_diving = True
+        self.rounds_underwater = 0
+        self.max_rounds = con_score
+        self.last_swim_check_success = True
+
+    def advance_round(self) -> int:
+        """
+        Advance time by one round underwater.
+
+        Returns:
+            Rounds of breath remaining
+        """
+        if not self.is_diving:
+            return self.max_rounds
+        self.rounds_underwater += 1
+        return max(0, self.max_rounds - self.rounds_underwater)
+
+    def advance_turn(self) -> int:
+        """
+        Advance time by one turn (6 rounds) underwater.
+
+        Returns:
+            Rounds of breath remaining
+        """
+        for _ in range(6):
+            remaining = self.advance_round()
+            if remaining <= 0:
+                return 0
+        return max(0, self.max_rounds - self.rounds_underwater)
+
+    def get_rounds_remaining(self) -> int:
+        """Get rounds of breath remaining."""
+        return max(0, self.max_rounds - self.rounds_underwater)
+
+    def is_suffocating(self) -> bool:
+        """Check if character has run out of breath."""
+        return self.rounds_underwater >= self.max_rounds
+
+    def surface(self) -> None:
+        """Surface and reset diving state."""
+        self.is_diving = False
+        self.rounds_underwater = 0
+        self.depth_feet = 0
+
+    def get_warning_level(self) -> str:
+        """Get warning level based on remaining breath."""
+        remaining = self.get_rounds_remaining()
+        if remaining <= 0:
+            return "suffocating"
+        elif remaining <= 3:
+            return "critical"
+        elif remaining <= self.max_rounds // 2:
+            return "warning"
+        return "safe"
 
 
 # Hazard constants per Dolmenwood rules
@@ -135,6 +220,12 @@ SWIM_ARMOR_MODIFIERS = {
 # Trap trigger chance (p155)
 TRAP_TRIGGER_CHANCE = 2  # X-in-6
 
+# Suffocation rules (p154)
+# A character can survive for up to 1 Round (10 seconds) per point of Constitution
+# before suffocating to death
+SECONDS_PER_ROUND = 10  # 1 round = 10 seconds
+ROUNDS_PER_TURN = 6     # 1 turn = 60 seconds = 6 rounds
+
 # Foraging yields (p152)
 FORAGING_YIELDS = {
     "fishing": "2d6",
@@ -182,6 +273,7 @@ class HazardResolver:
             HazardType.CLIMBING: self._resolve_climbing,
             HazardType.COLD: self._resolve_cold,
             HazardType.DARKNESS: self._resolve_darkness,
+            HazardType.DIVING: self._resolve_diving,
             HazardType.DOOR_STUCK: self._resolve_door_stuck,
             HazardType.DOOR_LOCKED: self._resolve_door_locked,
             HazardType.DOOR_LISTEN: self._resolve_door_listen,
@@ -327,6 +419,145 @@ class HazardResolver:
                 "stumbling in darkness"
             ] if darkness_level != DarknessLevel.BRIGHT else []
         )
+
+    def _resolve_diving(
+        self,
+        character: "CharacterState",
+        diving_state: Optional[DivingState] = None,
+        rounds_to_spend: int = 1,
+        armor_weight: str = "unarmoured",
+        action: str = "dive",  # "dive", "swim", "surface", "action"
+        **kwargs: Any
+    ) -> HazardResult:
+        """
+        Resolve diving/underwater exploration with breath tracking.
+
+        Per Dolmenwood rules (p154):
+        - A character can survive for 1 Round (10 seconds) per CON point
+          before suffocating to death
+        - Swimming is at half speed
+        - Armor imposes penalties
+
+        Args:
+            character: The character diving
+            diving_state: Current diving state (or None to start fresh)
+            rounds_to_spend: How many rounds this action takes underwater
+            armor_weight: Weight of armor worn
+            action: "dive" to start, "swim" for movement, "surface" to return,
+                   "action" for exploring/grabbing items
+
+        Returns:
+            HazardResult with diving outcomes
+        """
+        con_score = character.ability_scores.get("CON", 10)
+
+        # Initialize or use existing diving state
+        if diving_state is None:
+            diving_state = DivingState(character_id=character.character_id)
+            diving_state.start_dive(con_score)
+
+        # Handle surfacing
+        if action == "surface":
+            diving_state.surface()
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Surfaced successfully, catching breath",
+                rounds_underwater=0,
+                rounds_remaining=con_score,
+                narrative_hints=["breaks the surface", "gasps for air", "breathes deeply"]
+            )
+
+        # Handle initial dive
+        if action == "dive":
+            diving_state.start_dive(con_score)
+
+        # Advance time underwater
+        for _ in range(rounds_to_spend):
+            remaining = diving_state.advance_round()
+
+            # Check for suffocation
+            if remaining <= 0:
+                return HazardResult(
+                    success=False,
+                    hazard_type=HazardType.DIVING,
+                    action_type=ActionType.SWIM,
+                    description="Ran out of breath and drowned!",
+                    conditions_applied=["dead"],
+                    rounds_underwater=diving_state.rounds_underwater,
+                    rounds_remaining=0,
+                    narrative_hints=["lungs burn", "darkness closes in", "cannot hold breath any longer"]
+                )
+
+        # Check swimming ability (for movement actions)
+        swim_success = True
+        swim_check_result = None
+        if action in ("swim", "dive"):
+            armor_mod = SWIM_ARMOR_MODIFIERS.get(armor_weight, 0)
+
+            # Heavy/medium armor requires a check
+            if armor_mod < 0:
+                str_mod = character.get_ability_modifier("STR")
+                total_mod = armor_mod + str_mod
+
+                roll = self.dice.roll_d20("Swimming underwater")
+                swim_check_result = roll.total + total_mod
+                target = kwargs.get("difficulty", 10)
+                swim_success = swim_check_result >= target
+
+                if not swim_success:
+                    # Failed swim check - sink and use extra round
+                    diving_state.advance_round()
+                    diving_state.last_swim_check_success = False
+
+        rounds_remaining = diving_state.get_rounds_remaining()
+        warning_level = diving_state.get_warning_level()
+
+        # Build narrative hints based on warning level
+        narrative_hints = []
+        if warning_level == "critical":
+            narrative_hints = ["lungs burning", "desperate for air", "vision blurring"]
+        elif warning_level == "warning":
+            narrative_hints = ["chest tightening", "need to surface soon"]
+        else:
+            narrative_hints = ["swimming underwater", "light filtering from above"]
+
+        if not swim_success:
+            narrative_hints.append("struggling against armor weight")
+
+        result = HazardResult(
+            success=swim_success,
+            hazard_type=HazardType.DIVING,
+            action_type=ActionType.SWIM,
+            description=f"Underwater: {rounds_remaining} rounds of breath remaining",
+            rounds_underwater=diving_state.rounds_underwater,
+            rounds_remaining=rounds_remaining,
+            penalties_applied={"speed_multiplier": 0.5},
+            narrative_hints=narrative_hints,
+        )
+
+        if swim_check_result is not None:
+            result.check_made = True
+            result.check_type = CheckType.STRENGTH
+            result.check_result = swim_check_result
+
+        return result
+
+    def create_diving_state(self, character: "CharacterState") -> DivingState:
+        """
+        Create a new diving state for a character.
+
+        Args:
+            character: The character to create state for
+
+        Returns:
+            New DivingState initialized with character's CON
+        """
+        con_score = character.ability_scores.get("CON", 10)
+        state = DivingState(character_id=character.character_id)
+        state.max_rounds = con_score
+        return state
 
     def _resolve_door_stuck(
         self,

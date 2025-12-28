@@ -36,13 +36,17 @@ from src.data_models import (
     MovementMode,
     CharacterState,
     PointOfInterest,
+    HexStateChange,
+    WorldStateChanges,
 )
 from src.narrative.narrative_resolver import (
     NarrativeResolver,
     ResolutionResult,
     NarrationContext,
+    DivingState,
 )
 from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
+from src.narrative.intent_parser import ActionType
 
 
 logger = logging.getLogger(__name__)
@@ -166,15 +170,6 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
     TerrainType.FOREST: TerrainInfo(
         TerrainType.FOREST, travel_point_cost=2, lost_chance=1, encounter_chance=1,
         mount_allowed=True, vehicle_allowed=True, description="Open forest"
-    ),
-    TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST,
-        TerrainDifficulty.LIGHT,
-        travel_points=2,
-        lost_chance=1,
-        encounter_chance=1,
-        mount_vehicle=MountVehicleRestriction.ALLOWED,
-        description="Light, airy woods (open forest)"
     ),
     # Moderate Terrain (p157) - 3 TP, 2-in-6
     TerrainType.MOOR: TerrainInfo(
@@ -316,6 +311,15 @@ class HexCrawlEngine:
 
         # NPC interaction tracking
         self._met_npcs: set[str] = set()  # NPC IDs we've interacted with
+
+        # World-state change tracking
+        self._world_state_changes: WorldStateChanges = WorldStateChanges()
+
+        # Current exploration context (surface, diving, etc.)
+        self._exploration_context: str = "surface"
+
+        # Diving state tracking per character
+        self._diving_states: dict[str, DivingState] = {}
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -2869,3 +2873,535 @@ class HexCrawlEngine:
                 dungeon_pois.append(poi_info)
 
         return dungeon_pois
+
+    # =========================================================================
+    # WORLD-STATE CHANGE TRACKING
+    # =========================================================================
+
+    def record_state_change(
+        self,
+        hex_id: str,
+        change_type: str,
+        trigger_action: str,
+        trigger_details: Optional[dict[str, Any]] = None,
+        poi_name: Optional[str] = None,
+        before_state: Optional[dict[str, Any]] = None,
+        after_state: Optional[dict[str, Any]] = None,
+        narrative_description: str = "",
+        reversible: bool = False,
+        reverse_condition: Optional[str] = None,
+    ) -> HexStateChange:
+        """
+        Record a permanent world-state change caused by player action.
+
+        Examples:
+        - Removing a cursed item lifts a curse
+        - Killing an NPC removes them from the location
+        - Solving a puzzle grants permanent access
+
+        Args:
+            hex_id: Hex where the change occurred
+            change_type: Type of change (e.g., "curse_lifted", "npc_removed")
+            trigger_action: What triggered the change (e.g., "item_removed", "npc_killed")
+            trigger_details: Details about the trigger (e.g., {"item": "Hand of St Howarth"})
+            poi_name: Specific POI affected (if applicable)
+            before_state: State before the change
+            after_state: State after the change
+            narrative_description: Player-facing description of what happened
+            reversible: Whether the change can be undone
+            reverse_condition: How to reverse the change
+
+        Returns:
+            The recorded HexStateChange
+        """
+        change = HexStateChange(
+            hex_id=hex_id,
+            poi_name=poi_name,
+            trigger_action=trigger_action,
+            trigger_details=trigger_details or {},
+            change_type=change_type,
+            before_state=before_state or {},
+            after_state=after_state or {},
+            narrative_description=narrative_description,
+            occurred_at=self.controller.world_state.current_date if self.controller.world_state else None,
+            reversible=reversible,
+            reverse_condition=reverse_condition,
+        )
+
+        self._world_state_changes.add_change(change)
+        logger.info(f"Recorded world-state change: {change_type} at {hex_id}/{poi_name or 'hex'}")
+
+        return change
+
+    def get_hex_state_changes(self, hex_id: str) -> list[HexStateChange]:
+        """Get all state changes that have occurred in a hex."""
+        return self._world_state_changes.get_changes_for_hex(hex_id)
+
+    def get_poi_state_changes(self, hex_id: str, poi_name: str) -> list[HexStateChange]:
+        """Get all state changes at a specific POI."""
+        return self._world_state_changes.get_changes_for_poi(hex_id, poi_name)
+
+    def is_curse_active(
+        self,
+        hex_id: str,
+        curse_name: str,
+        poi_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Check if a curse is still active in a location.
+
+        Args:
+            hex_id: Hex to check
+            curse_name: Name of the curse (e.g., "blood_curse")
+            poi_name: Specific POI if applicable
+
+        Returns:
+            True if curse is still active (no "curse_lifted" change recorded)
+        """
+        return self._world_state_changes.is_condition_active(hex_id, curse_name, poi_name)
+
+    def lift_curse(
+        self,
+        hex_id: str,
+        curse_name: str,
+        trigger_action: str,
+        trigger_details: Optional[dict[str, Any]] = None,
+        poi_name: Optional[str] = None,
+        narrative_description: str = "",
+    ) -> HexStateChange:
+        """
+        Record that a curse has been lifted.
+
+        Args:
+            hex_id: Hex where the curse was
+            curse_name: Name of the curse
+            trigger_action: What lifted the curse
+            trigger_details: Details about what triggered the lifting
+            poi_name: POI if specific to a location
+            narrative_description: Description of what happened
+
+        Returns:
+            The recorded state change
+        """
+        return self.record_state_change(
+            hex_id=hex_id,
+            change_type=f"{curse_name}_lifted",
+            trigger_action=trigger_action,
+            trigger_details=trigger_details,
+            poi_name=poi_name,
+            before_state={"curse_active": True, "curse_name": curse_name},
+            after_state={"curse_active": False, "curse_name": curse_name},
+            narrative_description=narrative_description or f"The {curse_name.replace('_', ' ')} has been lifted.",
+            reversible=False,
+        )
+
+    def get_current_state_value(
+        self,
+        hex_id: str,
+        state_key: str,
+        poi_name: Optional[str] = None,
+    ) -> Optional[Any]:
+        """
+        Get the current value of a state key after all changes.
+
+        Args:
+            hex_id: Hex to check
+            state_key: Key to look up
+            poi_name: POI if specific
+
+        Returns:
+            Current value or None if not changed
+        """
+        return self._world_state_changes.get_current_state(hex_id, state_key, poi_name)
+
+    # =========================================================================
+    # SUB-LOCATION EXPLORATION
+    # =========================================================================
+
+    def get_exploration_context(self) -> str:
+        """Get the current exploration context (surface, diving, inside, etc.)."""
+        return self._exploration_context
+
+    def set_exploration_context(self, context: str) -> None:
+        """
+        Set the current exploration context.
+
+        Args:
+            context: New context (surface, diving, underwater, inside, climbing)
+        """
+        self._exploration_context = context
+
+    def get_visible_sub_locations(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Get sub-locations visible from the current context.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of visible sub-location info
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                return poi.get_sub_locations(self._exploration_context)
+
+        return []
+
+    def explore_sub_location(
+        self,
+        hex_id: str,
+        sub_location_name: str,
+        character_id: str,
+    ) -> dict[str, Any]:
+        """
+        Explore a sub-location within the current POI.
+
+        Args:
+            hex_id: Current hex
+            sub_location_name: Name of sub-location to explore
+            character_id: Character doing the exploration
+
+        Returns:
+            Dict with exploration results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return {"success": False, "error": "Character not found"}
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Check if sub-location exists
+                sub_loc = poi.get_sub_location_by_name(sub_location_name)
+                if not sub_loc:
+                    return {
+                        "success": False,
+                        "error": f"'{sub_location_name}' not found at this location",
+                    }
+
+                # Check access
+                can_access, required = poi.can_access_sub_location(
+                    sub_location_name,
+                    self._exploration_context,
+                )
+
+                if not can_access:
+                    return {
+                        "success": False,
+                        "error": f"Cannot access this area from {self._exploration_context}",
+                        "requires": required,
+                    }
+
+                # Successfully exploring sub-location
+                result = {
+                    "success": True,
+                    "sub_location_name": sub_loc.get("name"),
+                    "description": sub_loc.get("description", ""),
+                    "features": sub_loc.get("features", []),
+                    "items": [],
+                }
+
+                # Get items at this sub-location
+                for item in sub_loc.get("items", []):
+                    if not item.get("taken", False):
+                        result["items"].append({
+                            "name": item.get("name"),
+                            "description": item.get("description", ""),
+                        })
+
+                # Track visit
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    self._poi_visits[visit_key].rooms_explored.append(sub_location_name)
+
+                return result
+
+        return {"success": False, "error": "Current location not found"}
+
+    def take_sub_location_item(
+        self,
+        hex_id: str,
+        sub_location_name: str,
+        item_name: str,
+        character_id: str,
+    ) -> dict[str, Any]:
+        """
+        Take an item from a sub-location.
+
+        Args:
+            hex_id: Current hex
+            sub_location_name: Sub-location containing the item
+            item_name: Name of item to take
+            character_id: Character taking the item
+
+        Returns:
+            Dict with result
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                sub_loc = poi.get_sub_location_by_name(sub_location_name)
+                if not sub_loc:
+                    return {"success": False, "error": "Sub-location not found"}
+
+                # Check access
+                can_access, _ = poi.can_access_sub_location(
+                    sub_location_name,
+                    self._exploration_context,
+                )
+                if not can_access:
+                    return {"success": False, "error": "Cannot access this area"}
+
+                # Find and take the item
+                for item in sub_loc.get("items", []):
+                    if item.get("name", "").lower() == item_name.lower():
+                        if item.get("taken", False):
+                            return {"success": False, "error": "Item already taken"}
+
+                        # Mark as taken
+                        item["taken"] = True
+
+                        # Track in visit
+                        visit_key = f"{hex_id}:{self._current_poi}"
+                        if visit_key in self._poi_visits:
+                            self._poi_visits[visit_key].items_taken.append(item.get("name"))
+
+                        result = {
+                            "success": True,
+                            "item_name": item.get("name"),
+                            "description": item.get("description", ""),
+                        }
+
+                        # Check for special consequences
+                        if item.get("on_take"):
+                            result["special_effect"] = item.get("on_take")
+
+                        return result
+
+                return {"success": False, "error": f"Item '{item_name}' not found"}
+
+        return {"success": False, "error": "Current location not found"}
+
+    def get_context_features(self, hex_id: str) -> list[str]:
+        """
+        Get features visible from the current exploration context.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            List of visible feature descriptions
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                return poi.get_visible_features_from_context(self._exploration_context)
+
+        return []
+
+    # =========================================================================
+    # DIVING/UNDERWATER EXPLORATION
+    # =========================================================================
+
+    def start_dive(
+        self,
+        character_id: str,
+        depth_feet: int = 0,
+    ) -> HazardResult:
+        """
+        Start diving underwater.
+
+        Per Dolmenwood rules (p154):
+        - A character can survive for 1 Round (10 seconds) per CON point
+        - Swimming is at half speed
+        - Armor imposes penalties on swimming checks
+
+        Args:
+            character_id: Character starting to dive
+            depth_feet: Initial depth in feet
+
+        Returns:
+            HazardResult with diving initiation details
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        # Create diving state for this character
+        diving_state = self.narrative_resolver.hazard_resolver.create_diving_state(character)
+        diving_state.start_dive(character.ability_scores.get("CON", 10))
+        diving_state.depth_feet = depth_feet
+        self._diving_states[character_id] = diving_state
+
+        # Update exploration context
+        self._exploration_context = "diving"
+
+        # Resolve the initial dive
+        armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.DIVING,
+            character=character,
+            diving_state=diving_state,
+            rounds_to_spend=1,
+            armor_weight=armor_weight,
+            action="dive",
+        )
+
+        return result
+
+    def continue_diving(
+        self,
+        character_id: str,
+        rounds: int = 1,
+        action: str = "swim",
+    ) -> HazardResult:
+        """
+        Continue underwater exploration, spending rounds of breath.
+
+        Args:
+            character_id: Character continuing dive
+            rounds: Number of rounds this action takes
+            action: "swim" for movement, "action" for exploring/grabbing items
+
+        Returns:
+            HazardResult with breath status
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        diving_state = self._diving_states.get(character_id)
+        if not diving_state or not diving_state.is_diving:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Character is not diving",
+            )
+
+        armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.DIVING,
+            character=character,
+            diving_state=diving_state,
+            rounds_to_spend=rounds,
+            armor_weight=armor_weight,
+            action=action,
+        )
+
+        # If character drowned, remove from diving states
+        if "dead" in result.conditions_applied:
+            self._exploration_context = "surface"
+            del self._diving_states[character_id]
+
+        return result
+
+    def surface_from_dive(self, character_id: str) -> HazardResult:
+        """
+        Surface from underwater and catch breath.
+
+        Args:
+            character_id: Character surfacing
+
+        Returns:
+            HazardResult confirming surfacing
+        """
+        character = self.controller.get_character(character_id)
+        if not character:
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Character not found",
+            )
+
+        diving_state = self._diving_states.get(character_id)
+        if not diving_state:
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.DIVING,
+                action_type=ActionType.SWIM,
+                description="Already on surface",
+            )
+
+        result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            hazard_type=HazardType.DIVING,
+            character=character,
+            diving_state=diving_state,
+            action="surface",
+        )
+
+        # Update state
+        diving_state.surface()
+        self._exploration_context = "surface"
+
+        return result
+
+    def get_diving_status(self, character_id: str) -> dict[str, Any]:
+        """
+        Get current diving status for a character.
+
+        Args:
+            character_id: Character to check
+
+        Returns:
+            Dict with diving status information
+        """
+        diving_state = self._diving_states.get(character_id)
+        if not diving_state or not diving_state.is_diving:
+            return {
+                "is_diving": False,
+                "rounds_remaining": None,
+                "warning_level": None,
+            }
+
+        return {
+            "is_diving": True,
+            "rounds_underwater": diving_state.rounds_underwater,
+            "rounds_remaining": diving_state.get_rounds_remaining(),
+            "max_rounds": diving_state.max_rounds,
+            "warning_level": diving_state.get_warning_level(),
+            "depth_feet": diving_state.depth_feet,
+        }
+
+    def get_all_diving_characters(self) -> list[str]:
+        """Get IDs of all characters currently diving."""
+        return [
+            char_id for char_id, state in self._diving_states.items()
+            if state.is_diving
+        ]

@@ -1391,6 +1391,12 @@ class PointOfInterest:
     dungeon_id: Optional[str] = None  # ID of dungeon to transition to
     dungeon_entrance_room: Optional[str] = None  # Starting room in dungeon
 
+    # Sub-locations within this POI (for non-dungeon exploration)
+    # Format: [{name, description, access_condition, visible_from, features, items}]
+    # access_condition: e.g., "diving", "climbing", "secret_door", None (always accessible)
+    # visible_from: "surface", "underwater", "inside", "always"
+    sub_locations: list[dict[str, Any]] = field(default_factory=list)
+
     # Time-of-day variant descriptions
     description_day: Optional[str] = None  # Description during daylight
     description_night: Optional[str] = None  # Description at night
@@ -1611,6 +1617,132 @@ class PointOfInterest:
         """Check if this POI leads to a dungeon."""
         return self.is_dungeon or self.dungeon_id is not None
 
+    # =========================================================================
+    # SUB-LOCATION METHODS
+    # =========================================================================
+
+    def get_sub_locations(
+        self,
+        access_context: Optional[str] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Get sub-locations accessible from the current context.
+
+        Args:
+            access_context: Current access condition (e.g., "surface", "underwater", "inside")
+                           If None, returns all sub-locations.
+
+        Returns:
+            List of accessible sub-location definitions
+        """
+        if access_context is None:
+            return self.sub_locations
+
+        accessible = []
+        for sub_loc in self.sub_locations:
+            visible_from = sub_loc.get("visible_from", "always")
+
+            # Check if visible from current context
+            if visible_from == "always":
+                accessible.append(sub_loc)
+            elif visible_from == access_context:
+                accessible.append(sub_loc)
+            elif visible_from == "underwater" and access_context == "diving":
+                accessible.append(sub_loc)
+            elif visible_from == "surface" and access_context in ("surface", None):
+                accessible.append(sub_loc)
+            elif visible_from == "inside" and access_context == "inside":
+                accessible.append(sub_loc)
+
+        return accessible
+
+    def get_sub_location_by_name(self, name: str) -> Optional[dict[str, Any]]:
+        """
+        Get a specific sub-location by name.
+
+        Args:
+            name: Name of the sub-location
+
+        Returns:
+            Sub-location definition or None if not found
+        """
+        for sub_loc in self.sub_locations:
+            if sub_loc.get("name", "").lower() == name.lower():
+                return sub_loc
+        return None
+
+    def can_access_sub_location(
+        self,
+        sub_location_name: str,
+        current_context: str,
+    ) -> tuple[bool, Optional[str]]:
+        """
+        Check if a sub-location can be accessed from the current context.
+
+        Args:
+            sub_location_name: Name of the sub-location to access
+            current_context: Current access context (surface, diving, inside, etc.)
+
+        Returns:
+            Tuple of (can_access, required_condition_if_not)
+        """
+        sub_loc = self.get_sub_location_by_name(sub_location_name)
+        if not sub_loc:
+            return False, None
+
+        access_condition = sub_loc.get("access_condition")
+
+        # No special access required
+        if access_condition is None:
+            return True, None
+
+        # Check if current context satisfies the condition
+        if access_condition == "diving" and current_context not in ("underwater", "diving"):
+            return False, "diving"
+        if access_condition == "climbing" and current_context != "climbing":
+            return False, "climbing"
+        if access_condition == "secret_door" and current_context != "discovered":
+            return False, "discovering the secret entrance"
+
+        return True, None
+
+    def get_visible_features_from_context(
+        self,
+        context: str = "surface",
+    ) -> list[str]:
+        """
+        Get features visible from a specific context.
+
+        Some features may only be visible when diving, at night,
+        or from specific vantage points.
+
+        Args:
+            context: Current viewing context (surface, underwater, inside, etc.)
+
+        Returns:
+            List of visible feature descriptions
+        """
+        visible = []
+
+        for feature in self.special_features:
+            feature_lower = feature.lower()
+
+            # Check visibility conditions
+            if "(underwater only)" in feature_lower or "(diving)" in feature_lower:
+                if context in ("underwater", "diving"):
+                    visible.append(feature)
+            elif "(surface)" in feature_lower or "(from surface)" in feature_lower:
+                if context == "surface":
+                    visible.append(feature)
+            elif "(inside)" in feature_lower:
+                if context == "inside":
+                    visible.append(feature)
+            else:
+                # No context restriction - always visible
+                visible.append(feature)
+
+        return visible
+
     def get_description(self, is_night: bool = False) -> str:
         """Get appropriate description based on time of day."""
         if is_night and self.description_night:
@@ -1638,6 +1770,128 @@ class PointOfInterest:
     def mark_discovered(self) -> None:
         """Mark this POI as discovered."""
         self.discovered = True
+
+
+@dataclass
+class HexStateChange:
+    """
+    Tracks a world-state change that occurred in a hex.
+
+    Used to record permanent changes to hex/POI state caused by player actions.
+    Examples:
+    - Removing the Hand of St Howarth lifts the curse on Lankston Pool
+    - Killing the lord of a manor changes its description
+    - Solving a puzzle opens a secret passage permanently
+    """
+    change_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    hex_id: str = ""
+    poi_name: Optional[str] = None  # If change is to a specific POI
+
+    # What triggered this change
+    trigger_action: str = ""  # e.g., "item_removed", "npc_killed", "puzzle_solved", "spell_cast"
+    trigger_details: dict[str, Any] = field(default_factory=dict)  # e.g., {"item": "Hand of St Howarth"}
+
+    # What changed
+    change_type: str = ""  # e.g., "curse_lifted", "description_changed", "npc_removed", "access_granted"
+    before_state: dict[str, Any] = field(default_factory=dict)  # State before change
+    after_state: dict[str, Any] = field(default_factory=dict)  # State after change
+
+    # Narrative consequence
+    narrative_description: str = ""  # Player-facing description of what happened
+
+    # When this occurred
+    occurred_at: Optional["GameDate"] = None
+
+    # Whether this change is reversible
+    reversible: bool = False
+    reverse_condition: Optional[str] = None  # How to reverse the change
+
+
+@dataclass
+class WorldStateChanges:
+    """
+    Container for all world-state changes in a campaign.
+
+    Tracks permanent mutations to hexes, POIs, NPCs, etc. caused by player actions.
+    """
+    changes: list[HexStateChange] = field(default_factory=list)
+
+    # Index for quick lookup
+    _by_hex: dict[str, list[HexStateChange]] = field(default_factory=dict)
+    _by_poi: dict[str, list[HexStateChange]] = field(default_factory=dict)
+
+    def add_change(self, change: HexStateChange) -> None:
+        """Add a new state change."""
+        self.changes.append(change)
+
+        # Update indices
+        if change.hex_id not in self._by_hex:
+            self._by_hex[change.hex_id] = []
+        self._by_hex[change.hex_id].append(change)
+
+        if change.poi_name:
+            key = f"{change.hex_id}:{change.poi_name}"
+            if key not in self._by_poi:
+                self._by_poi[key] = []
+            self._by_poi[key].append(change)
+
+    def get_changes_for_hex(self, hex_id: str) -> list[HexStateChange]:
+        """Get all changes that have occurred in a hex."""
+        return self._by_hex.get(hex_id, [])
+
+    def get_changes_for_poi(self, hex_id: str, poi_name: str) -> list[HexStateChange]:
+        """Get all changes that have occurred at a specific POI."""
+        key = f"{hex_id}:{poi_name}"
+        return self._by_poi.get(key, [])
+
+    def has_change_type(
+        self,
+        hex_id: str,
+        change_type: str,
+        poi_name: Optional[str] = None,
+    ) -> bool:
+        """Check if a specific type of change has occurred."""
+        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+        return any(c.change_type == change_type for c in changes)
+
+    def get_current_state(
+        self,
+        hex_id: str,
+        state_key: str,
+        poi_name: Optional[str] = None,
+    ) -> Optional[Any]:
+        """
+        Get the current value of a state key after all changes.
+
+        Returns the 'after_state' value of the most recent change
+        that affects this state key, or None if no changes.
+        """
+        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+
+        # Find the most recent change affecting this key
+        for change in reversed(changes):
+            if state_key in change.after_state:
+                return change.after_state[state_key]
+
+        return None
+
+    def is_condition_active(
+        self,
+        hex_id: str,
+        condition: str,
+        poi_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Check if a condition (like a curse) is still active.
+
+        Conditions start as active and become inactive when a change
+        of type "{condition}_lifted" or "{condition}_removed" is recorded.
+        """
+        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+
+        # Check for lifting/removal of condition
+        lifted_types = [f"{condition}_lifted", f"{condition}_removed", f"remove_{condition}"]
+        return not any(c.change_type in lifted_types for c in changes)
 
 
 @dataclass
