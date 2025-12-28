@@ -304,6 +304,10 @@ class HexCrawlEngine:
         self._encounter_checked_today: bool = False
         self._route_type: RouteType = RouteType.WILD
 
+        # Maze/trap hex state - party stuck until lost check succeeds
+        self._trapped_in_maze: bool = False
+        self._maze_hex_id: Optional[str] = None
+
         # Current travel state
         self._has_guide: bool = False
         self._has_map: bool = False
@@ -401,6 +405,20 @@ class HexCrawlEngine:
                 destination_hex=destination_hex,
                 actual_hex=destination_hex,
             )
+
+        # Check if trapped in maze hex - cannot leave until lost check succeeds
+        if self._trapped_in_maze:
+            current_hex = self.controller.party_state.location.location_id
+            if current_hex == self._maze_hex_id:
+                return TravelSegmentResult(
+                    success=False,
+                    travel_points_spent=0,
+                    remaining_travel_points=0,
+                    encounter_occurred=False,
+                    warnings=["Party is trapped in a maze and must wait for next day's navigation check"],
+                    destination_hex=destination_hex,
+                    actual_hex=current_hex,
+                )
 
         # Initialize day if not already done
         if self._travel_points_total == 0 or forced_march != self._forced_march:
@@ -530,15 +548,21 @@ class HexCrawlEngine:
         self._pending_entry_cost = self._pending_entry_cost  # carry-over from prior day
         self._encounter_checked_today = False
 
-        # Lost check once per day (none on roads, 1-in-6 on tracks, terrain-based in wild)
+        # Get current hex data for lost chance and maze behavior
+        current_hex = self.controller.party_state.location.location_id
+        hex_data = self._get_hex_data(current_hex)
+
+        # Determine lost chance
         lost_chance = 0
         if route_type == RouteType.TRACK:
             lost_chance = 1
         elif route_type == RouteType.WILD:
-            # Use current terrain if available
-            current_hex = self.controller.party_state.location.location_id
             terrain = self.get_terrain_for_hex(current_hex)
             lost_chance = self.get_terrain_info(terrain).lost_chance
+
+        # Check hex-specific lost_chance override
+        if hex_data and hex_data.procedural and hex_data.procedural.lost_chance:
+            lost_chance = self._parse_x_in_6_chance(hex_data.procedural.lost_chance)
 
         # Visibility modifiers could increase lost_chance; handled externally if needed
         if lost_chance > 0:
@@ -546,6 +570,40 @@ class HexCrawlEngine:
             self._lost_today = nav_roll.total <= lost_chance
         else:
             self._lost_today = False
+
+        # Handle maze/trap hex behavior
+        if self._trapped_in_maze and current_hex == self._maze_hex_id:
+            if self._lost_today:
+                # Still lost - remain trapped in maze
+                self._travel_points_remaining = 0  # Entire day spent wandering
+                return {
+                    "maze_trapped": True,
+                    "hex_id": current_hex,
+                    "message": "The party wanders in circles through the maze, unable to find a way out.",
+                    "travel_points": 0,
+                }
+            else:
+                # Escaped the maze!
+                self._trapped_in_maze = False
+                self._maze_hex_id = None
+                # Note: Travel points remain available for normal travel
+
+        # Check if getting lost in a maze hex
+        if self._lost_today and hex_data and hex_data.procedural:
+            lost_behavior = hex_data.procedural.lost_behavior
+            if lost_behavior and lost_behavior.get("type") == "maze":
+                self._trapped_in_maze = True
+                self._maze_hex_id = current_hex
+                self._travel_points_remaining = 0  # Entire day spent wandering
+                return {
+                    "maze_trapped": True,
+                    "hex_id": current_hex,
+                    "message": lost_behavior.get(
+                        "description",
+                        "The party becomes lost in the labyrinthine terrain, spending the day wandering in circles."
+                    ),
+                    "travel_points": 0,
+                }
 
     def _get_party_speed(self) -> int:
         """
@@ -576,8 +634,13 @@ class HexCrawlEngine:
         """
         Generate an encounter for the current hex per Dolmenwood rules (p157).
 
-        Uses encounter tables from the Campaign Book.
+        Uses encounter tables from the Campaign Book, modified by contextual
+        encounter modifiers from nearby POIs (e.g., "2-in-6 likely to be a
+        bewildered banshee heading to a ball at the Spectral Manse").
         """
+        # Check for contextual encounter modifiers from POIs in this hex
+        contextual_result = self._apply_contextual_encounter_modifiers(hex_id)
+
         # Determine surprise first (affects distance)
         surprise = self._check_surprise()
 
@@ -585,16 +648,114 @@ class HexCrawlEngine:
         distance = self._roll_encounter_distance(surprise)
 
         # Create encounter state
-        encounter = EncounterState(
-            encounter_type=EncounterType.MONSTER,  # Default, would be rolled
-            distance=distance,
-            surprise_status=surprise,
-            terrain=terrain.value,
-            context=self._determine_encounter_context(),
-        )
+        if contextual_result:
+            # Use the contextual encounter from a POI
+            encounter = EncounterState(
+                encounter_type=EncounterType.MONSTER,
+                distance=distance,
+                surprise_status=surprise,
+                terrain=terrain.value,
+                context=contextual_result.get("context", ""),
+                actors=[contextual_result.get("result", "unknown creature")],
+            )
+        else:
+            # Standard encounter
+            encounter = EncounterState(
+                encounter_type=EncounterType.MONSTER,
+                distance=distance,
+                surprise_status=surprise,
+                terrain=terrain.value,
+                context=self._determine_encounter_context(),
+            )
 
         self.controller.set_encounter(encounter)
         return encounter
+
+    def _apply_contextual_encounter_modifiers(
+        self,
+        hex_id: str
+    ) -> Optional[dict[str, Any]]:
+        """
+        Check hex-level and POI-level contextual encounter modifiers.
+
+        Hex-level modifiers are checked first (from procedural.encounter_modifiers),
+        then POI-level modifiers. For example, hex 0101 has:
+        "Encounters are 2-in-6 likely to be with a bewildered banshee
+        heading to a ball at the Spectral Manse"
+
+        Args:
+            hex_id: The current hex ID
+
+        Returns:
+            Dictionary with contextual encounter details if triggered, None otherwise
+        """
+        hex_data = self._get_hex_data(hex_id)
+        if not hex_data:
+            return None
+
+        # First check hex-level encounter modifiers (procedural.encounter_modifiers)
+        if hex_data.procedural and hex_data.procedural.encounter_modifiers:
+            for modifier in hex_data.procedural.encounter_modifiers:
+                chance_str = modifier.get("chance", "")
+                chance = self._parse_x_in_6_chance(chance_str)
+
+                if chance > 0:
+                    roll = self.dice.roll_d6(1, f"hex contextual encounter: {hex_id}")
+                    if roll.total <= chance:
+                        return {
+                            "triggered": True,
+                            "source": "hex",
+                            "hex_id": hex_id,
+                            "result": modifier.get("result", "unknown creature"),
+                            "context": modifier.get("context", ""),
+                            "modifier": modifier,
+                        }
+
+        # Then check each POI for encounter modifiers
+        for poi in hex_data.points_of_interest:
+            for modifier in poi.encounter_modifiers:
+                # Parse the chance (e.g., "2-in-6")
+                chance_str = modifier.get("chance", "")
+                chance = self._parse_x_in_6_chance(chance_str)
+
+                if chance > 0:
+                    roll = self.dice.roll_d6(1, f"POI contextual encounter: {poi.name}")
+                    if roll.total <= chance:
+                        return {
+                            "triggered": True,
+                            "source": "poi",
+                            "poi_name": poi.name,
+                            "result": modifier.get("result", "unknown creature"),
+                            "context": modifier.get("context", ""),
+                            "modifier": modifier,
+                        }
+
+        return None
+
+    def _parse_x_in_6_chance(self, chance_str: str) -> int:
+        """
+        Parse a chance string like "2-in-6" or "3-in-6" to an integer.
+
+        Args:
+            chance_str: String in format "X-in-6"
+
+        Returns:
+            Integer value of X, or 0 if parsing fails
+        """
+        if not chance_str:
+            return 0
+        try:
+            # Handle formats like "2-in-6", "3 in 6", "2/6"
+            chance_str = chance_str.lower().strip()
+            if "-in-" in chance_str:
+                return int(chance_str.split("-in-")[0])
+            elif " in " in chance_str:
+                return int(chance_str.split(" in ")[0])
+            elif "/" in chance_str:
+                return int(chance_str.split("/")[0])
+            return 0
+        except (ValueError, IndexError):
+            return 0
 
     def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
         """
@@ -770,6 +931,9 @@ class HexCrawlEngine:
             # Daily check status
             "lost_check_made": self._travel_day.lost_check_made,
             "encounter_check_made": self._travel_day.encounter_check_made,
+            # Maze/trap hex state
+            "trapped_in_maze": self._trapped_in_maze,
+            "maze_hex_id": self._maze_hex_id,
         }
 
     def _get_veered_hex(self, intended_hex: str) -> str:
@@ -1001,13 +1165,16 @@ class HexCrawlEngine:
         """
         Attempt to find food in the wild per Dolmenwood rules (p152).
 
+        Includes hex-specific foraging_special yields when available.
+        For example, hex 0102 yields Sage Toe in addition to normal foraging.
+
         Args:
             character_id: ID of the foraging character
             method: "foraging", "fishing", or "hunting"
             full_day: Whether spending full day foraging (+2 bonus)
 
         Returns:
-            HazardResult with outcomes including rations found
+            HazardResult with outcomes including rations found and special yields
         """
         character = self.controller.get_character(character_id)
         if not character:
@@ -1026,12 +1193,21 @@ class HexCrawlEngine:
             elif self.controller.world_state.season == Season.AUTUMN:
                 season = "autumn"
 
+        # Get hex-specific foraging special yields
+        foraging_special = []
+        current_hex = self._state.current_hex
+        if current_hex:
+            hex_data = self._get_hex_data(current_hex)
+            if hex_data and hex_data.procedural and hex_data.procedural.foraging_special:
+                foraging_special = hex_data.procedural.foraging_special
+
         from src.narrative.intent_parser import ActionType
         return self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=season,
             full_day=full_day,
+            foraging_special=foraging_special,
         )
 
     # =========================================================================
@@ -1192,6 +1368,111 @@ class HexCrawlEngine:
             ) if self.controller.world_state else None,
             time_specific_observations=time_observations,
         )
+
+    def check_poi_availability(
+        self,
+        poi: "PointOfInterest"
+    ) -> dict[str, Any]:
+        """
+        Check if a POI is currently available based on its availability conditions.
+
+        POIs can have availability conditions like:
+        - Moon phase requirements (e.g., only visible during full moon)
+        - Time of day requirements
+        - Seasonal requirements
+        - Conditional requirements
+
+        Args:
+            poi: The PointOfInterest to check
+
+        Returns:
+            Dictionary with availability status and message
+        """
+        if not poi.availability:
+            return {"available": True}
+
+        availability = poi.availability
+        avail_type = availability.get("type", "")
+        required = availability.get("required", "")
+        hidden_message = availability.get(
+            "hidden_message",
+            "This location is not currently accessible."
+        )
+
+        # Check based on availability type
+        if avail_type == "moon_phase":
+            if self.controller.world_state and self.controller.world_state.current_date:
+                current_moon = self.controller.world_state.current_date.get_moon_phase()
+                # Handle required as string or list
+                required_phases = [required] if isinstance(required, str) else required
+                # Check if current moon matches any required phase
+                for phase in required_phases:
+                    # Match by name (e.g., "full_moon", "grinning_moon")
+                    if phase.lower().replace(" ", "_") == current_moon.value:
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "moon_phase",
+                    "required": required,
+                    "current": current_moon.value,
+                    "message": hidden_message,
+                }
+            # No date tracking - assume available
+            return {"available": True}
+
+        elif avail_type == "time_of_day":
+            is_night = self._is_night()
+            if required == "night" and not is_night:
+                return {
+                    "available": False,
+                    "type": "time_of_day",
+                    "required": "night",
+                    "message": hidden_message,
+                }
+            elif required == "day" and is_night:
+                return {
+                    "available": False,
+                    "type": "time_of_day",
+                    "required": "day",
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        elif avail_type == "seasonal":
+            if self.controller.world_state and self.controller.world_state.current_date:
+                current_season = self.controller.world_state.current_date.get_season()
+                required_seasons = [required] if isinstance(required, str) else required
+                for season in required_seasons:
+                    if season.lower() == current_season.value:
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "seasonal",
+                    "required": required,
+                    "current": current_season.value,
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        elif avail_type == "condition":
+            # Condition-based availability - check world state
+            condition_key = availability.get("condition_key", "")
+            if condition_key and self.controller.world_state:
+                # Check if condition is met in world state
+                # This would be tracked in hex state changes
+                if hasattr(self.controller.world_state, "conditions"):
+                    if self.controller.world_state.conditions.get(condition_key):
+                        return {"available": True}
+                return {
+                    "available": False,
+                    "type": "condition",
+                    "required": condition_key,
+                    "message": hidden_message,
+                }
+            return {"available": True}
+
+        # Unknown type - assume available
+        return {"available": True}
 
     def get_visible_pois(self, hex_id: str) -> list[dict[str, Any]]:
         """
@@ -1584,6 +1865,16 @@ class HexCrawlEngine:
 
         if not poi:
             return {"success": False, "error": "Current location not found"}
+
+        # Check POI availability (e.g., moon phase requirements)
+        availability_check = self.check_poi_availability(poi)
+        if not availability_check["available"]:
+            return {
+                "success": False,
+                "unavailable": True,
+                "message": availability_check.get("message", "This location is not currently accessible"),
+                "availability": availability_check,
+            }
 
         is_night = self._is_night()
 
@@ -2722,6 +3013,181 @@ class HexCrawlEngine:
 
         return None
 
+    def evaluate_reaction_conditions(
+        self,
+        reaction_conditions: dict[str, Any],
+        party_alignments: list[str],
+    ) -> dict[str, Any]:
+        """
+        Evaluate alignment-based reaction conditions for a roll table entry.
+
+        This is used by the ENCOUNTERS state to determine creature reactions
+        based on party member alignments (e.g., "attacks non-Neutral characters").
+
+        Args:
+            reaction_conditions: The reaction_conditions from RollTableEntry
+                Format: {hostile_if: {alignment_not: ["Neutral"]},
+                        friendly_if: {alignment: ["Lawful"]}}
+            party_alignments: List of party member alignments
+
+        Returns:
+            Dictionary with reaction modification:
+            {
+                "hostile": True/False,
+                "friendly": True/False,
+                "affected_alignments": [...],
+                "description": str
+            }
+        """
+        result = {
+            "hostile": False,
+            "friendly": False,
+            "affected_alignments": [],
+            "description": "",
+        }
+
+        if not reaction_conditions or not party_alignments:
+            return result
+
+        # Check hostile conditions
+        hostile_if = reaction_conditions.get("hostile_if", {})
+        if hostile_if:
+            # Check alignment_not condition (hostile to those NOT in list)
+            alignment_not = hostile_if.get("alignment_not", [])
+            if alignment_not:
+                non_matching = [
+                    align for align in party_alignments
+                    if align not in alignment_not
+                ]
+                if non_matching:
+                    result["hostile"] = True
+                    result["affected_alignments"] = non_matching
+                    result["description"] = (
+                        f"Hostile toward {', '.join(alignment_not)}-aligned characters"
+                    )
+
+            # Check alignment condition (hostile to those IN list)
+            alignment_match = hostile_if.get("alignment", [])
+            if alignment_match:
+                matching = [
+                    align for align in party_alignments
+                    if align in alignment_match
+                ]
+                if matching:
+                    result["hostile"] = True
+                    result["affected_alignments"] = matching
+                    result["description"] = (
+                        f"Hostile toward {', '.join(matching)}-aligned characters"
+                    )
+
+        # Check friendly conditions
+        friendly_if = reaction_conditions.get("friendly_if", {})
+        if friendly_if:
+            alignment_match = friendly_if.get("alignment", [])
+            if alignment_match:
+                matching = [
+                    align for align in party_alignments
+                    if align in alignment_match
+                ]
+                if matching:
+                    result["friendly"] = True
+                    if not result["hostile"]:
+                        result["affected_alignments"] = matching
+                        result["description"] = (
+                            f"Friendly toward {', '.join(matching)}-aligned characters"
+                        )
+
+        return result
+
+    def get_poi_roll_tables(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None
+    ) -> list["RollTable"]:
+        """
+        Get roll tables from a POI for use in ENCOUNTERS or DUNGEON states.
+
+        This allows encounters and dungeon exploration to use POI-specific
+        room tables and encounter tables.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            List of RollTable objects from the POI
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                return poi.roll_tables
+
+        return []
+
+    def get_poi_dungeon_config(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get dungeon configuration for a POI with dynamic layout.
+
+        Returns the dynamic_layout, item_persistence, and roll_tables
+        needed for the DUNGEON_EXPLORATION state.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with dungeon configuration or None
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return None
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == target_poi:
+                if not poi.is_dungeon:
+                    return None
+
+                return {
+                    "poi_name": poi.name,
+                    "dungeon_levels": poi.dungeon_levels,
+                    "dynamic_layout": poi.dynamic_layout,
+                    "item_persistence": poi.item_persistence,
+                    "roll_tables": poi.roll_tables,
+                    "room_table": self._find_table_by_name(poi.roll_tables, "Rooms"),
+                    "encounter_table": self._find_table_by_name(poi.roll_tables, "Encounters"),
+                    "interior": poi.interior,
+                    "exploring": poi.exploring,
+                    "leaving": poi.leaving,
+                }
+
+        return None
+
+    def _find_table_by_name(
+        self,
+        tables: list["RollTable"],
+        name: str
+    ) -> Optional["RollTable"]:
+        """Find a roll table by name (case-insensitive)."""
+        for table in tables:
+            if table.name.lower() == name.lower():
+                return table
+        return None
+
     # =========================================================================
     # ITEM AND TREASURE TRACKING AT POIs
     # =========================================================================
@@ -2745,11 +3211,23 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                # Filter out already taken items
+                # Filter out already taken items from multiple sources:
+                # 1. Engine-local visit tracking
+                # 2. Persistent session delta
+                # 3. Item's own "taken" flag
                 visit_key = f"{hex_id}:{self._current_poi}"
-                taken_items = []
+                taken_items = set()
+
+                # Check engine-local visit state
                 if visit_key in self._poi_visits:
-                    taken_items = self._poi_visits[visit_key].items_taken
+                    taken_items.update(self._poi_visits[visit_key].items_taken)
+
+                # Check persistent session delta
+                if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                    session_taken = self.controller.session_manager.get_items_taken_from_poi(
+                        hex_id, self._current_poi
+                    )
+                    taken_items.update(session_taken)
 
                 available_items = []
                 for item in poi.items:
@@ -2759,6 +3237,7 @@ class HexCrawlEngine:
                             "name": item_name,
                             "description": item.get("description", ""),
                             "value": item.get("value"),
+                            "is_unique": item.get("is_unique", False),
                         })
 
                 return available_items
@@ -2772,7 +3251,10 @@ class HexCrawlEngine:
         character_id: str,
     ) -> dict[str, Any]:
         """
-        Take an item from the current POI.
+        Take an item from the current POI and add to character inventory.
+
+        Items are tracked at the hex/POI level so they no longer appear
+        once taken. Unique items are also registered globally.
 
         Args:
             hex_id: Current hex
@@ -2794,24 +3276,76 @@ class HexCrawlEngine:
                 # Find the item
                 for item in poi.items:
                     if item.get("name", "").lower() == item_name.lower():
+                        # Check if already taken (shouldn't appear in available items, but safety check)
                         if item.get("taken", False):
-                            return {"success": False, "error": "Item already taken"}
+                            return {"success": False, "error": "Item not found here"}
 
-                        # Mark as taken
+                        # Check if this is a unique item
+                        is_unique = item.get("is_unique", False)
+                        unique_item_id = item.get("unique_item_id")
+
+                        # Construct unique ID if not provided but marked unique
+                        if is_unique and not unique_item_id:
+                            unique_item_id = f"{hex_id}:{self._current_poi}:{item.get('name')}"
+
+                        # Mark as taken in POI data
                         item["taken"] = True
 
-                        # Track in visit
+                        # Track in engine-local visit state
                         visit_key = f"{hex_id}:{self._current_poi}"
                         if visit_key in self._poi_visits:
                             self._poi_visits[visit_key].items_taken.append(item.get("name"))
                             if item.get("name") not in self._poi_visits[visit_key].items_found:
                                 self._poi_visits[visit_key].items_found.append(item.get("name"))
 
+                        # Persist to session manager (for cross-session tracking)
+                        if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                            self.controller.session_manager.add_item_taken(
+                                hex_id=hex_id,
+                                poi_name=self._current_poi,
+                                item_name=item.get("name"),
+                            )
+
+                            # Also register in unique item registry for global tracking
+                            if is_unique and unique_item_id:
+                                self.controller.session_manager.register_unique_item(
+                                    unique_item_id=unique_item_id,
+                                    item_name=item.get("name"),
+                                    acquired_by=character_id,
+                                    hex_id=hex_id,
+                                    poi_name=self._current_poi,
+                                )
+
+                        # Create Item object for character inventory
+                        from src.data_models import Item
+                        new_item = Item(
+                            item_id=item.get("item_id", item.get("name", "").lower().replace(" ", "_")),
+                            name=item.get("name"),
+                            weight=item.get("weight", 0),
+                            quantity=item.get("quantity", 1),
+                            is_unique=is_unique,
+                            unique_item_id=unique_item_id,
+                            source_hex=hex_id,
+                            source_poi=self._current_poi,
+                            description=item.get("description"),
+                            value_gp=item.get("value"),
+                            magical=item.get("magical", False),
+                            cursed=item.get("cursed", False),
+                        )
+
+                        # Add to character inventory
+                        character = self.controller.get_character(character_id)
+                        if character:
+                            character.inventory.append(new_item)
+
                         return {
                             "success": True,
                             "item_name": item.get("name"),
                             "description": item.get("description", ""),
                             "value": item.get("value"),
+                            "is_unique": is_unique,
+                            "unique_item_id": unique_item_id,
+                            "added_to_inventory": character is not None,
                             "message": f"You take the {item.get('name')}.",
                         }
 

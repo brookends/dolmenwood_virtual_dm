@@ -107,6 +107,8 @@ class ConditionType(str, Enum):
     LOST = "lost"
     STARVING = "starving"
     DEHYDRATED = "dehydrated"
+    # Environmental/magical conditions
+    DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
 
 
 class LightSourceType(str, Enum):
@@ -1228,11 +1230,44 @@ class EncumbranceState:
 
 @dataclass
 class Condition:
-    """A condition affecting a character or creature."""
+    """
+    A condition affecting a character or creature.
+
+    Supports simple turn-based durations as well as complex conditions with:
+    - Day-based durations (for long-term afflictions like dreamlessness)
+    - Periodic effects (e.g., -1 Wisdom every 2 days)
+    - Recovery conditions (how the condition ends)
+    - Spell effects (penalties to certain spell types)
+    """
     condition_type: ConditionType
     duration_turns: Optional[int] = None  # None = permanent until cured
     source: str = ""
     severity: int = 1  # For conditions like exhaustion
+
+    # Day-based tracking (for multi-day conditions)
+    duration_days: Optional[int] = None  # Days remaining (for conditions like dreamlessness)
+    days_elapsed: int = 0  # Days since condition started
+
+    # Periodic effects that trigger over time
+    # Format: {stat: "wisdom", amount: -1, frequency_days: 2, description: "..."}
+    periodic_effect: Optional[dict[str, Any]] = None
+
+    # Recovery conditions - how this condition can end
+    # Format: {type: "rest_with_dreams", description: "Once dreams return..."}
+    # Types: "rest", "rest_with_dreams", "spell", "item", "time", "custom"
+    recovery_condition: Optional[dict[str, Any]] = None
+
+    # Recovery rate after condition ends (for stat damage)
+    # Format: {stat: "wisdom", amount: 1, per: "night_rest"}
+    recovery_rate: Optional[dict[str, Any]] = None
+
+    # Spell effect penalties
+    # Format: {spell_types: ["illusion"], effect: "save_to_memorize", save_type: "spell"}
+    spell_effects: Optional[dict[str, Any]] = None
+
+    # Threshold effect - what happens at extreme values
+    # Format: {stat: "wisdom", threshold: 0, effect: "incapacitated", description: "..."}
+    threshold_effect: Optional[dict[str, Any]] = None
 
     def tick(self) -> bool:
         """
@@ -1246,6 +1281,132 @@ class Condition:
             return self.duration_turns <= 0
         return False
 
+    def tick_day(self) -> dict[str, Any]:
+        """
+        Process a day passing for this condition.
+
+        Returns:
+            Dict with:
+            - expired: True if condition has ended
+            - periodic_triggered: True if periodic effect should trigger
+            - effect: The periodic effect details if triggered
+        """
+        self.days_elapsed += 1
+        result = {
+            "expired": False,
+            "periodic_triggered": False,
+            "effect": None,
+        }
+
+        # Check day-based duration
+        if self.duration_days is not None:
+            self.duration_days -= 1
+            if self.duration_days <= 0:
+                result["expired"] = True
+                return result
+
+        # Check periodic effects
+        if self.periodic_effect:
+            frequency = self.periodic_effect.get("frequency_days", 1)
+            if self.days_elapsed % frequency == 0:
+                result["periodic_triggered"] = True
+                result["effect"] = self.periodic_effect
+
+        return result
+
+    def check_threshold(self, current_stat_value: int) -> Optional[dict[str, Any]]:
+        """
+        Check if a threshold effect should trigger.
+
+        Args:
+            current_stat_value: Current value of the affected stat
+
+        Returns:
+            Threshold effect details if triggered, None otherwise
+        """
+        if not self.threshold_effect:
+            return None
+
+        threshold = self.threshold_effect.get("threshold", 0)
+        if current_stat_value <= threshold:
+            return self.threshold_effect
+        return None
+
+    def get_spell_memorization_check(self, spell_type: str) -> Optional[dict[str, Any]]:
+        """
+        Check if a spell type requires a save to memorize.
+
+        Args:
+            spell_type: Type of spell being memorized (e.g., "illusion")
+
+        Returns:
+            Save details if required, None otherwise
+        """
+        if not self.spell_effects:
+            return None
+
+        affected_types = self.spell_effects.get("spell_types", [])
+        if spell_type.lower() in [t.lower() for t in affected_types]:
+            return {
+                "required": True,
+                "save_type": self.spell_effects.get("save_type", "spell"),
+                "effect": self.spell_effects.get("effect", "fail_to_memorize"),
+            }
+        return None
+
+    @classmethod
+    def create_dreamlessness(cls, duration_days: int, source: str = "") -> "Condition":
+        """
+        Create a Dreamlessness condition (as per hex 0102 Reedwall).
+
+        Effects:
+        - Duration: specified days
+        - Wisdom loss: -1 every second day
+        - 0 Wisdom: character becomes vacant, lost in phantasms
+        - Difficulty memorizing illusion spells: Save vs Spell or fail
+        - Recovery: 1 Wisdom per night's rest once dreams return
+
+        Args:
+            duration_days: Number of days the condition lasts
+            source: Source of the condition (e.g., "Reedwall mist")
+
+        Returns:
+            Configured Condition instance
+        """
+        return cls(
+            condition_type=ConditionType.DREAMLESS,
+            source=source,
+            duration_days=duration_days,
+            periodic_effect={
+                "stat": "wisdom",
+                "amount": -1,
+                "frequency_days": 2,
+                "description": "The dreamless nights drain your mind",
+            },
+            threshold_effect={
+                "stat": "wisdom",
+                "threshold": 0,
+                "effect": "incapacitated",
+                "description": "utterly vacant, lost in a world of phantasms",
+            },
+            spell_effects={
+                "spell_types": ["illusion", "phantasm", "invisibility"],
+                "effect": "save_to_memorize",
+                "save_type": "spell",
+                "description": "The dreamless state makes illusions difficult to grasp",
+            },
+            recovery_condition={
+                "type": "time",
+                "description": "Once dreams return after the duration ends",
+            },
+            recovery_rate={
+                "stat": "wisdom",
+                "amount": 1,
+                "per": "night_rest",
+                "description": "Lost Wisdom recovers at 1 point per night's rest",
+            },
+        )
+
 
 @dataclass
 class Item:
@@ -1253,6 +1414,10 @@ class Item:
     An item in inventory.
 
     Supports both weight-based and slot-based encumbrance systems (p148-149).
+
+    Unique items (is_unique=True) can only exist once in the game world.
+    When picked up, they are registered in the UniqueItemRegistry to prevent
+    duplicates from being acquired.
     """
     item_id: str
     name: str
@@ -1267,6 +1432,19 @@ class Item:
     slot_size: int = 1   # Number of gear slots required (for slot encumbrance)
     is_container: bool = False  # True for backpacks, sacks, etc.
 
+    # Unique item tracking
+    is_unique: bool = False  # True for one-of-a-kind items
+    unique_item_id: Optional[str] = None  # Global unique identifier (e.g., "hand_of_st_howarth")
+    source_hex: Optional[str] = None  # Hex where item was found
+    source_poi: Optional[str] = None  # POI where item was found
+
+    # Item properties
+    description: Optional[str] = None  # Detailed item description
+    value_gp: Optional[float] = None  # Value in gold pieces
+    magical: bool = False  # Whether item is magical
+    cursed: bool = False  # Whether item is cursed
+    identified: bool = True  # Whether item properties are known
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1277,6 +1455,76 @@ class Item:
         if self.slot_size == 0:
             return 0
         return self.slot_size * self.quantity
+
+    def get_unique_key(self) -> Optional[str]:
+        """
+        Get the unique key for this item if it's unique.
+
+        Returns unique_item_id if set, otherwise constructs from source location.
+        """
+        if not self.is_unique:
+            return None
+        if self.unique_item_id:
+            return self.unique_item_id
+        # Fallback: construct from source location
+        if self.source_hex and self.source_poi:
+            return f"{self.source_hex}:{self.source_poi}:{self.item_id}"
+        return self.item_id
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize item to dictionary for saving."""
+        return {
+            "item_id": self.item_id,
+            "name": self.name,
+            "weight": self.weight,
+            "quantity": self.quantity,
+            "equipped": self.equipped,
+            "charges": self.charges,
+            "light_source": self.light_source.value if self.light_source else None,
+            "light_remaining_turns": self.light_remaining_turns,
+            "item_type": self.item_type,
+            "slot_size": self.slot_size,
+            "is_container": self.is_container,
+            "is_unique": self.is_unique,
+            "unique_item_id": self.unique_item_id,
+            "source_hex": self.source_hex,
+            "source_poi": self.source_poi,
+            "description": self.description,
+            "value_gp": self.value_gp,
+            "magical": self.magical,
+            "cursed": self.cursed,
+            "identified": self.identified,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Item":
+        """Deserialize item from dictionary."""
+        light_source = None
+        if data.get("light_source"):
+            light_source = LightSourceType(data["light_source"])
+
+        return cls(
+            item_id=data["item_id"],
+            name=data["name"],
+            weight=data.get("weight", 0),
+            quantity=data.get("quantity", 1),
+            equipped=data.get("equipped", False),
+            charges=data.get("charges"),
+            light_source=light_source,
+            light_remaining_turns=data.get("light_remaining_turns"),
+            item_type=data.get("item_type", ""),
+            slot_size=data.get("slot_size", 1),
+            is_container=data.get("is_container", False),
+            is_unique=data.get("is_unique", False),
+            unique_item_id=data.get("unique_item_id"),
+            source_hex=data.get("source_hex"),
+            source_poi=data.get("source_poi"),
+            description=data.get("description"),
+            value_gp=data.get("value_gp"),
+            magical=data.get("magical", False),
+            cursed=data.get("cursed", False),
+            identified=data.get("identified", True),
+        )
 
 
 @dataclass
@@ -1475,6 +1723,20 @@ class HexProcedural:
     encounter_notes: str = ""  # Special notes about encounters
     foraging_results: str = ""  # Description of foraging results
     foraging_special: list[str] = field(default_factory=list)  # Special foraging yields
+    # Contextual encounter modifiers that apply to all wilderness encounters in this hex
+    # Each modifier has: chance (e.g., "2-in-6"), result (creature/event), context (flavor)
+    encounter_modifiers: list[dict[str, Any]] = field(default_factory=list)
+
+    # Extended lost behavior for maze-like hexes
+    # Format: {type: "maze", description: "...", escape_requires: "successful_lost_check"}
+    # Types: "normal" (default), "maze" (stuck until check succeeds), "trap" (can't leave at all)
+    lost_behavior: Optional[dict[str, Any]] = None
+
+    # Night hazards - effects that trigger when resting/sleeping in this hex
+    # Format: [{trigger: "sleep", save_type: "doom", save_dc: None,
+    #           on_fail: {condition: "dreamless", duration_dice: "2d6", duration_unit: "days"},
+    #           description: "Wisps of mauve mist drift from the mire..."}]
+    night_hazards: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -1492,6 +1754,27 @@ class RollTableEntry:
     items: list[str] = field(default_factory=list)  # Item references
     mechanical_effect: Optional[str] = None  # Game mechanical effects
     sub_table: Optional[str] = None  # Reference to a sub-table to roll on
+
+    # Alignment-based reaction conditions
+    # Format: {hostile_if: {alignment_not: ["Neutral"]}, friendly_if: {alignment: ["Lawful"]}}
+    # Creatures may attack or react differently based on party alignment
+    reaction_conditions: Optional[dict[str, Any]] = None
+
+    # Transportation effect triggered by this entry (for ENCOUNTERS state)
+    # Format: {save_type: "Hold", destination: "Prince's Road", failure_desc: "whisked away"}
+    # Used for magical effects that may transport characters to other locations
+    transportation_effect: Optional[dict[str, Any]] = None
+
+    # Time dilation effect when this entry is triggered (for ENCOUNTERS state)
+    # Format: {time_passes: "1d12 days", trigger_condition: "on_exit", description: "..."}
+    # Used for locations where time flows differently
+    time_effect: Optional[dict[str, Any]] = None
+
+    # Quest hook triggered by this encounter
+    # Format: {quest_id: "...", trigger: "on_encounter|on_accept", reward_items: [...]}
+    # When trigger is "on_accept", items are given when player accepts the quest
+    # Links to quest definition in POI's quest_hooks list
+    quest_hook: Optional[dict[str, Any]] = None
 
 
 @dataclass
@@ -1638,6 +1921,27 @@ class PointOfInterest:
     interior_night: Optional[str] = None  # Interior at night
     entering_day: Optional[str] = None  # Entering during day
     entering_night: Optional[str] = None  # Entering at night
+
+    # POI availability conditions (for ENCOUNTERS/DUNGEON states)
+    # Format: {type: "moon_phase", required: "full_moon", hidden_message: "The manor has vanished..."}
+    # Types: "moon_phase", "time_of_day", "seasonal", "condition"
+    # When not available, POI cannot be entered and hidden_message is shown
+    availability: Optional[dict[str, Any]] = None
+
+    # Contextual encounter modifiers - affects hex-level random encounters
+    # Format: [{chance: "2-in-6", result: "bewildered banshee", context: "heading to a ball"}]
+    # When rolling hex encounters, these modifiers may replace or supplement standard results
+    encounter_modifiers: list[dict[str, Any]] = field(default_factory=list)
+
+    # Item persistence rules for this POI (for DUNGEON state)
+    # Format: {default: "evaporate", exceptions: [{owner_npc: "lord_hobbled...", persists: True}]}
+    # Controls what happens to items taken from this location
+    item_persistence: Optional[dict[str, Any]] = None
+
+    # Dynamic room generation for procedural dungeons (for DUNGEON state)
+    # Format: {connections_per_room: "1d3", room_table: "Rooms", encounter_table: "Encounters"}
+    # Enables randomly generated room connections instead of fixed maps
+    dynamic_layout: Optional[dict[str, Any]] = None
 
     def is_visible(self, discovered_secrets: Optional[set[str]] = None) -> bool:
         """
@@ -3109,6 +3413,12 @@ class HexNPC:
     loyalty: str = "loyal"
     personal_feelings: Optional[str] = None  # e.g., "loathes employer"
 
+    # Magical binding or imprisonment
+    # Format: {bound_to: "The Spectral Manse", release_condition: "Ygraine's intervention",
+    #          captor: "Prince Mallowheart", can_leave: False}
+    # NPCs with binding cannot leave their bound location until condition is met
+    binding: Optional[dict[str, Any]] = None
+
     def get_relationship(self, npc_id: str) -> Optional[dict[str, Any]]:
         """Get relationship to a specific NPC."""
         for rel in self.relationships:
@@ -3127,6 +3437,28 @@ class HexNPC:
     def get_cross_hex_connections(self) -> list[dict[str, Any]]:
         """Get relationships to NPCs in other hexes."""
         return [r for r in self.relationships if r.get("hex_id")]
+
+    def is_bound(self) -> bool:
+        """Check if NPC is magically bound to a location."""
+        return self.binding is not None
+
+    def can_leave_location(self) -> bool:
+        """Check if NPC can leave their current location."""
+        if not self.binding:
+            return True
+        return self.binding.get("can_leave", False)
+
+    def get_bound_location(self) -> Optional[str]:
+        """Get the location this NPC is bound to."""
+        if self.binding:
+            return self.binding.get("bound_to")
+        return None
+
+    def get_release_condition(self) -> Optional[str]:
+        """Get the condition required to release this NPC from binding."""
+        if self.binding:
+            return self.binding.get("release_condition")
+        return None
 
 
 @dataclass
@@ -3519,6 +3851,220 @@ class CharacterState:
         else:  # SLOT system
             equipped, stowed = self.calculate_slot_encumbrance()
             return EncumbranceCalculator.is_over_slot_capacity(equipped, stowed)
+
+    # =========================================================================
+    # INVENTORY MANAGEMENT
+    # =========================================================================
+
+    def add_item(self, item: Item) -> bool:
+        """
+        Add an item to the character's inventory.
+
+        Args:
+            item: The Item to add
+
+        Returns:
+            True if item was added successfully
+        """
+        # For stackable items (quantity > 1 and not unique), try to merge
+        if not item.is_unique and item.quantity > 0:
+            for existing in self.inventory:
+                if (existing.item_id == item.item_id and
+                    not existing.is_unique and
+                    existing.name == item.name):
+                    existing.quantity += item.quantity
+                    return True
+
+        self.inventory.append(item)
+        return True
+
+    def remove_item(self, item_id: str, quantity: int = 1) -> Optional[Item]:
+        """
+        Remove an item from inventory.
+
+        Args:
+            item_id: ID of the item to remove
+            quantity: Number to remove (for stackable items)
+
+        Returns:
+            The removed Item or None if not found
+        """
+        for i, item in enumerate(self.inventory):
+            if item.item_id == item_id:
+                if item.quantity > quantity:
+                    # Reduce stack
+                    item.quantity -= quantity
+                    removed = Item(
+                        item_id=item.item_id,
+                        name=item.name,
+                        weight=item.weight,
+                        quantity=quantity,
+                        is_unique=item.is_unique,
+                        unique_item_id=item.unique_item_id,
+                    )
+                    return removed
+                else:
+                    # Remove entire item
+                    return self.inventory.pop(i)
+        return None
+
+    def remove_item_by_unique_id(self, unique_item_id: str) -> Optional[Item]:
+        """
+        Remove a unique item from inventory by its unique ID.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            The removed Item or None if not found
+        """
+        for i, item in enumerate(self.inventory):
+            if item.is_unique and item.unique_item_id == unique_item_id:
+                return self.inventory.pop(i)
+        return None
+
+    def get_item(self, item_id: str) -> Optional[Item]:
+        """
+        Get an item from inventory by ID.
+
+        Args:
+            item_id: ID of the item
+
+        Returns:
+            The Item or None if not found
+        """
+        for item in self.inventory:
+            if item.item_id == item_id:
+                return item
+        return None
+
+    def get_item_by_unique_id(self, unique_item_id: str) -> Optional[Item]:
+        """
+        Get a unique item from inventory by its unique ID.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            The Item or None if not found
+        """
+        for item in self.inventory:
+            if item.is_unique and item.unique_item_id == unique_item_id:
+                return item
+        return None
+
+    def get_item_by_name(self, name: str) -> Optional[Item]:
+        """
+        Get an item from inventory by name (case-insensitive).
+
+        Args:
+            name: Name of the item
+
+        Returns:
+            The first matching Item or None if not found
+        """
+        name_lower = name.lower()
+        for item in self.inventory:
+            if item.name.lower() == name_lower:
+                return item
+        return None
+
+    def has_item(self, item_id: str, quantity: int = 1) -> bool:
+        """
+        Check if character has an item in sufficient quantity.
+
+        Args:
+            item_id: ID of the item
+            quantity: Minimum quantity required
+
+        Returns:
+            True if character has the item in sufficient quantity
+        """
+        for item in self.inventory:
+            if item.item_id == item_id and item.quantity >= quantity:
+                return True
+        return False
+
+    def has_unique_item(self, unique_item_id: str) -> bool:
+        """
+        Check if character has a specific unique item.
+
+        Args:
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            True if character has the unique item
+        """
+        return any(
+            item.is_unique and item.unique_item_id == unique_item_id
+            for item in self.inventory
+        )
+
+    def get_unique_items(self) -> list[Item]:
+        """
+        Get all unique items in inventory.
+
+        Returns:
+            List of unique Items
+        """
+        return [item for item in self.inventory if item.is_unique]
+
+    def get_inventory_value(self) -> float:
+        """
+        Calculate total value of inventory in gold pieces.
+
+        Returns:
+            Total value in GP
+        """
+        total = 0.0
+        for item in self.inventory:
+            if item.value_gp:
+                total += item.value_gp * item.quantity
+        return total
+
+    def transfer_item_to(
+        self,
+        other: "CharacterState",
+        item_id: str,
+        quantity: int = 1,
+    ) -> bool:
+        """
+        Transfer an item to another character.
+
+        Args:
+            other: The recipient character
+            item_id: ID of the item to transfer
+            quantity: Number to transfer
+
+        Returns:
+            True if transfer succeeded
+        """
+        item = self.remove_item(item_id, quantity)
+        if item:
+            other.add_item(item)
+            return True
+        return False
+
+    def transfer_unique_item_to(
+        self,
+        other: "CharacterState",
+        unique_item_id: str,
+    ) -> bool:
+        """
+        Transfer a unique item to another character.
+
+        Args:
+            other: The recipient character
+            unique_item_id: The unique identifier of the item
+
+        Returns:
+            True if transfer succeeded
+        """
+        item = self.remove_item_by_unique_id(unique_item_id)
+        if item:
+            other.add_item(item)
+            return True
+        return False
 
 
 # =============================================================================

@@ -13,7 +13,7 @@ This ensures base content can be updated without breaking existing saves,
 and saves remain small by only storing differences from defaults.
 """
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, fields
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -33,6 +33,10 @@ from src.data_models import (
     Condition,
     ConditionType,
     LightSourceType,
+    Item,
+    Spell,
+    EncumbranceSystem,
+    ArmorWeight,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,6 +73,10 @@ class POIStateDelta:
     # Items taken from this POI
     items_taken: list[str] = field(default_factory=list)
 
+    # Roll table entries found: {table_name: [roll_values found]}
+    # For unique-item tables where entries can only be found once
+    found_roll_table_entries: dict[str, list[int]] = field(default_factory=dict)
+
     # Custom state changes
     custom_state: dict[str, Any] = field(default_factory=dict)
 
@@ -82,6 +90,7 @@ class POIStateDelta:
             "found_concealed_items": self.found_concealed_items,
             "variable_inhabitants_roll": self.variable_inhabitants_roll,
             "items_taken": self.items_taken,
+            "found_roll_table_entries": self.found_roll_table_entries,
             "custom_state": self.custom_state,
         }
 
@@ -96,6 +105,7 @@ class POIStateDelta:
             found_concealed_items={int(k): v for k, v in data.get("found_concealed_items", {}).items()},
             variable_inhabitants_roll=data.get("variable_inhabitants_roll"),
             items_taken=data.get("items_taken", []),
+            found_roll_table_entries=data.get("found_roll_table_entries", {}),
             custom_state=data.get("custom_state", {}),
         )
 
@@ -223,7 +233,11 @@ class HexStateDelta:
 
 @dataclass
 class SerializableCharacter:
-    """Serializable version of character state."""
+    """
+    Serializable version of character state.
+
+    Properly handles Item serialization with all unique item fields.
+    """
     character_id: str
     name: str
     character_class: str
@@ -231,41 +245,90 @@ class SerializableCharacter:
     hp_max: int
     hp_current: int
     armor_class: int
+    movement_rate: int = 120  # Base movement rate
 
-    # Abilities
-    strength: int = 10
-    dexterity: int = 10
-    constitution: int = 10
-    intelligence: int = 10
-    wisdom: int = 10
-    charisma: int = 10
+    # Abilities (stored as dict for compatibility with CharacterState)
+    ability_scores: dict[str, int] = field(default_factory=lambda: {
+        "STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10
+    })
 
-    # Equipment and resources
+    # Equipment and resources - Items serialized with all fields
     inventory: list[dict[str, Any]] = field(default_factory=list)
-    equipped: dict[str, str] = field(default_factory=dict)
-    gold: int = 0
 
     # Spells
-    spells_known: list[str] = field(default_factory=list)
-    spells_prepared: list[str] = field(default_factory=list)
-    spell_slots_remaining: dict[int, int] = field(default_factory=dict)
+    spells: list[dict[str, Any]] = field(default_factory=list)
 
-    # Conditions
+    # Conditions (with extended fields for dreamlessness, etc.)
     conditions: list[dict[str, Any]] = field(default_factory=list)
 
-    # Experience
-    xp: int = 0
+    # Retainer info
+    morale: Optional[int] = None
+    is_retainer: bool = False
+    employer_id: Optional[str] = None
+
+    # Encumbrance settings
+    encumbrance_system: str = "weight"
+    armor_weight: str = "unarmoured"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SerializableCharacter":
-        return cls(**data)
+        # Handle legacy format with individual ability scores
+        if "strength" in data and "ability_scores" not in data:
+            data["ability_scores"] = {
+                "STR": data.pop("strength", 10),
+                "DEX": data.pop("dexterity", 10),
+                "CON": data.pop("constitution", 10),
+                "INT": data.pop("intelligence", 10),
+                "WIS": data.pop("wisdom", 10),
+                "CHA": data.pop("charisma", 10),
+            }
+        # Remove any legacy fields not in dataclass
+        known_fields = {f.name for f in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in known_fields}
+        return cls(**filtered_data)
 
     @classmethod
     def from_character_state(cls, char: CharacterState) -> "SerializableCharacter":
         """Convert from CharacterState to serializable form."""
+        # Serialize inventory items using Item.to_dict()
+        serialized_inventory = []
+        for item in char.inventory:
+            if hasattr(item, 'to_dict'):
+                serialized_inventory.append(item.to_dict())
+            elif hasattr(item, '__dataclass_fields__'):
+                serialized_inventory.append(asdict(item))
+            else:
+                serialized_inventory.append(item)
+
+        # Serialize spells
+        serialized_spells = []
+        for spell in char.spells:
+            if hasattr(spell, '__dataclass_fields__'):
+                serialized_spells.append(asdict(spell))
+            else:
+                serialized_spells.append(spell)
+
+        # Serialize conditions with all extended fields
+        serialized_conditions = []
+        for c in char.conditions:
+            cond_dict = {
+                "condition_type": c.condition_type.value,
+                "duration_turns": c.duration_turns,
+                "source": c.source,
+                "severity": c.severity,
+                "duration_days": c.duration_days,
+                "days_elapsed": c.days_elapsed,
+                "periodic_effect": c.periodic_effect,
+                "recovery_condition": c.recovery_condition,
+                "recovery_rate": c.recovery_rate,
+                "spell_effects": c.spell_effects,
+                "threshold_effect": c.threshold_effect,
+            }
+            serialized_conditions.append(cond_dict)
+
         return cls(
             character_id=char.character_id,
             name=char.name,
@@ -274,36 +337,73 @@ class SerializableCharacter:
             hp_max=char.hp_max,
             hp_current=char.hp_current,
             armor_class=char.armor_class,
-            strength=char.strength,
-            dexterity=char.dexterity,
-            constitution=char.constitution,
-            intelligence=char.intelligence,
-            wisdom=char.wisdom,
-            charisma=char.charisma,
-            inventory=[asdict(item) if hasattr(item, '__dataclass_fields__') else item
-                      for item in char.inventory],
-            equipped=char.equipped,
-            gold=char.gold,
-            spells_known=char.spells.copy() if char.spells else [],
-            spells_prepared=char.spells_prepared.copy() if char.spells_prepared else [],
-            spell_slots_remaining=char.spell_slots_remaining.copy() if char.spell_slots_remaining else {},
-            conditions=[
-                {"type": c.condition_type.value, "duration": c.duration_remaining, "source": c.source}
-                for c in char.conditions
-            ],
-            xp=char.xp,
+            movement_rate=char.movement_rate,
+            ability_scores=char.ability_scores.copy(),
+            inventory=serialized_inventory,
+            spells=serialized_spells,
+            conditions=serialized_conditions,
+            morale=char.morale,
+            is_retainer=char.is_retainer,
+            employer_id=char.employer_id,
+            encumbrance_system=char.encumbrance_system.value if hasattr(char.encumbrance_system, 'value') else str(char.encumbrance_system),
+            armor_weight=char.armor_weight.value if hasattr(char.armor_weight, 'value') else str(char.armor_weight),
         )
 
     def to_character_state(self) -> CharacterState:
-        """Convert back to CharacterState."""
-        conditions = [
-            Condition(
-                condition_type=ConditionType(c["type"]),
-                duration_remaining=c.get("duration", -1),
-                source=c.get("source", ""),
-            )
-            for c in self.conditions
-        ]
+        """Convert back to CharacterState with proper Item objects."""
+        # Deserialize inventory items using Item.from_dict()
+        inventory_items = []
+        for item_data in self.inventory:
+            if isinstance(item_data, dict):
+                inventory_items.append(Item.from_dict(item_data))
+            else:
+                inventory_items.append(item_data)
+
+        # Deserialize spells
+        spell_objects = []
+        for spell_data in self.spells:
+            if isinstance(spell_data, dict):
+                spell_objects.append(Spell(
+                    spell_id=spell_data.get("spell_id", ""),
+                    name=spell_data.get("name", ""),
+                    level=spell_data.get("level", 1),
+                    prepared=spell_data.get("prepared", True),
+                    cast_today=spell_data.get("cast_today", False),
+                ))
+            else:
+                spell_objects.append(spell_data)
+
+        # Deserialize conditions with extended fields
+        condition_objects = []
+        for c in self.conditions:
+            if isinstance(c, dict):
+                condition_objects.append(Condition(
+                    condition_type=ConditionType(c.get("condition_type", c.get("type", "exhausted"))),
+                    duration_turns=c.get("duration_turns", c.get("duration")),
+                    source=c.get("source", ""),
+                    severity=c.get("severity", 1),
+                    duration_days=c.get("duration_days"),
+                    days_elapsed=c.get("days_elapsed", 0),
+                    periodic_effect=c.get("periodic_effect"),
+                    recovery_condition=c.get("recovery_condition"),
+                    recovery_rate=c.get("recovery_rate"),
+                    spell_effects=c.get("spell_effects"),
+                    threshold_effect=c.get("threshold_effect"),
+                ))
+            else:
+                condition_objects.append(c)
+
+        # Parse encumbrance system
+        try:
+            enc_system = EncumbranceSystem(self.encumbrance_system)
+        except (ValueError, KeyError):
+            enc_system = EncumbranceSystem.WEIGHT
+
+        # Parse armor weight
+        try:
+            arm_weight = ArmorWeight(self.armor_weight)
+        except (ValueError, KeyError):
+            arm_weight = ArmorWeight.UNARMOURED
 
         return CharacterState(
             character_id=self.character_id,
@@ -313,20 +413,16 @@ class SerializableCharacter:
             hp_max=self.hp_max,
             hp_current=self.hp_current,
             armor_class=self.armor_class,
-            strength=self.strength,
-            dexterity=self.dexterity,
-            constitution=self.constitution,
-            intelligence=self.intelligence,
-            wisdom=self.wisdom,
-            charisma=self.charisma,
-            inventory=self.inventory,
-            equipped=self.equipped,
-            gold=self.gold,
-            spells=self.spells_known,
-            spells_prepared=self.spells_prepared,
-            spell_slots_remaining=self.spell_slots_remaining,
-            conditions=conditions,
-            xp=self.xp,
+            movement_rate=self.movement_rate,
+            ability_scores=self.ability_scores.copy(),
+            inventory=inventory_items,
+            spells=spell_objects,
+            conditions=condition_objects,
+            morale=self.morale,
+            is_retainer=self.is_retainer,
+            employer_id=self.employer_id,
+            encumbrance_system=enc_system,
+            armor_weight=arm_weight,
         )
 
 
@@ -557,6 +653,10 @@ class GameSession:
     # POI visit tracking
     poi_visits: dict[str, dict[str, Any]] = field(default_factory=dict)
 
+    # Unique item registry - tracks unique items acquired to prevent duplicates
+    # Format: {unique_item_id: {name, acquired_by, acquired_at_hex, acquired_at_poi, acquired_date}}
+    unique_items_acquired: dict[str, dict[str, Any]] = field(default_factory=dict)
+
     # Custom session data (for extensions)
     custom_data: dict[str, Any] = field(default_factory=dict)
 
@@ -580,6 +680,7 @@ class GameSession:
             "world_changes": [c.to_dict() for c in self.world_changes],
             "completed_quests": self.completed_quests,
             "poi_visits": self.poi_visits,
+            "unique_items_acquired": self.unique_items_acquired,
             "custom_data": self.custom_data,
         }
 
@@ -604,6 +705,7 @@ class GameSession:
             world_changes=[SerializableWorldChange.from_dict(c) for c in data.get("world_changes", [])],
             completed_quests=data.get("completed_quests", []),
             poi_visits=data.get("poi_visits", {}),
+            unique_items_acquired=data.get("unique_items_acquired", {}),
             custom_data=data.get("custom_data", {}),
         )
 
@@ -856,6 +958,138 @@ class SessionManager:
         if item_name not in delta.items_taken:
             delta.items_taken.append(item_name)
 
+    def get_items_taken_from_poi(self, hex_id: str, poi_name: str) -> list[str]:
+        """
+        Get list of items that have been taken from a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+
+        Returns:
+            List of item names that have been taken
+        """
+        if not self._current_session:
+            return []
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return []
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return []
+
+        return poi_delta.items_taken.copy()
+
+    def is_item_taken_from_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        item_name: str,
+    ) -> bool:
+        """
+        Check if a specific item has been taken from a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            item_name: Name of the item to check
+
+        Returns:
+            True if the item has been taken
+        """
+        taken_items = self.get_items_taken_from_poi(hex_id, poi_name)
+        return item_name in taken_items
+
+    def mark_roll_table_entry_found(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        roll_value: int,
+    ) -> None:
+        """
+        Mark a roll table entry as found (for unique-item tables).
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            roll_value: The roll value that was found
+        """
+        delta = self.get_poi_delta(hex_id, poi_name)
+        if table_name not in delta.found_roll_table_entries:
+            delta.found_roll_table_entries[table_name] = []
+        if roll_value not in delta.found_roll_table_entries[table_name]:
+            delta.found_roll_table_entries[table_name].append(roll_value)
+
+    def is_roll_table_entry_found(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        roll_value: int,
+    ) -> bool:
+        """
+        Check if a roll table entry has been found.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            roll_value: The roll value to check
+
+        Returns:
+            True if this entry has been found, False otherwise
+        """
+        if not self._current_session:
+            return False
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return False
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return False
+
+        found_entries = poi_delta.found_roll_table_entries.get(table_name, [])
+        return roll_value in found_entries
+
+    def get_unfound_roll_table_entries(
+        self,
+        hex_id: str,
+        poi_name: str,
+        table_name: str,
+        all_roll_values: list[int],
+    ) -> list[int]:
+        """
+        Get roll values that haven't been found yet.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            table_name: Name of the roll table
+            all_roll_values: All possible roll values in the table
+
+        Returns:
+            List of roll values not yet found
+        """
+        if not self._current_session:
+            return all_roll_values
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return all_roll_values
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return all_roll_values
+
+        found_entries = poi_delta.found_roll_table_entries.get(table_name, [])
+        return [v for v in all_roll_values if v not in found_entries]
+
     def mark_hex_explored(self, hex_id: str) -> None:
         """Mark a hex as explored."""
         if not self._current_session:
@@ -895,6 +1129,161 @@ class SessionManager:
 
         if quest_id not in self._current_session.completed_quests:
             self._current_session.completed_quests.append(quest_id)
+
+    # =========================================================================
+    # UNIQUE ITEM REGISTRY
+    # =========================================================================
+
+    def is_unique_item_acquired(self, unique_item_id: str) -> bool:
+        """
+        Check if a unique item has already been acquired.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            True if the item has been acquired, False otherwise
+        """
+        if not self._current_session:
+            return False
+        return unique_item_id in self._current_session.unique_items_acquired
+
+    def register_unique_item(
+        self,
+        unique_item_id: str,
+        item_name: str,
+        acquired_by: str,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Register a unique item as acquired.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+            item_name: Display name of the item
+            acquired_by: Character ID who acquired the item
+            hex_id: Hex where item was acquired
+            poi_name: POI where item was acquired
+
+        Returns:
+            True if registration succeeded, False if item was already acquired
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id in self._current_session.unique_items_acquired:
+            return False  # Already acquired
+
+        self._current_session.unique_items_acquired[unique_item_id] = {
+            "name": item_name,
+            "acquired_by": acquired_by,
+            "acquired_at_hex": hex_id,
+            "acquired_at_poi": poi_name,
+            "acquired_date": datetime.now().isoformat(),
+        }
+        return True
+
+    def get_unique_item_info(self, unique_item_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get information about an acquired unique item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            Dictionary with item info or None if not acquired
+        """
+        if not self._current_session:
+            return None
+        return self._current_session.unique_items_acquired.get(unique_item_id)
+
+    def get_unique_item_owner(self, unique_item_id: str) -> Optional[str]:
+        """
+        Get the character ID of who owns a unique item.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            Character ID or None if item not acquired
+        """
+        info = self.get_unique_item_info(unique_item_id)
+        return info.get("acquired_by") if info else None
+
+    def transfer_unique_item(
+        self,
+        unique_item_id: str,
+        new_owner: str,
+    ) -> bool:
+        """
+        Transfer ownership of a unique item to another character.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+            new_owner: Character ID of new owner
+
+        Returns:
+            True if transfer succeeded, False if item not found
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id not in self._current_session.unique_items_acquired:
+            return False
+
+        self._current_session.unique_items_acquired[unique_item_id]["acquired_by"] = new_owner
+        return True
+
+    def remove_unique_item_from_world(self, unique_item_id: str) -> bool:
+        """
+        Remove a unique item from the registry (e.g., if destroyed or consumed).
+
+        Note: This allows the item to potentially be found again if it respawns.
+        For permanent removal, keep it in the registry with a "destroyed" flag.
+
+        Args:
+            unique_item_id: The unique identifier for the item
+
+        Returns:
+            True if removal succeeded, False if item not found
+        """
+        if not self._current_session:
+            return False
+
+        if unique_item_id in self._current_session.unique_items_acquired:
+            del self._current_session.unique_items_acquired[unique_item_id]
+            return True
+        return False
+
+    def get_all_unique_items(self) -> dict[str, dict[str, Any]]:
+        """
+        Get all acquired unique items.
+
+        Returns:
+            Dictionary mapping unique_item_id to item info
+        """
+        if not self._current_session:
+            return {}
+        return self._current_session.unique_items_acquired.copy()
+
+    def get_unique_items_by_owner(self, character_id: str) -> list[str]:
+        """
+        Get all unique items owned by a specific character.
+
+        Args:
+            character_id: The character's ID
+
+        Returns:
+            List of unique_item_ids owned by the character
+        """
+        if not self._current_session:
+            return []
+
+        return [
+            uid for uid, info in self._current_session.unique_items_acquired.items()
+            if info.get("acquired_by") == character_id
+        ]
 
     # =========================================================================
     # STATE EXTRACTION (from running game)
