@@ -28,12 +28,16 @@ MOSSLING_KNACKS_ABILITY = KindredAbility(
     name="Knacks",
     description=(
         "Mosslings practice carefully guarded, quasi-magical crafts known as knacks. "
-        "Each mossling knows one knack, rolled or chosen at character creation."
+        "Each mossling knows one knack, rolled or chosen at character creation. "
+        "Knacks grant abilities at levels 1, 3, 5, and 7."
     ),
-    is_passive=True,
+    is_passive=False,  # Active abilities that scale with level
     extra_data={
         "knack_count": 1,
-        "see_reference": "Mossling Knacks, p112",
+        "randomly_determined": True,
+        "spell_type": "knack",
+        "spell_source": "data/content/spells/knacks.json",
+        "level_scaling": [1, 3, 5, 7],
     },
 )
 
