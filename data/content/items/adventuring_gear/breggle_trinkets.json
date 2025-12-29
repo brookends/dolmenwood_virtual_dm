@@ -1,0 +1,457 @@
+{
+  "category": "adventuring_gear",
+  "subcategory": "breggle_trinkets",
+  "description": "Trinkets for Breggle character generation. Small trinkets weigh 10 coins. The Referee should judge the weight of larger items.",
+  "items": [
+    {
+      "item_id": "breggle_trinket_01",
+      "name": "Bag of Divination Stones",
+      "description": "A bag of divination stones that always answer 'Panic' to any question.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_02",
+      "name": "Bloodstained Jester's Hat",
+      "description": "A bloodstained jester's hat.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_03",
+      "name": "Bloody Knife",
+      "description": "A bloody knife that cannot be cleaned.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_04",
+      "name": "Blue Velvet Jacket",
+      "description": "A blue velvet jacket with a hidden pocket which moves when you're not looking. Every time you want to retrieve something from the pocket, it takes a minute of searching to find it.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_05",
+      "name": "Book of Bleating Poetry",
+      "description": "A book of poetry that consists primarily of bleating.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_06",
+      "name": "Bottle of Noxious Perfume",
+      "description": "A bottle of noxious perfume. When sprayed, it can be smelt up to half a mile away.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_07",
+      "name": "Brass Owl Statue",
+      "description": "A brass owl statue with eerie black eyes.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_08",
+      "name": "Broken Fishing Rod",
+      "description": "A broken fishing rod that still displays teeth marks from an enormous fish.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_09",
+      "name": "Moon Phase Amulet",
+      "description": "A circular ceramic amulet which displays the current moon phase.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_10",
+      "name": "Clay Pot of Frog Paste",
+      "description": "A clay pot labelled 'Frog Paste,' containing what appears to be frog paste.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_11",
+      "name": "Clump of Writhing Black Moss",
+      "description": "A clump of writhing, black moss that you scraped off a looming monolith one lonely night.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_12",
+      "name": "Collection of Life Story Papers",
+      "description": "A collection of papers with scrawled notes detailing your life story. The odd thing is that you found these notes on the corpse of a stranger, drowned in a ditch.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_13",
+      "name": "Mossling Gourd Instrument",
+      "description": "A curious mossling wind instrument carved out of a gourd. You can't figure out which hole to blow in.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_14",
+      "name": "Mouse Jousting Diorama",
+      "description": "A diorama of two stuffed mice riding stuffed squirrels, jousting.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_15",
+      "name": "Dried Mushroom with Face",
+      "description": "A dried mushroom with a face.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_16",
+      "name": "Folio of Pressed Sprite-Wings",
+      "description": "A folio of pressed sprite-wings.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_17",
+      "name": "Mossling-Shaped Root",
+      "description": "A gnarled root shaped like a mossling.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_18",
+      "name": "Warning Letter About Crookhorns",
+      "description": "A letter warning that several unnamed but high-ranked longhorns are secretly crookhorns in disguise.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_19",
+      "name": "King Pusskin Locket",
+      "description": "A locket with a portrait of a fluffy cat wearing a crown with the inscription 'For the love of King Pusskin.'",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_20",
+      "name": "Long-Nosed Masquerade Mask",
+      "description": "A long-nosed masquerade mask.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_21",
+      "name": "Fairy-Perfumed Moleskin Wristband",
+      "description": "A moleskin wristband, anointed with exotic fairy perfume.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_22",
+      "name": "Rainbow Smoke Mossling Pipe",
+      "description": "A mossling pipe that blows rainbow-coloured smoke rings.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_23",
+      "name": "Necklace of Humanoid Teeth",
+      "description": "A necklace of miscellaneous humanoid teeth.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_24",
+      "name": "Petrified Turnip",
+      "description": "A petrified turnip.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_25",
+      "name": "Ichor-Oozing Pig Heart",
+      "description": "A pig heart that oozes ichor when squeezed.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_26",
+      "name": "Mysteriously Heavy Pouch",
+      "description": "A pouch which feels heavy (as if full of pebbles) even when empty.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_27",
+      "name": "Lord Malbleat's Rusty Scalpel",
+      "description": "A rusty scalpel that once belonged to Lord Malbleat.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_28",
+      "name": "Sack of Fried Chicken Legs",
+      "description": "A sack of tasty fried chicken legs.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_29",
+      "name": "Fish-Breggle Scale",
+      "description": "A scale said to be from a breggle with a fishtail instead of legs.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_30",
+      "name": "Ancestral Prophetic Scroll",
+      "description": "A scroll containing a prophetic warning from an esteemed ancestor. Age has made it almost indecipherable.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_31",
+      "name": "Sketch of Lost Love",
+      "description": "A sheet of parchment with a charcoal sketch of your long lost love.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_32",
+      "name": "Fairy Fish Catching Gear",
+      "description": "A short length of silver cord and a delicate hook, said to be able to catch fairy fish in puddles.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_33",
+      "name": "Grave-Stained Shovel",
+      "description": "A shovel stained with the dirt of a thousand graves.",
+      "weight": 50,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_34",
+      "name": "Stuffed Vole in Waistcoat",
+      "description": "A stuffed vole dressed in a charming waistcoat.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_35",
+      "name": "Thigh-Bone Flute",
+      "description": "A thigh-bone flute.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_36",
+      "name": "Cat-Maddening Tin Whistle",
+      "description": "A tin whistle whose tones drive cats wild.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_37",
+      "name": "Tiny Book of Nonsense Poetry",
+      "description": "A tiny book of nonsense poetry, bound in purple leather.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_38",
+      "name": "Painting of Four-Horned Goat",
+      "description": "A tiny painting of a four-horned goat.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_39",
+      "name": "Goat-Head Walking Stick",
+      "description": "A well-loved walking stick with a goat's head handle.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_40",
+      "name": "Nail-Studded Wooden Chapes",
+      "description": "A wooden Chapes (holy symbol of the Pluritine Church) studded with nails.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_41",
+      "name": "Sunrise-Erasing Notebook",
+      "description": "An empty notebook. Anything written in it disappears at sunrise.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_42",
+      "name": "Pilfered Ornate Pie Pan",
+      "description": "An ornate pie pan, pilfered from a noble's kitchen.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_43",
+      "name": "Skull-Pip Black Stone Dice",
+      "description": "Black stone dice with white skulls for pips.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_44",
+      "name": "Worthless Horn Jewellery",
+      "description": "Expensive-looking (but worthless) jewellery, designed for breggle horns.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_45",
+      "name": "Legendary Hunter's Bowstring",
+      "description": "String from the bow of a legendary hunter.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_46",
+      "name": "Fairy Chess Pieces",
+      "description": "The board pieces for fairy chess. You have no idea what the rules are (or even if it's a real game).",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_47",
+      "name": "Cured Deer Skin",
+      "description": "The cured skin of a whole deer.",
+      "weight": 50,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_48",
+      "name": "Ancestor's Horn Necklace",
+      "description": "The horn of an ancestor, hung from a necklace.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_49",
+      "name": "Prison Cell Key",
+      "description": "The key to the prison cell you escaped from.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "breggle_trinket_50",
+      "name": "Grandmother's Glass Eye",
+      "description": "Your grandmother's creepy glass eye. You sometimes feel her presence watching you.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    }
+  ]
+}

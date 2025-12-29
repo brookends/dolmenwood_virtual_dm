@@ -3486,12 +3486,28 @@ class HexNPC:
     An NPC found within a hex location.
 
     Contains full NPC details for roleplay and encounters.
+    NPCs can be pre-defined (with detailed descriptions) or randomly generated.
     """
     npc_id: str
     name: str
     description: str
-    kindred: str = "Human"  # Race/species
+    kindred: str = "human"  # breggle, elf, grimalkin, human, mossling, woodgrue
     alignment: str = "Neutral"
+
+    # Physical characteristics (for randomly generated or detailed NPCs)
+    gender: Optional[str] = None  # male, female, or None
+    age: int = 0  # Age in years
+    height_inches: int = 0  # Height in inches
+    weight_lbs: int = 0  # Weight in pounds
+
+    # Kindred aspects (background, head, demeanour, desires, face, dress, beliefs, fur_body, speech)
+    aspects: dict[str, str] = field(default_factory=dict)
+
+    # Active kindred ability IDs
+    kindred_abilities: list[str] = field(default_factory=list)
+
+    # Whether this NPC was randomly generated (vs defined in content)
+    is_generated: bool = False
 
     # Roleplay details
     title: Optional[str] = None
@@ -3803,6 +3819,23 @@ class CharacterState:
     armor_weight: ArmorWeight = ArmorWeight.UNARMOURED
     # Polymorph overlay for transformations
     polymorph_overlay: Optional["PolymorphOverlay"] = None
+
+    # Kindred (race) information
+    kindred: str = "human"  # breggle, elf, grimalkin, human, mossling, woodgrue
+    gender: Optional[str] = None  # male, female, or None for unspecified
+    age: int = 0  # Character's age in years
+    height_inches: int = 0  # Height in inches
+    weight_lbs: int = 0  # Weight in pounds
+
+    # Kindred aspects (rolled during character generation)
+    # Keys: background, trinket, head, demeanour, desires, face, dress, beliefs, fur_body, speech
+    aspects: dict[str, str] = field(default_factory=dict)
+
+    # Active kindred ability IDs (e.g., ["breggle_fur", "breggle_horns", "breggle_gaze"])
+    kindred_abilities: list[str] = field(default_factory=list)
+
+    # Languages known
+    languages: list[str] = field(default_factory=list)
 
     def get_ability_score(self, ability: str) -> int:
         """

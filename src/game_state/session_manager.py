@@ -270,6 +270,22 @@ class SerializableCharacter:
     encumbrance_system: str = "weight"
     armor_weight: str = "unarmoured"
 
+    # Kindred (race) information
+    kindred: str = "human"
+    gender: Optional[str] = None
+    age: int = 0
+    height_inches: int = 0
+    weight_lbs: int = 0
+
+    # Kindred aspects (background, trinket, head, demeanour, etc.)
+    aspects: dict[str, str] = field(default_factory=dict)
+
+    # Active kindred ability IDs
+    kindred_abilities: list[str] = field(default_factory=list)
+
+    # Languages known
+    languages: list[str] = field(default_factory=list)
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -347,6 +363,15 @@ class SerializableCharacter:
             employer_id=char.employer_id,
             encumbrance_system=char.encumbrance_system.value if hasattr(char.encumbrance_system, 'value') else str(char.encumbrance_system),
             armor_weight=char.armor_weight.value if hasattr(char.armor_weight, 'value') else str(char.armor_weight),
+            # Kindred fields
+            kindred=char.kindred,
+            gender=char.gender,
+            age=char.age,
+            height_inches=char.height_inches,
+            weight_lbs=char.weight_lbs,
+            aspects=char.aspects.copy() if char.aspects else {},
+            kindred_abilities=list(char.kindred_abilities) if char.kindred_abilities else [],
+            languages=list(char.languages) if char.languages else [],
         )
 
     def to_character_state(self) -> CharacterState:
@@ -423,6 +448,15 @@ class SerializableCharacter:
             employer_id=self.employer_id,
             encumbrance_system=enc_system,
             armor_weight=arm_weight,
+            # Kindred fields
+            kindred=self.kindred,
+            gender=self.gender,
+            age=self.age,
+            height_inches=self.height_inches,
+            weight_lbs=self.weight_lbs,
+            aspects=self.aspects.copy() if self.aspects else {},
+            kindred_abilities=list(self.kindred_abilities) if self.kindred_abilities else [],
+            languages=list(self.languages) if self.languages else [],
         )
 
 
