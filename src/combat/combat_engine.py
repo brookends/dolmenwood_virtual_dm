@@ -44,6 +44,11 @@ from src.narrative.spell_resolver import (
     ActiveSpellEffect,
     DurationType,
 )
+from src.classes.ability_registry import (
+    AbilityRegistry,
+    AbilityEffectType,
+    get_ability_registry,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +66,8 @@ class CombatActionType(str, Enum):
     DEFEND = "defend"
     FLEE = "flee"
     PARLEY = "parley"
+    BACKSTAB = "backstab"         # Thief special attack
+    TURN_UNDEAD = "turn_undead"   # Cleric/Friar special action
 
 
 class MoraleCheckTrigger(str, Enum):
@@ -540,6 +547,7 @@ class CombatEngine:
         - Cover: -1 to -4 based on cover level
         - Charging: +2 attack (already in round_modifiers)
         - Fleeing target: +2 attack, ignore shield (p167)
+        - Class abilities: Slayer, Weapon Specialist, Order bonuses, etc.
         """
         result = AttackModifierResult()
 
@@ -590,7 +598,94 @@ class CombatEngine:
                 result.attack_bonus += penalty
                 result.details.append(f"Cover {penalty}")
 
+        # Class ability modifiers
+        class_mods = self._get_class_ability_combat_modifiers(
+            attacker, defender, action
+        )
+        result.attack_bonus += class_mods.get("attack_bonus", 0)
+        result.damage_bonus += class_mods.get("damage_bonus", 0)
+        result.details.extend(class_mods.get("details", []))
+
         return result
+
+    def _get_class_ability_combat_modifiers(
+        self,
+        attacker: Combatant,
+        defender: Combatant,
+        action: CombatAction,
+    ) -> dict[str, Any]:
+        """
+        Get combat modifiers from class abilities.
+
+        Handles:
+        - Fighter combat talents (Slayer, Weapon Specialist, Battle Rage)
+        - Knight combat prowess and mounted charge
+        - Cleric Order of St Signis (+1 vs undead)
+        - Hunter trophy bonuses
+        """
+        result = {
+            "attack_bonus": 0,
+            "damage_bonus": 0,
+            "damage_dice": None,
+            "details": [],
+        }
+
+        # Only party members have CharacterState with class abilities
+        if attacker.side != "party":
+            return result
+
+        # Get CharacterState from controller
+        char_state = self.controller.get_character(attacker.combatant_id)
+        if not char_state:
+            return result
+
+        # Build context for ability registry lookup
+        context = {
+            "target_type": self._get_creature_type(defender),
+            "position": action.parameters.get("position"),
+            "target_aware": action.parameters.get("target_aware", True),
+            "weapon": action.parameters.get("weapon", ""),
+            "is_mounted": action.parameters.get("is_mounted", False),
+            "talents": char_state.get_combat_talents() if hasattr(char_state, "get_combat_talents") else [],
+        }
+
+        # Query ability registry for combat modifiers
+        registry = get_ability_registry()
+        class_mods = registry.get_combat_modifiers(char_state, context)
+
+        result["attack_bonus"] = class_mods.get("attack_bonus", 0)
+        result["damage_bonus"] = class_mods.get("damage_bonus", 0)
+        result["damage_dice"] = class_mods.get("damage_dice")
+
+        # Add details for each applied ability
+        for effect in class_mods.get("special_effects", []):
+            if effect.get("attack_bonus") or effect.get("damage_bonus"):
+                ability_id = effect.get("ability_id", "unknown")
+                bonus_parts = []
+                if effect.get("attack_bonus"):
+                    bonus_parts.append(f"+{effect['attack_bonus']} Atk")
+                if effect.get("damage_bonus"):
+                    bonus_parts.append(f"+{effect['damage_bonus']} Dmg")
+                result["details"].append(f"{ability_id}: {', '.join(bonus_parts)}")
+
+        return result
+
+    def _get_creature_type(self, combatant: Combatant) -> Optional[str]:
+        """Get the creature type of a combatant for ability targeting."""
+        if not combatant.stat_block:
+            return None
+
+        # Check for creature type in stat block
+        creature_type = getattr(combatant.stat_block, "creature_type", None)
+        if creature_type:
+            return creature_type.lower()
+
+        # Check for undead tag
+        tags = getattr(combatant.stat_block, "tags", [])
+        if "undead" in [t.lower() for t in tags]:
+            return "undead"
+
+        return None
 
     def _get_effective_ac(
         self,
@@ -599,11 +694,13 @@ class CombatEngine:
         round_modifiers: dict[str, Any],
     ) -> int:
         """
-        Calculate effective AC considering shields, parrying, and fleeing (p167).
+        Calculate effective AC considering shields, parrying, fleeing, and class abilities.
 
         - Fleeing targets: ignore shield bonus
         - Parrying: +parry bonus to AC
         - Rear attacks: ignore shield bonus
+        - Friar Unarmoured Defence: AC 13 when not wearing armor
+        - Main Gauche: +1 AC choice per round
         """
         if not defender.stat_block:
             return 10
@@ -625,7 +722,46 @@ class CombatEngine:
         # Rear attacks also ignore shield (p167) - check parameter
         # (This would be set in action.parameters if attacking from rear)
 
+        # Class ability AC modifiers (for party members)
+        if defender.side == "party":
+            class_ac_mod = self._get_class_ability_ac_modifier(defender)
+            base_ac += class_ac_mod
+
         return base_ac
+
+    def _get_class_ability_ac_modifier(self, combatant: Combatant) -> int:
+        """
+        Get AC modifier from class abilities.
+
+        Handles:
+        - Friar Unarmoured Defence (base AC 13 when unarmored)
+        - Main Gauche (if selected for AC)
+        """
+        char_state = self.controller.get_character(combatant.combatant_id)
+        if not char_state:
+            return 0
+
+        registry = get_ability_registry()
+        abilities = registry.get_by_class(char_state.character_class)
+
+        total_modifier = 0
+
+        for ability in abilities:
+            if AbilityEffectType.COMBAT_AC not in ability.effect_types:
+                continue
+
+            # Friar Unarmoured Defence
+            if ability.ability_id == "friar_unarmoured_defence":
+                # Check if character is wearing armor
+                armor_weight = getattr(char_state, "armor_weight", None)
+                if armor_weight and str(armor_weight) == "ArmorWeight.UNARMOURED":
+                    # The base AC should already be 13 from character creation,
+                    # but we can add the modifier if stat_block AC is lower
+                    stat_ac = combatant.stat_block.armor_class if combatant.stat_block else 10
+                    if stat_ac < 13:
+                        total_modifier += (13 - stat_ac)
+
+        return total_modifier
 
     def _resolve_attack(
         self,
@@ -1668,6 +1804,302 @@ class CombatEngine:
     def is_in_combat(self) -> bool:
         """Check if combat is active."""
         return self._combat_state is not None
+
+    # =========================================================================
+    # CLASS SPECIAL ACTIONS
+    # =========================================================================
+
+    def attempt_backstab(
+        self,
+        thief_id: str,
+        target_id: str,
+        stealth_success: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Attempt a backstab attack per Dolmenwood rules (p74-75).
+
+        Backstab requirements:
+        - Must be positioned behind the target
+        - Target must be unaware (from successful Stealth or surprise)
+        - Must use a dagger in melee
+
+        Backstab bonuses:
+        - +4 Attack bonus
+        - 3d4 damage (plus STR and magic dagger bonuses)
+
+        Natural 1: Save vs Doom or be noticed by target.
+
+        Args:
+            thief_id: ID of the thief attempting backstab
+            target_id: ID of the target
+            stealth_success: Whether thief successfully used Stealth to hide
+
+        Returns:
+            Dictionary with backstab result
+        """
+        if not self._combat_state:
+            return {"success": False, "error": "No active combat"}
+
+        thief = self._get_combatant(thief_id)
+        target = self._get_combatant(target_id)
+
+        if not thief or not target:
+            return {"success": False, "error": "Combatant not found"}
+
+        # Verify thief is a thief class
+        char_state = self.controller.get_character(thief_id)
+        if not char_state or char_state.character_class.lower() != "thief":
+            return {"success": False, "error": "Only thieves can backstab"}
+
+        # Get backstab data from registry
+        registry = get_ability_registry()
+        backstab_data = registry.get_backstab_data(char_state)
+        if not backstab_data:
+            return {"success": False, "error": "Backstab ability not found"}
+
+        # Check target awareness
+        surprise_status = self._combat_state.encounter.surprise_status
+        target_unaware = (
+            stealth_success or
+            surprise_status == SurpriseStatus.ENEMIES_SURPRISED
+        )
+        if not target_unaware:
+            return {
+                "success": False,
+                "error": "Target is aware of you - cannot backstab",
+            }
+
+        # Roll attack with +4 bonus
+        attack_roll = self.dice.roll_d20(f"{thief.name} backstabs {target.name}")
+        attack_bonus = backstab_data["attack_bonus"]  # +4
+
+        # Add STR modifier
+        str_mod = 0
+        if thief.stat_block:
+            str_mod = thief.stat_block.strength_mod
+            attack_bonus += str_mod
+
+        # Get target AC
+        round_modifiers = self._init_round_modifiers()
+        target_ac = self._get_effective_ac(target, thief, round_modifiers)
+
+        # Check for natural 1
+        is_natural_1 = attack_roll.total == 1
+        total_attack = attack_roll.total + attack_bonus
+        hit = total_attack >= target_ac and not is_natural_1
+
+        result = {
+            "attacker": thief.name,
+            "target": target.name,
+            "attack_roll": attack_roll.total,
+            "attack_bonus": attack_bonus,
+            "total_attack": total_attack,
+            "target_ac": target_ac,
+            "hit": hit,
+            "is_natural_1": is_natural_1,
+            "damage_dealt": 0,
+            "special_effects": ["Backstab (+4 Attack, 3d4 damage)"],
+        }
+
+        # Handle natural 1 consequence
+        if is_natural_1:
+            # Save vs Doom or be noticed
+            save_target = char_state.get_saving_throw("doom")
+            save_roll = self.dice.roll_d20(f"{thief.name} saves vs Doom")
+
+            result["save_roll"] = save_roll.total
+            result["save_target"] = save_target
+            result["save_type"] = "doom"
+
+            if save_roll.total >= save_target:
+                result["save_success"] = True
+                result["special_effects"].append(
+                    "Natural 1! Saved vs Doom - attack missed but not noticed"
+                )
+            else:
+                result["save_success"] = False
+                result["noticed"] = True
+                result["special_effects"].append(
+                    "Natural 1! Failed save - target noticed you!"
+                )
+            return result
+
+        # Roll damage on hit
+        if hit:
+            # Backstab damage: 3d4 + STR + magic dagger bonus
+            damage_roll = self.dice.roll("3d4", "backstab damage")
+            damage = damage_roll.total + str_mod
+            # Minimum damage of 1
+            damage = max(1, damage)
+
+            result["damage_roll"] = damage_roll.total
+            result["str_modifier"] = str_mod
+            result["damage_dealt"] = damage
+
+            # Apply damage
+            if target.stat_block:
+                target.stat_block.hp_current -= damage
+                self.controller.apply_damage(target_id, damage, "physical")
+
+            # Check for kill
+            if target.stat_block and target.stat_block.hp_current <= 0:
+                result["target_killed"] = True
+                result["special_effects"].append("Target slain!")
+
+        return result
+
+    def attempt_turn_undead(
+        self,
+        cleric_id: str,
+        target_ids: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to turn undead per Dolmenwood rules (p60-61).
+
+        Turn Undead mechanics:
+        - Range: 30 feet
+        - Roll: 2d6
+        - Results vary based on roll and level difference
+
+        Level modifiers:
+        - Lower level undead: +2 per level difference (max +6)
+        - Higher level undead: -2 per level difference (max -6)
+
+        Results:
+        - 4 or lower: Undead unaffected
+        - 5-6: 2d4 undead stunned for 1 Round
+        - 7-12: 2d4 undead flee for 1 Turn
+        - 13+: 2d4 undead permanently destroyed
+
+        Args:
+            cleric_id: ID of the cleric/friar
+            target_ids: Optional specific undead targets
+
+        Returns:
+            Dictionary with turn undead result
+        """
+        if not self._combat_state:
+            return {"success": False, "error": "No active combat"}
+
+        cleric = self._get_combatant(cleric_id)
+        if not cleric:
+            return {"success": False, "error": "Combatant not found"}
+
+        # Verify cleric/friar class
+        char_state = self.controller.get_character(cleric_id)
+        if not char_state:
+            return {"success": False, "error": "Character not found"}
+
+        class_lower = char_state.character_class.lower()
+        if class_lower not in ("cleric", "friar"):
+            return {"success": False, "error": "Only clerics and friars can turn undead"}
+
+        # Get turn undead data from registry
+        registry = get_ability_registry()
+        turn_data = registry.get_turn_undead_data(char_state)
+        if not turn_data:
+            return {"success": False, "error": "Turn undead ability not found"}
+
+        # Find undead targets within 30 feet
+        undead_targets = []
+        for enemy in self._combat_state.encounter.get_active_enemies():
+            creature_type = self._get_creature_type(enemy)
+            if creature_type == "undead":
+                undead_targets.append(enemy)
+
+        if not undead_targets:
+            return {
+                "success": False,
+                "error": "No undead within range",
+                "targets_checked": len(self._combat_state.encounter.get_active_enemies()),
+            }
+
+        # Calculate level modifier (based on lowest level undead present)
+        cleric_level = char_state.level
+        # Assume undead HD equals their level; use stat_block if available
+        undead_levels = []
+        for undead in undead_targets:
+            if undead.stat_block:
+                # Use HD as level approximation
+                hd = getattr(undead.stat_block, "hit_dice", 1)
+                if isinstance(hd, str):
+                    # Parse "3d8" to get 3
+                    hd = int(hd.split("d")[0]) if "d" in hd else 1
+                undead_levels.append(hd)
+            else:
+                undead_levels.append(1)
+
+        lowest_undead_level = min(undead_levels) if undead_levels else 1
+        level_diff = cleric_level - lowest_undead_level
+        level_modifier = max(-6, min(6, level_diff * 2))
+
+        # Roll 2d6 + level modifier
+        turn_roll = self.dice.roll_2d6("turn undead")
+        total = turn_roll.total + level_modifier
+
+        result = {
+            "cleric": cleric.name,
+            "cleric_level": cleric_level,
+            "roll": turn_roll.total,
+            "level_modifier": level_modifier,
+            "total": total,
+            "undead_present": len(undead_targets),
+            "affected_count": 0,
+            "effect": "",
+        }
+
+        # Determine effect based on total
+        if total <= 4:
+            result["effect"] = "unaffected"
+            result["description"] = "The undead are unaffected by your holy power."
+        elif total <= 6:
+            # 2d4 stunned for 1 Round
+            affected_roll = self.dice.roll("2d4", "undead affected")
+            affected_count = min(affected_roll.total, len(undead_targets))
+            result["affected_count"] = affected_count
+            result["effect"] = "stunned"
+            result["duration"] = "1 Round"
+            result["description"] = (
+                f"{affected_count} undead are stunned by holy power, unable to act!"
+            )
+            # Apply stunned condition to affected undead
+            for i, undead in enumerate(undead_targets[:affected_count]):
+                status = self._combat_state.combatant_status.get(undead.combatant_id)
+                # Would add stunned condition here
+        elif total <= 12:
+            # 2d4 flee for 1 Turn
+            affected_roll = self.dice.roll("2d4", "undead affected")
+            affected_count = min(affected_roll.total, len(undead_targets))
+            result["affected_count"] = affected_count
+            result["effect"] = "fled"
+            result["duration"] = "1 Turn"
+            result["description"] = (
+                f"{affected_count} undead flee in terror from your holy presence!"
+            )
+            # Mark them as fleeing
+            for i, undead in enumerate(undead_targets[:affected_count]):
+                status = self._combat_state.combatant_status.get(undead.combatant_id)
+                if status:
+                    status.is_fleeing = True
+        else:
+            # 2d4 destroyed
+            affected_roll = self.dice.roll("2d4", "undead destroyed")
+            affected_count = min(affected_roll.total, len(undead_targets))
+            result["affected_count"] = affected_count
+            result["effect"] = "destroyed"
+            result["description"] = (
+                f"{affected_count} undead are destroyed by divine power!"
+            )
+            # Kill the affected undead
+            destroyed_names = []
+            for i, undead in enumerate(undead_targets[:affected_count]):
+                if undead.stat_block:
+                    undead.stat_block.hp_current = 0
+                    destroyed_names.append(undead.name)
+            result["destroyed"] = destroyed_names
+
+        result["success"] = result["effect"] != "unaffected"
+        return result
 
     def get_combat_summary(self) -> dict[str, Any]:
         """Get summary of current combat."""

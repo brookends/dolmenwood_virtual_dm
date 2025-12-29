@@ -24,6 +24,12 @@ from src.classes.class_data import (
     WeaponProficiency,
 )
 from src.classes.class_manager import ClassManager, get_class_manager
+from src.classes.ability_registry import (
+    AbilityEffectType,
+    AbilityIntegration,
+    AbilityRegistry,
+    get_ability_registry,
+)
 
 __all__ = [
     # Data structures
@@ -38,4 +44,9 @@ __all__ = [
     # Manager
     "ClassManager",
     "get_class_manager",
+    # Ability Registry
+    "AbilityEffectType",
+    "AbilityIntegration",
+    "AbilityRegistry",
+    "get_ability_registry",
 ]
