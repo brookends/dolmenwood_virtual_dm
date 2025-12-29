@@ -682,9 +682,9 @@ def test_hex_exploration_loop(dm: VirtualDM) -> None:
     print(f"   Result: {json.dumps(result, indent=4, default=str)}")
 
     print("\n3. Rolling for encounter check...")
-    roll = DiceRoller.roll("1d6")
-    print(f"   Encounter check roll: {roll}")
-    if roll == 1:
+    roll = DiceRoller.roll("1d6", "Encounter check")
+    print(f"   Encounter check roll: {roll.total}")
+    if roll.total == 1:
         print("   Encounter triggered!")
     else:
         print("   No encounter.")
@@ -823,9 +823,9 @@ def test_dungeon_exploration_loop(dm: VirtualDM) -> None:
     print(f"   Turns remaining: {dm.controller.party_state.light_remaining_turns}")
 
     print("\n5. Rolling for wandering monster check...")
-    roll = DiceRoller.roll("1d6")
-    print(f"   Wandering monster check: {roll}")
-    if roll == 1:
+    roll = DiceRoller.roll("1d6", "Wandering monster check")
+    print(f"   Wandering monster check: {roll.total}")
+    if roll.total == 1:
         print("   Monster encountered!")
     else:
         print("   No monster.")
