@@ -46,14 +46,27 @@ from src.data_models import (
     GrantedAbility,
     AbilityType,
 )
-from src.narrative.narrative_resolver import (
-    NarrativeResolver,
-    ResolutionResult,
-    NarrationContext,
-    DivingState,
-)
-from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
-from src.narrative.intent_parser import ActionType
+# Import narrative components (optional, may not be initialized yet)
+try:
+    from src.narrative.narrative_resolver import (
+        NarrativeResolver,
+        ResolutionResult,
+        NarrationContext,
+        DivingState,
+    )
+    from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
+    from src.narrative.intent_parser import ActionType
+    NARRATIVE_AVAILABLE = True
+except ImportError:
+    NARRATIVE_AVAILABLE = False
+    NarrativeResolver = None
+    ResolutionResult = None
+    NarrationContext = None
+    DivingState = None
+    HazardResolver = None
+    HazardType = None
+    HazardResult = None
+    ActionType = None
 
 
 logger = logging.getLogger(__name__)

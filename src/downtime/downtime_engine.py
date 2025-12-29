@@ -352,6 +352,15 @@ class DowntimeEngine:
         Returns:
             DowntimeResult with recovery details
         """
+        # Validate state - must be in downtime to rest
+        if self.controller.current_state != GameState.DOWNTIME:
+            return DowntimeResult(
+                activity=DowntimeActivity.REST,
+                days_spent=0,
+                success=False,
+                results={"error": "Must be in downtime state to rest. Use begin_downtime() first."},
+            )
+
         result = DowntimeResult(
             activity=DowntimeActivity.REST,
             days_spent=0,
