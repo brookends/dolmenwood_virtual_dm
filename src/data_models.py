@@ -3787,6 +3787,118 @@ class PartyState:
 
 
 # =============================================================================
+# CLASS-SPECIFIC STATE (Section 6.3a)
+# =============================================================================
+
+
+@dataclass
+class SpellSlotState:
+    """
+    Tracks spell slot usage for a character.
+
+    Used by Cleric, Friar, and Magician (ranked spells).
+    Enchanters use glamours (at-will) and runes (different system).
+    """
+    # Maximum slots per spell rank (from class progression)
+    max_slots: dict[int, int] = field(default_factory=dict)  # {rank: max}
+    # Currently available slots per rank
+    current_slots: dict[int, int] = field(default_factory=dict)  # {rank: current}
+
+    def has_slot(self, rank: int) -> bool:
+        """Check if a spell slot of the given rank is available."""
+        return self.current_slots.get(rank, 0) > 0
+
+    def use_slot(self, rank: int) -> bool:
+        """Use a spell slot. Returns True if successful."""
+        if self.has_slot(rank):
+            self.current_slots[rank] -= 1
+            return True
+        return False
+
+    def restore_all(self) -> None:
+        """Restore all spell slots (after rest)."""
+        self.current_slots = self.max_slots.copy()
+
+    def restore_rank(self, rank: int) -> None:
+        """Restore all slots of a specific rank."""
+        self.current_slots[rank] = self.max_slots.get(rank, 0)
+
+
+@dataclass
+class AnimalCompanion:
+    """
+    Tracks a Hunter's animal companion.
+
+    Hunters may bond with one animal at a time (Charisma Check).
+    """
+    companion_id: str = ""
+    name: str = ""
+    species: str = ""  # e.g., "wolf", "hawk", "bear"
+    level: int = 1  # Cannot exceed hunter's level
+    hp_current: int = 0
+    hp_max: int = 0
+    is_alive: bool = True
+
+    def is_valid(self) -> bool:
+        """Check if companion exists and is alive."""
+        return bool(self.companion_id) and self.is_alive
+
+
+@dataclass
+class HunterTrophy:
+    """
+    A trophy taken from a slain creature.
+
+    Provides +1 attack/save bonus against creatures of the same type.
+    """
+    trophy_id: str = ""
+    creature_type: str = ""  # e.g., "wyrm", "undead", "bear"
+    description: str = ""  # e.g., "wyrm's tooth", "stag's antlers"
+    location: str = "carried"  # "carried" or "mounted" (at home)
+
+
+@dataclass
+class ClassSpecificData:
+    """
+    Stores class-specific runtime data.
+
+    Different classes use different fields - unused fields remain empty/default.
+    """
+    # Fighter: Combat talents selected (at levels 2, 6, 10, 14)
+    combat_talents: list[str] = field(default_factory=list)  # ["cleave", "defender"]
+    slayer_targets: list[str] = field(default_factory=list)  # For Slayer talent
+    weapon_specializations: list[str] = field(default_factory=list)  # For Weapon Specialist
+
+    # Cleric/Friar: Holy order and turn undead tracking
+    holy_order: str = ""  # "st_faxis", "st_sedge", "st_signis"
+    turn_undead_uses_today: int = 0
+    laying_hands_uses_today: int = 0  # St Sedge order
+
+    # Knight: Liege and knighthood status
+    liege_house: str = ""  # "house_harrowmoor", "house_malbleat", etc.
+    is_knighted: bool = False  # True at level 3+
+    urge_speed_uses_today: int = 0  # Horsemanship ability at level 5+
+
+    # Magician: Starting spellbook
+    starting_spellbook: str = ""  # "charms_of_the_fey_court", etc.
+
+    # Enchanter: Glamours and Runes known
+    glamours_known: list[str] = field(default_factory=list)  # Spell IDs
+    runes_known: list[str] = field(default_factory=list)  # Rune spell IDs
+    rune_magnitudes: dict[str, str] = field(default_factory=dict)  # {rune_id: "lesser"/"greater"/"mighty"}
+
+    # Hunter: Animal companion and trophies
+    animal_companion: Optional[AnimalCompanion] = None
+    trophies: list[HunterTrophy] = field(default_factory=list)
+
+    # Thief: Skill customization (optional rule)
+    expertise_points_allocated: dict[str, int] = field(default_factory=dict)  # {skill: points}
+
+    # Bard: Songs known
+    songs_known: list[str] = field(default_factory=list)  # Song IDs
+
+
+# =============================================================================
 # CHARACTER STATE (Section 6.3)
 # =============================================================================
 
@@ -3836,6 +3948,28 @@ class CharacterState:
 
     # Languages known
     languages: list[str] = field(default_factory=list)
+
+    # =========================================================================
+    # CLASS-SPECIFIC STATE
+    # =========================================================================
+
+    # Active class ability IDs (e.g., ["fighter_combat_talents", "knight_horsemanship"])
+    class_abilities: list[str] = field(default_factory=list)
+
+    # Current saving throw targets (computed from class/level, stored for quick access)
+    saving_throws: dict[str, int] = field(default_factory=dict)  # {doom, ray, hold, blast, spell}
+
+    # Current attack bonus (computed from class/level)
+    attack_bonus: int = 0
+
+    # Spell slot tracking (for Cleric, Friar, Magician)
+    spell_slots: Optional[SpellSlotState] = None
+
+    # Class-specific runtime data (combat talents, holy order, liege, etc.)
+    class_data: Optional[ClassSpecificData] = None
+
+    # Experience points
+    experience_points: int = 0
 
     def get_ability_score(self, ability: str) -> int:
         """
@@ -4210,6 +4344,135 @@ class CharacterState:
             other.add_item(item)
             return True
         return False
+
+    # =========================================================================
+    # CLASS AND COMBAT METHODS
+    # =========================================================================
+
+    def get_saving_throw(self, save_type: str) -> int:
+        """
+        Get the saving throw target for a specific save type.
+
+        Args:
+            save_type: One of "doom", "ray", "hold", "blast", "spell"
+
+        Returns:
+            The target number to roll >= on d20
+        """
+        return self.saving_throws.get(save_type.lower(), 15)
+
+    def make_saving_throw(self, save_type: str, modifier: int = 0) -> tuple[int, bool]:
+        """
+        Roll a saving throw.
+
+        Args:
+            save_type: Type of save
+            modifier: Bonus/penalty to the roll
+
+        Returns:
+            Tuple of (roll_total, success)
+        """
+        import random
+        roll = random.randint(1, 20)
+        total = roll + modifier
+        target = self.get_saving_throw(save_type)
+        return total, total >= target
+
+    def get_attack_roll_bonus(self, weapon_type: str = "melee") -> int:
+        """
+        Get total attack bonus including class bonus and ability modifiers.
+
+        Args:
+            weapon_type: "melee" or "missile"
+
+        Returns:
+            Total attack bonus
+        """
+        bonus = self.attack_bonus
+        if weapon_type == "melee":
+            bonus += self.get_ability_modifier("STR")
+        else:
+            bonus += self.get_ability_modifier("DEX")
+        return bonus
+
+    def has_spell_slot(self, rank: int) -> bool:
+        """Check if character has a spell slot of the given rank."""
+        if self.spell_slots:
+            return self.spell_slots.has_slot(rank)
+        return False
+
+    def use_spell_slot(self, rank: int) -> bool:
+        """Use a spell slot of the given rank. Returns True if successful."""
+        if self.spell_slots:
+            return self.spell_slots.use_slot(rank)
+        return False
+
+    def restore_spell_slots(self) -> None:
+        """Restore all spell slots (after rest)."""
+        if self.spell_slots:
+            self.spell_slots.restore_all()
+
+    def get_skill_target(self, skill_name: str) -> Optional[int]:
+        """
+        Get the skill target for a class skill.
+
+        Args:
+            skill_name: Name of the skill (e.g., "stealth", "detect_magic")
+
+        Returns:
+            The target number to roll >= on d6, or None if not a class skill
+        """
+        # This would typically look up the skill target from class definitions
+        # based on character_class and level
+        # For now, return None - will be implemented in ClassManager integration
+        return None
+
+    def has_class_ability(self, ability_id: str) -> bool:
+        """Check if character has a specific class ability."""
+        return ability_id in self.class_abilities
+
+    def get_combat_talents(self) -> list[str]:
+        """Get list of Fighter combat talents (if any)."""
+        if self.class_data:
+            return self.class_data.combat_talents
+        return []
+
+    def get_glamours_known(self) -> list[str]:
+        """Get list of known glamours (Enchanter + kindred glamours)."""
+        glamours = []
+        # Add class glamours
+        if self.class_data:
+            glamours.extend(self.class_data.glamours_known)
+        # Note: Kindred glamours would be looked up via kindred_abilities
+        return glamours
+
+    def get_runes_known(self) -> list[str]:
+        """Get list of known fairy runes (Enchanter only)."""
+        if self.class_data:
+            return self.class_data.runes_known
+        return []
+
+    def get_animal_companion(self) -> Optional[AnimalCompanion]:
+        """Get Hunter's animal companion if any."""
+        if self.class_data:
+            return self.class_data.animal_companion
+        return None
+
+    def get_trophy_bonus(self, creature_type: str) -> int:
+        """
+        Get attack/save bonus from trophies against a creature type.
+
+        Args:
+            creature_type: Type of creature being fought
+
+        Returns:
+            +1 if character has a trophy of that type, 0 otherwise
+        """
+        if self.class_data:
+            for trophy in self.class_data.trophies:
+                if trophy.creature_type.lower() == creature_type.lower():
+                    return 1
+        return 0
 
 
 # =============================================================================
