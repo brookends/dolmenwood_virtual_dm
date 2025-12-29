@@ -1492,6 +1492,29 @@ class DowntimeEngine:
 
         result.results["xp_gained"] = xp_gained
 
+        # Apply XP using XPManager if available
+        if self.controller.xp_manager:
+            # Calculate mishap modifier for XP award
+            if mishap_roll.total <= 3:
+                mishap_modifier = 0.5
+            elif mishap_roll.total >= 18:
+                mishap_modifier = 1.5
+            else:
+                mishap_modifier = 1.0
+
+            xp_result = self.controller.xp_manager.award_carousing_xp(
+                character_id=character_id,
+                gold_spent=gold_spent,
+                mishap_modifier=mishap_modifier,
+            )
+            result.results["xp_applied"] = True
+            result.results["xp_final"] = xp_result.final_xp
+
+            # Check for level-up
+            if xp_result.level_ups:
+                result.events.append(f"Ready to level up!")
+                result.results["ready_to_level"] = True
+
         return result
 
     def _roll_major_mishap(self) -> str:

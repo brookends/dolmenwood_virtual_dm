@@ -43,6 +43,14 @@ except ImportError:
     NarrativeResolver = None
     ActiveSpellEffect = None
 
+# Import XPManager for advancement tracking
+try:
+    from src.advancement import XPManager
+    XP_MANAGER_AVAILABLE = True
+except ImportError:
+    XP_MANAGER_AVAILABLE = False
+    XPManager = None
+
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -282,6 +290,11 @@ class GlobalController:
         if NARRATIVE_AVAILABLE:
             self._narrative_resolver = NarrativeResolver(controller=self)
 
+        # XP Manager for advancement tracking (optional)
+        self._xp_manager: Optional["XPManager"] = None
+        if XP_MANAGER_AVAILABLE:
+            self._xp_manager = XPManager(controller=self)
+
         # Session log
         self._session_log: list[dict[str, Any]] = []
 
@@ -304,6 +317,11 @@ class GlobalController:
     def current_state(self) -> GameState:
         """Get current game state."""
         return self.state_machine.current_state
+
+    @property
+    def xp_manager(self) -> Optional["XPManager"]:
+        """Get the XP manager for advancement tracking."""
+        return self._xp_manager
 
     def transition(self, trigger: str, context: Optional[dict[str, Any]] = None) -> GameState:
         """
