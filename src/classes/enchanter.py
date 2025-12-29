@@ -1,10 +1,12 @@
 """
 Enchanter class definition for Dolmenwood.
 
-Masters of fairy magic who wield glamours and runes. The only class
-capable of casting runes - powerful fairy magic granted by fairy nobles.
+Wanderers who wield the magic of Fairy, currying favour with fairy nobles.
+Individuals whose contact with Fairy has imbued them with innate magic
+known as glamours. Enchanters are also blessed with the use of the fairy
+runes, guarded by the lords of Fairy.
 
-Source: Dolmenwood Player Book
+Source: Dolmenwood Player Book, pages 62-63
 """
 
 from src.classes.class_data import (
@@ -23,40 +25,107 @@ from src.classes.class_data import (
 # ENCHANTER ABILITIES
 # =============================================================================
 
-ENCHANTER_GLAMOUR_MAGIC = ClassAbility(
-    ability_id="enchanter_glamour_magic",
-    name="Glamour Magic",
+ENCHANTER_SKILLS = ClassAbility(
+    ability_id="enchanter_skills",
+    name="Enchanter Skills",
     description=(
-        "Enchanters can cast fairy glamours - minor magical talents of fairy "
-        "origin. Unlike kindred glamours which are innate, enchanters learn "
-        "glamours through study and practice. They can know multiple glamours "
-        "and cast them at will."
+        "Enchanters have one additional, specialised skill: Detect Magic."
     ),
     is_passive=True,
+    scales_with_level=True,
     extra_data={
-        "spell_type": "glamour",
-        "spell_source": "data/content/spells/glamours.json",
-        "glamours_known_by_level": {
-            1: 2,
-            3: 3,
-            5: 4,
-            7: 5,
-            9: 6,
-            11: 7,
-            13: 8,
-            15: 9,
+        "skills": ["detect_magic"],
+        # Skill Targets by level (roll d6 >= target to succeed)
+        "skill_targets": {
+            1: {"detect_magic": 5},
+            2: {"detect_magic": 5},
+            3: {"detect_magic": 5},
+            4: {"detect_magic": 5},
+            5: {"detect_magic": 4},
+            6: {"detect_magic": 4},
+            7: {"detect_magic": 3},
+            8: {"detect_magic": 3},
+            9: {"detect_magic": 2},
+            10: {"detect_magic": 2},
+            11: {"detect_magic": 2},
+            12: {"detect_magic": 2},
+            13: {"detect_magic": 2},
+            14: {"detect_magic": 2},
+            15: {"detect_magic": 2},
+        },
+        "skill_details": {
+            "detect_magic": {
+                "description": (
+                    "An enchanter can attempt to detect the subtle resonances "
+                    "woven into an enchanted object, place, or creature. If the "
+                    "attempt succeeds, the enchanter knows if the target is "
+                    "magical—i.e. enchanted, affected by a spell, or possessed "
+                    "of innate magic of some kind."
+                ),
+                "requires": "touch object, place, or creature; concentrate without distraction",
+                "time": "1 Turn per attempt",
+                "retry": "May retry failed attempts as often as desired (1 Turn each)",
+                "referee_rolls": (
+                    "The Referee rolls all Detect Magic Checks, so players do not "
+                    "know if the roll failed or if there is no magic present."
+                ),
+                "downtime": (
+                    "Given an hour of solitude in a safe location, an enchanter "
+                    "automatically detects magic on an object, place, or creature."
+                ),
+            },
         },
     },
 )
 
-ENCHANTER_RUNE_MAGIC = ClassAbility(
-    ability_id="enchanter_rune_magic",
-    name="Rune Magic",
+ENCHANTER_GLAMOURS = ClassAbility(
+    ability_id="enchanter_glamours",
+    name="Glamours",
     description=(
-        "Enchanters are the ONLY class capable of casting runes - powerful "
-        "fairy magic granted by fairy nobles. Runes are one-use magical effects "
-        "inscribed on objects. Enchanters gain access to lesser runes at level 1, "
-        "greater runes at level 5, and mighty runes at level 9."
+        "Enchanters possess minor magical talents known as glamours. The number "
+        "of glamours known is determined by the character's level. Known glamours "
+        "are determined randomly."
+    ),
+    is_passive=True,
+    scales_with_level=True,
+    extra_data={
+        "spell_type": "glamour",
+        "spell_source": "data/content/spells/glamours.json",
+        # Glamours known by level (from Enchanter Advancement table)
+        "glamours_known": {
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 3,
+            5: 4,
+            6: 5,
+            7: 6,
+            8: 6,
+            9: 7,
+            10: 7,
+            11: 8,
+            12: 8,
+            13: 9,
+            14: 9,
+            15: 10,
+        },
+        "kindred_glamours_note": (
+            "Some Kindreds (e.g. elf, grimalkin) gain glamours as a result of "
+            "their ancestry. Such glamours are in addition to glamours gained "
+            "by this Class. For example, a Level 1 human enchanter knows 1 "
+            "glamour, whereas a Level 1 elf enchanter knows 2 glamours—one "
+            "from their Kindred and one from their Class."
+        ),
+    },
+)
+
+ENCHANTER_FAIRY_RUNES = ClassAbility(
+    ability_id="enchanter_fairy_runes",
+    name="Fairy Runes",
+    description=(
+        "Enchanters are granted the use of fairy runes—the secret, magical sigils "
+        "guarded by the rulers of Fairy. As a character advances, fairy nobles "
+        "may be drawn by the enchanter's great deeds and grant new runes."
     ),
     is_passive=True,
     scales_with_level=True,
@@ -67,65 +136,46 @@ ENCHANTER_RUNE_MAGIC = ClassAbility(
             "greater": "data/content/spells/greater_runes.json",
             "mighty": "data/content/spells/mighty_runes.json",
         },
-        "rune_access_by_level": {
-            1: ["lesser"],
-            5: ["lesser", "greater"],
-            9: ["lesser", "greater", "mighty"],
+        "starting_runes": {
+            "count": 1,
+            "magnitude": "lesser",
+            "selection": "random",
         },
-        "runes_known_by_level": {
-            1: 1,
-            3: 2,
-            5: 3,
-            7: 4,
-            9: 5,
-            11: 6,
-            13: 7,
-            15: 8,
-        },
+        "learning_runes": (
+            "Each time the character gains a Level, the player should roll for "
+            "the chance of acquiring a new rune. See Learning Runes, p92."
+        ),
+        "reference": "See Fairy Magic, p92 for details on the fairy runes.",
     },
 )
 
-ENCHANTER_FAIRY_TONGUE = ClassAbility(
-    ability_id="enchanter_fairy_tongue",
-    name="Fairy Tongue",
+ENCHANTER_MAGIC_ITEMS = ClassAbility(
+    ability_id="enchanter_magic_items",
+    name="Magic Items",
     description=(
-        "Enchanters learn the ancient language of Fairy (Sylvan). They can "
-        "communicate with fairy creatures and read fairy inscriptions."
+        "The enchanter's natural affinities allow the use of magical items "
+        "exclusive to arcane spell-casters (for example, magic wands or scrolls "
+        "of arcane spells)."
     ),
     is_passive=True,
     extra_data={
-        "languages_gained": ["Sylvan"],
+        "can_use_arcane_items": True,
+        "item_types": ["wands", "arcane_scrolls", "arcane_magic_items"],
     },
 )
 
-ENCHANTER_FAIRY_AFFINITY = ClassAbility(
-    ability_id="enchanter_fairy_affinity",
-    name="Fairy Affinity",
+ENCHANTER_DIVINE_RESISTANCE = ClassAbility(
+    ability_id="enchanter_divine_resistance",
+    name="Resistance to Divine Aid",
     description=(
-        "Enchanters have a natural affinity with fairy creatures. They gain +2 "
-        "to reaction rolls with fairies and can sense fairy magic within 30 feet."
+        "The saints of the Pluritine Church are loath to aid those allied with "
+        "the godless world of Fairy. If an enchanter is the subject of a "
+        "beneficial holy spell, there is a 2-in-6 chance it has no effect."
     ),
     is_passive=True,
     extra_data={
-        "fairy_reaction_bonus": 2,
-        "sense_magic_range_feet": 30,
-        "sense_magic_types": ["fairy_glamour", "rune"],
-    },
-)
-
-ENCHANTER_FAIRY_PACT = ClassAbility(
-    ability_id="enchanter_fairy_pact",
-    name="Fairy Pact",
-    description=(
-        "At level 9, an enchanter may forge a pact with a fairy noble, gaining "
-        "access to more powerful runes and the ability to call upon fairy aid. "
-        "The terms of such pacts are always... interesting."
-    ),
-    min_level=9,
-    is_passive=True,
-    extra_data={
-        "requires": "fairy_noble_pact",
-        "benefits": ["mighty_runes", "fairy_summons"],
+        "holy_spell_failure_chance": "2-in-6",
+        "affects": "beneficial holy spells only",
     },
 )
 
@@ -134,131 +184,135 @@ ENCHANTER_FAIRY_PACT = ClassAbility(
 # ENCHANTER LEVEL PROGRESSION
 # =============================================================================
 
-# Enchanter saves (similar to magician but with better spell saves)
-ENCHANTER_SAVES_1_5 = SavingThrows(doom=13, ray=14, hold=13, blast=16, spell=13)
-ENCHANTER_SAVES_6_10 = SavingThrows(doom=11, ray=12, hold=11, blast=14, spell=10)
-ENCHANTER_SAVES_11_15 = SavingThrows(doom=8, ray=9, hold=8, blast=11, spell=6)
+# Enchanter saving throws (improve every 2 levels)
+ENCHANTER_SAVES_1_2 = SavingThrows(doom=11, ray=12, hold=13, blast=16, spell=14)
+ENCHANTER_SAVES_3_4 = SavingThrows(doom=10, ray=11, hold=12, blast=15, spell=13)
+ENCHANTER_SAVES_5_6 = SavingThrows(doom=9, ray=10, hold=11, blast=14, spell=12)
+ENCHANTER_SAVES_7_8 = SavingThrows(doom=8, ray=9, hold=10, blast=13, spell=11)
+ENCHANTER_SAVES_9_10 = SavingThrows(doom=7, ray=8, hold=9, blast=12, spell=10)
+ENCHANTER_SAVES_11_12 = SavingThrows(doom=6, ray=7, hold=8, blast=11, spell=9)
+ENCHANTER_SAVES_13_14 = SavingThrows(doom=5, ray=6, hold=7, blast=10, spell=8)
+ENCHANTER_SAVES_15 = SavingThrows(doom=4, ray=5, hold=6, blast=9, spell=7)
 
 ENCHANTER_LEVEL_PROGRESSION = [
     LevelProgression(
         level=1,
         experience_required=0,
         attack_bonus=0,
-        saving_throws=ENCHANTER_SAVES_1_5,
-        hit_dice="1d4",
+        saving_throws=ENCHANTER_SAVES_1_2,
+        hit_dice="1d6",
         rune_access=["lesser"],
     ),
     LevelProgression(
         level=2,
-        experience_required=2500,
+        experience_required=1750,
         attack_bonus=0,
-        saving_throws=ENCHANTER_SAVES_1_5,
-        hit_dice="2d4",
+        saving_throws=ENCHANTER_SAVES_1_2,
+        hit_dice="2d6",
         rune_access=["lesser"],
     ),
     LevelProgression(
         level=3,
-        experience_required=5000,
-        attack_bonus=0,
-        saving_throws=ENCHANTER_SAVES_1_5,
-        hit_dice="3d4",
+        experience_required=3500,
+        attack_bonus=1,
+        saving_throws=ENCHANTER_SAVES_3_4,
+        hit_dice="3d6",
         rune_access=["lesser"],
     ),
     LevelProgression(
         level=4,
-        experience_required=10000,
+        experience_required=7000,
         attack_bonus=1,
-        saving_throws=ENCHANTER_SAVES_1_5,
-        hit_dice="4d4",
+        saving_throws=ENCHANTER_SAVES_3_4,
+        hit_dice="4d6",
         rune_access=["lesser"],
     ),
     LevelProgression(
         level=5,
-        experience_required=20000,
-        attack_bonus=1,
-        saving_throws=ENCHANTER_SAVES_1_5,
-        hit_dice="5d4",
+        experience_required=14000,
+        attack_bonus=2,
+        saving_throws=ENCHANTER_SAVES_5_6,
+        hit_dice="5d6",
         rune_access=["lesser", "greater"],
     ),
     LevelProgression(
         level=6,
-        experience_required=40000,
+        experience_required=28000,
         attack_bonus=2,
-        saving_throws=ENCHANTER_SAVES_6_10,
-        hit_dice="6d4",
+        saving_throws=ENCHANTER_SAVES_5_6,
+        hit_dice="6d6",
         rune_access=["lesser", "greater"],
     ),
     LevelProgression(
         level=7,
-        experience_required=80000,
-        attack_bonus=2,
-        saving_throws=ENCHANTER_SAVES_6_10,
-        hit_dice="7d4",
+        experience_required=56000,
+        attack_bonus=3,
+        saving_throws=ENCHANTER_SAVES_7_8,
+        hit_dice="7d6",
         rune_access=["lesser", "greater"],
     ),
     LevelProgression(
         level=8,
-        experience_required=150000,
-        attack_bonus=2,
-        saving_throws=ENCHANTER_SAVES_6_10,
-        hit_dice="8d4",
+        experience_required=112000,
+        attack_bonus=3,
+        saving_throws=ENCHANTER_SAVES_7_8,
+        hit_dice="8d6",
         rune_access=["lesser", "greater"],
     ),
     LevelProgression(
         level=9,
-        experience_required=300000,
-        attack_bonus=3,
-        saving_throws=ENCHANTER_SAVES_6_10,
-        hit_dice="9d4",
+        experience_required=220000,
+        attack_bonus=4,
+        saving_throws=ENCHANTER_SAVES_9_10,
+        hit_dice="9d6",
         rune_access=["lesser", "greater", "mighty"],
-        abilities_gained=["enchanter_fairy_pact"],
     ),
     LevelProgression(
         level=10,
-        experience_required=450000,
-        attack_bonus=3,
-        saving_throws=ENCHANTER_SAVES_6_10,
-        hit_dice="9d4+1",
+        experience_required=340000,
+        attack_bonus=4,
+        saving_throws=ENCHANTER_SAVES_9_10,
+        hit_dice="10d6",
         rune_access=["lesser", "greater", "mighty"],
     ),
     LevelProgression(
         level=11,
-        experience_required=600000,
-        attack_bonus=3,
-        saving_throws=ENCHANTER_SAVES_11_15,
-        hit_dice="9d4+2",
+        experience_required=460000,
+        attack_bonus=5,
+        saving_throws=ENCHANTER_SAVES_11_12,
+        hit_dice="10d6+1",
         rune_access=["lesser", "greater", "mighty"],
     ),
     LevelProgression(
         level=12,
-        experience_required=750000,
-        attack_bonus=4,
-        saving_throws=ENCHANTER_SAVES_11_15,
-        hit_dice="9d4+3",
+        experience_required=580000,
+        attack_bonus=5,
+        saving_throws=ENCHANTER_SAVES_11_12,
+        hit_dice="10d6+2",
         rune_access=["lesser", "greater", "mighty"],
     ),
     LevelProgression(
         level=13,
-        experience_required=900000,
-        attack_bonus=4,
-        saving_throws=ENCHANTER_SAVES_11_15,
-        hit_dice="9d4+4",
+        experience_required=700000,
+        attack_bonus=6,
+        saving_throws=ENCHANTER_SAVES_13_14,
+        hit_dice="10d6+3",
         rune_access=["lesser", "greater", "mighty"],
     ),
     LevelProgression(
         level=14,
-        experience_required=1050000,
-        attack_bonus=4,
-        saving_throws=ENCHANTER_SAVES_11_15,
-        hit_dice="9d4+5",
+        experience_required=820000,
+        attack_bonus=6,
+        saving_throws=ENCHANTER_SAVES_13_14,
+        hit_dice="10d6+4",
         rune_access=["lesser", "greater", "mighty"],
     ),
     LevelProgression(
         level=15,
-        experience_required=1200000,
-        attack_bonus=5,
-        saving_throws=ENCHANTER_SAVES_11_15,
-        hit_dice="9d4+6",
+        experience_required=940000,
+        attack_bonus=7,
+        saving_throws=ENCHANTER_SAVES_15,
+        hit_dice="10d6+5",
         rune_access=["lesser", "greater", "mighty"],
     ),
 ]
@@ -272,45 +326,60 @@ ENCHANTER_DEFINITION = ClassDefinition(
     class_id="enchanter",
     name="Enchanter",
     description=(
-        "Enchanters are masters of fairy magic, wielding glamours and the "
-        "powerful runes granted by fairy nobles. They are the ONLY class capable "
-        "of casting runes - one-use magical effects of tremendous power. While "
-        "physically frail like magicians, their fairy magic grants them unique "
-        "abilities and a special connection to the realm of Fairy."
+        "Individuals whose contact with Fairy has imbued them with innate magic "
+        "known as glamours. Enchanters are also blessed with the use of the "
+        "fairy runes, guarded by the lords of Fairy, though such gifts are not "
+        "always without cost."
     ),
 
-    hit_die=HitDie.D4,
-    prime_ability="CHA",
+    hit_die=HitDie.D6,
+    prime_ability="CHA,INT",  # Dual prime abilities
 
     magic_type=MagicType.GLAMOUR,  # Covers both glamours and runes
 
     armor_proficiencies=[
-        ArmorProficiency.NONE,
+        ArmorProficiency.LIGHT,
+        ArmorProficiency.MEDIUM,
+        # Note: No shields
     ],
     weapon_proficiencies=[
-        WeaponProficiency.SIMPLE,
+        WeaponProficiency.SIMPLE,   # Small weapons
+        WeaponProficiency.MARTIAL,  # Medium weapons
     ],
 
     level_progression=ENCHANTER_LEVEL_PROGRESSION,
 
     abilities=[
-        ENCHANTER_GLAMOUR_MAGIC,
-        ENCHANTER_RUNE_MAGIC,
-        ENCHANTER_FAIRY_TONGUE,
-        ENCHANTER_FAIRY_AFFINITY,
-        ENCHANTER_FAIRY_PACT,
+        ENCHANTER_SKILLS,
+        ENCHANTER_GLAMOURS,
+        ENCHANTER_FAIRY_RUNES,
+        ENCHANTER_MAGIC_ITEMS,
+        ENCHANTER_DIVINE_RESISTANCE,
     ],
 
-    # Rare among humans, common among fairy kindreds
-    restricted_kindreds=["mossling", "breggle"],
+    # Typically only fairies and demi-fey, but mortals with strong Fairy
+    # connection can also be enchanters
+    restricted_kindreds=[],  # No hard restrictions, but typically fey/demi-fey
 
     starting_equipment=[
-        "dagger",
-        "staff",
-        "fairy_token",
-        "adventuring_gear",
+        # Armour (roll 1d6): 1-2. None. 3-4. Leather armour. 5-6. Chainmail.
+        "armor_roll_1d6",
+        # Weapons (roll 1d6 twice): 1. Club. 2. Dagger. 3. Longsword.
+        # 4. Shortbow + 20 arrows. 5. Spear. 6. Staff.
+        "weapon_roll_1d6_twice",
     ],
 
+    extra_data={
+        "kindred_note": (
+            "Typically only fairies and demi-fey (elves, grimalkins, and "
+            "woodgrues) are enchanters. Occasionally a mortal with a strong "
+            "connection to Fairy may also be an enchanter—for example, a human "
+            "with mixed elfish ancestry, an individual kidnapped by fairies in "
+            "childhood, or someone who wandered lost in Fairy for many years."
+        ),
+        "combat_aptitude": "Semi-martial",
+    },
+
     source_book="Dolmenwood Player Book",
-    source_page=60,
+    source_page=62,
 )
