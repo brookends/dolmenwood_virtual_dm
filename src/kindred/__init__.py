@@ -12,7 +12,7 @@ Available Kindreds:
 - Grimalkin: Shape-shifting cat-fairies (fairy)
 - Human: Common folk of Dolmenwood (mortal)
 - Mossling: Gnarled woody folk with symbiotic fungi (mortal)
-- Woodgrue: (coming soon)
+- Woodgrue: Bat-faced demi-fey goblins (demi-fey)
 """
 
 from src.kindred.kindred_data import (
