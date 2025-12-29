@@ -308,29 +308,53 @@ class LLMManager:
     - Logging and monitoring
     """
 
-    # Patterns that indicate authority violations
-    AUTHORITY_VIOLATION_PATTERNS = [
-        "roll",  # LLM shouldn't roll dice
-        "you take",  # LLM shouldn't apply effects
-        "you lose",  # LLM shouldn't determine losses
-        "you gain",  # LLM shouldn't grant rewards
-        "you succeed",  # LLM shouldn't determine success
-        "you fail",  # LLM shouldn't determine failure
-        "save vs",  # LLM shouldn't call for saves
-        "make a",  # LLM shouldn't request rolls
-        "d20",  # LLM shouldn't mention dice
-        "d6",
-        "d8",
-        "d10",
-        "d12",
-        "damage",  # Context-dependent, may be narrating resolved damage
-    ]
+    # Compiled regex patterns for authority violations (using word boundaries)
+    # These detect when the LLM tries to usurp mechanical authority
+    import re as _re
 
-    # Patterns that are allowed when narrating resolved actions
+    # Patterns for dice/roll mechanics (LLM shouldn't invoke these)
+    _DICE_ROLL_PATTERNS = _re.compile(
+        r"""
+        \broll\b                    # "roll" as a word (not troll, scroll, stroll)
+        | \brolls\b                 # "rolls"
+        | \brolling\b               # "rolling"
+        | \brolled\s+a?\s*\d+       # "rolled 15" or "rolled a 15" (deciding outcomes)
+        | \bd20\b                   # dice notation
+        | \bd12\b
+        | \bd10\b
+        | \bd8\b
+        | \bd6\b
+        | \bd4\b
+        | \bd100\b
+        | \d+d\d+                   # XdY notation like "2d6"
+        | \bmake\s+a\s+.*\b(check|save|roll)\b  # "make a saving throw", "make a check"
+        | \bsave\s+vs\b             # "save vs poison"
+        | \bsaving\s+throw\b        # "saving throw"
+        """,
+        _re.VERBOSE | _re.IGNORECASE
+    )
+
+    # Patterns for outcome determination (LLM shouldn't decide these)
+    _OUTCOME_PATTERNS = _re.compile(
+        r"""
+        \byou\s+take\s+\d+          # "you take 5 damage" (deciding damage amounts)
+        | \byou\s+lose\s+\d+        # "you lose 3 hp"
+        | \byou\s+gain\s+\d+        # "you gain 50 xp"
+        | \byou\s+succeed\b         # "you succeed"
+        | \byou\s+fail\b            # "you fail"
+        | \bdeals?\s+\d+\s+damage\b # "deals 5 damage" (deciding damage)
+        | \binflicts?\s+\d+\s+damage\b  # "inflicts 8 damage"
+        """,
+        _re.VERBOSE | _re.IGNORECASE
+    )
+
+    # Patterns allowed when narrating already-resolved actions
     NARRATION_CONTEXT_ALLOWED = [
-        "damage",  # OK when describing what happened
+        "damage",  # OK when describing what happened (without numbers)
         "hit",  # OK when describing combat results
         "miss",  # OK when describing combat results
+        "wounded",  # OK for describing injury
+        "injured",  # OK for describing injury
     ]
 
     def __init__(self, config: Optional[LLMConfig] = None):
@@ -411,27 +435,22 @@ class LLMManager:
         - Decide success or failure
         - Alter game state
         - Invent rules or mechanics
+
+        Uses word-boundary regex patterns to avoid false positives
+        (e.g., "troll" should not trigger "roll" violation).
         """
         violations = []
-        content_lower = response.content.lower()
+        content = response.content
 
-        for pattern in self.AUTHORITY_VIOLATION_PATTERNS:
-            if pattern in content_lower:
-                # Check if it's allowed in narration context
-                if allow_narration_context and pattern in self.NARRATION_CONTEXT_ALLOWED:
-                    continue
-                violations.append(f"potential_authority_violation:{pattern}")
+        # Check for dice/roll mechanic violations
+        for match in self._DICE_ROLL_PATTERNS.finditer(content):
+            matched_text = match.group(0).strip()
+            violations.append(f"dice_mechanic_violation:{matched_text}")
 
-        # Check for dice notation patterns
-        import re
-        dice_patterns = [
-            r'\d+d\d+',  # XdY notation
-            r'roll\s+\w+',  # "roll a" or "roll the"
-            r'rolled\s+\d+',  # "rolled 15"
-        ]
-        for pattern in dice_patterns:
-            if re.search(pattern, content_lower):
-                violations.append(f"dice_notation_detected:{pattern}")
+        # Check for outcome determination violations
+        for match in self._OUTCOME_PATTERNS.finditer(content):
+            matched_text = match.group(0).strip()
+            violations.append(f"outcome_determination_violation:{matched_text}")
 
         if violations:
             response.authority_violations.extend(violations)

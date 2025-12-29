@@ -193,3 +193,14 @@ class TestDiceStatistics:
         assert len(results) == 20
         assert min(results) == 1
         assert max(results) == 20
+
+    def test_d6_total_is_int_in_range(self, clean_dice):
+        """Test that roll().total returns an int in the correct range.
+
+        This ensures code like 'if roll.total == 1' works correctly,
+        rather than accidentally comparing DiceResult objects to ints.
+        """
+        for _ in range(100):
+            result = clean_dice.roll("1d6", "range check")
+            assert isinstance(result.total, int), "roll().total should be an int"
+            assert 1 <= result.total <= 6, f"1d6 total should be 1-6, got {result.total}"

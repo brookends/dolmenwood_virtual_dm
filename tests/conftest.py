@@ -100,7 +100,7 @@ def sample_fighter():
         hp_current=24,
         hp_max=24,
         armor_class=4,  # Chain + shield
-        movement_rate=90,
+        base_speed=30,  # Encumbered in armor
     )
 
 
@@ -123,7 +123,7 @@ def sample_thief():
         hp_current=8,
         hp_max=8,
         armor_class=6,  # Leather
-        movement_rate=120,
+        base_speed=40,  # Standard unencumbered
     )
 
 
@@ -146,7 +146,7 @@ def sample_cleric():
         hp_current=12,
         hp_max=12,
         armor_class=5,  # Chain
-        movement_rate=60,
+        base_speed=30,  # Encumbered in armor
     )
 
 
@@ -203,7 +203,7 @@ def sample_combatants(sample_fighter, goblin_stat_block):
             hit_dice="3d8",
             hp_current=sample_fighter.hp_current,
             hp_max=sample_fighter.hp_max,
-            movement=sample_fighter.movement_rate,
+            movement=sample_fighter.base_speed,
             attacks=[{"name": "Sword", "damage": "1d8+1", "bonus": 3}],
             morale=12,
         ),
@@ -490,7 +490,7 @@ def create_test_character(
         hp_current=hp,
         hp_max=hp,
         armor_class=9,
-        movement_rate=120,
+        base_speed=40,  # Standard unencumbered
     )
 
 

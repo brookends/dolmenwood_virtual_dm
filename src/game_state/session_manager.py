@@ -245,7 +245,7 @@ class SerializableCharacter:
     hp_max: int
     hp_current: int
     armor_class: int
-    movement_rate: int = 120  # Base movement rate
+    base_speed: int = 40  # Base Speed in feet (p146)
 
     # Abilities (stored as dict for compatibility with CharacterState)
     ability_scores: dict[str, int] = field(default_factory=lambda: {
@@ -353,7 +353,7 @@ class SerializableCharacter:
             hp_max=char.hp_max,
             hp_current=char.hp_current,
             armor_class=char.armor_class,
-            movement_rate=char.movement_rate,
+            base_speed=char.base_speed,
             ability_scores=char.ability_scores.copy(),
             inventory=serialized_inventory,
             spells=serialized_spells,
@@ -438,7 +438,7 @@ class SerializableCharacter:
             hp_max=self.hp_max,
             hp_current=self.hp_current,
             armor_class=self.armor_class,
-            movement_rate=self.movement_rate,
+            base_speed=self.base_speed,
             ability_scores=self.ability_scores.copy(),
             inventory=inventory_items,
             spells=spell_objects,

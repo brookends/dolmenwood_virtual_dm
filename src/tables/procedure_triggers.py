@@ -10,8 +10,6 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Callable, Optional, Union
 from datetime import datetime
-import random
-
 from src.data_models import (
     GameTime,
     GameDate,
@@ -439,7 +437,7 @@ class ProcedureManager:
         """Execute wilderness encounter check."""
         encounter_chance = context.get("encounter_chance", 2)  # X-in-6
 
-        roll = random.randint(1, 6)
+        roll = DiceRoller.randint(1, 6, "Wilderness encounter check")
         encounter = roll <= encounter_chance
 
         if encounter:
@@ -469,7 +467,7 @@ class ProcedureManager:
         context: dict[str, Any]
     ) -> ProcedureResult:
         """Execute dungeon wandering monster check."""
-        roll = random.randint(1, 6)
+        roll = DiceRoller.randint(1, 6, "Dungeon wandering monster check")
         encounter = roll == 1  # 1-in-6 for dungeon
 
         if encounter:
@@ -500,7 +498,7 @@ class ProcedureManager:
         """Execute getting lost check."""
         lost_chance = context.get("lost_chance", 2)  # X-in-6
 
-        roll = random.randint(1, 6)
+        roll = DiceRoller.randint(1, 6, "Lost check")
         lost = roll <= lost_chance
 
         if lost:
@@ -633,7 +631,7 @@ class ProcedureManager:
         rest_type = context.get("rest_type", "light")
 
         if rest_type == "complete":
-            healing = random.randint(1, 3)
+            healing = DiceRoller.randint(1, 3, "Complete rest healing")
         else:
             healing = 1
 
@@ -653,8 +651,8 @@ class ProcedureManager:
         morale_score = context.get("enemy_morale", 7)
         modifier = context.get("morale_modifier", 0)
 
-        dice = [random.randint(1, 6), random.randint(1, 6)]
-        roll = sum(dice)
+        morale_roll = DiceRoller.roll("2d6", "Morale check")
+        roll = morale_roll.total
         adjusted = roll + modifier
 
         if adjusted > morale_score:

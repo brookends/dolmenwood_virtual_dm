@@ -6,10 +6,9 @@ this system generates and locks those random properties on first encounter.
 """
 
 import logging
-import random
 from typing import Any, Optional
 
-from src.data_models import Item
+from src.data_models import DiceRoller, Item
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +157,7 @@ class ItemMaterializer:
 
     def _roll_enchantment_type(self) -> str:
         """Roll for enchantment type (arcane/fairy/holy)."""
-        roll = random.randint(1, 100)
+        roll = DiceRoller.roll_percentile("Enchantment type").total
         for low, high, enchant_type in self.ENCHANTMENT_TYPES:
             if low <= roll <= high:
                 return enchant_type
@@ -166,7 +165,7 @@ class ItemMaterializer:
 
     def _check_chance(self, percent: int) -> bool:
         """Check if a percentage chance succeeds."""
-        return random.randint(1, 100) <= percent
+        return DiceRoller.percent_check(percent, "Magic item special property")
 
     def _generate_weapon_power(self) -> str:
         """Generate a random weapon special power."""
@@ -181,7 +180,7 @@ class ItemMaterializer:
             "Drains life from enemies",
             "Bursts into flame on command",
         ]
-        return random.choice(powers)
+        return DiceRoller.choice(powers, "Weapon special power")
 
     def _generate_armour_power(self) -> str:
         """Generate a random armour special power."""
@@ -195,7 +194,7 @@ class ItemMaterializer:
             "Reflects minor spells",
             "Weighs nothing to the wearer",
         ]
-        return random.choice(powers)
+        return DiceRoller.choice(powers, "Armour special power")
 
     def _generate_ring_power(self) -> str:
         """Generate a random ring special power."""
@@ -209,7 +208,7 @@ class ItemMaterializer:
             "Allows spider climbing",
             "Provides warmth in cold environments",
         ]
-        return random.choice(powers)
+        return DiceRoller.choice(powers, "Ring special power")
 
     def _generate_oddity(self) -> str:
         """Generate a random oddity/quirk."""
@@ -225,7 +224,7 @@ class ItemMaterializer:
             "Changes color with the wearer's mood",
             "Tastes of copper if licked",
         ]
-        return random.choice(oddities)
+        return DiceRoller.choice(oddities, "Magic item oddity")
 
     def _generate_from_treasure_tables(self) -> dict[str, Any]:
         """Generate properties using the full treasure table system."""

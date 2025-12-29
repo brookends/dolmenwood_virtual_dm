@@ -18,8 +18,8 @@ Treasure Generation Flow:
 """
 
 from typing import Any, Optional
-import random
 
+from src.data_models import DiceRoller
 from src.tables.table_types import (
     TreasureType,
     CoinType,
@@ -163,11 +163,11 @@ class TreasureTableManager:
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
-        return sum(random.randint(1, die_size) for _ in range(num_dice)) + modifier
+        return DiceRoller.roll(f"{num_dice}d{die_size}+{modifier}" if modifier >= 0 else f"{num_dice}d{die_size}{modifier}", "treasure quantity").total
 
     def _roll_d100(self) -> int:
         """Roll d100 (1-100)."""
-        return random.randint(1, 100)
+        return DiceRoller.roll_percentile("treasure chance").total
 
     # =========================================================================
     # TABLE ROLLING
@@ -350,14 +350,14 @@ class TreasureTableManager:
                 item.rolls["material"] = material_result.roll
 
             # Roll embellishment (optional - 50% chance)
-            if random.randint(1, 100) <= 50:
+            if DiceRoller.percent_check(50, "embellishment chance"):
                 embellishment_result = self.roll_on_table("embellishment", context)
                 if embellishment_result and embellishment_result.entry:
                     item.embellishment = embellishment_result.entry.result
                     item.rolls["embellishment"] = embellishment_result.roll
 
             # Roll provenance (optional - 25% chance)
-            if random.randint(1, 100) <= 25:
+            if DiceRoller.percent_check(25, "special power chance"):
                 provenance_result = self.roll_on_table("provenance", context)
                 if provenance_result and provenance_result.entry:
                     item.provenance = provenance_result.entry.result
@@ -395,14 +395,14 @@ class TreasureTableManager:
                 item.rolls["material"] = material_result.roll
 
             # Roll embellishment (optional - 50% chance)
-            if random.randint(1, 100) <= 50:
+            if DiceRoller.percent_check(50, "embellishment chance"):
                 embellishment_result = self.roll_on_table("embellishment", context)
                 if embellishment_result and embellishment_result.entry:
                     item.embellishment = embellishment_result.entry.result
                     item.rolls["embellishment"] = embellishment_result.roll
 
             # Roll provenance (optional - 50% chance for art)
-            if random.randint(1, 100) <= 50:
+            if DiceRoller.percent_check(50, "embellishment chance"):
                 provenance_result = self.roll_on_table("provenance", context)
                 if provenance_result and provenance_result.entry:
                     item.provenance = provenance_result.entry.result
@@ -505,14 +505,14 @@ class TreasureTableManager:
             item.rolls["armour_enchantment"] = enchant_result.roll
 
         # 25% chance of special power
-        if random.randint(1, 100) <= 25:
+        if DiceRoller.percent_check(25, "special power chance"):
             power_result = self.roll_on_table("armour_special_power", context)
             if power_result and power_result.entry:
                 item.special_powers.append(power_result.entry.result)
                 item.rolls["armour_special_power"] = power_result.roll
 
         # 10% chance of oddity
-        if random.randint(1, 100) <= 10:
+        if DiceRoller.percent_check(10, "oddity chance"):
             oddity_result = self.roll_on_table("armour_oddity", context)
             if oddity_result and oddity_result.entry:
                 item.oddities.append(oddity_result.entry.result)
@@ -537,14 +537,14 @@ class TreasureTableManager:
             item.rolls["weapon_enchantment"] = enchant_result.roll
 
         # 25% chance of special power
-        if random.randint(1, 100) <= 25:
+        if DiceRoller.percent_check(25, "special power chance"):
             power_result = self.roll_on_table("weapon_special_power", context)
             if power_result and power_result.entry:
                 item.special_powers.append(power_result.entry.result)
                 item.rolls["weapon_special_power"] = power_result.roll
 
         # 10% chance of oddity
-        if random.randint(1, 100) <= 10:
+        if DiceRoller.percent_check(10, "oddity chance"):
             oddity_result = self.roll_on_table("weapon_oddity", context)
             if oddity_result and oddity_result.entry:
                 item.oddities.append(oddity_result.entry.result)

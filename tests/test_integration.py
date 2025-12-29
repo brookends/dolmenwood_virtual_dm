@@ -83,7 +83,7 @@ class TestEncounterFlow:
                     hit_dice="3d8",
                     hp_current=sample_party[0].hp_current,
                     hp_max=sample_party[0].hp_max,
-                    movement=sample_party[0].movement_rate,
+                    movement=sample_party[0].base_speed,
                     attacks=[{"name": "Sword", "damage": "1d8", "bonus": 3}],
                     morale=12,
                 ),

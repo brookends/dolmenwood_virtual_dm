@@ -6,9 +6,9 @@ for characters based on their kindred definition.
 """
 
 import logging
-import random
 from typing import Optional
 
+from src.data_models import DiceRoller
 from src.kindred.kindred_data import (
     AspectType,
     DiceFormula,
@@ -31,8 +31,13 @@ def roll_dice(formula: DiceFormula) -> int:
     Returns:
         Total roll result
     """
-    total = sum(random.randint(1, formula.die_size) for _ in range(formula.num_dice))
-    return total + formula.modifier
+    notation = f"{formula.num_dice}d{formula.die_size}"
+    if formula.modifier > 0:
+        notation += f"+{formula.modifier}"
+    elif formula.modifier < 0:
+        notation += str(formula.modifier)
+    result = DiceRoller.roll(notation, "Kindred physical characteristic")
+    return result.total
 
 
 class KindredGenerator:
@@ -77,7 +82,7 @@ class KindredGenerator:
 
         # Determine gender if not specified
         if gender is None:
-            gender = random.choice(["male", "female"])
+            gender = DiceRoller.choice(["male", "female"], "Kindred gender")
         aspects.gender = gender
 
         # Roll physical characteristics
@@ -167,7 +172,7 @@ class KindredGenerator:
         if self.definition.kindred_id == "elf":
             # Choose style randomly if not specified
             if style is None:
-                style = random.choice(["rustic", "courtly"])
+                style = DiceRoller.choice(["rustic", "courtly"], "Elf name style")
 
             if style == "courtly" and NameColumn.COURTLY in name_table.columns:
                 names = name_table.get_names(NameColumn.COURTLY)
@@ -176,7 +181,7 @@ class KindredGenerator:
             else:
                 names = ["Unknown"]
 
-            return random.choice(names) if names else "Unknown"
+            return DiceRoller.choice(names, "Elf name") if names else "Unknown"
 
         # Standard naming for other kindreds
         # Determine first name column based on gender
@@ -198,8 +203,8 @@ class KindredGenerator:
         # Get surname if available
         surnames = name_table.get_names(NameColumn.SURNAME)
 
-        first = random.choice(first_names) if first_names else "Unknown"
-        surname = random.choice(surnames) if surnames else ""
+        first = DiceRoller.choice(first_names, "Kindred first name") if first_names else "Unknown"
+        surname = DiceRoller.choice(surnames, "Kindred surname") if surnames else ""
 
         if surname:
             return f"{first} {surname}"
@@ -219,7 +224,7 @@ class KindredGenerator:
         if not table:
             return {"result": "", "roll": 0}
 
-        roll = random.randint(1, table.die_size)
+        roll = DiceRoller.randint(1, table.die_size, f"Kindred {aspect_type.value} roll")
         entry = table.get_entry(roll)
 
         if entry:

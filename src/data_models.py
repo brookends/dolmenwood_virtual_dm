@@ -281,6 +281,79 @@ class DiceRoller:
         return cls.roll("1d100", reason)
 
     @classmethod
+    def randint(cls, min_val: int, max_val: int, reason: str = "") -> int:
+        """
+        Generate a random integer in range [min_val, max_val] (inclusive).
+
+        Logged for reproducibility. Use this instead of random.randint().
+
+        Args:
+            min_val: Minimum value (inclusive)
+            max_val: Maximum value (inclusive)
+            reason: Why this roll is being made (for logging)
+
+        Returns:
+            Random integer in the specified range
+        """
+        result = random.randint(min_val, max_val)
+        # Log as a pseudo-dice roll for consistency
+        log_entry = DiceResult(
+            notation=f"range({min_val}-{max_val})",
+            rolls=[result],
+            modifier=0,
+            total=result,
+            reason=reason
+        )
+        cls._roll_log.append(log_entry)
+        return result
+
+    @classmethod
+    def choice(cls, items: list, reason: str = "") -> Any:
+        """
+        Select a random item from a list.
+
+        Logged for reproducibility. Use this instead of random.choice().
+
+        Args:
+            items: List of items to choose from
+            reason: Why this choice is being made (for logging)
+
+        Returns:
+            Randomly selected item from the list
+        """
+        if not items:
+            raise ValueError("Cannot choose from empty list")
+        index = random.randint(0, len(items) - 1)
+        result = items[index]
+        # Log as a pseudo-dice roll
+        log_entry = DiceResult(
+            notation=f"choice(1-{len(items)})",
+            rolls=[index + 1],  # 1-indexed for readability
+            modifier=0,
+            total=index + 1,
+            reason=f"{reason}: selected '{result}'" if reason else f"selected '{result}'"
+        )
+        cls._roll_log.append(log_entry)
+        return result
+
+    @classmethod
+    def percent_check(cls, chance: int, reason: str = "") -> bool:
+        """
+        Roll d100 and check if result is <= chance.
+
+        Logged for reproducibility. Use this instead of random.randint(1,100) <= X.
+
+        Args:
+            chance: Percentage chance of success (1-100)
+            reason: Why this check is being made (for logging)
+
+        Returns:
+            True if roll <= chance (success), False otherwise
+        """
+        roll = cls.roll_percentile(f"{reason} ({chance}% chance)")
+        return roll.total <= chance
+
+    @classmethod
     def get_roll_log(cls) -> list:
         """Get the complete roll log for the session."""
         return cls._roll_log.copy()
@@ -3919,7 +3992,7 @@ class CharacterState:
     hp_current: int
     hp_max: int
     armor_class: int
-    movement_rate: int  # Base movement rate (unencumbered)
+    base_speed: int  # Base Speed in feet (40 for standard human, per p146)
     inventory: list[Item] = field(default_factory=list)
     spells: list[Spell] = field(default_factory=list)
     conditions: list[Condition] = field(default_factory=list)
@@ -4011,11 +4084,16 @@ class CharacterState:
                 return self.polymorph_overlay.armor_class
         return self.armor_class
 
-    def get_effective_movement(self) -> int:
-        """Get effective movement rate, applying polymorph overlay if active."""
+    def get_effective_speed(self) -> int:
+        """
+        Get effective base Speed, applying polymorph overlay if active.
+
+        Returns base Speed (not mode-specific movement rate).
+        Use MovementCalculator to convert to feet/round or feet/turn.
+        """
         if self.polymorph_overlay and self.polymorph_overlay.is_active:
-            if self.polymorph_overlay.movement_rate is not None:
-                return self.polymorph_overlay.movement_rate
+            if self.polymorph_overlay.base_speed is not None:
+                return self.polymorph_overlay.base_speed
         return self.get_encumbered_speed()
 
     def get_effective_attacks(self) -> list[dict]:
@@ -4100,20 +4178,33 @@ class CharacterState:
 
     def get_encumbered_speed(self) -> int:
         """
-        Get movement speed accounting for encumbrance (p148-149).
+        Get base Speed accounting for encumbrance (p148-149).
+
+        The encumbrance system assumes standard base Speed of 40.
+        Characters with different base_speed are scaled proportionally.
 
         Returns:
-            Movement speed based on current encumbrance level
+            Base Speed after encumbrance penalties
         """
+        # Get raw encumbrance speed (assumes standard base of 40)
         if self.encumbrance_system in (
             EncumbranceSystem.WEIGHT,
             EncumbranceSystem.BASIC_WEIGHT
         ):
             total_weight = self.calculate_encumbrance()
-            return EncumbranceCalculator.get_speed_from_weight(total_weight)
+            raw_speed = EncumbranceCalculator.get_speed_from_weight(total_weight)
         else:  # SLOT system
             equipped, stowed = self.calculate_slot_encumbrance()
-            return EncumbranceCalculator.get_speed_from_slots(equipped, stowed)
+            raw_speed = EncumbranceCalculator.get_speed_from_slots(equipped, stowed)
+
+        # Scale for characters with non-standard base_speed
+        # Standard human base_speed is 40
+        if self.base_speed != 40 and raw_speed > 0:
+            # Scale proportionally: if base is 50 and raw is 30, result is 37
+            scaled = (raw_speed * self.base_speed) // 40
+            return max(0, scaled)
+
+        return raw_speed
 
     def is_over_capacity(self) -> bool:
         """
@@ -4372,8 +4463,8 @@ class CharacterState:
         Returns:
             Tuple of (roll_total, success)
         """
-        import random
-        roll = random.randint(1, 20)
+        result = DiceRoller.roll_d20(f"Saving throw ({save_type})")
+        roll = result.total
         total = roll + modifier
         target = self.get_saving_throw(save_type)
         return total, total >= target
@@ -4607,7 +4698,7 @@ class PolymorphOverlay:
     dexterity: Optional[int] = None
     constitution: Optional[int] = None
     armor_class: Optional[int] = None
-    movement_rate: Optional[int] = None
+    base_speed: Optional[int] = None  # Overrides character's base_speed
     hp_max: Optional[int] = None  # Some polymorphs change HP
 
     # New attack options (replaces character's normal attacks)

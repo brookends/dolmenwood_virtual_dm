@@ -217,7 +217,7 @@ class VirtualDM:
         ability_scores: dict[str, int],
         hp_max: int,
         armor_class: int = 10,
-        movement_rate: int = 120,
+        base_speed: int = 40,
     ) -> CharacterState:
         """
         Create and add a new character.
@@ -229,8 +229,8 @@ class VirtualDM:
             level: Character level
             ability_scores: Dict of STR, INT, WIS, DEX, CON, CHA
             hp_max: Maximum HP
-            armor_class: AC (descending, default 10)
-            movement_rate: Movement in feet per turn
+            armor_class: AC (ascending, default 10 unarmored)
+            base_speed: Base Speed in feet (default 40, per p146)
 
         Returns:
             The created CharacterState
@@ -244,7 +244,7 @@ class VirtualDM:
             hp_current=hp_max,
             hp_max=hp_max,
             armor_class=armor_class,
-            movement_rate=movement_rate,
+            base_speed=base_speed,
         )
         self.add_character(character)
         return character
@@ -682,9 +682,9 @@ def test_hex_exploration_loop(dm: VirtualDM) -> None:
     print(f"   Result: {json.dumps(result, indent=4, default=str)}")
 
     print("\n3. Rolling for encounter check...")
-    roll = DiceRoller.roll("1d6")
-    print(f"   Encounter check roll: {roll}")
-    if roll == 1:
+    roll = DiceRoller.roll("1d6", "Encounter check")
+    print(f"   Encounter check roll: {roll.total}")
+    if roll.total == 1:
         print("   Encounter triggered!")
     else:
         print("   No encounter.")
@@ -823,9 +823,9 @@ def test_dungeon_exploration_loop(dm: VirtualDM) -> None:
     print(f"   Turns remaining: {dm.controller.party_state.light_remaining_turns}")
 
     print("\n5. Rolling for wandering monster check...")
-    roll = DiceRoller.roll("1d6")
-    print(f"   Wandering monster check: {roll}")
-    if roll == 1:
+    roll = DiceRoller.roll("1d6", "Wandering monster check")
+    print(f"   Wandering monster check: {roll.total}")
+    if roll.total == 1:
         print("   Monster encountered!")
     else:
         print("   No monster.")
