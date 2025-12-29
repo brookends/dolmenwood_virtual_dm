@@ -245,7 +245,7 @@ class NPCGenerator:
             hp_current=hp_max,
             hp_max=hp_max,
             armor_class=base_ac,
-            movement_rate=120,  # Default unencumbered human speed
+            base_speed=40,  # Standard human base Speed (p146)
             kindred=kindred_id,
             gender=gender,
             is_retainer=is_retainer,

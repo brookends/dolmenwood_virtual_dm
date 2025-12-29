@@ -217,7 +217,7 @@ class VirtualDM:
         ability_scores: dict[str, int],
         hp_max: int,
         armor_class: int = 10,
-        movement_rate: int = 120,
+        base_speed: int = 40,
     ) -> CharacterState:
         """
         Create and add a new character.
@@ -230,7 +230,7 @@ class VirtualDM:
             ability_scores: Dict of STR, INT, WIS, DEX, CON, CHA
             hp_max: Maximum HP
             armor_class: AC (ascending, default 10 unarmored)
-            movement_rate: Movement in feet per turn
+            base_speed: Base Speed in feet (default 40, per p146)
 
         Returns:
             The created CharacterState
@@ -244,7 +244,7 @@ class VirtualDM:
             hp_current=hp_max,
             hp_max=hp_max,
             armor_class=armor_class,
-            movement_rate=movement_rate,
+            base_speed=base_speed,
         )
         self.add_character(character)
         return character

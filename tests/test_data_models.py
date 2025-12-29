@@ -218,7 +218,7 @@ class TestCharacterState:
             hp_current=10,
             hp_max=10,
             armor_class=9,
-            movement_rate=120,
+            base_speed=40,
         )
         assert character.get_ability_modifier("STR") == 3
 
@@ -233,7 +233,7 @@ class TestCharacterState:
             hp_current=10,
             hp_max=10,
             armor_class=9,
-            movement_rate=120,
+            base_speed=40,
         )
         assert character.get_ability_modifier("STR") == -2
 
@@ -248,7 +248,7 @@ class TestCharacterState:
             hp_current=10,
             hp_max=10,
             armor_class=9,
-            movement_rate=120,
+            base_speed=40,
         )
         assert character.get_ability_modifier("STR") == 0
 
@@ -289,7 +289,7 @@ class TestCharacterState:
             hp_current=10,
             hp_max=10,
             armor_class=9,
-            movement_rate=120,
+            base_speed=40,
             inventory=[
                 Item(item_id="sword", name="Sword", weight=50, quantity=1),
                 Item(item_id="shield", name="Shield", weight=100, quantity=1),
