@@ -182,6 +182,9 @@ class ClassDefinition:
     source_book: str = "Dolmenwood Player Book"
     source_page: int = 0
 
+    # Additional mechanical data
+    extra_data: dict[str, Any] = field(default_factory=dict)
+
     def get_progression_at_level(self, level: int) -> Optional[LevelProgression]:
         """Get level progression data for a specific level."""
         for prog in self.level_progression:

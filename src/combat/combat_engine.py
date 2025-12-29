@@ -635,6 +635,8 @@ class CombatEngine:
         - Knight combat prowess and mounted charge
         - Cleric Order of St Signis (+1 vs undead)
         - Hunter trophy bonuses
+
+        Works for both party members and NPCs with class abilities (via character_ref).
         """
         result = {
             "attack_bonus": 0,
@@ -643,12 +645,12 @@ class CombatEngine:
             "details": [],
         }
 
-        # Only party members have CharacterState with class abilities
-        if attacker.side != "party":
-            return result
-
-        # Get CharacterState from controller
-        char_state = self.controller.get_character(attacker.combatant_id)
+        # Get CharacterState - check character_ref first, then combatant_id
+        char_state = None
+        if attacker.character_ref:
+            char_state = self.controller.get_character(attacker.character_ref)
+        if not char_state:
+            char_state = self.controller.get_character(attacker.combatant_id)
         if not char_state:
             return result
 
@@ -735,10 +737,9 @@ class CombatEngine:
         # Rear attacks also ignore shield (p167) - check parameter
         # (This would be set in action.parameters if attacking from rear)
 
-        # Class ability AC modifiers (for party members)
-        if defender.side == "party":
-            class_ac_mod = self._get_class_ability_ac_modifier(defender)
-            base_ac += class_ac_mod
+        # Class ability AC modifiers (for party members and classed NPCs)
+        class_ac_mod = self._get_class_ability_ac_modifier(defender)
+        base_ac += class_ac_mod
 
         return base_ac
 
@@ -749,8 +750,15 @@ class CombatEngine:
         Handles:
         - Friar Unarmoured Defence (base AC 13 when unarmored)
         - Main Gauche (if selected for AC)
+
+        Works for both party members and NPCs with class abilities (via character_ref).
         """
-        char_state = self.controller.get_character(combatant.combatant_id)
+        # Get CharacterState - check character_ref first, then combatant_id
+        char_state = None
+        if combatant.character_ref:
+            char_state = self.controller.get_character(combatant.character_ref)
+        if not char_state:
+            char_state = self.controller.get_character(combatant.combatant_id)
         if not char_state:
             return 0
 
@@ -936,19 +944,22 @@ class CombatEngine:
         caster = self._get_combatant(caster_id)
         caster_state: Optional[CharacterState] = None
 
-        # Try to get CharacterState from controller for party members
-        if caster and caster.side == "party":
-            caster_state = self.controller.get_character(caster_id)
+        # Try to get CharacterState - check character_ref first, then combatant_id
+        if caster:
+            if caster.character_ref:
+                caster_state = self.controller.get_character(caster.character_ref)
+            if not caster_state:
+                caster_state = self.controller.get_character(caster_id)
 
         if not caster_state:
-            # Create minimal CharacterState for spell casting validation
-            # This handles NPC/monster spellcasters
+            # No CharacterState found - this is a basic monster spellcaster
+            # without proper spell slot tracking (e.g., from stat block)
             return AttackResult(
                 attacker_id=caster_id,
                 defender_id=target_id,
                 action_type=CombatActionType.CAST_SPELL,
-                hit=True,  # NPC/monster spells generally succeed
-                special_effects=[f"cast {spell.name}", "NPC/monster spellcaster"],
+                hit=True,  # Monster spells generally succeed
+                special_effects=[f"cast {spell.name}", "monster spellcaster"],
             )
 
         # Resolve the spell through SpellResolver

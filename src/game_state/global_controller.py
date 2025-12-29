@@ -279,6 +279,9 @@ class GlobalController:
         # Character roster
         self._characters: dict[str, CharacterState] = {}
 
+        # NPC roster (generated NPCs with class abilities)
+        self._npcs: dict[str, CharacterState] = {}
+
         # Location cache
         self._locations: dict[str, LocationState] = {}
 
@@ -410,8 +413,12 @@ class GlobalController:
         self._log_event("character_added", {"character_id": character.character_id})
 
     def get_character(self, character_id: str) -> Optional[CharacterState]:
-        """Get a character by ID."""
-        return self._characters.get(character_id)
+        """Get a character by ID (checks party members and NPCs)."""
+        char = self._characters.get(character_id)
+        if char:
+            return char
+        # Also check NPC roster
+        return self._npcs.get(character_id)
 
     def get_all_characters(self) -> list[CharacterState]:
         """Get all characters in the party."""
@@ -485,6 +492,57 @@ class GlobalController:
         if character and character_id in self.party_state.marching_order:
             self.party_state.marching_order.remove(character_id)
         return character
+
+    # =========================================================================
+    # NPC MANAGEMENT
+    # =========================================================================
+
+    def register_npc(self, npc: CharacterState) -> None:
+        """
+        Register an NPC with class abilities for use in combat.
+
+        NPCs registered here can be referenced by combatants via character_ref
+        and will have their class abilities applied in combat.
+
+        Args:
+            npc: The CharacterState representing the NPC
+        """
+        self._npcs[npc.character_id] = npc
+        self._log_event("npc_registered", {
+            "character_id": npc.character_id,
+            "name": npc.name,
+            "class": npc.character_class,
+            "level": npc.level,
+        })
+
+    def get_npc(self, npc_id: str) -> Optional[CharacterState]:
+        """Get a registered NPC by ID."""
+        return self._npcs.get(npc_id)
+
+    def get_all_npcs(self) -> list[CharacterState]:
+        """Get all registered NPCs."""
+        return list(self._npcs.values())
+
+    def remove_npc(self, npc_id: str) -> Optional[CharacterState]:
+        """Remove an NPC from the registry."""
+        npc = self._npcs.pop(npc_id, None)
+        if npc:
+            self._log_event("npc_removed", {"character_id": npc_id})
+        return npc
+
+    def clear_npcs(self) -> int:
+        """
+        Clear all registered NPCs.
+
+        Typically called at the end of an encounter.
+
+        Returns:
+            Number of NPCs cleared
+        """
+        count = len(self._npcs)
+        self._npcs.clear()
+        self._log_event("npcs_cleared", {"count": count})
+        return count
 
     def apply_damage(
         self,
