@@ -29,6 +29,7 @@ from src.data_models import (
     ReactionResult,
     MovementCalculator,
 )
+from src.classes.ability_registry import get_ability_registry, AbilityEffectType
 
 
 logger = logging.getLogger(__name__)
@@ -54,10 +55,11 @@ class EncounterOrigin(str, Enum):
 
 class EncounterAction(str, Enum):
     """Available actions during an encounter."""
-    ATTACK = "attack"       # Initiates combat
-    PARLEY = "parley"       # Attempt communication
-    EVASION = "evasion"     # Attempt to flee/avoid
-    WAIT = "wait"           # Hold position, observe
+    ATTACK = "attack"           # Initiates combat
+    PARLEY = "parley"           # Attempt communication
+    EVASION = "evasion"         # Attempt to flee/avoid
+    WAIT = "wait"               # Hold position, observe
+    ENCHANTMENT = "enchantment" # Bard special action
 
 
 @dataclass
@@ -600,6 +602,8 @@ class EncounterEngine:
             result = self._handle_evasion(actor, result)
         elif action == EncounterAction.WAIT:
             result = self._handle_wait(actor, result)
+        elif action == EncounterAction.ENCHANTMENT:
+            result = self._handle_enchantment(actor, target, parameters, result)
 
         return result
 
@@ -834,6 +838,120 @@ class EncounterEngine:
             "actor": actor,
             "effect": "reaction_bonus",
             "value": 1,
+        })
+
+        return result
+
+    def _handle_enchantment(
+        self,
+        actor: str,
+        target: Optional[str],
+        parameters: dict[str, Any],
+        result: EncounterRoundResult
+    ) -> EncounterRoundResult:
+        """
+        Handle Bard enchantment action per Dolmenwood rules (p58-59).
+
+        Enchantment:
+        - Range: 60 feet (within hearing distance)
+        - Targets: Mortals, fairies, demi-fey, and beasts
+        - Effect: Charm-like (target views bard as trusted friend)
+        - Duration: Until charm is broken (act against target's interests)
+        - Save: Spell (target gets save to resist)
+        - Uses per day: Scales with level (1 at level 1, +1 at 4, 8, 12)
+
+        Args:
+            actor: The actor (should be "party" with bard character)
+            target: Target creature identifier
+            parameters: Should include "bard_id" for the bard character
+            result: The encounter result to update
+
+        Returns:
+            Updated EncounterRoundResult
+        """
+        if not self._state:
+            return result
+
+        bard_id = parameters.get("bard_id")
+        if not bard_id:
+            result.success = False
+            result.messages.append("No bard specified for enchantment")
+            return result
+
+        # Get bard character state
+        char_state = self.controller.get_character(bard_id)
+        if not char_state:
+            result.success = False
+            result.messages.append("Bard character not found")
+            return result
+
+        if char_state.character_class.lower() != "bard":
+            result.success = False
+            result.messages.append("Only bards can use enchantment")
+            return result
+
+        # Get enchantment ability data from registry
+        registry = get_ability_registry()
+        ability = registry.get("bard_enchantment")
+        if not ability:
+            result.success = False
+            result.messages.append("Enchantment ability not found")
+            return result
+
+        # Check uses per day
+        uses_by_level = ability.extra_data.get("uses_per_day_by_level", {1: 1})
+        max_uses = 1
+        for level_threshold, uses in sorted(uses_by_level.items()):
+            if char_state.level >= level_threshold:
+                max_uses = uses
+
+        # Check if character has uses remaining (would need state tracking)
+        # For now, assume they have uses available
+
+        # Perform the enchantment
+        bard_name = char_state.name
+        result.messages.append(f"{bard_name} weaves an enchanting melody...")
+
+        # Target must save vs Spell or be charmed
+        # Get target's save value (default to 15 if not specified)
+        target_save = parameters.get("target_save_spell", 15)
+        save_roll = self.dice.roll_d20("target saves vs Spell")
+
+        enchantment_result = {
+            "bard": bard_name,
+            "bard_level": char_state.level,
+            "target": target or "creatures",
+            "save_roll": save_roll.total,
+            "save_target": target_save,
+        }
+
+        if save_roll.total >= target_save:
+            # Target resisted
+            enchantment_result["resisted"] = True
+            result.messages.append(
+                f"Target resisted the enchantment! (Save: {save_roll.total} vs {target_save})"
+            )
+            result.success = False
+        else:
+            # Target enchanted
+            enchantment_result["charmed"] = True
+            enchantment_result["effect"] = "Target views bard as a trusted friend"
+            result.messages.append(
+                f"Target is enchanted! (Save: {save_roll.total} vs {target_save}) "
+                f"They now view {bard_name} as a trusted friend."
+            )
+            result.success = True
+
+            # This could transition to social interaction
+            result.reaction_result = ReactionResult.FRIENDLY
+            result.messages.append(
+                "The enchantment has created a friendly disposition toward the bard."
+            )
+
+        result.actions_resolved.append({
+            "action": "enchantment",
+            "actor": bard_id,
+            "result": enchantment_result,
         })
 
         return result

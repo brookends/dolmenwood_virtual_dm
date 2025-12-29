@@ -290,6 +290,12 @@ class SpellResolver:
         """
         Check if a caster can cast a spell.
 
+        Validates:
+        - Character's class can cast this spell type
+        - Spell is prepared/known
+        - Spell slot is available (for ranked spells)
+        - Kindred restrictions (for Mossling Knacks)
+
         Args:
             caster: The character attempting to cast
             spell: The spell to cast
@@ -298,14 +304,43 @@ class SpellResolver:
         Returns:
             Tuple of (can_cast, reason)
         """
-        # Check if caster has the spell prepared
+        from src.classes.class_manager import get_class_manager
+
+        class_manager = get_class_manager()
+
+        # Check if caster's class can use this magic type
+        spell_magic_type = spell.magic_type.value if spell.magic_type else "unknown"
+        if not class_manager.can_character_cast_spell_type(caster, spell_magic_type):
+            class_magic = class_manager.get_character_magic_type(caster)
+            magic_name = class_magic.value if class_magic else "no"
+            return False, (
+                f"{caster.name}'s class cannot cast {spell_magic_type} spells "
+                f"(has {magic_name} magic)"
+            )
+
+        # Check if caster has the spell prepared/known
         has_spell = any(s.spell_id == spell.spell_id for s in caster.spells)
+
+        # For glamours, also check class_data.glamours_known
+        if not has_spell and spell.magic_type == MagicType.FAIRY_GLAMOUR:
+            glamours = caster.get_glamours_known() if hasattr(caster, 'get_glamours_known') else []
+            has_spell = spell.spell_id in glamours
+
+        # For runes, check class_data.runes_known
+        if not has_spell and spell_magic_type == "rune":
+            runes = caster.get_runes_known() if hasattr(caster, 'get_runes_known') else []
+            has_spell = spell.spell_id in runes
+
         if not has_spell:
             return False, f"{caster.name} does not have {spell.name} prepared"
 
-        # Check spell slot availability (for leveled spells)
-        if spell.level is not None:
-            # Find the spell in caster's list
+        # Check spell slot availability (for ranked spells: arcane, holy)
+        if spell.level is not None and spell.magic_type in (MagicType.ARCANE, MagicType.DIVINE):
+            # Use the new spell slot system
+            if hasattr(caster, 'has_spell_slot') and not caster.has_spell_slot(spell.level):
+                return False, f"{caster.name} has no Rank {spell.level} spell slots remaining"
+
+            # Legacy check: spell cast_today flag
             caster_spell = next(
                 (s for s in caster.spells if s.spell_id == spell.spell_id),
                 None
@@ -317,8 +352,8 @@ class SpellResolver:
         if spell.requires_concentration:
             active_concentration = self.get_concentration_effect(caster.character_id)
             if active_concentration:
-                # Would need to break existing concentration
-                pass  # Allow, but note the conflict
+                # Would need to break existing concentration - allow but note
+                pass
 
         # Check usage frequency for glamours
         if spell.usage_frequency:
@@ -372,13 +407,19 @@ class SpellResolver:
             if existing:
                 existing.break_concentration()
 
-        # Consume spell slot
+        # Consume spell slot (for ranked spells: arcane, holy)
         slot_consumed = False
-        if spell.level is not None:
+        if spell.level is not None and spell.magic_type in (MagicType.ARCANE, MagicType.DIVINE):
+            # Use the new spell slot system if available
+            if hasattr(caster, 'use_spell_slot'):
+                slot_consumed = caster.use_spell_slot(spell.level)
+
+            # Also mark the specific spell as cast (legacy support)
             for s in caster.spells:
                 if s.spell_id == spell.spell_id:
                     s.cast_today = True
-                    slot_consumed = True
+                    if not slot_consumed:
+                        slot_consumed = True
                     break
 
         # Calculate duration
