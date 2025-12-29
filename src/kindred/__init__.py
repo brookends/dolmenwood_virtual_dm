@@ -9,7 +9,7 @@ This module provides:
 Available Kindreds:
 - Breggle: Goat-headed folk (mortal)
 - Elf: Ageless fairies from the immortal realm (fairy)
-- Grimalkin: (coming soon)
+- Grimalkin: Shape-shifting cat-fairies (fairy)
 - Human: (coming soon)
 - Mossling: (coming soon)
 - Woodgrue: (coming soon)

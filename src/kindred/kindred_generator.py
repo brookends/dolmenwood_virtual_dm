@@ -113,8 +113,8 @@ class KindredGenerator:
         base = physical.age_base
         dice_roll = roll_dice(physical.age_dice)
 
-        # Special handling for elves: age is 1d100 × 10 years
-        if self.definition.kindred_id == "elf":
+        # Special handling for fairies (elf, grimalkin): age is 1d100 × 10 years
+        if self.definition.kindred_id in ("elf", "grimalkin"):
             return dice_roll * 10
 
         return base + dice_roll

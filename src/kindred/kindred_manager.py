@@ -54,8 +54,14 @@ class KindredManager:
         except ImportError as e:
             logger.warning(f"Failed to load Elf kindred: {e}")
 
+        try:
+            from src.kindred.grimalkin import GRIMALKIN_DEFINITION
+            self.register(GRIMALKIN_DEFINITION)
+            logger.info(f"Loaded kindred: {GRIMALKIN_DEFINITION.name}")
+        except ImportError as e:
+            logger.warning(f"Failed to load Grimalkin kindred: {e}")
+
         # Future kindreds will be loaded here:
-        # from src.kindred.grimalkin import GRIMALKIN_DEFINITION
         # from src.kindred.human import HUMAN_DEFINITION
         # from src.kindred.mossling import MOSSLING_DEFINITION
         # from src.kindred.woodgrue import WOODGRUE_DEFINITION
