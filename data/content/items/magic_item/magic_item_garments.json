@@ -1,0 +1,389 @@
+{
+  "category": "magic_item",
+  "subcategory": "garments",
+  "items": [
+    {
+      "item_id": "belt_of_blending",
+      "name": "Belt of Blending",
+      "description": "A belt of glimmering fish skin with a buckle of silver thorns. The wearer can blend into a crowd (10 or more people) and not be clearly recalled. The wearer also has difficulty recalling their own name.",
+      "weight": 20,
+      "cost_sp": 80000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "blend_into_crowd",
+        "memory_difficulty"
+      ]
+    },
+    {
+      "item_id": "belt_of_hounds",
+      "name": "Belt of Hounds",
+      "description": "A broad leather belt emblazoned with portraits of 8 noble hounds—one per type of hound listed in the DPB. If the wearer lovingly strokes one of the hounds, it leaps from the belt, manifesting as a dog of the corresponding type. The hound serves the wearer for 24 hours before vanishing (along with the image on the belt).",
+      "weight": 20,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "conjure_8_hounds",
+        "24_hour_duration"
+      ]
+    },
+    {
+      "item_id": "belt_of_might",
+      "name": "Belt of Might",
+      "description": "A broad leather belt with patterns of metal studs. Grants the wearer Strength 18 (+3). They may also ignore 1,000 coins (or 10 items) of encumbrance.",
+      "weight": 20,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "strength_18",
+        "ignore_encumbrance"
+      ]
+    },
+    {
+      "item_id": "boggin_hair_cloak",
+      "name": "Boggin-Hair Cloak",
+      "description": "A cloak of thick, green weed-like boggin hair, perpetually sodden and dripping, but perfectly warm. Cast upon a body of water, the cloak functions as a small rowing boat capable of carrying up to 2 people and their gear. A pole or oars are required to propel the boat.",
+      "weight": 20,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "transforms_to_boat",
+        "carries_2_people"
+      ]
+    },
+    {
+      "item_id": "boots_of_andromethia",
+      "name": "Boots of Andromethia",
+      "description": "Cherry blossom petals that swathe a character's feet, warming and protecting like stout travelling boots. As the wearer walks, the boots leave a trail of petals in their wake. This reduces the party's chance of getting lost in difficult terrain to 2-in-6 (see Travel, DPB). Following the wearer is trivial.",
+      "weight": 20,
+      "cost_sp": 60000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "petal_trail",
+        "reduces_lost_chance",
+        "easy_to_follow"
+      ]
+    },
+    {
+      "item_id": "boots_of_the_plains",
+      "name": "Boots of the Plains",
+      "description": "Soft suede boots with soles covered in fresh, green blades of grass. When travelling overland, the wearer moves with Speed 80 (16 Travel Points a day). After a day travelling at this rate, the wearer must rest for 1 day, unable to move at greater than Speed 10.",
+      "weight": 20,
+      "cost_sp": 200000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "speed_80",
+        "requires_rest_day"
+      ]
+    },
+    {
+      "item_id": "boots_of_weft_striding",
+      "name": "Boots of Weft-Striding",
+      "description": "Supple leather boots threaded with a mesh of fairy silver. The wearer gains the ability to step through the fabric of reality. Up to thrice a day, they may make a small step and be transported to a selected location up to 30′ away. The wearer may even step into mid-air and not fall, though without a means of propulsion (e.g. pushing along a wall), they cannot move.",
+      "weight": 20,
+      "cost_sp": 150000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "teleport_30_feet",
+        "thrice_per_day",
+        "float_in_air"
+      ]
+    },
+    {
+      "item_id": "cloak_of_displacement",
+      "name": "Cloak of Displacement",
+      "description": "A cloak of black, shimmering scales that bends light, making the wearer appear to be 5′ away from their true location. The wearer gains a +2 bonus to Saving Throws against attacks that directly target them (e.g. wands, spells, gaze attacks, etc.). Attacks Rolls against the wearer are penalised by –2.",
+      "weight": 20,
+      "cost_sp": 175000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "appears_5_feet_away",
+        "+2_saving_throws",
+        "-2_attack_rolls"
+      ]
+    },
+    {
+      "item_id": "cloak_of_leaves",
+      "name": "Cloak of Leaves",
+      "description": "A long, voluminous cloak of oak leaves that change with the seasons, from freshly unfurling buds in spring, to deep and lustrous greenery in summer, to shades of golden orange in autumn, to mere skeletons in winter. The cloak's magic also changes with the seasons: in spring it grants the wearer a +2 bonus to AC, in summer a +2 Attack bonus with missile weapons, in autumn a +2 bonus to Survival Checks for hunting and foraging, and in winter a +2 bonus to Constitution Checks for sleeping.",
+      "weight": 20,
+      "cost_sp": 150000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "seasonal_bonuses",
+        "changes_appearance"
+      ]
+    },
+    {
+      "item_id": "cobweb_socks",
+      "name": "Cobweb Socks",
+      "description": "Long socks woven of sticky cobwebs. If wearing nothing else on their feet, the wearer can walk up vertical surfaces and upside down along ceilings. The wearer gains a taste for eating raw insects.",
+      "weight": 20,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "wall_walking",
+        "ceiling_walking",
+        "insect_craving"
+      ]
+    },
+    {
+      "item_id": "hearty_companion_cloak",
+      "name": "Hearty Companion Cloak",
+      "description": "A normal-looking woollen cloak with a brass clasp in the form of a merry face. If the clasp is fed 1 ration of food and a sip of alcohol in the evening, the cloak produces a hearty warmth for the wearer throughout the night. Weather conditions and lack of fire or camping equipment do not prevent the wearer getting a good night's rest.",
+      "weight": 20,
+      "cost_sp": 80000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "requires_feeding",
+        "weather_protection",
+        "good_rest"
+      ]
+    },
+    {
+      "item_id": "helm_of_realignment",
+      "name": "Helm of Realignment",
+      "description": "A beautifully crafted silver helmet. Donning the helmet instantly causes the wearer's Alignment to change to a new, randomly determined Alignment (re-roll duplicates). Once donned, the helmet and its Alignment-changing curse can only be removed by magic (e.g. Remove Curse).",
+      "weight": 20,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "change_alignment",
+        "requires_remove_curse"
+      ]
+    },
+    {
+      "item_id": "helm_of_teleportation",
+      "name": "Helm of Teleportation",
+      "description": "A beautifully crafted silver helmet. Grants the wearer the ability to cast the arcane spell Teleport on themselves once a day. Arcane spell-casters may cast Teleport up to thrice a day and are able to cast the spell on other creatures or objects if desired.",
+      "weight": 20,
+      "cost_sp": 200000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "teleport_once_per_day",
+        "arcane_casters_thrice",
+        "cast_on_others"
+      ]
+    },
+    {
+      "item_id": "lichen_cloak",
+      "name": "Lichen Cloak",
+      "description": "A ragged cloak of patched, dank-smelling, multi-hued lichen. When motionless, the wearer can blend into trees or stone, appearing as a large patch of lichen.",
+      "weight": 20,
+      "cost_sp": 80000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "blend_into_trees",
+        "blend_into_stone",
+        "requires_motionless"
+      ]
+    },
+    {
+      "item_id": "mushroom_cap",
+      "name": "Mushroom Cap",
+      "description": "A floppy leather cap laced with mycelia and covered in rampant growth of a random edible fungus (see p118). The fungi are sufficient for 1 ration. If consumed, a new batch of fungus grows the following dawn—1 ration of a random edible type, plus a 1-in-6 chance of a portion of a random special type (see p428).",
+      "weight": 20,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "produces_1_ration",
+        "regrows_daily",
+        "special_fungi_chance"
+      ]
+    },
+    {
+      "item_id": "pickpockets_glove",
+      "name": "Pickpocket's Glove",
+      "description": "A silk glove embroidered with sprite motifs. When the glove is worn, non-living objects (up to 100 coins weight) in contact with it are rendered invisible. Object becomes visible when contact ceases.",
+      "weight": 20,
+      "cost_sp": 125000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "invisible_objects",
+        "100_coins_weight_limit",
+        "contact_required"
+      ]
+    },
+    {
+      "item_id": "robe_of_eyes",
+      "name": "Robe of Eyes",
+      "description": "A luxurious robe adorned with dozens of eye motifs. The wearer can see in all directions at once, can see normally in darkness (up to 60′), can perceive invisible (up to 60′), and can plainly see anyone hiding or using camouflage. The robe's visual powers prevent the character from being surprised. The holy spell Light, cast directly on the robe, causes the wearer to be blinded for 1d4 Rounds.",
+      "weight": 20,
+      "cost_sp": 500000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "all_round_vision",
+        "see_in_darkness",
+        "see_invisible",
+        "prevents_surprise",
+        "light_vulnerability"
+      ]
+    },
+    {
+      "item_id": "robe_of_useful_items",
+      "name": "Robe of Useful Items",
+      "description": "A plain, unremarkable robe. Fairies, demi-fey, and arcane spell-casters who don the robe notice a series of cloth patches sewn into it, shaped like items—see Robe of Useful Items Patches. Other characters cannot perceive the patches or use the powers of the robe. Patches on the robe can be removed (take 1 Round), permanently turning into the corresponding item.",
+      "weight": 20,
+      "cost_sp": 150000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "patches_become_items",
+        "fairies_demi_fey_arcane_only",
+        "1_round_to_remove"
+      ]
+    },
+    {
+      "item_id": "scholars_cap",
+      "name": "Scholar's Cap",
+      "description": "A floppy felt cap embroidered with mystic sigils. The wearer gains the ability to read writing of all kinds, including text in all languages and magical text (e.g. created by Arcane Cypher).",
+      "weight": 20,
+      "cost_sp": 125000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "read_all_languages",
+        "read_magical_text"
+      ]
+    },
+    {
+      "item_id": "sprite_wing_cloak",
+      "name": "Sprite-Wing Cloak",
+      "description": "A diaphanous cloak formed of thousands of iridescent sprite wings, stitched together with spider silk. When moving carefully (maximum half Speed), the wearer is rendered almost invisible: there is only a 1-in-6 chance of them being spotted. The invisibility is nullified for 1 Turn if the wearer attacks or casts a spell.",
+      "weight": 20,
+      "cost_sp": 60000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "near_invisibility",
+        "half_speed_required",
+        "nullified_by_combat"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      408,
+      409
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "category": "consumable",
+  "subcategory": "rare_herbs",
+  "items": [
+    {
+      "item_id": "black_clover",
+      "name": "Black Clover",
+      "description": "The milk-white leaves of a climbing vine that turn black when dried. If eaten: Mildly poisonous: Save Versus Doom or suffer 1 damage per Turn for the next 1d4 Turns. If smoked: Smoking dried leaves grants the ability to speak with inanimate objects for 6 Turns.",
+      "weight": 4,
+      "cost_sp": 4000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "communication_with_objects"
+      ]
+    },
+    {
+      "item_id": "blushing_mandrake",
+      "name": "Blushing Mandrake",
+      "description": "Spindly, 1′-long, roughly humanoid roots, covered in wiry, purple hairs. Blushing Mandrake roots turn a bright scarlet hue within 5 minutes of being unearthed. They reek of garlicky sweat. If boiled and the resulting liquid consumed, causes physical form changes over 1d4 weeks.",
+      "weight": 4,
+      "cost_sp": 8000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "change_physical_features"
+      ]
+    },
+    {
+      "item_id": "frondhelm",
+      "name": "Frondhelm",
+      "description": "A striated green and yellow moss, with a dank aroma. Each frond is tipped with a tiny, hand-like furl. If eaten: For 1d6 Turns, the subject gains an invisible, quasi-real extra hand that can be directed to manipulate small objects up to 10′ distant. It can carry and manipulate objects weighing up to 100 coins.",
+      "weight": 4,
+      "cost_sp": 5000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "invisible_hand_manipulation"
+      ]
+    },
+    {
+      "item_id": "goatsweed",
+      "name": "Goatsweed",
+      "description": "Ungainly crowns of long, rough-furred leaves that grow upon tree branches. If burned: Produces a thick, roiling smoke that smells of roast pork. All goats and related creatures within 10′ must Save Versus Doom or caper uncontrollably for 1d4 Rounds. A portion burns for 4 Rounds.",
+      "weight": 4,
+      "cost_sp": 6000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "causes_goats_to_caper"
+      ]
+    },
+    {
+      "item_id": "groaning_mandrake",
+      "name": "Groaning Mandrake",
+      "description": "Hand-sized, roughly humanoid roots, with long, straggly arms and wispy fingers. Black on the outside, with rich green flesh. The roots briefly emit a plaintive groaning, when unearthed. If eaten: The subject must Save Versus Hold or transform into the last plant or creature they ate for 1d3 hours.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "polymorph_into_last_creature_eaten"
+      ]
+    },
+    {
+      "item_id": "hags_tears",
+      "name": "Hag's Tears",
+      "description": "The teardrop-shaped leaves of a marsh succulent, olive green and scaly on the outside, pink and juicy on the inside. Extremely bitter. If eaten: Enhances hearing for 3d4 Turns. The subject gains a +1 bonus to Listen, but loud sounds incur a –1 Attack and Armour Class penalty for 1 Turn.",
+      "weight": 4,
+      "cost_sp": 1500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "enhanced_hearing"
+      ]
+    },
+    {
+      "item_id": "horridwort",
+      "name": "Horridwort",
+      "description": "A violet marsh lichen with a musty odour and an awfully bitter flavour. If smoked: An arcane spell-caster who smokes a pipe of dried Horridwort in peace (2 Turns) has a 50% chance once a day of being able to recall to memory a single spell that they cast within the last hour.",
+      "weight": 4,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "recall_recently_cast_arcane_spell"
+      ]
+    },
+    {
+      "item_id": "knobbled_mandrake",
+      "name": "Knobbled Mandrake",
+      "description": "Hand-sized roots, broadly humanoid in form, covered in knobbly protrusions alike to extra heads. When plucked from the earth, knobbled mandrake roots squirm gently, sigh, then go still. They have a plum-like odour and taste of dung. If eaten: A missing bodily appendage begins to regrow.",
+      "weight": 4,
+      "cost_sp": 6000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "regrow_lost_appendage"
+      ]
+    },
+    {
+      "item_id": "mind_moss",
+      "name": "Mind-Moss",
+      "description": "Glistening purple moss spattered with points of scintillating light. Smells of fresh dew and tastes of elderberries. If eaten: Has the capacity to restore memories lost due to magic or old age. A subject under the effects of a curse of delusion or amnesia may Save Versus Spell to shake off the affliction.",
+      "weight": 4,
+      "cost_sp": 4000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "restore_lost_memories"
+      ]
+    },
+    {
+      "item_id": "oddy_sorrel",
+      "name": "Oddy Sorrel",
+      "description": "Long, lank leaves with purple spots. Taste of awfully strong vinegar. If eaten: The subject must Save Versus Doom or forget everything that occurred in the last 3d6 days.",
+      "weight": 4,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "forget_events_of_last_3d6_days"
+      ]
+    },
+    {
+      "item_id": "parsons_gobble",
+      "name": "Parson's Gobble",
+      "description": "Purple stem nodules of a lanky woodland flower. Taste at once horribly sweet and horribly bitter. If eaten: The subject's need for sleep is eradicated for 24 hours. If consumed repeatedly, causes the subject's teeth to blacken and rot.",
+      "weight": 4,
+      "cost_sp": 3000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "eradicates_need_to_sleep_for_24_hours"
+      ]
+    },
+    {
+      "item_id": "prancing_mandrake",
+      "name": "Prancing Mandrake",
+      "description": "1′-long roots with lanky, human-like legs and arms and bulbous heads. The roots' legs wobble and jig when unearthed, and their faces smirk and grimace. Smell of wild garlic and taste of goose fat. If eaten: Brings about a wooziness and lightness of head within 1 Turn. The subject must Save Versus Doom or fall deeply unconscious for 2d12 hours.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "wooziness_and_unconsciousness"
+      ]
+    },
+    {
+      "item_id": "rindlewort",
+      "name": "Rindlewort",
+      "description": "Long, finger-like roots that scrabble at the soil when unearthed. Smell of dung and taste horribly bitter. If boiled: The roots dissolve, producing a viscous, steel-grey liquid that can be used as an ink (sufficient for 4 pages of text). Text in Rindlewort ink can only be read by the character who wrote it and optionally one other person named while writing.",
+      "weight": 4,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "magic_ink_that_cannot_be_read_by_others"
+      ]
+    },
+    {
+      "item_id": "sage_toe",
+      "name": "Sage Toe",
+      "description": "Toe-like root nodules of a gnarled bog willow, dug up and smoke-dried. If chewed: Grants the ability to absorb written information at a greatly accelerated rate. The subject can get the gist of a book on a quick flip through (1 Turn) and can fully absorb the contents in 6 Turns. The effects last for 2d6 Turns.",
+      "weight": 4,
+      "cost_sp": 4000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "accelerated_information_uptake"
+      ]
+    },
+    {
+      "item_id": "sclubbers_twist",
+      "name": "Sclubber's Twist",
+      "description": "A fuzzy, lilac moss that grows in the upper branches of unusually large trees (150′ tall or more). The moss has a faint, earthy odour. If chewed, it exudes a juice that tastes like cherry wine. If chewed: The subject enters a trance state for 1d6 Turns. Fairies and demi-fey experience a fantastic vision of the dawning of creation. Mortals experience a harrowing nightmare of being torn limb from limb by evil trees.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "wondrous_for_fairies",
+        "nightmarish_for_mortals"
+      ]
+    },
+    {
+      "item_id": "shub_eggs",
+      "name": "Shub Eggs",
+      "description": "6″ ovoid fruit sacs dangling by rubbery cords from the twisted trees of the Nagwood. Each sac contains a brain-like inner fruit in a succulent, pink jelly. When a fruit is plucked, the brain-like interior pulses gently for an hour, then goes still. If eaten: Each whole fruit consumed heals 1 Hit Point. The subject must Save Versus Doom or be cursed with a hunger for human flesh.",
+      "weight": 4,
+      "cost_sp": 250,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cures_1_hp",
+        "desire_to_eat_human_flesh"
+      ]
+    },
+    {
+      "item_id": "snogglebeard",
+      "name": "Snogglebeard",
+      "description": "A lichen-like moss that grows on rotting wood in long, yellow or cyan beards. Odourless and flavourless. Unpleasantly dry, chewy, and stringy to eat. If eaten: Blurs the subject's mental aura for 1d6 Turns, enabling them to read the thoughts of others within 5′. The subject's own thoughts also flow uncontrollably outwards and are perceived by all within 10′.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "read_thoughts",
+        "project_thoughts_to_others"
+      ]
+    },
+    {
+      "item_id": "woodpurse",
+      "name": "Woodpurse",
+      "description": "Pale, pouch-like leaves of a creeping shrub. Acorns, water, or honey are sometimes found within the pouches. The leaves are odourless and have a slightly minty taste. If eaten: The subject becomes deathly pale and partially transparent for 1d6 Turns. During this time, they can physically interact with incorporeal creatures and can harm them in combat even without magic.",
+      "weight": 4,
+      "cost_sp": 7500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "interact_with_incorporeal_creatures"
+      ]
+    },
+    {
+      "item_id": "worm_mallow",
+      "name": "Worm-Mallow",
+      "description": "Stringy, pink roots of a flowering shrub beloved by toads. Taste sweet and gooey. If eaten: Induces instant sobriety and has a 3-in-6 chance of negating poisons.",
+      "weight": 4,
+      "cost_sp": 4000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "induces_sobriety",
+        "3_in_6_chance_of_removing_poison"
+      ]
+    },
+    {
+      "item_id": "writhing_mandrake",
+      "name": "Writhing Mandrake",
+      "description": "5″ roots with stubby limbs and wolf-like heads. When unearthed, the root writhes around as if in agony. Smell of dung. If eaten: The subject must Save Versus Doom or immediately vomit the root back up. If boiled: The resulting liquid acts as a potion preventing lycanthropic transformation for 1d4 days.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "prevents_lycanthropic_transformation"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      432,
+      433
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

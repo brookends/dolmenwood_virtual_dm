@@ -1,0 +1,379 @@
+{
+  "category": "consumable",
+  "subcategory": "potion",
+  "items": [
+    {
+      "item_id": "aethers_of_starlight",
+      "name": "Aethers of Starlight",
+      "description": "A clear, slightly fizzing liquid dotted with twinkling points of light. Odourless and tasteless. Grants the ability to see enchantments and invisibility within 60′ for 1d6+6 Turns.",
+      "weight": 10,
+      "cost_sp": 20000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "magical",
+        "vision"
+      ]
+    },
+    {
+      "item_id": "alchemical_tonic",
+      "name": "Alchemical Tonic",
+      "description": "A clear, fizzing liquid, flavourless but with a repulsive, acrid odour. Rouses an unconscious subject or grants a Save Versus Hold to recover from paralysis of any form.",
+      "weight": 10,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "paralysis_cure"
+      ]
+    },
+    {
+      "item_id": "amber_nectar",
+      "name": "Amber Nectar",
+      "description": "A thick, honey-like liquid in a 2″ spherical jar. Heals 1d4 Hit Points and brings on a heady euphoria lasting for 1 Turn. A Save Versus Doom must also be made, with failure incurring a deep, dream-filled sleep, lasting for 1d6 Turns.",
+      "weight": 10,
+      "cost_sp": 2000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "sleep_risk"
+      ]
+    },
+    {
+      "item_id": "bottled_light",
+      "name": "Bottled Light",
+      "description": "Dawn light decanted into stoppered bottles of dark crystal. If unstoppered: Casts amber light in a 30′ radius for 6 Turns. May be sealed and reopened multiple times. Monsters affected by sunlight are vulnerable to Bottled Light.",
+      "weight": 10,
+      "cost_sp": 2000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "light",
+        "reusable",
+        "sunlight_effect"
+      ]
+    },
+    {
+      "item_id": "distillation_of_hoarfrost",
+      "name": "Distillation of Hoarfrost",
+      "description": "A pale blue liquid shot through with jagged ice crystals. Numbs the tongue. Renders the imbiber immune to non-magical heat and fire, and grants a +2 bonus to Saving Throws against magical fire. Furthermore, fire-based damage is reduced by 1 per damage die rolled. Effects last for 1d6+6 Turns.",
+      "weight": 10,
+      "cost_sp": 20000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "fire_resistance",
+        "cold_immunity"
+      ]
+    },
+    {
+      "item_id": "elixir_of_mutability",
+      "name": "Elixir of Mutability",
+      "description": "A viscous, amethyst liquid that is unaffected by gravity. Transforms the imbiber into another being of their choice for 1d6 + 6 Turns. The transformation fails if the new form's Level is greater than the imbiber's. The transformation does not alter the character's Hit Points, Save Targets, Attack, or intelligence. Physical capabilities of the new form are acquired. Non-physical special traits or powers are not acquired. While transformed, the character is unable to cast spells.",
+      "weight": 10,
+      "cost_sp": 20000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "polymorph",
+        "spell_blocking"
+      ]
+    },
+    {
+      "item_id": "essence_of_springtime",
+      "name": "Essence of Springtime",
+      "description": "A clear liquid with the odour of a fresh spring day. Tastes of cherry blossom. Reverses the effects of ageing, causing a mortal or demi-fey to become 10 years younger. Fairies must Save Versus Doom or fall into a coma for 2d6 days.",
+      "weight": 10,
+      "cost_sp": 80000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "age_reversal",
+        "fairy_poison"
+      ]
+    },
+    {
+      "item_id": "essence_of_sweet_dreams",
+      "name": "Essence of Sweet Dreams",
+      "description": "Dreams filched from the innocent minds of sleeping children and distilled into a violet spirit stored in delicate perfume bottles. If applied as a perfume: Grants a +1 bonus to Saving Throws Versus Spell for 6 Turns. Sufficient for 4 applications. If drunk: Induces a night of deep rest and ambrosial dream, even in the most uncomfortable of conditions.",
+      "weight": 10,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "save_bonus",
+        "sleep_aid",
+        "multiple_uses"
+      ]
+    },
+    {
+      "item_id": "liquid_time",
+      "name": "Liquid Time",
+      "description": "A curious liquid with constantly changing visual and tactile qualities—viscous then watery, transparent then opaque, lilac then scarlet. Smells and tastes of the imbiber's favourite tipple. Accelerates the imbiber's passage through time, doubling Speed and enabling twice the normal number of attacks or other actions per Round. Lasts for 1d6+6 Turns. This time acceleration causes the imbiber to age 1d6 years.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "speed_double",
+        "aging_effect"
+      ]
+    },
+    {
+      "item_id": "orgons_scintillating_philtre",
+      "name": "Orgon's Scintillating Philtre",
+      "description": "An iridescent spirit that must be stored in crystal to retain its unusual properties. Smells faintly of almonds and has no flavour, but evokes a curious \"flashing\" of hot and cold sensations in the mouth and throat when consumed. Heals 1d6 Hit Points. If drunk within 2 hours of having consumed another potion, the imbiber must Save Versus Doom or vomit up the philtre, wasting it.",
+      "weight": 10,
+      "cost_sp": 5000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "potion_interference"
+      ]
+    },
+    {
+      "item_id": "philtre_of_delusion",
+      "name": "Philtre of Delusion",
+      "description": "This potion has the appearance of another randomly selected potion. The imbiber comes temporarily under the effect of the other type of potion, but all effects vanish at a critical juncture (as determined by the Referee).",
+      "weight": 10,
+      "cost_sp": 1500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "temporary_effect"
+      ]
+    },
+    {
+      "item_id": "philtre_of_doom",
+      "name": "Philtre of Doom",
+      "description": "This potion has the appearance of another randomly selected potion. The imbiber must Save Versus Doom or die instantly. Even a tiny sip is deadly.",
+      "weight": 10,
+      "cost_sp": 5000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "deadly_poison"
+      ]
+    },
+    {
+      "item_id": "philtre_of_the_winds",
+      "name": "Philtre of the Winds",
+      "description": "A tempestuous, cloudy fluid of blue and grey with the odour of rain and the taste of damp earth. Grants the ability to fly, levitate, and hover for 1d6+6 Turns, with Speed up to 120.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "flight",
+        "levitation"
+      ]
+    },
+    {
+      "item_id": "philtre_of_wondrous_vitality",
+      "name": "Philtre of Wondrous Vitality",
+      "description": "A deep purple liquid of thin, vaporous consistency that evaporates within seconds following contact with air. Smells strongly of cinnamon and elicits a shocking heat in the mouth when drunk. Has a 3-in-6 chance of reviving a subject killed by damage within the last 3 Rounds. Returning from death is an ordeal: until the subject gets two full weeks of bed rest, they have 1 Hit Point, half Speed, cannot carry heavy items, and cannot attack, cast spells, or use other Class capabilities.",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "resurrection",
+        "weakness_effect"
+      ]
+    },
+    {
+      "item_id": "prismatic_elixir",
+      "name": "Prismatic Elixir",
+      "description": "A pulsing, rainbow-hued liquid that is always found in octahedral glass containers (required retain its magical properties). Odourless but has a zingy metallic taste. Instantly heals 1d6+1 Hit Points.",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "special_container"
+      ]
+    },
+    {
+      "item_id": "sandors_phantasmal_elixir",
+      "name": "Sandor's Phantasmal Elixir",
+      "description": "A frothing indigo liquid that smells of sulphur and tastes of dry earth. The imbiber falls into a deep coma for 1d6+6 Turns, their spirit rising from the comatose body as a translucent phantom. The spirit may roam where it will, moving with Speed 40, able to pass through walls, doors, and other solid objects. It cannot attack, cast spells, or influence the world in any way, but may be harmed by magic and magic weapons, having Armour Class 20. When the potion's duration expires, if the spirit has not returned to the body the character must Save Versus Doom.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "spirit_projection",
+        "coma",
+        "death_risk"
+      ]
+    },
+    {
+      "item_id": "vanishing_philtre",
+      "name": "Vanishing Philtre",
+      "description": "An invisible liquid, only detectable by its weight, motion, and consistency. Smelling the philtre causes a brief blacking out of vision. It tastes like robust port. Renders the imbiber (and all gear) invisible for 1d6+6 Turns, or until they attack or cast a spell.",
+      "weight": 10,
+      "cost_sp": 20000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "invisibility",
+        "gear_included"
+      ]
+    },
+    {
+      "item_id": "vaporous_spirits",
+      "name": "Vaporous Spirits",
+      "description": "A thin, lime green fluid always stored in a tightly stoppered container. Evaporates into a gas immediately upon being unstoppered. A character must decide instantly whether to imbibe it or let it escape. The imbiber's body (but not gear) is transformed into a cloud of vapour for 1d6+6 Turns, moving at Speed 40 and able to seep through small cracks. While in gaseous form, the character cannot attack, but has AC 21 and can only be harmed by magic.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "gaseous_form",
+        "instant_evaporation"
+      ]
+    },
+    {
+      "item_id": "wereform_elixir",
+      "name": "Wereform Elixir",
+      "description": "A substance that separates into a thin, yellow liquid and a brown sludge. Must be mixed before use. Transforms the imbiber into animal of a specific kind (determined by the potion's creator) for 1d6+6 Turns. The type of animal must be non-magical, at most Level 2, and of at most Animal intelligence. The transformation does not alter the imbiber's Hit Points, Save Targets, Attack, or intelligence. Physical capabilities of the new form are acquired. While transformed, the character is unable to cast spells.",
+      "weight": 10,
+      "cost_sp": 7500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "animal_form",
+        "spell_blocking",
+        "mixing_required"
+      ]
+    },
+    {
+      "item_id": "wyrmsblood_elixir",
+      "name": "Wyrmsblood Elixir",
+      "description": "A thick, opaque liquid of deep crimson or plum. Radiates a distinct warmth, smells of ash, and tastes acidic and metallic. Grants a +2 bonus to Armour Class and Saving Throws for 1d6+6 Turns. If drunk within 1 week of having consumed another dose, the effect is inverted: –2 to AC and Saving Throws.",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "ac_bonus",
+        "save_bonus",
+        "negative_stacking"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      416,
+      417
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

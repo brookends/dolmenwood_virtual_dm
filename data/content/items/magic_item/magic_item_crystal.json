@@ -1,0 +1,375 @@
+{
+  "category": "magic_item",
+  "subcategory": "crystal",
+  "items": [
+    {
+      "item_id": "crystal_ball",
+      "name": "Crystal Ball",
+      "description": "A perfect, polished sphere of clear crystal, 6″ across. Gazing into the crystal, an arcane spell-caster can view any place or object that is brought to mind. The vision lasts for 1 Turn. Its clarity is dependant on the scryer's familiarity with the subject. A Crystal Ball may be used up to thrice a day.",
+      "weight": 50,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "scrying",
+        "arcane_caster_only",
+        "3_uses_per_day"
+      ]
+    },
+    {
+      "item_id": "crystal_of_sepulture",
+      "name": "Crystal of Sepulture",
+      "description": "A faceted, 1′ tall, ovoid crystal of pale blue or violet hue. Placed within a case or cabinet by an arcane spell-caster, the crystal floats and rotates slowly, absorbing the soul of any sentient being that dies within 120′. Victims cannot be raised from the dead, unless the soul is released by the caster. Trapped souls may be consumed to extend the duration of a spell or other magical effect.",
+      "weight": 50,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "120'",
+      "size": null,
+      "properties": [
+        "soul_absorption",
+        "spell_extension",
+        "arcane_caster_only"
+      ]
+    },
+    {
+      "item_id": "dweomer_shard",
+      "name": "Dweomer Shard",
+      "description": "A rough-cut aquamarine crystal that emits a faint, pulsing warmth when touched by an arcane spell-caster. If placed in a flow of arcane energy (e.g. a ley line), the crystal charges up, becoming purple-tinged and eventually purplish-black when fully charged (6 hours). Once fully charged, the crystal contains a random Rank 1 arcane spell.",
+      "weight": 1,
+      "cost_sp": 200000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "spell_storage",
+        "rechargeable",
+        "arcane_caster_only"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_absorption",
+      "name": "Ioun Stone, Absorption",
+      "description": "A pale lavender ellipsoid that absorbs and negates spells of Rank 3 or lower cast at the character. After absorbing a total of 1d3 × 10 Ranks of spells, the stone burns out and turns to dull grey, forever useless.",
+      "weight": 1,
+      "cost_sp": 200000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "spell_absorption",
+        "limited_uses",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_agility",
+      "name": "Ioun Stone, Agility",
+      "description": "A deep red sphere that increases the character's Dexterity by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dexterity_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_breath",
+      "name": "Ioun Stone, Breath",
+      "description": "An iridescent spindel that sustains the character without air.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "air_sustenance",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_fortitude",
+      "name": "Ioun Stone, Fortitude",
+      "description": "A pink rhomboid that increases the character's Constitution by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "constitution_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_insight",
+      "name": "Ioun Stone, Insight",
+      "description": "An incandescent blue sphere that increases the character's Wisdom by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "wisdom_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_intellect",
+      "name": "Ioun Stone, Intellect",
+      "description": "A striated scarlet and blue sphere that increases the character's Intelligence by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "intelligence_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_might",
+      "name": "Ioun Stone, Might",
+      "description": "A pale blue rhomboid that increases the character's Strength by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "strength_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_presence",
+      "name": "Ioun Stone, Presence",
+      "description": "A striated pink and green sphere that increases the character's Charisma by 1 (to a maximum of 18).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "charisma_bonus",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_regeneration",
+      "name": "Ioun Stone, Regeneration",
+      "description": "A pearly white spindle that heals 1 Hit Point per Turn.",
+      "weight": 1,
+      "cost_sp": 200000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "regeneration",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "ioun_stone_sustenance",
+      "name": "Ioun Stone, Sustenance",
+      "description": "A clear spindle that sustains the character without food and water.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "food_sustenance",
+        "orbiting"
+      ]
+    },
+    {
+      "item_id": "lenses_of_reflection",
+      "name": "Lenses of Reflection",
+      "description": "A pair of 2″, transparent grey, lens-shaped crystals, attached to a leather strap. When affixed over the eyes, the wearer is immune to gaze attacks (e.g. a basilisk's gaze).",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "gaze_immunity"
+      ]
+    },
+    {
+      "item_id": "lenses_of_sight",
+      "name": "Lenses of Sight",
+      "description": "A pair of 2″, transparent, lens-shaped crystals, one pink, the other azure. Looking through the pink lens, one sees out of the azure lens. The pair of lenses operates at any distance.",
+      "weight": 1,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "unlimited",
+      "size": null,
+      "properties": [
+        "remote_viewing"
+      ]
+    },
+    {
+      "item_id": "lens_of_penetration",
+      "name": "Lens of Penetration",
+      "description": "A 2″, transparent blue, lens-shaped crystal. Looking through the lens, one sees through all fairy glamours of illusion.",
+      "weight": 1,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "illusion_penetration"
+      ]
+    },
+    {
+      "item_id": "leystone",
+      "name": "Leystone",
+      "description": "A 3″ shard of translucent crystal, deep green or blue in colour, slightly warm to the touch. Placed in the palm of the hand, the crystal points towards the nearest ley line. In a hex containing a nodal stone, the crystal slowly rotates.",
+      "weight": 1,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "ley_line_detection"
+      ]
+    },
+    {
+      "item_id": "loadstone",
+      "name": "Loadstone",
+      "description": "A roughly hewn piece of ornamental stone (e.g. agate) which afflicts the owner with a curse of slow movement. The character's Speed is halved and they can only attack or cast spells every second Round. The curse takes effect when the character attempts to flee from an enemy. If the stone is discarded, it reappears, hidden somewhere on the character's person, unless the curse is removed by magic.",
+      "weight": 1,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "speed_reduction",
+        "returns_when_discarded"
+      ]
+    },
+    {
+      "item_id": "luckstone",
+      "name": "Luckstone",
+      "description": "A roughly hewn piece of ornamental stone (e.g. agate) which grants its owner good luck. The character gains a +1 bonus to Saving Throws and Ability Checks.",
+      "weight": 1,
+      "cost_sp": 250000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "luck_bonus"
+      ]
+    },
+    {
+      "item_id": "moonstone",
+      "name": "Moonstone",
+      "description": "A perfect, polished sphere of silver-grey crystal, 6″ across, engraved with geomantic and astrological sigils. If placed for a night beneath the light of the full moon, the stone becomes charged with the moon's light. Once successfully charged, the stone radiates a lambent, bluish light in a 30′ radius until the moon is next full.",
+      "weight": 50,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "30'",
+      "size": null,
+      "properties": [
+        "light_source",
+        "moon_charged",
+        "rechargeable"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      406,
+      407
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,384 @@
+{
+  "category": "magic_item",
+  "subcategory": "enchanted_oddments",
+  "items": [
+    {
+      "item_id": "boggle_mask",
+      "name": "Boggle Mask",
+      "description": "A wooden mask with bulging eyes, twisting horns, and a sinister fanged grin. The wearer of the mask takes on the appearance of a terrifying horned demon, veiling their true form, clothing, and equipment. The effect is purely visual. When removed, the mask bursts into flame and vanishes.",
+      "weight": 10,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "disguise",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "clockwork_beetle",
+      "name": "Clockwork Beetle",
+      "description": "A 3″ brass contraption that resembles an oval-shaped brooch with a winding key on the underside. Winding key causes legs, wings, and mandibles to pop out. Once activated, the beetle flies in a straight line at Speed 30. It can carry a small object (weighing up to 40 coins). The beetle flies until manually deactivated or until it winds down (1 Turn). After each use, there is a 1-in-6 chance of the beetle exploding in a mess of tiny gears.",
+      "weight": 5,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "flying",
+        "carrier",
+        "fragile"
+      ]
+    },
+    {
+      "item_id": "crystal_illusion",
+      "name": "Crystal Illusion",
+      "description": "A pouch of faceted crystal fragments, scintillating with pink, cerulean, and indigo light. If crushed, the fragments release a fleeting, glowing, life-size illusion of a noble elf bowing, pirouetting, or whirling a sabre. The illusion lasts for 1d6 Rounds.",
+      "weight": 10,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "illusion",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "dreaming_burl",
+      "name": "Dreaming Burl",
+      "description": "A chunky tree burl, 8″ across, covered with face-like gnarls and whorls. When lit in a fire pit, the burl slowly burns (8 hours), emitting a soothing greenish-orange glow and a hearty aroma reminiscent of a cosy tavern. Characters sleeping by the fire gain a +1 bonus to any Constitution Checks required to sleep and experience comforting dreams of merry, burl-faced fairies. A random injured character is blessed by the burl-fairies and heals 1 HP.",
+      "weight": 100,
+      "cost_sp": 750,
+      "slot_size": 2,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "sleep_bonus",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "dust_of_ages",
+      "name": "Dust of Ages",
+      "description": "A pouch of sooty grey powder. When sprinkled over an object or creature, the dust makes it appear as an aged and decrepit version of itself. People and animals become old and grey, objects become tattered and dusty. The illusion is purely visual and lasts for 6 Turns.",
+      "weight": 10,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "illusion",
+        "aging_effect"
+      ]
+    },
+    {
+      "item_id": "eternal_flower",
+      "name": "Eternal Flower",
+      "description": "A delicate bloom plucked at its peak and frozen in time. If treated gently, it retains its beauty (and value) for all eternity. Greatly valued by mortals of noble means. Value: 10gp for a dainty snowdrop, 50gp for a spring-fresh tulip, 250gp for a pristine water lily, 500gp for a majestic black rose.",
+      "weight": 1,
+      "cost_sp": 100,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "eternal",
+        "valuable"
+      ]
+    },
+    {
+      "item_id": "fairy_comb",
+      "name": "Fairy Comb",
+      "description": "An elegant comb of ivory or wyrm-bone, shaped like a fanciful bird with tooth-feather wings. By brushing the comb through their hair for 1 Turn, the user can change their hair to any colour and style desired.",
+      "weight": 5,
+      "cost_sp": 1000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "hair_transformation"
+      ]
+    },
+    {
+      "item_id": "fairy_swan_feather",
+      "name": "Fairy Swan Feather",
+      "description": "A long, elegant feather of pearlescent white. If a character holds the feather tight against their chest, closes their eyes, and thinks happy thoughts, they begin to float 1′ off the ground. The character cannot move through the air of their own volition, but drifts if pushed by an outside force. The levitation lasts as long as the character concentrates with their eyes closed. When concentration ends, the feather vanishes in a wisp of smoke.",
+      "weight": 1,
+      "cost_sp": 1500,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "levitation",
+        "single_use",
+        "concentration"
+      ]
+    },
+    {
+      "item_id": "fire_powder",
+      "name": "Fire Powder",
+      "description": "A bag of shimmering dust of a particular, vivid hue (the dust comes in any colour of the rainbow). Tossing the powder into a flame causes it to change colour to match the powder and to flare up, doubling its light radius. The colour change lasts as long as the flame burns, and the brightness lasts for 1 Turn.",
+      "weight": 10,
+      "cost_sp": 250,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "flame_enhancement",
+        "light_doubling"
+      ]
+    },
+    {
+      "item_id": "frozen_birdsong",
+      "name": "Frozen Birdsong",
+      "description": "Flakes of glittering hoarfrost, stored in a glass bottle swaddled in thick felt. If thawed, the melting flakes release a beauteous symphony of birdsong, as if a chorus of nightingales, blackbirds, thrushes, and finches were greeting the dawn. All within 30′ of the birdsong suffer a –2 penalty to any Saving Throws against enchanted music. The song echoes around for 1 Turn, then fades.",
+      "weight": 10,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "music",
+        "enchantment_vulnerability",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "ghost_crow_quill",
+      "name": "Ghost Crow Quill",
+      "description": "A shadowy, semi-corporeal feather. Writing made using the quill fades and is only visible under moonlight.",
+      "weight": 1,
+      "cost_sp": 500,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "invisible_writing",
+        "moonlight_visible"
+      ]
+    },
+    {
+      "item_id": "gold_leaf",
+      "name": "Gold Leaf",
+      "description": "An autumn birch leaf that glitters like real gold. Crushing the leaf and sprinkling the dust over an object makes it appear to be made of solid gold. The effect is purely visual and lasts until washed off with water. A single leaf is enough to affect a single object weighing up to 50 coins.",
+      "weight": 1,
+      "cost_sp": 500,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "illusion",
+        "gold_appearance",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "grave_wax_candle",
+      "name": "Grave Wax Candle",
+      "description": "A lumpy candle shaped like a crooked finger. While lit, it gives off the faint, sickly sweet odour of a fresh corpse. The candle's flame sputters and pops when brought within 30′ of an undead creature. Burns for 3 Turns.",
+      "weight": 2,
+      "cost_sp": 1000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "detect_undead",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "growling_tree_face",
+      "name": "Growling Tree Face",
+      "description": "A scowling, human-like face of gnarled bark, ringed with drooping lichen and moss. If placed upon a tree trunk, the face adheres and opens its eyes, peering this way and that. Upon sighting a sentient being close by (30′), it grumbles wordlessly (audible within 60′). A Growling Tree Face functions for 8 hours, then crumbles to dust.",
+      "weight": 10,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "guardian",
+        "detection",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "hungry_shadow",
+      "name": "Hungry Shadow",
+      "description": "A drawstring pouch that wriggles and growls when touched by light. Opening the bag releases a monstrous blot of shadow that slithers along walls, floors, and ceilings to devour all light in a 15′ radius, creating an area of magical darkness. The patch of darkness lasts for 6 Turns, after which the shadow disappears.",
+      "weight": 10,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "darkness",
+        "area_effect",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "jar_of_seasons",
+      "name": "Jar of Seasons",
+      "description": "A stoppered clay jar painted with scenery corresponding to one of the four seasons. When opened, a miniature weather pattern whisks out of the jar and occupies a 30′ radius area for 8 hours. Once released, the weather pattern cannot be returned to the jar. Comes in 4 varieties: winter (chilly wind, 3′ snowfall), spring (tiny clouds, rainfall), summer (golden sunbeams, warmth), autumn (gusts of wind and brown leaves).",
+      "weight": 10,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "weather_control",
+        "area_effect",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "redcaps_mug",
+      "name": "Redcap's Mug",
+      "description": "A tankard of green wood with a hinged lid in the form of a jolly, grinning face. Often carved with woodland scenes or animals dancing arm-in-arm. Once a day, a pint of water poured into the tankard is instantly transformed into cold, dark beer when the lid is replaced.",
+      "weight": 10,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "water_to_beer",
+        "daily_use"
+      ]
+    },
+    {
+      "item_id": "salamander_seed",
+      "name": "Salamander Seed",
+      "description": "A bright red seed, 2″across, with a tiny wick-like stem. When the stem is lit, the seed rapidly grows into a mass of fiery red creeper vines covering a 20′ radius area. The vines latch firmly onto surfaces (including vertical surfaces within their area of extent) and can be used for climbing or anchoring. Creatures caught in the vines when they grow must Save Versus Hold or be entangled, unable to move. Another save is allowed each Round to escape. The vines wither and disappear after 1d6 hours.",
+      "weight": 2,
+      "cost_sp": 750,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "vine_growth",
+        "entanglement",
+        "climbing_aid",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "steed_stump",
+      "name": "Steed Stump",
+      "description": "A small, uprooted tree stump (1′ across) with several thick roots at the base. Sitting on the stump's flat, cut surface and speaking a command word (typically \"whalloop\"—the Sylvan equivalent of \"giddyup\") brings the stump to life, its roots scrabbling like legs. The stump acts as a mount for 24 hours before rotting away to slime. The stump has Speed 40 with a Small rider and 20 with a Medium rider. It can carry one character and all their gear.",
+      "weight": 200,
+      "cost_sp": 500,
+      "slot_size": 2,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "mount",
+        "command_word",
+        "single_use"
+      ]
+    },
+    {
+      "item_id": "wizards_pipe",
+      "name": "Wizard's Pipe",
+      "description": "A smoking pipe of fine red clay with a long stem inscribed with astrological symbols. When stoked with leaf, the smoker can blow smoke into any shape desired, so long as it is no larger than 1 cubic foot. The forms produced by the pipe are obviously smoky apparitions.",
+      "weight": 10,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "smoke_shaping",
+        "illusion"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      426,
+      427
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

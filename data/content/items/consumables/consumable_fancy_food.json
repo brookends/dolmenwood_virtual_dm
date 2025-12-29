@@ -1,0 +1,302 @@
+{
+  "category": "consumable",
+  "subcategory": "fancy_food",
+  "items": [
+    {
+      "item_id": "blackbird_pie",
+      "name": "Blackbird Pie",
+      "description": "A feast of blackbirds (traditionally two dozen whole birds!) baked in a pie crust with cream.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "brathering",
+      "name": "Brathering",
+      "description": "A famed Prigwort speciality: pancakes layered with sliced apple, cured sausage, and gooseberries.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "jellied_lamprey",
+      "name": "Jellied Lamprey",
+      "description": "Thick-sliced lamprey in an exquisite, spiced jelly.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "longmere_pike",
+      "name": "Longmere Pike",
+      "description": "A whole pike, stuffed with leek and sage, served with fresh forest greens.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "maids_o_the_lake",
+      "name": "Maids-o'-the-Lake",
+      "description": "A Dolmenwood delicacy: thigh-sized, translucent pink squid fried in garlic butter. Many inns refuse to serve this dish on nights of the full moon, as it is said to attract the attention of witches.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality",
+        "attracts_witches"
+      ]
+    },
+    {
+      "item_id": "roast_lurkey",
+      "name": "Roast Lurkey",
+      "description": "Juicy flesh of the notoriously elusive Dolmenwood game bird.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "unicorn_rump",
+      "name": "Unicorn Rump",
+      "description": "Tender venison of the deer-like beasts known as false unicorns. The flesh of true unicorns may only be served at the duke's table.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "whole_suckling_pig",
+      "name": "Whole Suckling Pig",
+      "description": "A whole piglet, spit-roast, complete with an apple in its mouth. A true hero's feast!",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "larks_tongues_in_aspic",
+      "name": "Larks' Tongues in Aspic",
+      "description": "Delicate songbirds' tongues preserved in sweet jelly.",
+      "weight": null,
+      "cost_sp": 15,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "old_shuck",
+      "name": "Old Shuck",
+      "description": "Rigid slices of stinking, ultra-mature cheese of mossling manufacture.",
+      "weight": null,
+      "cost_sp": 15,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "fancy_quality",
+        "mossling_made"
+      ]
+    },
+    {
+      "item_id": "sparrey",
+      "name": "Sparrey",
+      "description": "A melt-in-the-mouth confection of crispy, sugared moth wings.",
+      "weight": null,
+      "cost_sp": 15,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "vinegared_troll_moss",
+      "name": "Vinegared Troll Moss",
+      "description": "Sweet and sour moss, pilfered from the moss-gardens of Dolmenwood trolls.",
+      "weight": null,
+      "cost_sp": 15,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "fondant_pastries",
+      "name": "Fondant Pastries",
+      "description": "Freshly baked, dusted with sugar.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dessert",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "sugared_plums",
+      "name": "Sugared Plums",
+      "description": "A taste of summer, all year round.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dessert",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "trifle",
+      "name": "Trifle",
+      "description": "Layered berries, sponge, custard, and cream.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dessert",
+        "fancy_quality"
+      ]
+    },
+    {
+      "item_id": "walnut_tarts",
+      "name": "Walnut Tarts",
+      "description": "Topped with whipped cream.",
+      "weight": null,
+      "cost_sp": 20,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dessert",
+        "fancy_quality"
+      ]
+    }
+  ],
+  "source": {
+    "source_id": "players_book",
+    "book_code": "DPB",
+    "page_reference": "p. 125",
+    "section": "Equipment - Lodgings and Food"
+  }
+}

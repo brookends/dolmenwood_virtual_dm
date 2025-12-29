@@ -1,0 +1,146 @@
+{
+  "category": "magic_item",
+  "subcategory": "amulet",
+  "items": [
+    {
+      "item_id": "amulet_of_breath",
+      "name": "Amulet of Breath",
+      "description": "When placed in the mouth, allows the wearer to breathe both in air and underwater.",
+      "weight": 10,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "breathe_underwater",
+        "breathe_air"
+      ]
+    },
+    {
+      "item_id": "amulet_of_density",
+      "name": "Amulet of Density",
+      "description": "Once a day, the wearer (along with all their gear) can turn into either a cloud of vapour or a statue of solid iron for as long as they wish. When in the form of a cloud, the wearer has Speed 40, can seep through small cracks, cannot attack, has AC 21, and can only be harmed by magic. When in the form of a statue of iron, the wearer cannot move, has AC 24, and can only be harmed by magic.",
+      "weight": 10,
+      "cost_sp": 250000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "transform_vapour",
+        "transform_iron",
+        "once_per_day"
+      ]
+    },
+    {
+      "item_id": "amulet_of_lightning",
+      "name": "Amulet of Lightning",
+      "description": "Appears worthless until worn. The wearer perceives 2d4 small silver lightning bolts hanging from the amulet. Up to once a Round, the wearer can detach and throw one of the small metal lightning bolts, producing a stream of lightning 60′ long and 5′ wide. All in the stream suffer 5d6 damage (Save Versus Ray for half). Once all the lightning bolts have been thrown, the amulet's magic is spent.",
+      "weight": 10,
+      "cost_sp": 75000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": "5d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "60",
+      "size": null,
+      "properties": [
+        "lightning_stream",
+        "limited_charges",
+        "save_for_half"
+      ]
+    },
+    {
+      "item_id": "amulet_of_mind_reading",
+      "name": "Amulet of Mind-Reading",
+      "description": "Grants the power to read thoughts. By concentrating for 1 Round, the wearer may target a creature within 30′. If the target fails a Save Versus Spell, the wearer can read their surface thoughts. While reading thoughts, the wearer may move, but cannot cast spells or attack. The amulet is not entirely reliable: each time it is used, there is a 1-in-6 chance of it misfiring, instead sending the wearer's thoughts to all within 30′.",
+      "weight": 10,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "30",
+      "size": null,
+      "properties": [
+        "read_thoughts",
+        "save_versus_spell",
+        "misfire_chance"
+      ]
+    },
+    {
+      "item_id": "amulet_of_pristine_sight",
+      "name": "Amulet of Pristine Sight",
+      "description": "The wearer can see through all illusions, and can perceive invisible objects and creatures. The pristine sight is restricted to 30′ range. There is a 1-in-6 chance each day of the wearer being accosted by 2d6 yellow sprites (DMB), striving to steal or destroy the amulet.",
+      "weight": 10,
+      "cost_sp": 125000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "30",
+      "size": null,
+      "properties": [
+        "see_through_illusions",
+        "see_invisible",
+        "sprite_attraction"
+      ]
+    },
+    {
+      "item_id": "amulet_of_refraction",
+      "name": "Amulet of Refraction",
+      "description": "Once a day, the wearer can cause 1d4 illusory images of themselves to appear. The mirror images look and behave exactly as the wearer, remaining within 3′. The wearer's voice and any spells they cast emanate randomly from one of the mirror images or the wearer's true form. Attacks on the wearer destroy one of the mirror images (even if the attack misses). If the wearer is an arcane spell-caster, they also gain the ability to cast the spell Project Image once a week. While wearing the amulet, the wearer casts no reflection.",
+      "weight": 10,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "mirror_images",
+        "once_per_day",
+        "project_image",
+        "no_reflection"
+      ]
+    },
+    {
+      "item_id": "ioun_trap",
+      "name": "Ioun Trap",
+      "description": "Protects the wearer from Ioun Shards (from spells, wands, etc.). Ioun Shards that target the wearer are trapped and harmlessly orbit their head forevermore. Each time an Ioun Shard is trapped, there is a 1-in-20 chance of the amulet's magic expiring.",
+      "weight": 10,
+      "cost_sp": 90000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "trap_ioun_shards",
+        "expiration_chance"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      400,
+      401
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

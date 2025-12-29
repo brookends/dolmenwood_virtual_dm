@@ -1,0 +1,393 @@
+{
+  "category": "magic_item",
+  "subcategory": "wondrous_items",
+  "items": [
+    {
+      "item_id": "astrolabe_of_the_aegis",
+      "name": "Astrolabe of the Aegis",
+      "description": "An intricate brass astrolabe, 10″ wide, of Drune make, detailing the movements of the moon and stars in relation to the ley lines of Dolmenwood. Arcane spell-casters can use this device to travel through Dolmenwood's ley lines.",
+      "weight": 200,
+      "cost_sp": 500000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "ley_line_travel",
+        "astral_travel"
+      ]
+    },
+    {
+      "item_id": "bag_of_devouring",
+      "name": "Bag of Devouring",
+      "description": "A normal-looking sack that devours objects placed inside it. Anything placed inside the bag vanishes from existence after 1d6+6 Turns. Living creatures may be affected, but only if the entire creature fits inside the bag.",
+      "weight": 10,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "devouring"
+      ]
+    },
+    {
+      "item_id": "bag_of_holding",
+      "name": "Bag of Holding",
+      "description": "A normal-looking sack that can magically hold large objects and weights. Objects of up to 10′ × 5′ × 3′ can fit inside the bag. Up to 10,000 coins of weight can be placed in the bag. When full, the bag weighs 600 coins.",
+      "weight": 10,
+      "cost_sp": 250000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "extra_dimensional_storage"
+      ]
+    },
+    {
+      "item_id": "boggle_lantern",
+      "name": "Boggle Lantern",
+      "description": "A lantern of brass and pink glass which the owner can light or extinguish on command. Once a day, the owner can summon 1d3 marsh lanterns to serve for 6 Turns.",
+      "weight": 20,
+      "cost_sp": 350000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "command_light",
+        "summon_marsh_lanterns"
+      ]
+    },
+    {
+      "item_id": "eye_of_the_yurl",
+      "name": "Eye of the Yurl",
+      "description": "A glass eye with a cat-like iris of pale violet, said to have been created by a mythical grimalkin ancestor known as the Yurl. When placed against a creature's eye, the glass eye liquefies and seeps into the eye socket, dissolving the creature's own eye into a purple jelly.",
+      "weight": 1,
+      "cost_sp": 200000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "darkvision_30",
+        "see_through_cloth_wood",
+        "replaces_eye"
+      ]
+    },
+    {
+      "item_id": "fairy_jar",
+      "name": "Fairy Jar",
+      "description": "A 4″ high glass jar of deep purple or pale pink hue. The spirit of a fairy is trapped in the jar, visible as a tormented face swathed in swirling mist. Smashing the jar frees the spirit, which grants the character a boon before dissipating.",
+      "weight": 10,
+      "cost_sp": 150000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "trapped_fairy_spirit",
+        "fairy_runes",
+        "curse_risk"
+      ]
+    },
+    {
+      "item_id": "horseshoes_of_lightness",
+      "name": "Horseshoes of Lightness",
+      "description": "A set of 4 iron horseshoes which, when affixed, allow a horse to float slightly above the ground. The horse leaves no tracks and can move across water as if it were solid ground. The magic is only effective if all 4 horseshoes are worn.",
+      "weight": 40,
+      "cost_sp": 75000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "float_above_ground",
+        "no_tracks",
+        "water_walking",
+        "requires_all_four"
+      ]
+    },
+    {
+      "item_id": "horseshoes_of_speed",
+      "name": "Horseshoes of Speed",
+      "description": "A set of 4 iron horseshoes which, when affixed, double a horse's Speed. The mount can travel at this speed for up to a whole day, allowing the rider to travel great distances. After travelling at speed for more than 4 hours in a day, the horseshoes do not function for 24 hours.",
+      "weight": 40,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "double_speed",
+        "daily_limit",
+        "requires_all_four"
+      ]
+    },
+    {
+      "item_id": "knife_of_separation",
+      "name": "Knife of Separation",
+      "description": "A short-bladed knife with a notably blunt blade. Slicing across a living creature's appendage allows body parts to be harmlessly detached. Detached body parts are independently mobile and can be reattached by touching them back onto the creature's body.",
+      "weight": 10,
+      "cost_sp": 150000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "harmless_separation",
+        "mobile_parts",
+        "reattachment"
+      ]
+    },
+    {
+      "item_id": "leaf_dome",
+      "name": "Leaf Dome",
+      "description": "A bundle of compressed leaves, fresh green as if picked from trees in high spring. If placed on the ground and watered, the bundle erupts into a verdant canopy providing shelter for up to 4 people. Beneath the leaf canopy, a pleasant coolness pervades—treat as springtime, for the purposes of camping.",
+      "weight": 5,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "shelter_for_four",
+        "springtime_conditions",
+        "collapses_at_dawn"
+      ]
+    },
+    {
+      "item_id": "marvellous_pigments",
+      "name": "Marvellous Pigments",
+      "description": "A pot of magical paint which can be applied to a flat surface to conjure a real, permanent, three-dimensional object. The artistic skill of the character has no bearing—the object magically flows from the paint brush, guided by the character's imagination alone. Only non-magical, inanimate things may be conjured.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "create_objects",
+        "1000_cubic_feet",
+        "non_magical_only"
+      ]
+    },
+    {
+      "item_id": "mirror_of_life_trapping",
+      "name": "Mirror of Life Trapping",
+      "description": "A mirror with the ability to magically trap living creatures behind its pane. Small or Medium creatures who gaze into the mirror must Save Versus Spell or be sucked inside, along with their belongings. Up to 20 creatures can be trapped in the mirror, where they will live indefinitely.",
+      "weight": 200,
+      "cost_sp": 250000,
+      "slot_size": 2,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "trap_creatures",
+        "up_to_20_creatures",
+        "indefinite_imprisonment"
+      ]
+    },
+    {
+      "item_id": "mirror_of_youthfulness",
+      "name": "Mirror of Youthfulness",
+      "description": "An enchanted looking glass that veils its possessor's true appearance with one of youth and fey beauty. The owner must spend at least 1 hour per day gazing at their reflection in the mirror. The mirror has no power to actually stop ageing, it merely veils the owner's appearance.",
+      "weight": 200,
+      "cost_sp": 150000,
+      "slot_size": 2,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "youthful_appearance",
+        "fey_beauty",
+        "requires_daily_use"
+      ]
+    },
+    {
+      "item_id": "needles_of_hexing",
+      "name": "Needles of Hexing",
+      "description": "A set of enchanted embroidery needles that can place curses remotely by embroidering a likeness of the intended victim. Once the victim's likeness has been embroidered with the needles, any cursing magic cast upon it affects the victim as if they were present.",
+      "weight": 1,
+      "cost_sp": 150000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "remote_cursing",
+        "embroidery_required",
+        "sympathetic_magic"
+      ]
+    },
+    {
+      "item_id": "petrified_fairy_heart",
+      "name": "Petrified Fairy Heart",
+      "description": "A fist-sized heart of black stone which emits a slow, pulsing frigidity. The owner gains a +1 bonus to Saving Throws against fairy magic. If powdered and consumed, the dust rejuvenates a mortal by 1d20 years per dose (12 doses in total).",
+      "weight": 10,
+      "cost_sp": 180000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "fairy_magic_resistance",
+        "rejuvenation",
+        "12_doses"
+      ]
+    },
+    {
+      "item_id": "portable_hole",
+      "name": "Portable Hole",
+      "description": "A 6′ diameter circle of fine black cloth that can be folded down to the size of a handkerchief. The cloth can be placed upon a surface to conjure a 6′ diameter, 10′ deep hole in the surface. The cloth can subsequently be picked up by a creature inside or outside of the hole, causing the hole to vanish.",
+      "weight": 1,
+      "cost_sp": 500000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "extra_dimensional_hole",
+        "6_foot_diameter",
+        "10_foot_deep",
+        "1_turn_air"
+      ]
+    },
+    {
+      "item_id": "purse_of_plentiful_coin",
+      "name": "Purse of Plentiful Coin",
+      "description": "A small leather pouch which can magically duplicate coins placed inside it. When found, the purse contains 26 coins of each type (cp, sp, gp, pp). Each morning, the purse duplicates any coins left in it, producing up to 25 coins of each type it contains.",
+      "weight": 10,
+      "cost_sp": 250000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "duplicate_coins",
+        "daily_duplication",
+        "up_to_25_each_type"
+      ]
+    },
+    {
+      "item_id": "rope_of_climbing",
+      "name": "Rope of Climbing",
+      "description": "A coil of thin, strong rope, 50′ in length. The owner may command the rope to climb in any direction, and may command it to attach to a surface. The rope can hold loads of up to 10,000 coins of weight.",
+      "weight": 100,
+      "cost_sp": 100000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "command_climbing",
+        "50_foot_length",
+        "10000_coin_capacity"
+      ]
+    },
+    {
+      "item_id": "skeleton_key",
+      "name": "Skeleton Key",
+      "description": "A magical key, carved from thin bone, that opens any lock (mundane or magical). Using a Skeleton Key bypasses any traps or wards upon the lock. Each key can be used only once, crumbling to dust afterwards. Usually found in sets of 2d3 keys.",
+      "weight": 1,
+      "cost_sp": 10000,
+      "slot_size": 0.5,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "opens_any_lock",
+        "bypasses_traps",
+        "single_use",
+        "found_in_sets"
+      ]
+    },
+    {
+      "item_id": "sylvan_bracelet",
+      "name": "Sylvan Bracelet",
+      "description": "A silver bracelet of seven interlocking leaves that allows the wearer to speak with plants and fairies. When activated, the wearer gains the ability to speak either the Sylvan tongue for 24 hours or to communicate with plants for 3 Turns. The magic can be used seven times—upon each use, one of the leaves \"wilts.\"",
+      "weight": 5,
+      "cost_sp": 50000,
+      "slot_size": 1,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "speak_sylvan",
+        "speak_with_plants",
+        "seven_uses",
+        "leaves_wilt"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      422,
+      423
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

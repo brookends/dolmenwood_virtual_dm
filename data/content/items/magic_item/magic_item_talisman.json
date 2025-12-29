@@ -1,0 +1,256 @@
+{
+  "category": "magic_item",
+  "subcategory": "talisman",
+  "items": [
+    {
+      "item_id": "talisman_of_defence",
+      "name": "Talisman of Defence",
+      "description": "Any who attack the wearer in melee must Save Versus Hold or be paralysed for 1d4 Rounds (aware but unable to move or act, the triggering attack misses). The charm is only effective against each individual once per day.",
+      "weight": 10,
+      "cost_sp": 150000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "paralyse_attackers",
+        "save_versus_hold",
+        "once_per_individual_per_day"
+      ]
+    },
+    {
+      "item_id": "talisman_of_devotion",
+      "name": "Talisman of Devotion",
+      "description": "Grants a +1 bonus to Armour Class and Saving Throws against attacks and special powers of Chaotic creatures, as well as creatures created or summoned by magic. If the wearer is a devout follower of the Pluritine Church (e.g. a holy spell-caster), they also gain immunity to all forms of disease. While wearing the talisman, the wearer becomes of Lawful Alignment.",
+      "weight": 10,
+      "cost_sp": 70000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": 1,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "bonus_vs_chaotic",
+        "disease_immunity",
+        "lawful_alignment"
+      ]
+    },
+    {
+      "item_id": "talisman_of_dimensional_anchoring",
+      "name": "Talisman of Dimensional Anchoring",
+      "description": "Grants immunity to magic of teleportation and time alteration (e.g. the Haste spell). Causes the wearer's hair to grey prematurely.",
+      "weight": 10,
+      "cost_sp": 40000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "immunity_teleportation",
+        "immunity_time_alteration",
+        "grey_hair"
+      ]
+    },
+    {
+      "item_id": "talisman_of_free_action",
+      "name": "Talisman of Free Action",
+      "description": "Protects the wearer from all forms of restraint, paralysis (but not petrification), and slowing (but not encumbrance). For example, a character wearing a Talisman of Free Action can slip out of bonds or a Web spell, is immune to the spell Hold Person or the paralysing touch of a ghoul, and is unaffected by magic armour with the Freezing curse.",
+      "weight": 10,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "immunity_restraint",
+        "immunity_paralysis",
+        "immunity_slowing"
+      ]
+    },
+    {
+      "item_id": "talisman_of_gaze_reflection",
+      "name": "Talisman of Gaze Reflection",
+      "description": "The wearer's eyes take on an odd, iridescent, mirrored hue. Gaze attacks (e.g. a basilisk's petrifying gaze) directly targeting the wearer are reflected back and affect the attacker instead. After 2d4 gaze attacks are reflected, the talisman loses its power.",
+      "weight": 10,
+      "cost_sp": 200000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "reflect_gaze_attacks",
+        "limited_uses",
+        "mirrored_eyes"
+      ]
+    },
+    {
+      "item_id": "talisman_of_hex_attraction",
+      "name": "Talisman of Hex Attraction",
+      "description": "Appears to be a protective talisman of some kind. This cursed talisman afflicts the wearer with a –4 penalty to Saving Throws against curses and death magic (e.g. Word of Doom). The talisman and its curse can only be removed by magic (e.g. Remove Curse).",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "penalty_vs_curses",
+        "penalty_vs_death_magic"
+      ]
+    },
+    {
+      "item_id": "talisman_of_magic_resistance",
+      "name": "Talisman of Magic Resistance",
+      "description": "Grants +2 Magic Resistance (applied to Saving Throws against magic).",
+      "weight": 10,
+      "cost_sp": 40000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "magic_resistance_bonus"
+      ]
+    },
+    {
+      "item_id": "talisman_of_non_detection",
+      "name": "Talisman of Non-Detection",
+      "description": "Protects the wearer from all magic of detection and divination pertaining to their person or gear. Magic that detects the presence of some force or quality (e.g. Detect Evil) simply fails to detect the wearer. Magic that divines information about a subject (e.g. Reveal Alignment) provides no information when applied to the wearer. Even those who know the wearer tend to forget their name.",
+      "weight": 10,
+      "cost_sp": 75000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "immunity_detection",
+        "immunity_divination",
+        "memory_effect"
+      ]
+    },
+    {
+      "item_id": "talisman_of_protection",
+      "name": "Talisman of Protection",
+      "description": "Grants the wearer an Armour Class of 14, modified by Dexterity. Foiled attacks produce a flash of prismatic light. If worn in conjunction with armour that grants better than AC 14, the talisman has no effect.",
+      "weight": 10,
+      "cost_sp": 120000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 14,
+      "range": null,
+      "size": null,
+      "properties": [
+        "prismatic_flash",
+        "dexterity_modified"
+      ]
+    },
+    {
+      "item_id": "talisman_of_protection_from_hexes",
+      "name": "Talisman of Protection From Hexes",
+      "description": "Protects the wearer from baleful magic, nullifying magic that places a curse or causes instant death (e.g. Word of Doom). The talisman works 2d6 times before its magic is spent.",
+      "weight": 10,
+      "cost_sp": 250000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "nullify_curses",
+        "nullify_death_magic",
+        "limited_uses"
+      ]
+    },
+    {
+      "item_id": "talisman_of_protection_from_scrying",
+      "name": "Talisman of Protection From Scrying",
+      "description": "Stymies all attempts at scrying (e.g. a Crystal Ball) and mind-reading (e.g. Crystal Vision) that target the wearer.",
+      "weight": 10,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "immunity_scrying",
+        "immunity_mind_reading"
+      ]
+    },
+    {
+      "item_id": "talisman_of_spell_reflection",
+      "name": "Talisman of Spell Reflection",
+      "description": "Spells cast directly on the wearer are reflected back and affect the caster instead. After 2d6 spells are reflected, the talisman loses its power.",
+      "weight": 10,
+      "cost_sp": 200000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "reflect_spells",
+        "limited_uses"
+      ]
+    },
+    {
+      "item_id": "talisman_of_vitality",
+      "name": "Talisman of Vitality",
+      "description": "Grants the wearer a +4 bonus to Saving Throws against poison and disease. If worn on a daily basis, the talisman promotes vigorous hair growth.",
+      "weight": 10,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "bonus_vs_poison",
+        "bonus_vs_disease",
+        "hair_growth"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      400,
+      401
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
