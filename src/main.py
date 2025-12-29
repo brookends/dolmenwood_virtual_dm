@@ -229,7 +229,7 @@ class VirtualDM:
             level: Character level
             ability_scores: Dict of STR, INT, WIS, DEX, CON, CHA
             hp_max: Maximum HP
-            armor_class: AC (descending, default 10)
+            armor_class: AC (ascending, default 10 unarmored)
             movement_rate: Movement in feet per turn
 
         Returns:
