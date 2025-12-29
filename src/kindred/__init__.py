@@ -10,7 +10,7 @@ Available Kindreds:
 - Breggle: Goat-headed folk (mortal)
 - Elf: Ageless fairies from the immortal realm (fairy)
 - Grimalkin: Shape-shifting cat-fairies (fairy)
-- Human: (coming soon)
+- Human: Common folk of Dolmenwood (mortal)
 - Mossling: (coming soon)
 - Woodgrue: (coming soon)
 """

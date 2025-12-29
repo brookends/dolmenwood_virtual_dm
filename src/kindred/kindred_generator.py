@@ -82,7 +82,7 @@ class KindredGenerator:
 
         # Roll physical characteristics
         aspects.age = self.roll_age()
-        aspects.height_inches = self.roll_height()
+        aspects.height_inches = self.roll_height(gender)
         aspects.weight_lbs = self.roll_weight()
 
         # Generate name
@@ -119,10 +119,21 @@ class KindredGenerator:
 
         return base + dice_roll
 
-    def roll_height(self) -> int:
-        """Roll height in inches."""
+    def roll_height(self, gender: Optional[str] = None) -> int:
+        """Roll height in inches.
+
+        Args:
+            gender: "male" or "female" for gender-specific height bases
+        """
         physical = self.definition.physical
         base = physical.height_base
+
+        # Handle gender-specific height for humans
+        if (gender == "female" and
+            physical.extra_data and
+            "female_height_base" in physical.extra_data):
+            base = physical.extra_data["female_height_base"]
+
         dice_roll = roll_dice(physical.height_dice)
         return base + dice_roll
 
