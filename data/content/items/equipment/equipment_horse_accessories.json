@@ -1,0 +1,97 @@
+{
+  "category": "equipment",
+  "subcategory": "horse_accessories",
+  "items": [
+    {
+      "item_id": "feed_1_day",
+      "name": "Feed (1 day)",
+      "description": "A sack of hay, oat grains, and the odd apple or carrot to chomp.",
+      "weight": 100,
+      "cost_sp": 0.5,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "horse_barding",
+      "name": "Horse barding (+2 AC)",
+      "description": "Armour made of leather and plates of metal. Grants a +2 bonus to Armour Class.",
+      "weight": 600,
+      "cost_sp": 1500,
+      "slot_size": 2,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": 2,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "horse_armor"
+      ]
+    },
+    {
+      "item_id": "pack_saddle_and_bridle",
+      "name": "Pack saddle and bridle",
+      "description": "A pack saddle is necessary for horses to carry heavy loads, as it includes a rack upon which to lash crates, bags, and bundles.",
+      "weight": 150,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pack_saddle"
+      ]
+    },
+    {
+      "item_id": "riding_saddle_and_bridle",
+      "name": "Riding saddle and bridle",
+      "description": "A riding saddle is a leather seat required to mount and ride a horse.",
+      "weight": 300,
+      "cost_sp": 250,
+      "slot_size": 2,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "riding_saddle"
+      ]
+    },
+    {
+      "item_id": "riding_saddle_bags",
+      "name": "Riding saddle bags",
+      "description": "Hold up to 500 coins of weight.",
+      "weight": 100,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "storage_500"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      122,
+      123
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
