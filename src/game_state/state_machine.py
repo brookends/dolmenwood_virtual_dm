@@ -188,6 +188,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
     ),
     StateTransition(
         GameState.COMBAT,
+        GameState.DOWNTIME,
+        "combat_end_downtime",
+        "Combat ends, return to rest/downtime (rest was interrupted)"
+    ),
+    StateTransition(
+        GameState.COMBAT,
         GameState.SOCIAL_INTERACTION,
         "combat_to_parley",
         "Combat transitions to negotiation (surrender, etc.)"
@@ -430,6 +436,7 @@ class StateMachine:
             (GameState.COMBAT, GameState.WILDERNESS_TRAVEL): "combat_end_wilderness",
             (GameState.COMBAT, GameState.DUNGEON_EXPLORATION): "combat_end_dungeon",
             (GameState.COMBAT, GameState.SETTLEMENT_EXPLORATION): "combat_end_settlement",
+            (GameState.COMBAT, GameState.DOWNTIME): "combat_end_downtime",
             # Social interaction endings
             (GameState.SOCIAL_INTERACTION, GameState.WILDERNESS_TRAVEL): "conversation_end_wilderness",
             (GameState.SOCIAL_INTERACTION, GameState.DUNGEON_EXPLORATION): "conversation_end_dungeon",

@@ -35,13 +35,25 @@ from src.data_models import (
     TURNS_PER_HOUR,
     CharacterState,
 )
-from src.narrative.narrative_resolver import (
-    NarrativeResolver,
-    ResolutionResult,
-    NarrationContext,
-)
-from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
-from src.narrative.spell_resolver import SpellResolver
+# Import narrative components (optional, may not be initialized yet)
+try:
+    from src.narrative.narrative_resolver import (
+        NarrativeResolver,
+        ResolutionResult,
+        NarrationContext,
+    )
+    from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
+    from src.narrative.spell_resolver import SpellResolver
+    NARRATIVE_AVAILABLE = True
+except ImportError:
+    NARRATIVE_AVAILABLE = False
+    NarrativeResolver = None
+    ResolutionResult = None
+    NarrationContext = None
+    HazardResolver = None
+    HazardType = None
+    HazardResult = None
+    SpellResolver = None
 
 
 logger = logging.getLogger(__name__)
