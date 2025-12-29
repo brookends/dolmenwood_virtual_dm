@@ -35,8 +35,10 @@ logger = logging.getLogger(__name__)
 
 class XPAwardType(str, Enum):
     """Types of XP awards per Dolmenwood rules (p106-107)."""
+    # Standard awards (always enabled)
     TREASURE = "treasure"           # 1 XP per 1 GP recovered
     FOES_DEFEATED = "foes_defeated" # From creature stat blocks
+    # Optional awards (configurable)
     MAGIC_ITEMS = "magic_items"     # 1/5 of GP value (optional)
     MILESTONE_MAJOR = "milestone_major"  # Major story milestone
     MILESTONE_MINOR = "milestone_minor"  # Minor story milestone
@@ -44,6 +46,28 @@ class XPAwardType(str, Enum):
     EXPLORATION = "exploration"     # Exploration goals
     SPENDING = "spending"           # 1 XP per 1 GP spent (optional)
     CAROUSING = "carousing"         # Spending on parties/celebrations
+
+
+# Standard XP award types that are always enabled
+STANDARD_XP_AWARDS: set[XPAwardType] = {
+    XPAwardType.TREASURE,
+    XPAwardType.FOES_DEFEATED,
+}
+
+# Default optional XP award types (can be configured)
+DEFAULT_OPTIONAL_XP_AWARDS: set[XPAwardType] = {
+    XPAwardType.MAGIC_ITEMS,
+    XPAwardType.EXPLORATION,
+    XPAwardType.CAROUSING,
+}
+
+# Optional XP awards disabled by default
+DISABLED_BY_DEFAULT_XP_AWARDS: set[XPAwardType] = {
+    XPAwardType.MILESTONE_MAJOR,
+    XPAwardType.MILESTONE_MINOR,
+    XPAwardType.DEED,
+    XPAwardType.SPENDING,
+}
 
 
 class MilestoneType(str, Enum):
@@ -197,6 +221,12 @@ class XPManager:
         from src.data_models import DiceRoller
         self.dice = DiceRoller()
 
+        # Enabled XP award types (standard + default optional)
+        # Standard awards are always included and cannot be disabled
+        self._enabled_award_types: set[XPAwardType] = (
+            STANDARD_XP_AWARDS | DEFAULT_OPTIONAL_XP_AWARDS
+        )
+
         # Track exploration discoveries for XP
         self._visited_settlements: set[str] = set()
         self._visited_hexes: set[str] = set()
@@ -214,6 +244,107 @@ class XPManager:
         """Set the XP multiplier (for rate adjustment)."""
         self._xp_multiplier = max(0.0, value)
         logger.info(f"XP multiplier set to {self._xp_multiplier}")
+
+    # =========================================================================
+    # AWARD TYPE CONFIGURATION
+    # =========================================================================
+
+    @property
+    def enabled_award_types(self) -> set[XPAwardType]:
+        """Get the set of enabled XP award types."""
+        return self._enabled_award_types.copy()
+
+    def is_award_type_enabled(self, award_type: XPAwardType) -> bool:
+        """
+        Check if an XP award type is enabled.
+
+        Args:
+            award_type: The award type to check
+
+        Returns:
+            True if enabled
+        """
+        return award_type in self._enabled_award_types
+
+    def enable_award_type(self, award_type: XPAwardType) -> None:
+        """
+        Enable an XP award type.
+
+        Args:
+            award_type: The award type to enable
+        """
+        self._enabled_award_types.add(award_type)
+        logger.info(f"Enabled XP award type: {award_type.value}")
+
+    def disable_award_type(self, award_type: XPAwardType) -> bool:
+        """
+        Disable an XP award type.
+
+        Standard award types (treasure, foes_defeated) cannot be disabled.
+
+        Args:
+            award_type: The award type to disable
+
+        Returns:
+            True if disabled, False if it's a standard type that cannot be disabled
+        """
+        if award_type in STANDARD_XP_AWARDS:
+            logger.warning(
+                f"Cannot disable standard XP award type: {award_type.value}"
+            )
+            return False
+
+        self._enabled_award_types.discard(award_type)
+        logger.info(f"Disabled XP award type: {award_type.value}")
+        return True
+
+    def set_enabled_award_types(self, award_types: set[XPAwardType]) -> None:
+        """
+        Set the enabled XP award types.
+
+        Standard award types are always included.
+
+        Args:
+            award_types: Set of award types to enable
+        """
+        # Always include standard awards
+        self._enabled_award_types = STANDARD_XP_AWARDS | award_types
+        logger.info(
+            f"Set enabled XP award types: "
+            f"{[t.value for t in self._enabled_award_types]}"
+        )
+
+    def get_award_type_status(self) -> dict[str, dict[str, Any]]:
+        """
+        Get status of all XP award types.
+
+        Returns:
+            Dictionary with status info for each award type
+        """
+        status = {}
+        for award_type in XPAwardType:
+            is_standard = award_type in STANDARD_XP_AWARDS
+            status[award_type.value] = {
+                "enabled": award_type in self._enabled_award_types,
+                "standard": is_standard,
+                "can_disable": not is_standard,
+            }
+        return status
+
+    def _check_award_enabled(self, award_type: XPAwardType) -> bool:
+        """
+        Check if an award type is enabled, logging if disabled.
+
+        Args:
+            award_type: The award type to check
+
+        Returns:
+            True if enabled
+        """
+        if award_type not in self._enabled_award_types:
+            logger.debug(f"XP award type disabled: {award_type.value}")
+            return False
+        return True
 
     # =========================================================================
     # XP QUERIES
@@ -417,6 +548,14 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Check if this award type is enabled
+        if not self._check_award_enabled(XPAwardType.MAGIC_ITEMS):
+            return XPAwardResult(
+                award_type=XPAwardType.MAGIC_ITEMS,
+                base_xp=0,
+                details={"disabled": True, "gold_value": gold_value},
+            )
+
         if sold_without_use:
             base_xp = gold_value
         else:
@@ -458,16 +597,27 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Determine award type based on milestone type
+        award_type = (
+            XPAwardType.MILESTONE_MAJOR if milestone_type == MilestoneType.MAJOR
+            else XPAwardType.MILESTONE_MINOR if milestone_type == MilestoneType.MINOR
+            else XPAwardType.DEED
+        )
+
+        # Check if this award type is enabled
+        if not self._check_award_enabled(award_type):
+            return XPAwardResult(
+                award_type=award_type,
+                base_xp=0,
+                details={"disabled": True, "milestone_type": milestone_type.value},
+            )
+
         avg_level = self.get_party_average_level()
         base_xp = get_milestone_award(avg_level, milestone_type)
         multiplier = self._xp_multiplier if apply_multiplier else 1.0
 
         result = XPAwardResult(
-            award_type=(
-                XPAwardType.MILESTONE_MAJOR if milestone_type == MilestoneType.MAJOR
-                else XPAwardType.MILESTONE_MINOR if milestone_type == MilestoneType.MINOR
-                else XPAwardType.DEED
-            ),
+            award_type=award_type,
             base_xp=base_xp,
             multiplier=multiplier,
             details={
@@ -502,6 +652,14 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Check if this award type is enabled
+        if not self._check_award_enabled(XPAwardType.EXPLORATION):
+            return XPAwardResult(
+                award_type=XPAwardType.EXPLORATION,
+                base_xp=0,
+                details={"disabled": True, "goal": goal.value, "goal_id": goal_id},
+            )
+
         # Check if already discovered
         tracking_sets = {
             ExplorationGoal.SETTLEMENT_FIRST_VISIT: self._visited_settlements,
@@ -563,6 +721,14 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Check if this award type is enabled
+        if not self._check_award_enabled(XPAwardType.DEED):
+            return XPAwardResult(
+                award_type=XPAwardType.DEED,
+                base_xp=0,
+                details={"disabled": True, "character_id": character_id},
+            )
+
         character = self.controller.get_character(character_id)
         if not character:
             return XPAwardResult(
@@ -610,6 +776,14 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Check if this award type is enabled
+        if not self._check_award_enabled(XPAwardType.SPENDING):
+            return XPAwardResult(
+                award_type=XPAwardType.SPENDING,
+                base_xp=0,
+                details={"disabled": True, "gold_spent": gold_spent},
+            )
+
         multiplier = self._xp_multiplier if apply_multiplier else 1.0
 
         result = XPAwardResult(
@@ -647,6 +821,14 @@ class XPManager:
         Returns:
             XPAwardResult with details
         """
+        # Check if this award type is enabled
+        if not self._check_award_enabled(XPAwardType.CAROUSING):
+            return XPAwardResult(
+                award_type=XPAwardType.CAROUSING,
+                base_xp=0,
+                details={"disabled": True, "gold_spent": gold_spent},
+            )
+
         base_xp = int(gold_spent * mishap_modifier)
         multiplier = self._xp_multiplier if apply_multiplier else 1.0
 
@@ -910,6 +1092,7 @@ class XPManager:
             "met_creature_types": list(self._met_creature_types),
             "confirmed_rumours": list(self._confirmed_rumours),
             "xp_multiplier": self._xp_multiplier,
+            "enabled_award_types": [t.value for t in self._enabled_award_types],
         }
 
     def load_exploration_state(self, state: dict[str, Any]) -> None:
@@ -920,3 +1103,13 @@ class XPManager:
         self._met_creature_types = set(state.get("met_creature_types", []))
         self._confirmed_rumours = set(state.get("confirmed_rumours", []))
         self._xp_multiplier = state.get("xp_multiplier", 1.0)
+
+        # Load enabled award types (default to standard + default optional if not present)
+        enabled_types = state.get("enabled_award_types")
+        if enabled_types:
+            self._enabled_award_types = STANDARD_XP_AWARDS | {
+                XPAwardType(t) for t in enabled_types
+                if t in [e.value for e in XPAwardType]
+            }
+        else:
+            self._enabled_award_types = STANDARD_XP_AWARDS | DEFAULT_OPTIONAL_XP_AWARDS
