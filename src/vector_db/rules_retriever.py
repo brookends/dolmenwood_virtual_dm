@@ -97,7 +97,7 @@ class RulesRetriever:
             ContentCategory.MONSTER: 1.2,
             ContentCategory.RULES: 1.0,
         },
-        GameState.WILDERNESS_ENCOUNTER: {
+        GameState.ENCOUNTER: {
             ContentCategory.MONSTER: 2.0,
             ContentCategory.ENCOUNTER: 1.8,
             ContentCategory.RULES: 1.5,
@@ -106,11 +106,6 @@ class RulesRetriever:
             ContentCategory.DUNGEON: 2.0,
             ContentCategory.MONSTER: 1.5,
             ContentCategory.RULES: 1.2,
-        },
-        GameState.DUNGEON_ENCOUNTER: {
-            ContentCategory.MONSTER: 2.0,
-            ContentCategory.DUNGEON: 1.5,
-            ContentCategory.RULES: 1.5,
         },
         GameState.COMBAT: {
             ContentCategory.RULES: 2.0,
