@@ -68,8 +68,14 @@ class KindredManager:
         except ImportError as e:
             logger.warning(f"Failed to load Human kindred: {e}")
 
+        try:
+            from src.kindred.mossling import MOSSLING_DEFINITION
+            self.register(MOSSLING_DEFINITION)
+            logger.info(f"Loaded kindred: {MOSSLING_DEFINITION.name}")
+        except ImportError as e:
+            logger.warning(f"Failed to load Mossling kindred: {e}")
+
         # Future kindreds will be loaded here:
-        # from src.kindred.mossling import MOSSLING_DEFINITION
         # from src.kindred.woodgrue import WOODGRUE_DEFINITION
 
     def register(self, kindred: KindredDefinition) -> None:

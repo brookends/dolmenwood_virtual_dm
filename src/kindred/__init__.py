@@ -11,7 +11,7 @@ Available Kindreds:
 - Elf: Ageless fairies from the immortal realm (fairy)
 - Grimalkin: Shape-shifting cat-fairies (fairy)
 - Human: Common folk of Dolmenwood (mortal)
-- Mossling: (coming soon)
+- Mossling: Gnarled woody folk with symbiotic fungi (mortal)
 - Woodgrue: (coming soon)
 """
 
