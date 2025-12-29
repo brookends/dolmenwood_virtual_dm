@@ -1,0 +1,93 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      103
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Yickerwill",
+      "monster_id": "yickerwill",
+      "armor_class": 13,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "20' Fly 60'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": 60,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+3, 1d6)",
+        "breath (frost)"
+      ],
+      "damage": [
+        "1d6",
+        "2d6"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M1",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Demi-Fey",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, yickerwills suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Flammable: Suffer double damage from fire.",
+        "Nocturnal: –1 penalty to Attack Rolls and Saving Throws in the daytime.",
+        "Dark sight: Can see normally without light.",
+        "Absorb magical light: With a click of its fingers, a yickerwill can absorb light spells (e.g. Firelight, Holy Light) within 30′, permanently cancelling the magic. The fairy heals 1d4 Hit Points per Rank of the spell absorbed.",
+        "Frosty breath (thrice a day): A yickerwill can exhale a whirling blast of frost, filling a cone 30′ long and 20′ wide at the end. All within the cone must Save Versus Blast or suffer 2d6 damage. All flames within the cone are extinguished.",
+        "Antennae: Detect invisibility and magic without fail.",
+        "Killed victims: Yickerwills make fast work of devouring victims' clothing, and sometimes (2-in-6) lay eggs in the corpse. Such corpses are devoured by larvae in 2 weeks."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "fire",
+        "cold iron"
+      ],
+      "description": "Flying demi-fey monsters, 6′ tall, with legs like bendy caterpillars, goggling moth-like faces, feathered bellies, and icy, fluttering wings. Murder sentients to consume their clothing.",
+      "behavior": "Flighty, greedy, mercurial",
+      "speech": "Chittering whispers. Snatches of Sylvan",
+      "traits": [
+        "Wings and body emit a smouldering smoke.",
+        "Long, spiralling tongue folds in and out.",
+        "Rows of tiny, insectoid legs along chest.",
+        "Eye patterns on wings.",
+        "Ruff of iridescent, peacock-like feathers.",
+        "Icicles hanging from wings."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 90,
+      "encounter_scenarios": [
+        "Gleefully feasting on the goods of a clothes merchant, pulling great armfuls of garments from his caravan. The merchant and 3 guards lie slaughtered nearby.",
+        "Attacking a hive of 3d12 killer bees (p116) in the treetops, wishing to steal their honey.",
+        "Being attacked by a desperate company of 4d6 nutcaps (p63), attempting to drive the yickerwills away from their colony in the treetops nearby. The nutcaps will reward any who aid them with 3 small garnets (100gp each).",
+        "Creeping up on a group of 2d6 villagers (p111) bathing tipsily in a bubbling brook. The yickerwills have eyes for the humans' clothing, strewn on rocks nearby."
+      ],
+      "lair_descriptions": [
+        "A steep, rocky gully lined with silk cocoons in which the yickerwills slumber.",
+        "A storm-wracked elm festooned with cast iron lanterns formed like leering visages. While the yickerwills dream among the branches, eerie fires flicker on an off in the lanterns.",
+        "A network of grottoes formed where a stream trickles underground. The yickerwills slumber atop mounds of crushed bone in their larder cave, draped with pristine sheets of silk and linen.",
+        "The ruins of an old manor house, its windows smashed and its interior overgrown with brambles. The yickerwills roost in ancient, decrepit wardrobes in the manor's former bedchambers."
+      ],
+      "xp_value": 180,
+      "habitat": []
+    }
+  ]
+}

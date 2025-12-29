@@ -1,0 +1,221 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      94,
+      95,
+      96
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Witch Owl",
+      "monster_id": "witch_owl",
+      "armor_class": 14,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "10' Fly 60'",
+      "speed": 10,
+      "burrow_speed": null,
+      "fly_speed": 60,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+1, 1d4)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C4 + R3",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Monstrosity",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Screech (once a day): Mortals within 120′ who hear the screeching of a group of witch owls must Save Versus Hold or be paralysed for 1 Turn (aware but unable to move or act).",
+        "Gaze: A mortal within 30′ who meets the gaze of a witch owl must Save Versus Spell. Unless averting their eyes, characters in melee are affected each Round. Those who fail have a momentary vision of being a mouse lost in moonlit woods, hunted and then torn to shreds by owls. Victims lose 1d3 Wisdom and part of their psyche (see Psychic Drain). A character whose Wisdom is drained to 0 becomes a shadow in the thrall of the witch owls.",
+        "Averting eyes: –4 penalty to Attack Rolls. The witch owl gains a +2 bonus to Attack Rolls against the character.",
+        "Recovering psychic drain: Lost Wisdom can be restored by Remove Curse or Hex Weaving, but lost psychic fragments can never truly be recalled, even if reminded by others."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Milky-white owls with a 3′ wingspan, violet eyes, and uncannily rotating heads. Prey at dusk on sentients, feeding on their psychic energy. Sighting a witch owl is regarded as an ill omen.",
+      "behavior": "Inscrutable, sinister, merciless",
+      "speech": "Eerie hooting",
+      "traits": [
+        "Single large eye in centre of forehead.",
+        "Feathers shimmer, as if bathed in moonlight.",
+        "Human mouth, is able to speak.",
+        "Haloed with eerie, purple light.",
+        "Silver antlers.",
+        "Wing-tip feathers made of silver. (12 feathers, 50gp each.)"
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Perched atop a decaying signpost, heads turned away. If mortals approach, the owls' heads swivel around, bringing their gaze upon the victims.",
+        "Fluttering around the shuttered windows of a small cottage, attempting to frighten the inhabitants into allowing the owls entry.",
+        "Perched on a dolmen, fixated by the crystal pendulum of a Drune Cottager (p35). Any sound breaks the enchantment.",
+        "Gathered in solemn council on the needle-littered floor of a pine-glade. 1d6 shadows (p74)—thralls of the owls—lurk among the trees. There appear to be 2 factions among the owls and their hooting conveys a sense of discord."
+      ],
+      "lair_descriptions": [
+        "The ruins of an old church steeple, standing alone among a maze of briars and wild roses.",
+        "A series of alcoves built into the shaft of an old well. Anyone peering down the shaft must Save Versus Spell or be compelled to climb within.",
+        "A forest cave which exudes an unnatural and terrifying darkness. Even plants lean away, trying to escape the influence of this accursed grotto.",
+        "An ivy-clad mausoleum—the resting place of a witch—standing amid the ruins of a graveyard. The door to the crypt is slightly ajar. There is a 2-in-6 chance that the woman interred here is now a wight (p89)."
+      ],
+      "xp_value": 50,
+      "habitat": []
+    },
+    {
+      "name": "Wodewose",
+      "monster_id": "wodewose",
+      "armor_class": 12,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Cudgel (+2, 1d6+1)"
+      ],
+      "damage": [
+        "1d6+1"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Carried by group: roots and mushrooms (see below)",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: In woodland, opposing side has a 3-in-6 chance of being surprised, due to wodewoses' stealth.",
+        "Animal friendship: Animals of all species are fascinated by and instinctively well-disposed towards wodewoses. Animals never attack or chase a wodewose, even if commanded by their masters.",
+        "Attack monsters: Wodewoses hate magical monstrosities (e.g. wyrms) and wicked servants of Atanuwë (e.g. crookhorns). They attempt to kill or drive all such beings out of their territory.",
+        "Roots and mushrooms: Each wodewose group carries 1d3 portions of an unusual root or mushroom, freshly foraged. See the Roots and Mushrooms table.",
+        "Wodewose blood: The deep brown blood of a wodewose has healing properties. If applied to a wound, tiny vines slowly stitch the wound together, healing 1d3 Hit Points after 1d6 Turns. If drunk, the blood has no healing effect and causes leaves to sprout from the character's body after 1d3 days (Save Versus Doom to avoid). A vial of wodewose blood is worth 200gp. 2d6 vials of blood can be drained from a dead wodewose."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Wild people of the forest (6–7′ tall), covered in coarse hair and patched with moss, lichen, and ferns. Wander in the deep woods, avoiding all contact with other folk. Eat fungus and roots.",
+      "behavior": "Wide-eyed, shy, uncultured",
+      "speech": "Whistling mumbles and whispers. Mulch, Woldish or Sylvan (1-in-4 chance)",
+      "traits": [
+        "Crawling with beetles.",
+        "Shaggy, auburn hair, mane of oak leaves.",
+        "Rough, black hair, tangled and braided.",
+        "Face covered in fern shoots. Long, pink tongue lolls.",
+        "Long, tawny beard, laced with vines.",
+        "Staring, bulbous black eyes. Clad entirely in moss."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Merrily capering around the mossy, fallen trunk of a great tree, disoriented and chuckling quietly, having consumed large quantities of Goatman's Goblet (DCB). The goat's milk odour of the fungus lingers prominently.",
+        "Nimbly scaling a tree trunk, cautiously surveying the ground below. Clusters of purple, grape-like fruits glisten high in the branches.",
+        "In battle with a corrupt unicorn (p86), trying to beat the monster into submission and drag it to a nearby pool to be drowned.",
+        "Drinking from a pool in a glade encrusted with colourful coral fungus. With each palm-full of water, the wodewoses' hair grows thicker and their grins become wider."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 40,
+      "habitat": []
+    },
+    {
+      "name": "Woodgrue",
+      "monster_id": "woodgrue",
+      "armor_class": 12,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "2d4gp + wind instrument",
+      "size": "Small",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: In woodland, opposing side has a 3-in-6 chance of being surprised, due to woodgrues' stealth.",
+        "Cold iron: As demi-fey, woodgrues suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Weapons: Woodgrues favour clubs (1d4), daggers (1d4), and slings (1d4).",
+        "Moon sight: Woodgrues can see in darkness up to 60′, viewing the world as though it glows in faint moonlight. Fine detail (e.g. writing) cannot be perceived.",
+        "Mad revelry (once a day): A woodgrue can play a magical song (see Enchanted Melodies) on a woodwind instrument. All within 60′ must Save Versus Spell or be afflicted by its magic as long as the woodgrue keeps playing. Fairies and demi-fey gain a +2 bonus to the Saving Throw. While playing, the woodgrue may move but cannot attack or perform other actions.",
+        "Code of hospitality: If a woodgrue is invited into a place by way of handwritten invitation or swearing an oath of good behaviour, they are bound by ancient rites of hospitality and are unable to use Mad Revelry while within the place."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "3½' tall, demi-fey, bat-faced goblins, with bodies covered in soft, downy fur. Love darkness, fire, revelry, and deranged woodwind music. Wander wild in the woods, sleeping in treetops.",
+      "behavior": "Madcap, frivolous, hair-brained",
+      "speech": "Rapid squeaking. Woldish, Sylvan",
+      "traits": [
+        "Twitchy, wobbly ears.",
+        "Purple nose and lips.",
+        "Wiry mohawk.",
+        "Dressed in dapper tweed, with a monocle.",
+        "Chitters with excitement and mirth.",
+        "Frilly bonnet."
+      ],
+      "number_appearing": "3d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Furtively defecating atop a communal dung heap, while nibbling on glowing mushrooms growing in the dung.",
+        "Playing an irksome melody on twisted brass horns. A raiding party of 2d6 crookhorns (p28) cavort boisterously, leaping onto each other's backs (see Mount—Enchanted Melodies).",
+        "Being coerced into swearing an oath of good behaviour at the perimeter of a ring of Speckled Sporange fungus (DCB) being used as seats by 3d6 merry-making sprites (p80).",
+        "Capering through the woods, laughing while recklessly blowing flammable oil into burning torches, producing great gouts of flame."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 15,
+      "habitat": []
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      59,
+      60,
+      61
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Marsh Lantern",
+      "monster_id": "marsh_lantern",
+      "armor_class": 16,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+3, energy drain)",
+        "wail (compel)"
+      ],
+      "damage": [
+        "energy drain",
+        "compel"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Immunities: Only harmed by silver weapons, magic, or magic weapons.",
+        "Dark sight: Can see normally without light.",
+        "Compelling wail: A marsh lantern may gaze upon a target within 60′ and emit a plaintive wail. The target must Save Versus Hold or be compelled to move towards the marsh lantern at their full Speed for 1 Round.",
+        "Energy drain: The touch of a marsh lantern reduces the victim's maximum Hit Points by 1d3 and incurs a –1 penalty to Attack Rolls and Saving Throws. These effects are cumulative if a victim is touched multiple times. Gaining a Level removes all penalties and restores lost maximum HP.",
+        "Tethered: A marsh lantern cannot move more than 60′ from the site where its corpse lies rotting.",
+        "If turned: A marsh lantern, unable to flee, disappears beneath the bog waters, unable to manifest for 1d6 Turns."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "silver weapons",
+        "magic",
+        "magic weapons"
+      ],
+      "description": "Wretched souls of those who drowned unconsecrated in marshy pools. Manifest as plaintive visages trapped in orbs of bobbing light, luring unwary travellers to meet the same doom.",
+      "behavior": "Hateful, pitiful",
+      "speech": "Cacophonous moaning",
+      "traits": [
+        "Tears of yellow ectoplasm drift from weeping face.",
+        "Joined souls—two faces, partially amalgamated.",
+        "Emits a lurid ultraviolet radiance.",
+        "Tethered to its corpse by trailers of lank lichen.",
+        "Innocent, smiling face of a child.",
+        "Face morphs between rotting corpse and beautiful maid."
+      ],
+      "number_appearing": "1d12",
+      "lair_percentage": 100,
+      "encounter_scenarios": [],
+      "lair_descriptions": [
+        "The marsh lanterns are the bickering spirits of a family of pedlars. The rotting remains of their wagon lie half submerged in a swamp. The skeletons of two horses are slumped before it, still yoked.",
+        "A cottage submerged in a bog, only its algae-soaked thatch and leaning chimney protrude. The marsh lanterns flit in and out of the underwater doors and windows of their former dwelling.",
+        "A low, soggy island in a bog. The lights of the marsh lanterns flicker among a stand of dark pines atop the isle.",
+        "A wide, waterlogged ditch into which the graves of a long-abandoned cemetery have slumped. A tangle of leaning thorn trees and mangled iron railing demarcates the cemetery's former boundary."
+      ],
+      "xp_value": 230,
+      "habitat": []
+    },
+    {
+      "name": "Merfaun",
+      "monster_id": "merfaun",
+      "armor_class": 12,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "Swim 40'",
+      "speed": null,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 40,
+      "attacks": [
+        "Trident (+1, 1d6)",
+        "horns (+1, 1d4)"
+      ],
+      "damage": [
+        "1d6",
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C5 + R3 + M9",
+      "possessions": "1d6gp",
+      "size": "Medium",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, merfauns suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Song immunity: Merfauns are immune to magical songs and music, including those of kelpies and woodgrues.",
+        "Amphibious: Can breathe air and water.",
+        "Kiss: A merfaun's kiss grants a land-dwelling humanoid the ability to breathe underwater for 24 hours.",
+        "Magical song (once a day): The song of a group of merfauns has an enchanting effect on willing listeners. See Enchanted Songs.",
+        "Hunt kelpies: Merfauns have an ancient animosity with kelpies, slaying any that enter the waters around their subaquatic homes.",
+        "All male: All merfauns are men. No merfaun women exist."
+      ],
+      "immunities": [
+        "magical songs",
+        "music"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Aquatic, human-sized demi-fey, with the scaled tails of fish, the upper bodies of men, and the horns and curly hair of goats. Lair in subaquatic caverns and make merry in enchanted waters.",
+      "behavior": "Merry, boisterous, hedonistic",
+      "speech": "Boastful, mirthful. Woldish, Sylvan, Merfolk",
+      "traits": [
+        "Goat-like eyes.",
+        "Dressed in armour constructed from reeds (AC 13).",
+        "Upper body covered in thick, weed-like hair.",
+        "Translucent, pale blue flesh.",
+        "Strong body odour of dead fish.",
+        "Necklace fashioned from sea snail shells."
+      ],
+      "number_appearing": "2d6",
+      "lair_percentage": 10,
+      "encounter_scenarios": [
+        "Calling out to attractive passersby, inviting them to join in swimming in the water.",
+        "Lounging half-asleep atop a domesticated giant crab (p113) as it moves back and forth across a beach, looking for food. If approached, the merfauns let the crustacean give sentient creatures a little scare before calling it off.",
+        "Bartering with 2d8 mossling traders (p60) for different kinds of pipeweed. Insistent on trying the merchandise before they buy.",
+        "Lying in wait as an unsuspecting kelpie (p53) leads a handsome young man towards the water's edge."
+      ],
+      "lair_descriptions": [
+        "A secret waterfall grotto, riddled with passageways leading to deeper subaquatic caverns. Slick, scintillating rocks in the plunge pool make for the perfect lounging spot.",
+        "A large sailing ship that barely fits the lake it sits atop. The merfauns lounge on the ship's deck during the day, then rest in subaquatic tunnels below at night.",
+        "An underwater cave system connecting numerous rivers. 2d6 madtoms (p54) periodically make a play for the caves.",
+        "An enchanted lake, blanketed in a silver mist. On dark nights, a troupe of 3d6 woodgrues (p94) visits to engage in revelry and contests of musical skill on the lakeshore."
+      ],
+      "xp_value": 20,
+      "habitat": []
+    },
+    {
+      "name": "Mogglewomp",
+      "monster_id": "mogglewomp",
+      "armor_class": 12,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+2, 1d10)",
+        "bite (+2, 2d6)"
+      ],
+      "damage": [
+        "1d10",
+        "1d10",
+        "2d6"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "Wealth of dwelling's former owner: 2d20gp (common) / C3 + R3 + M3 (affluent) / C7 + R11 + M9 (rich)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, mogglewomps suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Immunities: Mogglewomps have rubbery flesh beneath their fluff. They suffer half damage from slashing or slicing weapons. Severed appendages can be reattached.",
+        "If encountered abroad: A mogglewomp has the form of a hirsute, slack-jawed bumpkin, dressed in travelling attire.",
+        "Entering a home: When invited indoors and given a hot beverage, a mogglewomp reverts to its monstrous form, growing rapidly to fill the dwelling (see Growth). To cement itself as new master of the house, it makes fast work of eating or expelling the dwelling's former inhabitants.",
+        "Growth: Initially the size of a lion, a mogglewomp's body, neck, and limbs extend into great mounds and coils of furry flesh, expanding to fill a 10′ × 10′ area per Turn. The monster gains 1 Level per room it overwhelms (to a maximum of Level 18). For each extra Level, the monster gains 1d8 HP and a +1 bonus to Attack Rolls and Saving Throws. The monster's XP value should be calculated according to its increased Level (see Creating Monsters, p126).",
+        "If made homeless: A mogglewomp cast out from its home reverts to its wandering human form in 1d6 hours."
+      ],
+      "immunities": [],
+      "resistances": [
+        "slashing weapons",
+        "slicing weapons"
+      ],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Leonine demi-fey monsters with great claws, fangs, and saucer-like eyes. Wander in human form, seeking an offer of a hot drink, before eating their host and taking over their abode.",
+      "behavior": "Ferocious, slow-witted, curious, thirsty for tea",
+      "speech": "Stammering yowls. Basic Woldish, Mewl",
+      "traits": [
+        "Wiry, 6′-long whiskers.",
+        "Frilly gingham bonnet.",
+        "Quivering, purple, rubbery lips.",
+        "Twirls its oiled moustache.",
+        "Wears a neck-ruff or bow-tie.",
+        "Bright cyan fur."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Trudging through a small hamlet, stopping at each door to ask for a cup of tea.",
+        "Crawling forlorn through the undergrowth in monstrous form, moaning. The mogglewomp has been cast out from its dwelling by 3d6 villagers (p111), wielding pitchforks. Some follow after, intent on putting an end to the beast.",
+        "Writhing in a muddy puddle, being mercilessly beaten by 2 yowling grimalkins (p48—grimalkins have a great animosity toward mogglewomps, thought to have originated aeons ago, when the ancestors of mogglewomps dwelt in the fairy realm of Catland).",
+        "Carrying a china teacup in an outstretched hand, asking for the way to the nearest settlement."
+      ],
+      "lair_descriptions": [
+        "A cosy wee cottage with smoke streaming cheerily from the chimney. The clink of china and a satisfied slurping, followed by growls and screams, can be heard within.",
+        "A small, unkempt manor in which the mogglewomp has grown to giant proportions, its face poking out of the attic and its forepaws out of upper windows. 3 knights (Level 1—p106) survey the house from a safe vantage point.",
+        "A tea house beside a beautiful pool (an ill-trained apprentice failed to recognise the mogglewomp before serving it). The proprietors escaped and have set up camp nearby.",
+        "A ramshackle shed, bulging with the mogglewomp's furry flesh. The beast lies grumbling within, clutching a mug of tea and scheming a way to find a larger home."
+      ],
+      "xp_value": 65,
+      "habitat": []
+    }
+  ]
+}

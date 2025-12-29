@@ -1,0 +1,235 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      23,
+      24,
+      25
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Brambling",
+      "monster_id": "brambling",
+      "armor_class": 13,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 bramble claws (+1, 1d6 + entangle)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Binding scroll (see below)",
+      "size": "Medium",
+      "monster_type": "Plant",
+      "sentience": "Mindless",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: In woodland, opposing side has a 4-in-6 chance of being surprised",
+        "Immunities: Suffer half damage from piercing weapons (e.g. spears) and bludgeoning weapons (e.g. maces)",
+        "Flammable: Suffer double damage from fire",
+        "Dark sight: Can see normally without light",
+        "Entangle: If a victim is hit by both claw attacks in the same Round, the victim is entangled in brambles and takes 1d6 automatic damage per Round until freed. Entangled victims cannot move but may attack with a –2 penalty to Attack Rolls",
+        "Freeing entangled victims: Requires killing the brambling or a command from a Drune to release the victim",
+        "Binding scroll: At its heart, each brambling bears a scroll of parchment inscribed with Drunic runes. These scrolls bear a minor magical effect (see Binding Scrolls) and can be cast by arcane spell-casters able to read Drunic. Each scroll is worth 250gp"
+      ],
+      "immunities": [],
+      "resistances": [
+        "piercing weapons",
+        "bludgeoning weapons"
+      ],
+      "vulnerabilities": [
+        "fire"
+      ],
+      "description": "5′ tall thickets of thorny wood and curling bramble, animated into humanoid form by Drune magic. A wicked green fire flickers in their vaguely formed eye sockets.",
+      "behavior": "Sneaky, mindlessly follow commands",
+      "speech": "None. Understand Drunic, but cannot speak",
+      "traits": [
+        "Crown of thorns",
+        "Intermingled with pretty wildflowers",
+        "Thick, charred, stump integrated in torso",
+        "Beard of holly",
+        "Bird's nest in chest cavity; may contain a clutch of eggs",
+        "\"Face\" covered with bright yellow fungus"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Lurking in the branches of a large tree overhanging a brook. The bramblings are tasked to spy on 1d3 elf courtiers (p37) camping beside the stream",
+        "Concealed in the tangled undergrowth around a glade wherein a wicker man has been erected. If passersby dare to tamper with the device, the bramblings attack",
+        "Carrying a wounded, semi-conscious knight (Level 1—p106) to the closest nodal stone, under the command of a Drune Cottager (p35)",
+        "Clumsily carrying stones and clods of earth to cover over a shallow pit in the woods. Inside the hole is the corpse of an emaciated unicorn, ritualistically bound in silver-threaded rope and strewn with sprigs of thyme"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 35,
+      "habitat": []
+    },
+    {
+      "name": "Breggle—Longhorn",
+      "monster_id": "breggle_longhorn",
+      "armor_class": 16,
+      "hit_dice": "5d8",
+      "hp": 22,
+      "level": 5,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+4)",
+        "horns (+4, 1d4+1)",
+        "gaze (obeisance)"
+      ],
+      "damage": [
+        "1d8",
+        "1d4+1"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8",
+      "possessions": "2d6gp",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Weapons: Longhorns favour longswords (1d8) when on foot and lances (1d6) when mounted",
+        "Armour: Longhorns wear ceremonial plate mail engraved with house sigils. Without armour, they have AC 11",
+        "Gaze (once a day per target): The gaze of a longhorn has the power to charm humans and shorthorns into obeisance. A target that fails a Save Versus Spell comes under the longhorn's sway and is unable to harm them (either directly or indirectly) until next sunrise. The holy spell Mantle of Protection counters a longhorn's gaze",
+        "Mount: Usually encountered mounted (1d6): 1–4: Prigwort prancer (DPB), 5: charger (DPB), 6: devil goat (p32)",
+        "Entourage: 4-in-6 chance of being accompanied by 1d12 shorthorns (p23—servants or guards)",
+        "Lair: Typically accompanied by 4d8 shorthorns (p23—servants and guards)"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "The breggle elite, consisting of haughty nobles and dashing knights. Typically around 6′ tall, with spiralled horns of up to 16″ in length. Horn length and shape are symbols of status.",
+      "behavior": "Scheming, haughty, callous",
+      "speech": "Eloquent, condescending. Woldish, Caprice, Gaffe",
+      "traits": [
+        "Forward-pointing horns (an especially noble trait)",
+        "Deep red eyes",
+        "A golden or silver tooth",
+        "Odd pet: a monkey, sprite, or fanged sheep",
+        "Wears a monocle",
+        "Long, lustrous, beautifully groomed fur"
+      ],
+      "number_appearing": "2d4",
+      "lair_percentage": 10,
+      "encounter_scenarios": [
+        "Travelling in a horse-drawn carriage, on the way to a ball at the nearest settlement or manor",
+        "Charging through the undergrowth on horseback, pursuing 2d4 peasants (everyday mortals—p110) accused of petty theft",
+        "Bringing news from one longhorn noble to another",
+        "Fleeing a fire that is consuming their dwelling, clutching what few valuables they could carry"
+      ],
+      "lair_descriptions": [
+        "A small, stone keep atop a low hill, walled with a palisade of wood and thorny creepers",
+        "A noble villa with walled gardens where herbs and vines are cultivated by downtrodden shorthorn servants (p23)",
+        "An area of fenced-in woodland, used for hunting. The longhorns dwell in a wood-gabled hunting lodge at the corner of their land, beside a stable of fine horses (DPB)",
+        "A rambling manor house set among exquisitely tended gardens, mazes, and follies"
+      ],
+      "xp_value": 260,
+      "habitat": []
+    },
+    {
+      "name": "Breggle—Shorthorn",
+      "monster_id": "breggle_shorthorn",
+      "armor_class": 13,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)",
+        "horns (+0, 1d4)"
+      ],
+      "damage": [
+        "1d6",
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C1",
+      "possessions": "3d6sp",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: In woodland, opposing side has a 3-in-6 chance of being surprised, due to shorthorns' stealth",
+        "Weapons: Shorthorns favour shortswords (1d6) and spears (1d6)",
+        "Armour: Shorthorns wear leather armour. Without armour, they have AC 11"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Members of the breggle lower class, consisting of peasants, servants, hunters, and soldiers. Stand around 5½' tall, with small nub-horns no longer than an inch.",
+      "behavior": "Merry, grudgingly servile",
+      "speech": "Mellow, rustic. Woldish, Gaffe, basic Caprice",
+      "traits": [
+        "Wears an eye patch",
+        "Broken or jutting teeth",
+        "Fur and eyes of midnight black",
+        "Wooden leg",
+        "Three-horned",
+        "Large, misshapen skull with odd lumps"
+      ],
+      "number_appearing": "3d10",
+      "lair_percentage": 20,
+      "encounter_scenarios": [
+        "Sitting wounded and forlorn by the wayside, crouched atop a stump. These are the survivors of a larger band; their companions were brutally slain in a skirmish with knights of a rival noble house",
+        "Crashing wildly through the undergrowth, dragging 2 convicts (everyday mortals—p110) in rusty chains",
+        "Ringed around an enraged boar (p113), sticking it with spears and flaming brands",
+        "Hiding in bracken, spying on a longhorn knight (p22), a servant of a rival aristocrat"
+      ],
+      "lair_descriptions": [
+        "A lonely cottage atop a bluff, surrounded with gardens of curly cabbages, gnarled roots, and crab-apples",
+        "An unruly hog farm in a wooded dell. The shorthorns live in attic rooms above the pigsties",
+        "A small hamlet amid a thicket of holly trees. Animal pens (pigs, chickens) intersperse the shorthorns' tumbledown cottages. Each house has a cellar where mushrooms are cultivated",
+        "A turf-roofed log cabin. The shorthorns make their living as hunters, trappers, and tanners"
+      ],
+      "xp_value": 10,
+      "habitat": []
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      44,
+      45,
+      46
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Galosher",
+      "monster_id": "galosher",
+      "armor_class": 12,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 40,
+      "attacks": [
+        "2 fists (+2, 1d4)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C7 + R4 + M4",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Monstrosity",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally without light",
+        "Dissipate: When in water or mud, a galosher can dissipate its humanoid form at will, vanishing into a swarm of lampreys with swimming Speed 40",
+        "Phantasmal beauty: When not in combat, a galosher can veil its true form with illusion. Sentient creatures perceive an alluring person of great beauty and must Save Versus Spell or be entranced and drawn to move towards the monster. The charm is broken if the galosher is slain",
+        "Submerging victims: Entranced victims drawn into the mud of the galosher's pool are submerged over 2d4 Rounds. Submerged victims do not drown, but enter a state of suspended animation, their minds lost in feverish dreams",
+        "Dream feeding: Galoshers feed on the dreams of submerged victims, attaching to their heads with their sucking, toothless maws",
+        "Rescuing: Submerged victims awaken and return to normal if dragged from the mud"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "7′ tall, roughly humanoid conglomerations of long, writhing, greenish-brown lampreys. Lurk in muddy pools, waiting to lure humanoids in and feed on their dreams.",
+      "behavior": "Lumbering, cunning, languid",
+      "speech": "Wordless gurgling",
+      "traits": [
+        "Mouths constantly drooling black bile",
+        "Illusory forms still have lamprey teeth",
+        "Hiccups bubbles of dream stuff",
+        "Emits a pleading whine",
+        "Reeks of melancholy",
+        "Tiny human faces inside each lamprey"
+      ],
+      "number_appearing": "2d6",
+      "lair_percentage": 75,
+      "encounter_scenarios": [
+        "Standing in a pool of water, entreating a wandering bard (Level 1—p104) to come and have a swim. The bard seems to have taken the bait",
+        "Furtively slithering through the undergrowth, searching for fresh victims and a new set of muddy pools to lair in",
+        "Warding off an intruding kelpie (p53), which has been entertaining itself by drowning and eating the galosher's dreaming victims",
+        "Searching for an entrance to the domain of the Duke Who Cherishes Dreams (DCB), discovered by devouring the dreams of a manticore"
+      ],
+      "lair_descriptions": [
+        "A stone cottage sunken into a marsh, visible just beneath the water's surface. Victims have been posed sitting in chairs and tucked into beds",
+        "Pools of dark water, connected by underwater tunnels. Nearby madtoms (p54) have yet to discover the galoshers are freeing and stealing the mortals caught in their traps",
+        "Sludge ponds that sit alongside a large lake. The galoshers have a mutually beneficial relationship with the lake's boggin (p19), who uses the creatures as both a threat and punishment for rebellious captives",
+        "A stone well choked with mud and overflowing with dirty water. Each day, the mire surrounding the well grows larger"
+      ],
+      "xp_value": 65,
+      "habitat": []
+    },
+    {
+      "name": "Gargoyle",
+      "monster_id": "gargoyle",
+      "armor_class": 14,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "30' Fly 50'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": 50,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+3, 1d3)",
+        "bite (+3, 1d6)"
+      ],
+      "damage": [
+        "1d3",
+        "1d6"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 11,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Construct",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: When a gargoyle stands still and statue-like, opposing side has a 4-in-6 chance of being surprised",
+        "Construct: Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate)",
+        "Immunities: Only harmed by magic or magic weapons",
+        "Magic Resistance: +2 bonus to Saving Throws against effects of magical origin",
+        "Dark sight: Can see normally without light",
+        "Alignment: Gargoyles created to protect a holy site are usually Lawful or Neutral and may parley with intruders. Gargoyles are occasionally created by happenstance, when magic (e.g. fluctuating ley energy) animates a religious statue. Such individuals may be Chaotic, delighting in dismembering any who approach them"
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Grotesque, winged religious statues of roughly human stature (4-6′ tall), animated to guard treasures or holy sites. Older gargoyles become crotchety and idiosyncratic as they tire of duty.",
+      "behavior": "Cunning, single-minded",
+      "speech": "Gravelly snapping. Woldish, Liturgic",
+      "traits": [
+        "Covered in ivy",
+        "Patched with moss and lichen",
+        "Damaged: missing limb, nose, claw, etc",
+        "Carved from elegant, veined marble",
+        "Decorates itself with necklaces and trinkets",
+        "Rolling eyes, lashing tongue, and slavering maw"
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 100,
+      "encounter_scenarios": [],
+      "lair_descriptions": [
+        "The ruined remnants of a small chapel and scriptural library. Lawful gargoyles pore over the rotting tomes",
+        "A walled graveyard, long forgotten. Lawful gargoyles tend to the graves, bedecking them with woodland flowers",
+        "The ruined shell of a once great church, now overrun by nature. Neutral gargoyles—recently awakened—furiously labour to free the place from lichen and creeper",
+        "Gold glitters amid the tumbled stones of a ruined shrine. Chaotic gargoyles hide among the statuary, waiting to ambush intruders"
+      ],
+      "xp_value": 130,
+      "habitat": []
+    },
+    {
+      "name": "Gelatinous Hulk",
+      "monster_id": "gelatinous_hulk",
+      "armor_class": 13,
+      "hit_dice": "8d8",
+      "hp": 36,
+      "level": 8,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 grasps (+7, 2d6 + dissolve)"
+      ],
+      "damage": [
+        "2d6"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Floating inside torso: 1-in-4 chance of C2 + 1 magic item",
+      "size": "Large",
+      "monster_type": "Ooze",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally without light",
+        "Immunities: Suffer half damage from non-magical weapons, acid, cold, fire, and lightning",
+        "Hunting frenzy: Adventuring parties with favoured food among them (see below) are in grave danger—once a gelatinous hulk scents food within 60′, it will stop at nothing to get a hold of it. Otherwise, these monsters are peaceful and show little interest in other creatures",
+        "Dissolve: Metal that touches a gelatinous hulk (e.g. weapons that strike it and armour it grasps)—is dissolved. Magic items have a 50% chance of being unaffected per touch",
+        "Seep: A gelatinous hulk can squeeze its giant body through spaces as small as the crack under a door",
+        "Nocturnal: Gelatinous hulks are only active at night",
+        "Favoured foods: Gelatinous hulks consume magic items of all kinds, psychedelic fungi (which they snuffle up in great swaths), fairies, and demi-fey",
+        "Alchemical brain: The spongy, green brain of a gelatinous hulk is prized by alchemists (500gp value). The brain can be distilled down to an essence which aids in potion brewing, reducing the required time by 50%"
+      ],
+      "immunities": [],
+      "resistances": [
+        "non-magical weapons",
+        "acid",
+        "cold",
+        "fire",
+        "lightning"
+      ],
+      "vulnerabilities": [],
+      "description": "20′ tall, humanoid mounds of transparent jelly. Arise at night to wander the dark in search of delectable morsels: fungi, fairies, and magic items. Pursue relentlessly when food is scented.",
+      "behavior": "Peaceful, relentless when pursuing food",
+      "speech": "Wordless gibbering",
+      "traits": [
+        "Phosphorescent",
+        "Covered in nodules and wobbly tentacles",
+        "Drowsy; patched with moss and lichen",
+        "Elf skeleton drifting in belly",
+        "Daintily festooned with vines and pondweed",
+        "Arms only emerge from body when chasing prey"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 0,
+      "encounter_scenarios": [
+        "Collapsed into formless jelly, pooled in a depression",
+        "Sprawled across a woodland path",
+        "Lounging dreamily upon a couch of indigo moss",
+        "Slumped over a pile of boulders, flattened to only 1′ thick",
+        "Browsing on a patch of iridescing Devil's Grease (DCB). 2d4 portions remain after the hulks have gorged themselves",
+        "Swallowing an unconscious mossling (p60) whole. If the hulks are slain within 1 Turn, the mossling can be revived",
+        "Seeping under the door of a woodcutter's cottage, attracted to the scent of a basket of recently foraged mushrooms. The inhabitants cower fearfully and may attempt to flee up the chimney",
+        "Gazing at the sky, swaying gently and emitting a plaintive keening that echoes through the night"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 1440,
+      "habitat": []
+    }
+  ]
+}

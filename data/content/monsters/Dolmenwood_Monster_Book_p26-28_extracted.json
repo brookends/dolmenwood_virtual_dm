@@ -1,0 +1,230 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      26,
+      27,
+      28
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Centaur—Bestial",
+      "monster_id": "centaur_bestial",
+      "armor_class": 14,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "60'",
+      "speed": 60,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+5, 1d6) and weapon (+5, 1d8+3)",
+        "bellow (amnesia)"
+      ],
+      "damage": [
+        "1d6",
+        "1d8+3"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C2 + R1",
+      "possessions": "3d6sp + Chaotic item",
+      "size": "Large",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, bestial centaurs suffer 1 extra point of damage when hit with cold iron weapons",
+        "Weapons: Bestial centaurs wield great spears and axes",
+        "Bellow (once a day): A bestial centaur can let out a hideous, mind-wrenching bellow. All within 30′ must Save Versus Doom or be stricken for 1d6 days with complete amnesia and Wisdom reduced to 3",
+        "Gifts of the Nag-Lord: Bestial centaurs serve Atanuwë and each bears a gift from its master (worth 250gp). Such items, if stolen, can be used by others of Chaotic Alignment, but permanently reduce the user's Wisdom by 1 point per use",
+        "Hatred of music: Beautiful music aggravates bestial centaurs—they must Save Versus Spell or flee the source of the music for 1 Turn. If the save succeeds, the bestial centaur is instead driven into a rage and gains a +1 bonus to Attack and Damage Rolls for 1 Turn"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "10′ tall horse/human hybrids corrupted by Atanuwë, with lumpy flesh and jutting fangs. Feverishly hunger after the flesh of sentients—find all other meat repulsive.",
+      "behavior": "Feverish, brutal, furious",
+      "speech": "Semi-comprehensible bellowing. Basic Woldish, basic Gaffe, basic Sylvan",
+      "traits": [
+        "Hairless, indigo skin and flaming, yellow eyes",
+        "Patchy, white fluff",
+        "Fronds of writhing, snake-like \"hair\" upon head",
+        "Cyclops. Eye pulses green and purple",
+        "Covered in weeping boils and ulcers",
+        "Stunted, three-fingered arm protruding from chest"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Crouched beside a bloodied stream, chewing on the freshly rended limbs of a party of travellers—several humans and a grimalkin",
+        "Pursuing 1d3 blessed unicorns (p85), intent on butchering them and bringing their horns to the Nag-Lord",
+        "Attempting to subdue a writhing, speared black bile wyrm (p97) and bind it to a tree with a great, rune-bound chain of cast iron",
+        "1d3+1 bestial centaurs in an orgiastic mating frenzy, bellowing and screaming"
+      ],
+      "lair_descriptions": [
+        "A rocky, cave-riddled island amid a sludge-rimmed lake. The centaur lairs in the caves, which it decks with outré sculptures of mud, bone, and guts",
+        "A forest-cave where fabulous, glowing crystals grow. The centaur spends much of its time gazing at the crystals, in hypnotic communion with the Nag-Lord",
+        "The ruined shell of an old barn, roofed with branches. Cured skins of animals and humans hang inside",
+        "A bubbling pool of orange, green, and blue mud. The pool has healing properties (bathers heal 1d6 HP) but is ferociously guarded by the centaur"
+      ],
+      "xp_value": 520,
+      "habitat": []
+    },
+    {
+      "name": "Centaur—Sylvan",
+      "monster_id": "centaur_sylvan",
+      "armor_class": 13,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+3, 1d4) and club (+3, 1d6+2)",
+        "bow (+3, 1d8, range 70′/140′/210′)"
+      ],
+      "damage": [
+        "1d4",
+        "1d6+2",
+        "1d8"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Carried by group: 4d20pp + M2",
+      "size": "Large",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, sylvan centaurs suffer 1 extra point of damage when hit with cold iron weapons",
+        "Reaction Roll: Sylvan centaurs are of volatile temperament. When encountered, make a Reaction Roll (2d6 modified by Charisma) and consult the Sylvan Centaur Reactions table to determine their behaviour",
+        "Food, drink, music: Signs of feasting or revelry send sylvan centaurs into a hedonistic rage"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Jovial yet volatile human/horse hybrids native to Fairy. Famed for their wisdom, love of philosophy, and fondness for capturing and roasting mortals in debauched feasts.",
+      "behavior": "Wild, jovial, philosophical",
+      "speech": "Gentle murmuring and wild whinnying. Sylvan, Woldish (1-in-4 chance)",
+      "traits": [
+        "Decorated with hunting trophies",
+        "Clad in wolf-skin",
+        "Eyes of piercing blue, tangle of black hair",
+        "Silver-dappled flanks",
+        "Collection of fantastic hunting and drinking horns",
+        "Battle-beaten helmet with ornate antlers"
+      ],
+      "number_appearing": "2d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Feasting on the crispy, roasted flesh of a party of adventurers. The party's gear and treasure (2d100gp) lie strewn nearby. One party member remains alive: a hunter (Level 1—p106) hides in the bushes, trembling with anguish and rage",
+        "Navigating a series of stepping stones across a broad pool, accompanied by a skittish young centaur foal",
+        "Carrying the corpse of one of their number, slain by the arrows of a gang of 3d6 thieves (Level 1—p107) who operate a bandit lair in the nearby woods",
+        "On the trail of a herd of 2d6 shaggy mammoths (p117)"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 80,
+      "habitat": []
+    },
+    {
+      "name": "Cobbin",
+      "monster_id": "cobbin",
+      "armor_class": 14,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)",
+        "bite (+0, 1d3)"
+      ],
+      "damage": [
+        "1d3"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "3d6sp",
+      "size": "Small",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Weapons: Cobbins favour clubs (1d4), shortswords (1d6), slings (1d4), and staves (1d4)",
+        "Origins: Cobbins were created by Atanuwë, who wished for adoring worshippers and decided to awaken sentience in the animals of the Valley of Wise Beasts",
+        "Outside the Valley: Cobbins encountered outside the Valley of Wise Beasts are rare escapees from the tyrannical rule of the crookhorns"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Anthropomorphic animals (2′–3′ tall) who build cottages, drink tea, and smoke pipes, just as other sentient folk. Dwell in the Valley of Wise Beasts, under the cruel yoke of the crookhorns.",
+      "behavior": "Shrewd, cautious, merry",
+      "speech": "Rustic squeaks and croaks. Woldish, Gaffe",
+      "traits": [
+        "Smokes a long pipe",
+        "Hat keeps slipping down over eyes",
+        "Whistles and sings little ditties between sentences",
+        "Wicker basket on back, laden with straw and kindling",
+        "Thick woolly jumper with far too long arms",
+        "Iron collar around neck (placed by crookhorns)"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 15,
+      "encounter_scenarios": [
+        "Quivering behind a great stump, hiding from 2d4 crookhorns (p28) who are yelling \"you will not be punished if you turn yourselves in now\" (while quietly chuckling)",
+        "Picking through the ruins of a church and graveyard, irreverently tossing around broken holy symbols",
+        "Picnicking in a glade, checked blanket laden with cheeses, pasties, pickled eggs, and lashings of ginger beer",
+        "Sitting exhausted beside a stream, cleaning wounds acquired while escaping crookhorn custody. Without proper care (or healing magic), the wounds soon prove fatal"
+      ],
+      "lair_descriptions": [
+        "A ramshackle hideout in the ruins of an old barn, shared with a colony of 3d4 lurkeys (p116)",
+        "A splendidly constructed, adeptly concealed treehouse in the branches of an old oak. A little rope ladder can be spied, dangling between branches",
+        "A miniature thatched cottage in a glade of foxgloves. A hand-painted sign reads \"Hobble's Tea Rooms .\" A mogglewomp (p59) has taken up residence in the cottage, expelling the Cobbins to huddle in a leaky barn at the rear",
+        "A semi-permanent camp inside the hollow, fallen trunk of a great tree. The insides of the trunk are lined with soft moss and hung with cooking pots"
+      ],
+      "xp_value": 10,
+      "habitat": []
+    }
+  ]
+}

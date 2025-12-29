@@ -1,0 +1,69 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      86
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Ygraine Mordlin",
+      "monster_id": "ygraine_mordlin",
+      "armor_class": 15,
+      "hit_dice": null,
+      "hp": 40,
+      "level": 15,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Ioun Blade (+6, 1d4+2)",
+        "wand",
+        "spell"
+      ],
+      "damage": [
+        "1d4+2"
+      ],
+      "save_doom": 10,
+      "save_ray": 10,
+      "save_hold": 9,
+      "save_blast": 12,
+      "save_spell": 10,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": "Three wands (Wand of Phantasm, Wand of Lightning Bolts, Wand of Dispel Magic - 10 charges each), Ioun-Blade (worth 10,000gp), obsidian Talisman of Protection carved as squid, diamond worth 50,000gp, spell books, magical scrolls",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Genius",
+      "alignment": "Neutral",
+      "intelligence": "Genius",
+      "special_abilities": [
+        "Fairy awe: One who initiates aggressive action against Ygraine (e.g. attacking her or using offensive magic on her) must Save Versus Spell or be awe-struck, delaying their intended action for 1 Round. (This applies to each character's first act of aggression against Ygraine per encounter.)",
+        "Ioun Blade: An Arcane Dagger formed of radiant orange crystal. In combat, its wielder is enveloped in a globe of time acceleration and can attack twice per Round.",
+        "Wands: Carries a Wand of Phantasm, a Wand of Lightning Bolts, and a Wand of Dispel Magic concealed about her person. (10 charges each.)",
+        "Spellcasting: Level 15 magician with memorised spells"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Mysterious sorceress of northern Dolmenwood, lady of Chateau Mauvesse. A human woman of noble bearing and patrician beauty. She appears in her fifties (though she is in fact over 500 years old), with straight black hair to her waist, eyes of cool grey, and a complexion as pale as moonlight. She dresses in white lace with a heavy fur robe, lavishly buttoned and baubled. Upon her brow is a brilliant diamond.",
+      "behavior": "Majestic, proud. She is a diplomat par excellence, but is fatigued by her constant duties as host to all manner of eminent fairies.",
+      "speech": "Firm, calculated. Lyrical in the scant moments when she finds happiness. Woldish, Old Woldish, Sylvan, High Elfish.",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 8300,
+      "habitat": []
+    }
+  ]
+}

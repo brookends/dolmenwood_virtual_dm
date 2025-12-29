@@ -1,0 +1,65 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      146
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Crewithyant—Atacorn",
+      "monster_id": "crewithyant_atacorn",
+      "armor_class": 12,
+      "hit_dice": "4d8",
+      "hp": 19,
+      "level": 4,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Horn (+3, 1d6 + disease)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Disease: The victim must Save Versus Doom or suffer 1d3 damage per day, their flesh erupting in grey lumps.",
+        "Gaseous form: Crewithyant can dissolve his physical form—including clothing and equipment—into a sooty vapour at will. The process takes 1 Round, as does re-coalescing. In gaseous form, he is immune to mundane damage and can seep through small cracks."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "A naked, emaciated, gangly (6′ tall) man-thing with warty, ashen skin and the decaying head of a unicorn. Crewithyant is a child of the Nag-Lord, sent out into the world to spread discord and woe.",
+      "behavior": "Wretched, hunched skulking. Utterly craven.",
+      "speech": "Coughing and wheezing. Woldish, Gaffe.",
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 180,
+      "habitat": []
+    }
+  ]
+}

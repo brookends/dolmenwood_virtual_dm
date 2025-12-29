@@ -1,0 +1,87 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      84
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "The Hag",
+      "monster_id": "the_hag",
+      "armor_class": 16,
+      "hit_dice": "11d8",
+      "hp": 57,
+      "level": 11,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Stick (+10, 1d4+2)",
+        "finger snap (waxification)"
+      ],
+      "damage": [
+        "1d4+2",
+        "special"
+      ],
+      "save_doom": 6,
+      "save_ray": 7,
+      "save_hold": 8,
+      "save_blast": 9,
+      "save_spell": 10,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": "Enchanted walking stick, Boggle Lantern, Pouches containing 1d4 portions of each: Bloodcap, Bosun's Balm, Grinning Jenny, Hag's Tears, Lankswith, Marshwick, Snogglebeard, Witch's Oyster",
+      "size": "Medium",
+      "monster_type": "Fairy",
+      "sentience": "Genius",
+      "alignment": "Chaotic",
+      "intelligence": "Genius",
+      "special_abilities": [
+        "Cold iron: As a fairy, the Hag suffers 1 extra point of damage when hit with weapons of (enchanted) cold iron",
+        "Immunities: Only harmed by magic or magic weapons",
+        "Magic Resistance: +4 bonus to Saving Throws against effects of magical origin",
+        "Cloak true form: The Hag can take on any outward appearance she wishes (limited to female humanoids of roughly the same size). Such is her power that magicks of detection have a 50% chance of failing to detect this glamour",
+        "Fairy magic: Glamours Beguilement, Cloak of Darkness, Disguise Object, Fairy Dust, Moon Sight, Subtle Sight, Lesser runes (once a day) all, Greater runes (once a day) Arcane Unbinding. The Hag can also cast the arcane spells Hex Weaving, Polymorph, and Cloudkill once a day",
+        "Finger snap: With a click of her fingers, the Hag can permanently transform a subject enchanted with Sway the Mortal Mind into a gnarled candle. The victim may Save Versus Spell to avoid this fate. The Hag can return a victim to their living form with another click of her fingers",
+        "Stick: The Hag's crooked walking stick acts as an Arcane Club"
+      ],
+      "immunities": [
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "A malevolent, supernatural being with an appetite for mortal flesh. Her true form is that of a crone, bent and decrepit beyond mortal conception, with eyes as large as saucers and a great, warty nose. Unbeknown to any of mortal blood, the Hag was long ago a fairy princess, the sister of the Queen of Blackbirds.",
+      "behavior": "Depraved, lustful, treacherous. Loves to deceive, torment, and kill mortals. Fears elf nobles and anything associated with them",
+      "speech": "Slavering and cackling. Woldish, Old Woldish, Sylvan, Mewl, High Elfish (rusty)",
+      "traits": [
+        "A rustic maid gathering marsh herbs",
+        "A longhorn woman, capering in a copse",
+        "A gaunt, wide-eyed girl, tall beyond her years",
+        "A pregnant woman with eyes of blood red",
+        "An elderly lady with skin covered in fungus",
+        "A wooden woman, carved from a rotting log",
+        "A crow-headed lady, dressed in sodden lace",
+        "A pale, wailing corpse, lurching through the bog"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 5600,
+      "habitat": [
+        "swamp"
+      ]
+    }
+  ]
+}

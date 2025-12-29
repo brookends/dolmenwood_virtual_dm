@@ -1,0 +1,74 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      77
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Celenia—The Queen of All Witches",
+      "monster_id": "celenia_the_queen_of_all_witches",
+      "armor_class": 18,
+      "hit_dice": "12d4",
+      "hp": 40,
+      "level": 12,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Sword of Lost Souls (+5, 1d8+2)",
+        "spell"
+      ],
+      "damage": [
+        "1d8+2"
+      ],
+      "save_doom": 11,
+      "save_ray": 11,
+      "save_hold": 10,
+      "save_blast": 13,
+      "save_spell": 11,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": "Sword of Lost Souls, Giant clam shell, The Selenite Mirror of Embala, Crown of Fallen Stars",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Genius",
+      "alignment": "Neutral",
+      "intelligence": "Genius",
+      "special_abilities": [
+        "Sword of Lost Souls: An Arcane Longsword with a blade of clear crystal which traps the souls of those it slays. A creature slain by the sword cannot be returned to life unless the sword is destroyed.",
+        "Crown of Fallen Stars: A vortex of glittering crystals that orbits the head of the wearer. The crown grants an AC of 16 and immunity to Rank 1 spells.",
+        "Secret name of Hasturiel (thrice a day): Celenia can speak the secret name of Hasturiel, causing beings of Level 6 or lower within 20′ to flee in terror for 2 Turns (Save Versus Hold to resist).",
+        "Evil eye (thrice a day): Celenia can inflict a curse (per the arcane spell Hex Weaving) by gazing at a target.",
+        "Cloak true form: The Queen of all Witches can take on any outward appearance she wishes (limited to female humanoids of roughly the same size).",
+        "Metamorphosis (once a day): Celenia can change into any creature, per the arcane spell Polymorph. The metamorphosis lasts until dawn or until she chooses to shed her new form."
+      ],
+      "immunities": [
+        "Rank 1 spells"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "An androgynous human woman of waifish build, with cropped silver hair and eyes as blue as cold moonlight. Dresses in ethereal gowns of silver gauze. Appears around 20, but is actually 280 years old. In union with Hasturiel Thrice-Crowned.",
+      "behavior": "Aloof, mercurial, quick to anger, does not suffer fools gladly",
+      "speech": "Dreamy, old-fashioned, and formal. Woldish, Old Woldish, Sylvan, a smattering of High Elfish",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [
+        "Secret, submerged palace at the bottom of Lake Longmere, hex 0806"
+      ],
+      "xp_value": 7200,
+      "habitat": []
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      140
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Briggsy Bugber",
+      "monster_id": "briggsy_bugber",
+      "armor_class": 14,
+      "hit_dice": "4d8",
+      "hp": 22,
+      "level": 4,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Bite/butt (+3, 1d8 + disease)",
+        "great axe (+3, 2d4)"
+      ],
+      "damage": [
+        "1d8",
+        "2d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Disease: Anyone bitten or butted by Briggsy must Save Versus Doom or be afflicted by a nasty infection (see crookhorn—DMB)"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "A red-furred, hunch-backed crookhorn woman with frenzied, staring eyes and a single, spiralling horn in the centre of her forehead (regarded as highly auspicious). Wears a chainmail hauberk daubed with blood.",
+      "behavior": "Brutal, utterly humourless",
+      "speech": "Dictatorial braying. Woldish, Gaffe.",
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 130,
+      "habitat": []
+    }
+  ]
+}

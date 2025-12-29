@@ -1,0 +1,179 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      14,
+      15
+    ],
+    "content_type": "monsters",
+    "item_count": 2,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Antler Wraith",
+      "monster_id": "antler_wraith",
+      "armor_class": 14,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Clawed grasp (+3, 1d10 + life drain)"
+      ],
+      "damage": [
+        "1d10"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M1",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Immunities: Only harmed by silver weapons, magic, or magic weapons.",
+        "Dark sight: Can see normally without light.",
+        "Life drain: The touch of an antler wraith drains 1d3 points of Constitution. A character reduced to 0 Constitution dies and cannot be raised. Constitution damage can only be healed by holy magic: Bless heals 1 point.",
+        "Sinister silence: Within 60′ of an antler wraith, sound is hushed and speech feels as if it disturbs something best left in peace. Characters casting spells have a 2-in-6 chance of failure (the spell is removed from memory as if cast).",
+        "Dormant during the day: During hours of sunlight, antler wraiths are dormant, manifesting only as a cold mist around the stones they guard. If their stones or treasure hoards are tampered with, they manifest fully, coalescing out of the mist.",
+        "Sacrificial victims: Antler wraiths seek out warm-blooded sentients whom they drag to their stone rings for sacrifice. Sacrificed victims are buried in the vicinity of the stone circle, along with their possessions and treasures."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "silver weapons",
+        "magic",
+        "magic weapons"
+      ],
+      "description": "Sinister spirits made manifest as looming humanoids, cloaked in black, with stag-skull heads and bony claws. Servants of grim, forgotten gods, doomed to haunt rings of standing stones.",
+      "behavior": "Ruthless, hateful, avaricious",
+      "speech": "None. Understand Woldish and Old Woldish",
+      "traits": [
+        "Wields a scythe or ancient sword (damage as per touch).",
+        "Utters a single, sinister word, mantra-like.",
+        "Skull wreathed in blue flame.",
+        "Jewels in eye sockets (500gp each, cursed: –4 Strength).",
+        "Antlers draped with shrivelled human intestines.",
+        "Shrieks upon sight of living souls."
+      ],
+      "number_appearing": "2d4",
+      "lair_percentage": 75,
+      "encounter_scenarios": [
+        "Dragging a young hunter screaming through the underbrush. 2d3 bloodhounds (see Hounds—DPB) bay wildly in defence of their owner, but are too terrified to approach the wraiths.",
+        "Slowly encircling a group of 2d4 grave diggers (everyday mortals—p110) who stand rigid with fear beside the wraiths' half-unearthed hoard.",
+        "Preparing to sacrifice 2 young noblewomen (everyday mortals—p110), bound at the centre of a stone circle. Their escort, a knight, lies bleeding and dead nearby.",
+        "Battling 2d3 Drune Cottagers (p35) who are attempting to drive the wraiths from their stone circle. The Drunes wield a golden skull whose radiance repels the wraiths."
+      ],
+      "lair_descriptions": [
+        "A single giant (20′ high) obelisk of black stone streaked with veins of blood red. The earth around the stone is ashen and nearby plant-life is withered and blackened.",
+        "A ring of blood-daubed boulders at the marshy base of a dismal, overgrown valley. Skeletons of stags line the valley—the animals come here to die.",
+        "A 15′ high spire of white marble upon a lonely, mist-wreathed island amid a murky pool. The spire is carved with time-worn images of human sacrifice.",
+        "An imposing ring of 5 dolmens, festooned with trailing moss and strings of human skulls. At the centre of the ring is a 10′ deep pit filled with mist and an eerie blue radiance. The wraiths' victims (and their treasures) are cast into the pit. Anyone climbing down must Save Versus Spell or be reduced to terrified babbling for 1d6 days."
+      ],
+      "xp_value": 180,
+      "habitat": []
+    },
+    {
+      "name": "Banshee",
+      "monster_id": "banshee",
+      "armor_class": 19,
+      "hit_dice": "7d8",
+      "hp": 31,
+      "level": 7,
+      "movement": "50'",
+      "speed": 50,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+6, 1d8 + chill)",
+        "wail (death)"
+      ],
+      "damage": [
+        "1d8"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C6 + R7 + M4",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Immunities: Only harmed by silver weapons, magic, or magic weapons. Unharmed by cold-based attacks.",
+        "Incorporeal: Can pass through walls, doors, and other solid objects.",
+        "Dark sight: Can see normally without light.",
+        "Chill touch: The victim loses 1 Strength per hit, dying if Strength is reduced to 0. Lost Strength is recovered at dawn.",
+        "Wail (once a night): All within 30′ must Save Versus Doom or die. Usable only during the hours of darkness.",
+        "If killed: Before evaporating into mist and vanishing forever, the banshee curses her slayer to meet their doom. Unless the curse is removed, the character automatically fails their next Saving Throw against a deadly effect (e.g. death, petrification, poison, etc.)."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons",
+        "cold"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "silver weapons",
+        "magic",
+        "magic weapons"
+      ],
+      "description": "Drifting, incorporeal shades of frost elf ladies cruelly slain in ancient wars with mortals. Haunt desolate moors and hills, seeking vengeance on the living.",
+      "behavior": "Coldly brilliant, bitter, vengeful",
+      "speech": "Rasping whisper. High Elfish, Old Woldish",
+      "traits": [
+        "Seductive, youthful beauty.",
+        "Throat slit. Icy, blue blood drips from the wound.",
+        "Sings forgotten ballads in an otherworldly soprano.",
+        "Spectral skin wreathed with frost and patched with moss.",
+        "Scent of ancient floral perfumes.",
+        "Nearby plants rime with crackling frost."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 10,
+      "encounter_scenarios": [
+        "Gazing at her reflection in a pool, sobbing, then screaming in rage at the sky.",
+        "Closing in on a lone friar (Level 3—p106) quaking behind a tree, impotently holding forth his holy symbol.",
+        "Drifting out of a chilling mist hanging over a reed-choked pond. 1d3 anglers (p110) huddled on the shore are oblivious to the impending danger.",
+        "Hovering above a peat bog, whispering with a flock of ravens perched in a gnarled tree—a gloam (p46) in flock form. The gloam brings word of approaching travellers—mortal souls for the banshee to slay and corpses for the flock to pick over."
+      ],
+      "lair_descriptions": [
+        "The rotting remnants of an ornate wooden carriage, half submerged in a bog alongside the skeletons of 2 fairy horses. The banshee reclines on the decaying seats, dreaming of ancient days.",
+        "A lonely tower, now crumbling and overgrown. The banshee dwells alongside 3 giant spinning spiders (p118), whose sticky webs fill the tower.",
+        "A pool of dark water in which the faces of dead warriors can be seen.",
+        "A glade of crooked silver birches in which black flowers bloom. The banshee has reassembled the bones of her companions' corpses, as well as her own, and lain them in state amid the blossoms."
+      ],
+      "xp_value": 1980,
+      "habitat": []
+    }
+  ]
+}

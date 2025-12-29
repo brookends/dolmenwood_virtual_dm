@@ -1,0 +1,157 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      18,
+      19
+    ],
+    "content_type": "monsters",
+    "item_count": 2,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Black Tentacles",
+      "monster_id": "black_tentacles",
+      "armor_class": 15,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "6 tentacles (+3, 1d4 + throttle, 10′ reach)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Surprise: When black tentacles are submerged in a body of water or mud, opposing side has a 4-in-6 chance of being surprised.",
+        "Eyeless: Can act normally in light or darkness.",
+        "Amphibious: Can breathe air and water.",
+        "Reach: The monster's attacks may be directed at multiple opponents within 10′.",
+        "Throttle: Once it hits, a tentacle holds on, tightens its grip, and attempts to throttle or drown the victim. The victim suffers 1d4 automatic damage each Round, until the tentacle is severed (see below) or the monster is killed.",
+        "Severing tentacles: A natural 19 or 20 Attack Roll indicates that one of the monster's tentacles has been severed. The number of attacks it can make per Round is reduced by one. Severing all 6 tentacles kills the monster.",
+        "Sustenance: Black tentacles absorb nourishment from the decomposing bodies of their victims."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Masses of writhing, suckered, black tentacles (10′ long) that lurk in boggy waterways, stinking mud pools, and lightless caverns, seeking to enwrap and strangle warm-blooded creatures.",
+      "behavior": "Relentless, brutal",
+      "speech": "None",
+      "traits": [
+        "Straggly, hand-like appendages at ends of tentacles.",
+        "Water around the monster bubbles and roils.",
+        "Contact leaves black stains for 1d6 days.",
+        "Covered in rubbery nodules.",
+        "Reeks of carrion.",
+        "Tentacles ridged with malicious, purple eyes."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Slowly, carefully emerging from the murk, preparing to grab a woodgrue (p94) fishing from a tussock.",
+        "Dragging a whinnying blessed unicorn (p85) into a sludgy pool, tentacles tightly wrapped around the poor creature's flanks, belly, and neck.",
+        "Splashing up great cascades of muddy water, writhing in agony at the shrill, eerie song of 2d3 witches (p90).",
+        "Tentacles raised into the air, swaying gently to worship the 20′ tall monolith that emerges from the bog. Beneath streaks of algae and fronds of pondweed, a multitude of eyes can be seen, carved into the stone."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 180,
+      "habitat": []
+    },
+    {
+      "name": "Bog Corpse",
+      "monster_id": "bog_corpse",
+      "armor_class": 11,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Thump (+1, 1d6 + throttle)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Mindless",
+      "alignment": "Chaotic",
+      "intelligence": "Mindless",
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Dark sight: Can see normally without light.",
+        "Throttle: Upon a successful hit with a Damage Roll of 4 or greater, the bog corpse clasps its hands around the victim's throat and begins to strangle them. The victim automatically suffers 1d6 damage per Round until the bog corpse is killed. A victim killed in this way is dragged into the bog and rises the following night as a bog corpse.",
+        "In melee: Characters in melee with a bog corpse must Save Versus Hold or suffer a –2 penalty to Attack Rolls, hypnotised by the flickering green light burning in the monster's chest cavity.",
+        "If killed: The unholy green flame in the bog corpse's chest explodes. All within 10′ suffer 1d6 damage (Save Versus Blast for half)."
+      ],
+      "immunities": [
+        "disease",
+        "poison"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Sodden corpses of hapless mortals who died, accursed, in bogs and swamps. Inhabited by the spirits of marsh-fires, they rise to wreak death and jealous vengeance upon the living.",
+      "behavior": "Hateful, savage",
+      "speech": "Incoherent moaning",
+      "traits": [
+        "Headless.",
+        "Draped with dank pondweed.",
+        "Covered with crabs and bog-snails.",
+        "Flesh rotted away, almost skeletal.",
+        "Eyes burning with a flickering green light.",
+        "Swollen and leech-ridden."
+      ],
+      "number_appearing": "2d4",
+      "lair_percentage": 35,
+      "encounter_scenarios": [
+        "Dragging a freshly suffocated (though not quite dead) trapper (Level 1 hunter—p106) into a bog.",
+        "Laying in wait in a muddy ditch beside a path.",
+        "Fleeing from a solitary friar (Level 1—p106), stuck up to his waist in quicksand. His holy symbol, clutched in a quaking hand, has repelled the monsters, for now.",
+        "Two opposing gangs of bog corpses fighting over the freshly slain bodies of three woodsmen, mindlessly tearing them limb from limb."
+      ],
+      "lair_descriptions": [
+        "The half-submerged ruin of a wooden shack.",
+        "The waterlogged shrine of a long-forgotten saint, now defiled by necromancy. The bog corpses spend much of their time in prayer around the unholy altar, worshipping a grisly, decapitated head which rests there.",
+        "The ruins of an old gaol, slumped into a boggy pool. The bog corpses are trapped in one of the cells, still locked.",
+        "Ritualistic bog-graves. The bog corpses are the victims of ancient sacrifice, buried in the marsh to appease forgotten heathen deities."
+      ],
+      "xp_value": 65,
+      "habitat": []
+    }
+  ]
+}

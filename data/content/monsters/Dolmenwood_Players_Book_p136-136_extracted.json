@@ -1,0 +1,60 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      136
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Townsfolk",
+      "monster_id": "townsfolk",
+      "armor_class": 10,
+      "hit_dice": "1d4",
+      "hp": 2,
+      "level": 1,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (-1)"
+      ],
+      "damage": null,
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": null,
+      "behavior": null,
+      "speech": null,
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 10,
+      "habitat": []
+    }
+  ]
+}

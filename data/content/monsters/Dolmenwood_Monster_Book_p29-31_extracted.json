@@ -1,0 +1,242 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      29,
+      30,
+      31
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Cockatrice",
+      "monster_id": "cockatrice",
+      "armor_class": 13,
+      "hit_dice": "5d8",
+      "hp": 22,
+      "level": 5,
+      "movement": "30' Fly 60'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": 60,
+      "swim_speed": null,
+      "attacks": [
+        "Beak (+4, 1d6 + petrification)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C6 + R7 + M4",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Monstrosity",
+      "sentience": "Non-Sentient",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Petrification: The victim must Save Versus Hold or be permanently turned to stone.",
+        "Rock eating: Cockatrices drag petrified victims to their lair for consumption. They smash the statues by toppling them and gobble down the gravel by the gullet-full."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "4′ long cockerel-like creatures with wattled necks, scaled tails, and dragon-like bodies. Feared for their ability to petrify any creature they touch.",
+      "behavior": "Rambunctious capering",
+      "speech": "Agitated squawking",
+      "traits": [
+        "Comb resembles an elaborate crown.",
+        "Enormous, feathery beard.",
+        "Cackles relentlessly.",
+        "Scales shine in a rainbow of colour.",
+        "Large, bone-like spurs on legs.",
+        "Bloated, serpentine tail."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Engaging in an elaborately choreographed courtship dance, squawking and fanning their wings as they move. Spectators are unwelcome, unless they're providing music.",
+        "Screeching and posturing angrily at a herd of 1d4 wild devil goats (p32), testing to see whether an approach is worth the risk.",
+        "Angrily chasing a shorthorn (p23), who has stolen a cockatrice egg at the behest of her longhorn master.",
+        "Pecking their way through the undergrowth, obscured by tall grass, leaving a trail of small stone insects and mammals in their wake."
+      ],
+      "lair_descriptions": [
+        "A collapsed mineshaft, only a few dozen feet deep. At the edge of the light, atop piles of gravel and moss, are clutches of cockatrice eggs.",
+        "An empty farmstead, slowly being overtaken by nature. The cockatrices roost in the hen house amidst rows of petrified chickens.",
+        "A collection of boulders beside a clear, deep pond. A boggin (p19) lurks beneath the water's surface, slowly running out of fish to eat but fearful of attack if it tries to leave.",
+        "A peaceful, overgrown garden. Petrified victims stand alongside carved statues and 1d6 hidden gargoyles (p43)."
+      ],
+      "xp_value": 260,
+      "habitat": []
+    },
+    {
+      "name": "Crookhorn",
+      "monster_id": "crookhorn",
+      "armor_class": 13,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+1)",
+        "bite (+1, 1d6 + disease)",
+        "horns (+1, 1d6 + disease)"
+      ],
+      "damage": [
+        "1d4",
+        "1d6",
+        "1d6",
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M1",
+      "possessions": "3d6sp",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Weapons: Crookhorns favour clubs (1d4) and spears (1d6).",
+        "Armour: Crookhorns wear a rough patchwork of spiked leather and chainmail. Without armour, they have AC 11.",
+        "Disease: Anyone who comes into close contact with a crookhorn (including being bitten or butted by one) must Save Versus Doom or be afflicted by a nasty infection (see Crookhorn Diseases). All can be cured with Lankswith (DPB).",
+        "Marauders: Crookhorns delight in the capture, torture, and (inevitable) roasting of other sentients."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "7′-tall, feral, disease-ridden breggles, twisted by the evil magic of their master, Atanuwë. Roam northern Dolmenwood as pillagers, brigands, and burners of villages.",
+      "behavior": "Brutish, wild, merciless",
+      "speech": "Obscenity-laced bleating. Gaffe, basic Woldish (1-in-4 is fluent)",
+      "traits": [
+        "Milky white, oozing eyes.",
+        "Patchy fur and flaking, grey skin.",
+        "One horn snapped off.",
+        "Bright orange, red or purple fur—maybe natural or dyed.",
+        "Speaks in a sinister whisper, giggles maniacally.",
+        "Bellows, gurgles, erratically rolls eyes."
+      ],
+      "number_appearing": "3d10",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Capering around a roaring bonfire, preparing to roast 1d4 mosslings (p60), delirious and smeared with hog grease.",
+        "Receiving orders from a harpy (p49), angered at the crookhorns' incompetence in losing an important prisoner.",
+        "Charging after a blessed unicorn (p85), carrying flaming brands and a wickedly spiked iron bridle and bit.",
+        "Prancing around to abominable pipe music, bearing a 6′ tall, velvety, three-horned unicorn effigy upon a throne. Utterly inebriated (–2 to Attack Rolls and Saving Throws)."
+      ],
+      "lair_descriptions": [
+        "A makeshift camp of greasy tarpaulins and hammocks. Freshly killed game animals and skins hang from trees.",
+        "The cellars of a mossy ruin, stuffed with rotting furnishings. A Drune Cottager (p35) is held prisoner in the dark.",
+        "A homely cottage whose former human inhabitants were recently dispatched. The crookhorns are a rebel band charmed into the service of the Drune.",
+        "A marquee in a freshly burnt clearing. Inside, the crookhorns cavort, blast crude trumpets, and torment prisoners for the delight of an audience of 2d6 harpies (p49)."
+      ],
+      "xp_value": 35,
+      "habitat": []
+    },
+    {
+      "name": "Crystaloid",
+      "monster_id": "crystaloid",
+      "armor_class": 15,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+2)",
+        "fist (+2, 1d6)",
+        "flash (blinding)"
+      ],
+      "damage": [
+        "1d6",
+        "1d10",
+        "1d6"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C4 + 4d4 gems + 1d3 magic crystals (1-in-4 chance)",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Construct",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Non-biological: Immune to biological effects (e.g. disease, poison).",
+        "Weapons: Crystaloids favour elaborate spears (1d6) and polearms (1d10). Their weapons are formed of metal and crystal, with no wooden elements.",
+        "Damage reduction: Suffer half damage from cutting or piercing attacks (e.g. arrows, spears, swords).",
+        "Blinding flash (once a Turn): A group of 3 crystaloids can cooperate to produce a flash of blinding light. All within 20′ must Save Versus Doom or be blinded for 1d6 Turns.",
+        "Glow: Crystaloids naturally emit a lambent glow, enabling them to see underground. They can voluntarily change the colour and brightness, illuminating up to a 30′ radius.",
+        "Mind link: All crystaloids in a community are telepathically linked. Each individual's experience is shared with the community.",
+        "Crystaloid leaders: Each community is led by a council of 3 elders, each able to cast the following arcane spells once a day: Ioun Shard, Mind Crystal, Mirror Image. (115 XP for defeating.)"
+      ],
+      "immunities": [
+        "disease",
+        "poison"
+      ],
+      "resistances": [
+        "cutting",
+        "piercing"
+      ],
+      "vulnerabilities": [],
+      "description": "Mineral-based humanoids (5′ tall) with crystal cluster heads, eyeless and mouthless. Dwell underground in telepathic communities, cultivating and refining veins of minerals and ore.",
+      "behavior": "Peaceful, curious, emotionless",
+      "speech": "Resonant keening. Dwelve",
+      "traits": [
+        "Face carved into head.",
+        "Spider-webbed with fracture lines.",
+        "Multi-coloured lights sparkle inside.",
+        "Movement sounds like wind chimes.",
+        "Body a patchwork of different gems.",
+        "Cloak of bioluminescent fungi."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 70,
+      "encounter_scenarios": [
+        "Tentatively entering the surface world for the first time by climbing out of a large hole in the ground.",
+        "Taking an offering of rare gemstones to the lair of a nearby fomorian (p41). In exchange for regular tribute, they receive protection and are left alone.",
+        "Entertaining an excitable group of 2d6 woodgrues (p94) by rapidly changing the colour and brightness of their natural glow.",
+        "Following the crimson trail left by 2d3 redslobs (p70) which have kidnapped another party of crystaloids. The oozes have become enraptured by their shiny new prizes."
+      ],
+      "lair_descriptions": [
+        "A hidden encampment amidst a field of boulders. Each stone is being systematically examined to see if it is secretly a geode.",
+        "An old mine, abandoned years ago after a deadly collapse. Much of the debris has been excavated by the crystaloids, unearthing numerous skeletons (p76).",
+        "A network of large warrens, home to a colony of talking animals (p82). The crystaloids have taken refuge here following the collapse of their home cave system, bartering gems for sanctuary.",
+        "A cave system deep beneath the earth, accessible only through secret passageways in a local barrow. Sparkling veins of silver ore run through the walls and ceilings."
+      ],
+      "xp_value": 90,
+      "habitat": []
+    }
+  ]
+}

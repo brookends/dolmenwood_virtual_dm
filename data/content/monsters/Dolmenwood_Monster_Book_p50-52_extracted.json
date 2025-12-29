@@ -1,0 +1,244 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      50,
+      51,
+      52
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Grimalkin",
+      "monster_id": "grimalkin",
+      "armor_class": 12,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)",
+        "fur ball (1d6, 30' line)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8",
+      "possessions": "2d4gp + 1d3 Kitty-Nibbles (DCB)",
+      "size": "Small",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, grimalkins suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Weapons: Grimalkins favour shortbows (1d6) and shortswords (1d6).",
+        "Fur balls (thrice a day): A grimalkin may sacrifice 1 HP to spew up a violent stream of congealed fur, spittle, and bone. All creatures in a 30′ line suffer 1d6 damage (Save Versus Blast for half).",
+        "Estray form: A grimalkin's normal form, a humanoid cat.",
+        "Chester form: Can transform into a fat domestic cat (takes 1 Round). See Chester Form.",
+        "Wilder form: If reduced to half Hit Points, can transform into a near-invisible, primal fey form (takes 1 Round). Only deranged, predatory eyes remain visible. See Wilder Form.",
+        "Subtle sight: 3-in-6 chance of seeing invisible. May attack detected invisible creatures at a –1 penalty to Attack Rolls.",
+        "Kitty-Nibbles: Grant a +1 bonus to Attack Rolls for 1 Turn."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "3′–4′ tall feline fairies who shift between three forms: a humanoid cat, a fat moggy, and a primal fey predator. Wander in Dolmenwood to savour the absurdities of the mortal world.",
+      "behavior": "Sharp-witted, narcissistic, mercurial",
+      "speech": "Impudent yowls. Woldish, Mewl",
+      "traits": [
+        "Dressed in pirate garb, complete with a tricorn hat.",
+        "Eyes shift between violet, green, and amber.",
+        "Fur constantly stands on end, as if electrified.",
+        "Licks face and preens whiskers with long, pink tongue.",
+        "Snacks on a seemingly limitless supply of pickled rats.",
+        "Smirks, snickers, and stifles laughs at all mortals say."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 10,
+      "encounter_scenarios": [
+        "Skinning the giant, furry coils of a freshly slain moggle­womp (p59), yowling tauntingly all the while.",
+        "Manically chasing 2d4 giant rats (p117).",
+        "Roasting meat over a fire, including suspiciously human­oid limbs. The grimalkins swear this is crookhorn meat.",
+        "Conversing in Sylvan with a fairy horse (p40), joking and guffawing about everyday events witnessed in a human town. Become hushed and shy if approached."
+      ],
+      "lair_descriptions": [
+        "A half-sized cottage with gardens of catnip. A profusion of pipes, fiddles, and drums lines the interior walls.",
+        "A semi-permanent campsite, decked with hammocks, fire pit, and roasting spit. Game and loot are hoisted in trees.",
+        "A subterranean den, expanded from a giant rat lair. Carpeted with rat fur and decked with hunting trophies.",
+        "A high-prowed sailing ship beached on a mossy knoll. The captain's berth is lined with nautical maps of the strange lands of Fairy."
+      ],
+      "xp_value": 15,
+      "habitat": []
+    },
+    {
+      "name": "Harpy",
+      "monster_id": "harpy",
+      "armor_class": 12,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "20' Fly 50'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": 50,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+2, 1d4)",
+        "1 weapon (+2)",
+        "song (charm)"
+      ],
+      "damage": [
+        "1d4",
+        "1d4"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "2d6gp",
+      "size": "Medium",
+      "monster_type": "Monstrosity",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Magic Resistance: +2 bonus to Saving Throws against effects of magical origin.",
+        "Dark sight: Can see normally without light.",
+        "Weapons: Harpies favour daggers (1d4), clubs (1d4), and shortbows (1d6).",
+        "Charming song: Those who hear the song of a group of harpies must Save Versus Spell or come under their sway. If the Saving Throw fails, the victim is charmed to move towards the harpies (resisting those who try to prevent it), to obey the harpies' commands (if understood), and to defend the harpies. They are unable to cast spells, use magic items, or harm the harpies. Killing the harpies breaks the charm. A character who makes the save is unaffected for the rest of the encounter."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Scrawny, saggy-skinned women with the legs, tails, and wings of a crow or chicken. Use their magic song to lure victims to their doom. Relish the flesh of sentients. Most serve Atanuwë.",
+      "behavior": "Rapacious, sadistic, avaricious",
+      "speech": "Cackling, screeching. Woldish, Gaffe, the tongue of crows",
+      "traits": [
+        "Dressed in tattered priestly robes.",
+        "Constantly humming a tune.",
+        "Reeks of sulphur.",
+        "Cradles a musical instrument.",
+        "Feathers white as snow.",
+        "Visage of an old man."
+      ],
+      "number_appearing": "2d4",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Conversing with 1d3 harridans (p50) in the shadow of a dying oak, each party confidently revealing conflicting prophecies.",
+        "Whipping 3 bestial centaurs (p24) into a frenzy, preparing them to raid and kill on behalf of the Nag-Lord.",
+        "Practising singing with the help of a terrified bard (Level 3—p104). The troubadour is resistant to magical charms but too frightened to flee.",
+        "Perched upon thick branches, tearing strips off the corpse of a freshly killed friar. Blood and gobbets of flesh periodically drip onto the ground below."
+      ],
+      "lair_descriptions": [
+        "A half-finished stone temple to a forgotten god. 2d4 charmed villagers have been labouring day and night to build it.",
+        "The rafters of a ruined church. The building has been profaned, black ivy creeps up the walls, and a chilling fog lingers day and night.",
+        "An earthen chamber, accessed through a tunnel set into a craggy cliff face. Cracks in the ground release poisonous fumes that induce potentially prophetic hallucinations.",
+        "A camp at the bottom of a dell filled with twisted, leafless trees. War parties of 3d10 crookhorns (p28) periodically arrive to rest, cavort, and deliver prisoners for interrogation and consumption by the harpies."
+      ],
+      "xp_value": 65,
+      "habitat": []
+    },
+    {
+      "name": "Harridan",
+      "monster_id": "harridan",
+      "armor_class": 14,
+      "hit_dice": "5d8",
+      "hp": 22,
+      "level": 5,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Club (+4, 1d10)",
+        "spell (see below)"
+      ],
+      "damage": [
+        "1d10"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M5",
+      "possessions": "2d20gp",
+      "size": "Large",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Immunities: Only harmed by silver weapons, magic, or magic weapons.",
+        "Light sensitivity: Harridans suffer a –2 penalty to Attack Rolls and a –1 penalty to Armour Class when in bright light (daylight, Holy Light).",
+        "Dark sight: Can see normally without light.",
+        "Spells: Can cast each of the following arcane spells once per day: Rank 1 Ventriloquism, Rank 2 Perceive the Invisible, Rank 3 Fly.",
+        "Charm person (thrice a day): A harridan may attempt to charm a mortal, fairy, or demi-fey. The target may Save Versus Spell to resist. If the save fails, the victim is charmed to move towards the harridan (resisting those who try to prevent it), to obey the harridan's commands (if understood), and to defend the harridan. They are unable to cast spells, use magic items, or harm the harridan. Killing the harridan breaks the charm.",
+        "Mimicry: Harridans accurately imitate animal sounds and voices to lure sentient prey to approach.",
+        "Hatred of mirrors: Harridans hate their own reflection and mercilessly attack anyone who presents a mirror."
+      ],
+      "immunities": [
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "bright light"
+      ],
+      "description": "Depraved ogre witches (9′ tall) who serve the Nag-Lord as lieutenants and soothsayers. Dwell underground, emerging to do their master's bidding or to hunt for juicy mortal flesh.",
+      "behavior": "Diabolical, scheming, hateful, ravenous",
+      "speech": "Deranged cackling. Woldish, Gaffe",
+      "traits": [
+        "Central third eye, bulbous and oozing green pus.",
+        "Clad in a patchwork apron of human scalps.",
+        "Empty eye sockets, magical sight.",
+        "Gargantuan, hairy nostrils, constantly sniffing.",
+        "Lurid purple skin, flaking and blistered.",
+        "Clumps of matted hair writhe like serpents."
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": 40,
+      "encounter_scenarios": [
+        "Capering around an old elm, flicking it with glowing blue goo whilst reciting words of magical power. The tree gradually withers and reanimates as an evil treowere (p83).",
+        "Whisking a succulent, unconscious young beauty (everyday mortal—p110) away to their lair. The harridans plan to cage, fatten, and roast the unfortunate.",
+        "Drawing the stinking entrails from a freshly slain donkey and suspending them above a green, sparking fire. The harridans wail as they receive divinatory visions.",
+        "Commanding a band of 2d4 crookhorns (p28), pulling a wonky cart loaded with caged human children, bound for the Court of the Nag-Lord (hex 0904)."
+      ],
+      "lair_descriptions": [
+        "A leaf-covered trapdoor leads down to a subterranean river and a rotting dock. The harridans lair in wooden barges and rowing boats moored at the dock.",
+        "A mud-brick cottage with a roof of thick straw. Below the homely interior is a maze of creepy cellars crammed with twisted roots, human bones, and organ-filled pickle jars.",
+        "A gloomy hut of branches and wickerwork, with purple smoke drifting from the chimney. The harridans squat around a great cauldron. A kidnapped villager (everyday mortal—p110) lolls wretchedly in a cage in the rafters.",
+        "A network of caves and clay pits where the harridans breed all manner of horrors. Their prize is a mutant giant snail (p77)."
+      ],
+      "xp_value": 560,
+      "habitat": []
+    }
+  ]
+}
