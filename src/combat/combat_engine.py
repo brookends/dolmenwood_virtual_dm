@@ -254,6 +254,19 @@ class CombatEngine:
         Returns:
             Dictionary with combat initialization results
         """
+        # Validate state - must be in combat state before starting combat
+        # The caller is responsible for transitioning to COMBAT state first
+        # (e.g., via encounter_to_combat, settlement_combat, rest_interrupted, etc.)
+        if self.controller.current_state != GameState.COMBAT:
+            return {
+                "combat_started": False,
+                "error": (
+                    f"Must be in COMBAT state to start combat. "
+                    f"Current state: {self.controller.current_state.value}. "
+                    f"Transition to combat first (e.g., encounter_to_combat)."
+                ),
+            }
+
         # Store return state
         self._return_state = return_state
 
