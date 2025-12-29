@@ -8,7 +8,7 @@
     "content_type": "spells",
     "item_count": 6,
     "errors": [],
-    "note": "Review and correct this data before importing"
+    "note": "Mossling Knacks are the ONLY kindred-restricted spell type. Only Mosslings can use these spells."
   },
   "items": [
     {

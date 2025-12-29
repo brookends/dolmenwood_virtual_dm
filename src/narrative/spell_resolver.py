@@ -325,10 +325,12 @@ class SpellResolver:
             # TODO: Track glamour usage per subject/turn/day
             pass
 
-        # Check kindred restrictions
+        # Check kindred restrictions (only applies to Mossling Knacks)
         if spell.kindred_restricted:
-            # TODO: Check caster's kindred
-            pass
+            caster_kindred = caster.kindred.lower() if hasattr(caster, 'kindred') else ""
+            allowed_kindreds = [k.lower() for k in spell.kindred_restricted]
+            if caster_kindred not in allowed_kindreds:
+                return False, f"Only {', '.join(spell.kindred_restricted)} can cast {spell.name}"
 
         return True, "Can cast"
 
