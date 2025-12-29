@@ -8,7 +8,8 @@ for character creation, encounters, treasure, weather, and more.
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Callable, Optional, Union
-import random
+
+from src.data_models import DiceRoller
 
 
 class Kindred(str, Enum):
@@ -291,8 +292,8 @@ class DolmenwoodTable:
             Tuple of (roll_total, matching_entry)
         """
         die_size = int(self.die_type.value[1:])
-        rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
-        total = sum(rolls) + self.base_modifier + modifier
+        dice_result = DiceRoller.roll(f"{self.num_dice}d{die_size}", "table roll")
+        total = dice_result.total + self.base_modifier + modifier
 
         # Clamp to valid range
         total = max(self.get_min_roll(), min(self.get_max_roll(), total))
@@ -486,7 +487,7 @@ class SkillCheck:
             SkillCheck result
         """
         effective_target = max(0, min(6, target + modifier))  # Clamp to 0-6
-        roll = random.randint(1, 6)
+        roll = DiceRoller.roll("1d6", f"{skill_name} check").total
         success = roll <= effective_target
 
         return cls(
@@ -532,7 +533,7 @@ class NameTableColumn:
         if not self.names:
             return ""
         die_size = int(self.die_type.value[1:])
-        index = random.randint(1, min(die_size, len(self.names))) - 1
+        index = DiceRoller.randint(1, min(die_size, len(self.names)), "name roll") - 1
         return self.names[index]
 
 
@@ -637,7 +638,7 @@ class CharacterAspectTable:
             Tuple of (roll_total, matching_entry)
         """
         die_size = int(self.die_type.value[1:])
-        roll = random.randint(1, die_size)
+        roll = DiceRoller.roll(f"1d{die_size}", "aspect table roll").total
 
         for entry in self.entries:
             if entry.matches_roll(roll):
@@ -1053,8 +1054,8 @@ class EncounterTable:
                 return nested.roll(context)
 
         die_size = int(self.die_type.value[1:])
-        rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
-        total = sum(rolls)
+        dice_result = DiceRoller.roll(f"{self.num_dice}d{die_size}", "encounter table roll")
+        total = dice_result.total
 
         for entry in self.entries:
             if entry.matches_roll(total):
@@ -1416,8 +1417,8 @@ class TreasureTable:
         based on context and rolls on that instead.
         """
         die_size = int(self.die_type.value[1:])
-        rolls = [random.randint(1, die_size) for _ in range(self.num_dice)]
-        total = sum(rolls)
+        dice_result = DiceRoller.roll(f"{self.num_dice}d{die_size}", "treasure table roll")
+        total = dice_result.total
 
         for entry in self.entries:
             if entry.matches_roll(total):
@@ -1458,7 +1459,7 @@ class TreasureComponent:
 
     def roll_present(self) -> bool:
         """Roll to see if this component is present."""
-        return random.randint(1, 100) <= self.chance_percent
+        return DiceRoller.percent_check(self.chance_percent, "treasure component check")
 
 
 @dataclass
@@ -1827,8 +1828,8 @@ class RollTable:
         Returns (roll_value, entry) or (roll_value, None) if no match.
         """
         die_size = self.get_die_size()
-        rolls = [random.randint(1, die_size) for _ in range(self.metadata.num_dice)]
-        total = sum(rolls)
+        dice_result = DiceRoller.roll(f"{self.metadata.num_dice}d{die_size}", "roll table")
+        total = dice_result.total
 
         for entry in self.entries:
             if entry.matches_roll(total):
@@ -2158,7 +2159,7 @@ class HexRollTable:
     def roll(self) -> tuple[int, Optional[HexRollTableEntry]]:
         """Roll on this table and return the result."""
         die_size = int(self.die_type.lower().replace('d', ''))
-        roll_value = random.randint(1, die_size)
+        roll_value = DiceRoller.roll(f"1d{die_size}", "hex table roll").total
 
         for entry in self.entries:
             if entry.roll == roll_value:

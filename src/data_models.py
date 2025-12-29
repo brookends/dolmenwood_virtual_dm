@@ -281,6 +281,79 @@ class DiceRoller:
         return cls.roll("1d100", reason)
 
     @classmethod
+    def randint(cls, min_val: int, max_val: int, reason: str = "") -> int:
+        """
+        Generate a random integer in range [min_val, max_val] (inclusive).
+
+        Logged for reproducibility. Use this instead of random.randint().
+
+        Args:
+            min_val: Minimum value (inclusive)
+            max_val: Maximum value (inclusive)
+            reason: Why this roll is being made (for logging)
+
+        Returns:
+            Random integer in the specified range
+        """
+        result = random.randint(min_val, max_val)
+        # Log as a pseudo-dice roll for consistency
+        log_entry = DiceResult(
+            notation=f"range({min_val}-{max_val})",
+            rolls=[result],
+            modifier=0,
+            total=result,
+            reason=reason
+        )
+        cls._roll_log.append(log_entry)
+        return result
+
+    @classmethod
+    def choice(cls, items: list, reason: str = "") -> Any:
+        """
+        Select a random item from a list.
+
+        Logged for reproducibility. Use this instead of random.choice().
+
+        Args:
+            items: List of items to choose from
+            reason: Why this choice is being made (for logging)
+
+        Returns:
+            Randomly selected item from the list
+        """
+        if not items:
+            raise ValueError("Cannot choose from empty list")
+        index = random.randint(0, len(items) - 1)
+        result = items[index]
+        # Log as a pseudo-dice roll
+        log_entry = DiceResult(
+            notation=f"choice(1-{len(items)})",
+            rolls=[index + 1],  # 1-indexed for readability
+            modifier=0,
+            total=index + 1,
+            reason=f"{reason}: selected '{result}'" if reason else f"selected '{result}'"
+        )
+        cls._roll_log.append(log_entry)
+        return result
+
+    @classmethod
+    def percent_check(cls, chance: int, reason: str = "") -> bool:
+        """
+        Roll d100 and check if result is <= chance.
+
+        Logged for reproducibility. Use this instead of random.randint(1,100) <= X.
+
+        Args:
+            chance: Percentage chance of success (1-100)
+            reason: Why this check is being made (for logging)
+
+        Returns:
+            True if roll <= chance (success), False otherwise
+        """
+        roll = cls.roll_percentile(f"{reason} ({chance}% chance)")
+        return roll.total <= chance
+
+    @classmethod
     def get_roll_log(cls) -> list:
         """Get the complete roll log for the session."""
         return cls._roll_log.copy()
@@ -4390,8 +4463,8 @@ class CharacterState:
         Returns:
             Tuple of (roll_total, success)
         """
-        import random
-        roll = random.randint(1, 20)
+        result = DiceRoller.roll_d20(f"Saving throw ({save_type})")
+        roll = result.total
         total = roll + modifier
         target = self.get_saving_throw(save_type)
         return total, total >= target

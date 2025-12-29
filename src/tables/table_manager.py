@@ -7,10 +7,10 @@ including nested rolls, and manages context-sensitive modifiers.
 
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
-import random
 import json
 from pathlib import Path
 
+from src.data_models import DiceRoller
 from src.tables.table_types import (
     TableCategory,
     DieType,
@@ -294,8 +294,8 @@ class TableManager:
 
         # Roll the dice
         die_size = int(table.die_type.value[1:])
-        dice_rolled = [random.randint(1, die_size) for _ in range(table.num_dice)]
-        roll_total = sum(dice_rolled) + table.base_modifier + total_modifier
+        dice_result = DiceRoller.roll(f"{table.num_dice}d{die_size}", f"table roll: {table_id}")
+        roll_total = dice_result.total + table.base_modifier + total_modifier
 
         # Clamp to valid range
         roll_total = max(table.get_min_roll(), min(table.get_max_roll(), roll_total))
@@ -353,8 +353,8 @@ class TableManager:
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
-        rolls = [random.randint(1, die_size) for _ in range(num_dice)]
-        return sum(rolls) + modifier
+        dice_result = DiceRoller.roll(f"{num_dice}d{die_size}", "quantity roll")
+        return dice_result.total + modifier
 
     def roll_reaction(
         self,
@@ -392,8 +392,8 @@ class TableManager:
         Returns:
             Tuple of (roll_total, morale_result, description)
         """
-        dice = [random.randint(1, 6), random.randint(1, 6)]
-        roll_total = sum(dice)
+        dice_result = DiceRoller.roll("2d6", "morale check")
+        roll_total = dice_result.total
 
         result = check_morale(roll_total, morale_score, situational_modifier)
 
@@ -415,7 +415,7 @@ class TableManager:
         Returns:
             Tuple of (roll, is_surprised)
         """
-        roll = random.randint(1, 6) + modifier
+        roll = DiceRoller.roll("1d6", "surprise check").total + modifier
         return roll, roll <= 2
 
     def skill_check(

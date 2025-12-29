@@ -9,7 +9,6 @@ what's at stake before asking for rolls.
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Callable, Optional, Union
-import random
 
 from src.data_models import DiceResult, DiceRoller, ActionType
 from src.tables.table_types import (
@@ -638,7 +637,7 @@ def quick_skill_check(
     Returns:
         Tuple of (success, description)
     """
-    roll = random.randint(1, 6)
+    roll = DiceRoller.randint(1, 6, f"Quick skill check: {skill_name}")
     success = roll <= (base_chance + modifier)
 
     if success:

@@ -21,8 +21,8 @@ Table Selection Logic:
 """
 
 from typing import Any, Optional
-import random
 
+from src.data_models import DiceRoller
 from src.tables.table_types import (
     DieType,
     EncounterLocationType,
@@ -395,7 +395,8 @@ class EncounterTableManager:
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
-        return sum(random.randint(1, die_size) for _ in range(num_dice)) + modifier
+        result = DiceRoller.roll(notation, "Encounter table dice roll")
+        return result.total
 
     # =========================================================================
     # ENCOUNTER RESOLUTION
@@ -493,7 +494,7 @@ class EncounterTableManager:
             return None
 
         # Random selection with equal probability
-        selected_id = random.choice(eligible_tables)
+        selected_id = DiceRoller.choice(eligible_tables, "Select encounter table")
         return self._tables.get(selected_id)
 
     def _get_eligible_wilderness_tables(
