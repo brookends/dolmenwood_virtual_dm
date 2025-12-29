@@ -119,6 +119,9 @@ WOODGRUE_MOON_SIGHT_ABILITY = KindredAbility(
         "darkvision_range_feet": 60,
         "no_low_light_penalty": True,
         "cannot_read_in_darkness": True,
+        # Note: This is the same as the "Moon Sight" glamour, but woodgrues
+        # receive it as a racial ability rather than through the Glamours system.
+        "equivalent_glamour_id": "moon_sight",
     },
 )
 

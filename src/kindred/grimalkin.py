@@ -46,6 +46,8 @@ GRIMALKIN_GLAMOURS_ABILITY = KindredAbility(
     extra_data={
         "glamour_count": 1,
         "randomly_determined": True,
+        "spell_type": "fairy_glamour",
+        "spell_source": "data/content/spells/glamours.json",
     },
 )
 
