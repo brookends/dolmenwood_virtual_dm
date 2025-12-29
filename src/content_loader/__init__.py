@@ -26,6 +26,14 @@ from src.content_loader.monster_loader import (
     MonsterFileMetadata,
     load_all_monsters,
 )
+from src.content_loader.monster_registry import (
+    MonsterRegistry,
+    MonsterLookupResult,
+    StatBlockResult,
+    NPCStatRequest,
+    get_monster_registry,
+    reset_monster_registry,
+)
 
 __all__ = [
     # Core manager
@@ -56,4 +64,11 @@ __all__ = [
     "MonsterDirectoryLoadResult",
     "MonsterFileMetadata",
     "load_all_monsters",
+    # Monster registry
+    "MonsterRegistry",
+    "MonsterLookupResult",
+    "StatBlockResult",
+    "NPCStatRequest",
+    "get_monster_registry",
+    "reset_monster_registry",
 ]
