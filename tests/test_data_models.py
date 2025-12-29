@@ -299,6 +299,175 @@ class TestCharacterState:
         assert character.calculate_encumbrance() == 50 + 100 + 70
 
 
+class TestEncumbranceSpeed:
+    """Tests for encumbrance speed calculations and scaling."""
+
+    def test_weight_encumbrance_monotonic_decrease(self):
+        """Test that increasing weight monotonically decreases speed."""
+        from src.data_models import Item, EncumbranceSystem
+
+        # Create characters with increasing encumbrance
+        weights_and_expected_speeds = [
+            (0, 40),      # No weight: Speed 40
+            (400, 40),    # At threshold: Speed 40
+            (401, 30),    # Just over: Speed 30
+            (600, 30),    # At threshold: Speed 30
+            (601, 20),    # Just over: Speed 20
+            (800, 20),    # At threshold: Speed 20
+            (801, 10),    # Just over: Speed 10
+            (1600, 10),   # At max: Speed 10
+        ]
+
+        for weight, expected_speed in weights_and_expected_speeds:
+            character = CharacterState(
+                character_id="test",
+                name="Test",
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=10,
+                hp_max=10,
+                armor_class=9,
+                base_speed=40,
+                encumbrance_system=EncumbranceSystem.WEIGHT,
+                inventory=[Item(item_id="gold", name="Gold", weight=weight, quantity=1)] if weight > 0 else [],
+            )
+            actual_speed = character.get_encumbered_speed()
+            assert actual_speed == expected_speed, \
+                f"Weight {weight}: expected speed {expected_speed}, got {actual_speed}"
+
+    def test_encumbrance_scaling_for_fast_character(self):
+        """Test that encumbered speed scales proportionally for base_speed > 40."""
+        from src.data_models import Item, EncumbranceSystem
+
+        # Character with base_speed 50 (e.g., faster kindred)
+        # When lightly encumbered (raw speed 40), should scale to 50
+        # When medium encumbered (raw speed 30), should scale to 37 (30 * 50 / 40)
+        # When heavily encumbered (raw speed 20), should scale to 25 (20 * 50 / 40)
+
+        test_cases = [
+            (0, 50),      # No encumbrance: full base_speed
+            (400, 50),    # Light: 40 * 50 / 40 = 50
+            (600, 37),    # Medium: 30 * 50 / 40 = 37 (integer division)
+            (800, 25),    # Heavy: 20 * 50 / 40 = 25
+            (1600, 12),   # Very heavy: 10 * 50 / 40 = 12 (integer division)
+        ]
+
+        for weight, expected_speed in test_cases:
+            character = CharacterState(
+                character_id="test",
+                name="Fast Character",
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=10,
+                hp_max=10,
+                armor_class=9,
+                base_speed=50,  # Faster than standard
+                encumbrance_system=EncumbranceSystem.WEIGHT,
+                inventory=[Item(item_id="gold", name="Gold", weight=weight, quantity=1)] if weight > 0 else [],
+            )
+            actual_speed = character.get_encumbered_speed()
+            assert actual_speed == expected_speed, \
+                f"Weight {weight} with base_speed 50: expected {expected_speed}, got {actual_speed}"
+
+    def test_encumbrance_scaling_for_slow_character(self):
+        """Test that encumbered speed scales proportionally for base_speed < 40."""
+        from src.data_models import Item, EncumbranceSystem
+
+        # Character with base_speed 30 (e.g., slower kindred or heavily armored)
+        # When lightly encumbered (raw speed 40), should scale to 30
+        # When medium encumbered (raw speed 30), should scale to 22 (30 * 30 / 40)
+
+        test_cases = [
+            (0, 30),      # No encumbrance: full base_speed (capped by scaling)
+            (400, 30),    # Light: 40 * 30 / 40 = 30
+            (600, 22),    # Medium: 30 * 30 / 40 = 22 (integer division)
+            (800, 15),    # Heavy: 20 * 30 / 40 = 15
+            (1600, 7),    # Very heavy: 10 * 30 / 40 = 7 (integer division)
+        ]
+
+        for weight, expected_speed in test_cases:
+            character = CharacterState(
+                character_id="test",
+                name="Slow Character",
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=10,
+                hp_max=10,
+                armor_class=9,
+                base_speed=30,  # Slower than standard
+                encumbrance_system=EncumbranceSystem.WEIGHT,
+                inventory=[Item(item_id="gold", name="Gold", weight=weight, quantity=1)] if weight > 0 else [],
+            )
+            actual_speed = character.get_encumbered_speed()
+            assert actual_speed == expected_speed, \
+                f"Weight {weight} with base_speed 30: expected {expected_speed}, got {actual_speed}"
+
+    def test_speed_is_proportionally_scaled(self):
+        """Test that speed is proportionally scaled from base_speed, not fixed constants."""
+        from src.data_models import Item, EncumbranceSystem
+
+        # For any base_speed, encumbered speeds should be proportionally scaled
+        # Formula: scaled_speed = (raw_speed * base_speed) // 40
+        # where raw_speed is from the standard 40/30/20/10 bands
+
+        raw_speed_at_weight = {
+            0: 40,     # No encumbrance
+            400: 40,   # Light
+            600: 30,   # Medium
+            800: 20,   # Heavy
+            1600: 10,  # Very heavy
+        }
+
+        for base_speed in [35, 45, 50, 60, 80]:
+            for weight, raw_speed in raw_speed_at_weight.items():
+                character = CharacterState(
+                    character_id="test",
+                    name="Test",
+                    character_class="Fighter",
+                    level=1,
+                    ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                    hp_current=10,
+                    hp_max=10,
+                    armor_class=9,
+                    base_speed=base_speed,
+                    encumbrance_system=EncumbranceSystem.WEIGHT,
+                    inventory=[Item(item_id="gold", name="Gold", weight=weight, quantity=1)] if weight > 0 else [],
+                )
+                actual_speed = character.get_encumbered_speed()
+
+                # Calculate expected scaled speed
+                expected_speed = (raw_speed * base_speed) // 40
+
+                assert actual_speed == expected_speed, \
+                    f"base_speed {base_speed}, weight {weight}: expected {expected_speed}, got {actual_speed}"
+
+                # Speed should always be <= base_speed
+                assert actual_speed <= base_speed, \
+                    f"base_speed {base_speed}, weight {weight}: speed {actual_speed} exceeds base"
+
+    def test_over_capacity_returns_zero(self):
+        """Test that exceeding max capacity returns speed 0."""
+        from src.data_models import Item, EncumbranceSystem
+
+        character = CharacterState(
+            character_id="test",
+            name="Overloaded",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=9,
+            base_speed=40,
+            encumbrance_system=EncumbranceSystem.WEIGHT,
+            inventory=[Item(item_id="gold", name="Gold", weight=2000, quantity=1)],  # Over 1600 max
+        )
+        assert character.get_encumbered_speed() == 0
+
+
 class TestCondition:
     """Tests for Condition class."""
 
