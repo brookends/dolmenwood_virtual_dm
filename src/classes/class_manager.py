@@ -3,12 +3,18 @@ Class manager for Dolmenwood character classes.
 
 Provides a singleton registry for class definitions with lazy loading.
 Follows the same pattern as KindredManager.
+
+Also provides integration with CharacterState for initializing class-specific
+data like saving throws, attack bonus, spell slots, and skill targets.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional, TYPE_CHECKING
 
-from src.classes.class_data import ClassDefinition
+from src.classes.class_data import ClassDefinition, MagicType
+
+if TYPE_CHECKING:
+    from src.data_models import CharacterState, SpellSlotState, ClassSpecificData
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +145,196 @@ class ClassManager:
         if not class_def:
             return False
         return class_def.can_be_kindred(kindred_id)
+
+    # =========================================================================
+    # CHARACTER STATE INTEGRATION
+    # =========================================================================
+
+    def initialize_character_class_data(
+        self,
+        character: "CharacterState",
+        class_id: str,
+        level: int = 1
+    ) -> bool:
+        """
+        Initialize a character's class-specific data.
+
+        Sets up saving throws, attack bonus, spell slots, and class abilities
+        based on the class definition and level.
+
+        Args:
+            character: The CharacterState to initialize
+            class_id: The class ID to use
+            level: The character's level
+
+        Returns:
+            True if initialization succeeded
+        """
+        from src.data_models import SpellSlotState, ClassSpecificData
+
+        class_def = self.get(class_id)
+        if not class_def:
+            logger.warning(f"Unknown class: {class_id}")
+            return False
+
+        # Set the character class
+        character.character_class = class_id
+
+        # Set attack bonus
+        character.attack_bonus = class_def.get_attack_bonus(level)
+
+        # Set saving throws
+        saves = class_def.get_saving_throws(level)
+        character.saving_throws = {
+            "doom": saves.doom,
+            "ray": saves.ray,
+            "hold": saves.hold,
+            "blast": saves.blast,
+            "spell": saves.spell,
+        }
+
+        # Set class abilities
+        character.class_abilities = [
+            ability.ability_id
+            for ability in class_def.get_abilities_at_level(level)
+        ]
+
+        # Initialize spell slots for spellcasters
+        if class_def.magic_type in (MagicType.ARCANE, MagicType.HOLY):
+            spell_slots = class_def.get_spell_slots(level)
+            if spell_slots:
+                character.spell_slots = SpellSlotState(
+                    max_slots=spell_slots.copy(),
+                    current_slots=spell_slots.copy()
+                )
+
+        # Initialize class-specific data
+        if not character.class_data:
+            character.class_data = ClassSpecificData()
+
+        return True
+
+    def update_character_for_level(
+        self,
+        character: "CharacterState",
+        new_level: int
+    ) -> bool:
+        """
+        Update a character's class data for a new level.
+
+        Called when a character levels up.
+
+        Args:
+            character: The CharacterState to update
+            new_level: The new level
+
+        Returns:
+            True if update succeeded
+        """
+        class_def = self.get(character.character_class)
+        if not class_def:
+            return False
+
+        # Update attack bonus
+        character.attack_bonus = class_def.get_attack_bonus(new_level)
+
+        # Update saving throws
+        saves = class_def.get_saving_throws(new_level)
+        character.saving_throws = {
+            "doom": saves.doom,
+            "ray": saves.ray,
+            "hold": saves.hold,
+            "blast": saves.blast,
+            "spell": saves.spell,
+        }
+
+        # Update class abilities
+        character.class_abilities = [
+            ability.ability_id
+            for ability in class_def.get_abilities_at_level(new_level)
+        ]
+
+        # Update spell slots for spellcasters
+        if class_def.magic_type in (MagicType.ARCANE, MagicType.HOLY):
+            spell_slots = class_def.get_spell_slots(new_level)
+            if spell_slots and character.spell_slots:
+                character.spell_slots.max_slots = spell_slots.copy()
+                # Keep current slots but don't exceed new max
+                for rank, max_count in spell_slots.items():
+                    current = character.spell_slots.current_slots.get(rank, 0)
+                    character.spell_slots.current_slots[rank] = min(current, max_count)
+
+        return True
+
+    def get_skill_target_for_character(
+        self,
+        character: "CharacterState",
+        skill_name: str
+    ) -> Optional[int]:
+        """
+        Get a skill target for a character based on class and level.
+
+        Args:
+            character: The character to check
+            skill_name: Name of the skill
+
+        Returns:
+            The target number (roll d6 >= target), or None if not a class skill
+        """
+        class_def = self.get(character.character_class)
+        if not class_def:
+            return None
+
+        # Look for skill ability in class
+        for ability in class_def.abilities:
+            extra_data = ability.extra_data or {}
+            skill_targets = extra_data.get("skill_targets", {})
+
+            # Check if this ability has skill targets by level
+            if skill_targets:
+                level_targets = skill_targets.get(character.level)
+                if level_targets and skill_name in level_targets:
+                    return level_targets[skill_name]
+
+        return None
+
+    def can_character_cast_spell_type(
+        self,
+        character: "CharacterState",
+        spell_type: str
+    ) -> bool:
+        """
+        Check if a character can cast a specific spell type.
+
+        Args:
+            character: The character to check
+            spell_type: Type of spell (arcane, holy, glamour, rune)
+
+        Returns:
+            True if the character's class can cast this spell type
+        """
+        class_def = self.get(character.character_class)
+        if not class_def:
+            return False
+        return class_def.can_cast_spell_type(spell_type)
+
+    def get_character_magic_type(
+        self,
+        character: "CharacterState"
+    ) -> Optional[MagicType]:
+        """
+        Get the magic type for a character's class.
+
+        Args:
+            character: The character to check
+
+        Returns:
+            The MagicType for the character's class, or None if unknown
+        """
+        class_def = self.get(character.character_class)
+        if not class_def:
+            return None
+        return class_def.magic_type
 
     @classmethod
     def reset(cls) -> None:
