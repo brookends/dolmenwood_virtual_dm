@@ -1,0 +1,118 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      129
+    ],
+    "content_type": "monsters",
+    "item_count": 2,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Quag Toad",
+      "monster_id": "quag_toad",
+      "armor_class": 11,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+0, 1d4 + poison)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Small",
+      "monster_type": "Animal",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Poison: Save Versus Doom or become sick for 1d10 days: –2 to Attack Rolls and Saving Throws, Speed reduced by half."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "2′ long, black-skinned toads with quizzically rotating eyeballs and mouths full of gnarled fangs.",
+      "behavior": null,
+      "speech": null,
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 15,
+      "habitat": []
+    },
+    {
+      "name": "Clockwork Guardian",
+      "monster_id": "clockwork_guardian",
+      "armor_class": 16,
+      "hit_dice": null,
+      "hp": 20,
+      "level": 3,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Two-handed sword (+2, 1d10)"
+      ],
+      "damage": [
+        "1d10"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Medium",
+      "monster_type": "Construct",
+      "sentience": "Mindless",
+      "alignment": "Neutral",
+      "intelligence": "Mindless",
+      "special_abilities": [
+        "Construct: Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate)."
+      ],
+      "immunities": [
+        "disease",
+        "poison",
+        "mind-affecting spells"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "A hulking, 6′ tall, humanoid automaton of brass and bolts, powered by gears, springs, and coils.",
+      "behavior": null,
+      "speech": null,
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 40,
+      "habitat": []
+    }
+  ]
+}

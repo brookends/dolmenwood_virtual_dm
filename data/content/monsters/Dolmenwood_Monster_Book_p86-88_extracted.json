@@ -1,0 +1,236 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      86,
+      87,
+      88
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Troll",
+      "monster_id": "troll",
+      "armor_class": 13,
+      "hit_dice": "8d8",
+      "hp": 36,
+      "level": 8,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 fists (+7, 1d10 + moss growth)"
+      ],
+      "damage": [
+        "1d10"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8 + magical mosses (3-in-6 chance)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, trolls suffer 1 extra point of damage when hit with cold iron weapons",
+        "Regeneration: A damaged troll gains 3 HP at the start of each Round, as long as it is alive. Severed limbs reattach",
+        "Return from death: If killed (0 HP), a troll regenerates and fights again in 2d6 Rounds",
+        "Fire and acid: The only way to permanently kill a troll—they cannot regenerate damage from these sources",
+        "Fear of fire: Morale 8 when attacked with fire or acid",
+        "Moss growth: A creature touched by a troll sprouts moss at the site of contact, which can only be removed by magic (e.g. Cure Affliction). If the moss is not removed, the victim loses 1 Constitution each week. If reduced to 0 Constitution, the character dies and becomes a mound of inanimate moss. Raise Dead is ineffectual upon characters who perish in this way",
+        "Magical mosses: Trolls sometimes have 2d4 portions of a magical moss species in their lair (e.g. Frondhelm, Mind-Moss, Snogglebeard—DCB)",
+        "Moss connoisseurs: Trolls wander far and wide in search of new moss taste sensations. The great abundance of moss (including delicious ley-infused species) draws numerous trolls to Dolmenwood"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "fire",
+        "acid"
+      ],
+      "description": "Monstrous (10′ tall), mossivorous fairies with hairless, clay-like flesh. Their favoured delicacy is Dolmenwood moss grown on the corpses of sentient beings.",
+      "behavior": "Muddled, sly, hungry for moss",
+      "speech": "Lethargic rumbling. Woldish, Sylvan",
+      "traits": [
+        "Bony growths on head, like petrified antler fungus",
+        "Clumsy, three-fingered hands",
+        "Huge, milky eyes and a gawping mouth",
+        "Moss sprouts in its wake, as its feet touch the earth",
+        "Translucent flesh—with thick black bones and organs",
+        "Two heads: one wicked, the other kindly"
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": 30,
+      "encounter_scenarios": [
+        "Dragging a human corpse through the undergrowth. The deceased person's horse (a Prigwort prancer—see Horses, DPB) lies nearby, maimed and bleeding to death",
+        "Drowsing in pool of cool mud, snoring loudly. Sacks of moss-coated skeletons are piled nearby",
+        "Sitting beside a small waterfall, singing sweetly while lovingly rinsing and brushing the mossy hair and beards of a collection of skulls",
+        "Merrily whistling while squashing the corpses of a dozen woodgrues with a giant stone rolling pin. A sack of lime green moss lies nearby, ready to be laid across the woodgrue-mash substrate"
+      ],
+      "lair_descriptions": [
+        "Hiding beneath a rickety old bridge spanning a stream. Under the bridge's gloomy eaves hangs the trolls' collection of corpses—festooned with luxuriant, woolly moss",
+        "An old well shaft leading down to a winding cave complex where black, subterranean mosses thrive. The trolls arrange their beloved skeletons in dioramas in the dark",
+        "A wondrous garden of incandescent mosses growing upon the ruined pile of an old church. The trolls lair in the crypt, tending the moss-coated skeletons of holy people",
+        "A crooked cottage overwhelmed with moss, seemingly derelict. The trolls lurk in the cellar, served fresh corpse-moss by a gang of 2d4 murderous mosslings (p60) whose minds are addled by fungal infestation"
+      ],
+      "xp_value": 1440,
+      "habitat": []
+    },
+    {
+      "name": "Unicorn—Blessed",
+      "monster_id": "unicorn_blessed",
+      "armor_class": 17,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+3, 1d6) and horn (+3, 1d8)",
+        "spell"
+      ],
+      "damage": [
+        "1d6",
+        "1d8"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Blessed horn",
+      "size": "Large",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Lawful",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, blessed unicorns suffer 1 extra point of damage when hit with cold iron weapons",
+        "Magic Resistance: +2 bonus to Saving Throws against effects of magical origin",
+        "Spells: Blessed unicorns can cast each of the following holy spells once a day: Bless, Lesser Healing, Light, Rally",
+        "Teleport: Once per day, up to 360′ (including rider)",
+        "Riders: A blessed unicorn may occasionally allow a pure-hearted, Lawful character to ride it as a mount",
+        "Blessed horn: A blessed unicorn's horn, if severed, is an artefact of holy magic. The horn functions as a Holy Dagger and grants the wielder the ability to cast Bless and Lesser Healing once a day (magic item value 2,250gp). Servants of good may hunt and attempt to bring to justice one who wields such an item",
+        "Origin: The blessed unicorns of Dolmenwood are scions of a troop of fairy unicorns who aided mortals in the wars against the Cold Prince. In return for their aid, the unicorns and all their descendants were blessed by St Abthius and granted the freedom to roam Dolmenwood"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Magical beings of pure good. Shimmering pink, white, or pearlescent in colour. Roam deep, wild woods, revelling in the wonders of the natural world. Avoid contact with other sentients.",
+      "behavior": "Noble, timid, wilful",
+      "speech": "Proud whinnies. Liturgic, Sylvan",
+      "traits": [
+        "Regal, goat-like beard",
+        "Voice tinkles like wind chimes",
+        "Shifting aura of rainbow colour",
+        "Hooves fashioned from pearl",
+        "Scent reminiscent of home",
+        "Tail of a lion"
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Washing and sunning in a crystal-clear pool of water. For the rest of the day, the pool has curative properties, healing 1d4 HP when used to clean wounds",
+        "Cautiously approaching a confused-looking maiden while 1d6 hunters (Level 1—p106) with bows and nets lie in wait",
+        "Injured and seeking the protection of a family of 2d4 wodewoses (p93) who dwell in a secret grove. Shimmering blood trails in the unicorns' wake",
+        "Leading a knight (Level 3—p106) towards a long-lost shrine to St Abthius, where she intends to pray for guidance on her holy mission"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 180,
+      "habitat": []
+    },
+    {
+      "name": "Unicorn—Corrupt",
+      "monster_id": "unicorn_corrupt",
+      "armor_class": 17,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+3, 1d6) and horn (+3, 1d8)",
+        "spell"
+      ],
+      "damage": [
+        "1d6",
+        "1d8"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Cursed horn",
+      "size": "Large",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, corrupt unicorns suffer 1 extra point of damage when hit with cold iron weapons",
+        "Magic Resistance: +2 bonus to Saving Throws against effects of magical origin",
+        "Spells: Corrupt unicorns can cast each of the following unholy spells once a day: Blight, Cause Disease, Cause Fear, Darkness",
+        "Teleport: Once per day, up to 360′ (including rider)",
+        "Riders: A corrupt unicorn may occasionally allow a malignant Chaotic character to ride it as a mount",
+        "Cursed horn: A corrupt unicorn's horn, if severed, is an artefact of evil magic. The horn functions as an Arcane Dagger and grants the wielder the ability to cast Cause Disease and Cause Fear once a day (magic item value 2,250gp). Servants of Atanuwë hunt and attempt to kill one who wields such an item"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Wicked unicorns corrupted by Atanuwë. Ashen grey, midnight blue, or deep purple in colour. Serve Atanuwë as advisors in matters of war and assistants in dark sorcery.",
+      "behavior": "Sinister, fanatic, sadistic",
+      "speech": "Creaky whinnies. Gaffe, Sylvan",
+      "traits": [
+        "Cyan froth around the mouth",
+        "Speaks in tongues. Sentences emerge from the babble",
+        "Rippling, violet aura of energy",
+        "Feet end in mutated hooves, cloven into 3 claws",
+        "Empty, bleeding eye sockets. Navigates by magic",
+        "Two mouths, one gnashing, one grinning"
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Rearing upon a cracked dais, screeching in Gaffe, leading 2d6 crookhorns (p28) in a profane rite. At the culmination, 3 cobbins (p26) are sacrificed and a purple tear opens in the fabric of space. Atanuwë (DCB) steps through the rift and slays all present, cackling with glee",
+        "Walking widdershins around a standing stone. A shimmering, emerald energy rises from the stone and drifts into the sky",
+        "Leaping atop a crag, battling 1d8 blessed unicorns (p85)",
+        "Browsing the mossy beards and fungal growths of 1d6 slaughtered mosslings"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 180,
+      "habitat": []
+    }
+  ]
+}

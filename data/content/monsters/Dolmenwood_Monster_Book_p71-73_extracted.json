@@ -1,0 +1,224 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      71,
+      72,
+      73
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Redcap",
+      "monster_id": "redcap",
+      "armor_class": 14,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 cudgels (+1, 1d4 + knock-out)",
+        "nursery rhyme (sleep)"
+      ],
+      "damage": [
+        "1d4",
+        "sleep"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Carried by group: 2d100gp + R4",
+      "size": "Medium",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, redcaps suffer 1 extra point of damage when hit with cold iron weapons",
+        "Knock-out: Redcaps never fight to kill, but only to knock their foes unconscious. A blow that would reduce the target to 0 HP instead renders it unconscious for 6 Turns, remaining at 1 HP",
+        "Nursery rhymes (once a day): A group of 4 or more redcaps can chant a taunting nursery rhyme that causes 1d6 mortals within 50′ to fall into an enchanted sleep for 6 Turns (Save Versus Spell to resist)",
+        "Robbery: Unconscious victims are robbed of their possessions (save silver) and sometimes outerwear",
+        "Red hats: All redcaps wear a bright red hat of one kind of another",
+        "Entering mortal settlements: If a redcap can be tricked into setting foot in a mortal town or village, they become merry, good-willed, and amorous, before vanishing into Fairy after some hours",
+        "Serve Prince Mallowheart: Redcaps are servants of the cruel fairy Prince Mallowheart (DCB), who delights in tormenting and humiliating mortals"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Fairy bandits who enter Dolmenwood at the behest of Prince Mallowheart to taunt, beat, and rob mortals. Look like squat humans with white hair, glinting eyes, and wide, leering grins.",
+      "behavior": "Sneaky, malicious, mischievous",
+      "speech": "Leering and tittering. Woldish, Sylvan, basic High Elfish",
+      "traits": [
+        "Constantly giggling",
+        "Hairy, shoeless feet",
+        "Eyes like emeralds",
+        "Sings lullabies while administering a beating",
+        "Carries a human infant in a wicker basket",
+        "Shiny, red, leather boots with brass buckles"
+      ],
+      "number_appearing": "2d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Stringing 2d4 unconscious humans (everyday mortals—p110) up in a tree, after having stripped them of their clothing and valuables",
+        "Furtively digging beside a large boulder, burying their ill-gotten treasure: 100pp, 100gp, and 12 bronze bracelets carved with prancing longhorns (50gp each)",
+        "Arguing with an ogre (p65) about the flavour of mortal flesh. The redcaps claim mortals taste like chicken, whereas the ogre insists they taste like fish",
+        "Painting silly, grinning faces on the bald pate of a sleeping friar (Level 1—p106)"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 35,
+      "habitat": []
+    },
+    {
+      "name": "Redslob",
+      "monster_id": "redslob",
+      "armor_class": 13,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "4 appendages (+3, 1d4 + adhesion)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "In ooze pockets: R1",
+      "size": "Large",
+      "monster_type": "Ooze",
+      "sentience": "Semi-Sentient",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Immunities: Unharmed by cold and lightning",
+        "Eyeless: Can act normally in light or darkness",
+        "Adhesion: On a successful attack, the acid-oozing appendage sticks onto the victim and inflicts 1d4 damage in subsequent Rounds. This reduces the number of attacks per Round the redslob may make",
+        "If hit in melee: When a redslob is hit with a melee weapon, the attacker must Save Versus Hold. If the save fails, the weapon is ripped out of the attacker's hand, adhering to the monster's sticky mass",
+        "Wield weapons: A redslob may grasp weapons that have adhered to its surface, wielding them in subsequent Rounds. Each weapon wielded may attack once per Round, replacing one of the redslob's appendage attacks"
+      ],
+      "immunities": [
+        "cold",
+        "lightning"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Semi-sentient masses (8′ across) of noxious, bubbling, crimson ooze that lurk in branches, waiting to drop on victims. Covet with avaricious fervour—sometimes collect gems.",
+      "behavior": "Cautious, inquisitive",
+      "speech": "Slurping and bubbling",
+      "traits": [
+        "Eye-like organs on wobbly stalks",
+        "Sporadically wracked with quivering",
+        "Surrounded by a pink vapour",
+        "Suit of armour embedded in ooze mass",
+        "Mimics the forms of those it encounters",
+        "Dotted with throbbing white globes"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Submerged in a pool of clear, sparkling water, placidly purging itself of accumulated debris",
+        "Draped over a standing stone, emitting a cloud of red steam. The stone emits a deep, pleasant warmth that grants any who touch it (if cleared of the ooze) a +2 bonus to all Saving Throws against cold effects for 24 hours",
+        "Slithering through the branches of a fir tree, attempting to evade the grasping hands of a hungry gelatinous hulk (p44)",
+        "Floating in a glistening, 3′ wide bubble of magical force. Any contact with the bubble pops it, releasing the ooze"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 230,
+      "habitat": []
+    },
+    {
+      "name": "Root Thing",
+      "monster_id": "root_thing",
+      "armor_class": 13,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+2, 1d4 + entangle)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Small/Medium/Large",
+      "monster_type": "Plant",
+      "sentience": "Semi-Sentient",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Eyeless: Can act normally in light or darkness",
+        "Entangle: If both claw attacks hit in the same Round, the victim becomes entangled in the monster's rooty grasp. An entangled victim automatically suffers 1d4 damage per Round and cannot attack. A Save Versus Hold is allowed, once per Round, to escape",
+        "Bury / unearth: Root things are able to bury and unearth themselves completely in the space of 1d4 Rounds. An entangled victim dragged beneath the earth suffocates after a further 1d4 Rounds",
+        "Root type: Root things are the predatory counterparts of root vegetable varieties cultivated by mortals",
+        "Digestion: Root things do not have a mouth, instead consuming victims by dragging them beneath the earth. Digestion occurs over months, on corpses entwined in the roots",
+        "Accursed flesh: The flesh of a root thing is hearty and delicious (treat as 2d6 fresh rations per slain root thing), but inspires murder. Any who consume the flesh must Save Versus Doom or be compelled to attack the next person they encounter"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Humanoid root vegetables (4′–10′ tall) that pull themselves up from the soil to hunt hapless mortals. Root things are eyeless and hunt by scent, with a horrid, rasping sniffing.",
+      "behavior": "Cunning, bestial, ruthless lust to feed",
+      "speech": "None",
+      "traits": [
+        "Long, grasping fingers",
+        "Eye-like whorls on body. Maybe they really are eyes?",
+        "Mass of floppy foliage",
+        "Gaping, mouth-like orifice which moans and belches",
+        "Covered in grotesque nodules and limp, stunted arms",
+        "Long, pointy nose"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Being set upon by 1d4 woodsmen (Level 1 hunters—p106), bludgeoning the root thing with the shovels they have just used to unearth it",
+        "Burrowing into the earth, dragging a screaming child (everyday mortal—p110)",
+        "Sniffing around the camp-site of a reclining friar (Level 1—p106)",
+        "Hanging from a tree branch, trapped in a cage woven from thick, thorny bramble-wood. The root thing has been here for some time and has fallen into a semi-conscious state, wherein shoots and strange nodules have begun to grow from its head. The person who has trapped it may be nearby"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 65,
+      "habitat": []
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      77,
+      78,
+      79
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Shape-Stealer",
+      "monster_id": "shape_stealer",
+      "armor_class": 14,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 fists (+3, 1d6)",
+        "weapon (+3)"
+      ],
+      "damage": [
+        "1d6",
+        "weapon"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C3 + R4 + M8",
+      "possessions": "Victim's equipment",
+      "size": "Medium",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, shape-stealers suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Immunities: Immune to mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Shape-stealing: A shape-stealer can adopt the physical form of any Medium humanoid it observes. Clothing and equipment are not copied—these are usually acquired by killing the mimicked creature. Physical and magical capabilities of the adopted form are not gained—the shape-stealer always uses the stats listed above.",
+        "Absorbing victims: After slaying a mimicked victim, a shape-stealer can absorb the corpse into its ooze-like body, gaining their personality and memories in the process. This takes 1 Turn. The shape-stealer lives as the victim for 2d6 days (or until suspected—see Suspicious Traits), before fleeing and seeking its next victim.",
+        "If killed: A shape-stealer reverts to their natural form—a transparent, ooze-like humanoid, 7′ tall."
+      ],
+      "immunities": [
+        "mind-affecting spells"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Shape-shifting fairies, naturally ooze-like, but eager to copy the form and mind of any humanoid they slay and absorb. Obsessed with experiencing mortal life through many guises.",
+      "behavior": "Remorseless, cautious, stealthy",
+      "speech": "Victim's voice. Woldish, Sylvan, High Elfish",
+      "traits": [
+        "Coughs after speaking adopted name.",
+        "Smokes in contact with silver or cold iron.",
+        "Cannot cross running water.",
+        "One extra finger.",
+        "Fizzing cyan blood.",
+        "Breath smells of blossom."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 20,
+      "encounter_scenarios": [
+        "Naked, in the forms of 1d3 pedlars (p111) spied in the distance. If confronted, claim that their intended victims are monsters who've stolen their possessions.",
+        "Stealing away after tiring of their most recent victims' lives. A search party of 2d4 villagers (p111) is in pursuit—friends who know something is wrong but have not yet realised the truth.",
+        "Fussing over an adventuring party (p108) captured and bound while they slept, unsure who should be absorbed and impersonated first.",
+        "Dragging an unconscious acquaintance or friend of the PCs away to an isolated location, intending to replace them in secret."
+      ],
+      "lair_descriptions": [
+        "A simple thatched cottage hidden in a cluster of trees. Crude portraits of past victims adorn the house's walls.",
+        "The basement of a collapsed building, decorated cosily with knick-knacks and knitted blankets. Only the tiny or ooze-like can enter without shifting fallen stone and timber.",
+        "A ramshackle hut ringed by marshland. The discarded bodies of victims deemed unfit to be copied have risen as 2d6 bog corpses (p17).",
+        "An unassuming dwelling in a small hamlet, its closets filled with myriad finery and costumes. A barrel of perpetually bubbling water can be used to communicate with the Baths of Astralon (DCB)."
+      ],
+      "xp_value": 180,
+      "habitat": []
+    },
+    {
+      "name": "Skeleton",
+      "monster_id": "skeleton",
+      "armor_class": 12,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)"
+      ],
+      "damage": [
+        "weapon"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "2d6sp",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Dark sight: Can see normally without light.",
+        "Damage reduction: Suffer half damage from cutting or piercing attacks (e.g. arrows, spears, swords).",
+        "Weapons: Skeletons tend to wield clubs (d4), staves (d4), or shortswords (d6).",
+        "Mindless skeletons: 3-in-6 groups of skeletons are undead servitors created by dark magic (e.g. the arcane spell Animate Dead). Such skeletons unquestioningly carry out their creator's instructions (sometimes centuries after their demise). They are Mindless and have Morale 12."
+      ],
+      "immunities": [
+        "disease",
+        "poison",
+        "mind-affecting spells"
+      ],
+      "resistances": [
+        "cutting damage",
+        "piercing damage"
+      ],
+      "vulnerabilities": [],
+      "description": "Skeletal remains of mortals, reanimated by errant magic. Granted a second life, they feast, drink, and make merry, savouring the wonders of the mortal world and living as they please.",
+      "behavior": "Merry, flippant, addled, awed",
+      "speech": "Rattling whisper. Woldish",
+      "traits": [
+        "Flowers fill its ribcage.",
+        "Addresses the skeleton inside living people.",
+        "False eyes inserted into eye sockets.",
+        "Smells of cheap wine.",
+        "Wears a wig and make-up.",
+        "Host to a rat inside its skull."
+      ],
+      "number_appearing": "3d6",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Collecting water from a sacred spring to pour out as libations to lost companions. An undead-hunting cleric of the Order of St Signis (Level 3—p104) lies in wait nearby.",
+        "Traipsing loudly through the forest, heavily intoxicated and slurring their words into ghastly moans.",
+        "Gathering to engage in an annual contest of music and song. Talented outsiders are welcome to participate and try for the prize of 2d4 Speckled Sporange (DCB), intended to adorn the eye sockets. The price of entry is a sizeable bone, preferably one's own.",
+        "Standing around the corpse of a recently murdered human, cheering as the bones attempt to free of their prison of decomposing flesh."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 10,
+      "habitat": []
+    },
+    {
+      "name": "Snail, Giant—Mutant",
+      "monster_id": "snail_giant_mutant",
+      "armor_class": 17,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+5, 1d8 + engulf)"
+      ],
+      "damage": [
+        "1d8"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Engulf: On a natural 19 or 20 Attack Roll, the victim is dragged under the snail's slimy, undulating body and crushed. Each Round, an engulfed victim automatically suffers 2d6 damage and may make a Save Versus Hold to escape.",
+        "Cling: Can slither up vertical surfaces (e.g. tree trunks, walls, ceilings, etc.).",
+        "Mutations: Due to feeding on ley-infused flora, each snail possesses a weird mutation—roll on the Mutations table.",
+        "Riders: Mutant giant snails may be captured and used as mounts, though the necessary training requires magic or great patience."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Slimy, shelled molluscs (10′ tall) that glide slowly through the dank glades of Dolmenwood, munching on ley-infused vegetation and anything fleshy that crosses their path.",
+      "behavior": "Ravenous, instinctual",
+      "speech": "Relentless slurping",
+      "traits": [
+        "Pointy, striped shell.",
+        "Three eye stalks.",
+        "Leaves a trail of fluorescent slime.",
+        "1′-wide eyes with dozens of independently mobile pupils.",
+        "Multiple rows of snapping teeth.",
+        "Jet black, oozing orange slime."
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Rolling through a hamlet, crushing the mud huts and devouring their screaming inhabitants—2d4 everyday mortals (p110).",
+        "Slowly slithering up the trunk of a great tree, pursuing 1d6 woodgrues (p94) who clamber ever higher into the branches to escape the monster.",
+        "Laying hundreds of 6″ long eggs over the slimy boulders of a small stream.",
+        "Trapped within a 20′ cube of magical energy, slithering up and down the sides. Touching the force cube from the outside dispels it."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 720,
+      "habitat": []
+    }
+  ]
+}

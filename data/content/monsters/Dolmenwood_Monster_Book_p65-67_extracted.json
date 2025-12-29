@@ -1,0 +1,237 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      65,
+      66,
+      67
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Nutcap",
+      "monster_id": "nutcap",
+      "armor_class": 13,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "20' Fly 40'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": 40,
+      "swim_speed": null,
+      "attacks": [
+        "Dart (+0, 1d4, range 20'/40'/60')",
+        "Cudgel (+0, 1d4)"
+      ],
+      "damage": [
+        "1d4",
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, nutcaps suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Plant-based: Nutcaps are affected by magic that targets plants or plant-based creatures.",
+        "Wood extraction: Nutcaps can extract raw or shaped wood from trees merely by touch, without cutting or harming the tree. An unarmed nutcap can arm itself with a cudgel or dart by touching a living tree for 1 Round.",
+        "Aerial raids: Nutcaps are agile flyers. They sometimes make aerial raids on ground-dwellers, gleefully stealing tasty food and small items.",
+        "Mount: 1-in-3 nutcaps is mounted on a giant fly (p114)."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "2-3′ tall, arboreal demi-fey with wings like sycamore seeds, acorn heads, hands and feet like creeping roots, and skin like smooth beech bark. Guard magical trees of their own breeding.",
+      "behavior": "Capricious, covetous, flighty",
+      "speech": "Excited chittering. Sylvan, Mulch (1-in-3 chance)",
+      "traits": [
+        "Scintillating compound eyes.",
+        "Creaks like wet wood as it moves.",
+        "Leafy shoots growing from joints.",
+        "Symbiotic hornets' nest (treat as an insect swarm—p115).",
+        "Burred hands (can be used as clubs).",
+        "Eye-like whorls over whole body."
+      ],
+      "number_appearing": "2d6",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Drunk on berry wine, fighting over a pouch of 1d12 lambent blue nuts. The nuts are magical, each having the effect of a random balm or potion with a 1 Turn duration: Dimensional Solvent (Gold or Silver), Liquid Time, Vaporous Spirits. Each nut is worth 500gp.",
+        "Raiding a cart laden with vegetables. The angry farmer (everyday mortal—p110) waves a rake at the nutcaps.",
+        "Polishing little faces in the trunk of a great elm—the hallowed remains of community elders.",
+        "Tenderly carrying 1d6 young (1′ tall, wavering, green saplings with humanoid arms and little leaf faces) in clay pots down to a stream to bathe and drink."
+      ],
+      "lair_descriptions": [
+        "A communal hive-home fantastically moulded from polished wood—arching bridges, round doors and windows, vaulted roofs. Alongside, a wicker breeding enclosure houses 2d6 giant flies (p114).",
+        "Wicker spheres built high in the branches of a great oak. Bees (insect swarm, p115)—friendly with the nutcaps—buzz around the lair, their huge nest hanging in the centre.",
+        "Tunnels and little chambers delved into the living wood of an enormous beech tree. The nutcaps cultivate luscious berries in pots on balconies and along branches.",
+        "A treetop village of mud huts on woven platforms stretched between tree branches. The village glows with orb-like, bioluminescent fruits hung from twigs."
+      ],
+      "xp_value": 10,
+      "habitat": []
+    },
+    {
+      "name": "Ochre Slime-Hulk",
+      "monster_id": "ochre_slime-hulk",
+      "armor_class": 14,
+      "hit_dice": "7d8",
+      "hp": 31,
+      "level": 7,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 claws (+6, 2d4)"
+      ],
+      "damage": [
+        "2d4"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Fungus",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Immunities: Suffer half damage from mundane weapons.",
+        "Flammable: Suffer double damage from fire.",
+        "Eyeless: Can act normally in light or darkness.",
+        "If damaged: When a slime-hulk takes damage (except by fire), it releases a cloud of spores. All within 10′ must Save Versus Doom or suffer 1d4 damage for the next 3 Rounds, as the acidic spores burn away at skin and lungs.",
+        "Upon killing a victim: A slime-hulk spews out a spore-laden, yellow slime that engulfs the corpse. After 1 Turn, the corpse is dissolved into a pool of slime that spawns a new slime-hulk 2 weeks later. A character dissolved in this way cannot be restored to life via Raise Dead.",
+        "Washing off slime: A corpse can be saved before being completely dissolved (1 Turn) by washing off the yellow slime with water, wine, etc.",
+        "Potion ingredient: The flesh of an ochre slime-hulk can be used to brew a Philtre of Wondrous Vitality in half the normal time. The flesh is worth 100gp."
+      ],
+      "immunities": [],
+      "resistances": [
+        "mundane weapons"
+      ],
+      "vulnerabilities": [
+        "fire"
+      ],
+      "description": "Hulking (8′ long), headless, quadrupedal mounds of fungal flesh, covered with webs, networks, and lattices of ochre slime and bristling with spore-laden stalks. Rapacious killers.",
+      "behavior": "Indiscriminately brutal",
+      "speech": "None",
+      "traits": [
+        "Skull-like face.",
+        "Covered in sucking, slurping orifices.",
+        "Acidic, citrus reek.",
+        "Spore-stalks are hand-like and eye-like.",
+        "Humanoid skeleton in hollow lattice at centre of torso.",
+        "Writhing cluster of worm-like tentacles at front of body."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Crouched over an unconscious, bloodied friar (Level 1—p106), spewing a sticky, ochre slime onto the body. If the slime-hulks are driven off and the slime washed off, the friar can be saved.",
+        "Rising, dripping wet and newly spawned, from a pool of yellow slime collected in a bowl in the hollowed out stump of a once-mighty tree.",
+        "Advancing on a blessed unicorn (p85) trapped in a rocky crevasse.",
+        "Lying dormant under streams of iridescent oil dripping from the trees above, shuddering with apparent pleasure."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 780,
+      "habitat": []
+    },
+    {
+      "name": "Ogre",
+      "monster_id": "ogre",
+      "armor_class": 14,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Club (+3, 1d10)",
+        "Horns (+3, 1d8)"
+      ],
+      "damage": [
+        "1d10",
+        "1d8"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M2",
+      "possessions": "Sack (see below)",
+      "size": "Large",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: Ogres' acute senses of hearing and smell make them difficult to surprise. Each ogre has a 3-in-6 chance of being able to act during a Surprise Round when their side is surprised.",
+        "Tracking: Ogres can track by scent. Once an ogre is on the trail, they are exceedingly difficult to thwart.",
+        "Ogre's sack: Each ogre carries a sack of loot. See the Sack Contents table.",
+        "Origin: Ogres are mortals who were corrupted and transformed by the temptations of Atanuwë, such as the Shub Eggs (DCB) that grow in the Nagwood. Once transformed into an ogre, they lose all recollection of their former lives.",
+        "Offspring: Progeny are usually born cursed, but occasionally an uncursed child (of normal mortal Kindred) is born.",
+        "Remove curse: If an ogre is subjected to magic of curse removal (e.g. Remove Curse), they must Save Versus Doom or return to their original mortal form."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Frightful humanoids, 8–10′ tall, with warty, violet skin, misshapen bodies, and great, curled horns. Dwell in isolated caves or cottages, dress in hides. Crave mortal flesh, especially infants.",
+      "behavior": "Depraved, brutish, slow-witted, greedy",
+      "speech": "Crude booming. Basic Woldish",
+      "traits": [
+        "Jaw completely unhinges.",
+        "Emaciated torso reveals last meal.",
+        "Cooking pot worn as a helm.",
+        "Horns twist and branch like antlers.",
+        "Self-inflicted ritual scarification.",
+        "Hide clothing fashioned from unicorn skin."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 40,
+      "encounter_scenarios": [
+        "Returning home from a successful hunt, covered in blood. Each ogre present carries 1d3 kidnapped children in a large wooden cage strapped to their back.",
+        "Yelling out from atop a valley, listening to their own echo and increasingly concerned they cannot see who or what is repeating the words back at them.",
+        "Gathering around a campfire to watch a captive wodewose (p93) be tied to a spit and slowly roasted alive. Terrified woodland animals may try to attract the attention of potential saviours nearby.",
+        "Tracking a herd of 3d4 false unicorns (p113), desperate to rid the area of their stench."
+      ],
+      "lair_descriptions": [
+        "A giant structure of tree trunks and unhewn stone built into a crude facsimile of a house. Detritus, filth, and discarded loot cover the floor.",
+        "A quaint cottage, splattered with blood and decorated with bones. 2d10 pook morels (p68) live under the floorboards, stealing what they can whenever the house is empty.",
+        "An enormous cave made up of a single, spacious chamber. A massive boulder blocks the entrance to prevent any mortal captives from escaping.",
+        "A collapsed stone fort with a makeshift roof fashioned from tree trunks. A feral owlbear (p116) is being kept as a pet, trapped behind bars in the fort's old gaol."
+      ],
+      "xp_value": 80,
+      "habitat": []
+    }
+  ]
+}

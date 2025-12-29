@@ -1,0 +1,237 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      74,
+      75,
+      76
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Scarecrow",
+      "monster_id": "scarecrow",
+      "armor_class": 11,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+2)",
+        "Gaze (terror)"
+      ],
+      "damage": [
+        "1d4",
+        "terror"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "Herbal and mundane trade goods (DCB)",
+      "size": "Medium",
+      "monster_type": "Construct",
+      "sentience": "Sentient",
+      "alignment": "Alignment by Season",
+      "intelligence": null,
+      "special_abilities": [
+        "Non-biological: Immune to biological effects (e.g. disease, poison)",
+        "Weapons: Scarecrows favour clubs (1d4) and staves (1d4)",
+        "Terrifying gaze: A scarecrow can gaze at a target within 30′, its painted or carven visage twisting into a leering grimace. The target must Save Versus Doom or be stricken with fear and flee for 2d6 Rounds. Affected creatures have a 60% chance of immediately dropping anything in their hands. The chance is decreased by 5% for each Level above 1",
+        "In spring and summer: Scarecrows are merry—wishing to sing, dance, and trade (Lawful alignment)",
+        "In autumn: Scarecrows are murderous—seeking to kill sentients and secretly devour their brains in the deep woods (Chaotic alignment)",
+        "In winter: Scarecrows are morose—wishing to be left alone with their dark thoughts (Neutral alignment)"
+      ],
+      "immunities": [
+        "disease",
+        "poison"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Human-shaped figures composed of jumbled straw, brambles, and leaves stuffed inside sacks or cast-off clothing. Wander Dolmenwood as pedlars, seeking wonder and merriment.",
+      "behavior": "Merry / murderous / morose",
+      "speech": "Rustling and rumbling. Woldish, Mulch",
+      "traits": [
+        "Chuckles and sighs between sentences",
+        "Inadvertently mutters \"juicy brains\" in conversation",
+        "Sacking eroded, composed entirely of straw/brambles",
+        "Plucks and neatly re-stuffs stray straws",
+        "One leg missing, walks with a crutch",
+        "Partially burned, straw and sacking charred"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 0,
+      "encounter_scenarios": [
+        "Crouched at the edge of a meadow, cutting dried grass with a sickle to re-stuff their sagging bodies",
+        "Leaning over a small pool, filling wooden tankards from a miniature waterfall. Taking long, hearty draughts of the fresh water, soaking their straw stuffing",
+        "Wildly prancing upon a grassy knoll to the enchanted music of 1d4 giggling woodgrues (p94)",
+        "Angrily shaking sticks at a flock of bickering crows that swoops down and pecks at their straw stuffing. The crows are the flock form of a gloam (p46), intent on stealing the scarecrows' bonnets"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 65,
+      "habitat": []
+    },
+    {
+      "name": "Scrabey",
+      "monster_id": "scrabey",
+      "armor_class": 13,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": 40,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+1)"
+      ],
+      "damage": [
+        "1d4",
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C4 + R4 + M1 + M5",
+      "possessions": "4d6sp + fairy, herbal, and mundane trade goods (DCB, 2-in-6 chance of each)",
+      "size": "Small",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, scrabies suffer 1 extra point of damage when hit with cold iron weapons",
+        "Weapons: Scrabies typically carry 1d3 daggers (1d4) and a shortsword (1d6)",
+        "Worm form: In a pinch (they find it distasteful), scrabies can transform into a 5′ long, 2″ thick, grey worm with their face at the tail end. The transformation takes 1 Round, during which the scrabey can do nothing else. When in this form, they are able to dive into the earth and burrow away at their normal Speed",
+        "Nose beverage: Each scrabey can pour a particular liquid (see Nose Beverages) from its tap-like nose, at will—up to a pint per hour. Despite their questionable origin, these liquids are quite delicious. The bestowing of a nose-beverage is a gesture of friendship"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Scrawny, 3′–4′ tall demi-fey with ashen skin, moonish eyes, needle teeth, and tap-like noses. Live in a labyrinth of subterranean tunnels. Often travel with their possessions in packs.",
+      "behavior": "Prudent, excitable, curious",
+      "speech": "Gulping whisper. Dwelve, basic Woldish",
+      "traits": [
+        "Wears a quizzical wooden mask",
+        "Smokes green Mogglemoss (DPB) in a long, clay pipe",
+        "Listens through an ivory horn",
+        "Braided beard, down to the knees",
+        "Calls strangers \"Palanquin\" and friends \"Spontywiff\"",
+        "Telescopic fingers that can unfurl up to 3′ long"
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 15,
+      "encounter_scenarios": [
+        "Lying listless by the roadside, drunk on mushroom ale, their packs strewn behind them. Drunkenly ask passersby for ludicrous or fictional items (e.g. moon cats, kings' jowl-fur, mermaids' toes, sagacious mares)",
+        "Feverishly repairing a section of tunnel exposed due to a cave in. Passersby may be enlisted to help, if willing to work in exchange for a refreshing beverage",
+        "Peeking out from a hole at the base of a tree, inquiring with an irascible Drune Cottager (p35) about directions to the fabled grotto of the King of the Woodgrues (hex 1704)",
+        "Perched atop a sled packed with goods, wildly lashing the boars which drag it, frantically trying to evade the crashing footsteps of a gelatinous hulk (p44) in pursuit"
+      ],
+      "lair_descriptions": [
+        "Cramped pantries, libraries, bed chambers, and smoking parlours in the hollow trunk of a mighty tree, accessible via a tunnel through the tree's roots",
+        "A stone trapdoor in the forest floor leads to a chilly, subterranean warehouse full of barrels and crates. A stove and mounds of blankets are the only home comforts",
+        "2′ wide clay pipes lead to narrow bedroom-ledges at different levels of a bottomless underground shaft. Ever more absurd creatures dwell deeper down",
+        "A cavern pool. The scrabies stash their treasures in casks at the bottom of the pool, extracted by hooked poles. They also sleep in the water; one stays above the surface, on guard, and draws the others out when they awake"
+      ],
+      "xp_value": 20,
+      "habitat": []
+    },
+    {
+      "name": "Shadow",
+      "monster_id": "shadow",
+      "armor_class": 12,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+1, 1d4 + Strength drain)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": "C9 + R5 + M10",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Monstrosity",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: When shadows emerge from the gloom, opposing side has a 5-in-6 chance of being surprised",
+        "Immunities: Only harmed by magic or magic weapons. Immune to mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate)",
+        "Light sensitivity: In daylight (or equivalent), shadows suffer a –2 penalty to Attack Rolls and Saving Throws",
+        "Dark sight: Can see normally without light",
+        "Strength drain: Victims lose 1 Strength per hit. If reduced to 0 Strength, the victim becomes a shadow. Lost Strength recovers after 8 Turns"
+      ],
+      "immunities": [
+        "mind-affecting spells",
+        "non-magical weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "daylight"
+      ],
+      "description": "Creeping humanoid shadows that lurk in darkness, grasping at living creatures, on whose vital energy they feed. Shift form when moving, writhing with tentacles, maws, and horns.",
+      "behavior": "Ravenous, greedy",
+      "speech": "Incoherent whispering. Jumbled Woldish",
+      "traits": [
+        "Eye-like holes appear and disappear across body",
+        "Very familiar silhouette",
+        "Shifting shades of the night sky",
+        "A mass of worm-like shadows, moving together",
+        "Too many mouths",
+        "Thousands of voices, whispering at once"
+      ],
+      "number_appearing": "1d8",
+      "lair_percentage": 40,
+      "encounter_scenarios": [
+        "Toying with 1d6 pilgrims. The travellers are uncertain why the shadows they're casting are slightly out-of-sync with their movements",
+        "Relentlessly creeping across the ground in a straight line, stopping only to attack whatever crosses their path",
+        "Haunting a roadside shrine, ready to lash out and feed on anyone who stops to pray. A glinting jewel (200 gp) sits in the shrine's darkened alcove, left as tribute years before",
+        "Writhing and screeching as 1d4 Drune Cottagers (p35) attempt a rebinding ritual. As the ritual progresses, 1d4 antler wraiths (p12) manifest out of the mist and are drawn to the location"
+      ],
+      "lair_descriptions": [
+        "A stone well criss-crossed with a strange purple moss. The water inside is pitch black, repelling any light",
+        "A singular towering cairn (12′ high) sat atop a hill, acting like the gnomon of a sundial. Shadows hide within the cast shadow, waiting for the night to set them free once again",
+        "A glade filled with bloated but hollow trees, each with the appearance of a grotesque, gaping mouth. The shadows shelter inside them, always drawn back to the blighted plants that long ago birthed them",
+        "Tunnels beneath an ancient barrow. Strange crystalline structures absorb and shed light from many angles, causing intruders to throw multiple shadows"
+      ],
+      "xp_value": 50,
+      "habitat": []
+    }
+  ]
+}

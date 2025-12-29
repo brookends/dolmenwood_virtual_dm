@@ -1,0 +1,235 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      62,
+      63,
+      64
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Mossling",
+      "monster_id": "mossling",
+      "armor_class": 13,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)"
+      ],
+      "damage": [
+        "varies by weapon"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3",
+      "possessions": "3d6sp + fungi (see below)",
+      "size": "Small",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Resilience: +4 bonus to Saving Throws against fungal spores or poisons. +2 bonus to all other Saving Throws.",
+        "Weapons: Mosslings favour clubs (1d4), hand axes (1d6), and slings (1d4).",
+        "Armour: Mosslings wear bark armour (DPB). Without armour, they have AC 10.",
+        "Plant/fungus symbiosis: Each mossling's moist, earthy flesh hosts a number of symbiotic plants, moulds, or fungi. See Fertile Flesh.",
+        "Fungi: Mosslings carry a pouch of useful fungus foraged in the deep woods: 1d3 portions of Blood Canker (DPB), Hogscap (DPB), or Grinning Jenny (DCB)."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "4′ tall, gnarled, woody humanoids with mossy hair and beards. Live in isolated communities in gloomy, dank, forest dells. Renowned as brewers and cheese-makers.",
+      "behavior": "Slow but shrewd, jovial, prudent",
+      "speech": "Squelching, grinding. Woldish, Mulch",
+      "traits": [
+        "Pack full of stinky swine-cheese.",
+        "Curious, bendy hat of red felt.",
+        "Butt naked.",
+        "Dried mushroom caps strung around neck.",
+        "Dainty birch-bark gloves and booties.",
+        "Speaks in a high-pitched wheeze."
+      ],
+      "number_appearing": "2d8",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Feverishly digging around the base of a standing stone, attempting to uproot it. The mosslings believe the stone's evil magic is blighting the fungi in the region.",
+        "Chasing 2d6 errant swine (use merriman stats—p116) which, hexed by a slighted magician, have grown wings and escaped from their pens.",
+        "Guardedly gathering the plentiful mushrooms of a quiet grove.",
+        "Reading a ducal decree, nailed to a tree, which announces a steep rise in taxation."
+      ],
+      "lair_descriptions": [
+        "Lacquered, circular wooden trapdoors in the forest floor lead down to a warren of earthy passages and round chambers intersected by the tunnels and lairs of an extensive badger sett.",
+        "Cliffs and rocky protrusions riddled with natural caves, converted into cosy, single-family dwellings. The entrances are sealed with brightly painted wooden doors.",
+        "The body of a huge fallen tree, hollowed out to form chambers and corridors. Round portholes line the sides, while the only door is atop the trunk, close to the roots. Amidst the broken branches, a giant, roughly humanoid clay statue stands, surrounded by glowing orbs.",
+        "A village of giant mushrooms, hollowed out to provide living spaces. The largest mushroom, a gigantic spotted toadstool at the centre of the community, houses a merry inn with cosy, spongy rooms on several levels."
+      ],
+      "xp_value": 10,
+      "habitat": []
+    },
+    {
+      "name": "Mould Oracle",
+      "monster_id": "mould_oracle",
+      "armor_class": 12,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Gnarled cudgel (+3, 1d6)",
+        "spore breath (psychedelic poison)",
+        "spell (see below)"
+      ],
+      "damage": [
+        "1d6",
+        "psychedelic poison",
+        "varies by spell"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "R1 + M5",
+      "possessions": "3d6sp",
+      "size": "Small",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Resilience: +4 bonus to Saving Throws against fungal spores or poisons. +2 bonus to all other Saving Throws.",
+        "Spore breath (thrice a day): A mould oracle can breathe a cloud of psychoactive spores in a 10′ cone. All creatures in the area must Save Versus Blast or fall to the ground writhing in psychedelic ecstasy, unable to move or act for 1 Turn.",
+        "Spells: The typical mould oracle has the following arcane spells memorised: Rank 1 Vapours of Dream, Rank 2 Dweomerlight, Rank 3 Dark Sight, Rank 4 Polymorph.",
+        "Divination: A mould oracle can perform a divinatory ritual lasting 1 hour. The ritual divines the likely outcome of an action planned by characters in the near future, providing a \"weal or woe\" response or sometimes a cryptic clue. Characters must perform a quest for the mould oracle in return, or provide compensation of herbs or fungi to the value of at least 200gp.",
+        "Plant/fungus symbiosis: Like all mosslings, each mould oracle's flesh hosts a number of plants, moulds, or fungi, in a symbiotic relationship. See Fertile Flesh, p60."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Mosslings devoted to communion with the Mogba deities of roots, mould, and mycelia. Symbiosis with psychedelic fungi lends them divinatory powers and warped personalities.",
+      "behavior": "Sagacious, inscrutable, idiosyncratic",
+      "speech": "Abstracted gurgling. Woldish, Mulch, Dwelve (1-in-4 chance)",
+      "traits": [
+        "Rough clay mask with dangling conkers.",
+        "Pulsating puffballs in place of eyes.",
+        "Yellow spores drifting from mouth and ears.",
+        "Constant oracular babbling.",
+        "Hands formed entirely of knotted mycelia.",
+        "Naked, skin daubed with glowing green slime."
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": 65,
+      "encounter_scenarios": [
+        "Crawling through the undergrowth on a vision quest in wide-eyed, psychedelic glee, drooling pink slime. Likely to believe passersby to be divinatory hallucinations.",
+        "Tottering under the weight of a gigantic yellow mushroom covered in pale green froth—a giant, 50-dose specimen of Shaggy Sage (DCB) worth 2,500gp.",
+        "Stirring a pool of star-spangled blackness in the hollow bole of a tree, attended by 2d6 sprites (p80). If disturbed, all vanish and the pool of blackness evaporates.",
+        "Leading a congregation of 2d6 mosslings (p60) in anointing a 15′ tall, rotting stinkhorn with sloppy, fermented milk. The ritual culminates with the voice of the Myconom (DCB) prophesying a fungal uprising in the Nagwood, expelling the alien Nag-Lord."
+      ],
+      "lair_descriptions": [
+        "An opaque pool of swirling, purple water. Entering the water transports one into a domed cave festooned with drooping, coral-like fungus. The real world is reflected in the polished floor. The mould oracles contemplate drifting bubbles of coloured gas.",
+        "A stone circle in a moss-carpeted glade of giant mushrooms. The mould oracles are attended by 2d8 gobbles (p114) with symbiotic fungus growing in their brains.",
+        "A grotto of dripping pools, glowing mushrooms, and mutated skulls. The mould oracles slumber on the ceiling, wrapped in mycelial cocoons.",
+        "A network of damp burrows. In a central chamber stands a great clay idol of the Wood God Limwdd (DCB), teeming with maggots, which the mould oracles consume."
+      ],
+      "xp_value": 230,
+      "habitat": []
+    },
+    {
+      "name": "Mugwudge",
+      "monster_id": "mugwudge",
+      "armor_class": 12,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Tusk (+2, 2d4)",
+        "breath (turn to wood)"
+      ],
+      "damage": [
+        "2d4",
+        "turn to wood"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "1d4 magical fruits in trees around lair (see below)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Nauseating stench: Natural carrion odour sickens humanoids: Save Versus Doom or suffer a –2 penalty to Attack Rolls while in melee with a mugwudge.",
+        "Woodifying breath (thrice a day): Purple miasma, 30′ long, 10′ wide. All in the cloud must Save Versus Hold or be transformed into living wood.",
+        "Restoring victims: Woodified victims can be restored to life by magic that causes plants to grow (e.g. Plant Growth) or polymorphs a target (e.g. Polymorph).",
+        "Wood growth: If not restored, a woodified victim will sprout twigs, branches, and leaves, eventually growing into a stunted tree. When fully matured, such trees bear 1d4 black, medlar-like fruits every year.",
+        "Fruits: A fruit from a mugwudge's tree has the power to dispel a curse if eaten."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Long-necked, hirsute boars whose awful stench and deadly breath deter most predators. Live on mushrooms, moss, and pondweed. Dangerous and irascible if disturbed.",
+      "behavior": "Dull-witted, greedy, cantankerous",
+      "speech": "Grumbling and bellowing",
+      "traits": [
+        "Fringes of purple, symbiotic lichen.",
+        "Warty pustules covering back.",
+        "One eye bulbous and oozing black pus.",
+        "Swollen, throbbing tongue lolls from mouth.",
+        "Eyeless, senses by smell and hearing alone.",
+        "Six-legged. Massive front legs and stumpy rear legs."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 33,
+      "encounter_scenarios": [
+        "Browsing on a series of fecund, multi-hued moss mounds lined up beside a ditch like barrows. A troll (p84) approaches cautiously, angered at the defilement of its moss garden.",
+        "Sniffing around a 120′ long, roughly humanoid mound, carpeted with tiny, glowing green mushrooms. Beneath the fungal covering is the decomposing corpse of a giant.",
+        "Bellowing and wrestling in a muddy basin, battling for mating rights.",
+        "Reclining peacefully in a warm pool, submerged up to the mouth, letting out satisfied, bubbling sighs. The boars' nauseating stench is nullified while they are submerged."
+      ],
+      "lair_descriptions": [
+        "Leaf mounds amid a glade of twisted, blossoming trees—the remains of woodified victims. 3 wrinkled black fruits can be found (see Wood Growth and Fruiting).",
+        "Shallow burrows dug into a sandy bank by a stream. A hermit friar (Level 1—p106) named Meredith camps nearby. She has a rapport with the mugwudges, who protect her in return for choice fungal delicacies from her foraging satchel.",
+        "A pool of bubbling mud, ringed with swaying reeds. When bathing in the warm mud, the boars are utterly docile.",
+        "Leashed, guarding the vegetable plots of an 8′ tall, scarecrow (p72) named Palanquin. The scarecrow dwells in a thatched cottage amid a verdant orchard and spends its days carving root vegetables into the likenesses of every mortal in Dolmenwood."
+      ],
+      "xp_value": 90,
+      "habitat": []
+    }
+  ]
+}

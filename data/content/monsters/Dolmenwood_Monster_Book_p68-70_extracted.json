@@ -1,0 +1,280 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      68,
+      69,
+      70
+    ],
+    "content_type": "monsters",
+    "item_count": 4,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Onyx Blob",
+      "monster_id": "onyx_blob",
+      "armor_class": 16,
+      "hit_dice": "10d8",
+      "hp": 45,
+      "level": 10,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "4 appendages (+8, 1d6 + wrap)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 6,
+      "save_ray": 7,
+      "save_hold": 8,
+      "save_blast": 9,
+      "save_spell": 10,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Huge",
+      "monster_type": "Ooze",
+      "sentience": "Non-Sentient",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Immunities: Only harmed by fire-based attacks",
+        "Eyeless: Can act normally in light or darkness",
+        "Wrap: If an appendage inflicts 4 or more damage, it wraps around the target and exudes a chill acid, automatically inflicting 1d6 damage each subsequent Round. The victim may attack, but cannot move, except by Retreating From Melee",
+        "Severing appendages: Though blades inflict no damage on an onyx blob (see Immunities), they can be used to sever wrapped appendages. A hit that would inflict 4 or more damage severs an appendage, freeing a wrapped victim",
+        "Retreating from melee: A character can break away from wrapping appendages by retreating from melee (see Combat, DPB). This inflicts 1d4 permanent damage (reducing the character's current and maximum Hit Points), as flesh is ripped off and cauterised. Powerful holy magic (e.g. Cure Affliction, Greater Healing) can restore maximum HP lost in this way",
+        "If hit: Non-fire attacks (including spells) cause the blob to divide. Each hit creates a bloblet—stats below",
+        "Cling: Can slither up vertical surfaces (e.g. tree trunks, walls, ceilings, etc.)",
+        "Seep: An onyx blob can squeeze through spaces as small as the crack under a door"
+      ],
+      "immunities": [
+        "non-fire attacks"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Huge (20′ across) blobs of amorphous, wobbling black jelly. Ooze relentlessly in pursuit of living creatures, driven by a mindless urge to dissolve living flesh.",
+      "behavior": "Relentless, ravenous",
+      "speech": "Unnerving fizzing",
+      "traits": [
+        "Writhing with weird, human-like faces",
+        "Leaves a trail of caustic slime, dissolving plant life",
+        "Iridescent purple sheen",
+        "Emits horrible slurping sounds",
+        "Semi-transparent, with an awful, glaring eye in its centre",
+        "Moves in lurching, wobbling leaps"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Relentlessly chasing a mixed group of animals. The wildlife are likely sighted first, running in a blind panic",
+        "Trapped beneath the surface of a frozen body of water. Cracks are rapidly beginning to appear in the ice",
+        "Clashing with a party of 2d6 skeletons (p76), eager to strip the last bits of loose flesh from their bones. The skeletons' swords have already created 1d6 bloblets",
+        "Trapped in a pit by a burning circle of fire around the rim. 2d4 woodgrues (p94) are gathered around the hole, feeding the fire with wood and wielding burning torches"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 3550,
+      "habitat": []
+    },
+    {
+      "name": "Bloblet",
+      "monster_id": "bloblet",
+      "armor_class": 13,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "20'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+1, 1d8)"
+      ],
+      "damage": [
+        "1d8"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Small",
+      "monster_type": "Ooze",
+      "sentience": "Non-Sentient",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Immunities, cling, seep: Per onyx blob—see above"
+      ],
+      "immunities": [
+        "non-fire attacks"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": null,
+      "behavior": null,
+      "speech": null,
+      "traits": [],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 35,
+      "habitat": []
+    },
+    {
+      "name": "Peryton",
+      "monster_id": "peryton",
+      "armor_class": 13,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "40' Fly 70'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": 70,
+      "swim_speed": null,
+      "attacks": [
+        "2 talons (+3, 1d6)",
+        "bite (+3, 3d4)"
+      ],
+      "damage": [
+        "1d6",
+        "3d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C6 + R7 + M4",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Non-Sentient",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Immunities: Only harmed by magic or magic weapons",
+        "Gaze (once a day): A peryton may gaze at a sentient creature within 30′ and let out a hideous, gurgling shriek. If the target fails a Save Versus Spell, they are assailed by their own shadow for 1d3 Rounds (treat as a shadow—p74). A character who slays their own shadow gains a +2 bonus to Attack Rolls against the peryton until next dawn, when the shadow also returns",
+        "Killing a victim: When a victim is killed, the peryton rips out their heart and immediately flies away. Perytons feed fresh hearts to their young"
+      ],
+      "immunities": [
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Weird monsters with the body, talons, and wings of a giant eagle, the head and great antlers of a stag, and the fangs of a wolf. Nest in isolated regions, preying upon humans and their ilk.",
+      "behavior": "Cunning, frenzied",
+      "speech": "Gurgling howls",
+      "traits": [
+        "Antlers resemble grasping hands",
+        "Fangs too large for mouth",
+        "Garishly colourful plumage",
+        "Leather collar around neck",
+        "Casts the shadow of a human",
+        "Has shed its antlers"
+      ],
+      "number_appearing": "2d4",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Swooping through the air, trying to seize and carry away easy targets from a convoy of 4 merchants (p111) and 12 guards (Level 1 fighters—p105)",
+        "Howling and posturing at previously human snacks who have revealed themselves to instead be 1d6 shape-stealers (p75)",
+        "Furiously pursuing 1d4 grimalkins (p48), who have stolen a clutch of peryton eggs to savour later as a delicacy",
+        "Pinned to the ground by a razor net trap, unable to break free. Nearby, the would-be trapper (Level 1 hunter—p106) is being assaulted by his own shadow (p74)"
+      ],
+      "lair_descriptions": [
+        "A large nest hidden in the branches of a colossal tree. Young perytons cry out for food and messily spill droplets of blood onto the forest floor as they feast",
+        "A spire of crimson rock (20′ high), sharpened to a razor point, carved with perches. An unknown force compels the perytons to drop living victims onto the spire as tribute",
+        "A rugged crag dotted with shallow caves. The perytons return to roost at dusk, avoiding the 1d6 witch owls (p92) who sleep here during the day",
+        "An underground glade, accessible through a cave in the side of a hill. Ancient moss-wreathed statues stand among trees nourished by weird, bioluminescent fungi"
+      ],
+      "xp_value": 180,
+      "habitat": []
+    },
+    {
+      "name": "Pook Morel",
+      "monster_id": "pook_morel",
+      "armor_class": 16,
+      "hit_dice": "1d4",
+      "hp": 2,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Psychic projection (horror)"
+      ],
+      "damage": [],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": "C1 + R1 + herbal and mundane trade goods (DCB)",
+      "possessions": "3d6sp (1-in-4 chance)",
+      "size": "Small",
+      "monster_type": "Fungus",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: Opposing side has a 3-in-6 chance of being surprised, due to pook morels' stealth and small size",
+        "Psychic projection: A pook morel may target a creature within 20′ with its psychic attack. The target momentarily experiences an unsettling hallucination wherein an item on their person appears to come alive—sprouting wriggling, insectoid limbs and gnashing mandibles. The target must Save Versus Hold or instinctively cast the item to the ground in horror",
+        "Steal dropped items: Pook morels quickly scoop up items discarded by victims of their psychic projections and whisk them off to their lair",
+        "Vanish in woods: When fleeing into forest underbrush, a pook morel has a 2-in-6 chance per Round of vanishing without trace"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Tiny (6″), humanoid mushrooms with creamy white trunks and crinkled, spongy, yellow caps. Beset woodland travellers with projected psychic horrors and steal dropped possessions.",
+      "behavior": "Sneaky, mischievous, covetous",
+      "speech": "High-pitched tittering. Mulch, basic Woldish",
+      "traits": [
+        "Formations on cap that resemble human faces",
+        "Cap oozes nectar that attracts ants and wasps",
+        "Dressed in a stolen silk glove",
+        "Wears a lady's purse, adapted into a backpack",
+        "Feathery cap which is lifted up by breezes",
+        "Wears thimbles as shoes"
+      ],
+      "number_appearing": "2d10",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Tussling in a bramble patch, fighting over a lady's pearl-trimmed glove (300gp)",
+        "Creeping up on 3 merchants (p111) and 6 guards (Level 1 fighters—p105), camping atop a low knoll with horses and a pair of wagons. The pooks have an eye for the coin purses and silver daggers at the merchants' belts",
+        "Singing gleefully, dancing around a pile of tin forks and spoons, stolen from a hapless pedlar",
+        "Fleeing from a gaggle of 5 frenzied, yapping piskers (see Hounds—DPB), dropping pilfered handkerchiefs and purses as they run"
+      ],
+      "lair_descriptions": [
+        "A warm, sandy burrow amid the roots of an old oak tree. A 4″ hole in the trunk is the only entrance",
+        "A village of little huts woven from living ferns. In one hut, the pooks maintain a library of furled, dried leaves on which the history of their village is recounted in tiny Sylvan script. They claim to originate in Hypnagogia, fairy realm of the Duke Who Cherishes Dreams (DCB)",
+        "A 3′-high, transparent bubble floating in the midst of a swampy pool. 2 giant toads (p118) guard the lair in return for tasty morsels provided by the pooks",
+        "Nests in the upper branches of a beech tree, among a colony of magpies (use crow stats, p82). The pooks share shiny, pilfered trinkets with the birds"
+      ],
+      "xp_value": 15,
+      "habitat": []
+    }
+  ]
+}

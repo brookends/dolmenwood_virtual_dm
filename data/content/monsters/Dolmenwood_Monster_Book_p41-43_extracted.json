@@ -1,0 +1,226 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      41,
+      42,
+      43
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Elf—Wanderer",
+      "monster_id": "elf_wanderer",
+      "armor_class": 12,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Weapon (+0)"
+      ],
+      "damage": [
+        "varies"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "2d4gp",
+      "size": "Medium",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, elf wanderers suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Weapons: Elf wanderers favour shortbows (1d6), shortswords (1d6), and staves (1d4).",
+        "Beguilement (once a day per target): The elf's words have great power over mortal minds. A single mortal within 30′ whom the elf addresses must Save Versus Spell or believe the elf's words for 1d4 Rounds. After the duration ends, it is immediately obvious that a magical deception has occurred."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Denizens of Fairy who have crossed into the mortal world as exiles or aesthetes. While appearing human-like, elves have an air of otherworldliness which can only be veiled by magic.",
+      "behavior": "Perceptive, impartial, awestruck",
+      "speech": "Languid, lyrical. High Elfish, Sylvan, Woldish (1-in-3 chance)",
+      "traits": [
+        "Hair made of slender willow leaves.",
+        "Utterly hairless, skin shimmers.",
+        "Pearlescent eyes without pupils.",
+        "Skin hue phases between alabaster, slate, and ebony.",
+        "Dressed in a shift of glimmering snowflakes.",
+        "Eyes reflect an eternal sunset."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 0,
+      "encounter_scenarios": [
+        "Seated on mossy rocks beside a bubbling stream, smoking Wayside Wisp (DPB) and lost in wondrous daydreams. A sneering pickpocket (Level 3 thief—p107) creeps up on the elves, aiming to relieve them of their belt pouches.",
+        "In a glade of lush bracken, caressing a white stag (red deer, p117)—a wild beast tamed by the elves' magic.",
+        "Hiding in a briar patch, pursued by 1d3 Drune Cottagers (p35). The Drunes believe the elves are spies of Cold Prince.",
+        "Splashing joyously in a sparkling pool, playing lilting melodies on bone panpipes."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 15,
+      "habitat": []
+    },
+    {
+      "name": "Fairy Horse",
+      "monster_id": "fairy_horse",
+      "armor_class": 13,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+1, 1d6)",
+        "curse (see below)"
+      ],
+      "damage": [
+        "1d6",
+        "special"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, fairy horses suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Charming voice (once per target): When not in combat, a fairy horse may charm a mortal into its service for 1d6 days (Save Versus Spell to resist). Charmed individuals view the fairy horse as a trusted friend and companion, and are often mistaken for the horse's \"owner\" when allowed to ride.",
+        "Curse (once per target): A fairy horse may curse a mortal who has slighted it. The victim must Save Versus Spell or suffer a permanent –2 penalty to Saving Throws or Attack Rolls.",
+        "Blessing (once per target): A fairy horse may bless a mortal who has granted aid or service of their own free will. See Blessings. Blessings last for a year and a day.",
+        "Companions: 3-in-6 chance of being encountered with a companion—either a charmed mortal or an elf wanderer (p39). In the case of an elf companion, the two treat each other as equals."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Beautiful, silver-dappled mares and stallions of dashing grace and free-spirited intellect. Natives of the forests of Fairy, quixotic quests bring them to wander Dolmenwood.",
+      "behavior": "Sharp-witted, curious, driven by wanderlust",
+      "speech": "Sarcastic. Woldish, Sylvan",
+      "traits": [
+        "Surrounded by a primeval, lambent glow.",
+        "Tail and mane of gold.",
+        "Hooves flash silver when galloping.",
+        "Feathered rump.",
+        "Eyes of flaming violet.",
+        "Six legs."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 0,
+      "encounter_scenarios": [
+        "Bathing in a clear pool or bubbling stream, attended by a beautiful charmed youth (everyday mortal—p110), lovingly shampooing the horse's mane.",
+        "Engaged in a courtship dance with a blessed unicorn (p85).",
+        "Conversing with a Drune Cottager (p35). The Drune earnestly seeks the horse's opinion on the doings of the Cold Prince in Fairy. The horse mockingly relates a series of increasingly unbelievable lies about vast armies of frost elves mustering to invade Dolmenwood.",
+        "Fleeing from 2d4 unicorn hunters (Level 1 hunters—p106), loudly protesting its mistaken identity."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 50,
+      "habitat": []
+    },
+    {
+      "name": "Fomorian",
+      "monster_id": "fomorian",
+      "armor_class": 16,
+      "hit_dice": "13d8",
+      "hp": 58,
+      "level": 13,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Club (+9, 5d6)",
+        "2 fists (+9, 2d8)",
+        "gaze (blindness + read intent)"
+      ],
+      "damage": [
+        "5d6",
+        "2d8",
+        "special"
+      ],
+      "save_doom": 4,
+      "save_ray": 5,
+      "save_hold": 6,
+      "save_blast": 7,
+      "save_spell": 8,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8 + 4d4 gems",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally without light.",
+        "Gaze: A fomorian may gaze upon a target within 60′, who must Save Versus Hold or be blinded for 2d4 Rounds. The fomorian also knows the victim's aims and intents.",
+        "Mutations: Due to exposure to the weird magic of the underworld, each fomorian possesses a mutation—roll on the Mutations table.",
+        "Herders: Fomorians raise subterranean animals for food, typically cave salamanders (p113), giant earthworms (p113), or ooze salamanders (p116)."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Giant (12′–14′ tall) humanoids, with pale, translucent skin, lumpy flesh, ungainly limbs, lank hair, and a single huge eye. Hoard gems and lost secrets in deep caverns and desolate regions.",
+      "behavior": "Enigmatic, ponderous",
+      "speech": "Profound, grinding boom. Dwelve",
+      "traits": [
+        "Sweats a sickly-sweet slime.",
+        "Tentacular beard.",
+        "Covered in oozing sores.",
+        "White light fills eye socket.",
+        "Gemstones embedded in skin.",
+        "Gives nonsense, faux-intellectual advice."
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": 35,
+      "encounter_scenarios": [
+        "Bathing beneath the muddy waters of an underground waterfall, possessions left on the bank nearby.",
+        "Clinging to a giant earthworm (p113) as it blindly burrows through the earth at top speed. Out of control, the worm periodically bursts to the surface, mouth agape.",
+        "Grumpily trading with 2d6 scrabies (p73) at an underground crossroads. Both sides feel they are getting a raw deal and will be quick to rope in passersby to settle the matter in their favour.",
+        "Harvesting bracken from the surface to garnish meals, baskets already filled with rare fungi."
+      ],
+      "lair_descriptions": [
+        "An enormous stone house, half-sunken into a lonely bog. Having built the home by hand, the fomorians stubbornly refuse to leave.",
+        "A series of connected caverns hidden beneath the ruins of an old watchtower. Previously home to a group of bandits, some of their constructions and treasures remain.",
+        "A network of caves lit by bioluminescent fungi and strange, glowing crystals. A community of crystaloids (p29) dwells nearby in a tentatively brokered peace.",
+        "A farmstead built inside an enormous cavern. 2d4 cave salamanders (p113) are penned in as cattle, while a favoured ooze salamander (p116) acts as a watchdog."
+      ],
+      "xp_value": 3200,
+      "habitat": []
+    }
+  ]
+}

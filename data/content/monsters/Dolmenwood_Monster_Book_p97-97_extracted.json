@@ -1,0 +1,80 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      97
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Wronguncle",
+      "monster_id": "wronguncle",
+      "armor_class": 11,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Cudgel (+1, 1d6)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "3d6sp",
+      "size": "Medium",
+      "monster_type": "Fungus",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Turnable: As an odd symbiosis between fungal growth and revenant spirit, wronguncles can be turned as undead. Treat as Level 4 monsters for this purpose.",
+        "If damaged: A cloud of spores puffs from the injury, enveloping any within 5′. Those affected must Save Versus Doom or suffer from complete amnesia for 2d6 days.",
+        "Yearning for home: A yearning to return to the home of their deceased host compels wronguncles to wander, picking up basic travelling gear and seeking the companionship of other travellers along the way.",
+        "Returning home: If a wronguncle finds its way back home, it is compelled to murder its former loved ones, mentors, friends, or most hated enemies. This last deed accomplished, the toadstool explodes in a cloud of spores that drift along on the winds until they settle on a new host.",
+        "Alignment: A wronguncle inherits the Alignment of its deceased host, until becoming Chaotic in its final frenzy of murder."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Stumpy, humanoid toadstools, 5′ tall, with white bodies and speckled, red caps. Grow on a ley-infused corpse, inheriting the voice, habits, and garbled memories of the deceased person.",
+      "behavior": "Befuddled, merry, inane (until reunited with former loved ones—see Returning home)",
+      "speech": "Repeats favoured phrases. Woldish",
+      "traits": [
+        "Sports a dead squirrel, in memory of its former hat.",
+        "Face contorts between benign smile and twisted grimace.",
+        "Knitted \"clothes\" of woven mycelia (attached to body).",
+        "Wretchedly weeps and sniffles.",
+        "Attracts flies, bees, sprites, and small birds.",
+        "Two souls in one; switches personalities at intervals."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Merrily whistling and singing jolly songs of its hometown while washing its stumpy, fungal feet in a puddle.",
+        "Worriedly asking any it encounters if they know Matilda (or another loved one's name). Confused if questioned further, cannot offer any more details.",
+        "Marching along, endlessly repeating its name, rank, and hometown. Asks to be directed to Captain Merryweather.",
+        "Face distorted with rage, chasing a young man (the toadstool's former husband, everyday mortal—p110), brandishing a bloodied cudgel while screaming \"I love you with all my heart!\"."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 35,
+      "habitat": []
+    }
+  ]
+}

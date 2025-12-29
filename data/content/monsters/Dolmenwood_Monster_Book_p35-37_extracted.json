@@ -1,0 +1,216 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      35,
+      36,
+      37
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Drune—Audrune",
+      "monster_id": "drune_audrune",
+      "armor_class": 13,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Astral Blade (+7, 1d4+2)",
+        "spell (see below)"
+      ],
+      "damage": [
+        "1d4+2"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3 + M6",
+      "possessions": "2d4gp + platinum torc (350gp)",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Genius",
+      "alignment": "Alignment By Individual",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally in darkness up to 30′",
+        "Astral blade: An Arcane Dagger forged at a site of geomantic power (magic item value 1,500gp). A non-Drune who handles an Audrune's blade must Save Versus Hold or be turned to stone until the next full moon rises",
+        "Spells: The typical Audrune has the following arcane spells memorised: Rank 1 Ingratiate, Rank 2 Invisibility, Rank 3 Dispel Magic, Rank 4 Dimension Door, Rank 5 Cloudkill, Rank 6 Invisible Stalker",
+        "Ley travel: When in a hex which a ley line passes through, an Audrune can step into the ley line and travel astrally along the course of energy at a rate of 24 miles per hour"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Elite members of the occult brotherhood tasked with warding the nodal stones of Dolmenwood, keeping all non-Drunes away.",
+      "behavior": "Fierce, fanatical, ruthless",
+      "speech": "Fearsome, brooding. Woldish, Drunic, Sylvan",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Stepping suddenly from a purple dimension door, fleeing 2d4 babbling shadows (p74)",
+        "Divining the course of a lesser ley line with a pulsing crystal rod. Wears opaque onyx goggles which grant the ability to detect magic once a day for 6 Turns",
+        "Gazing into a pool of water in a hollow tree stump, conversing in the Sylvan tongue with a shimmering water-spirit (use water elemental stats—see the Conjure Elemental spell, DPB). The Audrune is negotiating for aid in locating \"the dreaming wyrm\" in Lake Longmere",
+        "Conducting solemn council with a gathering of 2d4 Cottagers (p35). The Drunes discuss (in Drunic) their brotherhood's imminent plans to attack the Court of the Nag-Lord (hex 0904)"
+      ],
+      "lair_descriptions": [],
+      "xp_value": 920,
+      "habitat": []
+    },
+    {
+      "name": "Drune—Braithmaid",
+      "monster_id": "drune_braithmaid",
+      "armor_class": 11,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Dagger (+0, 1d4)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "3d6sp + talisman (see below) + herbal trade goods (DCB, 2-in-6 chance)",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Song: A braithmaid may sing as she wanders the woods, weaving a subtle enchantment. Any who hear a Braithmaid's song must Save Versus Hold or enter into a wondrous reverie, unable to meaningfully act until the Braithmaid either approaches or passes. These songs are not effective in combat",
+        "Talismans: When wandering abroad, Braithmaids carry a magical ward to protect them from harm. See Talismans. Such talismans are only effective when worn by women and function only once before crumbling to dust. They are worth 500gp"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Adolescent daughters of the Drune who wander the wilds, gathering herbs, roots, and fungi. Their youth belies their power, for they are versed in the arts of enchanted song.",
+      "behavior": "Quick-witted, evasive, aloof",
+      "speech": "Melodic, coy. Woldish, Drunic",
+      "traits": [
+        "Albino—white hair and pink eyes",
+        "Human knuckle bones hanging from silver earrings",
+        "Densely freckled",
+        "Wears a cloak of crow feathers",
+        "Clad in diaphanous gauze, spattered with blood",
+        "Crown of holly and ivy"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 20,
+      "encounter_scenarios": [
+        "In the company of 1d3 witches (p90), gazing trance-like into an inky-black mirror, being tested for initiation into a coven",
+        "Digging in the earth, using a silver knife to root out mandrakes (either Groaning Mandrakes, Knobbled Mandrakes, or Prancing Mandrakes—DCB)",
+        "Fleeing a wrathful Drune Cottager (p35) with a local (non-Drune) beau (everyday mortal—p110)",
+        "Battling an exact duplicate (a shape-stealer, p75)"
+      ],
+      "lair_descriptions": [
+        "A turf-roofed stone house supported by 10′-tall, rune-etched obelisks at its four corners. The Braithmaids keep 24 cats (use weasel stats, p82), who hunt and play in the woods nearby",
+        "A cave concealed behind a cascade of wild roses. The Braithmaids are outcasts who have refused to marry among their people or join the ranks of the witches. They are deliberating on their next step",
+        "A log cabin on the verge of a glade of cairns—a cemetery for the deceased inhabitants of the home. The Braithmaids commune with the owls who roost in the trees",
+        "A ruined church, seemingly uninhabited. The Drune family live in the crypts beneath, lit by green fire flickering in the eyes of stags' skulls"
+      ],
+      "xp_value": 15,
+      "habitat": []
+    },
+    {
+      "name": "Drune—Cottager",
+      "monster_id": "drune_cottager",
+      "armor_class": 13,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Staff (+3, 1d4 + flame)",
+        "spell (see below)",
+        "sigil (see below)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "2d4gp + golden torc (150gp) + arcane trade goods (DCB, 2-in-6 chance)",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally in darkness up to 30′",
+        "Flame: A victim hit by a cottager's staff must Save Versus Spell or be wreathed in snaking green flame, suffering 1 damage per Round for 1d4 Rounds. Greenflame is extinguished if the victim immerses themselves in water",
+        "Spells: The typical Cottager has the following arcane spells memorised: Rank 1 Ingratiate, Vapours of Dream, Rank 2 Dweomerlight, Rank 3 Paralysation",
+        "Sigil (once a week): A Cottager may weave a mystic sigil of green flame in the air (see Drune Sigils). Weaving a sigil is treated as casting a spell and may be disrupted in combat",
+        "Entourage: 2-in-6 chance of being accompanied by 1d4 bramblings (p21) or 1d3 charmed villagers (p111)"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Moody, black-cloaked members of the occult brotherhood who wander the deeps of Dolmenwood, recording omens and seeking occult power.",
+      "behavior": "Penetrating, self-serving, manipulative",
+      "speech": "Abstruse, doom-laden. Woldish, Drunic",
+      "traits": [
+        "Emaciated and addled by mushroom brew",
+        "Necklace of owl skulls",
+        "Crown of antlers",
+        "Wears a featureless clay mask",
+        "Grizzled plaits cascading from his hood",
+        "Skin covered with occult markings. (Tattoos? Paint?)"
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 20,
+      "encounter_scenarios": [
+        "Commanding 1d4 charmed lackeys (everyday mortals—p110) who drag a 10′-high, humanoid wicker cage on a cart",
+        "Summoning 2d4 bramblings (p21) from the undergrowth to protect a rune-etched stone in a glade. The stone bears encoded directions to an emerging ley line",
+        "Sitting upon a boulder, deep in contemplation, surrounded by spiralling ravens. The ravens' cawing is vaguely coherent, as if the cacophony conceals words",
+        "In battle with a knight (Level 3—p106) and 2d4 men-at-arms (Level 1 fighters—p105) in the service of the duke. The Cottagers are charged with kidnapping locals for use in dark rituals and are attempting to flee"
+      ],
+      "lair_descriptions": [
+        "A thatched cottage beside a brook in a pastoral glade. The Cottager spends his days studying the rune-carved, granite skulls littered throughout the surrounding woods",
+        "A tumbledown shack beside a flint cliff. The Cottager maps the movements of the moon and planets from a hidden lookout tower atop the cliff",
+        "A poorly renovated ruin beside a monolith of fathomless obsidian which imprisons any who gaze into its depths. The Cottager knows the secret of releasing those trapped",
+        "A dilapidated cottage beside a waterfall. The Cottager is dying and is wracked with regret at the deeds of his life. He may rashly reveal secrets of the Drune to strangers"
+      ],
+      "xp_value": 180,
+      "habitat": []
+    }
+  ]
+}

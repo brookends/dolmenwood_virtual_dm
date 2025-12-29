@@ -1,0 +1,237 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      80,
+      81,
+      82
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Snail, Giant—Psionic",
+      "monster_id": "snail_giant_psionic",
+      "armor_class": 17,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+5, 1d4)",
+        "psychic crush (1d6)",
+        "illusion (see below)"
+      ],
+      "damage": [
+        "1d4",
+        "1d6"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Psychic crush: The snail may direct its psionic power into the mind of a sentient being within 60′, who must Save Versus Spell. If the save fails, the victim suffers 1d6 damage immediately and in each subsequent Round for as long as the snail concentrates (no other actions, half Speed).",
+        "Illusions (thrice a day): The snail can manifest psionic illusions that function like the arcane spell Phantasm, with the following enhancements: Senses: Visual, sounds, smells, and thermal elements. Illusionary monsters: Have AC 14. Concentration: The snail may move at half Speed while maintaining an illusion. Even when the snail stops concentrating, the illusion persists for 3 further Rounds.",
+        "Lairs and sleeping: Psionic snails do not keep lairs, but sometimes lie in slumber for decades, carpeted with weird plants and fungi",
+        "Dream projection: A sleeping snail's dreams produce illusionary scenes up to a mile distant",
+        "Riders: Psionic snails sometimes allow fairies (e.g. goblins, grimalkins, sprites) to ride upon their backs"
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "10′ tall snails with bright violet, purple, or pink bodies and shells of swirling oranges and greens. Live for many centuries. Feed on ley energies and magical mosses and fungi.",
+      "behavior": "Dreamy, aloof",
+      "speech": "Abstruse. Telepathic projection with any perceived sentient within 120′",
+      "traits": [
+        "Shell glows incandescent green.",
+        "Humanoid faces on each of its eye stalks.",
+        "Writhing, purple tentacles around mouth.",
+        "Golden halo of pulsing, psychic energy.",
+        "Sings beautiful, virtuoso operas.",
+        "Leaves a trail of evaporating psychedelic ooze."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 35,
+      "encounter_scenarios": [
+        "Cleansing its psychic aura in a rainbow-hued waterfall.",
+        "Tittering and veering erratically, carrying 3 goblins (p47) upon its shell. The goblins are whooping and screaming, drunkenly tussling with each other over a bottle of Golden Aspintheon (DCB).",
+        "Psychically communing with 1d3 gelatinous hulks (p44), standing frozen in a glade, reaching their arms toward the sky. If the snail is disturbed, the hulks awaken and go on the rampage.",
+        "Fleeing an Audrune (p33), angered that the snail has damaged a nearby ley line by drinking too greedily on its energies."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 720,
+      "habitat": []
+    },
+    {
+      "name": "Spectre",
+      "monster_id": "spectre",
+      "armor_class": 17,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "50' Fly 100'",
+      "speed": 50,
+      "burrow_speed": null,
+      "fly_speed": 100,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+5, 1d8 + energy drain)"
+      ],
+      "damage": [
+        "1d8"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 11,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Immunities: Only harmed by magic or magic weapons.",
+        "Incorporeal: Can pass through walls, doors, and other solid objects.",
+        "Dark sight: Can see normally without light.",
+        "Energy drain: The touch of a spectre reduces the victim's maximum Hit Points by 1d6 and incurs a –1 penalty to Attack Rolls and Saving Throws. These effects are cumulative if a victim is touched multiple times. Gaining a Level removes all penalties and restores lost maximum HP.",
+        "Soul annihilation: A victim slain by a spectre must Save Versus Doom or have their soul annihilated, snuffed out by the spectre's evil magic. Such a victim cannot be raised from the dead, except by a wish."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Incorporeal spirits of mortals who, in ages long past, worshipped profane deities of death and oblivion. Forced by pride and evil pacts to linger in undeath, gloating over their riches.",
+      "behavior": "Avaricious, arrogant, desire worship",
+      "speech": "Sinister whispering. Old Woldish",
+      "traits": [
+        "Crown of steel thorns.",
+        "Covered in ritualistic scars.",
+        "Misty aura of demonic visages.",
+        "Wields a great two-handed sword (damage as per touch).",
+        "Hands dripping with spectral blood.",
+        "Wears a leering skull mask."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": 80,
+      "encounter_scenarios": [
+        "Gliding through a hamlet, slaying those who do not show sufficient deference or provide proper tribute.",
+        "Meeting with 1d6 witches (p90) on neutral ground. The coven wishes to negotiate access to an arcane secret lost to all except those who linger from a bygone age.",
+        "Hunting for its mortal remains, long ago stolen from their place of interment. Willing to trade information about Dolmenwood's ruins and history in exchange for the names and locations of those who traffic in the ancient dead.",
+        "Slowly tormenting a thief (Level 1—p107) who almost succeeded in stealing its riches. The gold and jewels still sit in a sack nearby."
+      ],
+      "lair_descriptions": [
+        "A foreboding stone castle draped in heavy shadow and thick black vines. Only accessible for an hour a day, just after sunset, before it fades away without a trace.",
+        "The remnants of an ancient hillside keep. A rotting throne to a forgotten leader dominates the main hall, festering with beige mould (see Dungeon Environment—DCB).",
+        "A ruined church, its holy symbols and statues defaced and defiled. Attending are 1d4 pilgrims (p111), convinced the spectres deserve worship as dark gods.",
+        "A barrow constructed over a ley line. Inside, experiments performed on fresh corpses to create 1d3 servile wights (p89) have only been partially successful."
+      ],
+      "xp_value": 1120,
+      "habitat": []
+    },
+    {
+      "name": "Sprite",
+      "monster_id": "sprite",
+      "armor_class": 16,
+      "hit_dice": "1d4",
+      "hp": 2,
+      "level": 1,
+      "movement": "20' Fly 40'",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": 40,
+      "swim_speed": null,
+      "attacks": [
+        "Dart (+0, 1d2 + poison, range 20′/40′/60′)",
+        "magic (see below)"
+      ],
+      "damage": [
+        "1d2"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": "R1 + R6",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Fairy",
+      "sentience": "Sentient",
+      "alignment": "Any Alignment",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As fairies, sprites suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Poisoned darts: Irritation and swelling cause a –1 penalty to Attack Rolls for 24 hours (Save Versus Doom to negate).",
+        "Type and magical trait: There are eight types of sprites, each a different colour and with its own magical trait. When sprites are encountered, roll 1d8 to determine their type—see opposite.",
+        "Thievery and pranks: Sprites are inveterate thieves and delight in using their fairy magic to play pranks on mortals.",
+        "Cowardly: Sprites try to avoid physical confrontations with bigger folk, fleeing if their pranks lead to violence.",
+        "Barter: Sprites are sometimes open to barter, providing secrets and reconnaissance from the local area in exchange for salt, honey, or resin.",
+        "Potion ingredient: Adding a dozen mashed, fermented sprites of a particular type (see opposite) reduces the cost of brewing a particular type of potion by 25%. The Nag-Lord's servants hunt sprites for this purpose. Each sprite body is worth 10gp."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Pesky, miniature (6″ high), dragonfly-winged fairies that swarm Dolmenwood in hordes, causing mischief wherever they find the opportunity.",
+      "behavior": "Sharp-witted, mischievous, flippant",
+      "speech": "High-pitched buzzing. Sylvan, Woldish (1-in-4 chance)",
+      "traits": [
+        "Riding a rainbow-hued dragonfly (as a giant fly).",
+        "Compound eyes and antennae.",
+        "Speech accompanied by twittering giggles.",
+        "Naked and hairless.",
+        "Lumpy, warty flesh.",
+        "Curly horns."
+      ],
+      "number_appearing": "3d6",
+      "lair_percentage": 15,
+      "encounter_scenarios": [
+        "Buzzing around a party of 2d4 travellers (everyday mortals—p110), throwing acorns at their heads and twittering.",
+        "Fluttering around manically between tree branches, babbling in Sylvan, frantically looking for a recently purloined coin pouch which has disappeared. The pouch has been retrieved by its original owner—a now invisible magician (Level 3—p107) making a quick getaway.",
+        "Pursued by 1d6 crookhorns (p28) wielding butterfly nets.",
+        "Perched upon a branch, drunkenly eating a pile of fermented medlars and throwing the seeds down at anyone who happens by. The second course, following the medlars, is an indigo liquid (Sandor's Phantasmal Elixir—DCB) in a flask slung conspicuously from the branch."
+      ],
+      "lair_descriptions": [
+        "An enclosed nest woven from stripped twigs and colourful scraps of shredded cloth, hanging high in the branches of a plum tree. The sprites tend the cherry and plum trees in the area, consuming the ripe and fermented fruits.",
+        "Chambers in the hollowed out heart of a great fir tree, with access via a pair of woodpecker roosting holes. The sprites do the bidding of an evil psionic giant snail (p78) that lurks in the hollow tree, consuming sentients.",
+        "A gigantic bees' nest high in a beech tree, humming with bees (insect swarm, p115). The sprites live as the rulers of the bee colony; the insects are charmed to protect them.",
+        "Homes in rocky nooks behind a cascade of little waterfalls. The sprites ride giant frogs (p114) and hunt eels in the pools and streams."
+      ],
+      "xp_value": 20,
+      "habitat": []
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      53
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "The Cold Prince",
+      "monster_id": "the_cold_prince",
+      "armor_class": 19,
+      "hit_dice": "18d8",
+      "hp": 100,
+      "level": 18,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Rimeblade (+14, 1d8+2)",
+        "Staff of Mortality (+12, 1d6 + ageing)",
+        "touch (+12, freezing)",
+        "magic"
+      ],
+      "damage": [
+        "1d8+2",
+        "1d6",
+        "freezing",
+        "varies"
+      ],
+      "save_doom": 2,
+      "save_ray": 2,
+      "save_hold": 3,
+      "save_blast": 4,
+      "save_spell": 5,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": "The Royal Crown of Frigia (17 primal ice crystals worth 5,000gp each), The Rimeblade (worth 10,000gp), Staff of Mortality (worth 35,000gp)",
+      "size": "Medium",
+      "monster_type": "Fairy",
+      "sentience": "Genius",
+      "alignment": "Chaotic",
+      "intelligence": "Genius",
+      "special_abilities": [
+        "Awful presence: All who behold the Cold Prince must Save Versus Spell or be subject to one of the following effects (as the Prince wishes): charmed (per Dominate), terrified (flee for 2 Turns), or befuddled (per Feeblemind). Beings of equal stature (e.g. other fairy nobles or beings of godling status) are immune.",
+        "Aura of frost: Any in melee with the Cold Prince suffer 1d8 damage per Round.",
+        "The Rimeblade: A Fairy Longsword of ensorcelled ice, shimmering with an aura of dancing blue sparks. The sword can conjure up to 5 enchanted missiles of ice per day. Instead of making a melee attack, one or more missiles can be fired at a target within 150′, each missile inflicting 1d6+1 damage. The missiles hit automatically, without an Attack Roll or Saving Throw.",
+        "Staff of Mortality: A mortal who touches or is struck by the staff is ravaged by the accelerated passage of time, permanently losing 1d4 Constitution. If reduced to 0 Constitution, the victim dies of old age and cannot be raised from the dead by any means short of a wish.",
+        "Freezing touch: The victim must Save Versus Hold or be turned into a statue of ice. (Magic such as Petrification can restore frozen victims.)",
+        "Fairy magic: Glamours Beguilement, Breath of the Wind, Dancing Flame, Fairy Dust, Flame Charm, Masquerade, Moon Sight, Subtle Sight. Lesser runes (thrice a day) all, Greater runes (once a day) all, Mighty runes (once a day) Eternal Slumber, Rune of Death, Rune of Wishing. Can also cast the arcane spells Wall of Ice and Teleport thrice a day."
+      ],
+      "immunities": [
+        "cold",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "A fairy lord of ancient provenance, among the mightiest and wickedest of all fairies. The Cold Prince is a tall, lithe frost elf man with pale blue, hoar-crusted skin, angular features, and wan eyes lined with shimmering red light. He dresses in kingly robes of snow-white fur, with a ruff of blue feathers.",
+      "behavior": "Cruel, disciplinarian tyrant. All his deeds blaze with a volatile fury and malevolent genius.",
+      "speech": "Like the grinding and cracking of ice. Malevolent sneering, maniacally mocking laughter. Woldish, the Immortal tongue of Fairy, High Elfish, Sylvan, Old Woldish, Caprice.",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 14750,
+      "habitat": []
+    }
+  ]
+}

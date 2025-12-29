@@ -1,0 +1,75 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      57
+    ],
+    "content_type": "monsters",
+    "item_count": 1,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Caduceus Doome—Elder Phanatarch",
+      "monster_id": "caduceus_doome_elder_phanatarch",
+      "armor_class": 12,
+      "hit_dice": "14d4",
+      "hp": 38,
+      "level": 14,
+      "movement": "40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Vorpal Knife (+6, 1d4+2)",
+        "staff (+4, 1d4 + flame)",
+        "spell"
+      ],
+      "damage": [
+        "1d4+2",
+        "1d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 10,
+      "save_hold": 9,
+      "save_blast": 12,
+      "save_spell": 10,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": "Vorpal Knife, Amulet of Refraction, 2 magic rings, The Crown of Old Droun (worth 15,000gp)",
+      "size": "Medium",
+      "monster_type": "Mortal",
+      "sentience": "Genius",
+      "alignment": "Neutral",
+      "intelligence": "Genius",
+      "special_abilities": [
+        "Dark sight: Can see normally in darkness up to 30′",
+        "Vorpal Knife: A slim, curved Arcane Dagger of black iron (worth 20,000gp). On a natural 19 or 20 Attack Roll, a Small or Medium target is decapitated. Against targets of solid stone or metal, only a natural 20 decapitates. Creatures without a head are unaffected. Some creatures with heads (e.g. constructs) are not killed by decapitation",
+        "Flame: A victim damaged by the Elder Phanatarch's staff must Save Versus Spell or be wreathed in snaking green flame, suffering 3 damage per Round for 1d4 Rounds",
+        "Magic rings: The Elder Phanatarch wears a steel Ring of Charming (Humans) and a golden Ring of Energy Resistance (Fire)",
+        "Spells: Doome has the following arcane spells memorised: Rank 1 Decipher, Firelight, Ingratiate, Ignite / Extinguish, Shield of Force, Rank 2 Flaming Spirit, Invisibility, Mirror Image, Phantasm, Rank 3 Dispel Magic, Fireball, Haste, Serpent Glyph, Rank 4 Arcane Eye, Dimension Door, Polymorph, Rank 5 Animate Dead, Cloudkill, Mire, Rank 6 Geas, Word of Doom",
+        "Enter Chell: When in Drune Lodge, the Elder Phanatarch may step into the Ring of Chell, at any point he wishes around the ring",
+        "Ley travel: When in a hex which a ley line passes through, the Elder Phanatarch can step into the ley line and travel astrally along the course of energy at a rate of 24 miles per hour"
+      ],
+      "immunities": [],
+      "resistances": [
+        "fire"
+      ],
+      "vulnerabilities": [],
+      "description": "A gaunt, vault-pale human man of imposing height, crowned with the finger bones of his mightiest forebears and swathed in black. His beard and hair are tangled like bramble thickets. A baleful green fire flickers in his pupils.",
+      "behavior": "Cool-minded, scheming, manipulative. Pulls at his bony fingers, as if removing rings.",
+      "speech": "A dispassionate whisper that penetrates all noise. Woldish, Old Woldish, Drunic, Liturgic, Sylvan, a smattering of High Elfish.",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 6550,
+      "habitat": []
+    }
+  ]
+}

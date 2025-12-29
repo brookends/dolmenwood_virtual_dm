@@ -1,0 +1,295 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      53,
+      54,
+      55
+    ],
+    "content_type": "monsters",
+    "item_count": 4,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Headless Rider",
+      "monster_id": "headless_rider",
+      "armor_class": 16,
+      "hit_dice": "7d8",
+      "hp": 31,
+      "level": 7,
+      "movement": "30 (80 when mounted)",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Sword (+6, 1d8 + life drain)",
+        "gaze (terror)"
+      ],
+      "damage": [
+        "1d8",
+        "terror"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C5 + R2 + M8",
+      "possessions": "None",
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead: Silent before attacking. Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate).",
+        "Immunities: Only harmed by silver weapons, magic, or magic weapons.",
+        "Incorporeal: Can pass through walls, doors, and other solid objects.",
+        "Dark sight: Can see normally without light.",
+        "Life drain: Each hit with the rider's sword permanently reduces the victim's maximum Hit Points by 1. Holy Fire restores 1d6 Hit Points lost in this way.",
+        "Gaze (once per target): A headless rider may hold aloft its decapitated head and direct its gaze at a target within 60′. The target must Save Versus Hold or fall to the ground, paralysed with terror for 1d6 Turns (aware but unable to move or act).",
+        "Ghostly mount: Headless riders are usually mounted on a ghostly horse, moving at Speed 80.",
+        "Hidden hoard: Headless riders keeps their hoard in a secret location, often buried in the deep woods."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Ghosts of highway robbers, disgraced knights, or bloodthirsty mercenaries who were brought to justice and executed. Wander on a spectral horse, clutching their ghastly, decapitated head.",
+      "behavior": "Obsessive, cruel, vengeful",
+      "speech": "Grisly moaning (from decapitated head). Woldish, Old Woldish (2-in-6 chance)",
+      "traits": [
+        "Stag's or ram's skull hovers above severed neck.",
+        "Gore drips from neck and head.",
+        "Wreathed in eerie violet flame.",
+        "Accompanied by the sound of a clinking coin purse.",
+        "Electrical sparks fly from wicked, jangling spurs.",
+        "Ornate plate armour, engraved with demonic visages."
+      ],
+      "number_appearing": "1d4",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Bearing down on a lone cleric (Level 1—p104), staunchly presenting her holy symbol despite its failure to repel the undead.",
+        "In battle with 1d6 knights (Level 1—p106) wielding silver-tipped lances. The knights are on orders to vanquish the undead, who have been terrorising local roads.",
+        "Motionless at the centre of a track, challenging any who approach to single combat.",
+        "Dismounted, kneeling in a peaceful glade of wildflowers, mourning at the forgotten grave of a person once loved."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 1680,
+      "habitat": []
+    },
+    {
+      "name": "Ghostly Mount",
+      "monster_id": "ghostly_mount",
+      "armor_class": 12,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "80",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "2 hooves (+1, 1d4)"
+      ],
+      "damage": [
+        "1d4"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Large",
+      "monster_type": "Undead",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": null,
+      "special_abilities": [
+        "Undead, incorporeal, dark sight, immunities: Per headless rider—see above."
+      ],
+      "immunities": [
+        "biological effects",
+        "mind-affecting spells",
+        "mundane weapons"
+      ],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": null,
+      "behavior": null,
+      "speech": null,
+      "traits": [
+        "Flaming hooves.",
+        "Skeletal.",
+        "Emaciated, with decomposing flesh.",
+        "Eyes emit a pale blue glow.",
+        "Hovers 6″ off the ground.",
+        "Coated in lathery sweat, foaming at the mouth."
+      ],
+      "number_appearing": null,
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 35,
+      "habitat": []
+    },
+    {
+      "name": "Jack-o'-Lantern",
+      "monster_id": "jack-o-lantern",
+      "armor_class": 11,
+      "hit_dice": "3d8",
+      "hp": 13,
+      "level": 3,
+      "movement": "30",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Thump (+2, 1d3)",
+        "gaze (dazzling)"
+      ],
+      "damage": [
+        "1d3",
+        "dazzling"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 7,
+      "treasure_type": null,
+      "hoard": "C8 + R9 + M2",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Fungus",
+      "sentience": "Genius",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Dazzling gaze: In combat or when threatened, jack-o'-lanterns' eyes emit a sickening green/blue strobe. At the start of each Round, all within 30′ must Save Versus Hold or be dazzled, suffering a –2 penalty to Attack Rolls and Armour Class for that Round.",
+        "Riddles and secrets: Jack-o'-lanterns love riddles and word games, favouring parley over violence. When encountering other intelligent beings, they offer to reveal the answer to a problem or puzzle (see Fungal communion).",
+        "Fungal communion: A pulsing green glow from the mushroom's eyes and cap can hypnotise willing sentients. Subjects are immobilised for 1d4 hours, experiencing phantasmagoric visions. If a Wisdom Check succeeds, the visions reveal the answer to a riddle or puzzle, dredging deep secrets from the collective memory of mushroom-kind. If the check fails, the subject comes under the mushroom's thrall (effectively mindless), shrinks to 1″ tall, and is scooped up and carried back to the lair.",
+        "Magical flesh: The flesh of a jack-o'-lantern reduces the production cost of Dimensional Solvent, Silver by one-third. It is worth 100gp."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Ancient, brown-fleshed, humanoid mushrooms (4′ tall) with great, wobbly caps and clusters of inscrutable eyes. Guardians of secret knowledge who delight in capturing mortal folk.",
+      "behavior": "Alien, malevolent, Machiavellian",
+      "speech": "Emotionless. Telepathic projection with any perceived sentient within 100′",
+      "traits": [
+        "Cap peaked like a wizard's hat.",
+        "Twisted, talon-like fingers.",
+        "Eyes pulse purple and pink when communicating.",
+        "Blubbering, oozing, black maw.",
+        "Semi-transparent flesh reveals an inner illumination.",
+        "Cap crawling with delicate, magenta worms."
+      ],
+      "number_appearing": "1d8",
+      "lair_percentage": 15,
+      "encounter_scenarios": [
+        "Prancing gleefully around the drooling, hypnotised forms of 1d6 woodgrues (p94), emitting high-pitched chittering sounds.",
+        "Scurrying away with a fistful of miniature humans (everyday mortals—p110) who sought the jack-o'-lanterns' wisdom and were found unworthy by the mushroom gods.",
+        "Trapped in a net, flailing wildly and broadcasting telepathic pleas for aid. An adventuring party (p108) hauls the net onto a wagon, for transport to their patron, the alchemist Madame Thornwaife (hex 1905).",
+        "Conversing with 1d3 mould oracles (p61) amid a ring of standing stones clad with pulsating, luminescent fungus. Eavesdroppers who can understand Mulch hear fragments of a plan to breed a gargantuan, sentient puffball to carry out the will of the Myconom."
+      ],
+      "lair_descriptions": [
+        "Little sandstone chambers dug out of the walls of a sinkhole. At the base of the hole, miniaturised people (everyday mortals—p110) mine for valuable ores.",
+        "A secret grotto, veiled with a curtain of multi-hued moss. Beneath dripping stalactites, the jack-o'-lanterns craft tiny town dioramas, peopled with their miniaturised victims (everyday mortals—p110).",
+        "A ruined house covered with slimy, black fungal nodules (Hob's Lewd—DCB). The jack-o'-lanterns lurk in the basement, brooding over obsessively catalogued racks of miniaturised people (everyday mortals—p110) in jars.",
+        "Bulbous fungal sacs dangling in the treetops. Each sac houses a single jack-o'-lantern, greedily leering over its miniaturised victims (everyday mortals—p110) as they wander befuddled in a fiendish fungal maze."
+      ],
+      "xp_value": 65,
+      "habitat": []
+    },
+    {
+      "name": "Kelpie",
+      "monster_id": "kelpie",
+      "armor_class": 14,
+      "hit_dice": "5d8",
+      "hp": 22,
+      "level": 5,
+      "movement": "60 Swim 60",
+      "speed": 60,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 60,
+      "attacks": [
+        "Bite (+4, 1d6)",
+        "2 hooves (+4, 1d4)"
+      ],
+      "damage": [
+        "1d6",
+        "1d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Demi-Fey",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Cold iron: As demi-fey, kelpies suffer 1 extra point of damage when hit with cold iron weapons.",
+        "Amphibious: Can breathe air and water.",
+        "Enchanting song: All who hear the beautiful song of a kelpie must Save Versus Spell or be enchanted. Victims are compelled to approach and mount the kelpie (which can lengthen to carry up to a dozen individuals). Following a wild, aquatic ride, the kelpie drowns its victims, consumes their flesh, and leaves their entrails by the water's edge.",
+        "Bridle: One not enchanted by a kelpie's song may try to remove its bridle, requiring a successful melee attack. A kelpie is bound to serve the character for 1d8 days.",
+        "Human form: Kelpies sometimes leave the water and wander the shore in the form of a dashing young human in old-fashioned, formal dress. They can be recognised by the pond weed tangled in their hair.",
+        "Charm humans: A kelpie in human form may attempt to charm a human encountered alone. If the victim fails a Save Versus Spell, they are compelled to wander with the kelpie. After 1 day, the kelpie attempts to drown and devour the victim, unless their Charisma is 16 or higher. In this case, the kelpie falls in love and serves the victim for 1d8 days before either fleeing or choosing to become permanently human (equal chance of either)."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [
+        "cold iron"
+      ],
+      "description": "Demi-fey monsters that inhabit bodies of water. Appear as black horses, slick with foam, with backwards hooves and a bridle of silvery weed. Seek to enchant and devour humanoids.",
+      "behavior": "Wily, treacherous, dreamy",
+      "speech": "Eloquently romantic. Woldish, Sylvan",
+      "traits": [
+        "Dappled green and brown flanks.",
+        "Pearly eyes.",
+        "Covered in small snails and shellfish.",
+        "Glimmers as if in moonlight.",
+        "Eyes aflame with an unholy light.",
+        "Eyes and tongue rolling drunkenly."
+      ],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Lying in wait beneath the steep bank of a pool or stream, making cries and wails like those of a drowning child.",
+        "Charging along with a red-headed maid (its lover, everyday mortal—p110) atop its back. The pair flee a group of 6 villagers (p111)—the girl's relatives, armed with pitchforks—who suspect the fairy nature of her new paramour.",
+        "Strolling beside a brook in the form of a dashing young gentleman, muttering to himself, claiming to be seeking his black horse. If aided, the kelpie tries to find a moment alone with the character most vulnerable to its charms.",
+        "Careering in a pool, bearing a grizzled hunter (Level 1—p106) and a young lad (everyday mortal—p110), both whooping with joy. The kelpie prepares to drown them. A bundle of furs and a brace of pheasants lie nearby."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 360,
+      "habitat": []
+    }
+  ]
+}

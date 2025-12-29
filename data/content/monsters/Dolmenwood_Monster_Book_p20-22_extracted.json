@@ -1,0 +1,225 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      20,
+      21,
+      22
+    ],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Bog Salamander",
+      "monster_id": "bog_salamander",
+      "armor_class": 12,
+      "hit_dice": "4d8",
+      "hp": 18,
+      "level": 4,
+      "movement": "30' Swim 40'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 40,
+      "attacks": [
+        "2 claws (+3, 1d6)"
+      ],
+      "damage": [
+        "1d6"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3 (remains of victims)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Animal Intelligence",
+      "alignment": "Neutral",
+      "intelligence": "Animal Intelligence",
+      "special_abilities": [
+        "Amphibious: Can breathe air and water.",
+        "Eye glow: Anyone within 60′ seeing the glow of a bog salamander's eyes must Save Versus Hold or be bedazzled: –2 penalty to Armour Class, –2 penalty to Attack Rolls against the bog salamander, Speed halved. This state lasts as long as the victim remains in the bog salamander's presence.",
+        "Slain victims: Bodies are dragged to the bog salamander's lair and slavered up in its toothless maw."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Translucent white, 8′ long, carnivorous amphibians with toothless maws, glassy claws, and bulbous eyes that glow like lambent moons. Creep through the undergrowth in search of prey.",
+      "behavior": "Dull-witted, sluggish with frenzied bursts",
+      "speech": "Bestial slurping and wheezing",
+      "traits": [
+        "Purplish veins and organs visible through skin.",
+        "Coral-like air-gills fluttering around throat.",
+        "Emits a choked gurgling as it hunts.",
+        "Rows of blisters along back, filled with scarlet jelly.",
+        "Slimy, yellow tongue lolling.",
+        "Clamouring, human-like hands."
+      ],
+      "number_appearing": "1d3",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Thrashing around in an algae-choked pool, spawning. The pool is awash with great masses of fist-sized eggs, attached to pondweed with strands of sticky jelly.",
+        "Entranced by an odd, disharmonic tune played on a lute by a prancing bard (Level 1—p104). The salamanders follow senselessly, their eyes pulsating and tails waving in time with the music.",
+        "Desperately fleeing 2d6 crookhorns (p28), drunkenly loping along behind, throwing barbed spears at the salamanders. The crookhorns barely have the sense to stay out of range of the salamanders' eye glow.",
+        "Dragging a drooling, near-dead mould oracle (p61) to their lair to be devoured in peace."
+      ],
+      "lair_descriptions": [
+        "A mud-filled network of burrowed out tunnels in the marshy banks at the edge of a pond.",
+        "Aquatic caves at the base of a pool of black, oily water. The salamanders are used as mounts by a group of 2d4 madtoms (p54) who are blind and immune to the salamanders' hypnotic eye glow.",
+        "Submerged ruins, draped with a latticework of slimy, blue gel exuded by the salamanders. Within the ruins, blackened human skeletons are used as vessels for the salamanders' sticky egg clutches.",
+        "A muddy depression in an area of boggy ground, lined with freshly gathered ferns, marsh grasses, and striated moss (1d6 portions of Frondhelm—DCB)."
+      ],
+      "xp_value": 130,
+      "habitat": []
+    },
+    {
+      "name": "Boggin",
+      "monster_id": "boggin",
+      "armor_class": 14,
+      "hit_dice": "6d8",
+      "hp": 27,
+      "level": 6,
+      "movement": "40' Swim 40'",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 40,
+      "attacks": [
+        "2 groping hands (+5, 1d4 + grab)",
+        "muck rake (+5, 1d12)"
+      ],
+      "damage": [
+        "1d4",
+        "1d12"
+      ],
+      "save_doom": 9,
+      "save_ray": 10,
+      "save_hold": 11,
+      "save_blast": 12,
+      "save_spell": 13,
+      "saves_as": null,
+      "morale": 8,
+      "treasure_type": null,
+      "hoard": "C3 + R3 + M3 + earths and ores (1d10 × 100gp)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Monstrosity",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Dark sight: Can see normally without light.",
+        "Amphibious: Can breathe air and water.",
+        "Grab: Anyone hit by both of a boggin's hands in the same Round is dragged beneath its reeking mane of weed. The victim is trapped and may not act, but may Save Versus Hold each Round to escape. In the meantime, the boggin attempts to drag the victim to its underwater lair.",
+        "If killed: The flesh of a boggin dissolves into sludge.",
+        "Sludge mines: Boggins mine lake-beds for ores and clay.",
+        "Prey on sentients: Boggins ply the water's edge in search of warm-blooded sentients to drag down to their lair. 4-in-6 captives are dismembered and consumed; the remainder are put to work in the sludge mines.",
+        "Amphibious vomit: The putrid, green vomit of a boggin, when caked around the mouth and nose of a land-dwelling humanoid, grants the ability to breathe underwater for 1 day. A boggin produces 2 doses of the substance per day. A dose of the vomit is worth 100gp, if bottled."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Amphibious monstrosities (10′ tall) with frog-like limbs and a huge matting of hair-like pondweed concealing a grotesque, leering face. Lurk in pools, lakes, and mires.",
+      "behavior": "Cruel captors, man-eaters, slow-witted",
+      "speech": "Loon-like gibbering. Basic Woldish, Boggin",
+      "traits": [
+        "Dead tree branches arranged like antlers.",
+        "Weed-hair full of squirming worms and tadpoles.",
+        "Rows of pendulous teets.",
+        "Long, lumpy tail, ending in a tuft of pondweed.",
+        "Sickening, rotting stench.",
+        "Adorned with necklaces of human bones."
+      ],
+      "number_appearing": "1d6",
+      "lair_percentage": 25,
+      "encounter_scenarios": [
+        "Emerging from a pool to chase 1d3 shorthorns (p23): naked, covered in pondweed, fleeing captivity.",
+        "Lurking in a muddy pool, only the tops of their heads protruding. A Drune Cottager (p35) perches in a willow tree and promises payment (in the form of charmed locals) in return for six barrels of \"husk sludge\".",
+        "Sneaking through a bed of reeds, approaching a group of 3d4 anglers (p110) who sit around a fire, drinking and singing merrily, unaware of the impending danger.",
+        "Dragging themselves from a muddy pool which is dried up or frozen, moaning plaintively. The monsters will not live long out of water."
+      ],
+      "lair_descriptions": [
+        "A well shaft, submerged in a pond. An old woman (everyday mortal—p110) is bound in weeds at the bottom of the well. She spends her days tunnelling in the pitch dark.",
+        "An underwater mud dome. Swimming captives (everyday mortals—p110) tend colonies of fish and molluscs. The boggins serve a supra-intelligent giant catfish (p113).",
+        "A maze of subaquatic caves in the bedrock of a lake. Captives (everyday mortals—p110) support a mining operation tied to unscrupulous traders on the surface.",
+        "A cavern in the side of a pool. The boggins live peacefully—preying only on fish—led by 2d4 crystaloids (p29) who speak of philosophy and the stars."
+      ],
+      "xp_value": 520,
+      "habitat": []
+    },
+    {
+      "name": "Brainconk",
+      "monster_id": "brainconk",
+      "armor_class": 13,
+      "hit_dice": "1d8",
+      "hp": 4,
+      "level": 1,
+      "movement": "30'",
+      "speed": 30,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Claw (+0, 1d3 + brain slurp)"
+      ],
+      "damage": [
+        "1d3"
+      ],
+      "save_doom": 12,
+      "save_ray": 13,
+      "save_hold": 14,
+      "save_blast": 15,
+      "save_spell": 16,
+      "saves_as": null,
+      "morale": 6,
+      "treasure_type": null,
+      "hoard": "None",
+      "possessions": "None",
+      "size": "Small",
+      "monster_type": "Fungus",
+      "sentience": "Semi-Intelligent",
+      "alignment": "Neutral",
+      "intelligence": "Semi-Intelligent",
+      "special_abilities": [
+        "Surprise: Opposing side has a 3-in-6 chance of being surprised, due to mistaking brainconks for normal bracket fungi.",
+        "Brain slurp: Upon a successful attack inflicting 3 damage, a brainconk latches onto the victim's scalp and starts sucking out the brain. In subsequent Rounds, the victim automatically suffers 1d3 damage and a permanent loss of 1 Intelligence or Wisdom (selected at random each Round). A victim reduced to 0 Intelligence or Wisdom dies.",
+        "Detaching: Once latched onto a victim's scalp, a brainconk refuses to let go until the victim is dead. Attacks against a latched on brainconk suffer a –4 penalty. A natural 1 Attack Roll against a latched on brainconk hits the victim instead, inflicting normal damage.",
+        "Migratory: After feeding, brainconks migrate to a different glade, so that their victims' corpses do not give away their presence."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "Bright orange, 2′ wide, semi-sentient bracket fungi that lurk in treetops. Drop down upon warm-blooded creatures, aiming for the head and the juicy brains on which they subsist.",
+      "behavior": "Sneaky, ravenous",
+      "speech": "Excited squealing. Understand basic Sylvan, but cannot speak",
+      "traits": [
+        "Keens and purrs when attacking.",
+        "Tiny human faces (of victims) on upper side.",
+        "Giggles when spotted.",
+        "Upper side striated black.",
+        "Several mouths with tiny, shiny teeth.",
+        "Covered in symbiotic, purple mould."
+      ],
+      "number_appearing": "1d8",
+      "lair_percentage": null,
+      "encounter_scenarios": [
+        "Slowly creeping down the trunk of a great elm, pink drool oozing from their greedy mouth-parts as they eye a troll (p84) sleeping on a moss mound below.",
+        "Slurping out the brains of 4 deceased adventurers. Among the corpses' gear can be found 2d100gp and a coded letter bearing the seal of House Mulbreck. The letter requests a \"moss-covered corpse from the Nyf caves\" be delivered to Bogwitt Manor.",
+        "Squealing frantically, fleeing a scavenging redslob (p70), dissolving living creatures in the treetops.",
+        "The corpse of a rider and horse lie in a ditch, their brains sucked out through small holes in their skulls. The brainconks lounge sated in the treetops nearby."
+      ],
+      "lair_descriptions": [],
+      "xp_value": 20,
+      "habitat": []
+    }
+  ]
+}

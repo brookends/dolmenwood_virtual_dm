@@ -1,0 +1,357 @@
+{
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Monster_Book.pdf",
+    "pages": [
+      98,
+      99,
+      100,
+      101,
+      102
+    ],
+    "content_type": "monsters",
+    "item_count": 4,
+    "errors": [],
+    "note": "Review and correct this data before importing"
+  },
+  "items": [
+    {
+      "name": "Black Bile Wyrm",
+      "monster_id": "black_bile_wyrm",
+      "armor_class": 17,
+      "hit_dice": "5d8",
+      "hp": 22,
+      "level": 5,
+      "movement": "60' Burrow 20'",
+      "speed": 60,
+      "burrow_speed": 20,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+4, 2d6)",
+        "Tail (+4, 2d4)"
+      ],
+      "damage": [
+        "2d6",
+        "2d4"
+      ],
+      "save_doom": 10,
+      "save_ray": 11,
+      "save_hold": 12,
+      "save_blast": 13,
+      "save_spell": 14,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C6 + R7 + M4",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Dragon",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Surprise: When lying in wait beneath earth, opposing side has 4-in-6 chance of being surprised",
+        "Sleeping in lair: 50% chance of being asleep if encountered in lair",
+        "Immunities: Suffer half damage from mundane weapons. Immune to acid and poison. Immune to mundane fire, lightning, and cold. Suffer half damage from magical fire, lightning, and cold.",
+        "Dark sight: Can see normally without light",
+        "Breath (thrice a day): Vomit caustic black bile in 10' wide, 30' long stream. Damage equal to current HP (Save vs Blast for half)",
+        "Commanding growl (thrice a day): Single target must Save vs Spell or obey command for 1 Round"
+      ],
+      "immunities": [
+        "acid",
+        "poison",
+        "mundane fire",
+        "mundane lightning",
+        "mundane cold"
+      ],
+      "resistances": [
+        "mundane weapons",
+        "magical fire",
+        "magical lightning",
+        "magical cold"
+      ],
+      "vulnerabilities": [],
+      "description": "30' long, with lumpy flesh, brown-black scales, patches of fur or feathers, and leering, lupine faces. Burrow into the earth to surprise prey. Delight in killing for its own sake.",
+      "behavior": "Savage, rapacious, destructive",
+      "speech": "Growling, broken sentences. Basic Woldish, Wyrm",
+      "traits": [
+        "Reeks of sulphur",
+        "Eyes of phosphorescent amber",
+        "Plume of lustrous, black feathers around the neck",
+        "Thorns along sides",
+        "Salivates and froths at the mouth",
+        "Scales covered with moss"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Coiled around a dead horse, in battle with a knight (Level 3)",
+        "Lying in wait beneath a mound of freshly dug earth topped with the bloody corpse of an old woman",
+        "Crashing through the forest in a blood rage, levelling small trees. The wyrm has ravaged a cluster of woodland huts and hungers for more flesh",
+        "Enraged and coiled around an 8' sphere of black energy. Inside the sphere is a magician (Level 3). She is biding her time, but would be appreciative of assistance"
+      ],
+      "lair_descriptions": [
+        "The nest of a giant bird—possibly still containing an unhatched egg—amid the branches of a mighty tree. The wyrm is adept at climbing up and down the trunk",
+        "A muddy hole burrowed out of the side of a hill",
+        "A nest of feathers and furs in the deepest hole of a natural cave network. Outside, the bones and ravaged remains of victims are strewn around",
+        "At the base of a natural canyon, overgrown with brambles at either end (the wyrm descends down the sides). The monster collects the blood of its victims in a basin at the centre of its treasure hoard"
+      ],
+      "xp_value": 460,
+      "habitat": []
+    },
+    {
+      "name": "Blood Wyrm",
+      "monster_id": "blood_wyrm",
+      "armor_class": 19,
+      "hit_dice": "9d8",
+      "hp": 40,
+      "level": 9,
+      "movement": "80' Fly 80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": 80,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+7, 2d10)",
+        "Tail (+7, 2d6)"
+      ],
+      "damage": [
+        "2d10",
+        "2d6"
+      ],
+      "save_doom": 7,
+      "save_ray": 8,
+      "save_hold": 9,
+      "save_blast": 10,
+      "save_spell": 11,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C10 + R8 + M11",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Dragon",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Sleeping in lair: 30% chance of being asleep if encountered in lair",
+        "Immunities: Only harmed by magic or magic weapons. Immune to acid and poison. Immune to mundane fire, lightning, and cold. Suffer half damage from magical fire, lightning, and cold.",
+        "Dark sight: Can see normally without light",
+        "Breath (thrice a day): Vomit forth great gout of boiling blood. All within 15' wide, 120' long stream suffer damage equal to current HP (Save vs Blast for half)",
+        "Charming voice: Those who hear words must Save vs Spell or come under sway. Charmed victims move towards wyrm, obey commands, defend wyrm. Cannot cast spells, use magic items, or harm wyrm. Killing wyrm breaks charm.",
+        "Flight: Able to fly with sinuous agility. Having no wings, flight is magical."
+      ],
+      "immunities": [
+        "acid",
+        "poison",
+        "mundane fire",
+        "mundane lightning",
+        "mundane cold"
+      ],
+      "resistances": [
+        "magical fire",
+        "magical lightning",
+        "magical cold"
+      ],
+      "vulnerabilities": [],
+      "description": "50' long, with deep crimson scales, human-like faces, pupilless blue eyes, a ridge of antlers at the neck, and a thorny, whip-like tail. Often charm lesser beings to do their bidding.",
+      "behavior": "Scheming, cruel, sadistic",
+      "speech": "Eloquent, venomous. Woldish, Wyrm, Sylvan",
+      "traits": [
+        "Blood weeps from the eyes of all creatures in its presence",
+        "Antlers decorated with skulls of victims",
+        "Leaves a trail of clotted blood in its wake",
+        "Long, orange beard",
+        "Reeks of carrion",
+        "Two small mouths that speak in unison with the primary"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Plummeting to earth, harried by 2d4 griffons in the service of a powerful wizard. They are instructed to kill the wyrm and retrieve its body",
+        "In battle with a cleric of St Sedge (Level 5). The cleric rejects any offers of aid, being engaged in a duel of honour. The wyrm's servants—2d6 brigands (Level 1 thieves)—lurk nearby, ready to pounce at an opportune moment",
+        "1d4 elf wanderers, wild-eyed under the wyrm's charm, attack all they encounter and drag the captives to the wyrm, which waits nearby",
+        "Concealed behind a rock, threatening a caravan of 4 merchants and 16 guards (Level 1 fighters). The merchants fearfully unload their most precious goods into chests by the roadside"
+      ],
+      "lair_descriptions": [
+        "A ruined manor house, recently partially cleared and repaired. The wyrm has made its lair in the banquet hall and is attended by 6 charmed servants (everyday mortals), who treat the monster like a king",
+        "A natural cave system inhabited by 4d20 mosslings, all charmed by the wyrm. They serve the monster as their god, tricking strangers with feigned hospitality, only to sacrifice them to the wyrm in the night",
+        "Upon a magical, floating sky-island, among the ruined laboratories of the wizard who created it. All manner of magical curiosities may be among the wyrm's hoard",
+        "A hidden cleft among high, rocky peaks, nigh inaccessible on foot. A gang of 3d6 crookhorns dwells in the peaks, serving the wyrm"
+      ],
+      "xp_value": 2450,
+      "habitat": []
+    },
+    {
+      "name": "Phlegm Wyrm",
+      "monster_id": "phlegm_wyrm",
+      "armor_class": 19,
+      "hit_dice": "7d8",
+      "hp": 31,
+      "level": 7,
+      "movement": "60' Swim 60'",
+      "speed": 60,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 60,
+      "attacks": [
+        "Bite (+6, 2d8)",
+        "Tail (+6, 1d10)"
+      ],
+      "damage": [
+        "2d8",
+        "1d10"
+      ],
+      "save_doom": 8,
+      "save_ray": 9,
+      "save_hold": 10,
+      "save_blast": 11,
+      "save_spell": 12,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C9 + R5 + M10 + (R1 × 3)",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Dragon",
+      "sentience": "Sentient",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Sleeping in lair: 40% chance of being asleep if encountered in lair",
+        "Immunities: Suffer only a single point of damage when hit by mundane weapons. Immune to acid and poison. Immune to mundane fire, lightning, and cold. Suffer half damage from magical fire, lightning, and cold.",
+        "Dark sight: Can see normally without light",
+        "Amphibious: Can breath air and water",
+        "Breath (thrice a day): Spit venomous phlegm. All within 10' diameter sphere up to 120' suffer damage equal to current HP (Save vs Blast for half)",
+        "Hypnotic gaze (thrice a day): Gaze may hypnotise target. Must Save vs Spell or follow spoken suggestion (short phrase) for 1d6 Turns. Obviously harmful suggestions automatically fail.",
+        "Hypnotic music: Can soothe an angered phlegm wyrm"
+      ],
+      "immunities": [
+        "acid",
+        "poison",
+        "mundane fire",
+        "mundane lightning",
+        "mundane cold"
+      ],
+      "resistances": [
+        "magical fire",
+        "magical lightning",
+        "magical cold"
+      ],
+      "vulnerabilities": [],
+      "description": "40' long, sinuous, with scintillating silver-grey scales, weed-like fringes of purple, serpentine faces, and flashing, golden eyes. Dwell in or close to water. Love gems and hypnotic music.",
+      "behavior": "Languid, avaricious, deceitful",
+      "speech": "Dreamy hissing. Woldish, Wyrm",
+      "traits": [
+        "Dazzling scales reflect an unseen light",
+        "Triple-forked, yellow tongue",
+        "Third, violet eye in centre of forehead",
+        "Loves riddles and speaks in rhyme",
+        "Accompanied by the odour of aromatic resins",
+        "Covered in a clear slime"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Agitating the water around a barge drifting on a pool. 2 anglers cry out in terror, spotting the wyrm's silver coils",
+        "Writhing in hypnotic ecstasy to frenetic pipe music played by a bard (Level 3) standing on a large boulder. Disturbing the music could have grave consequences",
+        "Emerging from the undergrowth with a sack of pillaged coin in its teeth. A band of 12 mercenaries (Level 1 fighters) has brought jewels to trade with the wyrm",
+        "Darting from a pool or stream, dragging 3 merchants to their doom. A toppled caravan lies nearby. The merchants' guards have fled in terror"
+      ],
+      "lair_descriptions": [
+        "A murky pond beside a ruined mill. The wyrm stores its hoard beneath the old waterwheel",
+        "A narrow passage behind a small waterfall leads into a dripping, stalactite-filled grotto where the wyrm lairs. Any noise is amplified in cascading echoes and threatens to bring down the stone spikes from above",
+        "A pine-clad island in the centre of a bog. Cattle are sometimes tied at the edge of the bog—sacrificial offerings from local people to appease the wyrm",
+        "In a pool, once tended by nymphs, at the top of a waterfall that 'falls' upwards into the sky"
+      ],
+      "xp_value": 1380,
+      "habitat": []
+    },
+    {
+      "name": "Yellow Bile Wyrm",
+      "monster_id": "yellow_bile_wyrm",
+      "armor_class": 20,
+      "hit_dice": "11d8",
+      "hp": 49,
+      "level": 11,
+      "movement": "80' Fly 80'",
+      "speed": 80,
+      "burrow_speed": null,
+      "fly_speed": 80,
+      "swim_speed": null,
+      "attacks": [
+        "Bite (+8, 2d10)",
+        "Tail (+8, 2d6)"
+      ],
+      "damage": [
+        "2d10",
+        "2d6"
+      ],
+      "save_doom": 6,
+      "save_ray": 7,
+      "save_hold": 8,
+      "save_blast": 9,
+      "save_spell": 10,
+      "saves_as": null,
+      "morale": 9,
+      "treasure_type": null,
+      "hoard": "C11 + R12 + M7",
+      "possessions": "None",
+      "size": "Large",
+      "monster_type": "Dragon",
+      "sentience": "Genius",
+      "alignment": "Chaotic",
+      "intelligence": null,
+      "special_abilities": [
+        "Sleeping in lair: 20% chance of being asleep if encountered in lair",
+        "Immunities: Only harmed by magic or magic weapons. Suffer half damage from magic weapons. Immune to acid and poison. Immune to mundane fire, lightning, and cold. Suffer half damage from magical fire, lightning, and cold.",
+        "Dark sight: Can see normally without light",
+        "Breath (thrice a day): Belch forth cone of sticky, caustic, yellow bile. All within cone 60' long and 30' wide at end suffer damage equal to current HP, plus 2d6 damage following round while bile drips off (Save vs Blast for half both rounds)",
+        "Aura of fear: In presence of yellow bile wyrm, all beings of less than Level 8 must Save vs Hold or be paralysed for 1d6 Turns (aware but unable to move or act)",
+        "Flight: Able to fly with sinuous agility. Having no wings, flight is magical"
+      ],
+      "immunities": [
+        "acid",
+        "poison",
+        "mundane fire",
+        "mundane lightning",
+        "mundane cold"
+      ],
+      "resistances": [
+        "magic weapons",
+        "magical fire",
+        "magical lightning",
+        "magical cold"
+      ],
+      "vulnerabilities": [],
+      "description": "60' long, with tarnished gold scales, misshapen heads, bulbous, black eyes, and tufts of wispy, white hair. Hoard knowledge in addition to gold, feigning wisdom to lure in victims.",
+      "behavior": "Erudite, treacherous, hateful",
+      "speech": "Reasoned rasp. Woldish, Wyrm, Dwelve, Sylvan",
+      "traits": [
+        "Huge, fatty jowls",
+        "Bifurcated tail",
+        "Milky pus, oozing from between the scales",
+        "Lolling, violet tongue",
+        "Dozens of small, white eyes on the cheeks and forehead",
+        "Twisted, black tusks"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 50,
+      "encounter_scenarios": [
+        "Bellowing, flying on its way to devour the nearest village",
+        "Accompanied by 4d8 crookhorns, engaged in tense negotiations with a delegation of 5 Drune Cottagers and 8 bramblings. Those who approach stealthily may overhear plans to besiege the court of the Nag-Lord",
+        "Lounging atop a hillock. The monster claims to be on a pilgrimage to the ruined abbey of St Clewyd (hex 0906). In truth, it is resting after having eaten sixteen pilgrims",
+        "Laying beside a misty pool, quietly discussing ancient days with an elf courtier clad in dewdrops. There is a 3-in-6 chance of the wyrm suddenly swallowing the elf whole (she survives in its belly for 1d4 Rounds)"
+      ],
+      "lair_descriptions": [
+        "A huge cavern deep underground. The wyrm has captured an onyx blob and 2 redslobs to protect the multitude of mould-lined passages that lead to its lair",
+        "The ruins of an old church. Among the catacombs, the wyrm has amassed a collection of books, whose pages it leafs through by delicately blowing on them",
+        "Atop a storm cloud which looms permanently above this section of the wood",
+        "A hall of wood, erected by a group of 2d6 magician-acolytes (Level 1) who worship the wyrm. It shares enigmatic tidbits of its vast knowledge-hoard with them, in exchange for their servitude"
+      ],
+      "xp_value": 3350,
+      "habitat": []
+    }
+  ]
+}
