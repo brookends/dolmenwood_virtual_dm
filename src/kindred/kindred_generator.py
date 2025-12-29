@@ -112,6 +112,11 @@ class KindredGenerator:
         physical = self.definition.physical
         base = physical.age_base
         dice_roll = roll_dice(physical.age_dice)
+
+        # Special handling for elves: age is 1d100 × 10 years
+        if self.definition.kindred_id == "elf":
+            return dice_roll * 10
+
         return base + dice_roll
 
     def roll_height(self) -> int:
@@ -128,12 +133,17 @@ class KindredGenerator:
         dice_roll = roll_dice(physical.weight_dice)
         return base + dice_roll
 
-    def generate_name(self, gender: Optional[str] = None) -> str:
+    def generate_name(
+        self,
+        gender: Optional[str] = None,
+        style: Optional[str] = None,
+    ) -> str:
         """
         Generate a random name appropriate for the kindred.
 
         Args:
             gender: "male", "female", or None for random/unisex
+            style: For elves: "rustic" or "courtly" (random if None)
 
         Returns:
             Generated full name
@@ -142,6 +152,22 @@ class KindredGenerator:
         if not name_table:
             return "Unnamed"
 
+        # Special handling for elves: use rustic or courtly names (no surnames)
+        if self.definition.kindred_id == "elf":
+            # Choose style randomly if not specified
+            if style is None:
+                style = random.choice(["rustic", "courtly"])
+
+            if style == "courtly" and NameColumn.COURTLY in name_table.columns:
+                names = name_table.get_names(NameColumn.COURTLY)
+            elif NameColumn.RUSTIC in name_table.columns:
+                names = name_table.get_names(NameColumn.RUSTIC)
+            else:
+                names = ["Unknown"]
+
+            return random.choice(names) if names else "Unknown"
+
+        # Standard naming for other kindreds
         # Determine first name column based on gender
         if gender == "male" and NameColumn.MALE in name_table.columns:
             first_names = name_table.get_names(NameColumn.MALE)

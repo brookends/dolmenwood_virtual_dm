@@ -1,0 +1,457 @@
+{
+  "category": "adventuring_gear",
+  "subcategory": "elf_trinkets",
+  "description": "Trinkets for Elf character generation. Small trinkets weigh 10 coins. The Referee should judge the weight of larger items.",
+  "items": [
+    {
+      "item_id": "elf_trinket_01",
+      "name": "Bag of Hallucinogenic Caterpillars",
+      "description": "A bag of caterpillars whose flesh have hallucinogenic properties.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_02",
+      "name": "Endless Sticky Sweets",
+      "description": "A bag of sticky sweets that never get any smaller when sucked on.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_03",
+      "name": "Moonlight-Invisible Twine",
+      "description": "A ball of silvery twine that is invisible in moonlight.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_04",
+      "name": "Grimalkin's Gift Yarn",
+      "description": "A ball of yarn, gifted to you by a grateful grimalkin.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_05",
+      "name": "Everlasting Black Rose",
+      "description": "A black rose that never wilts.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_06",
+      "name": "Mossling Cocoa Chocolate",
+      "description": "A block of chocolate made with cocoa harvested from a mossling.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_07",
+      "name": "Noble's Amateur Poetry",
+      "description": "A book of amateur poetry. You suspect the author to be a powerful Fairy noble.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_08",
+      "name": "Holly and Poison Ivy Crown",
+      "description": "A crown woven from holly and poison ivy.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_09",
+      "name": "Moonlit Daisy",
+      "description": "A daisy that glows in moonlight.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_10",
+      "name": "Elk Antler Hat",
+      "description": "A fancy hat topped with elk antlers.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_11",
+      "name": "Dream Crystal Fragment",
+      "description": "A fragment of glowing crystal that you found in a dream.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_12",
+      "name": "Evil Unicorn Horn Fragment",
+      "description": "A fragment of horn from an evil unicorn.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_13",
+      "name": "Liquid-Annihilating Bottle",
+      "description": "A glass bottle that annihilates any liquid poured into it.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_14",
+      "name": "Frozen Sister Jar",
+      "description": "A glass jar containing the tiny, frozen form of your only sister.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_15",
+      "name": "Bloodstained Glass Slipper",
+      "description": "A glass slipper, stained with blood.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_16",
+      "name": "Mood-Inappropriate Harp",
+      "description": "A harp that, if left unattended, plays mood-inappropriate music with the skill of an enthusiastic amateur.",
+      "weight": 30,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_17",
+      "name": "Dying Friar's Chapes",
+      "description": "A Chapes (holy symbol of the Pluritine Church), given to you by a dying friar decades ago.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_18",
+      "name": "Ice Key",
+      "description": "A key fashioned from ice. It melts in the warmth, and reforms in cold weather.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_19",
+      "name": "Cold Blue Flame Lantern",
+      "description": "A lantern that burns with a cold, blue flame when lit.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_20",
+      "name": "Ancient Death Threat Letter",
+      "description": "A letter promising your imminent demise, written in High Elfish. Delivered over a hundred years ago.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_21",
+      "name": "Mortal's Freely Given Heart",
+      "description": "A mortal's heart, freely given.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_22",
+      "name": "Trapped Sunlight Crystal",
+      "description": "A mote of sunlight, trapped in a scintillating crystal.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_23",
+      "name": "Honeybee Necklace",
+      "description": "A necklace composed of honeybees.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_24",
+      "name": "Bottled Nightmare",
+      "description": "A nightmare, sealed inside a bottle.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_25",
+      "name": "Stolen Woodgrue Pan Flute",
+      "description": "A pan flute stolen from a woodgrue. A single pipe is missing.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_26",
+      "name": "Blinking Peacock Feather",
+      "description": "A peacock feather whose eye intermittently blinks.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_27",
+      "name": "Distilled Dream Liquor",
+      "description": "A pleasant dream, distilled into a liquor.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_28",
+      "name": "Fairy Library Loan Receipt",
+      "description": "A receipt for a loan of four rare and expensive tomes from a Fairy library. You no longer have any of these books.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_29",
+      "name": "Great Knight's Scabbard",
+      "description": "A scabbard taken from the fallen body of a great knight.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_30",
+      "name": "Goblin King's Name Scroll",
+      "description": "A sealed scroll. Allegedly contains one of the Goblin King's myriad names, never spoken.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_31",
+      "name": "Screaming Acorn",
+      "description": "A seemingly ordinary acorn. Screams when its cap is removed.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_32",
+      "name": "Centaur Horseshoes",
+      "description": "A set of horseshoes, designed for a centaur.",
+      "weight": 40,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_33",
+      "name": "Honey-Dripping Silver Spoon",
+      "description": "A silver spoon that drips honey on command.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_34",
+      "name": "Queen of Blackbirds' Feather",
+      "description": "A single crow feather, taken from the cloak of the Queen of Blackbirds.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_35",
+      "name": "Prophetic Skeletal Finger",
+      "description": "A skeletal finger that scrapes and scratches at dusk. If provided with a means of making marks (e.g. dipped in ink or blood, a surface that can be scratched), it writes macabre prophecies.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_36",
+      "name": "Breggle Eye Bell",
+      "description": "A small bell shaped like a breggle's eye. Faint bleating accompanies its ringing.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_37",
+      "name": "Clothing-Weaving Spider",
+      "description": "A spider that slowly weaves webs in the shape of clothing.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_38",
+      "name": "Night Sea Spyglass",
+      "description": "A spyglass that always shows a view of a sea at night.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_39",
+      "name": "Endless Liqueur Thimble",
+      "description": "A thimble that is always magically full of sweet liqueur.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_40",
+      "name": "Darkness-Creating Parasol",
+      "description": "A white-and-gold parasol that creates darkness directly underneath it.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_41",
+      "name": "Salivating Wolf Pelt Cloak",
+      "description": "A wolf pelt cloak. The wolf's head is still attached and occasionally salivates.",
+      "weight": 30,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_42",
+      "name": "Ancient Bronze Mask",
+      "description": "An ancient bronze mask depicting a bearded face.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_43",
+      "name": "Liquid-Drawing Wine Bottle",
+      "description": "An empty wine bottle. When held over a liquid, it draws it inside until full.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_44",
+      "name": "Unturnable Hourglass",
+      "description": "An hourglass which constantly flows in one direction. It cannot be inverted.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_45",
+      "name": "Never-Melting Icicle",
+      "description": "An icicle that never melts.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_46",
+      "name": "Ghost-Detecting Bronze Chimes",
+      "description": "Bronze chimes that tinkle in the presence of both ghosts and strong breezes.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_47",
+      "name": "Preternaturally Cold Sculpting Tools",
+      "description": "Sculpting tools, preternaturally cold to the touch.",
+      "weight": 20,
+      "cost_sp": 0,
+      "slot_size": 1,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_48",
+      "name": "Six Kindred Blood Vials",
+      "description": "Six vials of blood, each drawn from a different Kindred.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_49",
+      "name": "Unknown Sky Star Charts",
+      "description": "Star charts that match no sky seen from Dolmenwood.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    },
+    {
+      "item_id": "elf_trinket_50",
+      "name": "Severed Fairy Horse Tail",
+      "description": "The severed tail of a fairy horse.",
+      "weight": 10,
+      "cost_sp": 0,
+      "slot_size": 0,
+      "item_type": "trinket"
+    }
+  ]
+}
