@@ -1,0 +1,128 @@
+{
+  "category": "animals",
+  "subcategory": "horses",
+  "items": [
+    {
+      "item_id": "charger",
+      "name": "Charger",
+      "description": "War horses bred for strength and courage in battle. Adapted to short bursts of speed; not suited to long-distance riding.",
+      "weight": null,
+      "cost_sp": 2500,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "war",
+        "charge",
+        "melee",
+        "load_4000"
+      ]
+    },
+    {
+      "item_id": "dapple_doff",
+      "name": "Dapple-doff",
+      "description": "Mighty, shaggy-furred draft horses, bred for their great strength. Dull-witted and easily spooked.",
+      "weight": null,
+      "cost_sp": 400,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "draft",
+        "load_5000"
+      ]
+    },
+    {
+      "item_id": "hop_clopper",
+      "name": "Hop-clopper",
+      "description": "Stocky, green-maned draft horses beloved by Prigwort breweries. Get tetchy without their daily pint of ale.",
+      "weight": null,
+      "cost_sp": 800,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "draft",
+        "load_5000"
+      ]
+    },
+    {
+      "item_id": "mule",
+      "name": "Mule",
+      "description": "Stubborn horse/donkey cross-breeds used as beasts of burden. Unlike other horses, mules can be taken underground.",
+      "weight": null,
+      "cost_sp": 300,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "mule",
+        "load_2500",
+        "underground"
+      ]
+    },
+    {
+      "item_id": "prigwort_prancer",
+      "name": "Prigwort prancer",
+      "description": "Lightly built horses adapted to run at high speed. Fond of snacking on acorns in the autumn.",
+      "weight": null,
+      "cost_sp": 750,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "riding",
+        "load_3000",
+        "speed_80"
+      ]
+    },
+    {
+      "item_id": "yellow_flank",
+      "name": "Yellow-flank",
+      "description": "Tall, slender horses favoured by nobility, with flowing, silver manes and golden dappling along their sides. The haughty, laughing neigh of the yellow-flank bespeaks the breed's rumoured fairy ancestry.",
+      "weight": null,
+      "cost_sp": 2500,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "riding",
+        "load_3500",
+        "semi_intelligent",
+        "fairy_ancestry"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      122,
+      123
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
