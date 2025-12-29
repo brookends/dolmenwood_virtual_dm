@@ -94,6 +94,9 @@ class PhysicalRanges:
     # Size category
     size: str = "Medium"
 
+    # Additional data (e.g., gender-specific height differences)
+    extra_data: dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass
 class KindredAbility:

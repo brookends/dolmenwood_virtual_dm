@@ -9,10 +9,10 @@ This module provides:
 Available Kindreds:
 - Breggle: Goat-headed folk (mortal)
 - Elf: Ageless fairies from the immortal realm (fairy)
-- Grimalkin: (coming soon)
-- Human: (coming soon)
-- Mossling: (coming soon)
-- Woodgrue: (coming soon)
+- Grimalkin: Shape-shifting cat-fairies (fairy)
+- Human: Common folk of Dolmenwood (mortal)
+- Mossling: Gnarled woody folk with symbiotic fungi (mortal)
+- Woodgrue: Bat-faced demi-fey goblins (demi-fey)
 """
 
 from src.kindred.kindred_data import (
