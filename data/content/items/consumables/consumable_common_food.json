@@ -1,0 +1,228 @@
+{
+  "category": "consumable",
+  "subcategory": "common_food",
+  "items": [
+    {
+      "item_id": "mutton_roast",
+      "name": "Mutton Roast",
+      "description": "Slices of smoky roast mutton, slathered in garlic gravy.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "onion_sandwich",
+      "name": "Onion Sandwich",
+      "description": "White bread, butter, raw onion slices, and lashings of congealed whey.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "pooks_pudding",
+      "name": "Pook's Pudding",
+      "description": "A suety pudding of mallow and locally foraged mushrooms.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "puggle_pie",
+      "name": "Puggle Pie",
+      "description": "Puggle-flesh and mushroom gravy in flaky pastry. (Puggles are miniature fungivorous dogs that live in Dolmenwood.)",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "sausage_and_mash",
+      "name": "Sausage and Mash",
+      "description": "Fried bog-swine sausages from Dreg on a bed of mashed swede, potato, or carrot.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "shanky",
+      "name": "Shanky",
+      "description": "A pair of chicken or quail legs wrapped in vinegared oak leaves and bitter mugwort.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "snail_skewers",
+      "name": "Snail Skewers",
+      "description": "Forest snails skewered on metal spikes and roast over a wood fire. Served with a dipping custard.",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "trottel_mash",
+      "name": "Trottel Mash",
+      "description": "Mashed root vegetables (commonly turnip and burdock) laced with trotteling bacon. (Trottelings are tiny forest pigs.)",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "pickled_eggs",
+      "name": "Pickled Eggs",
+      "description": "Hard-boiled eggs preserved in vinegar.",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "coldlanks",
+      "name": "Coldlanks",
+      "description": "Raw, grated onion in a mustard and beer marinade.",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "hameth_sprats",
+      "name": "Hameth Sprats",
+      "description": "Little fish, crispy fried in batter.",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "common_quality"
+      ]
+    },
+    {
+      "item_id": "ruddy_chad",
+      "name": "Ruddy Chad",
+      "description": "A hunk of mature, red-veined cheese.",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "common_quality"
+      ]
+    }
+  ],
+  "source": {
+    "source_id": "players_book",
+    "book_code": "DPB",
+    "page_reference": "p. 125",
+    "section": "Equipment - Lodgings and Food"
+  }
+}

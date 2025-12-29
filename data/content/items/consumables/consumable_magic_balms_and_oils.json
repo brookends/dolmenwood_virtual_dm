@@ -1,0 +1,388 @@
+{
+  "category": "consumable",
+  "subcategory": "magic_balms_and_oils",
+  "items": [
+    {
+      "item_id": "alchemical_fire",
+      "name": "Alchemical Fire",
+      "description": "An incredibly noxious black oil, alchemically brewed from salamander bile. Always stored in tightly stoppered clay flasks, sealed with wax. Explodes in a fireball causing 5d6 damage in a 10′ radius.",
+      "weight": 10,
+      "cost_sp": 40000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": "5d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/30/50",
+      "size": null,
+      "properties": [
+        "explosive",
+        "missile",
+        "save_for_half"
+      ]
+    },
+    {
+      "item_id": "anti_magic_balm",
+      "name": "Anti-Magic Balm",
+      "description": "A pearlescent white balm with a sweet aroma that brings to mind memories of childhood. Dispels enchantments on a creature or temporarily renders an object non-magical.",
+      "weight": 10,
+      "cost_sp": 35000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "dispel_magic",
+        "anti_magic"
+      ]
+    },
+    {
+      "item_id": "brewmasters_balsam",
+      "name": "Brewmaster's Balsam",
+      "description": "A black gloop in a sturdy glass jar shaped like a miniature cauldron. Tastes sweet and syrupy with an undertone of beef dripping. Heals 1d4 Hit Points if used within 1 Turn; soporific effect: –1 to AC and Saving Throws.",
+      "weight": 10,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "soporific",
+        "penalty_to_ac_and_saves"
+      ]
+    },
+    {
+      "item_id": "dimensional_solvent_gold",
+      "name": "Dimensional Solvent, Gold",
+      "description": "A noxious smelling, metallic gold oil. Shrink to 6″ tall.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "shrinking",
+        "size_alteration"
+      ]
+    },
+    {
+      "item_id": "dimensional_solvent_silver",
+      "name": "Dimensional Solvent, Silver",
+      "description": "A noxious smelling, metallic silver oil. Double in size; double melee damage.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "enlargement",
+        "double_damage",
+        "size_alteration"
+      ]
+    },
+    {
+      "item_id": "deorling_balm",
+      "name": "Deorling Balm",
+      "description": "A resinous, white balm brewed from pine sap and needles. Heals 1d6 HP or 1d6 Constitution.",
+      "weight": 10,
+      "cost_sp": 5000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "constitution_restoration"
+      ]
+    },
+    {
+      "item_id": "holy_oil",
+      "name": "Holy Oil",
+      "description": "Sweet-smelling, amber oil blessed by a saint of the Pluritine Church. Stored in ceramic flasks engraved with holy liturgies. 3d8 damage to undead monsters.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": "3d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/30/50",
+      "size": null,
+      "properties": [
+        "anti_undead",
+        "missile",
+        "holy",
+        "continuous_damage"
+      ]
+    },
+    {
+      "item_id": "hunters_balm",
+      "name": "Hunter's Balm",
+      "description": "A transparent, yellowish balm that has the scent of a different animal each time it is smelled. Makes subject scentless.",
+      "weight": 10,
+      "cost_sp": 8000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "scentless",
+        "tracking_immunity"
+      ]
+    },
+    {
+      "item_id": "morphic_unguent",
+      "name": "Morphic Unguent",
+      "description": "A syrupy, orange balm that smells of tar. Alter form into any imagined humanoid form.",
+      "weight": 10,
+      "cost_sp": 20000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "shape_change",
+        "disguise",
+        "humanoid_form"
+      ]
+    },
+    {
+      "item_id": "nebulous_ointment",
+      "name": "Nebulous Ointment",
+      "description": "A fluffy, grey ointment that smells of rain and feels like wisps of cloud. Makes subject unable to sink in water.",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "water_walking",
+        "swimming_aid"
+      ]
+    },
+    {
+      "item_id": "oil_of_sharpness",
+      "name": "Oil of Sharpness",
+      "description": "A fine, golden oil with a subtle, rainbow-hued scintillance. Makes a bladed weapon magical; +2 to Attack and Damage Rolls.",
+      "weight": 10,
+      "cost_sp": 40000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "weapon_enhancement",
+        "magical_weapon",
+        "multiple_uses"
+      ]
+    },
+    {
+      "item_id": "oil_of_st_signis",
+      "name": "Oil of St Signis",
+      "description": "A thin, iridescent black oil with an odour of mothballs. Preserves a corpse indefinitely.",
+      "weight": 10,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "preservation",
+        "anti_undead",
+        "multiple_uses"
+      ]
+    },
+    {
+      "item_id": "ointment_of_weightlessness",
+      "name": "Ointment of Weightlessness",
+      "description": "A thick, slippery balm of scintillating, pearly hue. Smells of fresh rain. Renders a creature or object weightless.",
+      "weight": 10,
+      "cost_sp": 7500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "weightlessness",
+        "flight"
+      ]
+    },
+    {
+      "item_id": "orgons_sovereign_lubricant",
+      "name": "Orgon's Sovereign Lubricant",
+      "description": "A thin, pinkish oil with a metallic odour. Makes a creature or object impossible to grasp.",
+      "weight": 10,
+      "cost_sp": 7500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "slippery",
+        "escape_bonds",
+        "area_effect"
+      ]
+    },
+    {
+      "item_id": "phantasmal_unguent",
+      "name": "Phantasmal Unguent",
+      "description": "An obsidian balm twinkling with silver motes. Renders a solid object intangible.",
+      "weight": 10,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "intangible",
+        "wall_passage"
+      ]
+    },
+    {
+      "item_id": "salve_of_repulsion",
+      "name": "Salve of Repulsion",
+      "description": "A cream-coloured, oily balm whose odour is utterly repulsive to creatures of one specific species or Kindred. Emits a scent repulsive to a specific type of creature.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "repulsion",
+        "species_specific",
+        "area_effect"
+      ]
+    },
+    {
+      "item_id": "solvent_of_whispers",
+      "name": "Solvent of Whispers",
+      "description": "A slightly transparent oil of deep indigo hue that emits sibilant noises when moved. Smells faintly of almonds. Renders a subject utterly silent.",
+      "weight": 10,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "silence",
+        "stealth"
+      ]
+    },
+    {
+      "item_id": "spectral_oil",
+      "name": "Spectral Oil",
+      "description": "A thin, transparent oil with a slightly iridescent hue, stored in opaque clay flasks. Makes creatures or objects insubstantial, like a ghost.",
+      "weight": 10,
+      "cost_sp": 15000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "incorporeal",
+        "ghost_like",
+        "light_sensitive"
+      ]
+    },
+    {
+      "item_id": "thieves_salve",
+      "name": "Thieves' Salve",
+      "description": "An indigo salve found in tiny quantities in miniature crystal jars. Smells of musty crypts. Grants the ability to smell treasure.",
+      "weight": 10,
+      "cost_sp": 80000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "treasure_detection",
+        "multiple_uses",
+        "blocked_by_lead"
+      ]
+    },
+    {
+      "item_id": "viridescent_balm",
+      "name": "Viridescent Balm",
+      "description": "A deep emerald green balm that smells of spring rain. Cures all diseases and poisons or permanently grants +1 HP.",
+      "weight": 10,
+      "cost_sp": 30000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cure_disease",
+        "cure_poison",
+        "permanent_hp_increase",
+        "limited_uses"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      404,
+      405
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

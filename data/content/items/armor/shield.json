@@ -1,0 +1,31 @@
+{
+  "category": "armor",
+  "subcategory": "shield",
+  "items": [
+    {
+      "item_id": "shield",
+      "name": "Shield",
+      "description": "Made of metal or reinforced wood.",
+      "weight": 100,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "shield",
+      "damage": null,
+      "ac_bonus": 1,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "None"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      120,
+      121
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

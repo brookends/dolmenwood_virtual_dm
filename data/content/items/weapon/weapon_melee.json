@@ -1,0 +1,264 @@
+{
+  "category": "weapon",
+  "subcategory": "melee",
+  "items": [
+    {
+      "item_id": "battle_axe",
+      "name": "Battle axe",
+      "description": "A heavy axe with a 3′ haft.",
+      "weight": 100,
+      "cost_sp": 70,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "club",
+      "name": "Club",
+      "description": "A 2–3′ length of stout wood with a heavy head.",
+      "weight": 20,
+      "cost_sp": 30,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d4",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "dagger",
+      "name": "Dagger",
+      "description": "A 1′ long, two-edged blade.",
+      "weight": 10,
+      "cost_sp": 30,
+      "slot_size": 0.5,
+      "item_type": "weapon",
+      "damage": "1d4",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/20/30",
+      "size": "Small",
+      "properties": [
+        "Melee",
+        "Missile"
+      ]
+    },
+    {
+      "item_id": "hand_axe",
+      "name": "Hand axe",
+      "description": "A 2′ long hatchet suitable for use in melee or for throwing.",
+      "weight": 20,
+      "cost_sp": 40,
+      "slot_size": 0.5,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/20/30",
+      "size": "Small",
+      "properties": [
+        "Melee",
+        "Missile"
+      ]
+    },
+    {
+      "item_id": "lance",
+      "name": "Lance",
+      "description": "A 10′ shaft of strong wood tipped with a pointed, leaf-shaped blade. Designed for use on horseback, but may also be used on foot.",
+      "weight": 100,
+      "cost_sp": 50,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "Brace",
+        "Charge",
+        "Melee",
+        "Reach"
+      ]
+    },
+    {
+      "item_id": "longsword",
+      "name": "Longsword",
+      "description": "Typically double-edged and around 3–4′ in length.",
+      "weight": 30,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "mace",
+      "name": "Mace",
+      "description": "A 2–3′ haft with a studded, flanged, or spiked head.",
+      "weight": 40,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "polearm",
+      "name": "Polearm",
+      "description": "A long haft (8′ or longer) tipped with a stabbing point or slashing blade. Many types of polearms exist, but all are treated as one weapon type for simplicity.",
+      "weight": 140,
+      "cost_sp": 70,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "damage": "1d10",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "Brace",
+        "Melee",
+        "Reach",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "shortsword",
+      "name": "Shortsword",
+      "description": "2′ blades designed as thrusting and stabbing weapons.",
+      "weight": 20,
+      "cost_sp": 70,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "spear",
+      "name": "Spear",
+      "description": "A haft of strong, flexible wood, typically around 5′ long, tipped with a stabbing metal point.",
+      "weight": 30,
+      "cost_sp": 30,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "20/40/60",
+      "size": "Medium",
+      "properties": [
+        "Brace",
+        "Melee",
+        "Missile"
+      ]
+    },
+    {
+      "item_id": "staff",
+      "name": "Staff",
+      "description": "A stout length of wood, typically 6–8′ long. Staves often double as walking sticks, but those designed for combat may be shod with metal end caps.",
+      "weight": 40,
+      "cost_sp": 20,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d4",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "two_handed_sword",
+      "name": "Two-handed sword",
+      "description": "A great, heavy sword, 5–6′ in length.",
+      "weight": 140,
+      "cost_sp": 150,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "damage": "1d10",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Large",
+      "properties": [
+        "Melee",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "war_hammer",
+      "name": "War hammer",
+      "description": "A 2–3′ haft tipped with a heavy metal hammer head, often with a spike on one side.",
+      "weight": 40,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    },
+    {
+      "item_id": "torch_flaming",
+      "name": "Torch (flaming)",
+      "description": "(See p116) Melee",
+      "weight": 10,
+      "cost_sp": 3.33,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d4",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "Melee"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      120,
+      121
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

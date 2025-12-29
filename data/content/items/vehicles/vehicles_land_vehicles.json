@@ -1,0 +1,54 @@
+{
+  "category": "vehicles",
+  "subcategory": "land_vehicles",
+  "items": [
+    {
+      "item_id": "cart",
+      "name": "Cart",
+      "description": "A two-wheeled vehicle. If pulled by twice as many animals (2 draft horses or 4 mules), a cart can hold up to 20,000 coins of weight.",
+      "weight": null,
+      "cost_sp": 1000,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_10000",
+        "speed_30",
+        "hp_1d4",
+        "requires_1_draft_or_2_mules"
+      ]
+    },
+    {
+      "item_id": "wagon",
+      "name": "Wagon",
+      "description": "A four-wheeled, open vehicle. If pulled by twice as many animals (4 draft horses or 8 mules), a wagon can hold up to 40,000 coins of weight.",
+      "weight": null,
+      "cost_sp": 2000,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_20000",
+        "speed_30",
+        "hp_2d4",
+        "requires_2_draft_or_4_mules"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      122,
+      123
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

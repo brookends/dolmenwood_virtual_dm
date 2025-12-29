@@ -1,0 +1,104 @@
+{
+  "category": "services",
+  "subcategory": "poor_lodgings",
+  "items": [
+    {
+      "item_id": "poor_main_dish",
+      "name": "Food: main dish",
+      "description": "Main dish at poor establishment",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "poor_side_dish",
+      "name": "Food: side dish",
+      "description": "Side dish at poor establishment",
+      "weight": null,
+      "cost_sp": 0.5,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "poor_common_room_floor",
+      "name": "Lodging: common room floor, 1 night",
+      "description": "Sleeping on common room floor for one night at poor establishment",
+      "weight": null,
+      "cost_sp": 0.2,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "poor_shared_room_8_beds",
+      "name": "Lodging: shared room (8 beds), 1 night",
+      "description": "Bed in shared room with 8 beds for one night at poor establishment",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "poor_shared_room_4_beds",
+      "name": "Lodging: shared room (4 beds), 1 night",
+      "description": "Bed in shared room with 4 beds for one night at poor establishment",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "poor_stabling_and_fodder",
+      "name": "Stabling and fodder, 1 night",
+      "description": "Stabling and fodder for animals for one night at poor establishment",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      126,
+      127
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

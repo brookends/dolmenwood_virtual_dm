@@ -1,0 +1,133 @@
+{
+  "category": "armor",
+  "subcategory": null,
+  "items": [
+    {
+      "item_id": "unarmoured",
+      "name": "Unarmoured",
+      "description": "Standard clothing.",
+      "weight": null,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "None"
+      ]
+    },
+    {
+      "item_id": "leather",
+      "name": "Leather",
+      "description": "A breastplate of hardened leather, with soft leather covering the rest of the body.",
+      "weight": 200,
+      "cost_sp": 200,
+      "slot_size": 1,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 12,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Light"
+      ]
+    },
+    {
+      "item_id": "bark",
+      "name": "Bark",
+      "description": "Thick layers of tough, lichen-encrusted bark, with flexible joints of young birch bark or bottle corks laced together. Typically only available in small size, designed for mosslings.",
+      "weight": 300,
+      "cost_sp": 300,
+      "slot_size": 1,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 13,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Light"
+      ]
+    },
+    {
+      "item_id": "chainmail",
+      "name": "Chainmail",
+      "description": "A suit of interlocking metal rings over a backing of quilted fabric.",
+      "weight": 400,
+      "cost_sp": 400,
+      "slot_size": 2,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 14,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Medium"
+      ]
+    },
+    {
+      "item_id": "pinecone",
+      "name": "Pinecone",
+      "description": "An intricate scale-work of hardened pine scales threaded onto a cloth backing. Typically only available in small size, designed for mosslings.",
+      "weight": 400,
+      "cost_sp": 500,
+      "slot_size": 2,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 15,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Medium"
+      ]
+    },
+    {
+      "item_id": "plate_mail",
+      "name": "Plate mail",
+      "description": "Metal plates shaped to the contours of the body. Sections of chainmail provide flexibility at the joints.",
+      "weight": 500,
+      "cost_sp": 600,
+      "slot_size": 2,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 16,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Heavy"
+      ]
+    },
+    {
+      "item_id": "full_plate",
+      "name": "Full plate",
+      "description": "Perfectly interlocking plates of metal over a backing of chain mail and padding. Only the most expert armourers can craft full plate armour, and each suit must be tailored and balanced for a specific individual (takes 1 month). Wearing another person's full plate armour is awkward and only grants AC 16.",
+      "weight": 700,
+      "cost_sp": 10000,
+      "slot_size": 2,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 17,
+      "range": null,
+      "size": null,
+      "properties": [
+        "Heavy"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      120,
+      121
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

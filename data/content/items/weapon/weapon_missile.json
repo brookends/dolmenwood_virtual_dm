@@ -1,0 +1,123 @@
+{
+  "category": "weapon",
+  "subcategory": "missile",
+  "items": [
+    {
+      "item_id": "crossbow",
+      "name": "Crossbow",
+      "description": "A bow mounted horizontally on a wooden shaft, with a winding mechanism to pull back the string and nock a quarrel. May be kept in the loaded position.",
+      "weight": 50,
+      "cost_sp": 300,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "80/160/240",
+      "size": "Medium",
+      "properties": [
+        "Armour piercing",
+        "Missile",
+        "Reload",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "longbow",
+      "name": "Longbow",
+      "description": "A bow of around the wielder's height, typically 6′ in length. Fires arrows.",
+      "weight": 40,
+      "cost_sp": 400,
+      "slot_size": 2,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "70/140/210",
+      "size": "Large",
+      "properties": [
+        "Missile",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "shortbow",
+      "name": "Shortbow",
+      "description": "A bow of around 4′ in length. Fires arrows.",
+      "weight": 20,
+      "cost_sp": 250,
+      "slot_size": 1,
+      "item_type": "weapon",
+      "damage": "1d6",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "50/100/150",
+      "size": "Medium",
+      "properties": [
+        "Missile",
+        "Two-handed"
+      ]
+    },
+    {
+      "item_id": "sling",
+      "name": "Sling",
+      "description": "A strap of leather or fabric used to twirl and launch normal stones at high speed.",
+      "weight": 10,
+      "cost_sp": 20,
+      "slot_size": 0.5,
+      "item_type": "weapon",
+      "damage": "1d4",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "40/80/160",
+      "size": "Small",
+      "properties": [
+        "Missile"
+      ]
+    },
+    {
+      "item_id": "holy_water_vial",
+      "name": "Holy water vial",
+      "description": "(See p116) Missile (10′ / 30′ / 50′), Splash",
+      "weight": 10,
+      "cost_sp": 250,
+      "slot_size": 0.5,
+      "item_type": "weapon",
+      "damage": "1d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/30/50",
+      "size": "Small",
+      "properties": [
+        "Missile",
+        "Splash"
+      ]
+    },
+    {
+      "item_id": "oil_flask_burning",
+      "name": "Oil flask (burning)",
+      "description": "(See p116) Missile (10′ / 30′ / 50′), Splash",
+      "weight": 10,
+      "cost_sp": 10,
+      "slot_size": 0.5,
+      "item_type": "weapon",
+      "damage": "1d8",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "10/30/50",
+      "size": "Small",
+      "properties": [
+        "Missile",
+        "Splash"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      120,
+      121
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

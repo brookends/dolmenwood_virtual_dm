@@ -1,0 +1,385 @@
+{
+  "category": "consumable",
+  "subcategory": "rare_fungi",
+  "items": [
+    {
+      "item_id": "angels_lament",
+      "name": "Angel's Lament",
+      "description": "A fungus formed of hollow chimneys of shining, golden hue. Smells of wet wool and has a taste akin to intense horseradish, painfully attacking the sinuses.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "mental_effect"
+      ]
+    },
+    {
+      "item_id": "bloodcap",
+      "name": "Bloodcap",
+      "description": "Dainty little amber-coloured mushrooms with a pointed cap. Their odour is reminiscent of bad blue cheese and they have an oily taste.",
+      "weight": 4,
+      "cost_sp": 1500,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "cardiovascular_effect"
+      ]
+    },
+    {
+      "item_id": "devils_grease",
+      "name": "Devil's Grease",
+      "description": "A slime-mould that gathers in cracks in trees. It is jet black in colour, with an aura of ultraviolet. Its odour is like off sausage and it tastes of goose grease.",
+      "weight": 4,
+      "cost_sp": 750,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "constitution_loss"
+      ]
+    },
+    {
+      "item_id": "foolscap",
+      "name": "Foolscap",
+      "description": "Cream-coloured mushrooms with large, floppy caps, flecked with orange. Smell distinctly of cloves and taste earthy.",
+      "weight": 4,
+      "cost_sp": 3000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "transformation",
+        "lycanthropic"
+      ]
+    },
+    {
+      "item_id": "goatmans_goblet",
+      "name": "Goatman's Goblet",
+      "description": "Miniature, orange, goblet-shaped fungi that sprout from fuzzy patches on rotting wood. Smell of goat's milk and taste like blood.",
+      "weight": 4,
+      "cost_sp": 100,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "intoxicant",
+        "physical_change"
+      ]
+    },
+    {
+      "item_id": "grinning_jenny",
+      "name": "Grinning Jenny",
+      "description": "Drab, olive capped toadstools whose rims tend to curl up like leering grins.",
+      "weight": 4,
+      "cost_sp": 4000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "combat_bonus",
+        "catatonia"
+      ]
+    },
+    {
+      "item_id": "hobs_lewd",
+      "name": "Hob's Lewd",
+      "description": "Towering, horn-like nodules of slimy black fungus. The slime, if collected when fresh, is sweet-tasting and highly psychoactive.",
+      "weight": 4,
+      "cost_sp": 150,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "intoxicant",
+        "sleep_requirement"
+      ]
+    },
+    {
+      "item_id": "lambent_stinkhorn",
+      "name": "Lambent Stinkhorn",
+      "description": "8″ fungi with a long, fleshy stem topped with a pink, lattice-like veil. Reek of stale urine but are virtually flavourless. In darkness, lambent stinkhorns produce a faint, blue luminescence.",
+      "weight": 4,
+      "cost_sp": 3000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "fungal_infection",
+        "hp_bonus",
+        "luminescent"
+      ]
+    },
+    {
+      "item_id": "lovers_gasp",
+      "name": "Lover's Gasp",
+      "description": "Tiny pink mushrooms with delicate, pointed caps and long, stringy stems. Have a faintly floral odour and taste of sand.",
+      "weight": 4,
+      "cost_sp": 150,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "charisma_bonus",
+        "targeted_effect"
+      ]
+    },
+    {
+      "item_id": "mawbargs_jam",
+      "name": "Mawbarg's Jam",
+      "description": "A frothy, grey sludge that reeks of awful cheese and tastes worse.",
+      "weight": 4,
+      "cost_sp": 3500,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "healing",
+        "weightlessness"
+      ]
+    },
+    {
+      "item_id": "mossmulch",
+      "name": "Mossmulch",
+      "description": "Dark green, drooping fungi covered in seaweed-like tendrils.",
+      "weight": 4,
+      "cost_sp": 1750,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "delirium",
+        "coma"
+      ]
+    },
+    {
+      "item_id": "mottlecap",
+      "name": "Mottlecap",
+      "description": "Wide-capped toadstools of mottled green/brown colouration. Have an unpleasant odour akin to cat's urine.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "sleeplessness",
+        "enchantment_susceptibility"
+      ]
+    },
+    {
+      "item_id": "numblings",
+      "name": "Numblings",
+      "description": "Slimy, scarlet fungus bearing an eerie resemblance to various bodily organs, including brain, heart, eyeball, tongue, finger, nose.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "organ_growth",
+        "regeneration"
+      ]
+    },
+    {
+      "item_id": "pucks_ear",
+      "name": "Puck's Ear",
+      "description": "Glistening black, ear-shaped fungi that grow on bark. Smell of vinegar but taste fruity.",
+      "weight": 4,
+      "cost_sp": 200,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "trance",
+        "sprite_assault"
+      ]
+    },
+    {
+      "item_id": "purple_nightcap",
+      "name": "Purple Nightcap",
+      "description": "A deep purple fungus with long stems and tiny button caps. Smells of milk and has a yeasty flavour.",
+      "weight": 4,
+      "cost_sp": 10000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "asphyxiation",
+        "death",
+        "coma"
+      ]
+    },
+    {
+      "item_id": "rotting_mazegill",
+      "name": "Rotting Mazegill",
+      "description": "Densely packed balls of fibres that appear to be of purple or orange hue, depending on the viewing angle. The fungi smell of rotten parsnips and taste of lime sorbet.",
+      "weight": 4,
+      "cost_sp": 5000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "poison",
+        "constitution_loss",
+        "weakness"
+      ]
+    },
+    {
+      "item_id": "shaggy_sage",
+      "name": "Shaggy Sage",
+      "description": "A tiny, yellow fungus that grows in frothing clumps. Reeks of pungent spice and tastes of aniseed.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "hypnotic_sleep",
+        "otherworldly_dreams",
+        "obsession"
+      ]
+    },
+    {
+      "item_id": "speckled_sporange",
+      "name": "Speckled Sporange",
+      "description": "White puffballs, flecked with gold. Odourless, but have a very strong citrus flavour.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "constitution_bonus",
+        "ability_loss",
+        "random_effect"
+      ]
+    },
+    {
+      "item_id": "velvet_flounder",
+      "name": "Velvet Flounder",
+      "description": "Luxuriant, purple mushrooms covered in swirling crimson patterns.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "blood_lust",
+        "berserk"
+      ]
+    },
+    {
+      "item_id": "witchs_purple",
+      "name": "Witch's Purple",
+      "description": "Big, floppy bracket fungus of deep purple hue and woody consistency. The fungi smell of fine wine and taste of aniseed.",
+      "weight": 4,
+      "cost_sp": 100,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "purple_vision",
+        "skin_discoloration"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      430,
+      431
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

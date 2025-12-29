@@ -1,0 +1,59 @@
+{
+  "category": "ammunition",
+  "subcategory": null,
+  "items": [
+    {
+      "item_id": "arrows_20",
+      "name": "Arrows (quiver of 20)",
+      "description": "Standard arrows for bows.",
+      "weight": 20,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "ammunition",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "quarrels_20",
+      "name": "Quarrels (case of 20)",
+      "description": "Standard quarrels for crossbows.",
+      "weight": 20,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "ammunition",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "sling_stones",
+      "name": "Sling stones",
+      "description": "Normal stones for slings.",
+      "weight": 1,
+      "cost_sp": 0,
+      "slot_size": 0.1,
+      "item_type": "ammunition",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      120,
+      121
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

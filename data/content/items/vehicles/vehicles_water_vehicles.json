@@ -1,0 +1,138 @@
+{
+  "category": "vehicles",
+  "subcategory": "water_vehicles",
+  "items": [
+    {
+      "item_id": "barge",
+      "name": "Barge",
+      "description": "A flat-bottomed boat, 20′ long and 10′ wide, designed for carrying cargo. Barges may be rowed, pushed with poles, or pulled by horses on the riverbank.",
+      "weight": null,
+      "cost_sp": 5000,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 11,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_160000",
+        "speed_30",
+        "hp_1d20_plus_20",
+        "crew_2_to_4_sailors"
+      ]
+    },
+    {
+      "item_id": "canoe",
+      "name": "Canoe",
+      "description": "A small boat, 15′ long and 3′ wide, made of hide or canvas stretched over a wooden frame. Because of its small size and lightweight construction (weighing 500 coins), a canoe may be carried by two people.",
+      "weight": 500,
+      "cost_sp": 300,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_5000",
+        "speed_60",
+        "hp_1d4",
+        "crew_1_to_2_untrained",
+        "portable"
+      ]
+    },
+    {
+      "item_id": "fishing_boat",
+      "name": "Fishing boat",
+      "description": "A small sailing boat, 20–30′ long and 6′ wide.",
+      "weight": null,
+      "cost_sp": 3500,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 12,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_25000",
+        "speed_60",
+        "hp_1d20_plus_20",
+        "crew_1_to_2_sailors",
+        "sailing"
+      ]
+    },
+    {
+      "item_id": "raft",
+      "name": "Raft",
+      "description": "A professionally built raft has raised sides, a basic steering oar, and some form of shelter for goods or passengers. Such a raft may be up to 30′ × 40′. Professionally built rafts are sometimes floated downstream with cargo and then broken down and sold for the value of their wood (25cp per square foot).",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_500_per_sqft",
+        "speed_20",
+        "hp_5_per_10ft_sq",
+        "crew_1_untrained",
+        "cost_per_sqft"
+      ]
+    },
+    {
+      "item_id": "raft_makeshift",
+      "name": "Raft, makeshift",
+      "description": "Given sufficient trees for wood, characters may build a makeshift raft in 1d3 days per 10′ square section (up to a maximum size of 20′ × 30′).",
+      "weight": null,
+      "cost_sp": 0,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_250_per_sqft",
+        "speed_20",
+        "hp_3_per_10ft_sq",
+        "crew_1_untrained",
+        "craftable"
+      ]
+    },
+    {
+      "item_id": "rowing_boat",
+      "name": "Rowing boat",
+      "description": "A small wooden boat for 1–2 people, 10′ long and 4′ wide.",
+      "weight": null,
+      "cost_sp": 250,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": 10,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cargo_5000",
+        "speed_40",
+        "hp_2d4",
+        "crew_1_to_2_untrained"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      122,
+      123
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

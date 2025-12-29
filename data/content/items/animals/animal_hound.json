@@ -1,0 +1,158 @@
+{
+  "category": "animal",
+  "subcategory": "hound",
+  "items": [
+    {
+      "item_id": "bloodhound",
+      "name": "Bloodhound",
+      "description": "Medium hounds with sleek, rusty fur and blood red eyes. Bred for their excellent tracking skills. Common working dogs found in every woodland village in Dolmenwood.",
+      "weight": null,
+      "cost_sp": 250,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "tracking"
+      ]
+    },
+    {
+      "item_id": "dapper",
+      "name": "Dapper",
+      "description": "Curly-furred dogs with huge, floppy ears and great fringes that obscure their eyes. Dappers are favoured by the noble classes for their curious love of dressing in preposterous outfits and performing amusing dances.",
+      "weight": null,
+      "cost_sp": 600,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Small",
+      "properties": [
+        "companion",
+        "language"
+      ]
+    },
+    {
+      "item_id": "dolmen_pincher",
+      "name": "Dolmen pincher",
+      "description": "Sleek, muscular hunting hounds with black fur and a rusty muzzle. Employed especially for hunting large beasts.",
+      "weight": null,
+      "cost_sp": 300,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "hunting",
+        "bring_down_prey"
+      ]
+    },
+    {
+      "item_id": "lankston_mastiff",
+      "name": "Lankston mastiff",
+      "description": "Huge, bulky beasts with thick, shaggy fur and a volatile, vicious temperament. Mastiffs make excellent and diligent guard dogs, but they are notoriously difficult to train.",
+      "weight": null,
+      "cost_sp": 500,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Medium",
+      "properties": [
+        "guard_dog"
+      ]
+    },
+    {
+      "item_id": "lichhound",
+      "name": "Lichhound",
+      "description": "Stocky, grey, wiry-furred hounds with upright, pointed ears and narrow, yellow eyes. Lichhounds are bred by the Church as companions for graveyard wardens and clerics of the order of Saint Signis.",
+      "weight": null,
+      "cost_sp": 1500,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Small",
+      "properties": [
+        "undead_ward",
+        "fear_no_undead",
+        "turning_bark"
+      ]
+    },
+    {
+      "item_id": "pisker",
+      "name": "Pisker",
+      "description": "Stocky, short-legged dogs with lustrous reddish fur, lolling tongues, and soft, pudgy bellies. Known for their frisky, boisterous temperament and obnoxious yapping. Commonly kept by the people of Prigwort, who fear the presence of fairies.",
+      "weight": null,
+      "cost_sp": 750,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Small",
+      "properties": [
+        "fairy_ward",
+        "detect_fairies"
+      ]
+    },
+    {
+      "item_id": "seelie_dog",
+      "name": "Seelie dog",
+      "description": "Tall, silver-furred hounds with the delicate bone structure and long legs suited for running. Seelie dogs' eyes are bright pink, and they are said to be of fairy ancestry.",
+      "weight": null,
+      "cost_sp": 600,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Small",
+      "properties": [
+        "companion",
+        "language",
+        "loyalty"
+      ]
+    },
+    {
+      "item_id": "spookhound",
+      "name": "Spookhound",
+      "description": "Slender, short-haired hounds of gentle demeanour, recognisable for their white/grey coats, fluffy tails, and buggy eyes. The spookhound was bred for the ability to detect the presence of the undead.",
+      "weight": null,
+      "cost_sp": 1200,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": "Small",
+      "properties": [
+        "undead_ward",
+        "smell_undead"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      124,
+      125
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

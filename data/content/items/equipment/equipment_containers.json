@@ -1,0 +1,48 @@
+{
+  "category": "equipment",
+  "subcategory": "containers",
+  "items": [
+    {
+      "item_id": "bottle",
+      "name": "Bottle",
+      "description": "Contains 5 portions of wine, spirits, or specialist beverages for the price of 4 portions.",
+      "weight": 30,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "container"
+      ]
+    },
+    {
+      "item_id": "cask",
+      "name": "Cask",
+      "description": "Contains 10 portions of beer or cider for the price of 8 portions.",
+      "weight": 80,
+      "cost_sp": null,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "container"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      128,
+      129
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

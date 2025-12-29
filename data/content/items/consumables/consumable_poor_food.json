@@ -1,0 +1,228 @@
+{
+  "category": "consumable",
+  "subcategory": "poor_food",
+  "items": [
+    {
+      "item_id": "battered_pizzle",
+      "name": "Battered Pizzle",
+      "description": "The generative organs of a slaughtered bull, sliced up, battered, and fried. Rich and gristly stuff.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "blood_porridge",
+      "name": "Blood Porridge",
+      "description": "Oat porridge with a healthy portion of bloodworms mixed in. Some folk like their worms still wriggling.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "bubble_and_squeak",
+      "name": "Bubble and Squeak",
+      "description": "Fried up leftovers from yesterday's supper. Commonly a mix of cabbage, root vegetables and meat scraps.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "dreggers_pie",
+      "name": "Dregger's Pie",
+      "description": "Acorns and sloppy mixed innards baked in a tough pastry shell. The stench when the crust is cracked open is said to recall the back alleys of Dreg.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "fishers_gruel",
+      "name": "Fisher's Gruel",
+      "description": "Grain slop cooked in a fish-bone stock.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "roast_wellington",
+      "name": "Roast Wellington",
+      "description": "Layers of leftover mash, cabbage leaves, and chicken skin, rolled up and roasted.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "special_pasty",
+      "name": "Special Pasty",
+      "description": "Butter and sheep fat pastry encasing meaty chunks of unknown origin. Best not to ask.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "woad_in_the_hole",
+      "name": "Woad in the Hole",
+      "description": "Crispy chicken or sparrow feet poking out of a spongy baked batter. No actual woads' legs are anywhere to be seen\u2014they are far too expensive!",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "main_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "codswallop",
+      "name": "Codswallop",
+      "description": "A putrid, off-white slop. No one is quite sure what's in it.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "pigs_ear",
+      "name": "Pig's Ear",
+      "description": "Crispy fried hog's ear. Nice and hairy.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "sourcroute",
+      "name": "Sourcroute",
+      "description": "Fermented cabbage, often accompanied by an unwanted edge of mould.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "poor_quality"
+      ]
+    },
+    {
+      "item_id": "wormskin",
+      "name": "Wormskin",
+      "description": "The skins of any worms that wriggle in the region (earthworms, bloodworms, nightworms, etc.), fermented in strong vinegar.",
+      "weight": null,
+      "cost_sp": 1,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "side_dish",
+        "poor_quality"
+      ]
+    }
+  ],
+  "source": {
+    "source_id": "players_book",
+    "book_code": "DPB",
+    "page_reference": "p. 124",
+    "section": "Equipment - Lodgings and Food"
+  }
+}

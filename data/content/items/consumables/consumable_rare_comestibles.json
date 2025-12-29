@@ -1,0 +1,472 @@
+{
+  "category": "consumable",
+  "subcategory": "rare_comestibles",
+  "items": [
+    {
+      "item_id": "azoth",
+      "name": "Azoth",
+      "description": "A russet residue made from the crystals in the caves around Fog Lake. Crystals collected from the caves are boiled down, producing a sludge which re-crystallises when cooled.",
+      "weight": 4,
+      "cost_sp": 400,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "out_of_body_experience",
+        "smoked"
+      ]
+    },
+    {
+      "item_id": "fairy_fruits",
+      "name": "Fairy Fruits",
+      "description": "Wondrously succulent peaches, apples, pomegranates, plums, and bunches of grapes, dripping with syrup. Fairy fruits stay fresh indefinitely, untouched by the ravages of time in the mortal world.",
+      "weight": 4,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "food",
+        "healing",
+        "fairy_yearning"
+      ]
+    },
+    {
+      "item_id": "frisk",
+      "name": "Frisk",
+      "description": "A sticky, luminescent paste; actually the seminal fluid of the night-boars that sometimes visit Dolmenwood. Odourless, but has a faint, bitter flavour.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "empathic_amplification",
+        "detect_lies",
+        "prevents_lying"
+      ]
+    },
+    {
+      "item_id": "golden_aspintheon",
+      "name": "Golden Aspintheon",
+      "description": "A legendary draught said to be only distilled in Fairy. The spirit has a rich, golden hue, glimmering with motes of silvery radiance. Its taste is exquisite and differs based on the preferences of the imbiber.",
+      "weight": 4,
+      "cost_sp": 200,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "sublime_joviality"
+      ]
+    },
+    {
+      "item_id": "golden_aspintheon_bottle",
+      "name": "Golden Aspintheon (bottle)",
+      "description": "A legendary draught said to be only distilled in Fairy. The spirit has a rich, golden hue, glimmering with motes of silvery radiance. Its taste is exquisite and differs based on the preferences of the imbiber.",
+      "weight": 30,
+      "cost_sp": 800,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "sublime_joviality",
+        "5_portions"
+      ]
+    },
+    {
+      "item_id": "green_aspintheon",
+      "name": "Green Aspintheon",
+      "description": "A deep green spirit, swirling with enigmatic clouds. The flavour is of bitter herbs tempered with the sweetness of spring nectar.",
+      "weight": 4,
+      "cost_sp": 100,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "merry_boisterousness",
+        "see_invisible_fairies"
+      ]
+    },
+    {
+      "item_id": "green_aspintheon_bottle",
+      "name": "Green Aspintheon (bottle)",
+      "description": "A deep green spirit, swirling with enigmatic clouds. The flavour is of bitter herbs tempered with the sweetness of spring nectar.",
+      "weight": 30,
+      "cost_sp": 400,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "merry_boisterousness",
+        "see_invisible_fairies",
+        "5_portions"
+      ]
+    },
+    {
+      "item_id": "ishwagrande",
+      "name": "Ishwagrande",
+      "description": "A resinous ochre dust that smells strongly of pine sap.",
+      "weight": 4,
+      "cost_sp": 10000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "incapacitating_smoke_cloud",
+        "curse_of_befuddlement"
+      ]
+    },
+    {
+      "item_id": "kitty_nibbles",
+      "name": "Kitty-Nibbles",
+      "description": "Little, crunchy almond-flavoured biscuits, each baked with a cat's paw-print in the top.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "food",
+        "grimalkin_attack_bonus"
+      ]
+    },
+    {
+      "item_id": "lethe",
+      "name": "Lethe",
+      "description": "A silvery ooze typically contained in rough clay bottles. Has an odour akin to rust. Lethe is distilled from the brains of those who have bathed in the Lethean Well.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "deep_introspection",
+        "wisdom_bonus"
+      ]
+    },
+    {
+      "item_id": "mallow_puff",
+      "name": "Mallow-Puff",
+      "description": "Pale violet pipeleaf, loosely chopped. Smells of rich, smoky, apple and burns with a bright white flame.",
+      "weight": 4,
+      "cost_sp": 150,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pipeleaf",
+        "mobile_puffs_of_smoke"
+      ]
+    },
+    {
+      "item_id": "memory_dust",
+      "name": "Memory Dust",
+      "description": "A fine, pearlescent dust, renowned for its ability to expand the mind's capacity for the energies required by arcane spell memorisation.",
+      "weight": 4,
+      "cost_sp": 3500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "psychedelic",
+        "memorise_additional_spell",
+        "addictive"
+      ]
+    },
+    {
+      "item_id": "ourob",
+      "name": "Ourob",
+      "description": "A thick, swirling mushroom brew of indigo, black, and purple hue that is brewed by mosslings. Reeks of acidic rot. Good vintages are fermented for at least 5 years.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "digestive_bubbling",
+        "pacifies_fungal_creatures"
+      ]
+    },
+    {
+      "item_id": "prigwort_black",
+      "name": "Prigwort Black",
+      "description": "A pure black spirit that tastes of aniseed with an undertone of lemon. Once the pride of Prigwort's distillery House Oberon, the art of producing this spirit was lost a century ago.",
+      "weight": 4,
+      "cost_sp": 200,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "sharpness_of_mind",
+        "see_auras",
+        "detect_alignment"
+      ]
+    },
+    {
+      "item_id": "prigwort_black_bottle",
+      "name": "Prigwort Black (bottle)",
+      "description": "A pure black spirit that tastes of aniseed with an undertone of lemon. Once the pride of Prigwort's distillery House Oberon, the art of producing this spirit was lost a century ago.",
+      "weight": 30,
+      "cost_sp": 800,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "sharpness_of_mind",
+        "see_auras",
+        "detect_alignment",
+        "5_portions"
+      ]
+    },
+    {
+      "item_id": "purple_shag",
+      "name": "Purple Shag",
+      "description": "Thick-cut, deep purple pipeleaf dotted with pale yellow, scintillating crystals. Smells of dewy grass and produces a thin, sweet-scented smoke.",
+      "weight": 4,
+      "cost_sp": 300,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pipeleaf",
+        "frivolity",
+        "morale_bonus",
+        "fear_resistance"
+      ]
+    },
+    {
+      "item_id": "shandycoiffe_sparkle",
+      "name": "Shandycoiffe Sparkle",
+      "description": "A deep pink sparkling wine brewed from the fruits of Lord Gladhand's orchards. Smells of luscious, ripe fruit—a different kind on each smelling.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "changing_skin_hair_hues",
+        "dispels_polymorph"
+      ]
+    },
+    {
+      "item_id": "shandycoiffe_sparkle_bottle",
+      "name": "Shandycoiffe Sparkle (bottle)",
+      "description": "A deep pink sparkling wine brewed from the fruits of Lord Gladhand's orchards. Smells of luscious, ripe fruit—a different kind on each smelling.",
+      "weight": 30,
+      "cost_sp": 4000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "changing_skin_hair_hues",
+        "dispels_polymorph",
+        "5_portions"
+      ]
+    },
+    {
+      "item_id": "snobbles_blend",
+      "name": "Snobble's Blend",
+      "description": "A rough-leafed tea of chestnut hue, sparkling with silver motes. Has a delightful yet elusive aroma reminiscent of high summer.",
+      "weight": 4,
+      "cost_sp": 500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "beverage",
+        "daydreams_reverie",
+        "heal_1_hp",
+        "repels_mogglewomps"
+      ]
+    },
+    {
+      "item_id": "sprite_fancies",
+      "name": "Sprite Fancies",
+      "description": "Dainty square cakes, frosted with congealed dreams. Smell of honey and hypnagogia.",
+      "weight": 4,
+      "cost_sp": 750,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "food",
+        "semi_invisible_while_speaking_singing"
+      ]
+    },
+    {
+      "item_id": "sticky_gilly",
+      "name": "Sticky Gilly",
+      "description": "Long, moist fronds of sticky, green pipeleaf. Reeks of pondweed. The smoke is thick, green, and tends to form piscine faces.",
+      "weight": 4,
+      "cost_sp": 2000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pipeleaf",
+        "water_breathing"
+      ]
+    },
+    {
+      "item_id": "tarts_of_amicability",
+      "name": "Tarts of Amicability",
+      "description": "Dainty baked tarts with a delightful almond glaze, topped with a glacé cherry.",
+      "weight": 4,
+      "cost_sp": 2500,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "food",
+        "trusted_friend_enchantment"
+      ]
+    },
+    {
+      "item_id": "wanton_wisp",
+      "name": "Wanton Wisp",
+      "description": "A fine, supple pipeleaf of sparkling, golden hue, cultivated in Fairy. Produces coils and spirals of violet smoke, smelling of rosemary and peach.",
+      "weight": 4,
+      "cost_sp": 250,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pipeleaf",
+        "smoke_faces_entertain",
+        "sylvan_songs_jokes"
+      ]
+    },
+    {
+      "item_id": "wyrm_leaf",
+      "name": "Wyrm-Leaf",
+      "description": "A coarse pipeleaf of deep purple hue, with strands that writhe slowly when exposed to air. Hisses and produces thick, coiling smoke.",
+      "weight": 4,
+      "cost_sp": 1000,
+      "slot_size": 1,
+      "item_type": "consumable",
+      "damage": "1d10",
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "pipeleaf",
+        "exhale_fire_blast",
+        "cone_15_long_10_wide"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      428,
+      429
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

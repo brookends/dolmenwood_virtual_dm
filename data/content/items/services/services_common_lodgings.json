@@ -1,0 +1,119 @@
+{
+  "category": "services",
+  "subcategory": "common_lodgings",
+  "items": [
+    {
+      "item_id": "common_bath_private_room",
+      "name": "Bath in private room",
+      "description": "Private bath at common establishment",
+      "weight": null,
+      "cost_sp": 5,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_main_dish",
+      "name": "Food: main dish",
+      "description": "Main dish at common establishment",
+      "weight": null,
+      "cost_sp": 3,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_side_dish",
+      "name": "Food: side dish",
+      "description": "Side dish at common establishment",
+      "weight": null,
+      "cost_sp": 2,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_common_room_floor",
+      "name": "Lodging: common room floor, 1 night",
+      "description": "Sleeping on common room floor for one night at common establishment",
+      "weight": null,
+      "cost_sp": 0.5,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_shared_room_2_beds",
+      "name": "Lodging: shared room (2 beds), 1 night",
+      "description": "Bed in shared room with 2 beds for one night at common establishment",
+      "weight": null,
+      "cost_sp": 4,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_private_room",
+      "name": "Lodging: private room, 1 night",
+      "description": "Private room for one night at common establishment",
+      "weight": null,
+      "cost_sp": 8,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "common_stabling_and_fodder",
+      "name": "Stabling and fodder, 1 night",
+      "description": "Stabling and fodder for animals for one night at common establishment",
+      "weight": null,
+      "cost_sp": 4,
+      "slot_size": null,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      126,
+      127
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

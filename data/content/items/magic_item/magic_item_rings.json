@@ -1,0 +1,379 @@
+{
+  "category": "magic_item",
+  "subcategory": "rings",
+  "items": [
+    {
+      "item_id": "ring_of_amphibious_breath",
+      "name": "Ring of Amphibious Breath",
+      "description": "The wearer can breathe both in air and underwater.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "amphibious_breath"
+      ]
+    },
+    {
+      "item_id": "ring_of_animal_affinity",
+      "name": "Ring of Animal Affinity",
+      "description": "The wearer can speak with animals of one specific species and may transform into an animal of that type at will. The transformation does not alter the character's Hit Points, Save Targets, Attack, or intelligence. Physical capabilities of the new form are acquired. Non-physical special traits or powers are not acquired. While transformed, the character is unable to cast spells.",
+      "weight": 1,
+      "cost_sp": 75000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "animal_communication",
+        "animal_transformation"
+      ]
+    },
+    {
+      "item_id": "ring_of_charming",
+      "name": "Ring of Charming",
+      "description": "Allows the wearer to place a charm on sentient creatures of a specific type. A total of up to 6 Levels of creatures may be charmed at once. Targets of lower than Sentient intelligence are immune. Each target must Save Versus Spell or regard the wearer as a close friend. They will come to the wearer's defence and will obey their commands, as long as these are not obviously harmful and do not contradict the subject's habits or Alignment. The wearer may dispel the ring's hold on a subject at any time. Removing the ring dispels its effects on all subjects.",
+      "weight": 1,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "charm",
+        "save_versus_spell"
+      ]
+    },
+    {
+      "item_id": "ring_of_control",
+      "name": "Ring of Control",
+      "description": "Grants the power (up to once a Turn) to control the actions of non-sentient creatures of a specific type. A total of up to 6 Levels of creatures (minimum 1 individual) within 60′ may be affected at once. Targets of Sentient intelligence or greater are immune. Using the ring requires concentration, broken if the wearer moves or performs any other action. Creatures released from command are 1-in-6 likely to attack the wearer.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "60",
+      "size": null,
+      "properties": [
+        "control",
+        "concentration",
+        "once_per_turn"
+      ]
+    },
+    {
+      "item_id": "ring_of_delusion",
+      "name": "Ring of Delusion",
+      "description": "The wearer comes temporarily under the effect of another type of magic ring, but all effects vanish at a critical juncture (as determined by the Referee).",
+      "weight": 1,
+      "cost_sp": 20000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "delusion"
+      ]
+    },
+    {
+      "item_id": "ring_of_duomorph",
+      "name": "Ring of Duomorph",
+      "description": "When wearing the ring, the character physically changes into an alter-ego of a different gender. The exact characteristics of the alter-ego are determined by the Referee when the ring is first used by a character.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "transformation",
+        "gender_change"
+      ]
+    },
+    {
+      "item_id": "ring_of_encystment",
+      "name": "Ring of Encystment",
+      "description": "Has the power, once a day, to magically store an object within solid rock. The object may be up to 2′ across and must fit within a volume of nearby rock. Magically stored objects can be released by a command word chosen by the wearer.",
+      "weight": 1,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "storage",
+        "once_per_day",
+        "command_word"
+      ]
+    },
+    {
+      "item_id": "ring_of_energy_resistance",
+      "name": "Ring of Energy Resistance",
+      "description": "Protects the wearer against harmful energy of a specific kind. The wearer is immune to normal, non-magical energy. They gain a +2 bonus to Saving Throws against magical energy and any damage is reduced by 1 per damage die rolled.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "energy_resistance",
+        "immunity",
+        "save_bonus"
+      ]
+    },
+    {
+      "item_id": "ring_of_enfeeblement",
+      "name": "Ring of Enfeeblement",
+      "description": "Reduces the wearer's Strength to 3. The ring and its curse can only be removed by magic (e.g. Remove Curse).",
+      "weight": 1,
+      "cost_sp": 10000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "cursed",
+        "strength_reduction"
+      ]
+    },
+    {
+      "item_id": "ring_of_feather_falling",
+      "name": "Ring of Feather Falling",
+      "description": "If the wearer falls more than 5′, they begin to drift gently downwards as if as light as a feather. They fall at a rate of 10′ per Round and land without damage.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "feather_falling",
+        "fall_protection"
+      ]
+    },
+    {
+      "item_id": "ring_of_jumping",
+      "name": "Ring of Jumping",
+      "description": "The wearer can make great leaps, up to 30′ horizontally and up to 10′ vertically. The ring's power can be used up to thrice a day.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "jumping",
+        "three_times_per_day"
+      ]
+    },
+    {
+      "item_id": "ring_of_invisibility",
+      "name": "Ring of Invisibility",
+      "description": "The wearer becomes invisible, along with all their gear. The invisibility lasts until the character removes the ring, makes an attack, or casts a spell. The ring's magic functions up to once per Turn.",
+      "weight": 1,
+      "cost_sp": 75000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "invisibility",
+        "once_per_turn"
+      ]
+    },
+    {
+      "item_id": "ring_of_mortality",
+      "name": "Ring of Mortality",
+      "description": "Renders a fairy or demi-fey temporarily mortal, while the ring is worn. The wearer is thus immune to any effects that target fairies / demi-fey, and is not harmed by cold iron. It is not possible to use fairy glamours while wearing a Ring of Mortality.",
+      "weight": 1,
+      "cost_sp": 80000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "mortality",
+        "immunity",
+        "glamour_suppression"
+      ]
+    },
+    {
+      "item_id": "ring_of_protection",
+      "name": "Ring of Protection",
+      "description": "Grants a +1 bonus to Armour Class and Saving Throws.",
+      "weight": 1,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": 1,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "protection",
+        "save_bonus"
+      ]
+    },
+    {
+      "item_id": "ring_of_regeneration",
+      "name": "Ring of Regeneration",
+      "description": "As long as they are alive (above 0 HP), the wearer heals 1 Hit Point per Round. Severed limbs will also regrow—the rate depends on the size of the limb. Damage from fire or acid cannot be regenerated.",
+      "weight": 1,
+      "cost_sp": 400000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "regeneration",
+        "limb_regrowth"
+      ]
+    },
+    {
+      "item_id": "ring_of_selective_invisibility",
+      "name": "Ring of Selective Invisibility",
+      "description": "The wearer becomes invisible (along with all their gear) to the sight of a specific type of creature. The invisibility lasts until the character removes the ring, makes an attack, or casts a spell. The ring's magic functions up to once per Turn.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "selective_invisibility",
+        "once_per_turn"
+      ]
+    },
+    {
+      "item_id": "ring_of_vanishing",
+      "name": "Ring of Vanishing",
+      "description": "Has the power, once a day, to teleport the wearer to a chosen location within 60′ and to render them invisible for 2d6 Rounds, along with all their gear. Attacking or casting a spell breaks the invisibility.",
+      "weight": 1,
+      "cost_sp": 100000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "60",
+      "size": null,
+      "properties": [
+        "teleport",
+        "invisibility",
+        "once_per_day"
+      ]
+    },
+    {
+      "item_id": "ring_of_vision",
+      "name": "Ring of Vision",
+      "description": "Grants the power to see through solid objects by concentrating (no movement or other actions). Sight is possible up to 30′ through stone and up to 60′ through less dense materials (cloth, water, wood). Gold and lead block sight. When used for the purpose of locating hidden features, the wearer is guaranteed to notice secret doors or traps in the 10′ square area being examined. The ring's power functions up to once per Turn.",
+      "weight": 1,
+      "cost_sp": 350000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": "30/60",
+      "size": null,
+      "properties": [
+        "x_ray_vision",
+        "concentration",
+        "once_per_turn",
+        "secret_detection"
+      ]
+    },
+    {
+      "item_id": "ring_of_water_walking",
+      "name": "Ring of Water Walking",
+      "description": "Grants the power to walk on the surface of water, without sinking.",
+      "weight": 1,
+      "cost_sp": 50000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "water_walking"
+      ]
+    },
+    {
+      "item_id": "ring_of_wishes",
+      "name": "Ring of Wishes",
+      "description": "Grants the wearer three wishes. Once all wishes have been used, the ring's magic is spent.",
+      "weight": 1,
+      "cost_sp": 150000,
+      "slot_size": null,
+      "item_type": "magic_item",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": [
+        "wishes",
+        "limited_use"
+      ]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      412,
+      413
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
