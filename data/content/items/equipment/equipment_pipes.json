@@ -1,0 +1,74 @@
+{
+  "category": "equipment",
+  "subcategory": "pipes",
+  "items": [
+    {
+      "item_id": "bog_oak_pipe",
+      "name": "Bog-oak pipe",
+      "description": "A hard, black pipe carved from wood dredged out of a peat bog. The sombre faces of ancient bog-denizens can be spied drifting in the smoke. Said to be the favoured pipe of wizards of all kinds.",
+      "weight": 10,
+      "cost_sp": 150,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "cherry_wood_pipe",
+      "name": "Cherry-wood pipe",
+      "description": "A fine pipe of carved cherry, producing a smooth, aromatic smoke.",
+      "weight": 10,
+      "cost_sp": 50,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "clay_pipe",
+      "name": "Clay pipe",
+      "description": "A common pipe of fired clay, often inscribed with motifs, symbols, or script.",
+      "weight": 10,
+      "cost_sp": 10,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "gourd_pipe_mossling_style",
+      "name": "Gourd pipe (mossling style)",
+      "description": "A curiously shaped, colourful gourd with a curved stem and a plump bowl. Favoured by mosslings, who craft gourd pipes in their hidden communities.",
+      "weight": 10,
+      "cost_sp": 20,
+      "slot_size": 1,
+      "item_type": "equipment",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      130,
+      131
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
