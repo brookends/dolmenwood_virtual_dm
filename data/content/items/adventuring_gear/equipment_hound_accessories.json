@@ -1,0 +1,44 @@
+{
+  "category": "adventuring_gear",
+  "subcategory": "hound_accessories",
+  "items": [
+    {
+      "item_id": "dog_armour",
+      "name": "Dog armour (+2 AC)",
+      "description": "Light leather armour with a spiked collar. Grants a +2 bonus to Armour Class.",
+      "weight": 200,
+      "cost_sp": 250,
+      "slot_size": null,
+      "item_type": "armor",
+      "damage": null,
+      "ac_bonus": 2,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    },
+    {
+      "item_id": "feed_1_day",
+      "name": "Feed (1 day)",
+      "description": "Fresh meat scraps and bones to gnaw. Dogs may also be fed on rations of freshly caught game.",
+      "weight": 20,
+      "cost_sp": 10,
+      "slot_size": null,
+      "item_type": "consumable",
+      "damage": null,
+      "ac_bonus": null,
+      "ac_value": null,
+      "range": null,
+      "size": null,
+      "properties": []
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Players_Book.pdf",
+    "pages": [
+      124,
+      125
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
