@@ -113,8 +113,15 @@ class AnthropicClient(BaseLLMClient):
             api_key = self.config.api_key or os.getenv("ANTHROPIC_API_KEY")
             if api_key:
                 self._client = anthropic.Anthropic(api_key=api_key)
+            else:
+                logger.warning(
+                    "ANTHROPIC_API_KEY not set. Set the environment variable or pass api_key in config."
+                )
         except ImportError:
-            logger.warning("anthropic package not installed")
+            logger.warning(
+                "anthropic package not installed. "
+                "Install with: pip install dolmenwood-virtual-dm[llm-anthropic]"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize Anthropic client: {e}")
 
@@ -192,8 +199,15 @@ class OpenAIClient(BaseLLMClient):
             api_key = self.config.api_key or os.getenv("OPENAI_API_KEY")
             if api_key:
                 self._client = openai.OpenAI(api_key=api_key)
+            else:
+                logger.warning(
+                    "OPENAI_API_KEY not set. Set the environment variable or pass api_key in config."
+                )
         except ImportError:
-            logger.warning("openai package not installed")
+            logger.warning(
+                "openai package not installed. "
+                "Install with: pip install dolmenwood-virtual-dm[llm-openai]"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI client: {e}")
 
