@@ -24,6 +24,7 @@ from src.data_models import (
     EncounterType,
     SurpriseStatus,
     ReactionResult,
+    interpret_reaction,
     LocationState,
     LocationType,
     LightSourceType,
@@ -34,6 +35,7 @@ from src.data_models import (
     MINUTES_PER_TURN,
     TURNS_PER_HOUR,
     CharacterState,
+    RollTableEntry,
 )
 # Import narrative components (optional, may not be initialized yet)
 try:
@@ -1166,7 +1168,7 @@ class DungeonEngine:
         """Roll reaction for dungeon encounter."""
         encounter = self.controller.get_encounter()
         if not encounter:
-            return ReactionResult.NEUTRAL
+            return ReactionResult.UNCERTAIN
 
         roll = self.dice.roll_2d6("dungeon reaction")
 
@@ -1174,16 +1176,8 @@ class DungeonEngine:
         modifier = -1 if self._dungeon_state.alert_level > 2 else 0
         total = roll.total + modifier
 
-        if total <= 2:
-            result = ReactionResult.HOSTILE
-        elif total <= 5:
-            result = ReactionResult.UNFRIENDLY
-        elif total <= 8:
-            result = ReactionResult.NEUTRAL
-        elif total <= 11:
-            result = ReactionResult.FRIENDLY
-        else:
-            result = ReactionResult.HELPFUL
+        # Use canonical interpretation
+        result = interpret_reaction(total)
 
         encounter.reaction_result = result
         return result
@@ -1201,13 +1195,13 @@ class DungeonEngine:
         Returns:
             Trigger name for state transition
         """
-        if reaction == ReactionResult.HOSTILE:
+        if reaction == ReactionResult.ATTACKS:
             return "encounter_to_combat"
-        elif reaction in {ReactionResult.FRIENDLY, ReactionResult.HELPFUL}:
+        elif reaction == ReactionResult.FRIENDLY:
             return "encounter_to_parley"
-        elif reaction == ReactionResult.UNFRIENDLY:
+        elif reaction == ReactionResult.HOSTILE:
             # More likely to attack in dungeon
-            roll = self.dice.roll_d6(1, "unfriendly action")
+            roll = self.dice.roll_d6(1, "hostile action")
             if roll.total <= 3:
                 return "encounter_to_combat"
             return "encounter_end_dungeon"
@@ -1808,9 +1802,18 @@ class DungeonEngine:
         Generate an encounter for the current room using the POI's encounter table.
 
         Used for procedural dungeons where encounters are rolled per room.
+        Categorizes the encounter type to guide handling:
+        - "npc": NPC encounter, may allow social interaction
+        - "monster": Combat-capable encounter, transitions to ENCOUNTER state
+        - "item": Item discovery, adds to room description
+        - "hazard": Environmental hazard requiring save
+        - "ambient": Atmospheric description, no mechanical effect
 
         Returns:
-            Dictionary with encounter result or None
+            Dictionary with encounter result including:
+            - encounter_type: Category of encounter
+            - requires_transition: Whether to transition to ENCOUNTER state
+            - allows_social: Whether social interaction is an option
         """
         if not self._dungeon_state or not self._dungeon_state.encounter_table:
             return None
@@ -1831,6 +1834,9 @@ class DungeonEngine:
         if not entry:
             return {"roll": roll.total, "encounter": None}
 
+        # Categorize the encounter
+        encounter_type, requires_transition, allows_social = self._categorize_encounter(entry)
+
         result = {
             "roll": roll.total,
             "title": entry.title,
@@ -1839,7 +1845,14 @@ class DungeonEngine:
             "npcs": entry.npcs,
             "items": entry.items,
             "mechanical_effect": entry.mechanical_effect,
+            "encounter_type": encounter_type,
+            "requires_transition": requires_transition,
+            "allows_social": allows_social,
         }
+
+        # Include quest hook if present
+        if entry.quest_hook:
+            result["quest_hook"] = entry.quest_hook
 
         # Check for special effects
         if entry.reaction_conditions:
@@ -1857,6 +1870,60 @@ class DungeonEngine:
             result["sub_table"] = entry.sub_table
 
         return result
+
+    def _categorize_encounter(
+        self,
+        entry: "RollTableEntry",
+    ) -> tuple[str, bool, bool]:
+        """
+        Categorize a dungeon encounter entry.
+
+        Args:
+            entry: The RollTableEntry to categorize
+
+        Returns:
+            Tuple of (encounter_type, requires_transition, allows_social)
+            - encounter_type: "npc", "monster", "item", "hazard", or "ambient"
+            - requires_transition: Whether to transition to ENCOUNTER state
+            - allows_social: Whether social interaction is possible
+        """
+        has_monsters = bool(entry.monsters)
+        has_npcs = bool(entry.npcs)
+        has_items = bool(entry.items)
+        has_mechanical = bool(entry.mechanical_effect)
+        has_quest = bool(entry.quest_hook)
+        has_transport = bool(entry.transportation_effect)
+        has_time_effect = bool(entry.time_effect)
+
+        # NPC encounters: have NPCs listed, possibly with quest
+        if has_npcs and not has_monsters:
+            return ("npc", True, True)
+
+        # Monster encounters: have monsters listed
+        if has_monsters:
+            # Check if social option is mentioned in description
+            desc_lower = (entry.description or "").lower()
+            social_hints = ["if asked", "can be", "may be", "parley", "negotiate", "speak"]
+            allows_social = any(hint in desc_lower for hint in social_hints)
+            return ("monster", True, allows_social)
+
+        # Hazard encounters: have dangerous mechanical effects, transport, or time effects
+        # Check this BEFORE items since some hazards also have items
+        if has_transport or has_time_effect:
+            return ("hazard", False, False)
+
+        if has_mechanical:
+            mech_lower = entry.mechanical_effect.lower()
+            hazard_keywords = ["save", "ejected", "transported", "damage", "attack", "must", "pass"]
+            if any(keyword in mech_lower for keyword in hazard_keywords):
+                return ("hazard", False, False)
+
+        # Item discoveries: have items but no monsters/NPCs/hazards
+        if has_items and not has_monsters and not has_npcs:
+            return ("item", False, False)
+
+        # Ambient: everything else (atmospheric descriptions)
+        return ("ambient", False, False)
 
     # =========================================================================
     # ITEM PERSISTENCE (for locations like The Spectral Manse)

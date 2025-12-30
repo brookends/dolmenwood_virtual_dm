@@ -17,6 +17,66 @@
     "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm, in addition to the normal results",
     "foraging_special": [
       "Bosun's Balm (1d2 portions)"
+    ],
+    "encounter_modifiers": [
+      {
+        "chance": "2-in-6",
+        "monster_id": "banshee",
+        "result": "bewildered banshee",
+        "number_appearing": 1,
+        "context": "A translucent figure in tattered finery drifts through the mist, clutching an invitation and muttering about being late. She seems confused and distracted, as if searching for something.",
+        "behavior": "non_hostile",
+        "demeanor": ["bewildered", "distracted", "anxious about tardiness"],
+        "speech": "Ethereal whispers, trailing off mid-sentence",
+        "topic_intelligence": {
+          "known_topics": [
+            {
+              "topic_id": "the_ball",
+              "content": "There is a grand ball at the Spectral Manse tonight! All the finest spirits are invited. The music is simply divine - Lord Hobbled-and-Blackened plays such haunting melodies.",
+              "keywords": ["ball", "party", "dance", "event", "invitation", "manse", "manor", "spectral"],
+              "required_disposition": -5,
+              "category": "event",
+              "priority": 10
+            },
+            {
+              "topic_id": "spectral_manse_location",
+              "content": "The Spectral Manse lies within a thicket of twisted blackthorns, somewhere in this accursed bog. It appears only when the veil between worlds grows thin. Follow the violin music if you wish to find it.",
+              "keywords": ["where", "location", "find", "directions", "blackthorns", "thicket"],
+              "required_disposition": -3,
+              "category": "location",
+              "priority": 8
+            },
+            {
+              "topic_id": "lord_hobbled",
+              "content": "Lord Hobbled-and-Blackened is our host, a frost elf of exquisite musical talent. He has been hosting these balls for... oh, I cannot recall how long. Time moves strangely here.",
+              "keywords": ["lord", "hobbled", "blackened", "host", "elf", "frost", "musician"],
+              "required_disposition": -2,
+              "category": "npc",
+              "priority": 5
+            },
+            {
+              "topic_id": "the_invitation",
+              "content": "My invitation! It is written in frost that never melts, sealed with a frozen rose. One must have an invitation to attend... though mortals sometimes wander in uninvited.",
+              "keywords": ["invitation", "invite", "attend", "enter", "mortals", "living"],
+              "required_disposition": -4,
+              "category": "lore",
+              "priority": 3
+            }
+          ],
+          "secret_info": [
+            {
+              "secret_id": "manse_nature",
+              "content": "The Spectral Manse exists between Fairy and the mortal world. Those who enter may find it difficult to leave, and time passes strangely within its walls. Items taken from inside evaporate into mist when brought to the mortal realm.",
+              "hint": "Her form flickers as she speaks, and you notice the fog around her seems to pull toward some unseen point in the bog.",
+              "keywords": ["danger", "warning", "trapped", "time", "fairy", "dimension", "leave", "escape"],
+              "required_disposition": 1,
+              "required_trust": 1,
+              "can_be_bribed": false,
+              "bribe_amount": 0
+            }
+          ]
+        }
+      }
     ]
   },
   "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
@@ -178,7 +238,12 @@
               "items": [
                 "silver dagger"
               ],
-              "mechanical_effect": "Fixing clock causes 1d12 days to pass upon leaving"
+              "mechanical_effect": "Fixing clock causes 1d12 days to pass upon leaving",
+              "time_effect": {
+                "time_passes": "1d12 days",
+                "trigger_condition": "on_exit",
+                "description": "Upon returning to the mortal world, time has passed strangely"
+              }
             },
             {
               "roll": 7,
@@ -187,7 +252,13 @@
               "monsters": [],
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Save Versus Hold or be ejected to mortal world; manor disappears until next full moon"
+              "mechanical_effect": "Save Versus Hold or be ejected to mortal world; manor disappears until next full moon",
+              "transportation_effect": {
+                "save_type": "Hold",
+                "destination": "mortal world (hex 0101)",
+                "failure_desc": "Ejected back into the mortal world",
+                "manor_effect": "Manor disappears until the next full moon"
+              }
             },
             {
               "roll": 8,
@@ -224,7 +295,29 @@
         }
       ],
       "is_dungeon": true,
-      "dungeon_levels": null
+      "dungeon_levels": null,
+      "dynamic_layout": {
+        "connections_per_room": "1d3",
+        "room_table": "Rooms",
+        "encounter_table": "Encounters",
+        "description": "Each room connects to 1d3 other rooms, via crooked doors and lurching hallways"
+      },
+      "item_persistence": {
+        "default": "evaporate",
+        "default_description": "Items from the manse evaporate into mist when taken into the real world",
+        "exceptions": [
+          {
+            "owner_npc": "lord_hobbled_and_blackened",
+            "persists": true,
+            "description": "Lord Hobbled-and-Blackened's possessions persist in the mortal world"
+          }
+        ]
+      },
+      "availability": {
+        "type": "special",
+        "description": "The manse appears only when the veil between worlds grows thin",
+        "hidden_message": "The thicket of blackthorns stands silent and impenetrable. No manor is visible."
+      }
     }
   ],
   "roll_tables": [],
@@ -281,7 +374,89 @@
         "captor": "Prince Mallowheart",
         "can_leave": false,
         "description": "Imprisoned in the Spectral Manse by Prince Mallowheart for the crime of falling in love with Ygraine Mordlin"
-      }
+      },
+      "known_topics": [
+        {
+          "topic_id": "quest_deliver_letter",
+          "content": "Beseeches adventurers to deliver a letter to Ygraine Mordlin, declaring his love and pleading for her aid in escaping. Offers his magical violin as payment.",
+          "keywords": ["letter", "deliver", "message", "help", "escape", "quest", "task", "favor", "errand"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 10
+        },
+        {
+          "topic_id": "violin_offer",
+          "content": "Offers his magical violin - a priceless instrument that can cast Dominate once per week when played skilfully - as payment for delivering the letter.",
+          "keywords": ["violin", "music", "instrument", "payment", "reward", "treasure", "magic", "magical", "dominate"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 9
+        },
+        {
+          "topic_id": "ygraine_love",
+          "content": "Speaks wistfully of Ygraine Mordlin, a mortal woman of surpassing beauty. His eyes grow distant and his music turns tender when her name is mentioned.",
+          "keywords": ["ygraine", "mordlin", "love", "woman", "mortal", "beautiful", "beauty", "beloved"],
+          "required_disposition": -2,
+          "category": "personal",
+          "shared": false,
+          "priority": 5
+        },
+        {
+          "topic_id": "the_manse",
+          "content": "Explains that the Spectral Manse exists between Fairy and the mortal world. It appears only at certain times, and he is bound here, unable to leave.",
+          "keywords": ["manse", "manor", "house", "prison", "trapped", "bound", "fairy", "spectral", "dimension"],
+          "required_disposition": -3,
+          "category": "location",
+          "shared": false,
+          "priority": 3
+        },
+        {
+          "topic_id": "his_music",
+          "content": "He is a virtuoso musician, and his violin playing fills the manse with haunting melodies. Music is his solace in imprisonment.",
+          "keywords": ["music", "play", "playing", "musician", "virtuoso", "melodies", "songs"],
+          "required_disposition": -5,
+          "category": "personal",
+          "shared": false,
+          "priority": 2
+        },
+        {
+          "topic_id": "frost_elves",
+          "content": "Discusses frost elf customs and the fairy courts, though he becomes evasive about his specific situation there.",
+          "keywords": ["frost", "elf", "elves", "fairy", "fae", "court", "customs", "nobility"],
+          "required_disposition": -1,
+          "category": "lore",
+          "shared": false,
+          "priority": 1
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "court_musician_past",
+          "content": "He was once a court musician to Prince Mallowheart, one of the most powerful frost elf lords.",
+          "hint": "His fingers move with the practiced grace of one who has performed for the highest courts.",
+          "keywords": ["prince", "mallowheart", "court", "musician", "past", "served", "employer"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        },
+        {
+          "secret_id": "forbidden_love_imprisonment",
+          "content": "He was imprisoned in this manse by Prince Mallowheart as punishment for falling in love with Ygraine Mordlin - the Prince's mortal fosterling daughter. Their love was forbidden, and this is his eternal sentence.",
+          "hint": "When Ygraine's name is mentioned, a flash of both joy and deep sorrow crosses his features, and he glances nervously at the shadows as if afraid of being overheard.",
+          "keywords": ["imprisoned", "punishment", "forbidden", "crime", "sentence", "why", "reason", "fosterling", "daughter"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        }
+      ]
     }
   ],
   "items": [

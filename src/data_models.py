@@ -84,12 +84,43 @@ class SurpriseStatus(str, Enum):
 
 
 class ReactionResult(str, Enum):
-    """Results of 2d6 reaction roll."""
-    HOSTILE = "hostile"
-    UNFRIENDLY = "unfriendly"
-    NEUTRAL = "neutral"
-    FRIENDLY = "friendly"
-    HELPFUL = "helpful"
+    """
+    Results of 2d6 reaction roll per Dolmenwood Player's Book.
+
+    Encounter Reactions Table (2d6):
+    - 2 or less: Attacks
+    - 3-5: Hostile, may attack
+    - 6-8: Uncertain, wary
+    - 9-11: Indifferent, may negotiate
+    - 12 or more: Eager, friendly
+    """
+    ATTACKS = "attacks"           # 2 or less - Attacks immediately
+    HOSTILE = "hostile"           # 3-5 - Hostile, may attack
+    UNCERTAIN = "uncertain"       # 6-8 - Uncertain, wary
+    INDIFFERENT = "indifferent"   # 9-11 - Indifferent, may negotiate
+    FRIENDLY = "friendly"         # 12+ - Eager, friendly
+
+
+def interpret_reaction(roll: int) -> ReactionResult:
+    """
+    Interpret a 2d6 reaction roll per Dolmenwood Player's Book.
+
+    Args:
+        roll: The 2d6 roll result (with any CHA modifiers applied)
+
+    Returns:
+        ReactionResult indicating creature's disposition
+    """
+    if roll <= 2:
+        return ReactionResult.ATTACKS
+    elif roll <= 5:
+        return ReactionResult.HOSTILE
+    elif roll <= 8:
+        return ReactionResult.UNCERTAIN
+    elif roll <= 11:
+        return ReactionResult.INDIFFERENT
+    else:
+        return ReactionResult.FRIENDLY
 
 
 class ConditionType(str, Enum):
@@ -3590,7 +3621,13 @@ class HexNPC:
     # Knowledge and goals
     languages: list[str] = field(default_factory=list)
     desires: list[str] = field(default_factory=list)  # What they want
-    secrets: list[str] = field(default_factory=list)  # Hidden information
+    secrets: list[str] = field(default_factory=list)  # Hidden information (legacy format)
+
+    # Enhanced topic intelligence (for social interactions)
+    # known_topics: Structured conversation topics with keywords and disposition gating
+    # secret_info: Structured secrets with hints and reveal conditions
+    known_topics: list["KnownTopic"] = field(default_factory=list)
+    secret_info: list["SecretInfo"] = field(default_factory=list)
 
     # Equipment and location
     possessions: list[str] = field(default_factory=list)
@@ -4905,6 +4942,10 @@ class EncounterState:
     reaction_result: Optional[ReactionResult] = None
     terrain: str = ""
 
+    # Contextual encounter data (for hex-specific encounters with topic intelligence)
+    # Stores: topic_intelligence, behavior, demeanor, speech for social interaction
+    contextual_data: Optional[dict[str, Any]] = None
+
     # Combat-specific
     combatants: list[Combatant] = field(default_factory=list)
     current_round: int = 0
@@ -4925,6 +4966,898 @@ class EncounterState:
         """Get enemies still in the fight."""
         return [c for c in self.get_enemy_combatants()
                 if c.stat_block and c.stat_block.hp_current > 0]
+
+
+# =============================================================================
+# SOCIAL INTERACTION STATE
+# =============================================================================
+
+
+class SocialOrigin(str, Enum):
+    """Origin of a social interaction."""
+    SETTLEMENT = "settlement"       # Initiated in a settlement
+    ENCOUNTER_PARLEY = "encounter_parley"  # From encounter reaction roll
+    COMBAT_PARLEY = "combat_parley"  # From combat negotiation/surrender
+    HEX_NPC = "hex_npc"            # Fixed NPC in a hex location
+    POI_NPC = "poi_npc"            # NPC at a point of interest
+
+
+class SocialParticipantType(str, Enum):
+    """Type of participant in a social interaction."""
+    NPC = "npc"                    # Named NPC with full profile
+    MONSTER = "monster"            # Monster from encounter
+    ADVENTURING_PARTY = "adventuring_party"  # Random adventurers
+
+
+class TopicRelevance(str, Enum):
+    """How relevant a topic is to a player's question."""
+    EXACT = "exact"          # Direct match to what player asked
+    RELATED = "related"      # Related topic that might help
+    TANGENTIAL = "tangential"  # Loosely connected
+    IRRELEVANT = "irrelevant"  # No connection
+
+
+class SecretStatus(str, Enum):
+    """Status of a secret in the conversation."""
+    UNKNOWN = "unknown"      # Player doesn't know it exists
+    HINTED = "hinted"        # NPC has hinted at it
+    REVEALED = "revealed"    # Fully disclosed
+
+
+@dataclass
+class KnownTopic:
+    """
+    A topic that an NPC knows about and may share.
+
+    Includes metadata about when/how the topic can be shared.
+    """
+    topic_id: str
+    content: str  # The actual information
+    keywords: list[str] = field(default_factory=list)  # Keywords for matching
+
+    # Disposition requirements (-5 to 5 scale)
+    required_disposition: int = -5  # Minimum disposition to share (default: always)
+
+    # Category for organization
+    category: str = "general"  # "quest", "rumor", "personal", "location", "warning"
+
+    # Has this topic been shared?
+    shared: bool = False
+
+    # Priority for relevance (higher = more likely to mention)
+    priority: int = 0
+
+    def matches_query(self, query: str) -> TopicRelevance:
+        """
+        Check if this topic matches a player query.
+
+        Args:
+            query: The player's question/statement
+
+        Returns:
+            TopicRelevance indicating match quality
+        """
+        query_lower = query.lower()
+        content_lower = self.content.lower()
+
+        # Check for exact keyword matches
+        for keyword in self.keywords:
+            if keyword.lower() in query_lower:
+                return TopicRelevance.EXACT
+
+        # Check for content word overlap
+        query_words = set(query_lower.split())
+        content_words = set(content_lower.split())
+
+        # Remove common words
+        stop_words = {"the", "a", "an", "is", "are", "do", "does", "what", "where",
+                      "who", "why", "how", "can", "you", "i", "me", "your", "about",
+                      "tell", "know", "any", "have", "has"}
+        query_words -= stop_words
+        content_words -= stop_words
+
+        overlap = query_words & content_words
+        if len(overlap) >= 2:
+            return TopicRelevance.RELATED
+        elif len(overlap) == 1:
+            return TopicRelevance.TANGENTIAL
+
+        return TopicRelevance.IRRELEVANT
+
+    def can_share(self, current_disposition: int) -> bool:
+        """Check if disposition is high enough to share this topic."""
+        return current_disposition >= self.required_disposition
+
+
+@dataclass
+class SecretInfo:
+    """
+    A secret that an NPC knows but shouldn't reveal easily.
+
+    Tracks the status of the secret in the conversation.
+    """
+    secret_id: str
+    content: str  # The actual secret
+    hint: str = ""  # A vague hint about this secret
+    keywords: list[str] = field(default_factory=list)
+
+    # What's required to reveal this secret?
+    required_disposition: int = 3  # Must be friendly+ to reveal
+    required_trust: int = 2  # How many successful exchanges needed
+    can_be_bribed: bool = False
+    bribe_amount: int = 0  # Gold pieces
+
+    # Current status
+    status: SecretStatus = SecretStatus.UNKNOWN
+    hint_count: int = 0  # How many times hinted
+
+    def should_hint(self, current_disposition: int, times_asked: int) -> bool:
+        """Determine if NPC should hint at this secret."""
+        # More likely to hint if player keeps asking related questions
+        if times_asked >= 2 and current_disposition >= 0:
+            return True
+        # Friendly NPCs might hint unprompted
+        if current_disposition >= 2 and self.status == SecretStatus.UNKNOWN:
+            return DiceRoller.percent_check(30, "friendly NPC hint chance")
+        return False
+
+    def can_reveal(
+        self,
+        current_disposition: int,
+        trust_level: int,
+        bribe_offered: int = 0
+    ) -> bool:
+        """Check if conditions are met to reveal this secret."""
+        # Check bribery first
+        if self.can_be_bribed and bribe_offered >= self.bribe_amount:
+            return True
+
+        # Check disposition and trust
+        return (current_disposition >= self.required_disposition and
+                trust_level >= self.required_trust)
+
+    def get_hint(self) -> str:
+        """Get the hint text for this secret."""
+        return self.hint or f"There's something about {self.content[:20]}..."
+
+
+@dataclass
+class ConversationTracker:
+    """
+    Tracks the state of a conversation with a specific participant.
+
+    This is mutable state that changes during the conversation.
+    """
+    # Patience/frustration (-5 to +5, starts at disposition-based value)
+    patience: int = 3  # Positive = patient, negative = frustrated
+
+    # Trust level (0-5, built through successful exchanges)
+    trust_level: int = 0
+
+    # Topics asked about (for tracking repeated questions)
+    topics_asked: dict[str, int] = field(default_factory=dict)  # topic -> times asked
+
+    # Secrets that have been hinted at
+    secrets_hinted: list[str] = field(default_factory=list)
+
+    # Irrelevant questions asked (affects patience)
+    irrelevant_count: int = 0
+
+    # Successful exchanges (relevant questions answered)
+    successful_exchanges: int = 0
+
+    # Has the NPC become fed up and ended conversation?
+    conversation_ended: bool = False
+    end_reason: str = ""
+
+    def record_question(self, topic: str, was_relevant: bool) -> None:
+        """Record a question asked by the player."""
+        self.topics_asked[topic] = self.topics_asked.get(topic, 0) + 1
+
+        if was_relevant:
+            self.successful_exchanges += 1
+            # Successful exchanges can restore patience
+            if self.successful_exchanges % 3 == 0 and self.patience < 5:
+                self.patience += 1
+            # Build trust over time
+            if self.successful_exchanges >= 2 and self.trust_level < 5:
+                self.trust_level += 1
+        else:
+            self.irrelevant_count += 1
+            # Patience decays with irrelevant questions
+            self.patience -= 1
+            if self.patience <= -3:
+                self.conversation_ended = True
+                self.end_reason = "NPC has lost patience with irrelevant questions"
+
+    def get_patience_modifier(self) -> str:
+        """Get a description of NPC's patience state for prompts."""
+        if self.patience >= 3:
+            return "patient and attentive"
+        elif self.patience >= 1:
+            return "somewhat distracted"
+        elif self.patience >= 0:
+            return "growing impatient"
+        elif self.patience >= -2:
+            return "clearly annoyed"
+        else:
+            return "about to end the conversation"
+
+    def times_asked_about(self, topic: str) -> int:
+        """Get how many times a topic has been asked about."""
+        # Check for partial matches
+        topic_lower = topic.lower()
+        for asked_topic, count in self.topics_asked.items():
+            if topic_lower in asked_topic.lower() or asked_topic.lower() in topic_lower:
+                return count
+        return 0
+
+
+@dataclass
+class SocialParticipant:
+    """
+    A participant in a social interaction.
+
+    Can represent NPCs, monsters, or adventuring party members.
+    Captures the information needed for narrative context.
+    """
+    participant_id: str
+    name: str
+    participant_type: SocialParticipantType
+
+    # Core social attributes
+    sentience: str = "Sentient"      # Non-Sentient, Semi-Intelligent, Sentient
+    intelligence: Optional[str] = None
+    alignment: str = "Neutral"
+    languages: list[str] = field(default_factory=list)
+
+    # Personality and behavior
+    demeanor: list[str] = field(default_factory=list)  # e.g., ["Manic", "twitchy fingers"]
+    speech: Optional[str] = None  # Speech pattern
+    personality: str = ""
+
+    # Motivation and goals
+    desires: list[str] = field(default_factory=list)
+    goals: list[str] = field(default_factory=list)
+
+    # Knowledge and secrets (for DM/narrative) - LEGACY simple format
+    secrets: list[str] = field(default_factory=list)
+    dialogue_hooks: list[str] = field(default_factory=list)
+
+    # Enhanced topic system - structured topics with metadata
+    known_topics: list[KnownTopic] = field(default_factory=list)
+    secret_info: list[SecretInfo] = field(default_factory=list)
+
+    # Relationships
+    relationships: list[dict[str, Any]] = field(default_factory=list)
+    faction: Optional[str] = None
+
+    # Location context
+    location: str = ""
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+
+    # Quest hooks this participant can offer
+    quest_hooks: list[dict[str, Any]] = field(default_factory=list)
+
+    # Items/possessions relevant to conversation
+    possessions: list[str] = field(default_factory=list)
+
+    # Disposition toward party (-5 to +5)
+    disposition: int = 0
+    reaction_result: Optional[ReactionResult] = None
+
+    # For monsters: can they even be parleyed with?
+    can_communicate: bool = True
+    monster_type: Optional[str] = None  # e.g., "Fairy", "Undead", "Mortal"
+
+    # Reference to source data
+    stat_reference: Optional[str] = None  # e.g., "frost elf courtier (DMB)"
+
+    # Binding/constraint information (e.g., Lord Hobbled-and-Blackened)
+    binding: Optional[dict[str, Any]] = None
+
+    # Conversation state tracker (mutable during conversation)
+    conversation: Optional[ConversationTracker] = None
+
+    def __post_init__(self):
+        """Initialize conversation tracker and convert legacy topics."""
+        # Initialize conversation tracker if not present
+        if self.conversation is None:
+            # Set initial patience based on disposition
+            initial_patience = max(1, 3 + self.disposition)
+            self.conversation = ConversationTracker(patience=initial_patience)
+
+        # Convert legacy dialogue_hooks to KnownTopic if known_topics is empty
+        if not self.known_topics and self.dialogue_hooks:
+            for i, hook in enumerate(self.dialogue_hooks):
+                # Extract keywords from the hook text
+                keywords = self._extract_keywords(hook)
+                self.known_topics.append(KnownTopic(
+                    topic_id=f"hook_{i}",
+                    content=hook,
+                    keywords=keywords,
+                    category="dialogue",
+                ))
+
+        # Convert legacy secrets to SecretInfo if secret_info is empty
+        if not self.secret_info and self.secrets:
+            for i, secret in enumerate(self.secrets):
+                keywords = self._extract_keywords(secret)
+                self.secret_info.append(SecretInfo(
+                    secret_id=f"secret_{i}",
+                    content=secret,
+                    keywords=keywords,
+                    hint=self._generate_hint(secret),
+                ))
+
+        # Convert goals to known topics
+        for i, goal in enumerate(self.goals):
+            if not any(t.content == f"Goal: {goal}" for t in self.known_topics):
+                self.known_topics.append(KnownTopic(
+                    topic_id=f"goal_{i}",
+                    content=f"Goal: {goal}",
+                    keywords=self._extract_keywords(goal),
+                    category="personal",
+                    required_disposition=0,  # Neutral+ to discuss goals
+                ))
+
+    def _extract_keywords(self, text: str) -> list[str]:
+        """Extract meaningful keywords from text."""
+        stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
+                      "being", "have", "has", "had", "do", "does", "did", "will",
+                      "would", "could", "should", "may", "might", "must", "shall",
+                      "can", "to", "of", "in", "for", "on", "with", "at", "by",
+                      "from", "as", "into", "through", "during", "before", "after",
+                      "above", "below", "between", "under", "again", "further",
+                      "then", "once", "here", "there", "when", "where", "why",
+                      "how", "all", "each", "few", "more", "most", "other", "some",
+                      "such", "no", "nor", "not", "only", "own", "same", "so",
+                      "than", "too", "very", "just", "and", "but", "if", "or",
+                      "because", "until", "while", "about", "against", "between"}
+
+        words = text.lower().split()
+        keywords = [w.strip(".,!?:;\"'()[]") for w in words
+                   if w.strip(".,!?:;\"'()[]") not in stop_words and len(w) > 2]
+        return keywords[:5]  # Limit to 5 keywords
+
+    def _generate_hint(self, secret: str) -> str:
+        """Generate a vague hint for a secret."""
+        # Take first few words and make them vague
+        words = secret.split()[:4]
+        if len(words) >= 3:
+            return f"Something about {' '.join(words[:2])}..."
+        return "There's something they're not saying..."
+
+    def get_current_disposition(self) -> int:
+        """Get current disposition including conversation modifiers."""
+        base = self.disposition
+        if self.conversation:
+            # Trust increases effective disposition
+            base += self.conversation.trust_level // 2
+        return max(-5, min(5, base))
+
+    def find_relevant_topics(
+        self,
+        query: str,
+        include_locked: bool = False
+    ) -> list[tuple[KnownTopic, TopicRelevance]]:
+        """
+        Find topics relevant to a player's query.
+
+        Args:
+            query: The player's question/statement
+            include_locked: Include topics locked by disposition
+
+        Returns:
+            List of (topic, relevance) tuples, sorted by relevance
+        """
+        current_disp = self.get_current_disposition()
+        results = []
+
+        for topic in self.known_topics:
+            # Check disposition requirement
+            if not include_locked and not topic.can_share(current_disp):
+                continue
+
+            relevance = topic.matches_query(query)
+            if relevance != TopicRelevance.IRRELEVANT:
+                results.append((topic, relevance))
+
+        # Sort by relevance (EXACT > RELATED > TANGENTIAL) and priority
+        relevance_order = {
+            TopicRelevance.EXACT: 0,
+            TopicRelevance.RELATED: 1,
+            TopicRelevance.TANGENTIAL: 2,
+        }
+        results.sort(key=lambda x: (relevance_order[x[1]], -x[0].priority))
+
+        return results
+
+    def find_relevant_secrets(self, query: str) -> list[tuple[SecretInfo, TopicRelevance]]:
+        """Find secrets relevant to a player's query."""
+        results = []
+
+        for secret in self.secret_info:
+            # Check keyword matches
+            query_lower = query.lower()
+            relevance = TopicRelevance.IRRELEVANT
+
+            for keyword in secret.keywords:
+                if keyword.lower() in query_lower:
+                    relevance = TopicRelevance.RELATED
+                    break
+
+            if relevance != TopicRelevance.IRRELEVANT:
+                results.append((secret, relevance))
+
+        return results
+
+    def process_query(self, query: str) -> dict[str, Any]:
+        """
+        Process a player query and determine what the NPC should share.
+
+        Returns a dict with:
+        - relevant_topics: Topics to share
+        - locked_topics: Topics locked by disposition
+        - hints_to_give: Secrets to hint at
+        - secrets_to_reveal: Secrets that can be revealed
+        - is_relevant: Whether the query was relevant at all
+        - patience_warning: Warning if patience is low
+        """
+        current_disp = self.get_current_disposition()
+        trust = self.conversation.trust_level if self.conversation else 0
+        times_asked = self.conversation.times_asked_about(query) if self.conversation else 0
+
+        result = {
+            "relevant_topics": [],
+            "locked_topics": [],
+            "hints_to_give": [],
+            "secrets_to_reveal": [],
+            "is_relevant": False,
+            "patience_warning": None,
+            "conversation_ended": False,
+        }
+
+        # Check if conversation has ended
+        if self.conversation and self.conversation.conversation_ended:
+            result["conversation_ended"] = True
+            result["patience_warning"] = self.conversation.end_reason
+            return result
+
+        # Find relevant topics
+        all_relevant = self.find_relevant_topics(query, include_locked=True)
+
+        for topic, relevance in all_relevant:
+            if topic.can_share(current_disp):
+                result["relevant_topics"].append({
+                    "topic": topic,
+                    "relevance": relevance,
+                    "content": topic.content,
+                })
+                result["is_relevant"] = True
+            else:
+                result["locked_topics"].append({
+                    "topic": topic,
+                    "required_disposition": topic.required_disposition,
+                    "current_disposition": current_disp,
+                })
+
+        # Find relevant secrets
+        relevant_secrets = self.find_relevant_secrets(query)
+
+        for secret, relevance in relevant_secrets:
+            if secret.status == SecretStatus.REVEALED:
+                continue  # Already revealed
+
+            if secret.can_reveal(current_disp, trust):
+                result["secrets_to_reveal"].append({
+                    "secret": secret,
+                    "content": secret.content,
+                })
+                result["is_relevant"] = True
+            elif secret.should_hint(current_disp, times_asked):
+                result["hints_to_give"].append({
+                    "secret": secret,
+                    "hint": secret.get_hint(),
+                })
+                result["is_relevant"] = True
+
+        # Record the question and update patience
+        if self.conversation:
+            self.conversation.record_question(query, result["is_relevant"])
+
+            if self.conversation.patience <= 0:
+                result["patience_warning"] = self.conversation.get_patience_modifier()
+
+            if self.conversation.conversation_ended:
+                result["conversation_ended"] = True
+                result["patience_warning"] = self.conversation.end_reason
+
+        return result
+
+    def get_topics_for_disposition(self, min_disposition: int = -5) -> list[KnownTopic]:
+        """Get all topics available at or above a disposition level."""
+        current_disp = self.get_current_disposition()
+        return [t for t in self.known_topics
+                if t.required_disposition <= current_disp
+                and t.required_disposition >= min_disposition]
+
+    @classmethod
+    def from_npc(cls, npc: "NPC", hex_id: Optional[str] = None) -> "SocialParticipant":
+        """Create a SocialParticipant from an NPC."""
+        return cls(
+            participant_id=npc.npc_id,
+            name=npc.name,
+            participant_type=SocialParticipantType.NPC,
+            personality=npc.personality,
+            goals=list(npc.goals),
+            secrets=list(npc.secrets),
+            dialogue_hooks=list(npc.dialogue_hooks),
+            relationships=[{"npc_id": k, "type": v} for k, v in npc.relationships.items()],
+            faction=npc.faction,
+            location=npc.location,
+            hex_id=hex_id,
+            disposition=npc.disposition,
+        )
+
+    @classmethod
+    def from_hex_npc(
+        cls,
+        hex_npc: "HexNPC",
+        hex_id: Optional[str] = None,
+        initial_disposition: int = 0,
+    ) -> "SocialParticipant":
+        """
+        Create a SocialParticipant from a HexNPC.
+
+        This factory method properly handles the enhanced topic intelligence
+        fields (known_topics, secret_info) that HexNPCs can have.
+        """
+        # Build personality from demeanor and speech
+        personality_parts = []
+        if hex_npc.demeanor:
+            personality_parts.append(", ".join(hex_npc.demeanor))
+        if hex_npc.speech:
+            personality_parts.append(f"Speech: {hex_npc.speech}")
+        personality = ". ".join(personality_parts) if personality_parts else ""
+
+        # Convert relationships to standard format
+        relationships = []
+        for rel in hex_npc.relationships:
+            relationships.append({
+                "npc_id": rel.get("npc_id", ""),
+                "type": rel.get("relationship_type", ""),
+                "description": rel.get("description", ""),
+                "hex_id": rel.get("hex_id"),
+            })
+
+        # Use known_topics directly if present, otherwise convert desires to dialogue hooks
+        # The __post_init__ will convert dialogue_hooks to KnownTopic if needed
+        dialogue_hooks = list(hex_npc.desires) if not hex_npc.known_topics else []
+
+        return cls(
+            participant_id=hex_npc.npc_id,
+            name=hex_npc.name,
+            participant_type=SocialParticipantType.NPC,
+            personality=personality,
+            goals=list(hex_npc.desires),
+            secrets=list(hex_npc.secrets),
+            dialogue_hooks=dialogue_hooks,
+            known_topics=list(hex_npc.known_topics),
+            secret_info=list(hex_npc.secret_info),
+            relationships=relationships,
+            faction=hex_npc.faction,
+            location=hex_npc.location,
+            hex_id=hex_id or "",
+            disposition=initial_disposition,
+            languages=list(hex_npc.languages),
+            speech=hex_npc.speech,
+            can_communicate=True,
+            stat_reference=hex_npc.stat_reference,
+            possessions=list(hex_npc.possessions),
+        )
+
+    @classmethod
+    def from_monster(
+        cls,
+        monster: "Monster",
+        reaction: Optional[ReactionResult] = None,
+        hex_id: Optional[str] = None,
+    ) -> "SocialParticipant":
+        """Create a SocialParticipant from a Monster."""
+        # Determine if monster can communicate
+        can_communicate = monster.sentience in ("Sentient", "Semi-Intelligent")
+
+        # Get languages if available
+        languages = []
+        if monster.speech:
+            # Try to extract language info from speech field
+            languages = [monster.speech] if monster.speech else []
+
+        return cls(
+            participant_id=monster.monster_id,
+            name=monster.name,
+            participant_type=SocialParticipantType.MONSTER,
+            sentience=monster.sentience,
+            intelligence=monster.intelligence,
+            alignment=monster.alignment,
+            languages=languages,
+            speech=monster.speech,
+            personality=monster.behavior or "",
+            goals=[],  # Monsters typically don't have explicit goals
+            secrets=[],
+            dialogue_hooks=list(monster.encounter_scenarios),
+            hex_id=hex_id,
+            reaction_result=reaction,
+            can_communicate=can_communicate,
+            monster_type=monster.monster_type,
+            stat_reference=f"{monster.name} ({monster.page_reference})" if monster.page_reference else None,
+            possessions=[monster.possessions] if monster.possessions else [],
+        )
+
+    def to_dialogue_inputs(
+        self,
+        conversation_topic: str,
+        previous_interactions: Optional[list[str]] = None,
+        use_enhanced_topics: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Convert this participant to dialogue input format for the AI layer.
+
+        Returns a dict compatible with NPCDialogueInputs schema.
+
+        Args:
+            conversation_topic: What the player is asking about
+            previous_interactions: Previous conversation points
+            use_enhanced_topics: Use the enhanced topic matching system
+
+        Returns:
+            Dict with npc_name, npc_personality, npc_voice, reaction_result,
+            conversation_topic, known_to_npc, hidden_from_player, faction_context,
+            plus enhanced fields like patience_modifier and query_result
+        """
+        # Build personality description
+        personality_parts = []
+        if self.personality:
+            personality_parts.append(self.personality)
+        if self.demeanor:
+            personality_parts.append(f"Demeanor: {', '.join(self.demeanor)}")
+        if self.alignment and self.alignment != "Neutral":
+            personality_parts.append(f"Alignment: {self.alignment}")
+
+        # Add patience modifier to personality if relevant
+        if self.conversation and self.conversation.patience < 2:
+            patience_desc = self.conversation.get_patience_modifier()
+            personality_parts.append(f"Currently {patience_desc}")
+
+        personality = ". ".join(personality_parts) if personality_parts else "Reserved and cautious"
+
+        # Build voice/speech pattern
+        voice_parts = []
+        if self.speech:
+            voice_parts.append(self.speech)
+        if self.monster_type:
+            voice_parts.append(f"{self.monster_type} creature")
+        if self.sentience == "Semi-Intelligent":
+            voice_parts.append("simple speech, broken sentences")
+        elif self.sentience == "Non-Sentient":
+            voice_parts.append("cannot speak, only gestures and sounds")
+
+        voice = ". ".join(voice_parts) if voice_parts else "Period-appropriate speech"
+
+        # Determine reaction/disposition (use current including trust bonuses)
+        current_disp = self.get_current_disposition()
+        if self.reaction_result:
+            reaction = self.reaction_result.value
+        elif current_disp > 2:
+            reaction = "friendly"
+        elif current_disp < -2:
+            reaction = "hostile"
+        else:
+            reaction = "neutral"
+
+        # Process query using enhanced topic system if available
+        query_result = None
+        if use_enhanced_topics and self.known_topics:
+            query_result = self.process_query(conversation_topic)
+
+        # Build known topics (what NPC can share)
+        known_topics = []
+
+        if query_result and query_result["relevant_topics"]:
+            # Use enhanced system - prioritize relevant topics
+            for item in query_result["relevant_topics"]:
+                relevance_marker = ""
+                if item["relevance"] == TopicRelevance.EXACT:
+                    relevance_marker = "[DIRECTLY RELEVANT] "
+                elif item["relevance"] == TopicRelevance.RELATED:
+                    relevance_marker = "[RELATED] "
+                known_topics.append(f"{relevance_marker}{item['content']}")
+
+            # Add hints for secrets
+            for item in query_result.get("hints_to_give", []):
+                known_topics.append(f"[HINT ONLY - be vague] {item['hint']}")
+
+            # Add secrets that can be revealed
+            for item in query_result.get("secrets_to_reveal", []):
+                known_topics.append(f"[CAN NOW REVEAL] {item['content']}")
+
+            # Note locked topics (NPC knows but won't share)
+            if query_result.get("locked_topics"):
+                known_topics.append(
+                    "[NPC knows more but won't share until disposition improves]"
+                )
+        else:
+            # Fallback to legacy system
+            known_topics.extend(self.dialogue_hooks)
+            if self.goals:
+                known_topics.extend([f"Goal: {g}" for g in self.goals])
+
+        # Always include these basics
+        if self.desires:
+            known_topics.extend([f"Wants: {d}" for d in self.desires])
+        if self.possessions:
+            known_topics.append(f"Carries: {', '.join(self.possessions)}")
+        if self.location:
+            known_topics.append(f"From: {self.location}")
+
+        # Quest hooks (disposition-gated in enhanced system)
+        for hook in self.quest_hooks:
+            if isinstance(hook, dict):
+                hook_disp = hook.get("required_disposition", 0)
+                if current_disp >= hook_disp:
+                    hook_desc = hook.get("description", hook.get("name", str(hook)))
+                    known_topics.append(f"Quest opportunity: {hook_desc}")
+            else:
+                known_topics.append(f"Quest opportunity: {hook}")
+
+        # Secrets are hidden from player (for prompt constraint)
+        hidden_topics = []
+        for secret in self.secret_info:
+            if secret.status != SecretStatus.REVEALED:
+                hidden_topics.append(secret.content)
+        # Fallback to legacy secrets
+        if not hidden_topics:
+            hidden_topics = list(self.secrets)
+
+        # Add binding info as hidden if present
+        if self.binding:
+            binding_desc = self.binding.get("description", str(self.binding))
+            hidden_topics.append(f"Binding: {binding_desc}")
+
+        # Build faction context
+        faction_parts = []
+        if self.faction:
+            faction_parts.append(f"Member of {self.faction}")
+        for rel in self.relationships:
+            if isinstance(rel, dict):
+                rel_desc = f"{rel.get('type', 'knows')} {rel.get('npc_id', 'someone')}"
+                faction_parts.append(rel_desc)
+
+        faction_context = ". ".join(faction_parts)
+
+        result = {
+            "npc_name": self.name,
+            "npc_personality": personality,
+            "npc_voice": voice,
+            "reaction_result": reaction,
+            "conversation_topic": conversation_topic,
+            "known_to_npc": known_topics,
+            "hidden_from_player": hidden_topics,
+            "faction_context": faction_context,
+            "previous_interactions": previous_interactions or [],
+        }
+
+        # Add enhanced metadata if available
+        if query_result:
+            result["_query_result"] = query_result
+            result["_is_relevant"] = query_result.get("is_relevant", True)
+            result["_conversation_ended"] = query_result.get("conversation_ended", False)
+            if query_result.get("patience_warning"):
+                result["_patience_warning"] = query_result["patience_warning"]
+
+        return result
+
+    def get_communication_warning(self) -> Optional[str]:
+        """
+        Get a warning message if this participant cannot communicate normally.
+
+        Returns:
+            Warning string if communication is limited, None otherwise
+        """
+        if not self.can_communicate:
+            return f"{self.name} cannot communicate verbally (sentience: {self.sentience})"
+        if self.sentience == "Semi-Intelligent":
+            return f"{self.name} has limited intelligence and may not understand complex topics"
+        if not self.languages:
+            return f"{self.name} may not share a common language with the party"
+        return None
+
+
+@dataclass
+class SocialContext:
+    """
+    Context for a social interaction.
+
+    Captures all participants, their knowledge, and the circumstances
+    that led to the social encounter. This provides the narrative layer
+    with the information needed to generate appropriate dialogue and
+    track conversation state.
+    """
+    context_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    origin: SocialOrigin = SocialOrigin.ENCOUNTER_PARLEY
+
+    # The participants in this social interaction
+    participants: list[SocialParticipant] = field(default_factory=list)
+
+    # The reaction roll that led to parley (if from encounter)
+    initial_reaction: Optional[ReactionResult] = None
+
+    # Location context
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+    location_description: str = ""
+
+    # The encounter this spawned from (if any)
+    source_encounter_id: Optional[str] = None
+
+    # Previous state to return to when conversation ends
+    return_state: Optional[str] = None
+
+    # Available topics and information
+    # These are populated based on participant knowledge
+    available_quest_hooks: list[dict[str, Any]] = field(default_factory=list)
+    available_secrets: list[str] = field(default_factory=list)
+    available_rumors: list[str] = field(default_factory=list)
+
+    # Conversation tracking
+    topics_discussed: list[str] = field(default_factory=list)
+    secrets_revealed: list[str] = field(default_factory=list)
+    quests_offered: list[str] = field(default_factory=list)
+    disposition_changes: dict[str, int] = field(default_factory=dict)
+
+    # Time tracking
+    turns_elapsed: int = 0
+
+    # Context from the triggering event
+    trigger_context: dict[str, Any] = field(default_factory=dict)
+
+    def get_primary_participant(self) -> Optional[SocialParticipant]:
+        """Get the main NPC/monster being spoken to."""
+        if self.participants:
+            return self.participants[0]
+        return None
+
+    def can_parley(self) -> bool:
+        """Check if any participant can communicate."""
+        return any(p.can_communicate for p in self.participants)
+
+    def get_available_languages(self) -> set[str]:
+        """Get all languages spoken by participants."""
+        languages = set()
+        for p in self.participants:
+            languages.update(p.languages)
+        return languages
+
+    def get_all_secrets(self) -> list[str]:
+        """Get all secrets held by participants (DM info)."""
+        secrets = []
+        for p in self.participants:
+            secrets.extend(p.secrets)
+        return secrets
+
+    def get_all_quest_hooks(self) -> list[dict[str, Any]]:
+        """Get all quest hooks available from participants."""
+        hooks = []
+        for p in self.participants:
+            hooks.extend(p.quest_hooks)
+        return hooks
+
+    def add_disposition_change(self, participant_id: str, change: int) -> None:
+        """Track a disposition change for a participant."""
+        current = self.disposition_changes.get(participant_id, 0)
+        self.disposition_changes[participant_id] = current + change
 
 
 # =============================================================================

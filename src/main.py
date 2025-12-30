@@ -47,6 +47,13 @@ from src.combat import CombatEngine
 from src.settlement import SettlementEngine
 from src.downtime import DowntimeEngine
 from src.encounter import EncounterEngine, EncounterOrigin, EncounterAction
+from src.ai import (
+    DMAgent,
+    DMAgentConfig,
+    LLMProvider,
+    DescriptionResult,
+)
+from src.narrative import NarrationContext
 
 
 # Configure logging
@@ -78,6 +85,9 @@ class GameConfig:
     llm_provider: str = "mock"  # mock, anthropic, openai, local
     llm_model: Optional[str] = None
     llm_url: Optional[str] = None
+
+    # Narration settings
+    enable_narration: bool = True  # Enable LLM-generated narrative descriptions
 
     # Database options
     use_vector_db: bool = True
@@ -160,7 +170,80 @@ class VirtualDM:
         self.downtime = DowntimeEngine(self.controller)
         self.encounter = EncounterEngine(self.controller)
 
+        # Initialize the DM Agent for narrative descriptions
+        self._dm_agent: Optional[DMAgent] = None
+        if self.config.enable_narration:
+            self._init_dm_agent()
+
         logger.info(f"Virtual DM initialized in state: {initial_state.value}")
+
+    def _init_dm_agent(self) -> None:
+        """Initialize the DM Agent for narrative generation."""
+        provider_map = {
+            "mock": LLMProvider.MOCK,
+            "anthropic": LLMProvider.ANTHROPIC,
+            "openai": LLMProvider.OPENAI,
+        }
+        provider = provider_map.get(self.config.llm_provider, LLMProvider.MOCK)
+
+        dm_config = DMAgentConfig(
+            llm_provider=provider,
+            llm_model=self.config.llm_model or "claude-sonnet-4-20250514",
+        )
+        self._dm_agent = DMAgent(dm_config)
+        logger.info(f"DM Agent initialized with provider: {provider.value}")
+
+        # Set up narration callback on NarrativeResolver
+        narrative_resolver = self.controller.get_narrative_resolver()
+        if narrative_resolver:
+            narrative_resolver.set_narration_callback(self._narrate_from_context)
+
+    def _narrate_from_context(
+        self,
+        context: NarrationContext,
+        character_name: str,
+    ) -> Optional[str]:
+        """
+        Convert NarrationContext to narrated text.
+
+        This is the callback used by NarrativeResolver to generate
+        LLM narration for resolved actions.
+        """
+        if not self._dm_agent:
+            return None
+
+        # Extract damage totals from the context
+        damage_dealt = sum(context.damage_dealt.values()) if context.damage_dealt else 0
+        damage_taken = sum(context.healing_done.values()) if context.healing_done else 0
+
+        # Get dice info if available
+        dice_rolled = ""
+        dice_result = 0
+        dice_target = 0
+        if context.dice_results:
+            dice_info = context.dice_results[0]
+            dice_rolled = f"1d6"  # Default for Dolmenwood X-in-6 system
+            dice_result = dice_info.get("result", 0)
+            dice_target = dice_info.get("target", 0)
+
+        return self.narrate_resolved_action(
+            action_description=context.player_input,
+            action_category=context.action_category.value if context.action_category else "unknown",
+            action_type=context.action_type.value if context.action_type else "unknown",
+            success=context.success,
+            partial_success=context.partial_success,
+            character_name=character_name,
+            dice_rolled=dice_rolled,
+            dice_result=dice_result,
+            dice_target=dice_target,
+            damage_dealt=damage_dealt,
+            damage_taken=damage_taken,
+            conditions_applied=context.conditions_applied,
+            effects_created=context.effects_created,
+            resources_consumed=context.resources_consumed,
+            narrative_hints=context.narrative_hints,
+            rule_reference=context.rule_reference or "",
+        )
 
     # =========================================================================
     # STATE ACCESS
@@ -285,7 +368,11 @@ class VirtualDM:
     # QUICK ACTIONS
     # =========================================================================
 
-    def travel_to_hex(self, hex_id: str) -> dict[str, Any]:
+    def travel_to_hex(
+        self,
+        hex_id: str,
+        narrate: Optional[bool] = None,
+    ) -> dict[str, Any]:
         """
         Travel to an adjacent hex.
 
@@ -293,14 +380,63 @@ class VirtualDM:
 
         Args:
             hex_id: Target hex ID
+            narrate: Generate narrative description (default: use config setting)
 
         Returns:
-            Travel result dictionary
+            Travel result dictionary with optional 'narration' key
         """
         if self.current_state != GameState.WILDERNESS_TRAVEL:
             return {"error": f"Cannot travel from state: {self.current_state.value}"}
 
-        return self.hex_crawl.travel_to_hex(hex_id)
+        result = self.hex_crawl.travel_to_hex(hex_id)
+
+        # Add narration if enabled and travel succeeded
+        should_narrate = narrate if narrate is not None else self.config.enable_narration
+        if should_narrate and self._dm_agent and "error" not in result:
+            narration = self._narrate_hex_arrival(hex_id, result)
+            if narration:
+                result["narration"] = narration
+
+        return result
+
+    def _narrate_hex_arrival(
+        self,
+        hex_id: str,
+        travel_result: dict[str, Any],
+    ) -> Optional[str]:
+        """Generate narrative description for arriving at a hex."""
+        if not self._dm_agent:
+            return None
+
+        # Extract hex info from result or controller
+        terrain = travel_result.get("terrain", "wilderness")
+        hex_name = travel_result.get("hex_name")
+        features = travel_result.get("features", [])
+
+        # Get current conditions
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+        weather = self.controller.world_state.weather
+        season = Season(time_summary.get("season", "summer"))
+
+        try:
+            desc_result = self._dm_agent.describe_hex(
+                hex_id=hex_id,
+                terrain=terrain,
+                name=hex_name,
+                features=features,
+                time_of_day=time_of_day,
+                weather=weather,
+                season=season,
+            )
+            if desc_result.success:
+                return desc_result.content
+            else:
+                logger.warning(f"Narration failed: {desc_result.warnings}")
+                return None
+        except Exception as e:
+            logger.warning(f"Error generating hex narration: {e}")
+            return None
 
     def enter_dungeon(self, dungeon_id: str, entry_room: str) -> dict[str, Any]:
         """
@@ -346,6 +482,567 @@ class VirtualDM:
         }
 
         return self.downtime.rest(type_map.get(rest_type, RestType.LONG_REST))
+
+    # =========================================================================
+    # NARRATION METHODS
+    # =========================================================================
+
+    def narrate_encounter_start(
+        self,
+        encounter: EncounterState,
+        creature_name: str,
+        number_appearing: int,
+        terrain: str,
+    ) -> Optional[str]:
+        """
+        Generate narrative framing for the start of an encounter.
+
+        This should be called AFTER mechanical setup (distance, surprise)
+        has been determined. The narration describes what the party SEES.
+
+        Args:
+            encounter: The resolved encounter state
+            creature_name: Name of the encountered creature(s)
+            number_appearing: How many creatures
+            terrain: Current terrain type
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+        weather = self.controller.world_state.weather
+
+        try:
+            result = self._dm_agent.frame_encounter(
+                encounter=encounter,
+                creature_name=creature_name,
+                number_appearing=number_appearing,
+                terrain=terrain,
+                time_of_day=time_of_day,
+                weather=weather,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating encounter narration: {e}")
+            return None
+
+    def narrate_combat_round(
+        self,
+        round_number: int,
+        resolved_actions: list[dict[str, Any]],
+        damage_results: Optional[dict[str, int]] = None,
+        conditions_applied: Optional[list[str]] = None,
+        morale_results: Optional[list[str]] = None,
+        deaths: Optional[list[str]] = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for a resolved combat round.
+
+        CRITICAL: All outcomes must already be determined by the combat engine.
+        This method only describes what happened.
+
+        Args:
+            round_number: Current round number
+            resolved_actions: List of resolved actions with actor, action,
+                              target, result, damage keys
+            damage_results: Dict of combatant_id -> damage taken
+            conditions_applied: New conditions this round
+            morale_results: Morale check results
+            deaths: Who died this round
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.narrate_combat_round(
+                round_number=round_number,
+                resolved_actions=resolved_actions,
+                damage_results=damage_results,
+                conditions_applied=conditions_applied,
+                morale_results=morale_results,
+                deaths=deaths,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating combat narration: {e}")
+            return None
+
+    def narrate_failure(
+        self,
+        failed_action: str,
+        failure_type: str,
+        consequence_type: str,
+        consequence_details: str,
+        visible_warning: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative description for a failed action.
+
+        Makes failures feel fair by describing consequences dramatically.
+
+        Args:
+            failed_action: What was attempted
+            failure_type: Type of failure (missed attack, failed save, etc.)
+            consequence_type: Category of consequence
+            consequence_details: Specific mechanical result
+            visible_warning: Warning signs that were present
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.describe_failure(
+                failed_action=failed_action,
+                failure_type=failure_type,
+                consequence_type=consequence_type,
+                consequence_details=consequence_details,
+                visible_warning=visible_warning,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating failure narration: {e}")
+            return None
+
+    def narrate_combat_end(
+        self,
+        *,
+        combat_outcome: str,
+        surviving_party: list[str],
+        fallen_party: list[str],
+        defeated_enemies: list[str],
+        fled_enemies: list[str],
+        significant_moments: list[str],
+        total_rounds: int,
+        xp_gained: int = 0,
+        treasure_found: list[str] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for combat conclusion.
+
+        Describes the aftermath of combat, honoring the fallen and
+        celebrating victories without minimizing consequences.
+
+        Args:
+            combat_outcome: Result (victory, retreat, defeat, rout)
+            surviving_party: Party members still standing
+            fallen_party: Party members who fell in combat
+            defeated_enemies: Enemies killed or incapacitated
+            fled_enemies: Enemies who escaped
+            significant_moments: Notable events during combat
+            total_rounds: How long combat lasted
+            xp_gained: Experience points earned
+            treasure_found: Items discovered on enemies
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Derive victor_side from combat_outcome
+            victor_side = "party" if combat_outcome in ("victory", "rout") else (
+                "enemies" if combat_outcome == "defeat" else "none"
+            )
+
+            result = self._dm_agent.narrate_combat_end(
+                outcome=combat_outcome,
+                victor_side=victor_side,
+                party_casualties=fallen_party,
+                enemy_casualties=defeated_enemies,
+                fled_combatants=fled_enemies,
+                rounds_fought=total_rounds,
+                notable_moments=significant_moments,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating combat end narration: {e}")
+            return None
+
+    def narrate_dungeon_event(
+        self,
+        *,
+        event_type: str,
+        event_description: str,
+        location_name: str,
+        location_atmosphere: str = "",
+        party_formation: list[str] | None = None,
+        triggering_action: str = "",
+        mechanical_outcome: str = "",
+        damage_dealt: dict[str, int] | None = None,
+        items_involved: list[str] | None = None,
+        hidden_elements: list[str] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for dungeon events.
+
+        Covers traps, discoveries, environmental hazards, and
+        atmospheric moments in dungeon exploration.
+
+        Args:
+            event_type: Type of event (trap, discovery, hazard, secret)
+            event_description: What happened mechanically
+            location_name: Where this occurred
+            location_atmosphere: Ambient description
+            party_formation: Who was where in marching order
+            triggering_action: What triggered the event
+            mechanical_outcome: Game mechanics result
+            damage_dealt: Damage to party members if any
+            items_involved: Relevant items
+            hidden_elements: Things that might be discovered
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Extract damage from first affected character
+            damage_dict = damage_dealt or {}
+            first_victim = list(damage_dict.keys())[0] if damage_dict else ""
+            total_damage = sum(damage_dict.values()) if damage_dict else 0
+
+            # Determine success from mechanical_outcome
+            success = "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+
+            result = self._dm_agent.narrate_dungeon_event(
+                event_type=event_type,
+                event_name=event_description,
+                success=success,
+                damage_taken=total_damage,
+                damage_type="",  # Could be enhanced to extract from description
+                character_name=first_victim,
+                description=f"{triggering_action}. {location_atmosphere}".strip(". "),
+                room_context=location_name,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating dungeon event narration: {e}")
+            return None
+
+    def narrate_rest(
+        self,
+        *,
+        rest_type: str,
+        location_name: str,
+        location_safety: str,
+        duration_hours: int,
+        healing_received: dict[str, int] | None = None,
+        spells_recovered: dict[str, list[str]] | None = None,
+        watch_schedule: list[str] | None = None,
+        interruptions: list[str] | None = None,
+        weather_conditions: str = "",
+        ambient_events: list[str] | None = None,
+        resources_consumed: dict[str, int] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for rest and camping.
+
+        Creates atmospheric rest scenes that emphasize fellowship,
+        respite, and the quiet moments between adventures.
+
+        Args:
+            rest_type: Type of rest (short, long, camp, safe_haven)
+            location_name: Where party is resting
+            location_safety: Safety level of location
+            duration_hours: How long the rest lasted
+            healing_received: HP restored per character
+            spells_recovered: Spells recovered per caster
+            watch_schedule: Who took watch and when
+            interruptions: Events that disturbed rest
+            weather_conditions: Current weather
+            ambient_events: Atmospheric background events
+            resources_consumed: Food, fuel, etc. used
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Determine sleep quality from interruptions
+            sleep_quality = "poor" if interruptions else "good"
+            if location_safety == "safe":
+                sleep_quality = "good"
+            elif location_safety in ("dangerous", "hostile"):
+                sleep_quality = "poor"
+
+            result = self._dm_agent.narrate_rest(
+                rest_type=rest_type,
+                location_type=location_name,
+                watch_events=watch_schedule or [],
+                sleep_quality=sleep_quality,
+                healing_done=healing_received or {},
+                resources_consumed=resources_consumed or {},
+                weather=weather_conditions,
+                interruptions=interruptions or [],
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating rest narration: {e}")
+            return None
+
+    def narrate_poi_approach(
+        self,
+        *,
+        poi_name: str,
+        poi_type: str,
+        description: str,
+        tagline: str = "",
+        distance: str = "near",
+        discovery_hints: list[str] | None = None,
+        visible_hazards: list[str] | None = None,
+        visible_npcs: list[str] | None = None,
+        party_approach: str = "cautious",
+    ) -> Optional[str]:
+        """
+        Generate narrative for approaching a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type (manse, ruin, grove, cave, etc.)
+            description: Exterior description
+            tagline: Short evocative description
+            distance: near, medium, far
+            discovery_hints: Sensory clues that drew attention
+            visible_hazards: Hazards visible from approach
+            visible_npcs: Figures visible from approach
+            party_approach: cautious, direct, stealthy
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+        weather = self.controller.world_state.weather
+        season = Season(time_summary.get("season", "summer"))
+
+        try:
+            result = self._dm_agent.describe_poi_approach(
+                poi_name=poi_name,
+                poi_type=poi_type,
+                description=description,
+                tagline=tagline,
+                distance=distance,
+                time_of_day=time_of_day,
+                weather=weather,
+                season=season,
+                discovery_hints=discovery_hints or [],
+                visible_hazards=visible_hazards or [],
+                visible_npcs=visible_npcs or [],
+                party_approach=party_approach,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI approach narration: {e}")
+            return None
+
+    def narrate_poi_entry(
+        self,
+        *,
+        poi_name: str,
+        poi_type: str,
+        entering: str,
+        interior: str = "",
+        inhabitants_visible: list[str] | None = None,
+        atmosphere: list[str] | None = None,
+        entry_method: str = "normal",
+        entry_condition: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for entering a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type of POI
+            entering: Entry description from data model
+            interior: Interior description
+            inhabitants_visible: Visible inhabitants
+            atmosphere: Sensory tags for atmosphere
+            entry_method: normal, forced, secret, magical
+            entry_condition: diving, climbing, etc.
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+
+        try:
+            result = self._dm_agent.describe_poi_entry(
+                poi_name=poi_name,
+                poi_type=poi_type,
+                entering=entering,
+                interior=interior,
+                time_of_day=time_of_day,
+                inhabitants_visible=inhabitants_visible or [],
+                atmosphere=atmosphere or [],
+                entry_method=entry_method,
+                entry_condition=entry_condition,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI entry narration: {e}")
+            return None
+
+    def narrate_poi_feature(
+        self,
+        *,
+        poi_name: str,
+        feature_name: str,
+        feature_description: str,
+        interaction_type: str,
+        discovery_success: bool = True,
+        found_items: list[str] | None = None,
+        found_secrets: list[str] | None = None,
+        hazard_triggered: bool = False,
+        hazard_description: str = "",
+        character_name: str = "",
+        sub_location_name: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for exploring a POI feature.
+
+        Args:
+            poi_name: Name of the POI
+            feature_name: Name of the feature being explored
+            feature_description: Description of the feature
+            interaction_type: examine, search, touch, activate
+            discovery_success: Was the search/interaction successful?
+            found_items: Items discovered
+            found_secrets: Secrets revealed
+            hazard_triggered: Was a hazard triggered?
+            hazard_description: Description of triggered hazard
+            character_name: Who performed the action
+            sub_location_name: Sub-location within POI if applicable
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.describe_poi_feature(
+                poi_name=poi_name,
+                feature_name=feature_name,
+                feature_description=feature_description,
+                interaction_type=interaction_type,
+                discovery_success=discovery_success,
+                found_items=found_items or [],
+                found_secrets=found_secrets or [],
+                hazard_triggered=hazard_triggered,
+                hazard_description=hazard_description,
+                character_name=character_name,
+                sub_location_name=sub_location_name,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI feature narration: {e}")
+            return None
+
+    def narrate_resolved_action(
+        self,
+        *,
+        action_description: str,
+        action_category: str,
+        action_type: str,
+        success: bool,
+        partial_success: bool = False,
+        character_name: str = "",
+        target_description: str = "",
+        dice_rolled: str = "",
+        dice_result: int = 0,
+        dice_target: int = 0,
+        damage_dealt: int = 0,
+        damage_taken: int = 0,
+        conditions_applied: list[str] | None = None,
+        effects_created: list[str] | None = None,
+        resources_consumed: dict[str, int] | None = None,
+        narrative_hints: list[str] | None = None,
+        location_context: str = "",
+        rule_reference: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for a mechanically resolved action.
+
+        This is the generic method for narrating any action that has been
+        resolved by the narrative resolvers (spell, hazard, creative, etc.).
+
+        Args:
+            action_description: What the character attempted
+            action_category: spell, hazard, exploration, survival, creative
+            action_type: Specific action type
+            success: Was the action successful?
+            partial_success: Was it a partial success?
+            character_name: Who performed the action
+            target_description: Target of the action
+            dice_rolled: Dice expression (e.g., "1d20+3")
+            dice_result: Result of the roll
+            dice_target: Target number to beat
+            damage_dealt: Damage dealt to target
+            damage_taken: Damage taken by character
+            conditions_applied: Conditions applied
+            effects_created: Effects created
+            resources_consumed: Resources used
+            narrative_hints: Hints from the resolver
+            location_context: Where this happened
+            rule_reference: Rule reference if any
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.narrate_resolved_action(
+                action_description=action_description,
+                action_category=action_category,
+                action_type=action_type,
+                success=success,
+                partial_success=partial_success,
+                character_name=character_name,
+                target_description=target_description,
+                dice_rolled=dice_rolled,
+                dice_result=dice_result,
+                dice_target=dice_target,
+                damage_dealt=damage_dealt,
+                damage_taken=damage_taken,
+                conditions_applied=conditions_applied or [],
+                effects_created=effects_created or [],
+                resources_consumed=resources_consumed or {},
+                narrative_hints=narrative_hints or [],
+                location_context=location_context,
+                rule_reference=rule_reference,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating resolved action narration: {e}")
+            return None
+
+    @property
+    def dm_agent(self) -> Optional[DMAgent]:
+        """Get the DM Agent for direct access if needed."""
+        return self._dm_agent
 
     # =========================================================================
     # SESSION MANAGEMENT

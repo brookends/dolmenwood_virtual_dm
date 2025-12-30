@@ -38,6 +38,9 @@ from src.data_models import (
     RollTableEntry,
     StatBlock,
     Season,
+    KnownTopic,
+    SecretInfo,
+    SecretStatus,
 )
 
 
@@ -671,6 +674,9 @@ class ContentManager:
                 encounter_notes=proc_data.get('encounter_notes', ''),
                 foraging_results=proc_data.get('foraging_results', ''),
                 foraging_special=proc_data.get('foraging_special', []),
+                encounter_modifiers=proc_data.get('encounter_modifiers', []),
+                lost_behavior=proc_data.get('lost_behavior'),
+                night_hazards=proc_data.get('night_hazards', []),
             )
 
         # Parse points of interest (new format)
@@ -691,6 +697,40 @@ class ContentManager:
         npcs = []
         for npc_data in data.get('npcs', []):
             if isinstance(npc_data, dict):
+                # Parse known_topics if present
+                known_topics = []
+                for topic_data in npc_data.get('known_topics', []):
+                    known_topics.append(KnownTopic(
+                        topic_id=topic_data.get('topic_id', ''),
+                        content=topic_data.get('content', ''),
+                        keywords=topic_data.get('keywords', []),
+                        required_disposition=topic_data.get('required_disposition', -5),
+                        category=topic_data.get('category', 'general'),
+                        shared=topic_data.get('shared', False),
+                        priority=topic_data.get('priority', 0),
+                    ))
+
+                # Parse secret_info if present
+                secret_info = []
+                for secret_data in npc_data.get('secret_info', []):
+                    status_str = secret_data.get('status', 'unknown')
+                    try:
+                        status = SecretStatus(status_str)
+                    except ValueError:
+                        status = SecretStatus.UNKNOWN
+                    secret_info.append(SecretInfo(
+                        secret_id=secret_data.get('secret_id', ''),
+                        content=secret_data.get('content', ''),
+                        hint=secret_data.get('hint', ''),
+                        keywords=secret_data.get('keywords', []),
+                        required_disposition=secret_data.get('required_disposition', 3),
+                        required_trust=secret_data.get('required_trust', 2),
+                        can_be_bribed=secret_data.get('can_be_bribed', False),
+                        bribe_amount=secret_data.get('bribe_amount', 0),
+                        status=status,
+                        hint_count=secret_data.get('hint_count', 0),
+                    ))
+
                 npc = HexNPC(
                     npc_id=npc_data.get('npc_id', 'unknown'),
                     name=npc_data.get('name', 'Unknown NPC'),
@@ -703,10 +743,17 @@ class ContentManager:
                     languages=npc_data.get('languages', []),
                     desires=npc_data.get('desires', []),
                     secrets=npc_data.get('secrets', []),
+                    known_topics=known_topics,
+                    secret_info=secret_info,
                     possessions=npc_data.get('possessions', []),
                     location=npc_data.get('location', ''),
                     stat_reference=npc_data.get('stat_reference'),
                     is_combatant=npc_data.get('is_combatant', False),
+                    relationships=npc_data.get('relationships', []),
+                    faction=npc_data.get('faction'),
+                    loyalty=npc_data.get('loyalty', 'loyal'),
+                    personal_feelings=npc_data.get('personal_feelings'),
+                    binding=npc_data.get('binding'),
                 )
                 npcs.append(npc)
             else:
@@ -820,6 +867,11 @@ class ContentManager:
             secrets=data.get('secrets', []),
             is_dungeon=data.get('is_dungeon', False),
             dungeon_levels=data.get('dungeon_levels'),
+            quest_hooks=data.get('quest_hooks', []),
+            encounter_modifiers=data.get('encounter_modifiers', []),
+            item_persistence=data.get('item_persistence'),
+            dynamic_layout=data.get('dynamic_layout'),
+            availability=data.get('availability'),
         )
 
     def _dict_to_roll_table(self, data: dict) -> RollTable:
@@ -836,6 +888,10 @@ class ContentManager:
                     items=entry_data.get('items', []),
                     mechanical_effect=entry_data.get('mechanical_effect'),
                     sub_table=entry_data.get('sub_table'),
+                    reaction_conditions=entry_data.get('reaction_conditions'),
+                    transportation_effect=entry_data.get('transportation_effect'),
+                    time_effect=entry_data.get('time_effect'),
+                    quest_hook=entry_data.get('quest_hook'),
                 )
                 entries.append(entry)
 

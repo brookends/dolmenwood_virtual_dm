@@ -45,7 +45,12 @@ from src.data_models import (
     AbilityGrantTracker,
     GrantedAbility,
     AbilityType,
+    Combatant,
+    KnownTopic,
+    SecretInfo,
+    SecretStatus,
 )
+from src.content_loader.monster_registry import get_monster_registry
 # Import narrative components (optional, may not be initialized yet)
 try:
     from src.narrative.narrative_resolver import (
@@ -662,7 +667,20 @@ class HexCrawlEngine:
 
         # Create encounter state
         if contextual_result:
-            # Use the contextual encounter from a POI
+            # Use the contextual encounter - create proper combatants if monster_id provided
+            modifier = contextual_result.get("modifier", {})
+            monster_id = modifier.get("monster_id")
+            combatants = []
+
+            if monster_id:
+                # Create combatant(s) from monster registry
+                num_appearing = modifier.get("number_appearing", 1)
+                combatants = self._create_contextual_combatants(
+                    monster_id=monster_id,
+                    num_appearing=num_appearing,
+                    modifier=modifier,
+                )
+
             encounter = EncounterState(
                 encounter_type=EncounterType.MONSTER,
                 distance=distance,
@@ -670,7 +688,17 @@ class HexCrawlEngine:
                 terrain=terrain.value,
                 context=contextual_result.get("context", ""),
                 actors=[contextual_result.get("result", "unknown creature")],
+                combatants=combatants,
             )
+
+            # Store topic intelligence for social interaction use
+            if modifier.get("topic_intelligence"):
+                encounter.contextual_data = {
+                    "topic_intelligence": modifier.get("topic_intelligence"),
+                    "behavior": modifier.get("behavior", "neutral"),
+                    "demeanor": modifier.get("demeanor", []),
+                    "speech": modifier.get("speech", ""),
+                }
         else:
             # Standard encounter
             encounter = EncounterState(
@@ -769,6 +797,66 @@ class HexCrawlEngine:
             return 0
         except (ValueError, IndexError):
             return 0
+
+    def _create_contextual_combatants(
+        self,
+        monster_id: str,
+        num_appearing: int,
+        modifier: dict[str, Any],
+    ) -> list[Combatant]:
+        """
+        Create combatants for a contextual encounter.
+
+        Uses the monster registry to create proper combatants with stat blocks,
+        and applies any behavioral modifiers from the encounter definition.
+
+        Args:
+            monster_id: ID of the monster in the registry
+            num_appearing: Number of creatures to create
+            modifier: The encounter modifier dict with behavior, demeanor, etc.
+
+        Returns:
+            List of Combatant objects ready for combat or social interaction
+        """
+        combatants = []
+        registry = get_monster_registry()
+
+        for i in range(num_appearing):
+            # Try to create combatant from monster registry
+            combatant = registry.create_combatant(
+                monster_id=monster_id,
+                name_override=modifier.get("result") if num_appearing == 1 else None,
+            )
+
+            if combatant:
+                combatant.side = "enemy"
+                # Store contextual behavior for social interaction
+                if modifier.get("behavior"):
+                    combatant.behavior = modifier.get("behavior")
+                combatants.append(combatant)
+            else:
+                # Fallback: create a basic combatant with the name
+                logger.warning(
+                    f"Could not find monster '{monster_id}' in registry, "
+                    f"creating placeholder combatant"
+                )
+                from uuid import uuid4
+                fallback_name = modifier.get("result", monster_id)
+                if num_appearing > 1:
+                    fallback_name = f"{fallback_name} #{i + 1}"
+                combatants.append(Combatant(
+                    combatant_id=f"{monster_id}_{uuid4().hex[:8]}",
+                    name=fallback_name,
+                    side="enemy",
+                    current_hp=1,
+                    max_hp=1,
+                    armor_class=10,
+                    attack_bonus=0,
+                    damage="1d4",
+                    is_active=True,
+                ))
+
+        return combatants
 
     def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
         """
@@ -1975,6 +2063,128 @@ class HexCrawlEngine:
             result["npc_count"] = len(poi.npcs)
 
         return result
+
+    def enter_dungeon_from_poi(
+        self,
+        hex_id: str,
+        dungeon_engine: Any,
+    ) -> dict[str, Any]:
+        """
+        Enter a dungeon POI using the dungeon engine.
+
+        This bridges the hex POI data to the dungeon engine, converting the
+        POI's roll tables to the format expected by the dungeon engine.
+
+        Args:
+            hex_id: The hex containing the dungeon POI
+            dungeon_engine: The DungeonEngine instance to use
+
+        Returns:
+            Dictionary with entry results from dungeon engine
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location - approach first"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        if not poi.is_dungeon:
+            return {"success": False, "error": "This location is not a dungeon"}
+
+        # Check POI availability
+        availability_check = self.check_poi_availability(poi)
+        if not availability_check["available"]:
+            return {
+                "success": False,
+                "unavailable": True,
+                "message": availability_check.get("message", "This location is not accessible"),
+                "availability": availability_check,
+            }
+
+        # Build POI config for dungeon engine
+        poi_config = self._build_dungeon_poi_config(poi, hex_id)
+
+        # Generate dungeon ID from POI name
+        dungeon_id = poi.name.lower().replace(" ", "_").replace("-", "_")
+
+        # Enter dungeon via dungeon engine
+        result = dungeon_engine.enter_dungeon(
+            dungeon_id=dungeon_id,
+            entry_room="entry",
+            poi_config=poi_config,
+        )
+
+        # Track the POI visit
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key in self._poi_visits:
+            self._poi_visits[visit_key].entered = True
+
+        # Clear hex crawl POI state (we're in dungeon mode now)
+        self._poi_state = None
+
+        return result
+
+    def _build_dungeon_poi_config(
+        self,
+        poi: PointOfInterest,
+        hex_id: str,
+    ) -> dict[str, Any]:
+        """
+        Build dungeon POI configuration from a PointOfInterest.
+
+        Converts the POI's roll_tables to the format expected by DungeonEngine,
+        extracting room_table and encounter_table by name.
+
+        Args:
+            poi: The dungeon POI
+            hex_id: The hex containing the POI
+
+        Returns:
+            Dictionary with dungeon configuration
+        """
+        config = {
+            "poi_name": poi.name,
+            "hex_id": hex_id,
+            "roll_tables": poi.roll_tables,
+            "room_table": None,
+            "encounter_table": None,
+            "dynamic_layout": poi.dynamic_layout,
+            "item_persistence": poi.item_persistence,
+            "leaving": poi.leaving,
+        }
+
+        # Extract room and encounter tables by name
+        for table in poi.roll_tables:
+            table_name = table.name.lower()
+            if table_name == "rooms" or table_name == "room":
+                config["room_table"] = table
+            elif table_name == "encounters" or table_name == "encounter":
+                config["encounter_table"] = table
+
+        # If no explicit tables found, check for dynamic_layout references
+        if config["dynamic_layout"]:
+            layout = config["dynamic_layout"]
+            room_table_name = layout.get("room_table", "Rooms")
+            encounter_table_name = layout.get("encounter_table", "Encounters")
+
+            for table in poi.roll_tables:
+                if table.name.lower() == room_table_name.lower():
+                    config["room_table"] = table
+                if table.name.lower() == encounter_table_name.lower():
+                    config["encounter_table"] = table
+
+        return config
 
     def explore_poi_feature(
         self,

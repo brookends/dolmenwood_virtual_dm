@@ -27,6 +27,7 @@ from src.data_models import (
     EncounterType,
     SurpriseStatus,
     ReactionResult,
+    interpret_reaction,
     MovementCalculator,
 )
 from src.classes.ability_registry import get_ability_registry, AbilityEffectType
@@ -645,19 +646,16 @@ class EncounterEngine:
 
         result.messages.append(f"{actor.capitalize()} attempts to parley...")
 
-        # Roll 2d6 reaction
+        # Roll 2d6 reaction per Dolmenwood Player's Book
         reaction_roll = self.dice.roll_2d6("reaction roll")
         result.reaction_roll = reaction_roll.total
 
-        # Interpret reaction result
-        # 2: Hostile - attacks immediately
-        # 3-5: Unfriendly - may attack
-        # 6-8: Neutral - uncertain
-        # 9-11: Friendly - open to negotiation
-        # 12: Helpful - actively assists
-        if reaction_roll.total <= 2:
-            result.reaction_result = ReactionResult.HOSTILE
-            result.messages.append(f"Hostile! ({reaction_roll.total}) - They attack!")
+        # Interpret reaction using canonical function
+        result.reaction_result = interpret_reaction(reaction_roll.total)
+
+        # Handle reaction outcomes per official table
+        if result.reaction_result == ReactionResult.ATTACKS:
+            result.messages.append(f"Attacks! ({reaction_roll.total}) - They attack immediately!")
             result.encounter_ended = True
             result.end_reason = "hostile_reaction"
             result.transition_to = "encounter_to_combat"
@@ -665,21 +663,29 @@ class EncounterEngine:
                 "encounter_to_combat",
                 context={"reason": "hostile_reaction"}
             )
-        elif reaction_roll.total <= 5:
-            result.reaction_result = ReactionResult.UNFRIENDLY
+        elif result.reaction_result == ReactionResult.HOSTILE:
             result.messages.append(
-                f"Unfriendly ({reaction_roll.total}) - They are suspicious and hostile"
+                f"Hostile ({reaction_roll.total}) - They may attack"
             )
             # May escalate or allow further parley
-        elif reaction_roll.total <= 8:
-            result.reaction_result = ReactionResult.NEUTRAL
+        elif result.reaction_result == ReactionResult.UNCERTAIN:
             result.messages.append(
-                f"Neutral ({reaction_roll.total}) - They wait cautiously"
+                f"Uncertain ({reaction_roll.total}) - They are wary"
             )
-        elif reaction_roll.total <= 11:
-            result.reaction_result = ReactionResult.FRIENDLY
+        elif result.reaction_result == ReactionResult.INDIFFERENT:
             result.messages.append(
-                f"Friendly ({reaction_roll.total}) - They are open to talking"
+                f"Indifferent ({reaction_roll.total}) - They may negotiate"
+            )
+            result.encounter_ended = True
+            result.end_reason = "parley_success"
+            result.transition_to = "encounter_to_parley"
+            self.controller.transition(
+                "encounter_to_parley",
+                context={"reaction": "indifferent"}
+            )
+        else:  # FRIENDLY (12+)
+            result.messages.append(
+                f"Friendly ({reaction_roll.total}) - They are eager and friendly!"
             )
             result.encounter_ended = True
             result.end_reason = "parley_success"
@@ -687,18 +693,6 @@ class EncounterEngine:
             self.controller.transition(
                 "encounter_to_parley",
                 context={"reaction": "friendly"}
-            )
-        else:  # 12+
-            result.reaction_result = ReactionResult.HELPFUL
-            result.messages.append(
-                f"Helpful ({reaction_roll.total}) - They are eager to assist!"
-            )
-            result.encounter_ended = True
-            result.end_reason = "parley_success"
-            result.transition_to = "encounter_to_parley"
-            self.controller.transition(
-                "encounter_to_parley",
-                context={"reaction": "helpful"}
             )
 
         # Update encounter state

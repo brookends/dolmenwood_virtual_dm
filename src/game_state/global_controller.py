@@ -32,6 +32,14 @@ from src.data_models import (
     LightSourceType,
     AreaEffect,
     PolymorphOverlay,
+    SocialContext,
+    SocialOrigin,
+    SocialParticipant,
+    SocialParticipantType,
+    ReactionResult,
+    KnownTopic,
+    SecretInfo,
+    SecretStatus,
 )
 
 # Import NarrativeResolver (optional, may not be initialized yet)
@@ -239,6 +247,8 @@ class GlobalController:
     3. Enforce procedure ordering
     4. Log all state mutations
     5. Disallow LLM authority over outcomes
+
+    Transition hooks allow engines to initialize when states change.
     """
 
     def __init__(
@@ -288,6 +298,12 @@ class GlobalController:
         # Current encounter (if any)
         self._current_encounter: Optional[EncounterState] = None
 
+        # Current combat engine (if any)
+        self._combat_engine: Optional[Any] = None
+
+        # Current social context (if any)
+        self._social_context: Optional[SocialContext] = None
+
         # Narrative resolver for effect tracking (optional)
         self._narrative_resolver: Optional["NarrativeResolver"] = None
         if NARRATIVE_AVAILABLE:
@@ -301,6 +317,16 @@ class GlobalController:
         # Session log
         self._session_log: list[dict[str, Any]] = []
 
+        # Transition hooks: (from_state, to_state) -> list of callbacks
+        # Callbacks receive (from_state, to_state, trigger, context)
+        self._transition_hooks: dict[
+            tuple[GameState, GameState], list[Callable[[GameState, GameState, str, dict], None]]
+        ] = {}
+
+        # Wildcard hooks: to_state -> list of callbacks (fire on ANY transition to that state)
+        self._on_enter_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
+        self._on_exit_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
+
         # Register state machine hooks
         self.state_machine.register_post_hook(self._on_state_transition)
 
@@ -309,6 +335,9 @@ class GlobalController:
         self.time_tracker.register_watch_callback(self._on_watch_advance)
         self.time_tracker.register_day_callback(self._on_day_advance)
         self.time_tracker.register_season_callback(self._on_season_change)
+
+        # Register default transition hooks for engine initialization
+        self._register_default_transition_hooks()
 
         logger.info(f"GlobalController initialized in state: {initial_state.value}")
 
@@ -346,6 +375,578 @@ class GlobalController:
     def get_valid_actions(self) -> list[str]:
         """Get valid triggers/actions from current state."""
         return self.state_machine.get_valid_triggers()
+
+    # =========================================================================
+    # TRANSITION HOOKS
+    # =========================================================================
+
+    def register_transition_hook(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for a specific state transition.
+
+        The callback will be called with (from_state, to_state, trigger, context)
+        after the transition completes.
+
+        Args:
+            from_state: The starting state
+            to_state: The target state
+            callback: Function to call on this transition
+        """
+        key = (from_state, to_state)
+        if key not in self._transition_hooks:
+            self._transition_hooks[key] = []
+        self._transition_hooks[key].append(callback)
+        logger.debug(f"Registered transition hook: {from_state.value} -> {to_state.value}")
+
+    def register_on_enter_hook(
+        self,
+        state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for entering a state (from any source state).
+
+        The callback will be called with (from_state, to_state, trigger, context).
+
+        Args:
+            state: The state to monitor for entry
+            callback: Function to call when entering this state
+        """
+        if state not in self._on_enter_hooks:
+            self._on_enter_hooks[state] = []
+        self._on_enter_hooks[state].append(callback)
+        logger.debug(f"Registered on-enter hook for state: {state.value}")
+
+    def register_on_exit_hook(
+        self,
+        state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for exiting a state (to any target state).
+
+        The callback will be called with (from_state, to_state, trigger, context).
+
+        Args:
+            state: The state to monitor for exit
+            callback: Function to call when exiting this state
+        """
+        if state not in self._on_exit_hooks:
+            self._on_exit_hooks[state] = []
+        self._on_exit_hooks[state].append(callback)
+        logger.debug(f"Registered on-exit hook for state: {state.value}")
+
+    def _fire_transition_hooks(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Fire all registered transition hooks for a state change.
+
+        Fires in order:
+        1. On-exit hooks for the old state
+        2. Specific (from_state, to_state) hooks
+        3. On-enter hooks for the new state
+
+        Args:
+            from_state: The state being left
+            to_state: The state being entered
+            trigger: The trigger that caused the transition
+            context: Transition context data
+        """
+        # 1. Fire on-exit hooks
+        for callback in self._on_exit_hooks.get(from_state, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in on-exit hook for {from_state.value}: {e}")
+
+        # 2. Fire specific transition hooks
+        key = (from_state, to_state)
+        for callback in self._transition_hooks.get(key, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in transition hook {from_state.value}->{to_state.value}: {e}")
+
+        # 3. Fire on-enter hooks
+        for callback in self._on_enter_hooks.get(to_state, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in on-enter hook for {to_state.value}: {e}")
+
+    def _register_default_transition_hooks(self) -> None:
+        """
+        Register default transition hooks for engine initialization.
+
+        These hooks ensure that when transitioning to a state, the appropriate
+        engine is initialized and ready to handle operations.
+        """
+        # Hook: Entering COMBAT initializes combat from the current encounter
+        self.register_on_enter_hook(GameState.COMBAT, self._on_enter_combat)
+
+        # Hook: Exiting COMBAT cleans up combat state
+        self.register_on_exit_hook(GameState.COMBAT, self._on_exit_combat)
+
+        # Hook: Exiting ENCOUNTER clears encounter if transitioning to non-combat
+        self.register_on_exit_hook(GameState.ENCOUNTER, self._on_exit_encounter)
+
+        # Hook: Entering SOCIAL_INTERACTION initializes social context
+        self.register_on_enter_hook(GameState.SOCIAL_INTERACTION, self._on_enter_social)
+
+        # Hook: Exiting SOCIAL_INTERACTION cleans up social context
+        self.register_on_exit_hook(GameState.SOCIAL_INTERACTION, self._on_exit_social)
+
+        logger.debug("Default transition hooks registered")
+
+    def _on_enter_combat(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when entering COMBAT state.
+
+        Initializes the CombatEngine with the current encounter.
+        """
+        # Import here to avoid circular import
+        from src.combat.combat_engine import CombatEngine
+
+        if self._current_encounter is None:
+            logger.warning("Entering COMBAT without an active encounter")
+            return
+
+        # Determine the return state based on the previous state
+        return_state = from_state
+        if from_state == GameState.ENCOUNTER:
+            # Get the origin from the encounter or previous state
+            return_state = self.state_machine.previous_state or GameState.WILDERNESS_TRAVEL
+
+        # Create and initialize the combat engine
+        self._combat_engine = CombatEngine(self)
+        result = self._combat_engine.start_combat(
+            encounter=self._current_encounter,
+            return_state=return_state,
+        )
+
+        if result.get("combat_started"):
+            logger.info(f"Combat initialized from {from_state.value} with {len(self._current_encounter.combatants)} combatants")
+        else:
+            logger.error(f"Failed to start combat: {result.get('error', 'Unknown error')}")
+
+    def _on_exit_combat(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting COMBAT state.
+
+        Cleans up the combat engine.
+        """
+        if self._combat_engine:
+            logger.debug("Clearing combat engine on exit from COMBAT")
+            self._combat_engine = None
+
+    def _on_exit_encounter(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting ENCOUNTER state.
+
+        Clears encounter if transitioning to a non-combat state.
+        Combat needs the encounter state, so don't clear if going to COMBAT.
+        """
+        if to_state != GameState.COMBAT and to_state != GameState.SOCIAL_INTERACTION:
+            # Clear the encounter when returning to exploration states
+            if self._current_encounter:
+                logger.debug("Clearing encounter on exit to exploration state")
+                self.clear_encounter()
+
+    @property
+    def combat_engine(self) -> Optional[Any]:
+        """Get the current combat engine (if combat is active)."""
+        return self._combat_engine
+
+    def _on_enter_social(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when entering SOCIAL_INTERACTION state.
+
+        Initializes social context from the current encounter or transition context.
+        This provides the narrative layer with participant information for dialogue.
+        """
+        # Determine the origin based on where we came from
+        if from_state == GameState.ENCOUNTER:
+            origin = SocialOrigin.ENCOUNTER_PARLEY
+        elif from_state == GameState.COMBAT:
+            origin = SocialOrigin.COMBAT_PARLEY
+        elif from_state == GameState.SETTLEMENT_EXPLORATION:
+            origin = SocialOrigin.SETTLEMENT
+        else:
+            origin = SocialOrigin.HEX_NPC
+
+        # Create social context
+        self._social_context = SocialContext(
+            origin=origin,
+            trigger_context=dict(context),
+        )
+
+        # Determine return state
+        if from_state == GameState.ENCOUNTER:
+            # Return to the exploration state before the encounter
+            # Check the encounter context or infer from location
+            return_state = self._determine_exploration_return_state(context)
+            self._social_context.return_state = return_state.value
+        else:
+            self._social_context.return_state = from_state.value
+
+        # Extract reaction result from context or encounter
+        reaction = context.get("reaction")
+        if reaction:
+            if isinstance(reaction, str):
+                try:
+                    self._social_context.initial_reaction = ReactionResult(reaction)
+                except ValueError:
+                    pass
+            elif isinstance(reaction, ReactionResult):
+                self._social_context.initial_reaction = reaction
+
+        # Get location context
+        self._social_context.hex_id = context.get("hex_id")
+        self._social_context.poi_name = context.get("poi_name")
+
+        # Extract source encounter ID if coming from encounter
+        if self._current_encounter:
+            self._social_context.source_encounter_id = self._current_encounter.encounter_id
+
+        # Build participants from current encounter or context
+        self._build_social_participants(context)
+
+        # Log the social context creation
+        participant_names = [p.name for p in self._social_context.participants]
+        can_parley = self._social_context.can_parley()
+        logger.info(
+            f"Social context initialized from {from_state.value}: "
+            f"participants={participant_names}, can_parley={can_parley}"
+        )
+
+        if not can_parley:
+            logger.warning(
+                "Entering SOCIAL_INTERACTION but no participants can communicate. "
+                "Narrative will need to handle non-verbal interaction."
+            )
+
+    def _build_social_participants(self, context: dict[str, Any]) -> None:
+        """
+        Build social participants from encounter actors or context.
+
+        This method attempts to look up full NPC/monster data from the
+        encounter's actors and create SocialParticipant entries.
+        """
+        if not self._social_context:
+            return
+
+        participants = []
+
+        # Check if participants were provided directly in context
+        if "participants" in context:
+            for p_data in context["participants"]:
+                if isinstance(p_data, SocialParticipant):
+                    participants.append(p_data)
+                elif isinstance(p_data, dict):
+                    # Try to build from dict
+                    participants.append(SocialParticipant(
+                        participant_id=p_data.get("id", "unknown"),
+                        name=p_data.get("name", "Unknown"),
+                        participant_type=SocialParticipantType.NPC,
+                        **{k: v for k, v in p_data.items() if k not in ("id", "name")}
+                    ))
+
+        # If no explicit participants, try to extract from encounter
+        if not participants and self._current_encounter:
+            # Get actors from encounter
+            actors = self._current_encounter.actors
+            reaction = self._social_context.initial_reaction
+
+            # Check for contextual encounter data with topic intelligence
+            contextual_data = getattr(self._current_encounter, 'contextual_data', None)
+
+            for actor_id in actors:
+                participant = self._lookup_and_build_participant(
+                    actor_id, reaction, context
+                )
+                if participant:
+                    # Apply topic intelligence from contextual encounter if available
+                    if contextual_data and contextual_data.get("topic_intelligence"):
+                        self._apply_contextual_topic_intelligence(
+                            participant, contextual_data
+                        )
+                    participants.append(participant)
+
+        # Check context for NPC data (from settlement conversations, etc.)
+        if not participants and "npc_id" in context:
+            npc_id = context["npc_id"]
+            npc_name = context.get("npc_name", npc_id)
+
+            # Create a basic participant from context
+            participant = SocialParticipant(
+                participant_id=npc_id,
+                name=npc_name,
+                participant_type=SocialParticipantType.NPC,
+                hex_id=context.get("hex_id"),
+                poi_name=context.get("poi_name"),
+            )
+            participants.append(participant)
+
+        self._social_context.participants = participants
+
+        # Aggregate available quest hooks and secrets
+        self._social_context.available_quest_hooks = self._social_context.get_all_quest_hooks()
+        self._social_context.available_secrets = self._social_context.get_all_secrets()
+
+    def _lookup_and_build_participant(
+        self,
+        actor_id: str,
+        reaction: Optional[ReactionResult],
+        context: dict[str, Any],
+    ) -> Optional[SocialParticipant]:
+        """
+        Look up an actor by ID and build a SocialParticipant.
+
+        Attempts to find the actor in:
+        1. Monster registry
+        2. NPC registry
+        3. Context-provided data
+        """
+        from src.data_models import Monster, NPC
+
+        hex_id = context.get("hex_id")
+
+        # Try monster registry first
+        try:
+            from src.content_loader import get_monster_registry
+            registry = get_monster_registry()
+            result = registry.lookup(actor_id)
+            if result.found and result.monster:
+                return SocialParticipant.from_monster(
+                    result.monster,
+                    reaction=reaction,
+                    hex_id=hex_id,
+                )
+        except (ImportError, Exception) as e:
+            logger.debug(f"Could not lookup monster {actor_id}: {e}")
+
+        # Try NPC lookup from context or internal registry
+        if actor_id in self._npcs:
+            # We have the NPC in our character registry
+            char_state = self._npcs[actor_id]
+            return SocialParticipant(
+                participant_id=actor_id,
+                name=char_state.name,
+                participant_type=SocialParticipantType.NPC,
+                hex_id=hex_id,
+            )
+
+        # Check context for embedded NPC/monster data
+        if "actor_data" in context and actor_id in context["actor_data"]:
+            data = context["actor_data"][actor_id]
+            return SocialParticipant(
+                participant_id=actor_id,
+                name=data.get("name", actor_id),
+                participant_type=SocialParticipantType(data.get("type", "npc")),
+                sentience=data.get("sentience", "Sentient"),
+                alignment=data.get("alignment", "Neutral"),
+                languages=data.get("languages", []),
+                demeanor=data.get("demeanor", []),
+                speech=data.get("speech"),
+                desires=data.get("desires", []),
+                goals=data.get("goals", []),
+                secrets=data.get("secrets", []),
+                quest_hooks=data.get("quest_hooks", []),
+                possessions=data.get("possessions", []),
+                hex_id=hex_id,
+                reaction_result=reaction,
+                can_communicate=data.get("can_communicate", True),
+            )
+
+        # Fallback: create minimal participant from ID
+        logger.debug(f"Creating minimal participant for unknown actor: {actor_id}")
+        return SocialParticipant(
+            participant_id=actor_id,
+            name=actor_id.replace("_", " ").title(),
+            participant_type=SocialParticipantType.MONSTER,
+            hex_id=hex_id,
+            reaction_result=reaction,
+        )
+
+    def _apply_contextual_topic_intelligence(
+        self,
+        participant: SocialParticipant,
+        contextual_data: dict[str, Any],
+    ) -> None:
+        """
+        Apply topic intelligence from a contextual encounter to a participant.
+
+        This injects known_topics and secret_info from hex-specific encounter
+        modifiers into the SocialParticipant for social interaction.
+
+        Args:
+            participant: The participant to enhance
+            contextual_data: Dict with topic_intelligence, behavior, demeanor, speech
+        """
+        topic_intel = contextual_data.get("topic_intelligence", {})
+
+        # Apply known topics
+        known_topics_data = topic_intel.get("known_topics", [])
+        for topic_data in known_topics_data:
+            topic = KnownTopic(
+                topic_id=topic_data.get("topic_id", ""),
+                content=topic_data.get("content", ""),
+                keywords=topic_data.get("keywords", []),
+                required_disposition=topic_data.get("required_disposition", -5),
+                category=topic_data.get("category", "general"),
+                shared=topic_data.get("shared", False),
+                priority=topic_data.get("priority", 0),
+            )
+            participant.known_topics.append(topic)
+
+        # Apply secret info
+        secret_info_data = topic_intel.get("secret_info", [])
+        for secret_data in secret_info_data:
+            status_str = secret_data.get("status", "unknown")
+            try:
+                status = SecretStatus(status_str)
+            except ValueError:
+                status = SecretStatus.UNKNOWN
+
+            secret = SecretInfo(
+                secret_id=secret_data.get("secret_id", ""),
+                content=secret_data.get("content", ""),
+                hint=secret_data.get("hint", ""),
+                keywords=secret_data.get("keywords", []),
+                required_disposition=secret_data.get("required_disposition", 3),
+                required_trust=secret_data.get("required_trust", 2),
+                can_be_bribed=secret_data.get("can_be_bribed", False),
+                bribe_amount=secret_data.get("bribe_amount", 0),
+                status=status,
+                hint_count=secret_data.get("hint_count", 0),
+            )
+            participant.secret_info.append(secret)
+
+        # Apply behavioral modifiers
+        if contextual_data.get("demeanor"):
+            demeanor = contextual_data["demeanor"]
+            if isinstance(demeanor, list):
+                participant.demeanor = demeanor
+            else:
+                participant.demeanor = [demeanor]
+
+        if contextual_data.get("speech"):
+            participant.speech = contextual_data["speech"]
+
+        if contextual_data.get("behavior"):
+            # Store behavior hint in personality
+            behavior = contextual_data["behavior"]
+            if behavior == "non_hostile":
+                if participant.personality:
+                    participant.personality += ". Appears non-hostile."
+                else:
+                    participant.personality = "Appears non-hostile."
+
+        logger.debug(
+            f"Applied contextual topic intelligence to {participant.name}: "
+            f"{len(participant.known_topics)} topics, {len(participant.secret_info)} secrets"
+        )
+
+    def _determine_exploration_return_state(self, context: dict[str, Any]) -> GameState:
+        """
+        Determine the exploration state to return to after social interaction.
+
+        Uses party location or context to infer the appropriate exploration state.
+        """
+        # Check if context explicitly specifies return state
+        if "return_state" in context:
+            try:
+                return GameState(context["return_state"])
+            except ValueError:
+                pass
+
+        # Check party's current location type
+        if self.party_state and self.party_state.location:
+            location_type = self.party_state.location.location_type
+            if location_type == LocationType.DUNGEON_ROOM:
+                return GameState.DUNGEON_EXPLORATION
+            elif location_type == LocationType.SETTLEMENT:
+                return GameState.SETTLEMENT_EXPLORATION
+
+        # Default to wilderness travel
+        return GameState.WILDERNESS_TRAVEL
+
+    def _on_exit_social(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting SOCIAL_INTERACTION state.
+
+        Preserves any conversation outcomes and cleans up social context.
+        """
+        if self._social_context:
+            # Log the conversation summary
+            logger.debug(
+                f"Exiting social interaction: "
+                f"topics={self._social_context.topics_discussed}, "
+                f"secrets_revealed={len(self._social_context.secrets_revealed)}, "
+                f"quests_offered={self._social_context.quests_offered}"
+            )
+
+            # Clear the social context
+            self._social_context = None
+
+        # If going back to exploration and not to combat, clear encounter
+        if to_state not in {GameState.COMBAT} and self._current_encounter:
+            logger.debug("Clearing encounter after social interaction")
+            self.clear_encounter()
+
+    @property
+    def social_context(self) -> Optional[SocialContext]:
+        """Get the current social context (if in social interaction)."""
+        return self._social_context
+
+    def set_social_context(self, context: SocialContext) -> None:
+        """
+        Manually set social context.
+
+        Use this when initiating social interaction through an engine
+        (like SettlementEngine) that builds its own context.
+        """
+        self._social_context = context
 
     # =========================================================================
     # TIME MANAGEMENT
@@ -1178,6 +1779,9 @@ class GlobalController:
             "context": context,
         })
 
+        # Fire transition hooks
+        self._fire_transition_hooks(old_state, new_state, trigger, context)
+
     def _on_turn_advance(self, turns: int) -> None:
         """Called when exploration turns advance."""
         # Tick spell effects
@@ -1190,8 +1794,13 @@ class GlobalController:
                 self.tick_location_effects(self.party_state.location.location_id)
 
     def _on_watch_advance(self, watches: int) -> None:
-        """Called when watches advance."""
-        pass  # Override in subclasses if needed
+        """Called when watches advance (every 4 hours)."""
+        current_watch = self.time_tracker.game_time.get_current_watch()
+        self._log_event("watch_advanced", {
+            "watches_passed": watches,
+            "current_watch": current_watch.value,
+            "time": str(self.time_tracker.game_time),
+        })
 
     def _on_day_advance(self, days: int) -> None:
         """Called when days advance."""

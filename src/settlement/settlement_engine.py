@@ -45,6 +45,7 @@ from src.data_models import (
     DiceRoller,
     NPC,
     ReactionResult,
+    interpret_reaction,
     LocationType,
     SourceReference,
     TimeOfDay,
@@ -889,26 +890,17 @@ class SettlementEngine:
         return result
 
     def _interpret_reaction(self, roll: int) -> ReactionResult:
-        """Interpret 2d6 reaction roll."""
-        if roll <= 2:
-            return ReactionResult.HOSTILE
-        elif roll <= 5:
-            return ReactionResult.UNFRIENDLY
-        elif roll <= 8:
-            return ReactionResult.NEUTRAL
-        elif roll <= 11:
-            return ReactionResult.FRIENDLY
-        else:
-            return ReactionResult.HELPFUL
+        """Interpret 2d6 reaction roll using canonical function."""
+        return interpret_reaction(roll)
 
     def _reaction_to_disposition(self, reaction: ReactionResult) -> int:
         """Convert reaction to disposition score."""
         mapping = {
-            ReactionResult.HOSTILE: -3,
-            ReactionResult.UNFRIENDLY: -1,
-            ReactionResult.NEUTRAL: 0,
-            ReactionResult.FRIENDLY: 1,
-            ReactionResult.HELPFUL: 3,
+            ReactionResult.ATTACKS: -3,
+            ReactionResult.HOSTILE: -2,
+            ReactionResult.UNCERTAIN: 0,
+            ReactionResult.INDIFFERENT: 1,
+            ReactionResult.FRIENDLY: 3,
         }
         return mapping.get(reaction, 0)
 

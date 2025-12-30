@@ -46,6 +46,20 @@ from src.ai.prompt_schemas import (
     FailureConsequenceSchema,
     DowntimeSummaryInputs,
     DowntimeSummarySchema,
+    CombatConclusionInputs,
+    CombatConclusionSchema,
+    DungeonEventInputs,
+    DungeonEventSchema,
+    RestExperienceInputs,
+    RestExperienceSchema,
+    POIApproachInputs,
+    POIApproachSchema,
+    POIEntryInputs,
+    POIEntrySchema,
+    POIFeatureInputs,
+    POIFeatureSchema,
+    ResolvedActionInputs,
+    ResolvedActionSchema,
     create_schema,
 )
 from src.data_models import (
@@ -55,6 +69,9 @@ from src.data_models import (
     Weather,
     Season,
     TimeOfDay,
+    SocialContext,
+    SocialParticipant,
+    SocialOrigin,
 )
 
 
@@ -458,6 +475,298 @@ class DMAgent:
         return self._execute_schema(schema)
 
     # =========================================================================
+    # SOCIAL CONTEXT INTEGRATION
+    # =========================================================================
+
+    def generate_dialogue_from_context(
+        self,
+        social_context: SocialContext,
+        conversation_topic: str,
+        participant_index: int = 0,
+    ) -> DescriptionResult:
+        """
+        Generate NPC dialogue using the active social context.
+
+        This is the primary integration point between the game state's
+        SocialContext and the AI dialogue generation. Uses the enhanced
+        topic matching system to:
+        - Match player questions to relevant known topics
+        - Filter topics by disposition requirements
+        - Track and hint at secrets
+        - Monitor NPC patience
+
+        Args:
+            social_context: The active social context from GlobalController
+            conversation_topic: What the player is asking about
+            participant_index: Which participant to speak (0 = primary)
+
+        Returns:
+            DescriptionResult with the NPC dialogue and metadata
+        """
+        if not social_context.participants:
+            return DescriptionResult(
+                content="[No participants in social context]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=["No participants available for dialogue"],
+            )
+
+        # Get the speaking participant
+        if participant_index >= len(social_context.participants):
+            participant_index = 0
+        participant = social_context.participants[participant_index]
+
+        # Check if participant can communicate
+        warning = participant.get_communication_warning()
+        if warning and not participant.can_communicate:
+            return DescriptionResult(
+                content=f"[{participant.name} cannot communicate verbally]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[warning],
+            )
+
+        # Check if conversation has ended due to patience
+        if (participant.conversation and
+            participant.conversation.conversation_ended):
+            return DescriptionResult(
+                content=f"[{participant.name} has ended the conversation: "
+                        f"{participant.conversation.end_reason}]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[participant.conversation.end_reason],
+            )
+
+        # Get previous interactions from context
+        previous = social_context.topics_discussed.copy()
+
+        # Convert participant to dialogue inputs (uses enhanced topic system)
+        dialogue_data = participant.to_dialogue_inputs(
+            conversation_topic=conversation_topic,
+            previous_interactions=previous,
+        )
+
+        # Check for conversation ended after processing query
+        if dialogue_data.get("_conversation_ended"):
+            patience_warning = dialogue_data.get("_patience_warning", "")
+            return DescriptionResult(
+                content=f"[{participant.name} has lost patience and ends the conversation]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[patience_warning] if patience_warning else [],
+            )
+
+        # Extract enhanced metadata before creating schema inputs
+        query_result = dialogue_data.pop("_query_result", None)
+        is_relevant = dialogue_data.pop("_is_relevant", True)
+        dialogue_data.pop("_conversation_ended", None)
+        patience_warning = dialogue_data.pop("_patience_warning", None)
+
+        # Create inputs and schema (without underscore-prefixed keys)
+        inputs = NPCDialogueInputs(**dialogue_data)
+        schema = NPCDialogueSchema(inputs)
+
+        # Execute and track the topic
+        result = self._execute_schema(schema)
+
+        # Add topic to discussed list if successful
+        if result.success and conversation_topic not in social_context.topics_discussed:
+            social_context.topics_discussed.append(conversation_topic)
+
+        # Track secrets that were hinted or revealed
+        if query_result:
+            for hint_info in query_result.get("hints_to_give", []):
+                secret = hint_info.get("secret")
+                if secret and secret.secret_id not in social_context.secrets_revealed:
+                    if hasattr(secret, 'status'):
+                        from src.data_models import SecretStatus
+                        secret.status = SecretStatus.HINTED
+                        secret.hint_count += 1
+
+            for reveal_info in query_result.get("secrets_to_reveal", []):
+                secret = reveal_info.get("secret")
+                if secret:
+                    if hasattr(secret, 'status'):
+                        from src.data_models import SecretStatus
+                        secret.status = SecretStatus.REVEALED
+                    if reveal_info.get("content") not in social_context.secrets_revealed:
+                        social_context.secrets_revealed.append(reveal_info["content"])
+
+        # Add warnings
+        warnings_to_add = []
+        if warning:
+            warnings_to_add.append(warning)
+        if patience_warning:
+            warnings_to_add.append(f"NPC patience: {patience_warning}")
+        if not is_relevant:
+            warnings_to_add.append("Question was not relevant to NPC's knowledge")
+
+        for w in warnings_to_add:
+            result.warnings.append(w)
+
+        return result
+
+    def generate_dialogue_for_participant(
+        self,
+        participant: SocialParticipant,
+        conversation_topic: str,
+        previous_topics: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate dialogue for a specific SocialParticipant.
+
+        Use this when you have a participant but not a full SocialContext,
+        such as when talking to a fixed hex NPC directly.
+
+        Args:
+            participant: The SocialParticipant to voice
+            conversation_topic: What the player is asking about
+            previous_topics: Previously discussed topics
+
+        Returns:
+            DescriptionResult with the NPC dialogue
+        """
+        # Check communication capability
+        warning = participant.get_communication_warning()
+        if warning and not participant.can_communicate:
+            return DescriptionResult(
+                content=f"[{participant.name} cannot communicate verbally]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[warning],
+            )
+
+        # Convert to dialogue inputs
+        dialogue_data = participant.to_dialogue_inputs(
+            conversation_topic=conversation_topic,
+            previous_interactions=previous_topics,
+        )
+
+        inputs = NPCDialogueInputs(**dialogue_data)
+        schema = NPCDialogueSchema(inputs)
+        result = self._execute_schema(schema)
+
+        if warning:
+            result.warnings.append(warning)
+
+        return result
+
+    def frame_social_encounter(
+        self,
+        social_context: SocialContext,
+    ) -> DescriptionResult:
+        """
+        Generate the opening framing for a social interaction.
+
+        This describes the initial scene when entering SOCIAL_INTERACTION state,
+        setting the mood and introducing the participants.
+
+        Args:
+            social_context: The social context being entered
+
+        Returns:
+            DescriptionResult with the scene framing
+        """
+        if not social_context.participants:
+            return DescriptionResult(
+                content="[No participants to describe]",
+                schema_used=PromptSchemaType.EXPLORATION_DESCRIPTION,
+                success=False,
+                warnings=["No participants in social context"],
+            )
+
+        # Build participant descriptions
+        participant_descs = []
+        for p in social_context.participants:
+            desc_parts = [p.name]
+            if p.demeanor:
+                desc_parts.append(f"({', '.join(p.demeanor)})")
+            if p.stat_reference:
+                desc_parts.append(f"[{p.stat_reference}]")
+            participant_descs.append(" ".join(desc_parts))
+
+        # Determine the tone based on reaction
+        if social_context.initial_reaction:
+            reaction = social_context.initial_reaction.value
+        else:
+            reaction = "neutral"
+
+        tone_map = {
+            "hostile": "tense, dangerous",
+            "unfriendly": "wary, suspicious",
+            "neutral": "cautious, evaluating",
+            "friendly": "open, welcoming",
+            "helpful": "warm, eager to assist",
+        }
+        tone = tone_map.get(reaction, "uncertain")
+
+        # Build location context
+        location_parts = []
+        if social_context.poi_name:
+            location_parts.append(social_context.poi_name)
+        if social_context.hex_id:
+            location_parts.append(f"Hex {social_context.hex_id}")
+        if social_context.location_description:
+            location_parts.append(social_context.location_description)
+
+        location_summary = ". ".join(location_parts) if location_parts else "The encounter location"
+
+        # Origin context
+        origin_text = {
+            SocialOrigin.ENCOUNTER_PARLEY: "After the initial encounter, conversation has begun",
+            SocialOrigin.COMBAT_PARLEY: "Combat has paused as both sides attempt to negotiate",
+            SocialOrigin.SETTLEMENT: "In the settlement, a conversation begins",
+            SocialOrigin.HEX_NPC: "You encounter a notable figure",
+            SocialOrigin.POI_NPC: "At this location, you meet someone",
+        }.get(social_context.origin, "A social encounter begins")
+
+        # Use exploration description schema for framing
+        sensory_tags = ["voices", "tension" if reaction in ("hostile", "unfriendly") else "anticipation"]
+
+        inputs = ExplorationDescriptionInputs(
+            current_state="social_interaction",
+            location_summary=f"{origin_text}. Participants: {', '.join(participant_descs)}. "
+                           f"Location: {location_summary}. Mood: {tone}.",
+            sensory_tags=sensory_tags,
+            known_threats=[] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"],
+        )
+
+        schema = ExplorationDescriptionSchema(inputs)
+        return self._execute_schema(schema)
+
+    def get_social_context_summary(self, social_context: SocialContext) -> str:
+        """
+        Get a text summary of the social context for logging or debugging.
+
+        Args:
+            social_context: The social context to summarize
+
+        Returns:
+            Human-readable summary string
+        """
+        lines = [
+            f"Social Context ({social_context.origin.value}):",
+            f"  Participants: {len(social_context.participants)}",
+        ]
+
+        for i, p in enumerate(social_context.participants):
+            can_talk = "can communicate" if p.can_communicate else "CANNOT communicate"
+            lines.append(f"    {i+1}. {p.name} ({p.participant_type.value}) - {can_talk}")
+            if p.secrets:
+                lines.append(f"       Secrets: {len(p.secrets)} hidden topics")
+            if p.quest_hooks:
+                lines.append(f"       Quest hooks: {len(p.quest_hooks)} available")
+
+        if social_context.initial_reaction:
+            lines.append(f"  Initial reaction: {social_context.initial_reaction.value}")
+        if social_context.topics_discussed:
+            lines.append(f"  Topics discussed: {', '.join(social_context.topics_discussed)}")
+        if social_context.return_state:
+            lines.append(f"  Return state: {social_context.return_state}")
+
+        return "\n".join(lines)
+
+    # =========================================================================
     # FAILURE DESCRIPTIONS
     # =========================================================================
 
@@ -541,6 +850,380 @@ class DMAgent:
         )
 
         schema = DowntimeSummarySchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # COMBAT CONCLUSION
+    # =========================================================================
+
+    def narrate_combat_end(
+        self,
+        outcome: str,
+        victor_side: str,
+        party_casualties: Optional[list[str]] = None,
+        enemy_casualties: Optional[list[str]] = None,
+        fled_combatants: Optional[list[str]] = None,
+        rounds_fought: int = 0,
+        notable_moments: Optional[list[str]] = None,
+        terrain: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for the conclusion of combat.
+
+        Args:
+            outcome: "victory", "defeat", "fled", "morale_broken"
+            victor_side: "party", "enemies", "none"
+            party_casualties: Names of fallen party members
+            enemy_casualties: Names of slain enemies
+            fled_combatants: Names of those who fled
+            rounds_fought: How many rounds combat lasted
+            notable_moments: Key events during the battle
+            terrain: Where combat took place
+
+        Returns:
+            DescriptionResult with combat conclusion narration
+        """
+        inputs = CombatConclusionInputs(
+            outcome=outcome,
+            victor_side=victor_side,
+            party_casualties=party_casualties or [],
+            enemy_casualties=enemy_casualties or [],
+            fled_combatants=fled_combatants or [],
+            rounds_fought=rounds_fought,
+            notable_moments=notable_moments or [],
+            terrain=terrain,
+        )
+
+        schema = CombatConclusionSchema(inputs)
+        return self._execute_schema(schema, allow_narration_context=True)
+
+    # =========================================================================
+    # DUNGEON EVENTS
+    # =========================================================================
+
+    def narrate_dungeon_event(
+        self,
+        event_type: str,
+        event_name: str,
+        success: bool,
+        damage_taken: int = 0,
+        damage_type: str = "",
+        character_name: str = "",
+        description: str = "",
+        room_context: str = "",
+        narrative_hints: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a dungeon event (trap, discovery, etc.).
+
+        Args:
+            event_type: "trap_triggered", "trap_disarmed", "trap_discovered",
+                       "secret_found", "feature_discovered", "sound_heard"
+            event_name: Name of the trap/secret/feature
+            success: Was the event handled successfully?
+            damage_taken: Damage if trap triggered (use exact number)
+            damage_type: Type of damage (piercing, poison, etc.)
+            character_name: Who triggered/discovered it
+            description: Brief description of the thing
+            room_context: Where this happened
+            narrative_hints: Hints from the resolver
+
+        Returns:
+            DescriptionResult with dungeon event narration
+        """
+        inputs = DungeonEventInputs(
+            event_type=event_type,
+            event_name=event_name,
+            success=success,
+            damage_taken=damage_taken,
+            damage_type=damage_type,
+            character_name=character_name,
+            description=description,
+            room_context=room_context,
+            narrative_hints=narrative_hints or [],
+        )
+
+        schema = DungeonEventSchema(inputs)
+        return self._execute_schema(schema, allow_narration_context=True)
+
+    # =========================================================================
+    # REST EXPERIENCE
+    # =========================================================================
+
+    def narrate_rest(
+        self,
+        rest_type: str,
+        location_type: str,
+        watch_events: Optional[list[str]] = None,
+        sleep_quality: str = "normal",
+        healing_done: Optional[dict[str, int]] = None,
+        resources_consumed: Optional[dict[str, int]] = None,
+        time_of_day_start: str = "",
+        time_of_day_end: str = "",
+        weather: str = "",
+        interruptions: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a rest/camping period.
+
+        Args:
+            rest_type: "short", "long", "full", "camping"
+            location_type: "wilderness", "dungeon", "settlement", "camp"
+            watch_events: What happened during watches
+            sleep_quality: "good", "normal", "poor", "impossible"
+            healing_done: Character name -> HP recovered
+            resources_consumed: Resource name -> amount used
+            time_of_day_start: When rest started
+            time_of_day_end: When rest ended
+            weather: Weather during rest
+            interruptions: Any disturbances
+
+        Returns:
+            DescriptionResult with rest narration
+        """
+        inputs = RestExperienceInputs(
+            rest_type=rest_type,
+            location_type=location_type,
+            watch_events=watch_events or [],
+            sleep_quality=sleep_quality,
+            healing_done=healing_done or {},
+            resources_consumed=resources_consumed or {},
+            time_of_day_start=time_of_day_start,
+            time_of_day_end=time_of_day_end,
+            weather=weather,
+            interruptions=interruptions or [],
+        )
+
+        schema = RestExperienceSchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # POI NARRATION
+    # =========================================================================
+
+    def describe_poi_approach(
+        self,
+        poi_name: str,
+        poi_type: str,
+        description: str,
+        tagline: str = "",
+        distance: str = "near",
+        time_of_day: Optional[TimeOfDay] = None,
+        weather: Optional[Weather] = None,
+        season: Optional[Season] = None,
+        discovery_hints: Optional[list[str]] = None,
+        visible_hazards: Optional[list[str]] = None,
+        visible_npcs: Optional[list[str]] = None,
+        party_approach: str = "cautious",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for approaching a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type (manse, ruin, grove, cave, etc.)
+            description: Exterior description
+            tagline: Short evocative description
+            distance: near, medium, far
+            time_of_day: Current time of day
+            weather: Current weather
+            season: Current season
+            discovery_hints: Sensory clues that drew attention
+            visible_hazards: Hazards visible from approach
+            visible_npcs: Figures visible from approach
+            party_approach: cautious, direct, stealthy
+
+        Returns:
+            DescriptionResult with approach narration
+        """
+        inputs = POIApproachInputs(
+            poi_name=poi_name,
+            poi_type=poi_type,
+            description=description,
+            tagline=tagline,
+            distance=distance,
+            time_of_day=time_of_day.value if time_of_day else "",
+            weather=weather.value if weather else "",
+            season=season.value if season else "",
+            discovery_hints=discovery_hints or [],
+            visible_hazards=visible_hazards or [],
+            visible_npcs=visible_npcs or [],
+            party_approach=party_approach,
+        )
+
+        schema = POIApproachSchema(inputs)
+        return self._execute_schema(schema)
+
+    def describe_poi_entry(
+        self,
+        poi_name: str,
+        poi_type: str,
+        entering: str,
+        interior: str = "",
+        time_of_day: Optional[TimeOfDay] = None,
+        inhabitants_visible: Optional[list[str]] = None,
+        atmosphere: Optional[list[str]] = None,
+        entry_method: str = "normal",
+        entry_condition: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for entering a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type of POI
+            entering: Entry description from data model
+            interior: Interior description
+            time_of_day: Current time of day
+            inhabitants_visible: Visible inhabitants
+            atmosphere: Sensory tags for atmosphere
+            entry_method: normal, forced, secret, magical
+            entry_condition: diving, climbing, etc.
+
+        Returns:
+            DescriptionResult with entry narration
+        """
+        inputs = POIEntryInputs(
+            poi_name=poi_name,
+            poi_type=poi_type,
+            entering=entering,
+            interior=interior,
+            time_of_day=time_of_day.value if time_of_day else "",
+            inhabitants_visible=inhabitants_visible or [],
+            atmosphere=atmosphere or [],
+            entry_method=entry_method,
+            entry_condition=entry_condition,
+        )
+
+        schema = POIEntrySchema(inputs)
+        return self._execute_schema(schema)
+
+    def describe_poi_feature(
+        self,
+        poi_name: str,
+        feature_name: str,
+        feature_description: str,
+        interaction_type: str,
+        discovery_success: bool = True,
+        found_items: Optional[list[str]] = None,
+        found_secrets: Optional[list[str]] = None,
+        hazard_triggered: bool = False,
+        hazard_description: str = "",
+        character_name: str = "",
+        sub_location_name: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for exploring a POI feature.
+
+        Args:
+            poi_name: Name of the POI
+            feature_name: Name of the feature being explored
+            feature_description: Description of the feature
+            interaction_type: examine, search, touch, activate
+            discovery_success: Was the search/interaction successful?
+            found_items: Items discovered
+            found_secrets: Secrets revealed
+            hazard_triggered: Was a hazard triggered?
+            hazard_description: Description of triggered hazard
+            character_name: Who performed the action
+            sub_location_name: Sub-location within POI if applicable
+
+        Returns:
+            DescriptionResult with feature exploration narration
+        """
+        inputs = POIFeatureInputs(
+            poi_name=poi_name,
+            feature_name=feature_name,
+            feature_description=feature_description,
+            interaction_type=interaction_type,
+            discovery_success=discovery_success,
+            found_items=found_items or [],
+            found_secrets=found_secrets or [],
+            hazard_triggered=hazard_triggered,
+            hazard_description=hazard_description,
+            character_name=character_name,
+            sub_location_name=sub_location_name,
+        )
+
+        schema = POIFeatureSchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # RESOLVED ACTION NARRATION
+    # =========================================================================
+
+    def narrate_resolved_action(
+        self,
+        action_description: str,
+        action_category: str,
+        action_type: str,
+        success: bool,
+        partial_success: bool = False,
+        character_name: str = "",
+        target_description: str = "",
+        dice_rolled: str = "",
+        dice_result: int = 0,
+        dice_target: int = 0,
+        damage_dealt: int = 0,
+        damage_taken: int = 0,
+        conditions_applied: Optional[list[str]] = None,
+        effects_created: Optional[list[str]] = None,
+        resources_consumed: Optional[dict[str, int]] = None,
+        narrative_hints: Optional[list[str]] = None,
+        location_context: str = "",
+        rule_reference: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a mechanically resolved action.
+
+        This is the generic method for narrating any action that has been
+        resolved by the narrative resolvers (spell, hazard, creative, etc.).
+
+        Args:
+            action_description: What the character attempted
+            action_category: spell, hazard, exploration, survival, creative
+            action_type: Specific action type
+            success: Was the action successful?
+            partial_success: Was it a partial success?
+            character_name: Who performed the action
+            target_description: Target of the action
+            dice_rolled: Dice expression (e.g., "1d20+3")
+            dice_result: Result of the roll
+            dice_target: Target number to beat
+            damage_dealt: Damage dealt to target
+            damage_taken: Damage taken by character
+            conditions_applied: Conditions applied
+            effects_created: Effects created
+            resources_consumed: Resources used
+            narrative_hints: Hints from the resolver
+            location_context: Where this happened
+            rule_reference: Rule reference if any
+
+        Returns:
+            DescriptionResult with action narration
+        """
+        inputs = ResolvedActionInputs(
+            action_description=action_description,
+            action_category=action_category,
+            action_type=action_type,
+            success=success,
+            partial_success=partial_success,
+            character_name=character_name,
+            target_description=target_description,
+            dice_rolled=dice_rolled,
+            dice_result=dice_result,
+            dice_target=dice_target,
+            damage_dealt=damage_dealt,
+            damage_taken=damage_taken,
+            conditions_applied=conditions_applied or [],
+            effects_created=effects_created or [],
+            resources_consumed=resources_consumed or {},
+            narrative_hints=narrative_hints or [],
+            location_context=location_context,
+            rule_reference=rule_reference,
+        )
+
+        schema = ResolvedActionSchema(inputs)
         return self._execute_schema(schema)
 
     # =========================================================================
