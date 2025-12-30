@@ -17,6 +17,14 @@ if TYPE_CHECKING:
     from src.data_models import CharacterState, DiceRoller, ArmorWeight
 
 from src.narrative.intent_parser import ActionType, ResolutionType, CheckType, ParsedIntent
+from src.tables.foraging_tables import (
+    ForageableItem,
+    ForageType,
+    roll_forage_type,
+    roll_foraged_item,
+    roll_forage_quantity,
+    is_fungi,
+)
 
 
 class HazardType(str, Enum):
@@ -84,6 +92,10 @@ class HazardResult:
     # Diving-specific
     rounds_underwater: int = 0
     rounds_remaining: int = 0
+
+    # Foraging-specific
+    foraged_items: list[dict[str, Any]] = field(default_factory=list)
+    rations_found: int = 0
 
 
 @dataclass
@@ -995,14 +1007,16 @@ class HazardResolver:
         **kwargs: Any,
     ) -> HazardResult:
         """
-        Resolve finding food in the wild (p152).
+        Resolve finding food in the wild per Campaign Book (p118-119, p152).
 
-        Fishing: 2d6 rations on success
-        Foraging: 1d6 (1d4 winter, 1d8 autumn)
+        Procedure for foraging:
+        1. Make a Survival check
+        2. On success, roll d6: 1-3 = fungi, 4-6 = plants
+        3. Roll d20 on appropriate table for specific species
+        4. Roll 1d6 for rations found
+
+        Fishing: 2d6 rations on success (uses generic fish, not foraging tables)
         Hunting: Triggers combat with game animals
-
-        Hex-specific foraging_special yields are added on successful foraging.
-        Example: "Sage Toe (1d3 portions)" from hex 0102.
 
         Colliggwyld Unseason: During Colliggwyld, fungi yields are doubled.
         This is handled by passing foraging_bonus=2.0 or active_unseason="colliggwyld".
@@ -1014,10 +1028,15 @@ class HazardResolver:
             full_day: Whether spending a full day foraging (+2 bonus)
             foraging_bonus: Multiplier for fungi yields (default 1.0, 2.0 for Colliggwyld)
             active_unseason: Current unseason (used to auto-set foraging_bonus)
+
+        Returns:
+            HazardResult with foraged_items list containing ForageableItem dicts
+            with effect metadata for later consumption.
         """
         # Auto-set foraging bonus for Colliggwyld if not explicitly provided
         if active_unseason == "colliggwyld" and foraging_bonus == 1.0:
             foraging_bonus = 2.0
+
         # Survival check
         # TODO: Get best Survival skill in party
         roll = self.dice.roll_d6(1, "Survival check")
@@ -1038,18 +1057,8 @@ class HazardResolver:
                 narrative_hints=["slim pickings", "nothing edible found"],
             )
 
-        # Determine yield
-        if method == "fishing":
-            yield_dice = FORAGING_YIELDS["fishing"]
-        elif method == "foraging":
-            if season == "winter":
-                yield_dice = FORAGING_YIELDS["foraging_winter"]
-            elif season == "autumn":
-                yield_dice = FORAGING_YIELDS["foraging_autumn"]
-            else:
-                yield_dice = FORAGING_YIELDS["foraging_normal"]
-        else:
-            # Hunting requires combat
+        # Handle hunting (requires combat, not table-based)
+        if method == "hunting":
             return HazardResult(
                 success=True,
                 hazard_type=HazardType.HUNGER,
@@ -1061,54 +1070,90 @@ class HazardResolver:
                 narrative_hints=["tracks lead to quarry", "game spotted ahead"],
             )
 
-        yield_roll = self.dice.roll(yield_dice, f"{method} yield")
+        # Handle fishing (generic fish, not foraging tables)
+        if method == "fishing":
+            yield_roll = self.dice.roll(FORAGING_YIELDS["fishing"], "fishing yield")
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.HUNGER,
+                action_type=ActionType.FISH,
+                description=f"Caught {yield_roll.total} rations worth of fish",
+                check_made=True,
+                check_result=roll.total + bonus,
+                check_target=target,
+                rations_found=yield_roll.total,
+                narrative_hints=["fish on the line", f"caught {yield_roll.total} fish"],
+            )
 
-        # Process hex-specific foraging special yields
+        # FORAGING: Use the Campaign Book tables (p118-119)
+        # Step 1: Roll d6 for fungi (1-3) or plants (4-6)
+        forage_type = roll_forage_type()
+
+        # Step 2: Roll d20 on the appropriate table
+        foraged_item = roll_foraged_item(forage_type)
+
+        # Step 3: Roll 1d6 for quantity (rations)
+        base_quantity = roll_forage_quantity()
+
+        # Apply Colliggwyld bonus to fungi yields
+        quantity = base_quantity
+        colliggwyld_bonus_applied = False
+        if is_fungi(foraged_item) and foraging_bonus > 1.0:
+            quantity = int(base_quantity * foraging_bonus)
+            colliggwyld_bonus_applied = True
+
+        # Build item data with effect metadata for inventory
+        foraged_item_data = foraged_item.to_dict()
+        foraged_item_data["quantity"] = quantity
+        foraged_item_data["colliggwyld_bonus_applied"] = colliggwyld_bonus_applied
+
+        # Process any hex-specific foraging special yields (legacy support)
         foraging_special = kwargs.get("foraging_special", [])
-        special_yields = []
-        special_descriptions = []
-
+        additional_items: list[dict[str, Any]] = []
         for special in foraging_special:
-            # Parse format like "Sage Toe (1d3 portions)"
             special_result = self._parse_and_roll_special_yield(special, foraging_bonus)
             if special_result:
-                special_yields.append(special_result)
-                # Note if Colliggwyld bonus was applied
-                bonus_note = " (doubled by Colliggwyld!)" if special_result.get("bonus_applied") else ""
-                special_descriptions.append(
-                    f"{special_result['quantity']} {special_result['item']}{bonus_note}"
-                )
+                additional_items.append(special_result)
 
         # Build description
-        base_desc = f"Found {yield_roll.total} rations while {method}"
-        if special_descriptions:
-            base_desc += f", plus {', '.join(special_descriptions)}"
+        type_str = "fungi" if forage_type == ForageType.FUNGI else "plants"
+        bonus_note = " (doubled by Colliggwyld!)" if colliggwyld_bonus_applied else ""
+        base_desc = f"Found {quantity} rations of {foraged_item.name} ({type_str}){bonus_note}"
 
-        # Build narrative hints
+        if additional_items:
+            additional_desc = ", ".join(
+                f"{item['quantity']} {item['item']}"
+                for item in additional_items
+            )
+            base_desc += f", plus {additional_desc}"
+
+        # Build narrative hints using item descriptions
         hints = [
-            f"gathered {yield_roll.total} fresh rations",
-            "basket fills with edibles" if method == "foraging" else "fish on the line",
+            foraged_item.description,
+            f"smells {foraged_item.smell.lower()}" if foraged_item.smell else "",
         ]
-        if special_yields:
-            for special in special_yields:
-                hints.append(f"discovered {special['item']} growing nearby")
+        if colliggwyld_bonus_applied:
+            hints.append("the Colliggwyld's blessing doubles the fungi harvest")
 
-        result = HazardResult(
+        # Filter empty hints
+        hints = [h for h in hints if h]
+
+        # Compile all foraged items
+        all_foraged = [foraged_item_data]
+        all_foraged.extend(additional_items)
+
+        return HazardResult(
             success=True,
             hazard_type=HazardType.HUNGER,
-            action_type=ActionType.FORAGE if method != "fishing" else ActionType.FISH,
+            action_type=ActionType.FORAGE,
             description=base_desc,
             check_made=True,
             check_result=roll.total + bonus,
             check_target=target,
+            rations_found=quantity,
+            foraged_items=all_foraged,
             narrative_hints=hints,
         )
-
-        # Store special yields in result for caller
-        if special_yields:
-            result.items_found = special_yields
-
-        return result
 
     # Common fungi/mushroom keywords for Colliggwyld bonus detection
     FUNGI_KEYWORDS = frozenset([
