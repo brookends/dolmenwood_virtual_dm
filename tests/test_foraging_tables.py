@@ -427,3 +427,82 @@ class TestEffectMetadataForConsumption:
         # Crake berries only if "large quantity consumed"
         item = get_foraged_item_by_name("Crake berries")
         assert "large quantity" in item.effect.condition.lower()
+
+
+class TestForageableToInventoryItem:
+    """Test converting ForageableItem to Item for inventory storage."""
+
+    def test_basic_conversion(self):
+        """Basic conversion should create valid Item."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+
+        foraged = get_foraged_item_by_name("Hell horns")
+        item = forageable_to_inventory_item(foraged, quantity=3)
+
+        assert item.name == "Hell horns"
+        assert item.quantity == 3
+        assert item.item_type == "consumable"
+        assert item.forage_type == "fungi"
+
+    def test_conversion_preserves_effect_metadata(self):
+        """Conversion should preserve consumption effect metadata."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+
+        foraged = get_foraged_item_by_name("Hob nut")
+        item = forageable_to_inventory_item(foraged)
+
+        assert item.consumption_effect is not None
+        assert item.consumption_effect["effect_type"] == "save_penalty"
+        assert item.consumption_effect["modifier"] == -2
+        assert item.consumption_effect["save_type"] == "magic"
+        assert item.consumption_effect["duration_hours"] == 8
+
+    def test_conversion_includes_sensory_data(self):
+        """Conversion should include smell and taste."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+
+        foraged = get_foraged_item_by_name("Moonchook")
+        item = forageable_to_inventory_item(foraged)
+
+        assert item.smell == "Cool and ethereal, like moonlit mist"
+        assert item.taste == "Light and refreshing with a minty finish"
+
+    def test_conversion_with_source_hex(self):
+        """Conversion should store source hex when provided."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+
+        foraged = get_foraged_item_by_name("Gorger bean")
+        item = forageable_to_inventory_item(foraged, source_hex="0807")
+
+        assert item.source_hex == "0807"
+
+    def test_converted_item_serializes(self):
+        """Converted item should serialize to JSON-compatible dict."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+
+        foraged = get_foraged_item_by_name("Wanderer's friend")
+        item = forageable_to_inventory_item(foraged, quantity=2)
+
+        # Should serialize without errors
+        data = item.to_dict()
+        assert data["name"] == "Wanderer's friend"
+        assert data["quantity"] == 2
+        assert data["consumption_effect"]["effect_type"] == "healing"
+        assert data["consumption_effect"]["modifier"] == 1
+
+    def test_item_roundtrip(self):
+        """Item should survive serialization roundtrip."""
+        from src.tables.foraging_tables import forageable_to_inventory_item
+        from src.data_models import Item
+
+        foraged = get_foraged_item_by_name("Jellycup")
+        original = forageable_to_inventory_item(foraged, quantity=4)
+
+        # Serialize and deserialize
+        data = original.to_dict()
+        restored = Item.from_dict(data)
+
+        assert restored.name == original.name
+        assert restored.quantity == original.quantity
+        assert restored.forage_type == original.forage_type
+        assert restored.consumption_effect == original.consumption_effect

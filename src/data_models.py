@@ -1768,6 +1768,13 @@ class Item:
     is_materialized: bool = True  # False = needs random properties generated on first encounter
     materialization_template: Optional[str] = None  # Template ID for generating properties
 
+    # Consumable item properties (for foraged items, potions, etc.)
+    # Effect applied when item is consumed (eaten, drunk, applied, etc.)
+    consumption_effect: Optional[dict[str, Any]] = None  # Effect metadata from foraging tables
+    forage_type: Optional[str] = None  # "fungi" or "plant" for foraged items
+    smell: Optional[str] = None  # Sensory description
+    taste: Optional[str] = None  # Sensory description
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1826,6 +1833,11 @@ class Item:
             # Materialization tracking
             "is_materialized": self.is_materialized,
             "materialization_template": self.materialization_template,
+            # Consumable properties
+            "consumption_effect": self.consumption_effect,
+            "forage_type": self.forage_type,
+            "smell": self.smell,
+            "taste": self.taste,
         }
 
     @classmethod
@@ -1865,6 +1877,11 @@ class Item:
             # Materialization tracking
             is_materialized=data.get("is_materialized", True),
             materialization_template=data.get("materialization_template"),
+            # Consumable properties
+            consumption_effect=data.get("consumption_effect"),
+            forage_type=data.get("forage_type"),
+            smell=data.get("smell"),
+            taste=data.get("taste"),
         )
 
     @classmethod

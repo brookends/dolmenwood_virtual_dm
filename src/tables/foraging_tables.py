@@ -737,3 +737,43 @@ def get_all_plants() -> list[ForageableItem]:
 def is_fungi(item: ForageableItem) -> bool:
     """Check if an item is fungi (for Colliggwyld bonus)."""
     return item.forage_type == ForageType.FUNGI
+
+
+def forageable_to_inventory_item(
+    foraged: ForageableItem,
+    quantity: int = 1,
+    source_hex: Optional[str] = None,
+) -> "Item":
+    """
+    Convert a ForageableItem to an Item for character inventory.
+
+    This creates an Item instance that can be stored in character inventory
+    with full effect metadata preserved for the consumption system.
+
+    Args:
+        foraged: The ForageableItem from foraging tables
+        quantity: Number of rations/portions found
+        source_hex: Optional hex where item was foraged
+
+    Returns:
+        Item instance ready for inventory storage
+    """
+    from src.data_models import Item
+
+    # Generate a unique item_id based on name
+    item_id = foraged.name.lower().replace(" ", "_").replace("'", "").replace("-", "_")
+
+    return Item(
+        item_id=item_id,
+        name=foraged.name,
+        weight=4,  # Standard weight for foraged items (in coins)
+        quantity=quantity,
+        item_type="consumable",
+        slot_size=0,  # Tiny items, don't consume slots
+        description=foraged.description,
+        forage_type=foraged.forage_type.value,
+        smell=foraged.smell,
+        taste=foraged.taste,
+        consumption_effect=foraged.effect.to_dict(),
+        source_hex=source_hex,
+    )

@@ -1,0 +1,718 @@
+{
+  "category": "consumable",
+  "subcategory": "foraged_items",
+  "items": [
+    {
+      "item_id": "amethyst_orb",
+      "name": "Amethyst orb",
+      "description": "A round, purple-hued mushroom with a crystalline sheen on its cap",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Faintly floral, like dried lavender",
+      "taste": "Earthy with a hint of grape",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A nourishing mushroom with no special effects"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "brainconk",
+      "name": "Brainconk",
+      "description": "A wrinkled, brain-shaped bracket fungus that grows on dead oaks",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Musty and slightly metallic",
+      "taste": "Chewy with a nutty undertone",
+      "consumption_effect": {
+        "effect_type": "vision",
+        "description": "Grants vivid dreams if eaten before sleep",
+        "duration_hours": 8,
+        "condition": "eaten before sleep"
+      },
+      "properties": ["fungi", "edible", "forageable", "vision"]
+    },
+    {
+      "item_id": "chanctonslip",
+      "name": "Chanctonslip",
+      "description": "Slender, pale mushrooms with a slippery texture",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Fresh and clean, like morning dew",
+      "taste": "Mild and slightly sweet",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A pleasant, easily digestible mushroom"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "deathcap_mimic",
+      "name": "Deathcap mimic",
+      "description": "Resembles the deadly deathcap but with subtle orange flecks on the cap",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Slightly acrid, causing hesitation",
+      "taste": "Surprisingly rich and savory",
+      "consumption_effect": {
+        "effect_type": "courage",
+        "description": "Grants +1 to saves vs fear for eating something that looks deadly",
+        "modifier": 1,
+        "duration_hours": 4,
+        "save_type": "fear"
+      },
+      "properties": ["fungi", "edible", "forageable", "courage"]
+    },
+    {
+      "item_id": "devils_fingers",
+      "name": "Devil's fingers",
+      "description": "Red, tentacle-like protrusions emerging from a white egg sac",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Strong carrion stench that fades when cooked",
+      "taste": "Meaty and peppery when prepared properly",
+      "consumption_effect": {
+        "effect_type": "warmth",
+        "description": "Provides warmth, granting resistance to natural cold",
+        "duration_hours": 6
+      },
+      "properties": ["fungi", "edible", "forageable", "warmth"]
+    },
+    {
+      "item_id": "elf_cup",
+      "name": "Elf-cup",
+      "description": "Bright scarlet, cup-shaped fungi found on rotting branches",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Sweet and inviting",
+      "taste": "Delicate, like honeyed berries",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A favorite of the fey, considered good luck to find"
+      },
+      "properties": ["fungi", "edible", "forageable", "fey_favored"]
+    },
+    {
+      "item_id": "green_finger_morel",
+      "name": "Green-finger morel",
+      "description": "Honeycomb-textured cap with a distinctive greenish tinge",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Woody and aromatic",
+      "taste": "Rich, earthy, and prized by gourmands",
+      "consumption_effect": {
+        "effect_type": "valuable",
+        "description": "Highly prized by cooks; can be sold to taverns",
+        "gold_value": "1d4"
+      },
+      "properties": ["fungi", "edible", "forageable", "valuable"]
+    },
+    {
+      "item_id": "hell_horns",
+      "name": "Hell horns",
+      "description": "Black, horn-shaped mushrooms with ridged surfaces",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Smoky, like charred wood",
+      "taste": "Intensely savory with an almost meaty quality",
+      "consumption_effect": {
+        "effect_type": "double_nourishment",
+        "description": "Exceptionally filling; counts as 2 rations worth of food"
+      },
+      "properties": ["fungi", "edible", "forageable", "double_nourishment"]
+    },
+    {
+      "item_id": "hogback_truffle",
+      "name": "Hogback truffle",
+      "description": "Lumpy, dark brown truffle found just beneath the soil",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Pungent and earthy, irresistible to pigs",
+      "taste": "Complex, with notes of garlic and hazelnut",
+      "consumption_effect": {
+        "effect_type": "valuable",
+        "description": "A delicacy; can be sold to wealthy buyers",
+        "gold_value": "2d6"
+      },
+      "properties": ["fungi", "edible", "forageable", "valuable", "delicacy"]
+    },
+    {
+      "item_id": "king_oyster",
+      "name": "King oyster",
+      "description": "Large, trumpet-shaped white mushroom with a thick stem",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Subtle, almost odorless",
+      "taste": "Firm and slightly sweet, excellent grilled",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A hearty, filling mushroom favored by travelers"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "moonchook",
+      "name": "Moonchook",
+      "description": "Luminescent pale blue mushrooms that glow faintly in darkness",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Cool and ethereal, like moonlit mist",
+      "taste": "Light and refreshing with a minty finish",
+      "consumption_effect": {
+        "effect_type": "valuable",
+        "description": "Prized for their magical glow; alchemists pay well",
+        "gold_value": "1d6"
+      },
+      "properties": ["fungi", "edible", "forageable", "valuable", "luminescent"]
+    },
+    {
+      "item_id": "pook_morel",
+      "name": "Pook morel",
+      "description": "Small, spongy morels with a distinctive pook-face pattern",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Mildly fungal with grassy notes",
+      "taste": "Buttery when sautéed",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Named for their resemblance to pook faces; harmless"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "redslob",
+      "name": "Redslob",
+      "description": "Crimson, gelatinous mass that quivers when touched",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Faintly sour, like vinegar",
+      "taste": "Tangy and surprisingly refreshing",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Mildly restorative; heals 1 HP if eaten fresh",
+        "modifier": 1
+      },
+      "properties": ["fungi", "edible", "forageable", "healing"]
+    },
+    {
+      "item_id": "sage_toe_fungus",
+      "name": "Sage toe",
+      "description": "Gnarled, toe-shaped mushroom with a wrinkled grey cap",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Herbal and medicinal, like dried sage",
+      "taste": "Bitter but wholesome",
+      "consumption_effect": {
+        "effect_type": "poison_resistance",
+        "description": "Grants +1 to saves vs poison for 4 hours",
+        "modifier": 1,
+        "duration_hours": 4,
+        "save_type": "poison"
+      },
+      "properties": ["fungi", "edible", "forageable", "poison_resistance"]
+    },
+    {
+      "item_id": "shrieker_spawn",
+      "name": "Shrieker spawn",
+      "description": "Tiny purple mushrooms that emit a faint squeak when picked",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Sharp and acidic",
+      "taste": "Sour with an unpleasant aftertaste",
+      "consumption_effect": {
+        "effect_type": "nausea",
+        "description": "Causes mild nausea if more than 3 are consumed",
+        "condition": "if 3+ consumed"
+      },
+      "properties": ["fungi", "edible", "forageable", "nausea_risk"]
+    },
+    {
+      "item_id": "stinkhorn",
+      "name": "Stinkhorn",
+      "description": "Phallic mushroom covered in dark green slime",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Revolting carrion stench",
+      "taste": "Once cleaned, surprisingly mild and pleasant",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "The smell is far worse than the taste"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "treasure_chanterelle",
+      "name": "Treasure chanterelle",
+      "description": "Golden, vase-shaped mushroom with forked ridges",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Fruity and apricot-like",
+      "taste": "Delicately peppery with fruity notes",
+      "consumption_effect": {
+        "effect_type": "valuable",
+        "description": "Highly sought after by fine dining establishments",
+        "gold_value": "1d4"
+      },
+      "properties": ["fungi", "edible", "forageable", "valuable"]
+    },
+    {
+      "item_id": "velvet_shank",
+      "name": "Velvet shank",
+      "description": "Orange-brown caps with dark, velvety stems",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Mild and woodsy",
+      "taste": "Tender with a slightly gelatinous texture",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Can survive frost, found even in winter"
+      },
+      "properties": ["fungi", "edible", "forageable", "winter_hardy"]
+    },
+    {
+      "item_id": "witchs_butter",
+      "name": "Witch's butter",
+      "description": "Bright yellow-orange gelatinous blobs on dead wood",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Neutral, almost odorless",
+      "taste": "Bland but fills the belly",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Said to appear where witches have passed"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "wood_ear",
+      "name": "Wood ear",
+      "description": "Brown, ear-shaped jelly fungus on elder branches",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "fungi",
+      "smell": "Earthy and damp",
+      "taste": "Crunchy and absorbent, takes on other flavors well",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Popular in soups and stews throughout Dolmenwood"
+      },
+      "properties": ["fungi", "edible", "forageable"]
+    },
+    {
+      "item_id": "barb_cone",
+      "name": "Barb cone",
+      "description": "Spiky pine cone with edible seeds hidden within",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Fresh pine and resin",
+      "taste": "Nutty and slightly resinous",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Requires patience to extract the seeds"
+      },
+      "properties": ["plant", "edible", "forageable"]
+    },
+    {
+      "item_id": "bent_leek",
+      "name": "Bent leek",
+      "description": "Wild leek with a characteristic curved stem",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Pungent onion and garlic",
+      "taste": "Sharp and savory, excellent in cooking",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A staple wild vegetable in Dolmenwood cuisine"
+      },
+      "properties": ["plant", "edible", "forageable"]
+    },
+    {
+      "item_id": "bitter_chestnut",
+      "name": "Bitter chestnut",
+      "description": "Small, dark chestnuts in spiny husks",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Mild and nutty",
+      "taste": "Bitter raw, sweet when roasted",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Must be roasted to remove bitterness"
+      },
+      "properties": ["plant", "edible", "forageable", "requires_cooking"]
+    },
+    {
+      "item_id": "crake_berries",
+      "name": "Crake berries",
+      "description": "Clusters of small black berries on thorny bushes",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Sweet and slightly fermented",
+      "taste": "Tart and juicy with many seeds",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Mildly intoxicating if eaten in large quantities",
+        "condition": "if large quantity consumed"
+      },
+      "properties": ["plant", "edible", "forageable", "intoxicant"]
+    },
+    {
+      "item_id": "cuckoo_sorrel",
+      "name": "Cuckoo sorrel",
+      "description": "Clover-like leaves with a distinctive arrow shape",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Fresh and green",
+      "taste": "Pleasantly sour, refreshing",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Popular as a thirst-quenching trail snack"
+      },
+      "properties": ["plant", "edible", "forageable"]
+    },
+    {
+      "item_id": "drude_root",
+      "name": "Drude root",
+      "description": "Gnarled root with bark-like skin",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Earthy and slightly sweet",
+      "taste": "Starchy and filling, like potato",
+      "consumption_effect": {
+        "effect_type": "energy",
+        "description": "Provides sustained energy; no fatigue for 4 hours",
+        "duration_hours": 4
+      },
+      "properties": ["plant", "edible", "forageable", "energy"]
+    },
+    {
+      "item_id": "fairy_thimble",
+      "name": "Fairy thimble",
+      "description": "Tiny purple bell-shaped flowers on tall stalks",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Intensely sweet and floral",
+      "taste": "Honey-like nectar",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "May cause fey visions after dark",
+        "condition": "after dark"
+      },
+      "properties": ["plant", "edible", "forageable", "psychedelic", "fey_related"]
+    },
+    {
+      "item_id": "fen_pepper",
+      "name": "Fen pepper",
+      "description": "Small red pods growing in marshy areas",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Sharp and spicy",
+      "taste": "Intensely hot, used sparingly as seasoning",
+      "consumption_effect": {
+        "effect_type": "warmth",
+        "description": "Causes intense warmth; resistance to cold for 2 hours",
+        "duration_hours": 2
+      },
+      "properties": ["plant", "edible", "forageable", "warmth", "spicy"]
+    },
+    {
+      "item_id": "gorger_bean",
+      "name": "Gorger bean",
+      "description": "Large, meaty beans in twisted pods",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Earthy and substantial",
+      "taste": "Rich and filling, almost meaty",
+      "consumption_effect": {
+        "effect_type": "double_nourishment",
+        "description": "Very filling; counts as 2 rations worth of food"
+      },
+      "properties": ["plant", "edible", "forageable", "double_nourishment"]
+    },
+    {
+      "item_id": "hob_nut",
+      "name": "Hob nut",
+      "description": "Small hazelnuts with an iridescent sheen",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Sweet and nutty with a strange undertone",
+      "taste": "Delicious but leaves an odd tingling sensation",
+      "consumption_effect": {
+        "effect_type": "save_penalty",
+        "description": "Grants -2 to saves vs magic for 8 hours",
+        "modifier": -2,
+        "duration_hours": 8,
+        "save_type": "magic"
+      },
+      "properties": ["plant", "edible", "forageable", "magic_susceptibility"]
+    },
+    {
+      "item_id": "jellycup",
+      "name": "Jellycup",
+      "description": "Translucent, cup-shaped flowers filled with sweet gel",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Honey and citrus",
+      "taste": "Sweet and tangy jelly",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Causes vivid hallucinations after dark",
+        "condition": "after dark"
+      },
+      "properties": ["plant", "edible", "forageable", "psychedelic"]
+    },
+    {
+      "item_id": "moon_carrot",
+      "name": "Moon carrot",
+      "description": "Pale white root vegetable that glows faintly",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Sweet and carroty",
+      "taste": "Crisp and sweet, sweeter than normal carrots",
+      "consumption_effect": {
+        "effect_type": "vision",
+        "description": "Grants improved night vision for 4 hours",
+        "duration_hours": 4
+      },
+      "properties": ["plant", "edible", "forageable", "night_vision", "luminescent"]
+    },
+    {
+      "item_id": "nettlecress",
+      "name": "Nettlecress",
+      "description": "Stinging nettles with edible cress-like leaves",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Sharp and peppery",
+      "taste": "Peppery and nutritious when cooked",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Must be cooked to remove stinging properties"
+      },
+      "properties": ["plant", "edible", "forageable", "requires_cooking"]
+    },
+    {
+      "item_id": "pigwort",
+      "name": "Pigwort",
+      "description": "Broad, fleshy leaves often found near pig trails",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Green and slightly musky",
+      "taste": "Bland but filling",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Named because pigs love to root for it"
+      },
+      "properties": ["plant", "edible", "forageable"]
+    },
+    {
+      "item_id": "ramp",
+      "name": "Ramp",
+      "description": "Broad-leaved wild onion with a red-tinged stem",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Strong garlic-onion combination",
+      "taste": "Pungent and flavorful, prized in cooking",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A spring delicacy throughout the Wood"
+      },
+      "properties": ["plant", "edible", "forageable", "culinary"]
+    },
+    {
+      "item_id": "sloe_berry",
+      "name": "Sloe berry",
+      "description": "Small, dark blue berries with a dusty bloom",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Faintly sweet",
+      "taste": "Extremely tart, mouth-puckering",
+      "consumption_effect": {
+        "effect_type": "valuable",
+        "description": "Used to make sloe gin; taverns will buy them",
+        "gold_value": "1d4"
+      },
+      "properties": ["plant", "edible", "forageable", "valuable", "brewing_ingredient"]
+    },
+    {
+      "item_id": "sweetmoss",
+      "name": "Sweetmoss",
+      "description": "Soft, verdant moss with a sugary coating",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Fresh rain and honey",
+      "taste": "Sweet and refreshing, melts on the tongue",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "A favorite treat of woodland sprites"
+      },
+      "properties": ["plant", "edible", "forageable", "fey_favored"]
+    },
+    {
+      "item_id": "wanderers_friend",
+      "name": "Wanderer's friend",
+      "description": "Hardy green herb that grows along forest paths",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Clean and medicinal",
+      "taste": "Bitter but restorative",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Heals 1 HP when chewed fresh",
+        "modifier": 1
+      },
+      "properties": ["plant", "edible", "forageable", "healing"]
+    },
+    {
+      "item_id": "wild_garlic",
+      "name": "Wild garlic",
+      "description": "Broad leaves and white star-shaped flowers",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Powerful garlic scent that fills the air",
+      "taste": "Mild garlic flavor, less pungent than cultivated",
+      "consumption_effect": {
+        "effect_type": "none",
+        "description": "Common but always welcome for cooking"
+      },
+      "properties": ["plant", "edible", "forageable", "culinary"]
+    },
+    {
+      "item_id": "wood_apple",
+      "name": "Wood apple",
+      "description": "Small, gnarled crabapple with mottled skin",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "forage_type": "plant",
+      "smell": "Tart apple with woody notes",
+      "taste": "Sour and astringent, better when cooked",
+      "consumption_effect": {
+        "effect_type": "sleep",
+        "description": "Mildly sedative; may cause drowsiness",
+        "duration_hours": 4
+      },
+      "properties": ["plant", "edible", "forageable", "sedative"]
+    }
+  ],
+  "_metadata": {
+    "source_file": "Dolmenwood_Campaign_Book.pdf",
+    "pages": [118, 119],
+    "extraction_note": "Common forageable items from foraging tables, effects apply on consumption"
+  }
+}
