@@ -5064,6 +5064,124 @@ class SocialParticipant:
             possessions=[monster.possessions] if monster.possessions else [],
         )
 
+    def to_dialogue_inputs(
+        self,
+        conversation_topic: str,
+        previous_interactions: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Convert this participant to dialogue input format for the AI layer.
+
+        Returns a dict compatible with NPCDialogueInputs schema.
+
+        Args:
+            conversation_topic: What the player is asking about
+            previous_interactions: Previous conversation points
+
+        Returns:
+            Dict with npc_name, npc_personality, npc_voice, reaction_result,
+            conversation_topic, known_to_npc, hidden_from_player, faction_context
+        """
+        # Build personality description
+        personality_parts = []
+        if self.personality:
+            personality_parts.append(self.personality)
+        if self.demeanor:
+            personality_parts.append(f"Demeanor: {', '.join(self.demeanor)}")
+        if self.alignment and self.alignment != "Neutral":
+            personality_parts.append(f"Alignment: {self.alignment}")
+
+        personality = ". ".join(personality_parts) if personality_parts else "Reserved and cautious"
+
+        # Build voice/speech pattern
+        voice_parts = []
+        if self.speech:
+            voice_parts.append(self.speech)
+        if self.monster_type:
+            voice_parts.append(f"{self.monster_type} creature")
+        if self.sentience == "Semi-Intelligent":
+            voice_parts.append("simple speech, broken sentences")
+        elif self.sentience == "Non-Sentient":
+            voice_parts.append("cannot speak, only gestures and sounds")
+
+        voice = ". ".join(voice_parts) if voice_parts else "Period-appropriate speech"
+
+        # Determine reaction/disposition
+        if self.reaction_result:
+            reaction = self.reaction_result.value
+        elif self.disposition > 2:
+            reaction = "friendly"
+        elif self.disposition < -2:
+            reaction = "hostile"
+        else:
+            reaction = "neutral"
+
+        # Build known topics (what NPC can share)
+        known_topics = []
+        known_topics.extend(self.dialogue_hooks)
+        if self.goals:
+            known_topics.extend([f"Goal: {g}" for g in self.goals])
+        if self.desires:
+            known_topics.extend([f"Wants: {d}" for d in self.desires])
+        if self.possessions:
+            known_topics.append(f"Carries: {', '.join(self.possessions)}")
+        if self.location:
+            known_topics.append(f"From: {self.location}")
+
+        # Quest hooks are known but may require disposition to share
+        for hook in self.quest_hooks:
+            if isinstance(hook, dict):
+                hook_desc = hook.get("description", hook.get("name", str(hook)))
+                known_topics.append(f"Quest opportunity: {hook_desc}")
+            else:
+                known_topics.append(f"Quest opportunity: {hook}")
+
+        # Secrets are hidden from player
+        hidden_topics = list(self.secrets)
+
+        # Add binding info as hidden if present
+        if self.binding:
+            binding_desc = self.binding.get("description", str(self.binding))
+            hidden_topics.append(f"Binding: {binding_desc}")
+
+        # Build faction context
+        faction_parts = []
+        if self.faction:
+            faction_parts.append(f"Member of {self.faction}")
+        for rel in self.relationships:
+            if isinstance(rel, dict):
+                rel_desc = f"{rel.get('type', 'knows')} {rel.get('npc_id', 'someone')}"
+                faction_parts.append(rel_desc)
+
+        faction_context = ". ".join(faction_parts)
+
+        return {
+            "npc_name": self.name,
+            "npc_personality": personality,
+            "npc_voice": voice,
+            "reaction_result": reaction,
+            "conversation_topic": conversation_topic,
+            "known_to_npc": known_topics,
+            "hidden_from_player": hidden_topics,
+            "faction_context": faction_context,
+            "previous_interactions": previous_interactions or [],
+        }
+
+    def get_communication_warning(self) -> Optional[str]:
+        """
+        Get a warning message if this participant cannot communicate normally.
+
+        Returns:
+            Warning string if communication is limited, None otherwise
+        """
+        if not self.can_communicate:
+            return f"{self.name} cannot communicate verbally (sentience: {self.sentience})"
+        if self.sentience == "Semi-Intelligent":
+            return f"{self.name} has limited intelligence and may not understand complex topics"
+        if not self.languages:
+            return f"{self.name} may not share a common language with the party"
+        return None
+
 
 @dataclass
 class SocialContext:

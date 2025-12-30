@@ -766,3 +766,282 @@ class TestTransitionHooks:
 
         # Combat engine should be initialized (from the preserved encounter)
         assert controller_with_encounter.combat_engine is not None
+
+
+class TestSocialContextDialogueIntegration:
+    """Tests for the SocialContext to DMAgent dialogue integration."""
+
+    def test_participant_to_dialogue_inputs(self):
+        """Test that SocialParticipant converts to dialogue inputs correctly."""
+        from src.data_models import SocialParticipant, SocialParticipantType, ReactionResult
+
+        participant = SocialParticipant(
+            participant_id="goblin_chief",
+            name="Grubnak the Smelly",
+            participant_type=SocialParticipantType.MONSTER,
+            personality="Cunning and paranoid",
+            demeanor=["shifty eyes", "nervous twitching"],
+            speech="broken Common, guttural accent",
+            goals=["protect the tribe", "find food"],
+            secrets=["knows location of hidden treasure"],
+            dialogue_hooks=["complains about adventurers", "mentions tribute demands"],
+            faction="Goblin Warrens",
+            reaction_result=ReactionResult.UNFRIENDLY,
+            can_communicate=True,
+        )
+
+        result = participant.to_dialogue_inputs("Where is your lair?")
+
+        assert result["npc_name"] == "Grubnak the Smelly"
+        assert "Cunning and paranoid" in result["npc_personality"]
+        assert "shifty eyes" in result["npc_personality"]
+        assert "broken Common" in result["npc_voice"]
+        assert result["reaction_result"] == "unfriendly"
+        assert result["conversation_topic"] == "Where is your lair?"
+        assert "complains about adventurers" in result["known_to_npc"]
+        assert "Goal: protect the tribe" in result["known_to_npc"]
+        assert "knows location of hidden treasure" in result["hidden_from_player"]
+        assert "Goblin Warrens" in result["faction_context"]
+
+    def test_participant_communication_warning(self):
+        """Test communication warnings for non-sentient creatures."""
+        from src.data_models import SocialParticipant, SocialParticipantType
+
+        # Non-sentient cannot communicate
+        skeleton = SocialParticipant(
+            participant_id="skeleton_1",
+            name="Skeleton",
+            participant_type=SocialParticipantType.MONSTER,
+            sentience="Non-Sentient",
+            can_communicate=False,
+        )
+        warning = skeleton.get_communication_warning()
+        assert warning is not None
+        assert "cannot communicate verbally" in warning
+
+        # Semi-intelligent has limited speech
+        goblin = SocialParticipant(
+            participant_id="goblin_1",
+            name="Goblin",
+            participant_type=SocialParticipantType.MONSTER,
+            sentience="Semi-Intelligent",
+            can_communicate=True,
+        )
+        warning = goblin.get_communication_warning()
+        assert warning is not None
+        assert "limited intelligence" in warning
+
+        # Sentient has no warning
+        elf = SocialParticipant(
+            participant_id="elf_1",
+            name="Elf",
+            participant_type=SocialParticipantType.NPC,
+            sentience="Sentient",
+            can_communicate=True,
+            languages=["Common", "Elvish"],
+        )
+        warning = elf.get_communication_warning()
+        assert warning is None
+
+    def test_social_context_aggregates_secrets(self):
+        """Test that SocialContext aggregates secrets from all participants."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
+        p1 = SocialParticipant(
+            participant_id="npc_1",
+            name="Alice",
+            participant_type=SocialParticipantType.NPC,
+            secrets=["knows about the murder", "has the key"],
+        )
+        p2 = SocialParticipant(
+            participant_id="npc_2",
+            name="Bob",
+            participant_type=SocialParticipantType.NPC,
+            secrets=["witnessed the theft"],
+        )
+
+        context = SocialContext(participants=[p1, p2])
+        all_secrets = context.get_all_secrets()
+
+        assert len(all_secrets) == 3
+        assert "knows about the murder" in all_secrets
+        assert "has the key" in all_secrets
+        assert "witnessed the theft" in all_secrets
+
+    def test_social_context_quest_hook_aggregation(self):
+        """Test that SocialContext aggregates quest hooks from participants."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
+        p1 = SocialParticipant(
+            participant_id="npc_1",
+            name="Quest Giver",
+            participant_type=SocialParticipantType.NPC,
+            quest_hooks=[
+                {"name": "Find the Artifact", "description": "Search the ruins"},
+                {"name": "Rescue the Princess", "description": "She's in the tower"},
+            ],
+        )
+
+        context = SocialContext(participants=[p1])
+        hooks = context.get_all_quest_hooks()
+
+        assert len(hooks) == 2
+        assert hooks[0]["name"] == "Find the Artifact"
+
+    def test_social_context_can_parley(self):
+        """Test SocialContext.can_parley() with mixed participants."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
+        # All can communicate
+        context1 = SocialContext(
+            participants=[
+                SocialParticipant(
+                    participant_id="p1",
+                    name="Talker",
+                    participant_type=SocialParticipantType.NPC,
+                    can_communicate=True,
+                )
+            ]
+        )
+        assert context1.can_parley() is True
+
+        # None can communicate
+        context2 = SocialContext(
+            participants=[
+                SocialParticipant(
+                    participant_id="p1",
+                    name="Mindless",
+                    participant_type=SocialParticipantType.MONSTER,
+                    can_communicate=False,
+                )
+            ]
+        )
+        assert context2.can_parley() is False
+
+        # Mixed - at least one can
+        context3 = SocialContext(
+            participants=[
+                SocialParticipant(
+                    participant_id="p1",
+                    name="Mindless",
+                    participant_type=SocialParticipantType.MONSTER,
+                    can_communicate=False,
+                ),
+                SocialParticipant(
+                    participant_id="p2",
+                    name="Leader",
+                    participant_type=SocialParticipantType.MONSTER,
+                    can_communicate=True,
+                ),
+            ]
+        )
+        assert context3.can_parley() is True
+
+    def test_participant_from_monster(self):
+        """Test creating SocialParticipant from Monster data."""
+        from src.data_models import Monster, SocialParticipant, ReactionResult
+
+        monster = Monster(
+            name="Frost Elf",
+            monster_id="frost_elf",
+            sentience="Sentient",
+            intelligence="High",
+            alignment="Lawful",
+            speech="Speaks Elvish and Common with a cold, formal tone",
+            behavior="Haughty and dismissive of mortals",
+            monster_type="Fairy",
+            encounter_scenarios=["demands tribute", "questions intruders"],
+            page_reference="DMB p.45",
+        )
+
+        participant = SocialParticipant.from_monster(
+            monster,
+            reaction=ReactionResult.NEUTRAL,
+            hex_id="0303",
+        )
+
+        assert participant.name == "Frost Elf"
+        assert participant.sentience == "Sentient"
+        assert participant.can_communicate is True
+        assert participant.monster_type == "Fairy"
+        assert participant.reaction_result == ReactionResult.NEUTRAL
+        assert participant.hex_id == "0303"
+        assert "demands tribute" in participant.dialogue_hooks
+        assert "Haughty and dismissive" in participant.personality
+
+    def test_dialogue_inputs_with_disposition(self):
+        """Test that disposition affects reaction_result in dialogue inputs."""
+        from src.data_models import SocialParticipant, SocialParticipantType
+
+        # High disposition -> friendly
+        friendly_npc = SocialParticipant(
+            participant_id="npc_1",
+            name="Friend",
+            participant_type=SocialParticipantType.NPC,
+            disposition=4,  # High positive
+        )
+        result = friendly_npc.to_dialogue_inputs("Hello")
+        assert result["reaction_result"] == "friendly"
+
+        # Low disposition -> hostile
+        hostile_npc = SocialParticipant(
+            participant_id="npc_2",
+            name="Enemy",
+            participant_type=SocialParticipantType.NPC,
+            disposition=-4,  # High negative
+        )
+        result = hostile_npc.to_dialogue_inputs("Hello")
+        assert result["reaction_result"] == "hostile"
+
+        # Neutral disposition -> neutral
+        neutral_npc = SocialParticipant(
+            participant_id="npc_3",
+            name="Stranger",
+            participant_type=SocialParticipantType.NPC,
+            disposition=0,
+        )
+        result = neutral_npc.to_dialogue_inputs("Hello")
+        assert result["reaction_result"] == "neutral"
+
+    def test_social_context_disposition_tracking(self):
+        """Test that SocialContext tracks disposition changes."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
+        context = SocialContext(
+            participants=[
+                SocialParticipant(
+                    participant_id="npc_1",
+                    name="Merchant",
+                    participant_type=SocialParticipantType.NPC,
+                )
+            ]
+        )
+
+        # Track changes
+        context.add_disposition_change("npc_1", 2)
+        assert context.disposition_changes["npc_1"] == 2
+
+        context.add_disposition_change("npc_1", -1)
+        assert context.disposition_changes["npc_1"] == 1  # 2 + (-1) = 1
+
+    def test_social_context_topic_tracking(self):
+        """Test that SocialContext tracks discussed topics."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
+        context = SocialContext(
+            participants=[
+                SocialParticipant(
+                    participant_id="npc_1",
+                    name="Informant",
+                    participant_type=SocialParticipantType.NPC,
+                )
+            ]
+        )
+
+        assert len(context.topics_discussed) == 0
+
+        context.topics_discussed.append("the weather")
+        context.topics_discussed.append("local rumors")
+
+        assert len(context.topics_discussed) == 2
+        assert "the weather" in context.topics_discussed

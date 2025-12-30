@@ -55,6 +55,9 @@ from src.data_models import (
     Weather,
     Season,
     TimeOfDay,
+    SocialContext,
+    SocialParticipant,
+    SocialOrigin,
 )
 
 
@@ -456,6 +459,239 @@ class DMAgent:
 
         schema = NPCDialogueSchema(inputs)
         return self._execute_schema(schema)
+
+    # =========================================================================
+    # SOCIAL CONTEXT INTEGRATION
+    # =========================================================================
+
+    def generate_dialogue_from_context(
+        self,
+        social_context: SocialContext,
+        conversation_topic: str,
+        participant_index: int = 0,
+    ) -> DescriptionResult:
+        """
+        Generate NPC dialogue using the active social context.
+
+        This is the primary integration point between the game state's
+        SocialContext and the AI dialogue generation.
+
+        Args:
+            social_context: The active social context from GlobalController
+            conversation_topic: What the player is asking about
+            participant_index: Which participant to speak (0 = primary)
+
+        Returns:
+            DescriptionResult with the NPC dialogue
+        """
+        if not social_context.participants:
+            return DescriptionResult(
+                content="[No participants in social context]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=["No participants available for dialogue"],
+            )
+
+        # Get the speaking participant
+        if participant_index >= len(social_context.participants):
+            participant_index = 0
+        participant = social_context.participants[participant_index]
+
+        # Check if participant can communicate
+        warning = participant.get_communication_warning()
+        if warning and not participant.can_communicate:
+            return DescriptionResult(
+                content=f"[{participant.name} cannot communicate verbally]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[warning],
+            )
+
+        # Get previous interactions from context
+        previous = social_context.topics_discussed.copy()
+
+        # Convert participant to dialogue inputs
+        dialogue_data = participant.to_dialogue_inputs(
+            conversation_topic=conversation_topic,
+            previous_interactions=previous,
+        )
+
+        # Create inputs and schema
+        inputs = NPCDialogueInputs(**dialogue_data)
+        schema = NPCDialogueSchema(inputs)
+
+        # Execute and track the topic
+        result = self._execute_schema(schema)
+
+        # Add topic to discussed list if successful
+        if result.success and conversation_topic not in social_context.topics_discussed:
+            social_context.topics_discussed.append(conversation_topic)
+
+        # Add communication warning if present
+        if warning:
+            result.warnings.append(warning)
+
+        return result
+
+    def generate_dialogue_for_participant(
+        self,
+        participant: SocialParticipant,
+        conversation_topic: str,
+        previous_topics: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate dialogue for a specific SocialParticipant.
+
+        Use this when you have a participant but not a full SocialContext,
+        such as when talking to a fixed hex NPC directly.
+
+        Args:
+            participant: The SocialParticipant to voice
+            conversation_topic: What the player is asking about
+            previous_topics: Previously discussed topics
+
+        Returns:
+            DescriptionResult with the NPC dialogue
+        """
+        # Check communication capability
+        warning = participant.get_communication_warning()
+        if warning and not participant.can_communicate:
+            return DescriptionResult(
+                content=f"[{participant.name} cannot communicate verbally]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[warning],
+            )
+
+        # Convert to dialogue inputs
+        dialogue_data = participant.to_dialogue_inputs(
+            conversation_topic=conversation_topic,
+            previous_interactions=previous_topics,
+        )
+
+        inputs = NPCDialogueInputs(**dialogue_data)
+        schema = NPCDialogueSchema(inputs)
+        result = self._execute_schema(schema)
+
+        if warning:
+            result.warnings.append(warning)
+
+        return result
+
+    def frame_social_encounter(
+        self,
+        social_context: SocialContext,
+    ) -> DescriptionResult:
+        """
+        Generate the opening framing for a social interaction.
+
+        This describes the initial scene when entering SOCIAL_INTERACTION state,
+        setting the mood and introducing the participants.
+
+        Args:
+            social_context: The social context being entered
+
+        Returns:
+            DescriptionResult with the scene framing
+        """
+        if not social_context.participants:
+            return DescriptionResult(
+                content="[No participants to describe]",
+                schema_used=PromptSchemaType.EXPLORATION_DESCRIPTION,
+                success=False,
+                warnings=["No participants in social context"],
+            )
+
+        # Build participant descriptions
+        participant_descs = []
+        for p in social_context.participants:
+            desc_parts = [p.name]
+            if p.demeanor:
+                desc_parts.append(f"({', '.join(p.demeanor)})")
+            if p.stat_reference:
+                desc_parts.append(f"[{p.stat_reference}]")
+            participant_descs.append(" ".join(desc_parts))
+
+        # Determine the tone based on reaction
+        if social_context.initial_reaction:
+            reaction = social_context.initial_reaction.value
+        else:
+            reaction = "neutral"
+
+        tone_map = {
+            "hostile": "tense, dangerous",
+            "unfriendly": "wary, suspicious",
+            "neutral": "cautious, evaluating",
+            "friendly": "open, welcoming",
+            "helpful": "warm, eager to assist",
+        }
+        tone = tone_map.get(reaction, "uncertain")
+
+        # Build location context
+        location_parts = []
+        if social_context.poi_name:
+            location_parts.append(social_context.poi_name)
+        if social_context.hex_id:
+            location_parts.append(f"Hex {social_context.hex_id}")
+        if social_context.location_description:
+            location_parts.append(social_context.location_description)
+
+        location_summary = ". ".join(location_parts) if location_parts else "The encounter location"
+
+        # Origin context
+        origin_text = {
+            SocialOrigin.ENCOUNTER_PARLEY: "After the initial encounter, conversation has begun",
+            SocialOrigin.COMBAT_PARLEY: "Combat has paused as both sides attempt to negotiate",
+            SocialOrigin.SETTLEMENT: "In the settlement, a conversation begins",
+            SocialOrigin.HEX_NPC: "You encounter a notable figure",
+            SocialOrigin.POI_NPC: "At this location, you meet someone",
+        }.get(social_context.origin, "A social encounter begins")
+
+        # Use exploration description schema for framing
+        sensory_tags = ["voices", "tension" if reaction in ("hostile", "unfriendly") else "anticipation"]
+
+        inputs = ExplorationDescriptionInputs(
+            current_state="social_interaction",
+            location_summary=f"{origin_text}. Participants: {', '.join(participant_descs)}. "
+                           f"Location: {location_summary}. Mood: {tone}.",
+            sensory_tags=sensory_tags,
+            known_threats=[] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"],
+        )
+
+        schema = ExplorationDescriptionSchema(inputs)
+        return self._execute_schema(schema)
+
+    def get_social_context_summary(self, social_context: SocialContext) -> str:
+        """
+        Get a text summary of the social context for logging or debugging.
+
+        Args:
+            social_context: The social context to summarize
+
+        Returns:
+            Human-readable summary string
+        """
+        lines = [
+            f"Social Context ({social_context.origin.value}):",
+            f"  Participants: {len(social_context.participants)}",
+        ]
+
+        for i, p in enumerate(social_context.participants):
+            can_talk = "can communicate" if p.can_communicate else "CANNOT communicate"
+            lines.append(f"    {i+1}. {p.name} ({p.participant_type.value}) - {can_talk}")
+            if p.secrets:
+                lines.append(f"       Secrets: {len(p.secrets)} hidden topics")
+            if p.quest_hooks:
+                lines.append(f"       Quest hooks: {len(p.quest_hooks)} available")
+
+        if social_context.initial_reaction:
+            lines.append(f"  Initial reaction: {social_context.initial_reaction.value}")
+        if social_context.topics_discussed:
+            lines.append(f"  Topics discussed: {', '.join(social_context.topics_discussed)}")
+        if social_context.return_state:
+            lines.append(f"  Return state: {social_context.return_state}")
+
+        return "\n".join(lines)
 
     # =========================================================================
     # FAILURE DESCRIPTIONS
