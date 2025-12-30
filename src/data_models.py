@@ -4405,6 +4405,10 @@ class CharacterState:
     # Experience points
     experience_points: int = 0
 
+    # Temporary save bonuses (one-time use, e.g., fairy fish blessing)
+    # Format: {"deadly": {"bonus": 4, "source": "Queen's salmon", "one_time": True}}
+    temporary_save_bonuses: dict[str, dict[str, Any]] = field(default_factory=dict)
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -4575,6 +4579,85 @@ class CharacterState:
         else:  # SLOT system
             equipped, stowed = self.calculate_slot_encumbrance()
             return EncumbranceCalculator.is_over_slot_capacity(equipped, stowed)
+
+    # =========================================================================
+    # SAVE BONUSES (for one-time effects like fairy blessings)
+    # =========================================================================
+
+    def add_save_bonus(
+        self,
+        save_category: str,
+        bonus: int,
+        source: str,
+        one_time: bool = True,
+    ) -> None:
+        """
+        Add a temporary save bonus.
+
+        Args:
+            save_category: Category of saves this applies to ("deadly", "all", "doom", etc.)
+            bonus: The bonus value (e.g., +4)
+            source: What granted this bonus (e.g., "Queen's salmon")
+            one_time: Whether the bonus is consumed after one use
+        """
+        self.temporary_save_bonuses[save_category] = {
+            "bonus": bonus,
+            "source": source,
+            "one_time": one_time,
+        }
+
+    def get_save_bonus(self, save_type: str, is_deadly: bool = False) -> int:
+        """
+        Get any temporary save bonus that applies.
+
+        Args:
+            save_type: The type of save being made (doom, ray, hold, blast, spell)
+            is_deadly: Whether this is a deadly effect (death, petrification, poison)
+
+        Returns:
+            Total temporary bonus to apply
+        """
+        bonus = 0
+
+        # Check for specific save type bonus
+        if save_type in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses[save_type]["bonus"]
+
+        # Check for "deadly" category (death, petrification, poison)
+        if is_deadly and "deadly" in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses["deadly"]["bonus"]
+
+        # Check for "all" saves bonus
+        if "all" in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses["all"]["bonus"]
+
+        return bonus
+
+    def consume_save_bonus(self, save_type: str, is_deadly: bool = False) -> None:
+        """
+        Consume one-time save bonuses after they're used.
+
+        Call this after a save is made to remove one-time bonuses.
+        """
+        to_remove = []
+
+        # Check specific save type
+        if save_type in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses[save_type].get("one_time", True):
+                to_remove.append(save_type)
+
+        # Check deadly category
+        if is_deadly and "deadly" in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses["deadly"].get("one_time", True):
+                to_remove.append("deadly")
+
+        # Check all saves
+        if "all" in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses["all"].get("one_time", True):
+                to_remove.append("all")
+
+        for key in to_remove:
+            del self.temporary_save_bonuses[key]
 
     # =========================================================================
     # INVENTORY MANAGEMENT

@@ -1353,6 +1353,7 @@ class HexCrawlEngine:
         character_id: str,
         method: str = "foraging",
         full_day: bool = False,
+        accept_blessing: bool = False,
     ) -> HazardResult:
         """
         Attempt to find food in the wild per Dolmenwood rules (p152).
@@ -1360,10 +1361,16 @@ class HexCrawlEngine:
         Includes hex-specific foraging_special yields when available.
         For example, hex 0102 yields Sage Toe in addition to normal foraging.
 
+        For fishing (Campaign Book p116-117), this also handles:
+        - First-timer dangers (Gurney/Puffer damage)
+        - Monster attraction (Screaming jenny triggers wandering monster)
+        - Fairy blessings (Queen's salmon offers +4 save bonus if released)
+
         Args:
             character_id: ID of the foraging character
             method: "foraging", "fishing", or "hunting"
             full_day: Whether spending full day foraging (+2 bonus)
+            accept_blessing: Whether to accept a fairy fish blessing (releases fish)
 
         Returns:
             HazardResult with outcomes including rations found and special yields
@@ -1395,13 +1402,78 @@ class HexCrawlEngine:
 
         from src.narrative.intent_parser import ActionType
 
-        return self.narrative_resolver.hazard_resolver.resolve_foraging(
+        result = self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=season,
             full_day=full_day,
             foraging_special=foraging_special,
         )
+
+        # Apply fishing-specific effects (Campaign Book p116-117)
+        if method == "fishing" and result.success:
+            # Apply damage from first-timer dangers (Gurney, Puffer)
+            if result.damage_dealt > 0:
+                self.controller.apply_damage(
+                    character_id, result.damage_dealt, result.damage_type
+                )
+
+            # Apply conditions
+            for condition in result.conditions_applied:
+                self.controller.apply_condition(character_id, condition, "fishing")
+
+            # Handle fairy fish blessing (Queen's salmon)
+            if result.blessing_offered and accept_blessing:
+                # Player chose to release the fish for the blessing
+                # Add the save bonus (+4 to next save vs deadly effect)
+                blessing_bonus = 4  # Default Queen's salmon bonus
+                fish_name = result.fish_caught.get("name", "fairy fish")
+                for event in result.catch_events:
+                    if event.get("type") == "blessing_offered":
+                        blessing_bonus = event.get("bonus", 4)
+                        break
+
+                # Apply the blessing as a temporary save bonus
+                character.add_save_bonus(
+                    save_category="deadly",
+                    bonus=blessing_bonus,
+                    source=fish_name,
+                    one_time=True,
+                )
+
+                # Fish was released, no rations gained
+                result.rations_found = 0
+                result.description = (
+                    f"Released the {fish_name} in exchange for its blessing! "
+                    f"(+{blessing_bonus} to next save vs deadly effect)"
+                )
+
+            # Trigger wandering monster encounter if fish attracted one
+            if result.monster_attracted:
+                # Screaming jenny attracted a wandering monster!
+                current_hex = self._state.current_hex
+                if current_hex:
+                    hex_data = self._get_hex_data(current_hex)
+                    terrain = hex_data.terrain_type if hex_data else TerrainType.FOREST
+
+                    # Generate and trigger the encounter
+                    encounter = self._generate_encounter(current_hex, terrain)
+                    self.controller.set_encounter(encounter)
+                    self.controller.transition(
+                        "encounter_triggered",
+                        context={
+                            "hex_id": current_hex,
+                            "source": "screaming_jenny",
+                            "description": "The fish's shriek attracted something!",
+                        },
+                    )
+                    # Add to result for caller awareness
+                    result.catch_events.append({
+                        "type": "monster_encounter_triggered",
+                        "description": "The shriek attracted a wandering monster!",
+                    })
+
+        return result
 
     # =========================================================================
     # HEX OVERVIEW AND POI VISIBILITY

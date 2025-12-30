@@ -1334,15 +1334,50 @@ class HazardResolver:
             )
 
         # Step 7: Check for first-timer dangers (Gurney, Puffer)
+        # These fish deal damage to inexperienced anglers who fail their save
+        damage_dealt = 0
+        conditions_applied: list[str] = []
+
         if fish.catch_effect.requires_experience:
-            # Track fish experience on character (simplified - always treat as first time)
-            catch_events.append({
-                "type": "first_timer_danger",
-                "save_type": fish.catch_effect.save_type,
-                "damage": fish.catch_effect.damage,
-                "description": fish.catch_effect.description,
-            })
-            narrative_hints.append(fish.catch_effect.description)
+            # Roll save (using the save type from the fish)
+            save_type = fish.catch_effect.save_type or "doom"
+            save_roll = self.dice.roll_d20(f"Save vs {save_type} ({fish.name})")
+
+            # Get appropriate ability modifier for save
+            save_ability = "CON" if save_type == "doom" else "DEX" if save_type == "blast" else "WIS"
+            save_mod = character.get_ability_modifier(save_ability)
+            save_total = save_roll.total + save_mod
+
+            # Target is typically 15 for saves vs effects
+            save_target = kwargs.get("save_difficulty", 15)
+            save_success = save_total >= save_target
+
+            if not save_success and fish.catch_effect.damage:
+                # Roll the damage
+                damage_roll = self.dice.roll(fish.catch_effect.damage, f"{fish.name} damage")
+                damage_dealt = damage_roll.total
+                catch_events.append({
+                    "type": "first_timer_danger",
+                    "save_type": save_type,
+                    "save_roll": save_total,
+                    "save_target": save_target,
+                    "save_success": False,
+                    "damage_dealt": damage_dealt,
+                    "description": f"Save failed! {fish.catch_effect.description}",
+                })
+                narrative_hints.append(f"The {fish.name} caught you off guard!")
+            else:
+                catch_events.append({
+                    "type": "first_timer_danger",
+                    "save_type": save_type,
+                    "save_roll": save_total,
+                    "save_target": save_target,
+                    "save_success": True,
+                    "damage_dealt": 0,
+                    "description": f"Avoided the danger! {fish.catch_effect.description}",
+                })
+                if not save_success:
+                    narrative_hints.append(f"Careful handling avoided the {fish.name}'s danger")
 
         # Step 8: Roll for rations
         rations = roll_fish_rations(fish, has_pipe_music=has_pipe_music)
@@ -1365,6 +1400,8 @@ class HazardResolver:
             hazard_type=HazardType.HUNGER,
             action_type=ActionType.FISH,
             description=desc,
+            damage_dealt=damage_dealt,
+            damage_type="fishing_hazard" if damage_dealt > 0 else "",
             check_made=True,
             check_result=survival_roll + survival_bonus,
             check_target=survival_target,
@@ -1375,5 +1412,6 @@ class HazardResolver:
             treasure_found=treasure,
             monster_attracted=monster_attracted,
             blessing_offered=blessing_offered,
+            conditions_applied=conditions_applied,
             narrative_hints=narrative_hints,
         )

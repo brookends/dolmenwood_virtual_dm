@@ -299,6 +299,107 @@ class TestCharacterState:
         assert character.calculate_encumbrance() == 50 + 100 + 70
 
 
+class TestSaveBonuses:
+    """Tests for temporary save bonus functionality (e.g., fairy fish blessing)."""
+
+    def test_add_save_bonus(self):
+        """Test adding a temporary save bonus."""
+        character = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=9,
+            base_speed=40,
+        )
+
+        character.add_save_bonus(
+            save_category="deadly",
+            bonus=4,
+            source="Queen's salmon",
+            one_time=True,
+        )
+
+        assert "deadly" in character.temporary_save_bonuses
+        assert character.temporary_save_bonuses["deadly"]["bonus"] == 4
+        assert character.temporary_save_bonuses["deadly"]["source"] == "Queen's salmon"
+
+    def test_get_save_bonus_deadly(self):
+        """Test getting save bonus for deadly effects."""
+        character = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=9,
+            base_speed=40,
+        )
+
+        character.add_save_bonus("deadly", 4, "Queen's salmon")
+
+        # Should apply to deadly saves
+        assert character.get_save_bonus("doom", is_deadly=True) == 4
+        # Should NOT apply to non-deadly saves
+        assert character.get_save_bonus("doom", is_deadly=False) == 0
+
+    def test_consume_one_time_bonus(self):
+        """Test that one-time bonuses are consumed after use."""
+        character = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=9,
+            base_speed=40,
+        )
+
+        character.add_save_bonus("deadly", 4, "Queen's salmon", one_time=True)
+
+        # Bonus should be there
+        assert character.get_save_bonus("doom", is_deadly=True) == 4
+
+        # Consume it
+        character.consume_save_bonus("doom", is_deadly=True)
+
+        # Should be gone
+        assert character.get_save_bonus("doom", is_deadly=True) == 0
+        assert "deadly" not in character.temporary_save_bonuses
+
+    def test_permanent_bonus_not_consumed(self):
+        """Test that non-one-time bonuses persist."""
+        character = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=9,
+            base_speed=40,
+        )
+
+        character.add_save_bonus("all", 2, "Magic ring", one_time=False)
+
+        # Bonus should be there
+        assert character.get_save_bonus("doom") == 2
+
+        # Try to consume it
+        character.consume_save_bonus("doom")
+
+        # Should still be there (permanent)
+        assert character.get_save_bonus("doom") == 2
+
+
 class TestEncumbranceSpeed:
     """Tests for encumbrance speed calculations and scaling."""
 
