@@ -622,12 +622,22 @@ class DungeonEngine:
             LocationType.DUNGEON_ROOM, exit_target, sub_location=self._dungeon_state.dungeon_id
         )
 
-        return {
+        # Check for undetected traps in the new room
+        new_room = self._dungeon_state.rooms[exit_target]
+        trap_results = self._check_room_traps(new_room, params.get("character_id"))
+
+        result: dict[str, Any] = {
             "success": True,
             "message": f"Moved to {exit_target}",
             "new_room": exit_target,
             "noise": 1,  # Normal movement noise
         }
+
+        if trap_results:
+            result["traps_triggered"] = trap_results
+            result["noise"] = 3  # Increase noise due to trap
+
+        return result
 
     def _handle_search(self, params: dict[str, Any]) -> dict[str, Any]:
         """
@@ -888,11 +898,20 @@ class DungeonEngine:
 
             trigger_roll = self.dice.roll_d6(1, "trap trigger")
             if trigger_roll.total == 1:
+                # Resolve and apply legacy trap effects
+                trap_result = self._resolve_and_apply_trap(
+                    None, character_id, trap_hazard
+                )
                 return {
                     "success": False,
                     "message": "Trap triggered!",
                     "trap_triggered": True,
                     "trap_effect": trap_hazard.effect,
+                    "trap_result": {
+                        "damage_dealt": trap_result.damage_dealt,
+                        "conditions_applied": trap_result.conditions_applied,
+                        "description": trap_result.description,
+                    },
                     "noise": 3,
                 }
 
@@ -953,11 +972,137 @@ class DungeonEngine:
         }
 
         if result.trap_triggered:
+            # Resolve and apply trap effects to the character
+            trap_result = self._resolve_and_apply_trap(
+                trap_obj, character_id, trap_hazard
+            )
             response["trap_triggered"] = True
             response["trap_effect"] = trap_obj.effect.to_dict()
+            response["trap_result"] = {
+                "damage_dealt": trap_result.damage_dealt,
+                "conditions_applied": trap_result.conditions_applied,
+                "description": trap_result.description,
+            }
             response["noise"] = 3
 
         return response
+
+    def _check_room_traps(
+        self,
+        room: "DungeonRoom",
+        character_id: Optional[str],
+    ) -> list[dict[str, Any]]:
+        """
+        Check for and trigger undetected traps when entering a room.
+
+        Per Campaign Book p102-103, undetected traps have a chance to trigger
+        when characters interact with the trapped area.
+
+        Args:
+            room: The room being entered
+            character_id: ID of the character entering (leader of marching order)
+
+        Returns:
+            List of trap results if any traps triggered
+        """
+        triggered_traps = []
+
+        for hazard in room.hazards:
+            # Skip detected, disarmed, or already triggered traps
+            if hazard.detected or hazard.disarmed or getattr(hazard, 'triggered', False):
+                continue
+
+            # Get trap object if using new system
+            trap_obj = getattr(hazard, "trap_object", None)
+
+            # Determine trigger chance
+            trigger_chance = getattr(hazard, 'trigger_chance', 2)
+
+            # Roll to see if trap triggers
+            trigger_roll = self.dice.roll_d6(1, f"trap trigger: {hazard.hazard_id}")
+
+            if trigger_roll.total <= trigger_chance:
+                # Trap triggered!
+                trap_result = self._resolve_and_apply_trap(
+                    trap_obj, character_id, hazard
+                )
+
+                triggered_traps.append({
+                    "hazard_id": hazard.hazard_id,
+                    "name": hazard.name,
+                    "damage_dealt": trap_result.damage_dealt,
+                    "conditions_applied": trap_result.conditions_applied,
+                    "description": trap_result.description,
+                    "narrative_hints": trap_result.narrative_hints,
+                })
+
+        return triggered_traps
+
+    def _resolve_and_apply_trap(
+        self,
+        trap_obj: Optional[Any],
+        character_id: Optional[str],
+        trap_hazard: Any,
+    ) -> "HazardResult":
+        """
+        Resolve a triggered trap and apply its effects to the game state.
+
+        This method:
+        1. Uses the hazard resolver to determine trap effects
+        2. Applies damage to the affected character(s)
+        3. Applies any conditions from the trap
+
+        Args:
+            trap_obj: Trap object from trap_tables (or None for legacy traps)
+            character_id: ID of the character who triggered the trap
+            trap_hazard: The hazard object from the room
+
+        Returns:
+            HazardResult with trap resolution details
+        """
+        from src.narrative.hazard_resolver import HazardResult, HazardType, ActionType
+
+        # Get the character
+        character = None
+        if character_id:
+            character = self.controller.get_character(character_id)
+
+        if character is None:
+            # No character to apply effects to - return minimal result
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.TRAP,
+                action_type=ActionType.NARRATIVE_ACTION,
+                description="Trap triggered but no target",
+            )
+
+        # Get trap parameters
+        trap_type = getattr(trap_hazard, 'trap_type', 'generic')
+        trap_damage = getattr(trap_hazard, 'damage', '1d6')
+        trigger_chance = getattr(trap_hazard, 'trigger_chance', 2)
+
+        # Use hazard resolver to resolve the trap (trigger check already passed)
+        # We call _resolve_trap directly with trigger_chance high enough to guarantee trigger
+        result = self.narrative_resolver.hazard_resolver._resolve_trap(
+            character=character,
+            trap_type=trap_type,
+            trap_damage=trap_damage,
+            trigger_chance=6,  # Guarantee trigger since we already determined it triggered
+            trap=trap_obj,
+        )
+
+        # Apply damage to the character
+        for target_id, damage in result.apply_damage:
+            self.controller.apply_damage(target_id, damage, "trap")
+
+        # Apply conditions to the character
+        for target_id, condition in result.apply_conditions:
+            self.controller.apply_condition(target_id, condition, "trap")
+
+        # Mark trap as triggered (it may reset or be destroyed depending on type)
+        trap_hazard.triggered = True
+
+        return result
 
     def _handle_rest(self, params: dict[str, Any]) -> dict[str, Any]:
         """

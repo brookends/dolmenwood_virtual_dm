@@ -102,6 +102,10 @@ class HazardResult:
     conditions_applied: list[str] = field(default_factory=list)
     penalties_applied: dict[str, int] = field(default_factory=dict)
 
+    # Effects to apply to game state (target_id, value)
+    apply_damage: list[tuple[str, int]] = field(default_factory=list)
+    apply_conditions: list[tuple[str, str]] = field(default_factory=list)
+
     # For LLM narration
     narrative_hints: list[str] = field(default_factory=list)
 
@@ -1034,9 +1038,16 @@ class HazardResolver:
                 ],
             )
 
+        # Get character ID for applying effects
+        character_id = getattr(character, 'character_id', None)
+
         # If no trap object provided, use legacy behavior
         if trap is None:
             damage_roll = self.dice.roll(trap_damage, f"{trap_type} trap damage")
+            apply_damage = []
+            if damage_roll.total > 0 and character_id:
+                apply_damage.append((character_id, damage_roll.total))
+
             return HazardResult(
                 success=False,
                 hazard_type=HazardType.TRAP,
@@ -1044,6 +1055,7 @@ class HazardResolver:
                 description=f"Trap triggered! Took {damage_roll.total} damage",
                 damage_dealt=damage_roll.total,
                 damage_type=trap_type,
+                apply_damage=apply_damage,
                 check_made=True,
                 check_result=trigger_roll.total,
                 check_target=trigger_chance,
@@ -1143,6 +1155,16 @@ class HazardResolver:
                 f"Can attempt {effect.escape_check} check DC {effect.escape_dc} to escape"
             )
 
+        # Build apply lists for game state updates
+        apply_damage: list[tuple[str, int]] = []
+        apply_conditions: list[tuple[str, str]] = []
+
+        if character_id:
+            if damage_dealt > 0:
+                apply_damage.append((character_id, damage_dealt))
+            for condition in conditions:
+                apply_conditions.append((character_id, condition))
+
         return HazardResult(
             success=False,
             hazard_type=HazardType.TRAP,
@@ -1151,6 +1173,8 @@ class HazardResolver:
             damage_dealt=damage_dealt,
             damage_type=trap.effect.effect_type.value,
             conditions_applied=conditions,
+            apply_damage=apply_damage,
+            apply_conditions=apply_conditions,
             check_made=True,
             check_result=trigger_roll.total,
             check_target=trigger_chance,
