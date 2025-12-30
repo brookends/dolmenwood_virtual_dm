@@ -630,16 +630,29 @@ class DungeonEngine:
         }
 
     def _handle_search(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Handle searching the current area."""
+        """
+        Handle searching the current area per Campaign Book p155.
+
+        Search procedure:
+        1. Takes 1 turn (10 minutes) per 10x10 area
+        2. 2-in-6 chance to find hidden features, secret doors, and detect traps
+        3. Even on failed trap detection, provide exploration clues
+
+        Returns:
+            Dictionary with found features, traps, secret doors, and exploration clues
+        """
+        from src.tables.trap_tables import get_exploration_clues
+
         current_room = self._dungeon_state.rooms.get(self._dungeon_state.current_room)
         if not current_room:
             return {"success": False, "message": "Current room unknown"}
 
-        results = {
+        results: dict[str, Any] = {
             "success": True,
             "found_features": [],
             "found_traps": [],
             "found_secret_doors": [],
+            "exploration_clues": [],  # Hints about undetected traps
             "noise": 1,
         }
 
@@ -651,13 +664,43 @@ class DungeonEngine:
                     feature.discovered = True
                     results["found_features"].append(feature.name)
 
-        # Check for traps
+        # Check for traps with exploration clues
         for hazard in current_room.hazards:
             if not hazard.detected:
                 roll = self.dice.roll_d6(1, f"detect trap: {hazard.hazard_id}")
-                if roll.total <= 2:  # 2-in-6 chance
+
+                if roll.total <= 2:  # 2-in-6 chance to fully detect
                     hazard.detected = True
-                    results["found_traps"].append(hazard.name)
+                    trap_info = {"name": hazard.name, "hazard_id": hazard.hazard_id}
+
+                    # Include trap details if using new trap system
+                    trap_obj = getattr(hazard, "trap_object", None)
+                    if trap_obj:
+                        trap_info["category"] = trap_obj.category.value
+                        trap_info["trigger"] = trap_obj.trigger.value
+                        trap_info["disarm_method"] = trap_obj.get_disarm_method()
+
+                    results["found_traps"].append(trap_info)
+
+                elif roll.total <= 4:  # 3-4: Partial clue (per Campaign Book p155)
+                    # Provide exploration clues even on failed detection
+                    trap_obj = getattr(hazard, "trap_object", None)
+                    if trap_obj:
+                        clues = get_exploration_clues(trap_obj)
+                        if clues:
+                            # Pick a random clue
+                            clue_roll = self.dice.roll(f"1d{len(clues)}", "clue selection")
+                            clue = clues[clue_roll.total - 1]
+                            results["exploration_clues"].append({
+                                "clue": clue,
+                                "area": f"near {hazard.name}" if hazard.name != "unknown" else "this area",
+                            })
+                    else:
+                        # Generic clue for legacy traps
+                        results["exploration_clues"].append({
+                            "clue": "Something seems off about this area",
+                            "area": "this area",
+                        })
 
         # Check for secret doors
         for direction, door_state in current_room.doors.items():
@@ -772,7 +815,32 @@ class DungeonEngine:
         }
 
     def _handle_disarm_trap(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Handle disarming a detected trap."""
+        """
+        Handle disarming a detected trap per Campaign Book p102-103.
+
+        Disarm rules by category:
+        - PIT: Cannot be disarmed, only bypassed (jump, bridge, climb around)
+        - ARCHITECTURAL: Cannot be disarmed, only bypassed (jam, avoid)
+        - MECHANISM: Requires thief with Disarm Mechanism ability
+        - MAGICAL: Requires Dispel Magic spell or knowing the password
+
+        Args:
+            params: Must include trap_id, character_id, and optionally:
+                - disarm_chance: Thief's Disarm Mechanism percentage
+                - has_dispel_magic: Whether using Dispel Magic spell
+                - dispel_check: Caster level for dispel check
+                - knows_password: Whether character knows the password
+
+        Returns:
+            Result of disarm attempt
+        """
+        from src.tables.trap_tables import (
+            TrapCategory,
+            can_attempt_disarm,
+            attempt_disarm,
+            get_bypass_options,
+        )
+
         trap_id = params.get("trap_id")
         character_id = params.get("character_id")
 
@@ -780,50 +848,116 @@ class DungeonEngine:
         if not current_room:
             return {"success": False, "message": "Current room unknown"}
 
-        # Find the trap
-        trap = None
+        # Find the trap hazard
+        trap_hazard = None
         for hazard in current_room.hazards:
             if hazard.hazard_id == trap_id:
-                trap = hazard
+                trap_hazard = hazard
                 break
 
-        if not trap:
+        if not trap_hazard:
             return {"success": False, "message": "Trap not found", "noise": 0}
 
-        if not trap.detected:
+        if not trap_hazard.detected:
             return {"success": False, "message": "Must detect trap first", "noise": 0}
 
-        if trap.disarmed:
+        if trap_hazard.disarmed:
             return {"success": True, "message": "Trap already disarmed", "noise": 0}
 
-        # Thief ability check
-        roll = self.dice.roll_percentile("disarm trap")
-        threshold = 20  # Placeholder
+        # Get character info
+        character = self.controller.get_character(character_id) if character_id else None
+        character_class = "fighter"  # Default
+        if character and hasattr(character, "character_class"):
+            character_class = character.character_class.lower()
 
-        if roll.total <= threshold:
-            trap.disarmed = True
+        # Get trap object if it has the new category system
+        trap_obj = getattr(trap_hazard, "trap_object", None)
+
+        if trap_obj is None:
+            # Legacy trap without category - use old behavior
+            roll = self.dice.roll_percentile("disarm trap")
+            threshold = params.get("disarm_chance", 20)
+
+            if roll.total <= threshold:
+                trap_hazard.disarmed = True
+                return {
+                    "success": True,
+                    "message": "Trap disarmed!",
+                    "noise": 1,
+                }
+
+            trigger_roll = self.dice.roll_d6(1, "trap trigger")
+            if trigger_roll.total == 1:
+                return {
+                    "success": False,
+                    "message": "Trap triggered!",
+                    "trap_triggered": True,
+                    "trap_effect": trap_hazard.effect,
+                    "noise": 3,
+                }
+
             return {
-                "success": True,
-                "message": "Trap disarmed!",
+                "success": False,
+                "message": "Failed to disarm trap",
                 "noise": 1,
             }
 
-        # Check for triggering trap on failure
-        trigger_roll = self.dice.roll_d6(1, "trap trigger")
-        if trigger_roll.total == 1:
+        # Use category-based disarm rules
+        has_dispel = params.get("has_dispel_magic", False)
+        knows_password = params.get("knows_password", False)
+
+        # Check if disarm is even possible
+        can_disarm, reason = can_attempt_disarm(
+            trap_obj, character_class, has_dispel, knows_password
+        )
+
+        if not can_disarm:
+            # Provide bypass options for non-disarmable traps
+            bypass_options = get_bypass_options(trap_obj)
             return {
                 "success": False,
-                "message": "Trap triggered!",
-                "trap_triggered": True,
-                "trap_effect": trap.effect,
-                "noise": 3,
+                "message": reason,
+                "can_disarm": False,
+                "bypass_options": bypass_options,
+                "noise": 0,
             }
 
-        return {
+        # Attempt disarm
+        disarm_chance = params.get("disarm_chance", 20)
+        dispel_check = params.get("dispel_check")
+
+        result = attempt_disarm(
+            trap=trap_obj,
+            character_class=character_class,
+            disarm_chance=disarm_chance,
+            dice=self.dice,
+            has_dispel_magic=has_dispel,
+            dispel_check=dispel_check,
+            knows_password=knows_password,
+        )
+
+        if result.success:
+            trap_hazard.disarmed = True
+            return {
+                "success": True,
+                "message": result.message,
+                "method": result.method_used,
+                "noise": 1,
+            }
+
+        response = {
             "success": False,
-            "message": "Failed to disarm trap",
+            "message": result.message,
+            "method": result.method_used,
             "noise": 1,
         }
+
+        if result.trap_triggered:
+            response["trap_triggered"] = True
+            response["trap_effect"] = trap_obj.effect.to_dict()
+            response["noise"] = 3
+
+        return response
 
     def _handle_rest(self, params: dict[str, Any]) -> dict[str, Any]:
         """

@@ -989,13 +989,32 @@ class HazardResolver:
         trap_type: str = "generic",
         trap_damage: str = "1d6",
         trigger_chance: int = TRAP_TRIGGER_CHANCE,
+        trap: Optional[Any] = None,  # Trap object from trap_tables
         **kwargs: Any,
     ) -> HazardResult:
         """
-        Resolve triggering a trap (p155).
+        Resolve triggering a trap per Campaign Book p102-103.
 
-        2-in-6 chance of trap springing (or higher for well-maintained).
+        Trap resolution procedure:
+        1. Check trigger chance (2-in-6 standard, 3-4 for well-maintained)
+        2. If triggered, resolve effect based on trap type:
+           - Save-based effects: Character makes appropriate save
+           - Attack-based effects: Trap makes attack roll(s)
+           - Instant effects: Apply damage/condition immediately
+        3. Apply conditions and track duration for ongoing effects
+
+        Args:
+            character: The character triggering the trap
+            trap_type: Type of trap (for legacy compatibility)
+            trap_damage: Damage dice (for legacy compatibility)
+            trigger_chance: X-in-6 chance of triggering
+            trap: Full Trap object from trap_tables (if available)
+
+        Returns:
+            HazardResult with detailed trap outcomes
         """
+        from src.tables.trap_tables import Trap, TrapEffectType, TRAP_EFFECTS
+
         # Check if trap triggers
         trigger_roll = self.dice.roll_d6(1, "Trap trigger check")
         triggered = trigger_roll.total <= trigger_chance
@@ -1015,21 +1034,153 @@ class HazardResolver:
                 ],
             )
 
-        # Trap triggered - apply effects
-        damage_roll = self.dice.roll(trap_damage, f"{trap_type} trap damage")
+        # If no trap object provided, use legacy behavior
+        if trap is None:
+            damage_roll = self.dice.roll(trap_damage, f"{trap_type} trap damage")
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.TRAP,
+                action_type=ActionType.NARRATIVE_ACTION,
+                description=f"Trap triggered! Took {damage_roll.total} damage",
+                damage_dealt=damage_roll.total,
+                damage_type=trap_type,
+                check_made=True,
+                check_result=trigger_roll.total,
+                check_target=trigger_chance,
+                narrative_hints=["trap springs", f"{trap_type} strikes"],
+            )
+
+        # Use full trap resolution with proper mechanics
+        effect = trap.effect
+        damage_dealt = 0
+        conditions: list[str] = []
+        save_made = False
+        save_result = 0
+        attack_hits: list[dict] = []
+        narrative_hints = [trap.effect.description]
+
+        # Handle different effect types
+        if effect.save_type:
+            # Effect requires a save
+            save_result = self._roll_save(character, effect.save_type)
+            save_target = kwargs.get("save_dc", 15)
+            save_made = save_result >= save_target
+
+            if save_made:
+                if effect.save_negates:
+                    # Save completely negates the effect
+                    narrative_hints.append("barely avoided the effect!")
+                elif effect.damage_on_save:
+                    # Reduced damage on save
+                    damage_roll = self.dice.roll(effect.damage_on_save, "trap damage (saved)")
+                    damage_dealt = damage_roll.total
+                    narrative_hints.append("partially avoided the worst")
+            else:
+                # Failed save
+                if effect.damage:
+                    damage_roll = self.dice.roll(effect.damage, "trap damage")
+                    damage_dealt = damage_roll.total
+                if effect.condition_applied:
+                    conditions.append(effect.condition_applied)
+                    narrative_hints.append(f"afflicted with {effect.condition_applied}")
+
+        elif effect.attack_bonus is not None:
+            # Effect makes attack rolls (arrow volley, spear wall, etc.)
+            num_attacks = 1
+            if effect.num_attacks:
+                num_attacks = self.dice.roll(effect.num_attacks, "number of attacks").total
+
+            for i in range(num_attacks):
+                attack_roll = self.dice.roll_d20(f"trap attack {i + 1}")
+                attack_total = attack_roll.total + effect.attack_bonus
+                target_ac = character.armor_class if hasattr(character, 'armor_class') else 10
+
+                if attack_total >= target_ac:
+                    # Hit
+                    damage_roll = self.dice.roll(effect.damage or "1d6", f"trap damage {i + 1}")
+                    damage_dealt += damage_roll.total
+                    attack_hits.append({
+                        "attack": i + 1,
+                        "roll": attack_total,
+                        "damage": damage_roll.total,
+                        "hit": True,
+                    })
+                else:
+                    attack_hits.append({
+                        "attack": i + 1,
+                        "roll": attack_total,
+                        "hit": False,
+                    })
+
+            if attack_hits:
+                hits = sum(1 for a in attack_hits if a["hit"])
+                narrative_hints.append(f"{hits} of {num_attacks} attacks hit")
+
+        else:
+            # Instant effect or special mechanic
+            if effect.damage:
+                damage_roll = self.dice.roll(effect.damage, "trap damage")
+                damage_dealt = damage_roll.total
+            if effect.condition_applied:
+                conditions.append(effect.condition_applied)
+
+        # Build description
+        desc_parts = [f"{trap.name} triggered!"]
+        if damage_dealt > 0:
+            desc_parts.append(f"Took {damage_dealt} damage")
+        if conditions:
+            desc_parts.append(f"Conditions: {', '.join(conditions)}")
+
+        # Include duration info if applicable
+        if effect.duration_rounds:
+            narrative_hints.append(f"effect lasts {effect.duration_rounds} rounds")
+        elif effect.duration_turns:
+            narrative_hints.append(f"effect lasts {effect.duration_turns} turns")
+
+        # Include escape info if applicable
+        if effect.escape_check and conditions:
+            narrative_hints.append(
+                f"Can attempt {effect.escape_check} check DC {effect.escape_dc} to escape"
+            )
 
         return HazardResult(
             success=False,
             hazard_type=HazardType.TRAP,
             action_type=ActionType.NARRATIVE_ACTION,
-            description=f"Trap triggered! Took {damage_roll.total} damage",
-            damage_dealt=damage_roll.total,
-            damage_type=trap_type,
+            description=" ".join(desc_parts),
+            damage_dealt=damage_dealt,
+            damage_type=trap.effect.effect_type.value,
+            conditions_applied=conditions,
             check_made=True,
             check_result=trigger_roll.total,
             check_target=trigger_chance,
-            narrative_hints=["trap springs", f"{trap_type} strikes"],
+            narrative_hints=narrative_hints,
         )
+
+    def _roll_save(self, character: "CharacterState", save_type: str) -> int:
+        """
+        Roll a saving throw for a character.
+
+        Args:
+            character: The character making the save
+            save_type: Type of save (doom, blast, ray, etc.)
+
+        Returns:
+            Total save result (d20 + modifier)
+        """
+        # Map save types to ability modifiers
+        save_abilities = {
+            "doom": "CON",
+            "blast": "DEX",
+            "ray": "DEX",
+            "spell": "WIS",
+            "wand": "WIS",
+        }
+
+        ability = save_abilities.get(save_type.lower(), "CON")
+        modifier = character.get_ability_modifier(ability)
+        roll = self.dice.roll_d20(f"Save vs {save_type}")
+        return roll.total + modifier
 
     def resolve_foraging(
         self,
