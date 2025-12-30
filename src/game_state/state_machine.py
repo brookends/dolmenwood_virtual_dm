@@ -529,6 +529,29 @@ class StateMachine:
         )
         self._state_history.append(log_entry)
 
+        # Also log to RunLog for observability
+        self._log_to_run_log(from_state, to_state, trigger, context)
+
+    def _log_to_run_log(
+        self,
+        from_state: str,
+        to_state: str,
+        trigger: str,
+        context: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Log transition to the observability RunLog."""
+        try:
+            from src.observability.run_log import get_run_log
+
+            get_run_log().log_transition(
+                from_state=from_state,
+                to_state=to_state,
+                trigger=trigger,
+                context=context,
+            )
+        except ImportError:
+            pass  # Observability module not available
+
     def get_state_info(self) -> dict[str, Any]:
         """
         Get information about the current state for display/debugging.

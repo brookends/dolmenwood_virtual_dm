@@ -378,15 +378,26 @@ class TableManager:
                 entry = e
                 break
 
+        result_text = entry.result if entry else "No matching entry"
+
         result = TableResult(
             table_id=table_id,
             table_name=table.name,
             category=table.category,
             roll_total=roll_total,
-            dice_rolled=dice_rolled,
+            dice_rolled=dice_result.rolls,
             modifier_applied=total_modifier,
             entry=entry,
-            result_text=entry.result if entry else "No matching entry",
+            result_text=result_text,
+        )
+
+        # Log to RunLog for observability
+        self._log_table_lookup(
+            table_id=table_id,
+            table_name=table.name,
+            roll_total=roll_total,
+            result_text=result_text,
+            modifier_applied=total_modifier,
         )
 
         # Resolve quantity if specified
@@ -399,6 +410,28 @@ class TableManager:
             result.sub_results.append(sub_result)
 
         return result
+
+    def _log_table_lookup(
+        self,
+        table_id: str,
+        table_name: str,
+        roll_total: int,
+        result_text: str,
+        modifier_applied: int = 0,
+    ) -> None:
+        """Log a table lookup to the observability RunLog."""
+        try:
+            from src.observability.run_log import get_run_log
+
+            get_run_log().log_table_lookup(
+                table_id=table_id,
+                table_name=table_name,
+                roll_total=roll_total,
+                result_text=result_text,
+                modifier_applied=modifier_applied,
+            )
+        except ImportError:
+            pass  # Observability module not available
 
     def _roll_dice_notation(self, notation: str) -> int:
         """

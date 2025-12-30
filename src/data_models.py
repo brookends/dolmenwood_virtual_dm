@@ -256,11 +256,17 @@ class DiceRoller:
     """
     Centralized randomization interface.
     All dice rolls must go through this class for reproducibility and logging.
+
+    Supports:
+    - Seeded random generation for reproducibility
+    - Integration with RunLog for observability
+    - Replay mode for deterministic replay of recorded sessions
     """
 
     _instance = None
     _seed: Optional[int] = None
     _roll_log: list = []
+    _replay_session: Any = None  # ReplaySession when in replay mode
 
     def __new__(cls):
         if cls._instance is None:
@@ -272,11 +278,73 @@ class DiceRoller:
         """Set random seed for reproducibility."""
         cls._seed = seed
         random.seed(seed)
+        # Also notify RunLog of the seed
+        cls._notify_run_log_seed(seed)
+
+    @classmethod
+    def get_seed(cls) -> Optional[int]:
+        """Get the current seed."""
+        return cls._seed
+
+    @classmethod
+    def _notify_run_log_seed(cls, seed: int) -> None:
+        """Notify RunLog of the seed (lazy import to avoid circular deps)."""
+        try:
+            from src.observability.run_log import get_run_log
+
+            get_run_log().set_seed(seed)
+        except ImportError:
+            pass  # Observability module not available
+
+    @classmethod
+    def set_replay_session(cls, session: Any) -> None:
+        """
+        Set a replay session for deterministic replay.
+
+        When a replay session is active and in replay mode, rolls will
+        return recorded values instead of generating new random numbers.
+
+        Args:
+            session: ReplaySession instance or None to disable
+        """
+        cls._replay_session = session
+
+    @classmethod
+    def get_replay_session(cls) -> Any:
+        """Get the current replay session if any."""
+        return cls._replay_session
+
+    @classmethod
+    def is_replaying(cls) -> bool:
+        """Check if currently in replay mode."""
+        if cls._replay_session is None:
+            return False
+        return cls._replay_session.is_replaying()
+
+    @classmethod
+    def _log_to_run_log(
+        cls, notation: str, rolls: list[int], modifier: int, total: int, reason: str
+    ) -> None:
+        """Log a roll to the RunLog (lazy import to avoid circular deps)."""
+        try:
+            from src.observability.run_log import get_run_log
+
+            get_run_log().log_roll(
+                notation=notation,
+                rolls=rolls,
+                modifier=modifier,
+                total=total,
+                reason=reason,
+            )
+        except ImportError:
+            pass  # Observability module not available
 
     @classmethod
     def roll(cls, dice: str, reason: str = "") -> "DiceResult":
         """
         Roll dice using standard notation (e.g., '2d6', '1d20+5', '3d6-2').
+
+        In replay mode, returns recorded values instead of generating new rolls.
 
         Args:
             dice: Dice notation string
@@ -300,7 +368,25 @@ class DiceRoller:
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
-        # Roll the dice
+        # Check for replay mode
+        if cls.is_replaying() and cls._replay_session.has_next_roll():
+            recorded = cls._replay_session.get_next_roll()
+            if recorded:
+                rolls = recorded.get("rolls", [])
+                total = recorded.get("total", sum(rolls) + modifier)
+                result = DiceResult(
+                    notation=dice,
+                    rolls=rolls,
+                    modifier=modifier,
+                    total=total,
+                    reason=reason,
+                )
+                cls._roll_log.append(result)
+                # Still log to RunLog for observability during replay
+                cls._log_to_run_log(dice, rolls, modifier, total, reason)
+                return result
+
+        # Normal roll: generate random values
         rolls = [random.randint(1, die_size) for _ in range(num_dice)]
         total = sum(rolls) + modifier
 
@@ -309,6 +395,8 @@ class DiceRoller:
         )
 
         cls._roll_log.append(result)
+        # Log to RunLog for observability
+        cls._log_to_run_log(dice, rolls, modifier, total, reason)
         return result
 
     @classmethod
@@ -337,6 +425,7 @@ class DiceRoller:
         Generate a random integer in range [min_val, max_val] (inclusive).
 
         Logged for reproducibility. Use this instead of random.randint().
+        Supports replay mode.
 
         Args:
             min_val: Minimum value (inclusive)
@@ -346,16 +435,36 @@ class DiceRoller:
         Returns:
             Random integer in the specified range
         """
+        notation = f"range({min_val}-{max_val})"
+
+        # Check for replay mode
+        if cls.is_replaying() and cls._replay_session.has_next_roll():
+            recorded = cls._replay_session.get_next_roll()
+            if recorded:
+                result = recorded.get("total", recorded.get("rolls", [min_val])[0])
+                log_entry = DiceResult(
+                    notation=notation,
+                    rolls=[result],
+                    modifier=0,
+                    total=result,
+                    reason=reason,
+                )
+                cls._roll_log.append(log_entry)
+                cls._log_to_run_log(notation, [result], 0, result, reason)
+                return result
+
+        # Normal roll
         result = random.randint(min_val, max_val)
         # Log as a pseudo-dice roll for consistency
         log_entry = DiceResult(
-            notation=f"range({min_val}-{max_val})",
+            notation=notation,
             rolls=[result],
             modifier=0,
             total=result,
             reason=reason,
         )
         cls._roll_log.append(log_entry)
+        cls._log_to_run_log(notation, [result], 0, result, reason)
         return result
 
     @classmethod
@@ -364,6 +473,7 @@ class DiceRoller:
         Select a random item from a list.
 
         Logged for reproducibility. Use this instead of random.choice().
+        Supports replay mode.
 
         Args:
             items: List of items to choose from
@@ -374,17 +484,42 @@ class DiceRoller:
         """
         if not items:
             raise ValueError("Cannot choose from empty list")
+
+        notation = f"choice(1-{len(items)})"
+
+        # Check for replay mode
+        if cls.is_replaying() and cls._replay_session.has_next_roll():
+            recorded = cls._replay_session.get_next_roll()
+            if recorded:
+                index = recorded.get("total", 1) - 1  # Convert 1-indexed to 0-indexed
+                index = max(0, min(index, len(items) - 1))  # Clamp to valid range
+                result = items[index]
+                full_reason = f"{reason}: selected '{result}'" if reason else f"selected '{result}'"
+                log_entry = DiceResult(
+                    notation=notation,
+                    rolls=[index + 1],
+                    modifier=0,
+                    total=index + 1,
+                    reason=full_reason,
+                )
+                cls._roll_log.append(log_entry)
+                cls._log_to_run_log(notation, [index + 1], 0, index + 1, full_reason)
+                return result
+
+        # Normal choice
         index = random.randint(0, len(items) - 1)
         result = items[index]
         # Log as a pseudo-dice roll
+        full_reason = f"{reason}: selected '{result}'" if reason else f"selected '{result}'"
         log_entry = DiceResult(
-            notation=f"choice(1-{len(items)})",
+            notation=notation,
             rolls=[index + 1],  # 1-indexed for readability
             modifier=0,
             total=index + 1,
-            reason=f"{reason}: selected '{result}'" if reason else f"selected '{result}'",
+            reason=full_reason,
         )
         cls._roll_log.append(log_entry)
+        cls._log_to_run_log(notation, [index + 1], 0, index + 1, full_reason)
         return result
 
     @classmethod
