@@ -53,19 +53,49 @@ class LocationType(str, Enum):
 
 
 class TerrainType(str, Enum):
-    """Terrain types affecting travel speed and encounters."""
+    """
+    Official Dolmenwood terrain types affecting travel and encounters.
 
-    FOREST = "forest"
-    DEEP_FOREST = "deep_forest"
-    MOOR = "moor"
-    RIVER = "river"
-    LAKE = "lake"
-    HILLS = "hills"
-    MOUNTAINS = "mountains"
-    ROAD = "road"
-    TRAIL = "trail"
-    SWAMP = "swamp"
+    Per Campaign Book p156-157:
+
+    Light Terrain (2 TP, 1-in-6 lost/encounter, mounts/vehicles OK):
+    - FARMLAND: Tilled fields and lanes
+    - FUNGAL_FOREST: Giant fungi, few trees
+    - HILLS: Undulating grassland
+    - MEADOW: Flat grassland
+    - OPEN_FOREST: Light, airy woods
+
+    Moderate Terrain (3 TP, 2-in-6 lost/encounter, mounts led, no vehicles):
+    - BOG: Treeless mire
+    - HILLY_FOREST: Undulating woods
+    - TANGLED_FOREST: Dense, gloomy woods
+
+    Difficult Terrain (4 TP, 3-in-6 lost/encounter, no mounts/vehicles):
+    - BOGGY_FOREST: Wet, muddy woods
+    - CRAGGY_FOREST: Broken terrain, cliffs
+    - SWAMP: Wetland, sparse trees
+    - THORNY_FOREST: Dense thorn thickets
+    """
+
+    # Light Terrain (2 TP, 1-in-6)
     FARMLAND = "farmland"
+    FUNGAL_FOREST = "fungal_forest"
+    HILLS = "hills"
+    MEADOW = "meadow"
+    OPEN_FOREST = "open_forest"
+
+    # Moderate Terrain (3 TP, 2-in-6)
+    BOG = "bog"
+    HILLY_FOREST = "hilly_forest"
+    TANGLED_FOREST = "tangled_forest"
+
+    # Difficult Terrain (4 TP, 3-in-6)
+    BOGGY_FOREST = "boggy_forest"
+    CRAGGY_FOREST = "craggy_forest"
+    SWAMP = "swamp"
+    THORNY_FOREST = "thorny_forest"
+
+    # Special (used for route context, not terrain)
     SETTLEMENT = "settlement"
 
 
@@ -1768,6 +1798,13 @@ class Item:
     is_materialized: bool = True  # False = needs random properties generated on first encounter
     materialization_template: Optional[str] = None  # Template ID for generating properties
 
+    # Consumable item properties (for foraged items, potions, etc.)
+    # Effect applied when item is consumed (eaten, drunk, applied, etc.)
+    consumption_effect: Optional[dict[str, Any]] = None  # Effect metadata from foraging tables
+    forage_type: Optional[str] = None  # "fungi" or "plant" for foraged items
+    smell: Optional[str] = None  # Sensory description
+    taste: Optional[str] = None  # Sensory description
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1826,6 +1863,11 @@ class Item:
             # Materialization tracking
             "is_materialized": self.is_materialized,
             "materialization_template": self.materialization_template,
+            # Consumable properties
+            "consumption_effect": self.consumption_effect,
+            "forage_type": self.forage_type,
+            "smell": self.smell,
+            "taste": self.taste,
         }
 
     @classmethod
@@ -1865,6 +1907,11 @@ class Item:
             # Materialization tracking
             is_materialized=data.get("is_materialized", True),
             materialization_template=data.get("materialization_template"),
+            # Consumable properties
+            consumption_effect=data.get("consumption_effect"),
+            forage_type=data.get("forage_type"),
+            smell=data.get("smell"),
+            taste=data.get("taste"),
         )
 
     @classmethod
@@ -4036,9 +4083,45 @@ class WorldState:
     active_threats: list[Threat] = field(default_factory=list)
     active_adventure: Optional[str] = None
 
+    # Enhanced weather from Dolmenwood Campaign Book
+    weather_description: str = ""  # Evocative description (e.g., "Befuddling green fog")
+    weather_effects_flags: int = 0  # WeatherEffect flags as int (I=1, V=2, W=4)
+
+    # Unseason tracking (Hitching, Colliggwyld, Chame, Vague)
+    active_unseason: str = "none"  # Unseason enum value as string
+    unseason_days_remaining: int = 0
+
     def __post_init__(self):
         # Ensure season matches date
         self.season = self.current_date.get_season()
+
+    @property
+    def travel_point_penalty(self) -> int:
+        """Get Travel Points penalty from weather effects (I flag)."""
+        # WeatherEffect.IMPEDED = 1
+        return 2 if (self.weather_effects_flags & 1) else 0
+
+    @property
+    def lost_chance_modifier(self) -> int:
+        """Get modifier to lost chance from weather effects (V flag)."""
+        # WeatherEffect.VISIBILITY = 2
+        return 1 if (self.weather_effects_flags & 2) else 0
+
+    @property
+    def encounter_distance_halved(self) -> bool:
+        """Check if encounter distance should be halved (V flag)."""
+        return bool(self.weather_effects_flags & 2)
+
+    @property
+    def campfire_difficult(self) -> bool:
+        """Check if building campfire is difficult (W flag)."""
+        # WeatherEffect.WET = 4
+        return bool(self.weather_effects_flags & 4)
+
+    @property
+    def has_active_unseason(self) -> bool:
+        """Check if an unseason is currently active."""
+        return self.active_unseason != "none" and self.unseason_days_remaining > 0
 
 
 # =============================================================================
@@ -4352,6 +4435,10 @@ class CharacterState:
     # Experience points
     experience_points: int = 0
 
+    # Temporary save bonuses (one-time use, e.g., fairy fish blessing)
+    # Format: {"deadly": {"bonus": 4, "source": "Queen's salmon", "one_time": True}}
+    temporary_save_bonuses: dict[str, dict[str, Any]] = field(default_factory=dict)
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -4522,6 +4609,85 @@ class CharacterState:
         else:  # SLOT system
             equipped, stowed = self.calculate_slot_encumbrance()
             return EncumbranceCalculator.is_over_slot_capacity(equipped, stowed)
+
+    # =========================================================================
+    # SAVE BONUSES (for one-time effects like fairy blessings)
+    # =========================================================================
+
+    def add_save_bonus(
+        self,
+        save_category: str,
+        bonus: int,
+        source: str,
+        one_time: bool = True,
+    ) -> None:
+        """
+        Add a temporary save bonus.
+
+        Args:
+            save_category: Category of saves this applies to ("deadly", "all", "doom", etc.)
+            bonus: The bonus value (e.g., +4)
+            source: What granted this bonus (e.g., "Queen's salmon")
+            one_time: Whether the bonus is consumed after one use
+        """
+        self.temporary_save_bonuses[save_category] = {
+            "bonus": bonus,
+            "source": source,
+            "one_time": one_time,
+        }
+
+    def get_save_bonus(self, save_type: str, is_deadly: bool = False) -> int:
+        """
+        Get any temporary save bonus that applies.
+
+        Args:
+            save_type: The type of save being made (doom, ray, hold, blast, spell)
+            is_deadly: Whether this is a deadly effect (death, petrification, poison)
+
+        Returns:
+            Total temporary bonus to apply
+        """
+        bonus = 0
+
+        # Check for specific save type bonus
+        if save_type in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses[save_type]["bonus"]
+
+        # Check for "deadly" category (death, petrification, poison)
+        if is_deadly and "deadly" in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses["deadly"]["bonus"]
+
+        # Check for "all" saves bonus
+        if "all" in self.temporary_save_bonuses:
+            bonus += self.temporary_save_bonuses["all"]["bonus"]
+
+        return bonus
+
+    def consume_save_bonus(self, save_type: str, is_deadly: bool = False) -> None:
+        """
+        Consume one-time save bonuses after they're used.
+
+        Call this after a save is made to remove one-time bonuses.
+        """
+        to_remove = []
+
+        # Check specific save type
+        if save_type in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses[save_type].get("one_time", True):
+                to_remove.append(save_type)
+
+        # Check deadly category
+        if is_deadly and "deadly" in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses["deadly"].get("one_time", True):
+                to_remove.append("deadly")
+
+        # Check all saves
+        if "all" in self.temporary_save_bonuses:
+            if self.temporary_save_bonuses["all"].get("one_time", True):
+                to_remove.append("all")
+
+        for key in to_remove:
+            del self.temporary_save_bonuses[key]
 
     # =========================================================================
     # INVENTORY MANAGEMENT

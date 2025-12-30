@@ -601,11 +601,22 @@ class NarrativeResolver:
         }
 
         method = method_map.get(parsed.action_type, "foraging")
+
+        # Get active unseason from context (if available)
+        active_unseason = context.get("active_unseason")
+
+        # If controller is available, get unseason state from world state
+        if self.controller and not active_unseason:
+            world_state = getattr(self.controller, "world_state", None)
+            if world_state:
+                active_unseason = getattr(world_state, "active_unseason", None)
+
         result = self.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=context.get("season", "normal"),
             full_day=context.get("full_day", False),
+            active_unseason=active_unseason,
             **context,
         )
 
@@ -618,6 +629,12 @@ class NarrativeResolver:
             narrative_hints=result.narrative_hints,
             rule_reference="p152 - Finding Food in the Wild",
         )
+
+        # Add Colliggwyld narrative hints if active
+        if active_unseason == "colliggwyld":
+            narration.narrative_hints.append(
+                "Giant fungi bloom throughout the wood during Colliggwyld"
+            )
 
         if result.success and "rations" in result.description:
             # Extract ration count from description

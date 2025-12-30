@@ -17,6 +17,33 @@ if TYPE_CHECKING:
     from src.data_models import CharacterState, DiceRoller, ArmorWeight
 
 from src.narrative.intent_parser import ActionType, ResolutionType, CheckType, ParsedIntent
+from src.tables.foraging_tables import (
+    ForageableItem,
+    ForageType,
+    roll_forage_type,
+    roll_foraged_item,
+    roll_forage_quantity,
+    is_fungi,
+)
+from src.tables.fishing_tables import (
+    CatchableFish,
+    roll_fish,
+    roll_fish_rations,
+    check_treasure_in_fish,
+    check_monster_attracted,
+    fish_requires_landing_check,
+    fish_triggers_combat,
+    fish_is_fairy,
+)
+from src.tables.hunting_tables import (
+    GameAnimal,
+    TerrainType as HuntingTerrainType,
+    roll_game_animal,
+    roll_number_appearing,
+    roll_encounter_distance,
+    calculate_rations_yield,
+    get_hunting_terrain,
+)
 
 
 class HazardType(str, Enum):
@@ -75,6 +102,10 @@ class HazardResult:
     conditions_applied: list[str] = field(default_factory=list)
     penalties_applied: dict[str, int] = field(default_factory=dict)
 
+    # Effects to apply to game state (target_id, value)
+    apply_damage: list[tuple[str, int]] = field(default_factory=list)
+    apply_conditions: list[tuple[str, str]] = field(default_factory=list)
+
     # For LLM narration
     narrative_hints: list[str] = field(default_factory=list)
 
@@ -84,6 +115,26 @@ class HazardResult:
     # Diving-specific
     rounds_underwater: int = 0
     rounds_remaining: int = 0
+
+    # Foraging-specific
+    foraged_items: list[dict[str, Any]] = field(default_factory=list)
+    rations_found: int = 0
+
+    # Fishing-specific (Campaign Book p116-117)
+    fish_caught: Optional[dict[str, Any]] = None  # The fish species caught
+    landing_required: Optional[dict[str, Any]] = None  # Landing check needed
+    catch_events: list[dict[str, Any]] = field(default_factory=list)  # Events during catch
+    treasure_found: Optional[dict[str, Any]] = None  # Treasure in fish belly
+    monster_attracted: bool = False  # Screaming jenny effect
+    combat_triggered: bool = False  # Giant catfish
+    blessing_offered: bool = False  # Queen's salmon
+
+    # Hunting-specific (Campaign Book p120-121)
+    game_animal: Optional[dict[str, Any]] = None  # The game animal found
+    number_appearing: int = 0  # How many animals in the group
+    encounter_distance: int = 0  # Starting distance in feet (1d4 × 30')
+    party_has_surprise: bool = False  # Party always has surprise when hunting
+    potential_rations: int = 0  # Rations if all animals killed
 
 
 @dataclass
@@ -942,13 +993,32 @@ class HazardResolver:
         trap_type: str = "generic",
         trap_damage: str = "1d6",
         trigger_chance: int = TRAP_TRIGGER_CHANCE,
+        trap: Optional[Any] = None,  # Trap object from trap_tables
         **kwargs: Any,
     ) -> HazardResult:
         """
-        Resolve triggering a trap (p155).
+        Resolve triggering a trap per Campaign Book p102-103.
 
-        2-in-6 chance of trap springing (or higher for well-maintained).
+        Trap resolution procedure:
+        1. Check trigger chance (2-in-6 standard, 3-4 for well-maintained)
+        2. If triggered, resolve effect based on trap type:
+           - Save-based effects: Character makes appropriate save
+           - Attack-based effects: Trap makes attack roll(s)
+           - Instant effects: Apply damage/condition immediately
+        3. Apply conditions and track duration for ongoing effects
+
+        Args:
+            character: The character triggering the trap
+            trap_type: Type of trap (for legacy compatibility)
+            trap_damage: Damage dice (for legacy compatibility)
+            trigger_chance: X-in-6 chance of triggering
+            trap: Full Trap object from trap_tables (if available)
+
+        Returns:
+            HazardResult with detailed trap outcomes
         """
+        from src.tables.trap_tables import Trap, TrapEffectType, TRAP_EFFECTS
+
         # Check if trap triggers
         trigger_roll = self.dice.roll_d6(1, "Trap trigger check")
         triggered = trigger_roll.total <= trigger_chance
@@ -968,21 +1038,173 @@ class HazardResolver:
                 ],
             )
 
-        # Trap triggered - apply effects
-        damage_roll = self.dice.roll(trap_damage, f"{trap_type} trap damage")
+        # Get character ID for applying effects
+        character_id = getattr(character, 'character_id', None)
+
+        # If no trap object provided, use legacy behavior
+        if trap is None:
+            damage_roll = self.dice.roll(trap_damage, f"{trap_type} trap damage")
+            apply_damage = []
+            if damage_roll.total > 0 and character_id:
+                apply_damage.append((character_id, damage_roll.total))
+
+            return HazardResult(
+                success=False,
+                hazard_type=HazardType.TRAP,
+                action_type=ActionType.NARRATIVE_ACTION,
+                description=f"Trap triggered! Took {damage_roll.total} damage",
+                damage_dealt=damage_roll.total,
+                damage_type=trap_type,
+                apply_damage=apply_damage,
+                check_made=True,
+                check_result=trigger_roll.total,
+                check_target=trigger_chance,
+                narrative_hints=["trap springs", f"{trap_type} strikes"],
+            )
+
+        # Use full trap resolution with proper mechanics
+        effect = trap.effect
+        damage_dealt = 0
+        conditions: list[str] = []
+        save_made = False
+        save_result = 0
+        attack_hits: list[dict] = []
+        narrative_hints = [trap.effect.description]
+
+        # Handle different effect types
+        if effect.save_type:
+            # Effect requires a save
+            save_result = self._roll_save(character, effect.save_type)
+            save_target = kwargs.get("save_dc", 15)
+            save_made = save_result >= save_target
+
+            if save_made:
+                if effect.save_negates:
+                    # Save completely negates the effect
+                    narrative_hints.append("barely avoided the effect!")
+                elif effect.damage_on_save:
+                    # Reduced damage on save
+                    damage_roll = self.dice.roll(effect.damage_on_save, "trap damage (saved)")
+                    damage_dealt = damage_roll.total
+                    narrative_hints.append("partially avoided the worst")
+            else:
+                # Failed save
+                if effect.damage:
+                    damage_roll = self.dice.roll(effect.damage, "trap damage")
+                    damage_dealt = damage_roll.total
+                if effect.condition_applied:
+                    conditions.append(effect.condition_applied)
+                    narrative_hints.append(f"afflicted with {effect.condition_applied}")
+
+        elif effect.attack_bonus is not None:
+            # Effect makes attack rolls (arrow volley, spear wall, etc.)
+            num_attacks = 1
+            if effect.num_attacks:
+                num_attacks = self.dice.roll(effect.num_attacks, "number of attacks").total
+
+            for i in range(num_attacks):
+                attack_roll = self.dice.roll_d20(f"trap attack {i + 1}")
+                attack_total = attack_roll.total + effect.attack_bonus
+                target_ac = character.armor_class if hasattr(character, 'armor_class') else 10
+
+                if attack_total >= target_ac:
+                    # Hit
+                    damage_roll = self.dice.roll(effect.damage or "1d6", f"trap damage {i + 1}")
+                    damage_dealt += damage_roll.total
+                    attack_hits.append({
+                        "attack": i + 1,
+                        "roll": attack_total,
+                        "damage": damage_roll.total,
+                        "hit": True,
+                    })
+                else:
+                    attack_hits.append({
+                        "attack": i + 1,
+                        "roll": attack_total,
+                        "hit": False,
+                    })
+
+            if attack_hits:
+                hits = sum(1 for a in attack_hits if a["hit"])
+                narrative_hints.append(f"{hits} of {num_attacks} attacks hit")
+
+        else:
+            # Instant effect or special mechanic
+            if effect.damage:
+                damage_roll = self.dice.roll(effect.damage, "trap damage")
+                damage_dealt = damage_roll.total
+            if effect.condition_applied:
+                conditions.append(effect.condition_applied)
+
+        # Build description
+        desc_parts = [f"{trap.name} triggered!"]
+        if damage_dealt > 0:
+            desc_parts.append(f"Took {damage_dealt} damage")
+        if conditions:
+            desc_parts.append(f"Conditions: {', '.join(conditions)}")
+
+        # Include duration info if applicable
+        if effect.duration_rounds:
+            narrative_hints.append(f"effect lasts {effect.duration_rounds} rounds")
+        elif effect.duration_turns:
+            narrative_hints.append(f"effect lasts {effect.duration_turns} turns")
+
+        # Include escape info if applicable
+        if effect.escape_check and conditions:
+            narrative_hints.append(
+                f"Can attempt {effect.escape_check} check DC {effect.escape_dc} to escape"
+            )
+
+        # Build apply lists for game state updates
+        apply_damage: list[tuple[str, int]] = []
+        apply_conditions: list[tuple[str, str]] = []
+
+        if character_id:
+            if damage_dealt > 0:
+                apply_damage.append((character_id, damage_dealt))
+            for condition in conditions:
+                apply_conditions.append((character_id, condition))
 
         return HazardResult(
             success=False,
             hazard_type=HazardType.TRAP,
             action_type=ActionType.NARRATIVE_ACTION,
-            description=f"Trap triggered! Took {damage_roll.total} damage",
-            damage_dealt=damage_roll.total,
-            damage_type=trap_type,
+            description=" ".join(desc_parts),
+            damage_dealt=damage_dealt,
+            damage_type=trap.effect.effect_type.value,
+            conditions_applied=conditions,
+            apply_damage=apply_damage,
+            apply_conditions=apply_conditions,
             check_made=True,
             check_result=trigger_roll.total,
             check_target=trigger_chance,
-            narrative_hints=["trap springs", f"{trap_type} strikes"],
+            narrative_hints=narrative_hints,
         )
+
+    def _roll_save(self, character: "CharacterState", save_type: str) -> int:
+        """
+        Roll a saving throw for a character.
+
+        Args:
+            character: The character making the save
+            save_type: Type of save (doom, blast, ray, etc.)
+
+        Returns:
+            Total save result (d20 + modifier)
+        """
+        # Map save types to ability modifiers
+        save_abilities = {
+            "doom": "CON",
+            "blast": "DEX",
+            "ray": "DEX",
+            "spell": "WIS",
+            "wand": "WIS",
+        }
+
+        ability = save_abilities.get(save_type.lower(), "CON")
+        modifier = character.get_ability_modifier(ability)
+        roll = self.dice.roll_d20(f"Save vs {save_type}")
+        return roll.total + modifier
 
     def resolve_foraging(
         self,
@@ -990,18 +1212,41 @@ class HazardResolver:
         method: str = "foraging",
         season: str = "normal",
         full_day: bool = False,
+        foraging_bonus: float = 1.0,
+        active_unseason: Optional[str] = None,
         **kwargs: Any,
     ) -> HazardResult:
         """
-        Resolve finding food in the wild (p152).
+        Resolve finding food in the wild per Campaign Book (p118-119, p152).
 
-        Fishing: 2d6 rations on success
-        Foraging: 1d6 (1d4 winter, 1d8 autumn)
+        Procedure for foraging:
+        1. Make a Survival check
+        2. On success, roll d6: 1-3 = fungi, 4-6 = plants
+        3. Roll d20 on appropriate table for specific species
+        4. Roll 1d6 for rations found
+
+        Fishing: 2d6 rations on success (uses generic fish, not foraging tables)
         Hunting: Triggers combat with game animals
 
-        Hex-specific foraging_special yields are added on successful foraging.
-        Example: "Sage Toe (1d3 portions)" from hex 0102.
+        Colliggwyld Unseason: During Colliggwyld, fungi yields are doubled.
+        This is handled by passing foraging_bonus=2.0 or active_unseason="colliggwyld".
+
+        Args:
+            character: The character foraging
+            method: "foraging", "fishing", or "hunting"
+            season: "normal", "winter", or "autumn"
+            full_day: Whether spending a full day foraging (+2 bonus)
+            foraging_bonus: Multiplier for fungi yields (default 1.0, 2.0 for Colliggwyld)
+            active_unseason: Current unseason (used to auto-set foraging_bonus)
+
+        Returns:
+            HazardResult with foraged_items list containing ForageableItem dicts
+            with effect metadata for later consumption.
         """
+        # Auto-set foraging bonus for Colliggwyld if not explicitly provided
+        if active_unseason == "colliggwyld" and foraging_bonus == 1.0:
+            foraging_bonus = 2.0
+
         # Survival check
         # TODO: Get best Survival skill in party
         roll = self.dice.roll_d6(1, "Survival check")
@@ -1022,85 +1267,127 @@ class HazardResolver:
                 narrative_hints=["slim pickings", "nothing edible found"],
             )
 
-        # Determine yield
-        if method == "fishing":
-            yield_dice = FORAGING_YIELDS["fishing"]
-        elif method == "foraging":
-            if season == "winter":
-                yield_dice = FORAGING_YIELDS["foraging_winter"]
-            elif season == "autumn":
-                yield_dice = FORAGING_YIELDS["foraging_autumn"]
-            else:
-                yield_dice = FORAGING_YIELDS["foraging_normal"]
-        else:
-            # Hunting requires combat
-            return HazardResult(
-                success=True,
-                hazard_type=HazardType.HUNGER,
-                action_type=ActionType.HUNT,
-                description="Found game animals - combat required",
-                check_made=True,
-                check_result=roll.total + bonus,
-                check_target=target,
-                narrative_hints=["tracks lead to quarry", "game spotted ahead"],
+        # Handle hunting using Campaign Book tables (p120-121)
+        if method == "hunting":
+            terrain = kwargs.pop("terrain", "forest")
+            return self._resolve_hunting(
+                character=character,
+                survival_roll=roll.total,
+                survival_bonus=bonus,
+                survival_target=target,
+                terrain=terrain,
+                **kwargs,
             )
 
-        yield_roll = self.dice.roll(yield_dice, f"{method} yield")
+        # Handle fishing using Campaign Book tables (p116-117)
+        if method == "fishing":
+            return self._resolve_fishing(
+                character=character,
+                survival_roll=roll.total,
+                survival_bonus=bonus,
+                survival_target=target,
+                has_pipe_music=kwargs.get("has_pipe_music", False),
+                **kwargs,
+            )
 
-        # Process hex-specific foraging special yields
+        # FORAGING: Use the Campaign Book tables (p118-119)
+        # Step 1: Roll d6 for fungi (1-3) or plants (4-6)
+        forage_type = roll_forage_type()
+
+        # Step 2: Roll d20 on the appropriate table
+        foraged_item = roll_foraged_item(forage_type)
+
+        # Step 3: Roll 1d6 for quantity (rations)
+        base_quantity = roll_forage_quantity()
+
+        # Apply Colliggwyld bonus to fungi yields
+        quantity = base_quantity
+        colliggwyld_bonus_applied = False
+        if is_fungi(foraged_item) and foraging_bonus > 1.0:
+            quantity = int(base_quantity * foraging_bonus)
+            colliggwyld_bonus_applied = True
+
+        # Build item data with effect metadata for inventory
+        foraged_item_data = foraged_item.to_dict()
+        foraged_item_data["quantity"] = quantity
+        foraged_item_data["colliggwyld_bonus_applied"] = colliggwyld_bonus_applied
+
+        # Process any hex-specific foraging special yields (legacy support)
         foraging_special = kwargs.get("foraging_special", [])
-        special_yields = []
-        special_descriptions = []
-
+        additional_items: list[dict[str, Any]] = []
         for special in foraging_special:
-            # Parse format like "Sage Toe (1d3 portions)"
-            special_result = self._parse_and_roll_special_yield(special)
+            special_result = self._parse_and_roll_special_yield(special, foraging_bonus)
             if special_result:
-                special_yields.append(special_result)
-                special_descriptions.append(
-                    f"{special_result['quantity']} {special_result['item']}"
-                )
+                additional_items.append(special_result)
 
         # Build description
-        base_desc = f"Found {yield_roll.total} rations while {method}"
-        if special_descriptions:
-            base_desc += f", plus {', '.join(special_descriptions)}"
+        type_str = "fungi" if forage_type == ForageType.FUNGI else "plants"
+        bonus_note = " (doubled by Colliggwyld!)" if colliggwyld_bonus_applied else ""
+        base_desc = f"Found {quantity} rations of {foraged_item.name} ({type_str}){bonus_note}"
 
-        # Build narrative hints
+        if additional_items:
+            additional_desc = ", ".join(
+                f"{item['quantity']} {item['item']}"
+                for item in additional_items
+            )
+            base_desc += f", plus {additional_desc}"
+
+        # Build narrative hints using item descriptions
         hints = [
-            f"gathered {yield_roll.total} fresh rations",
-            "basket fills with edibles" if method == "foraging" else "fish on the line",
+            foraged_item.description,
+            f"smells {foraged_item.smell.lower()}" if foraged_item.smell else "",
         ]
-        if special_yields:
-            for special in special_yields:
-                hints.append(f"discovered {special['item']} growing nearby")
+        if colliggwyld_bonus_applied:
+            hints.append("the Colliggwyld's blessing doubles the fungi harvest")
 
-        result = HazardResult(
+        # Filter empty hints
+        hints = [h for h in hints if h]
+
+        # Compile all foraged items
+        all_foraged = [foraged_item_data]
+        all_foraged.extend(additional_items)
+
+        return HazardResult(
             success=True,
             hazard_type=HazardType.HUNGER,
-            action_type=ActionType.FORAGE if method != "fishing" else ActionType.FISH,
+            action_type=ActionType.FORAGE,
             description=base_desc,
             check_made=True,
             check_result=roll.total + bonus,
             check_target=target,
+            rations_found=quantity,
+            foraged_items=all_foraged,
             narrative_hints=hints,
         )
 
-        # Store special yields in result for caller
-        if special_yields:
-            result.items_found = special_yields
+    # Common fungi/mushroom keywords for Colliggwyld bonus detection
+    FUNGI_KEYWORDS = frozenset([
+        "mushroom", "mushrooms", "fungus", "fungi", "toadstool", "toadstools",
+        "morel", "morels", "puffball", "puffballs", "bracket", "truffle", "truffles",
+        "cap", "caps", "shroom", "shrooms", "spore", "spores",
+        # Specific Dolmenwood fungi
+        "sage toe", "brainconk", "pook morel", "redslob", "mould",
+    ])
 
-        return result
+    def _is_fungi_item(self, item_name: str) -> bool:
+        """Check if an item is a fungi/mushroom type (for Colliggwyld bonus)."""
+        name_lower = item_name.lower()
+        return any(keyword in name_lower for keyword in self.FUNGI_KEYWORDS)
 
-    def _parse_and_roll_special_yield(self, special_str: str) -> Optional[dict[str, Any]]:
+    def _parse_and_roll_special_yield(
+        self,
+        special_str: str,
+        foraging_bonus: float = 1.0,
+    ) -> Optional[dict[str, Any]]:
         """
         Parse a special foraging yield string and roll for quantity.
 
         Args:
             special_str: Format like "Sage Toe (1d3 portions)" or "Moonwort (2d4)"
+            foraging_bonus: Multiplier for fungi yields (2.0 during Colliggwyld)
 
         Returns:
-            Dict with item name and rolled quantity, or None if parsing fails
+            Dict with item name, rolled quantity, and whether bonus was applied
         """
         import re
 
@@ -1108,13 +1395,327 @@ class HazardResolver:
         match = re.match(r"(.+?)\s*\((\d+d\d+)(?:\s+\w+)?\)", special_str)
         if not match:
             # Simple format without dice, like "Rare Herb"
-            return {"item": special_str.strip(), "quantity": 1}
+            item_name = special_str.strip()
+            quantity = 1
+            # Apply bonus if it's a fungi item
+            bonus_applied = False
+            if self._is_fungi_item(item_name) and foraging_bonus > 1.0:
+                quantity = int(quantity * foraging_bonus)
+                bonus_applied = True
+            return {"item": item_name, "quantity": quantity, "bonus_applied": bonus_applied}
 
         item_name = match.group(1).strip()
         dice_expr = match.group(2)
 
         try:
             quantity_roll = self.dice.roll(dice_expr, f"special yield: {item_name}")
-            return {"item": item_name, "quantity": quantity_roll.total}
+            quantity = quantity_roll.total
+
+            # Apply Colliggwyld bonus to fungi items
+            bonus_applied = False
+            if self._is_fungi_item(item_name) and foraging_bonus > 1.0:
+                quantity = int(quantity * foraging_bonus)
+                bonus_applied = True
+
+            return {"item": item_name, "quantity": quantity, "bonus_applied": bonus_applied}
         except Exception:
-            return {"item": item_name, "quantity": 1}
+            return {"item": item_name, "quantity": 1, "bonus_applied": False}
+
+    def _resolve_fishing(
+        self,
+        character: "CharacterState",
+        survival_roll: int,
+        survival_bonus: int,
+        survival_target: int,
+        has_pipe_music: bool = False,
+        **kwargs: Any,
+    ) -> HazardResult:
+        """
+        Resolve fishing using Campaign Book tables (p116-117).
+
+        Procedure:
+        1. Roll 1d20 to determine fish species
+        2. Check for landing requirements (DEX/STR checks for some fish)
+        3. Check for catch events (danger, treasure, monster attraction)
+        4. Roll for rations yield (varies by fish type)
+
+        Args:
+            character: The character fishing
+            survival_roll: Result of survival check
+            survival_bonus: Bonus applied to survival check
+            survival_target: Target number for survival check
+            has_pipe_music: Whether party has madcap pipe music (for Wraithfish)
+
+        Returns:
+            HazardResult with fish caught and any events
+        """
+        # Step 1: Roll d20 for fish species
+        fish = roll_fish()
+        fish_data = fish.to_dict()
+
+        catch_events: list[dict[str, Any]] = []
+        narrative_hints: list[str] = [fish.description]
+
+        # Step 2: Check if this fish requires special landing
+        landing_required = None
+        if fish_requires_landing_check(fish):
+            landing_required = fish.landing.to_dict()
+            catch_events.append({
+                "type": "landing_required",
+                "check_type": fish.landing.landing_type.value,
+                "num_characters": fish.landing.num_characters,
+                "description": fish.landing.check_description,
+            })
+            narrative_hints.append(fish.landing.check_description)
+
+        # Step 3: Check if this triggers combat
+        combat_triggered = fish_triggers_combat(fish)
+        if combat_triggered:
+            catch_events.append({
+                "type": "combat",
+                "monster_id": fish.monster_id,
+                "description": "This catch triggers a combat encounter!",
+                "rations_per_hp": fish.rations_per_hp,
+            })
+            narrative_hints.append("A massive fish! This will be a fight!")
+
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.HUNGER,
+                action_type=ActionType.FISH,
+                description=f"Hooked a {fish.name}! Combat required!",
+                check_made=True,
+                check_result=survival_roll + survival_bonus,
+                check_target=survival_target,
+                fish_caught=fish_data,
+                catch_events=catch_events,
+                combat_triggered=True,
+                narrative_hints=narrative_hints,
+            )
+
+        # Step 4: Check for treasure in fish belly
+        treasure = check_treasure_in_fish(fish)
+        if treasure:
+            catch_events.append({
+                "type": "treasure",
+                **treasure,
+            })
+            narrative_hints.append(treasure["description"])
+
+        # Step 5: Check if fish attracts monsters (Screaming jenny)
+        monster_attracted = check_monster_attracted(fish)
+        if monster_attracted:
+            catch_events.append({
+                "type": "monster_attracted",
+                "description": f"The {fish.name}'s shriek echoes through the area!",
+            })
+            narrative_hints.append("The shriek may have attracted something...")
+
+        # Step 6: Check for fairy fish blessing
+        blessing_offered = fish_is_fairy(fish)
+        if blessing_offered:
+            catch_events.append({
+                "type": "blessing_offered",
+                "bonus": fish.catch_effect.blessing_bonus,
+                "description": fish.catch_effect.description,
+            })
+            narrative_hints.append(
+                f"The {fish.name} speaks! It offers a blessing in exchange for its freedom."
+            )
+
+        # Step 7: Check for first-timer dangers (Gurney, Puffer)
+        # These fish deal damage to inexperienced anglers who fail their save
+        damage_dealt = 0
+        conditions_applied: list[str] = []
+
+        if fish.catch_effect.requires_experience:
+            # Roll save (using the save type from the fish)
+            save_type = fish.catch_effect.save_type or "doom"
+            save_roll = self.dice.roll_d20(f"Save vs {save_type} ({fish.name})")
+
+            # Get appropriate ability modifier for save
+            save_ability = "CON" if save_type == "doom" else "DEX" if save_type == "blast" else "WIS"
+            save_mod = character.get_ability_modifier(save_ability)
+            save_total = save_roll.total + save_mod
+
+            # Target is typically 15 for saves vs effects
+            save_target = kwargs.get("save_difficulty", 15)
+            save_success = save_total >= save_target
+
+            if not save_success and fish.catch_effect.damage:
+                # Roll the damage
+                damage_roll = self.dice.roll(fish.catch_effect.damage, f"{fish.name} damage")
+                damage_dealt = damage_roll.total
+                catch_events.append({
+                    "type": "first_timer_danger",
+                    "save_type": save_type,
+                    "save_roll": save_total,
+                    "save_target": save_target,
+                    "save_success": False,
+                    "damage_dealt": damage_dealt,
+                    "description": f"Save failed! {fish.catch_effect.description}",
+                })
+                narrative_hints.append(f"The {fish.name} caught you off guard!")
+            else:
+                catch_events.append({
+                    "type": "first_timer_danger",
+                    "save_type": save_type,
+                    "save_roll": save_total,
+                    "save_target": save_target,
+                    "save_success": True,
+                    "damage_dealt": 0,
+                    "description": f"Avoided the danger! {fish.catch_effect.description}",
+                })
+                if not save_success:
+                    narrative_hints.append(f"Careful handling avoided the {fish.name}'s danger")
+
+        # Step 8: Roll for rations
+        rations = roll_fish_rations(fish, has_pipe_music=has_pipe_music)
+
+        # Build description
+        if rations > 0:
+            desc = f"Caught {fish.name}! ({rations} rations)"
+        else:
+            desc = f"Hooked a {fish.name}!"
+
+        if fish.flavor_text:
+            narrative_hints.append(fish.flavor_text)
+
+        # Special condition notes
+        if fish.special_condition and not has_pipe_music:
+            narrative_hints.append(fish.special_condition)
+
+        return HazardResult(
+            success=True,
+            hazard_type=HazardType.HUNGER,
+            action_type=ActionType.FISH,
+            description=desc,
+            damage_dealt=damage_dealt,
+            damage_type="fishing_hazard" if damage_dealt > 0 else "",
+            check_made=True,
+            check_result=survival_roll + survival_bonus,
+            check_target=survival_target,
+            rations_found=rations,
+            fish_caught=fish_data,
+            landing_required=landing_required,
+            catch_events=catch_events,
+            treasure_found=treasure,
+            monster_attracted=monster_attracted,
+            blessing_offered=blessing_offered,
+            conditions_applied=conditions_applied,
+            narrative_hints=narrative_hints,
+        )
+
+    def _resolve_hunting(
+        self,
+        character: "CharacterState",
+        survival_roll: int,
+        survival_bonus: int,
+        survival_target: int,
+        terrain: str = "forest",
+        **kwargs: Any,
+    ) -> HazardResult:
+        """
+        Resolve hunting using Campaign Book tables (p120-121).
+
+        Hunting Procedure:
+        1. Survival check already passed (done by caller)
+        2. Roll d20 on terrain-specific Game Animals table
+        3. Roll number appearing dice
+        4. Set up combat encounter with party having surprise
+        5. Starting distance is 1d4 × 30'
+        6. Yield calculated after combat: 1/2/4 rations per HP based on size
+
+        Args:
+            character: The character hunting
+            survival_roll: The survival check roll
+            survival_bonus: Bonus applied to survival check
+            survival_target: Target number for survival check
+            terrain: Terrain type for animal selection
+
+        Returns:
+            HazardResult with game_animal data and encounter setup
+        """
+        narrative_hints: list[str] = []
+
+        # Step 1: Determine terrain type for hunting table
+        hunting_terrain = get_hunting_terrain(terrain)
+
+        # Step 2: Roll on the terrain-specific game animal table
+        animal = roll_game_animal(hunting_terrain)
+        narrative_hints.append(f"Tracked {animal.name.lower()} in the {terrain}")
+
+        # Step 3: Roll number appearing
+        num_appearing = roll_number_appearing(animal)
+        if num_appearing == 1:
+            narrative_hints.append(f"A lone {animal.name.lower()}")
+        else:
+            narrative_hints.append(f"A group of {num_appearing} {animal.name.lower()}s")
+
+        # Step 4: Roll encounter distance (1d4 × 30')
+        distance = roll_encounter_distance()
+        narrative_hints.append(f"Spotted {distance}' away")
+
+        # Step 5: Calculate potential rations if all killed
+        # This uses average HP from monster stats - actual yield depends on combat
+        # For now we estimate based on hit dice (rough HP estimate)
+        hp_per_animal = self._estimate_animal_hp(animal.monster_id)
+        total_hp = hp_per_animal * num_appearing
+        potential_rations = calculate_rations_yield(animal, total_hp)
+
+        # Build animal data for result
+        animal_data = animal.to_dict()
+        animal_data["terrain_found"] = terrain
+        animal_data["hunting_terrain"] = hunting_terrain.value
+
+        # Build description
+        if num_appearing == 1:
+            desc = f"Stalked a {animal.name}! Combat encounter at {distance}'"
+        else:
+            desc = f"Stalked {num_appearing} {animal.name}s! Combat encounter at {distance}'"
+
+        if animal.flavor_text:
+            narrative_hints.append(animal.flavor_text)
+
+        return HazardResult(
+            success=True,
+            hazard_type=HazardType.HUNGER,
+            action_type=ActionType.HUNT,
+            description=desc,
+            check_made=True,
+            check_result=survival_roll + survival_bonus,
+            check_target=survival_target,
+            game_animal=animal_data,
+            number_appearing=num_appearing,
+            encounter_distance=distance,
+            party_has_surprise=True,  # Party always has surprise when hunting
+            potential_rations=potential_rations,
+            combat_triggered=True,  # Hunting always triggers combat
+            narrative_hints=narrative_hints,
+        )
+
+    def _estimate_animal_hp(self, monster_id: str) -> int:
+        """
+        Estimate average HP for a game animal.
+
+        Uses known values from Monster Book - actual HP may vary in combat.
+        """
+        # Average HP values from Monster Book entries
+        hp_estimates = {
+            "boar": 13,
+            "false_unicorn": 9,
+            "gelatinous_ape": 9,
+            "gobble": 2,
+            "headhog": 2,
+            "honey_badger": 4,
+            "lurkey": 4,
+            "merriman": 4,
+            "moss_mole": 2,
+            "puggle": 4,
+            "red_deer": 13,
+            "swamp_sloth": 4,
+            "trotteling": 4,
+            "woad": 4,
+            "yegril": 18,
+        }
+        return hp_estimates.get(monster_id, 4)  # Default to 4 HP

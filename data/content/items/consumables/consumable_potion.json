@@ -10,11 +10,13 @@
       "cost_sp": 20000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Odourless",
+      "taste": "Tasteless",
+      "consumption_effect": {
+        "effect_type": "magical_vision",
+        "description": "Grants ability to see enchantments and invisibility within 60'",
+        "duration": "1d6+6 Turns"
+      },
       "properties": [
         "magical",
         "vision"
@@ -28,11 +30,12 @@
       "cost_sp": 2500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Repulsive, acrid",
+      "taste": "Flavourless",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Rouses unconscious subject or grants Save vs Hold for paralysis recovery"
+      },
       "properties": [
         "healing",
         "paralysis_cure"
@@ -46,11 +49,13 @@
       "cost_sp": 2000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Honey-like",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Heals 1d4 HP; causes euphoria for 1 Turn; Save vs Doom or sleep 1d6 Turns",
+        "healing": "1d4",
+        "risk": "dream_sleep"
+      },
       "properties": [
         "healing",
         "sleep_risk"
@@ -64,11 +69,12 @@
       "cost_sp": 2000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "utility",
+        "description": "Casts amber light 30' radius for 6 Turns; affects sunlight-vulnerable monsters",
+        "duration": "6 Turns",
+        "reusable": true
+      },
       "properties": [
         "light",
         "reusable",
@@ -83,11 +89,12 @@
       "cost_sp": 20000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Numbs the tongue",
+      "consumption_effect": {
+        "effect_type": "resistance",
+        "description": "Immune to non-magical fire; +2 save vs magical fire; -1 damage per fire die",
+        "duration": "1d6+6 Turns"
+      },
       "properties": [
         "fire_resistance",
         "cold_immunity"
@@ -101,11 +108,12 @@
       "cost_sp": 20000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "Transform into another being; keeps HP/saves/attack/INT; gains physical abilities; cannot cast spells",
+        "duration": "1d6+6 Turns",
+        "limitation": "new_form_level_must_be_lower_or_equal"
+      },
       "properties": [
         "polymorph",
         "spell_blocking"
@@ -119,11 +127,13 @@
       "cost_sp": 80000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Fresh spring day",
+      "taste": "Cherry blossom",
+      "consumption_effect": {
+        "effect_type": "age_reversal",
+        "description": "Become 10 years younger; fairies must Save vs Doom or coma 2d6 days",
+        "age_reduction": 10
+      },
       "properties": [
         "age_reversal",
         "fairy_poison"
@@ -137,11 +147,11 @@
       "cost_sp": 2500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "dual_use",
+        "description": "As perfume: +1 Save vs Spell for 6 Turns (4 uses); As drink: deep restful sleep",
+        "applications": 4
+      },
       "properties": [
         "save_bonus",
         "sleep_aid",
@@ -156,11 +166,14 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Imbiber's favourite tipple",
+      "taste": "Imbiber's favourite tipple",
+      "consumption_effect": {
+        "effect_type": "haste",
+        "description": "Double Speed and actions per Round; causes 1d6 years aging",
+        "duration": "1d6+6 Turns",
+        "side_effect": "aging_1d6_years"
+      },
       "properties": [
         "speed_double",
         "aging_effect"
@@ -174,11 +187,14 @@
       "cost_sp": 5000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Faint almonds",
+      "taste": "Flavourless; hot and cold sensations",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Heals 1d6 HP; Save vs Doom if another potion consumed within 2 hours or waste",
+        "healing": "1d6",
+        "restriction": "potion_interaction"
+      },
       "properties": [
         "healing",
         "potion_interference"
@@ -192,11 +208,10 @@
       "cost_sp": 1500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "cursed",
+        "description": "Mimics another potion's appearance and effects; effects vanish at critical moment"
+      },
       "properties": [
         "cursed",
         "temporary_effect"
@@ -210,11 +225,12 @@
       "cost_sp": 5000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Save vs Doom or instant death; even tiny sip is deadly",
+        "save": "doom",
+        "failure": "instant_death"
+      },
       "properties": [
         "cursed",
         "deadly_poison"
@@ -228,11 +244,14 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rain",
+      "taste": "Damp earth",
+      "consumption_effect": {
+        "effect_type": "flight",
+        "description": "Grants flight, levitation, and hover; Speed up to 120",
+        "duration": "1d6+6 Turns",
+        "speed": 120
+      },
       "properties": [
         "flight",
         "levitation"
@@ -246,11 +265,14 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Strong cinnamon",
+      "taste": "Shocking heat",
+      "consumption_effect": {
+        "effect_type": "resurrection",
+        "description": "3-in-6 chance to revive recently killed (within 3 Rounds); requires 2 weeks bed rest",
+        "success_chance": "3-in-6",
+        "recovery": "2_weeks_bed_rest"
+      },
       "properties": [
         "resurrection",
         "weakness_effect"
@@ -264,11 +286,13 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Odourless",
+      "taste": "Zingy metallic",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Instantly heals 1d6+1 HP",
+        "healing": "1d6+1"
+      },
       "properties": [
         "healing",
         "special_container"
@@ -282,11 +306,14 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Sulphur",
+      "taste": "Dry earth",
+      "consumption_effect": {
+        "effect_type": "astral_projection",
+        "description": "Spirit leaves body as phantom; Speed 40; passes through solid; AC 20; Save vs Doom if not returned",
+        "duration": "1d6+6 Turns",
+        "risk": "save_vs_doom_if_not_returned"
+      },
       "properties": [
         "spirit_projection",
         "coma",
@@ -301,11 +328,14 @@
       "cost_sp": 20000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Causes brief vision blackout",
+      "taste": "Robust port",
+      "consumption_effect": {
+        "effect_type": "invisibility",
+        "description": "Invisible (with gear) until attack or spell cast",
+        "duration": "1d6+6 Turns",
+        "break_condition": "attack_or_spell"
+      },
       "properties": [
         "invisibility",
         "gear_included"
@@ -319,11 +349,12 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "gaseous_form",
+        "description": "Body becomes vapour (not gear); Speed 40; seep through cracks; AC 21; only harmed by magic",
+        "duration": "1d6+6 Turns",
+        "instant_decision_required": true
+      },
       "properties": [
         "gaseous_form",
         "instant_evaporation"
@@ -337,11 +368,12 @@
       "cost_sp": 7500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "animal_transformation",
+        "description": "Transform into specific animal (max Level 2); keeps HP/saves/attack/INT; gains physical abilities; cannot cast spells",
+        "duration": "1d6+6 Turns",
+        "preparation": "must_mix"
+      },
       "properties": [
         "animal_form",
         "spell_blocking",
@@ -356,11 +388,14 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Ash; radiates warmth",
+      "taste": "Acidic and metallic",
+      "consumption_effect": {
+        "effect_type": "protection",
+        "description": "Grants +2 AC and saves; -2 if consumed within 1 week of previous dose",
+        "duration": "1d6+6 Turns",
+        "stacking_penalty": "inverted_if_within_1_week"
+      },
       "properties": [
         "ac_bonus",
         "save_bonus",
@@ -374,6 +409,6 @@
       416,
       417
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, smell, taste fields"
   }
 }

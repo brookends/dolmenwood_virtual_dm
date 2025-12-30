@@ -10,11 +10,14 @@
       "cost_sp": 4000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "consumption_effect": {
+        "effect_type": "speak_with_objects",
+        "description": "If smoked: speak with inanimate objects for 6 Turns. If eaten: poisonous (Save vs Doom or 1 damage/Turn for 1d4 Turns)",
+        "duration_turns": 6,
+        "condition": "smoked",
+        "eaten_effect": "poison"
+      },
       "properties": [
         "psychedelic",
         "communication_with_objects"
@@ -28,11 +31,14 @@
       "cost_sp": 8000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Garlicky sweat",
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "Physical form changes over 1d4 weeks",
+        "duration": "1d4 weeks",
+        "condition": "boiled and liquid consumed"
+      },
       "properties": [
         "change_physical_features"
       ]
@@ -45,11 +51,15 @@
       "cost_sp": 5000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Dank",
+      "consumption_effect": {
+        "effect_type": "mage_hand",
+        "description": "Gain invisible hand to manipulate objects up to 10' away (100 coins max) for 1d6 Turns",
+        "duration_turns": "1d6",
+        "range_feet": 10,
+        "weight_limit_coins": 100
+      },
       "properties": [
         "invisible_hand_manipulation"
       ]
@@ -62,11 +72,16 @@
       "cost_sp": 6000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Roast pork (when burned)",
+      "consumption_effect": {
+        "effect_type": "goat_charm",
+        "description": "When burned: goats within 10' Save vs Doom or caper for 1d4 Rounds",
+        "condition": "burned",
+        "range_feet": 10,
+        "duration_rounds": "1d4",
+        "burn_time_rounds": 4
+      },
       "properties": [
         "causes_goats_to_caper"
       ]
@@ -79,11 +94,13 @@
       "cost_sp": 2000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "consumption_effect": {
+        "effect_type": "polymorph",
+        "description": "Save vs Hold or transform into last plant/creature eaten for 1d3 hours",
+        "save_type": "hold",
+        "duration": "1d3 hours"
+      },
       "properties": [
         "polymorph_into_last_creature_eaten"
       ]
@@ -96,11 +113,15 @@
       "cost_sp": 1500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "taste": "Extremely bitter",
+      "consumption_effect": {
+        "effect_type": "enhanced_hearing",
+        "description": "+1 Listen for 3d4 Turns; loud sounds cause -1 Attack/AC for 1 Turn",
+        "modifier": 1,
+        "duration_turns": "3d4",
+        "side_effect": "loud_sound_penalty"
+      },
       "properties": [
         "enhanced_hearing"
       ]
@@ -113,11 +134,16 @@
       "cost_sp": 15000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Musty",
+      "taste": "Awfully bitter",
+      "consumption_effect": {
+        "effect_type": "spell_recall",
+        "description": "Arcane caster: 50% chance to recall spell cast in last hour (requires 2 Turns smoking)",
+        "success_chance": "50%",
+        "condition": "smoked for 2 Turns",
+        "daily_limit": 1
+      },
       "properties": [
         "recall_recently_cast_arcane_spell"
       ]
@@ -125,16 +151,19 @@
     {
       "item_id": "knobbled_mandrake",
       "name": "Knobbled Mandrake",
-      "description": "Hand-sized roots, broadly humanoid in form, covered in knobbly protrusions alike to extra heads. When plucked from the earth, knobbled mandrake roots squirm gently, sigh, then go still. They have a plum-like odour and taste of dung. If eaten: A missing bodily appendage begins to regrow.",
+      "description": "Hand-sized, roughly humanoid roots, covered in knobbly protrusions alike to extra heads. When plucked from the earth, knobbled mandrake roots squirm gently, sigh, then go still. They have a plum-like odour and taste of dung. If eaten: A missing bodily appendage begins to regrow.",
       "weight": 4,
       "cost_sp": 6000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Plum-like",
+      "taste": "Dung",
+      "consumption_effect": {
+        "effect_type": "regeneration",
+        "description": "Missing bodily appendage begins to regrow",
+        "special": "regrow_lost_appendage"
+      },
       "properties": [
         "regrow_lost_appendage"
       ]
@@ -147,11 +176,14 @@
       "cost_sp": 4000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Fresh dew",
+      "taste": "Elderberries",
+      "consumption_effect": {
+        "effect_type": "restore_memory",
+        "description": "Restore memories lost to magic/age; Save vs Spell to cure delusion/amnesia",
+        "save_type": "spell"
+      },
       "properties": [
         "restore_lost_memories"
       ]
@@ -164,11 +196,14 @@
       "cost_sp": 15000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "taste": "Awfully strong vinegar",
+      "consumption_effect": {
+        "effect_type": "amnesia",
+        "description": "Save vs Doom or forget last 3d6 days",
+        "save_type": "doom",
+        "duration": "3d6 days of memory"
+      },
       "properties": [
         "forget_events_of_last_3d6_days"
       ]
@@ -181,11 +216,14 @@
       "cost_sp": 3000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "taste": "Horribly sweet and horribly bitter",
+      "consumption_effect": {
+        "effect_type": "no_sleep",
+        "description": "No need for sleep for 24 hours; repeated use causes teeth to rot",
+        "duration_hours": 24,
+        "risk": "teeth_rot"
+      },
       "properties": [
         "eradicates_need_to_sleep_for_24_hours"
       ]
@@ -198,11 +236,16 @@
       "cost_sp": 2000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Wild garlic",
+      "taste": "Goose fat",
+      "consumption_effect": {
+        "effect_type": "sleep_poison",
+        "description": "Save vs Doom or fall unconscious for 2d12 hours",
+        "save_type": "doom",
+        "duration": "2d12 hours",
+        "onset_turns": 1
+      },
       "properties": [
         "poison",
         "wooziness_and_unconsciousness"
@@ -216,11 +259,15 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Dung",
+      "taste": "Horribly bitter",
+      "consumption_effect": {
+        "effect_type": "secret_ink",
+        "description": "When boiled: creates ink for 4 pages readable only by writer and one named person",
+        "condition": "boiled",
+        "pages": 4
+      },
       "properties": [
         "magic_ink_that_cannot_be_read_by_others"
       ]
@@ -233,11 +280,13 @@
       "cost_sp": 4000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "consumption_effect": {
+        "effect_type": "speed_reading",
+        "description": "Absorb book contents in 6 Turns (gist in 1 Turn); effects last 2d6 Turns",
+        "duration_turns": "2d6",
+        "condition": "chewed"
+      },
       "properties": [
         "accelerated_information_uptake"
       ]
@@ -250,11 +299,17 @@
       "cost_sp": 1000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Faint, earthy",
+      "taste": "Cherry wine",
+      "consumption_effect": {
+        "effect_type": "vision",
+        "description": "Trance 1d6 Turns: fairies see creation vision; mortals have nightmare of evil trees",
+        "duration_turns": "1d6",
+        "condition": "chewed",
+        "fairy_effect": "wondrous_vision",
+        "mortal_effect": "nightmare"
+      },
       "properties": [
         "psychedelic",
         "wondrous_for_fairies",
@@ -269,11 +324,14 @@
       "cost_sp": 250,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "consumption_effect": {
+        "effect_type": "healing_cursed",
+        "description": "Heals 1 HP per fruit; Save vs Doom or cursed with hunger for human flesh",
+        "healing": 1,
+        "save_type": "doom",
+        "curse": "cannibalistic_hunger"
+      },
       "properties": [
         "cures_1_hp",
         "desire_to_eat_human_flesh"
@@ -287,11 +345,16 @@
       "cost_sp": 1000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Odourless",
+      "taste": "Flavourless, dry, chewy, stringy",
+      "consumption_effect": {
+        "effect_type": "telepathy",
+        "description": "Read thoughts within 5'; own thoughts broadcast within 10'; lasts 1d6 Turns",
+        "duration_turns": "1d6",
+        "read_range_feet": 5,
+        "broadcast_range_feet": 10
+      },
       "properties": [
         "read_thoughts",
         "project_thoughts_to_others"
@@ -305,11 +368,15 @@
       "cost_sp": 7500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Odourless",
+      "taste": "Slightly minty",
+      "consumption_effect": {
+        "effect_type": "ghost_touch",
+        "description": "Become pale/transparent; can harm incorporeal creatures without magic for 1d6 Turns",
+        "duration_turns": "1d6",
+        "special": "interact_with_incorporeal"
+      },
       "properties": [
         "interact_with_incorporeal_creatures"
       ]
@@ -322,11 +389,13 @@
       "cost_sp": 4000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "taste": "Sweet and gooey",
+      "consumption_effect": {
+        "effect_type": "cure_intoxication",
+        "description": "Instant sobriety; 3-in-6 chance to negate poison",
+        "antidote_chance": "3-in-6"
+      },
       "properties": [
         "induces_sobriety",
         "3_in_6_chance_of_removing_poison"
@@ -340,11 +409,14 @@
       "cost_sp": 1000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "plant",
+      "smell": "Dung",
+      "consumption_effect": {
+        "effect_type": "anti_lycanthropy",
+        "description": "If boiled: prevents lycanthropic transformation for 1d4 days. If eaten raw: Save vs Doom or vomit",
+        "condition": "boiled",
+        "duration_days": "1d4"
+      },
       "properties": [
         "prevents_lycanthropic_transformation"
       ]
@@ -356,6 +428,6 @@
       432,
       433
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, forage_type, smell, taste fields"
   }
 }

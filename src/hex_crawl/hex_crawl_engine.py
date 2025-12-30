@@ -191,8 +191,11 @@ class TerrainInfo:
     description: str = ""
 
 
-# Terrain definitions per Dolmenwood travel table
+# Terrain definitions per Dolmenwood Campaign Book p156-157
 TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
+    # ==========================================================================
+    # LIGHT TERRAIN - 2 TP, 1-in-6 lost/encounter, mounts and vehicles allowed
+    # ==========================================================================
     TerrainType.FARMLAND: TerrainInfo(
         TerrainType.FARMLAND,
         travel_point_cost=2,
@@ -202,51 +205,92 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         vehicle_allowed=True,
         description="Tilled fields and lanes",
     ),
-    TerrainType.MEADOW if hasattr(TerrainType, "MEADOW") else TerrainType.FARMLAND: TerrainInfo(  # type: ignore[attr-defined]
-        TerrainType.FARMLAND,
+    TerrainType.FUNGAL_FOREST: TerrainInfo(
+        TerrainType.FUNGAL_FOREST,
         travel_point_cost=2,
         lost_chance=1,
         encounter_chance=1,
         mount_allowed=True,
         vehicle_allowed=True,
-        description="Open meadow or grassland",
-    ),
-    TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST,
-        travel_point_cost=2,
-        lost_chance=1,
-        encounter_chance=1,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Open forest",
-    ),
-    # Moderate Terrain (p157) - 3 TP, 2-in-6
-    TerrainType.MOOR: TerrainInfo(
-        TerrainType.MOOR,
-        travel_point_cost=3,
-        lost_chance=2,
-        encounter_chance=2,
-        mount_allowed=True,
-        vehicle_allowed=False,
-        description="Boggy or hilly forest/moor",
+        description="Giant fungi, few trees",
     ),
     TerrainType.HILLS: TerrainInfo(
         TerrainType.HILLS,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Undulating grassland",
+    ),
+    TerrainType.MEADOW: TerrainInfo(
+        TerrainType.MEADOW,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Flat grassland",
+    ),
+    TerrainType.OPEN_FOREST: TerrainInfo(
+        TerrainType.OPEN_FOREST,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Light, airy woods",
+    ),
+    # ==========================================================================
+    # MODERATE TERRAIN - 3 TP, 2-in-6 lost/encounter, mounts led, no vehicles
+    # ==========================================================================
+    TerrainType.BOG: TerrainInfo(
+        TerrainType.BOG,
         travel_point_cost=3,
         lost_chance=2,
         encounter_chance=2,
-        mount_allowed=True,
+        mount_allowed=True,  # Must be led, not ridden
         vehicle_allowed=False,
-        description="Hilly forest/terrain",
+        description="Treeless mire",
     ),
-    TerrainType.DEEP_FOREST: TerrainInfo(
-        TerrainType.DEEP_FOREST,
+    TerrainType.HILLY_FOREST: TerrainInfo(
+        TerrainType.HILLY_FOREST,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,  # Must be led, not ridden
+        vehicle_allowed=False,
+        description="Undulating woods",
+    ),
+    TerrainType.TANGLED_FOREST: TerrainInfo(
+        TerrainType.TANGLED_FOREST,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,  # Must be led, not ridden
+        vehicle_allowed=False,
+        description="Dense, gloomy woods",
+    ),
+    # ==========================================================================
+    # DIFFICULT TERRAIN - 4 TP, 3-in-6 lost/encounter, no mounts or vehicles
+    # ==========================================================================
+    TerrainType.BOGGY_FOREST: TerrainInfo(
+        TerrainType.BOGGY_FOREST,
         travel_point_cost=4,
         lost_chance=3,
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Tangled or thorny forest",
+        description="Wet, muddy woods",
+    ),
+    TerrainType.CRAGGY_FOREST: TerrainInfo(
+        TerrainType.CRAGGY_FOREST,
+        travel_point_cost=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_allowed=False,
+        vehicle_allowed=False,
+        description="Broken terrain, cliffs",
     ),
     TerrainType.SWAMP: TerrainInfo(
         TerrainType.SWAMP,
@@ -255,17 +299,20 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Wetland or bog",
+        description="Wetland, sparse trees",
     ),
-    TerrainType.MOUNTAINS: TerrainInfo(
-        TerrainType.MOUNTAINS,
+    TerrainType.THORNY_FOREST: TerrainInfo(
+        TerrainType.THORNY_FOREST,
         travel_point_cost=4,
         lost_chance=3,
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Craggy forest or steep slopes",
+        description="Dense thorn thickets",
     ),
+    # ==========================================================================
+    # SPECIAL - Settlements don't use standard terrain rules
+    # ==========================================================================
     TerrainType.SETTLEMENT: TerrainInfo(
         TerrainType.SETTLEMENT,
         travel_point_cost=2,
@@ -274,24 +321,6 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         mount_allowed=True,
         vehicle_allowed=True,
         description="Settled area",
-    ),
-    TerrainType.TRAIL: TerrainInfo(  # Treated as track context
-        TerrainType.TRAIL,
-        travel_point_cost=2,
-        lost_chance=1,
-        encounter_chance=1,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Track",
-    ),
-    TerrainType.ROAD: TerrainInfo(
-        TerrainType.ROAD,
-        travel_point_cost=2,
-        lost_chance=0,
-        encounter_chance=0,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Road",
     ),
 }
 
@@ -425,6 +454,119 @@ class HexCrawlEngine:
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
 
+        # Register hook to process hunting results when combat ends
+        self._register_combat_exit_hook()
+
+    def _register_combat_exit_hook(self) -> None:
+        """Register a hook to process hunting rations when combat ends."""
+        from src.game_state.state_machine import GameState
+
+        def on_exit_combat(
+            from_state: GameState,
+            to_state: GameState,
+            trigger: str,
+            context: dict[str, Any],
+        ) -> None:
+            """Process hunting combat results before encounter is cleared."""
+            self._process_hunting_combat_result(context)
+
+        self.controller.register_on_exit_hook(GameState.COMBAT, on_exit_combat)
+
+    def _process_hunting_combat_result(self, combat_context: dict[str, Any]) -> None:
+        """
+        Process the result of a hunting combat and add rations to inventory.
+
+        Per Campaign Book p120-121:
+        - Calculate rations based on HP of killed animals
+        - Small: 1 ration/HP, Medium: 2 rations/HP, Large: 4 rations/HP
+        - Add rations to party inventory
+
+        Args:
+            combat_context: Context from combat end transition
+        """
+        # Get the encounter before it's cleared
+        encounter = self.controller.get_encounter()
+        if not encounter:
+            return
+
+        # Check if this was a hunting encounter
+        contextual_data = encounter.contextual_data
+        if not contextual_data or contextual_data.get("source") != "hunting":
+            return
+
+        # Get hunting data
+        game_animal_data = contextual_data.get("game_animal")
+        hex_id = contextual_data.get("hex_id")
+
+        if not game_animal_data:
+            return
+
+        # Calculate total HP killed from defeated enemy combatants
+        total_hp_killed = 0
+        for combatant in encounter.combatants:
+            if combatant.is_enemy and not combatant.is_active:
+                # Combatant was defeated - add their max HP
+                total_hp_killed += combatant.hp_max
+
+        if total_hp_killed <= 0:
+            # No animals were killed, no rations
+            return
+
+        # Import hunting table functions
+        from src.tables.hunting_tables import (
+            GAME_ANIMALS,
+            AnimalSize,
+            hunting_to_rations_item,
+        )
+
+        # Get the GameAnimal instance
+        monster_id = game_animal_data.get("monster_id")
+        if monster_id and monster_id in GAME_ANIMALS:
+            animal = GAME_ANIMALS[monster_id]
+        else:
+            # Fallback: create a temporary GameAnimal from the data
+            from src.tables.hunting_tables import GameAnimal
+            size_str = game_animal_data.get("size", "medium")
+            size = AnimalSize(size_str) if size_str in [s.value for s in AnimalSize] else AnimalSize.MEDIUM
+            animal = GameAnimal(
+                name=game_animal_data.get("name", "Game Animal"),
+                monster_id=monster_id or "unknown",
+                size=size,
+                number_appearing="1",
+                description=game_animal_data.get("description", ""),
+            )
+
+        # Create rations item
+        rations_item = hunting_to_rations_item(
+            animal=animal,
+            total_hp_killed=total_hp_killed,
+            source_hex=hex_id,
+        )
+
+        if not rations_item:
+            return
+
+        # Add rations to party leader's inventory (or first available character)
+        party_leader = self._state.party_leader if self._state else None
+        if not party_leader:
+            # Get first party member
+            characters = list(self.controller._characters.values())
+            if characters:
+                party_leader = characters[0].character_id
+
+        if party_leader:
+            character = self.controller.get_character(party_leader)
+            if character:
+                character.inventory.append(rations_item)
+
+                # Log the rations gained
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    f"Hunting yielded {rations_item.quantity} rations of {animal.name} meat "
+                    f"(from {total_hp_killed} HP killed) - added to {character.name}'s inventory"
+                )
+
     def set_has_guide(self, has_guide: bool) -> None:
         """Set whether party has a local guide."""
         self._has_guide = has_guide
@@ -450,11 +592,11 @@ class HexCrawlEngine:
         hex_data = self._hex_data.get(hex_id)
         if hex_data:
             return TerrainType(hex_data.terrain)
-        return TerrainType.FOREST  # Default
+        return TerrainType.OPEN_FOREST  # Default
 
     def get_terrain_info(self, terrain: TerrainType) -> TerrainInfo:
         """Get terrain information."""
-        return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.FOREST])
+        return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.OPEN_FOREST])
 
     # =========================================================================
     # MAIN TRAVEL LOOP (p156-157)
@@ -1353,6 +1495,7 @@ class HexCrawlEngine:
         character_id: str,
         method: str = "foraging",
         full_day: bool = False,
+        accept_blessing: bool = False,
     ) -> HazardResult:
         """
         Attempt to find food in the wild per Dolmenwood rules (p152).
@@ -1360,10 +1503,16 @@ class HexCrawlEngine:
         Includes hex-specific foraging_special yields when available.
         For example, hex 0102 yields Sage Toe in addition to normal foraging.
 
+        For fishing (Campaign Book p116-117), this also handles:
+        - First-timer dangers (Gurney/Puffer damage)
+        - Monster attraction (Screaming jenny triggers wandering monster)
+        - Fairy blessings (Queen's salmon offers +4 save bonus if released)
+
         Args:
             character_id: ID of the foraging character
             method: "foraging", "fishing", or "hunting"
             full_day: Whether spending full day foraging (+2 bonus)
+            accept_blessing: Whether to accept a fairy fish blessing (releases fish)
 
         Returns:
             HazardResult with outcomes including rations found and special yields
@@ -1395,13 +1544,200 @@ class HexCrawlEngine:
 
         from src.narrative.intent_parser import ActionType
 
-        return self.narrative_resolver.hazard_resolver.resolve_foraging(
+        # Get terrain for hunting tables
+        terrain_str = "forest"  # Default
+        current_hex = self._state.current_hex
+        if current_hex:
+            hex_data = self._get_hex_data(current_hex)
+            if hex_data:
+                terrain_str = hex_data.terrain_type.value if hex_data.terrain_type else "forest"
+
+        result = self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=season,
             full_day=full_day,
             foraging_special=foraging_special,
+            terrain=terrain_str,
         )
+
+        # Apply fishing-specific effects (Campaign Book p116-117)
+        if method == "fishing" and result.success:
+            # Apply damage from first-timer dangers (Gurney, Puffer)
+            if result.damage_dealt > 0:
+                self.controller.apply_damage(
+                    character_id, result.damage_dealt, result.damage_type
+                )
+
+            # Apply conditions
+            for condition in result.conditions_applied:
+                self.controller.apply_condition(character_id, condition, "fishing")
+
+            # Handle fairy fish blessing (Queen's salmon)
+            if result.blessing_offered and accept_blessing:
+                # Player chose to release the fish for the blessing
+                # Add the save bonus (+4 to next save vs deadly effect)
+                blessing_bonus = 4  # Default Queen's salmon bonus
+                fish_name = result.fish_caught.get("name", "fairy fish")
+                for event in result.catch_events:
+                    if event.get("type") == "blessing_offered":
+                        blessing_bonus = event.get("bonus", 4)
+                        break
+
+                # Apply the blessing as a temporary save bonus
+                character.add_save_bonus(
+                    save_category="deadly",
+                    bonus=blessing_bonus,
+                    source=fish_name,
+                    one_time=True,
+                )
+
+                # Fish was released, no rations gained
+                result.rations_found = 0
+                result.description = (
+                    f"Released the {fish_name} in exchange for its blessing! "
+                    f"(+{blessing_bonus} to next save vs deadly effect)"
+                )
+
+            # Trigger wandering monster encounter if fish attracted one
+            if result.monster_attracted:
+                # Screaming jenny attracted a wandering monster!
+                current_hex = self._state.current_hex
+                if current_hex:
+                    hex_data = self._get_hex_data(current_hex)
+                    terrain = hex_data.terrain_type if hex_data else TerrainType.OPEN_FOREST
+
+                    # Generate and trigger the encounter
+                    encounter = self._generate_encounter(current_hex, terrain)
+                    self.controller.set_encounter(encounter)
+                    self.controller.transition(
+                        "encounter_triggered",
+                        context={
+                            "hex_id": current_hex,
+                            "source": "screaming_jenny",
+                            "description": "The fish's shriek attracted something!",
+                        },
+                    )
+                    # Add to result for caller awareness
+                    result.catch_events.append({
+                        "type": "monster_encounter_triggered",
+                        "description": "The shriek attracted a wandering monster!",
+                    })
+
+        # Apply hunting-specific effects (Campaign Book p120-121)
+        if method == "hunting" and result.success and result.combat_triggered:
+            # Set up combat encounter with the game animals
+            if result.game_animal:
+                current_hex = self._state.current_hex
+                if current_hex:
+                    # Create encounter with the game animals
+                    monster_id = result.game_animal.get("monster_id")
+                    num_appearing = result.number_appearing
+                    distance = result.encounter_distance
+
+                    if monster_id:
+                        # Create combatants from monster registry
+                        combatants = self._create_hunting_combatants(
+                            monster_id=monster_id,
+                            num_appearing=num_appearing,
+                            animal_name=result.game_animal.get("name", "game animal"),
+                        )
+
+                        if combatants:
+                            # Create the hunting encounter
+                            encounter = EncounterState(
+                                encounter_id=f"hunt_{current_hex}_{monster_id}",
+                                encounter_type=EncounterType.COMBAT,
+                                description=result.description,
+                                combatants=combatants,
+                                distance=distance,
+                                party_surprised=False,  # Party is NOT surprised
+                                enemies_surprised=True,  # Enemies ARE surprised
+                                context=f"Hunting {result.game_animal.get('name', 'game')} in {current_hex}",
+                            )
+
+                            # Store hunting-specific data for post-combat ration calculation
+                            encounter.contextual_data = {
+                                "source": "hunting",
+                                "hex_id": current_hex,
+                                "game_animal": result.game_animal,
+                                "number_appearing": num_appearing,
+                                "potential_rations": result.potential_rations,
+                            }
+
+                            self.controller.set_encounter(encounter)
+                            self.controller.transition(
+                                "encounter_triggered",
+                                context={
+                                    "hex_id": current_hex,
+                                    "source": "hunting",
+                                    "animal": result.game_animal.get("name"),
+                                    "number": num_appearing,
+                                    "distance": distance,
+                                    "party_has_surprise": True,
+                                },
+                            )
+
+        return result
+
+    def _create_hunting_combatants(
+        self,
+        monster_id: str,
+        num_appearing: int,
+        animal_name: str,
+    ) -> list:
+        """
+        Create combatants for a hunting encounter.
+
+        Args:
+            monster_id: The monster ID from the game animal
+            num_appearing: How many animals in the group
+            animal_name: Display name for the animal
+
+        Returns:
+            List of Combatant objects for the encounter
+        """
+        from src.data_models import Combatant
+
+        combatants = []
+
+        # Get monster stats from registry
+        monster_stats = self.monster_registry.get(monster_id) if self.monster_registry else None
+
+        for i in range(num_appearing):
+            if monster_stats:
+                # Create combatant from monster registry
+                combatant = Combatant(
+                    combatant_id=f"{monster_id}_{i+1}",
+                    name=f"{animal_name} #{i+1}" if num_appearing > 1 else animal_name,
+                    monster_id=monster_id,
+                    hp_current=monster_stats.hp,
+                    hp_max=monster_stats.hp,
+                    armor_class=monster_stats.armor_class,
+                    attack_bonus=monster_stats.level,  # Use level as attack bonus
+                    damage=monster_stats.damage[0] if monster_stats.damage else "1d4",
+                    morale=monster_stats.morale,
+                    is_enemy=True,
+                    is_active=True,
+                )
+            else:
+                # Fallback with default stats
+                combatant = Combatant(
+                    combatant_id=f"{monster_id}_{i+1}",
+                    name=f"{animal_name} #{i+1}" if num_appearing > 1 else animal_name,
+                    monster_id=monster_id,
+                    hp_current=4,
+                    hp_max=4,
+                    armor_class=12,
+                    attack_bonus=0,
+                    damage="1d4",
+                    morale=6,
+                    is_enemy=True,
+                    is_active=True,
+                )
+            combatants.append(combatant)
+
+        return combatants
 
     # =========================================================================
     # HEX OVERVIEW AND POI VISIBILITY

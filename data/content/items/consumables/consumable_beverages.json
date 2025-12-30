@@ -10,11 +10,11 @@
       "cost_sp": 0.9,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Rich, iron-like",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes belching and goggling"
+      },
       "properties": [
         "beer",
         "cider",
@@ -29,11 +29,11 @@
       "cost_sp": 1,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Honey and hops",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes good-natured slumping"
+      },
       "properties": [
         "beer",
         "cider",
@@ -48,11 +48,11 @@
       "cost_sp": 2,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Smoky bacon",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on a woozy empathy"
+      },
       "properties": [
         "beer",
         "cider",
@@ -67,11 +67,11 @@
       "cost_sp": 0.4,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Singed elderberries",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes delirious cackling and misdirected aggression"
+      },
       "properties": [
         "beer",
         "cider",
@@ -86,11 +86,11 @@
       "cost_sp": 2,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Malted rye",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on a state of unexpected poetry"
+      },
       "properties": [
         "spirit",
         "common"
@@ -104,11 +104,11 @@
       "cost_sp": 0.5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Charred beech and honey",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on rampant disorientation"
+      },
       "properties": [
         "spirit",
         "common"
@@ -122,11 +122,11 @@
       "cost_sp": 3,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Chestnut and fennel",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Inspires giddy hijinks"
+      },
       "properties": [
         "spirit",
         "common"
@@ -140,11 +140,10 @@
       "cost_sp": 0.1,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Highly invigorating"
+      },
       "properties": [
         "tea",
         "common"
@@ -158,11 +157,11 @@
       "cost_sp": 5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Cherry syrup",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on propensity for pointed philosophical debate"
+      },
       "properties": [
         "beer",
         "cider",
@@ -177,11 +176,11 @@
       "cost_sp": 3,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Plum and cinnamon",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Provokes indiscriminate romantic advances"
+      },
       "properties": [
         "beer",
         "cider",
@@ -196,11 +195,11 @@
       "cost_sp": 4,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Hint of butterscotch",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Grinning and redness of face"
+      },
       "properties": [
         "beer",
         "cider",
@@ -215,11 +214,11 @@
       "cost_sp": 2,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Sharp, slightly sour; tingling sensation",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Tranquil daydreaming; poultice cures pimples; soaked sock relieves melancholy"
+      },
       "properties": [
         "beer",
         "cider",
@@ -234,11 +233,12 @@
       "cost_sp": 2,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Stinking",
+      "taste": "Rank ditch water",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces light-hearted tomfoolery and cathartic vomiting"
+      },
       "properties": [
         "specialist",
         "uncommon"
@@ -252,11 +252,11 @@
       "cost_sp": 12,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Sweet, syrupy honey",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces cosy belly feeling and light, eloquent state of mind"
+      },
       "properties": [
         "specialist",
         "uncommon"
@@ -270,11 +270,11 @@
       "cost_sp": 7,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Lingering, oaken after-taste",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on delightful listless lounging"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -288,11 +288,11 @@
       "cost_sp": 5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Custard with hint of skunk",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Inspires a state of lucid sensuality"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -306,11 +306,11 @@
       "cost_sp": 5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Delightful, creamy",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on rambunctious speaking in tongues"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -324,11 +324,11 @@
       "cost_sp": 1,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Blackcurrant",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes cathartic bellowing and screeching"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -342,11 +342,11 @@
       "cost_sp": 6,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Tasteless but highly astringent",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings about soporific languor"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -360,11 +360,11 @@
       "cost_sp": 0.4,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Wince-inducing, acrid",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes gagging and shouting"
+      },
       "properties": [
         "spirit",
         "uncommon"
@@ -378,11 +378,11 @@
       "cost_sp": 0.5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Mild, aromatic bouquet",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Calms the mind"
+      },
       "properties": [
         "tea",
         "uncommon"
@@ -396,11 +396,11 @@
       "cost_sp": 12,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Bitter herbs",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on dreamlike visions"
+      },
       "properties": [
         "wine",
         "uncommon"
@@ -414,11 +414,11 @@
       "cost_sp": 14,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Elderflower and spring bouquets",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Inspires drowsiness with serene visions of snowdrifts"
+      },
       "properties": [
         "wine",
         "uncommon"
@@ -432,11 +432,11 @@
       "cost_sp": 11,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Syrup, over-ripe plums, and hawberries",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Rankles spirit, provoking belligerent and arrogant mood"
+      },
       "properties": [
         "wine",
         "uncommon"
@@ -450,11 +450,11 @@
       "cost_sp": 2,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Sweet and awfully sour; milky and fruity",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Inspires jovial banter"
+      },
       "properties": [
         "specialist",
         "rare"
@@ -468,11 +468,12 @@
       "cost_sp": 5,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Insipid (for non-grimalkins)",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Drives cat-folk wild and raucous",
+        "affected_kindred": "grimalkin"
+      },
       "properties": [
         "specialist",
         "rare"
@@ -486,11 +487,11 @@
       "cost_sp": 10,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Sour rosehips",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Imbibers slip into blissful reverie"
+      },
       "properties": [
         "spirit",
         "rare"
@@ -504,11 +505,11 @@
       "cost_sp": 7,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Woody salmon",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes a state of eloquent camaraderie"
+      },
       "properties": [
         "spirit",
         "rare"
@@ -522,11 +523,11 @@
       "cost_sp": 10,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Bitter liquorice",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Brings on clear-headed state; drinker feels immortal"
+      },
       "properties": [
         "spirit",
         "rare"
@@ -540,11 +541,12 @@
       "cost_sp": 1,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Smoky",
+      "taste": "Aniseed and wormwood",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Clear-minded focus"
+      },
       "properties": [
         "tea",
         "rare"
@@ -558,11 +560,11 @@
       "cost_sp": 30,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Plum and charred lavender",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes sorrows to drift away"
+      },
       "properties": [
         "wine",
         "rare"
@@ -576,11 +578,11 @@
       "cost_sp": 35,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Pear and honey",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Inspires feats of romantic daring"
+      },
       "properties": [
         "wine",
         "rare"
@@ -594,11 +596,11 @@
       "cost_sp": 50,
       "slot_size": null,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Exquisitely robust; undertones of lemon zest and mead",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Overindulgence causes embarrassingly rapid dissolution of muscle control"
+      },
       "properties": [
         "wine",
         "rare"
@@ -611,6 +613,6 @@
       128,
       129
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, smell, taste fields"
   }
 }

@@ -11,10 +11,14 @@
       "slot_size": 1,
       "item_type": "consumable",
       "damage": "5d6",
-      "ac_bonus": null,
-      "ac_value": null,
+      "smell": "Incredibly noxious",
+      "consumption_effect": {
+        "effect_type": "weapon",
+        "description": "Explodes in fireball causing 5d6 damage in 10' radius; Save for half",
+        "damage": "5d6",
+        "area": "10_radius"
+      },
       "range": "10/30/50",
-      "size": null,
       "properties": [
         "explosive",
         "missile",
@@ -29,11 +33,12 @@
       "cost_sp": 35000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Sweet; evokes childhood memories",
+      "consumption_effect": {
+        "effect_type": "dispel",
+        "description": "Dispels enchantments on creatures or temporarily renders objects non-magical",
+        "method": "applied"
+      },
       "properties": [
         "dispel_magic",
         "anti_magic"
@@ -47,11 +52,13 @@
       "cost_sp": 2500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Sweet and syrupy with undertone of beef dripping",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Heals 1d4 HP if used within 1 Turn; -1 AC and saves (soporific)",
+        "healing": "1d4",
+        "side_effect": "-1_ac_and_saves"
+      },
       "properties": [
         "healing",
         "soporific",
@@ -66,11 +73,12 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Noxious, metallic",
+      "consumption_effect": {
+        "effect_type": "size_alteration",
+        "description": "Shrink subject to 6 inches tall",
+        "method": "applied"
+      },
       "properties": [
         "shrinking",
         "size_alteration"
@@ -84,11 +92,12 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Noxious, metallic",
+      "consumption_effect": {
+        "effect_type": "size_alteration",
+        "description": "Double subject's size; double melee damage",
+        "method": "applied"
+      },
       "properties": [
         "enlargement",
         "double_damage",
@@ -103,11 +112,13 @@
       "cost_sp": 5000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Resinous pine",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Heals 1d6 HP or 1d6 Constitution",
+        "healing": "1d6",
+        "alt_effect": "constitution_restoration_1d6"
+      },
       "properties": [
         "healing",
         "constitution_restoration"
@@ -122,10 +133,15 @@
       "slot_size": 1,
       "item_type": "consumable",
       "damage": "3d8",
-      "ac_bonus": null,
-      "ac_value": null,
+      "smell": "Sweet",
+      "consumption_effect": {
+        "effect_type": "weapon",
+        "description": "3d8 damage to undead; continuous damage",
+        "damage": "3d8",
+        "target": "undead",
+        "method": "thrown"
+      },
       "range": "10/30/50",
-      "size": null,
       "properties": [
         "anti_undead",
         "missile",
@@ -141,11 +157,12 @@
       "cost_sp": 8000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Different animal each time",
+      "consumption_effect": {
+        "effect_type": "stealth",
+        "description": "Makes subject completely scentless",
+        "method": "applied"
+      },
       "properties": [
         "scentless",
         "tracking_immunity"
@@ -159,11 +176,12 @@
       "cost_sp": 20000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Tar",
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "Alter form into any imagined humanoid form",
+        "method": "applied"
+      },
       "properties": [
         "shape_change",
         "disguise",
@@ -178,11 +196,12 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rain",
+      "consumption_effect": {
+        "effect_type": "utility",
+        "description": "Makes subject unable to sink in water",
+        "method": "applied"
+      },
       "properties": [
         "water_walking",
         "swimming_aid"
@@ -196,11 +215,12 @@
       "cost_sp": 40000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "weapon_enhancement",
+        "description": "Makes bladed weapon magical; +2 to Attack and Damage",
+        "bonus": "+2",
+        "method": "applied"
+      },
       "properties": [
         "weapon_enhancement",
         "magical_weapon",
@@ -215,11 +235,12 @@
       "cost_sp": 15000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Mothballs",
+      "consumption_effect": {
+        "effect_type": "preservation",
+        "description": "Preserves a corpse indefinitely; prevents undeath",
+        "method": "applied"
+      },
       "properties": [
         "preservation",
         "anti_undead",
@@ -234,11 +255,12 @@
       "cost_sp": 7500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Fresh rain",
+      "consumption_effect": {
+        "effect_type": "utility",
+        "description": "Renders creature or object weightless",
+        "method": "applied"
+      },
       "properties": [
         "weightlessness",
         "flight"
@@ -252,11 +274,12 @@
       "cost_sp": 7500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Metallic",
+      "consumption_effect": {
+        "effect_type": "utility",
+        "description": "Makes creature or object impossible to grasp",
+        "method": "applied"
+      },
       "properties": [
         "slippery",
         "escape_bonds",
@@ -271,11 +294,11 @@
       "cost_sp": 15000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "phasing",
+        "description": "Renders solid object intangible",
+        "method": "applied"
+      },
       "properties": [
         "intangible",
         "wall_passage"
@@ -289,11 +312,12 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Utterly repulsive (to specific creature type)",
+      "consumption_effect": {
+        "effect_type": "repulsion",
+        "description": "Emits scent repulsive to specific creature type",
+        "method": "applied"
+      },
       "properties": [
         "repulsion",
         "species_specific",
@@ -308,11 +332,12 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Faint almonds; emits sibilant noises",
+      "consumption_effect": {
+        "effect_type": "stealth",
+        "description": "Renders subject utterly silent",
+        "method": "applied"
+      },
       "properties": [
         "silence",
         "stealth"
@@ -326,11 +351,11 @@
       "cost_sp": 15000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "incorporeal",
+        "description": "Makes creatures or objects insubstantial like a ghost",
+        "method": "applied"
+      },
       "properties": [
         "incorporeal",
         "ghost_like",
@@ -345,11 +370,12 @@
       "cost_sp": 80000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Musty crypts",
+      "consumption_effect": {
+        "effect_type": "detection",
+        "description": "Grants ability to smell treasure (blocked by lead)",
+        "method": "applied"
+      },
       "properties": [
         "treasure_detection",
         "multiple_uses",
@@ -364,11 +390,13 @@
       "cost_sp": 30000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Spring rain",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Cures all diseases and poisons OR permanently grants +1 HP",
+        "method": "applied",
+        "limited_uses": true
+      },
       "properties": [
         "cure_disease",
         "cure_poison",
@@ -383,6 +411,6 @@
       404,
       405
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, smell, taste fields"
   }
 }

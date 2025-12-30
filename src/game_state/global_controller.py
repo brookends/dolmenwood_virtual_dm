@@ -42,6 +42,22 @@ from src.data_models import (
     SecretStatus,
 )
 
+# Import new Dolmenwood weather system
+try:
+    from src.weather import (
+        roll_weather as roll_dolmenwood_weather,
+        WeatherResult,
+        WeatherEffect,
+        Unseason,
+        UnseasonState,
+        check_unseason_trigger,
+        get_active_unseason_effects,
+    )
+
+    DOLMENWOOD_WEATHER_AVAILABLE = True
+except ImportError:
+    DOLMENWOOD_WEATHER_AVAILABLE = False
+
 # Import NarrativeResolver (optional, may not be initialized yet)
 try:
     from src.narrative import NarrativeResolver, ActiveSpellEffect
@@ -1494,29 +1510,128 @@ class GlobalController:
     # WEATHER AND ENVIRONMENT
     # =========================================================================
 
-    def set_weather(self, weather: Weather) -> None:
-        """Set current weather."""
+    def set_weather(
+        self,
+        weather: Weather,
+        description: str = "",
+        effects_flags: int = 0,
+    ) -> None:
+        """
+        Set current weather.
+
+        Args:
+            weather: The simplified Weather enum value
+            description: Evocative weather description from tables
+            effects_flags: WeatherEffect flags as int (I=1, V=2, W=4)
+        """
         old_weather = self.world_state.weather
+        old_description = self.world_state.weather_description
+
         self.world_state.weather = weather
+        self.world_state.weather_description = description
+        self.world_state.weather_effects_flags = effects_flags
+
         self._log_event(
             "weather_changed",
             {
                 "old_weather": old_weather.value,
+                "old_description": old_description,
                 "new_weather": weather.value,
+                "new_description": description,
+                "effects_flags": effects_flags,
             },
         )
 
     def roll_weather(self) -> Weather:
         """
-        Roll for random weather appropriate to season.
+        Roll for random weather appropriate to season and active unseason.
+
+        Uses the Dolmenwood Campaign Book weather tables with evocative
+        descriptions and mechanical effects (I/V/W).
 
         Returns:
-            The new weather condition
+            The simplified Weather enum value
         """
+        # Use new Dolmenwood weather system if available
+        if DOLMENWOOD_WEATHER_AVAILABLE:
+            return self._roll_dolmenwood_weather()
+
+        # Fallback to simplified tables
+        return self._roll_simple_weather()
+
+    def _roll_dolmenwood_weather(self) -> Weather:
+        """Roll weather using the full Dolmenwood tables."""
+        month = self.world_state.current_date.month
+
+        # Determine active unseason
+        active_unseason = Unseason(self.world_state.active_unseason)
+
+        # Roll on the appropriate table
+        result = roll_dolmenwood_weather(month, active_unseason)
+
+        # Map description to simplified Weather enum for backward compatibility
+        simple_weather = self._map_description_to_weather(result.description)
+
+        # Store the full result
+        self.set_weather(
+            weather=simple_weather,
+            description=result.description,
+            effects_flags=result.effects.value,
+        )
+
+        self._log_event(
+            "dolmenwood_weather_rolled",
+            {
+                "month": month,
+                "unseason": active_unseason.value,
+                "roll": result.roll,
+                "table": result.table_used,
+                "description": result.description,
+                "effects": str(result.effects),
+                "simple_weather": simple_weather.value,
+            },
+        )
+
+        return simple_weather
+
+    def _map_description_to_weather(self, description: str) -> Weather:
+        """
+        Map an evocative weather description to a simple Weather enum.
+
+        This maintains backward compatibility with code that uses the
+        simplified Weather enum.
+        """
+        desc_lower = description.lower()
+
+        # Check for specific conditions
+        if "blizzard" in desc_lower:
+            return Weather.BLIZZARD
+        elif "snow" in desc_lower:
+            return Weather.SNOW
+        elif "storm" in desc_lower or "thunder" in desc_lower:
+            return Weather.STORM
+        elif "rain" in desc_lower or "drizzle" in desc_lower or "torrential" in desc_lower:
+            return Weather.RAIN
+        elif "fog" in desc_lower or "mist" in desc_lower:
+            return Weather.FOG
+        elif "overcast" in desc_lower or "cloud" in desc_lower or "gloomy" in desc_lower:
+            return Weather.OVERCAST
+        elif "clear" in desc_lower or "sunny" in desc_lower or "bright" in desc_lower:
+            return Weather.CLEAR
+        else:
+            # Default based on temperature/condition words
+            if any(w in desc_lower for w in ["freeze", "frigid", "icy", "cold", "chill"]):
+                return Weather.OVERCAST
+            elif any(w in desc_lower for w in ["hot", "warm", "balmy", "humid"]):
+                return Weather.CLEAR
+            else:
+                return Weather.OVERCAST
+
+    def _roll_simple_weather(self) -> Weather:
+        """Fallback: Roll weather using simplified tables."""
         season = self.world_state.season
         roll = self.dice_roller.roll_2d6("weather").total
 
-        # Simplified weather table by season
         if season == Season.WINTER:
             weather_table = {
                 2: Weather.BLIZZARD,
@@ -1577,6 +1692,98 @@ class GlobalController:
         new_weather = weather_table.get(roll, Weather.CLEAR)
         self.set_weather(new_weather)
         return new_weather
+
+    def check_unseason_trigger(self) -> Optional[str]:
+        """
+        Check if an unseason should trigger on the current date.
+
+        Should be called at the start of each day.
+
+        Returns:
+            Name of triggered unseason, or None
+        """
+        if not DOLMENWOOD_WEATHER_AVAILABLE:
+            return None
+
+        month = self.world_state.current_date.month
+        day = self.world_state.current_date.day
+
+        # Build current state from world state
+        current_state = UnseasonState(
+            active=Unseason(self.world_state.active_unseason),
+            days_remaining=self.world_state.unseason_days_remaining,
+        )
+
+        # Check for trigger
+        result = check_unseason_trigger(month, day, current_state)
+
+        if result:
+            unseason, duration = result
+            self.world_state.active_unseason = unseason.value
+            self.world_state.unseason_days_remaining = duration
+
+            self._log_event(
+                "unseason_started",
+                {
+                    "unseason": unseason.value,
+                    "duration": duration,
+                    "month": month,
+                    "day": day,
+                },
+            )
+
+            return unseason.value
+
+        return None
+
+    def advance_unseason_day(self) -> Optional[str]:
+        """
+        Advance the unseason tracker by one day.
+
+        Should be called when the day advances.
+
+        Returns:
+            Name of ended unseason, or None
+        """
+        if self.world_state.unseason_days_remaining > 0:
+            self.world_state.unseason_days_remaining -= 1
+
+            if self.world_state.unseason_days_remaining == 0:
+                ended_unseason = self.world_state.active_unseason
+                self.world_state.active_unseason = "none"
+
+                self._log_event(
+                    "unseason_ended",
+                    {"unseason": ended_unseason},
+                )
+
+                return ended_unseason
+
+        return None
+
+    def get_unseason_effects(self) -> dict[str, Any]:
+        """
+        Get the special effects for the currently active unseason.
+
+        Returns dict with:
+        - special_encounters: bool
+        - special_encounter_chance: int (X-in-6)
+        - foraging_bonus: float (multiplier)
+        - description: str or None
+        """
+        if not DOLMENWOOD_WEATHER_AVAILABLE:
+            return {
+                "special_encounters": False,
+                "special_encounter_chance": 0,
+                "foraging_bonus": 1.0,
+                "description": None,
+            }
+
+        state = UnseasonState(
+            active=Unseason(self.world_state.active_unseason),
+            days_remaining=self.world_state.unseason_days_remaining,
+        )
+        return get_active_unseason_effects(state)
 
     # =========================================================================
     # EFFECT MANAGEMENT
