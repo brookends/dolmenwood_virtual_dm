@@ -32,6 +32,11 @@ from src.data_models import (
     LightSourceType,
     AreaEffect,
     PolymorphOverlay,
+    SocialContext,
+    SocialOrigin,
+    SocialParticipant,
+    SocialParticipantType,
+    ReactionResult,
 )
 
 # Import NarrativeResolver (optional, may not be initialized yet)
@@ -293,6 +298,9 @@ class GlobalController:
         # Current combat engine (if any)
         self._combat_engine: Optional[Any] = None
 
+        # Current social context (if any)
+        self._social_context: Optional[SocialContext] = None
+
         # Narrative resolver for effect tracking (optional)
         self._narrative_resolver: Optional["NarrativeResolver"] = None
         if NARRATIVE_AVAILABLE:
@@ -489,6 +497,12 @@ class GlobalController:
         # Hook: Exiting ENCOUNTER clears encounter if transitioning to non-combat
         self.register_on_exit_hook(GameState.ENCOUNTER, self._on_exit_encounter)
 
+        # Hook: Entering SOCIAL_INTERACTION initializes social context
+        self.register_on_enter_hook(GameState.SOCIAL_INTERACTION, self._on_enter_social)
+
+        # Hook: Exiting SOCIAL_INTERACTION cleans up social context
+        self.register_on_exit_hook(GameState.SOCIAL_INTERACTION, self._on_exit_social)
+
         logger.debug("Default transition hooks registered")
 
     def _on_enter_combat(
@@ -567,6 +581,282 @@ class GlobalController:
     def combat_engine(self) -> Optional[Any]:
         """Get the current combat engine (if combat is active)."""
         return self._combat_engine
+
+    def _on_enter_social(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when entering SOCIAL_INTERACTION state.
+
+        Initializes social context from the current encounter or transition context.
+        This provides the narrative layer with participant information for dialogue.
+        """
+        # Determine the origin based on where we came from
+        if from_state == GameState.ENCOUNTER:
+            origin = SocialOrigin.ENCOUNTER_PARLEY
+        elif from_state == GameState.COMBAT:
+            origin = SocialOrigin.COMBAT_PARLEY
+        elif from_state == GameState.SETTLEMENT_EXPLORATION:
+            origin = SocialOrigin.SETTLEMENT
+        else:
+            origin = SocialOrigin.HEX_NPC
+
+        # Create social context
+        self._social_context = SocialContext(
+            origin=origin,
+            trigger_context=dict(context),
+        )
+
+        # Determine return state
+        if from_state == GameState.ENCOUNTER:
+            # Return to the exploration state before the encounter
+            # Check the encounter context or infer from location
+            return_state = self._determine_exploration_return_state(context)
+            self._social_context.return_state = return_state.value
+        else:
+            self._social_context.return_state = from_state.value
+
+        # Extract reaction result from context or encounter
+        reaction = context.get("reaction")
+        if reaction:
+            if isinstance(reaction, str):
+                try:
+                    self._social_context.initial_reaction = ReactionResult(reaction)
+                except ValueError:
+                    pass
+            elif isinstance(reaction, ReactionResult):
+                self._social_context.initial_reaction = reaction
+
+        # Get location context
+        self._social_context.hex_id = context.get("hex_id")
+        self._social_context.poi_name = context.get("poi_name")
+
+        # Extract source encounter ID if coming from encounter
+        if self._current_encounter:
+            self._social_context.source_encounter_id = self._current_encounter.encounter_id
+
+        # Build participants from current encounter or context
+        self._build_social_participants(context)
+
+        # Log the social context creation
+        participant_names = [p.name for p in self._social_context.participants]
+        can_parley = self._social_context.can_parley()
+        logger.info(
+            f"Social context initialized from {from_state.value}: "
+            f"participants={participant_names}, can_parley={can_parley}"
+        )
+
+        if not can_parley:
+            logger.warning(
+                "Entering SOCIAL_INTERACTION but no participants can communicate. "
+                "Narrative will need to handle non-verbal interaction."
+            )
+
+    def _build_social_participants(self, context: dict[str, Any]) -> None:
+        """
+        Build social participants from encounter actors or context.
+
+        This method attempts to look up full NPC/monster data from the
+        encounter's actors and create SocialParticipant entries.
+        """
+        if not self._social_context:
+            return
+
+        participants = []
+
+        # Check if participants were provided directly in context
+        if "participants" in context:
+            for p_data in context["participants"]:
+                if isinstance(p_data, SocialParticipant):
+                    participants.append(p_data)
+                elif isinstance(p_data, dict):
+                    # Try to build from dict
+                    participants.append(SocialParticipant(
+                        participant_id=p_data.get("id", "unknown"),
+                        name=p_data.get("name", "Unknown"),
+                        participant_type=SocialParticipantType.NPC,
+                        **{k: v for k, v in p_data.items() if k not in ("id", "name")}
+                    ))
+
+        # If no explicit participants, try to extract from encounter
+        if not participants and self._current_encounter:
+            # Get actors from encounter
+            actors = self._current_encounter.actors
+            reaction = self._social_context.initial_reaction
+
+            for actor_id in actors:
+                participant = self._lookup_and_build_participant(
+                    actor_id, reaction, context
+                )
+                if participant:
+                    participants.append(participant)
+
+        # Check context for NPC data (from settlement conversations, etc.)
+        if not participants and "npc_id" in context:
+            npc_id = context["npc_id"]
+            npc_name = context.get("npc_name", npc_id)
+
+            # Create a basic participant from context
+            participant = SocialParticipant(
+                participant_id=npc_id,
+                name=npc_name,
+                participant_type=SocialParticipantType.NPC,
+                hex_id=context.get("hex_id"),
+                poi_name=context.get("poi_name"),
+            )
+            participants.append(participant)
+
+        self._social_context.participants = participants
+
+        # Aggregate available quest hooks and secrets
+        self._social_context.available_quest_hooks = self._social_context.get_all_quest_hooks()
+        self._social_context.available_secrets = self._social_context.get_all_secrets()
+
+    def _lookup_and_build_participant(
+        self,
+        actor_id: str,
+        reaction: Optional[ReactionResult],
+        context: dict[str, Any],
+    ) -> Optional[SocialParticipant]:
+        """
+        Look up an actor by ID and build a SocialParticipant.
+
+        Attempts to find the actor in:
+        1. Monster registry
+        2. NPC registry
+        3. Context-provided data
+        """
+        from src.data_models import Monster, NPC
+
+        hex_id = context.get("hex_id")
+
+        # Try monster registry first
+        try:
+            from src.content_loader import get_monster_registry
+            registry = get_monster_registry()
+            result = registry.lookup(actor_id)
+            if result.found and result.monster:
+                return SocialParticipant.from_monster(
+                    result.monster,
+                    reaction=reaction,
+                    hex_id=hex_id,
+                )
+        except (ImportError, Exception) as e:
+            logger.debug(f"Could not lookup monster {actor_id}: {e}")
+
+        # Try NPC lookup from context or internal registry
+        if actor_id in self._npcs:
+            # We have the NPC in our character registry
+            char_state = self._npcs[actor_id]
+            return SocialParticipant(
+                participant_id=actor_id,
+                name=char_state.name,
+                participant_type=SocialParticipantType.NPC,
+                hex_id=hex_id,
+            )
+
+        # Check context for embedded NPC/monster data
+        if "actor_data" in context and actor_id in context["actor_data"]:
+            data = context["actor_data"][actor_id]
+            return SocialParticipant(
+                participant_id=actor_id,
+                name=data.get("name", actor_id),
+                participant_type=SocialParticipantType(data.get("type", "npc")),
+                sentience=data.get("sentience", "Sentient"),
+                alignment=data.get("alignment", "Neutral"),
+                languages=data.get("languages", []),
+                demeanor=data.get("demeanor", []),
+                speech=data.get("speech"),
+                desires=data.get("desires", []),
+                goals=data.get("goals", []),
+                secrets=data.get("secrets", []),
+                quest_hooks=data.get("quest_hooks", []),
+                possessions=data.get("possessions", []),
+                hex_id=hex_id,
+                reaction_result=reaction,
+                can_communicate=data.get("can_communicate", True),
+            )
+
+        # Fallback: create minimal participant from ID
+        logger.debug(f"Creating minimal participant for unknown actor: {actor_id}")
+        return SocialParticipant(
+            participant_id=actor_id,
+            name=actor_id.replace("_", " ").title(),
+            participant_type=SocialParticipantType.MONSTER,
+            hex_id=hex_id,
+            reaction_result=reaction,
+        )
+
+    def _determine_exploration_return_state(self, context: dict[str, Any]) -> GameState:
+        """
+        Determine the exploration state to return to after social interaction.
+
+        Uses party location or context to infer the appropriate exploration state.
+        """
+        # Check if context explicitly specifies return state
+        if "return_state" in context:
+            try:
+                return GameState(context["return_state"])
+            except ValueError:
+                pass
+
+        # Check party's current location type
+        if self.party_state and self.party_state.location:
+            location_type = self.party_state.location.location_type
+            if location_type == LocationType.DUNGEON_ROOM:
+                return GameState.DUNGEON_EXPLORATION
+            elif location_type == LocationType.SETTLEMENT:
+                return GameState.SETTLEMENT_EXPLORATION
+
+        # Default to wilderness travel
+        return GameState.WILDERNESS_TRAVEL
+
+    def _on_exit_social(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting SOCIAL_INTERACTION state.
+
+        Preserves any conversation outcomes and cleans up social context.
+        """
+        if self._social_context:
+            # Log the conversation summary
+            logger.debug(
+                f"Exiting social interaction: "
+                f"topics={self._social_context.topics_discussed}, "
+                f"secrets_revealed={len(self._social_context.secrets_revealed)}, "
+                f"quests_offered={self._social_context.quests_offered}"
+            )
+
+            # Clear the social context
+            self._social_context = None
+
+        # If going back to exploration and not to combat, clear encounter
+        if to_state not in {GameState.COMBAT} and self._current_encounter:
+            logger.debug("Clearing encounter after social interaction")
+            self.clear_encounter()
+
+    @property
+    def social_context(self) -> Optional[SocialContext]:
+        """Get the current social context (if in social interaction)."""
+        return self._social_context
+
+    def set_social_context(self, context: SocialContext) -> None:
+        """
+        Manually set social context.
+
+        Use this when initiating social interaction through an engine
+        (like SettlementEngine) that builds its own context.
+        """
+        self._social_context = context
 
     # =========================================================================
     # TIME MANAGEMENT

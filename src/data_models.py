@@ -4928,6 +4928,229 @@ class EncounterState:
 
 
 # =============================================================================
+# SOCIAL INTERACTION STATE
+# =============================================================================
+
+
+class SocialOrigin(str, Enum):
+    """Origin of a social interaction."""
+    SETTLEMENT = "settlement"       # Initiated in a settlement
+    ENCOUNTER_PARLEY = "encounter_parley"  # From encounter reaction roll
+    COMBAT_PARLEY = "combat_parley"  # From combat negotiation/surrender
+    HEX_NPC = "hex_npc"            # Fixed NPC in a hex location
+    POI_NPC = "poi_npc"            # NPC at a point of interest
+
+
+class SocialParticipantType(str, Enum):
+    """Type of participant in a social interaction."""
+    NPC = "npc"                    # Named NPC with full profile
+    MONSTER = "monster"            # Monster from encounter
+    ADVENTURING_PARTY = "adventuring_party"  # Random adventurers
+
+
+@dataclass
+class SocialParticipant:
+    """
+    A participant in a social interaction.
+
+    Can represent NPCs, monsters, or adventuring party members.
+    Captures the information needed for narrative context.
+    """
+    participant_id: str
+    name: str
+    participant_type: SocialParticipantType
+
+    # Core social attributes
+    sentience: str = "Sentient"      # Non-Sentient, Semi-Intelligent, Sentient
+    intelligence: Optional[str] = None
+    alignment: str = "Neutral"
+    languages: list[str] = field(default_factory=list)
+
+    # Personality and behavior
+    demeanor: list[str] = field(default_factory=list)  # e.g., ["Manic", "twitchy fingers"]
+    speech: Optional[str] = None  # Speech pattern
+    personality: str = ""
+
+    # Motivation and goals
+    desires: list[str] = field(default_factory=list)
+    goals: list[str] = field(default_factory=list)
+
+    # Knowledge and secrets (for DM/narrative)
+    secrets: list[str] = field(default_factory=list)
+    dialogue_hooks: list[str] = field(default_factory=list)
+
+    # Relationships
+    relationships: list[dict[str, Any]] = field(default_factory=list)
+    faction: Optional[str] = None
+
+    # Location context
+    location: str = ""
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+
+    # Quest hooks this participant can offer
+    quest_hooks: list[dict[str, Any]] = field(default_factory=list)
+
+    # Items/possessions relevant to conversation
+    possessions: list[str] = field(default_factory=list)
+
+    # Disposition toward party (-5 to +5)
+    disposition: int = 0
+    reaction_result: Optional[ReactionResult] = None
+
+    # For monsters: can they even be parleyed with?
+    can_communicate: bool = True
+    monster_type: Optional[str] = None  # e.g., "Fairy", "Undead", "Mortal"
+
+    # Reference to source data
+    stat_reference: Optional[str] = None  # e.g., "frost elf courtier (DMB)"
+
+    # Binding/constraint information (e.g., Lord Hobbled-and-Blackened)
+    binding: Optional[dict[str, Any]] = None
+
+    @classmethod
+    def from_npc(cls, npc: "NPC", hex_id: Optional[str] = None) -> "SocialParticipant":
+        """Create a SocialParticipant from an NPC."""
+        return cls(
+            participant_id=npc.npc_id,
+            name=npc.name,
+            participant_type=SocialParticipantType.NPC,
+            personality=npc.personality,
+            goals=list(npc.goals),
+            secrets=list(npc.secrets),
+            dialogue_hooks=list(npc.dialogue_hooks),
+            relationships=[{"npc_id": k, "type": v} for k, v in npc.relationships.items()],
+            faction=npc.faction,
+            location=npc.location,
+            hex_id=hex_id,
+            disposition=npc.disposition,
+        )
+
+    @classmethod
+    def from_monster(
+        cls,
+        monster: "Monster",
+        reaction: Optional[ReactionResult] = None,
+        hex_id: Optional[str] = None,
+    ) -> "SocialParticipant":
+        """Create a SocialParticipant from a Monster."""
+        # Determine if monster can communicate
+        can_communicate = monster.sentience in ("Sentient", "Semi-Intelligent")
+
+        # Get languages if available
+        languages = []
+        if monster.speech:
+            # Try to extract language info from speech field
+            languages = [monster.speech] if monster.speech else []
+
+        return cls(
+            participant_id=monster.monster_id,
+            name=monster.name,
+            participant_type=SocialParticipantType.MONSTER,
+            sentience=monster.sentience,
+            intelligence=monster.intelligence,
+            alignment=monster.alignment,
+            languages=languages,
+            speech=monster.speech,
+            personality=monster.behavior or "",
+            goals=[],  # Monsters typically don't have explicit goals
+            secrets=[],
+            dialogue_hooks=list(monster.encounter_scenarios),
+            hex_id=hex_id,
+            reaction_result=reaction,
+            can_communicate=can_communicate,
+            monster_type=monster.monster_type,
+            stat_reference=f"{monster.name} ({monster.page_reference})" if monster.page_reference else None,
+            possessions=[monster.possessions] if monster.possessions else [],
+        )
+
+
+@dataclass
+class SocialContext:
+    """
+    Context for a social interaction.
+
+    Captures all participants, their knowledge, and the circumstances
+    that led to the social encounter. This provides the narrative layer
+    with the information needed to generate appropriate dialogue and
+    track conversation state.
+    """
+    context_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    origin: SocialOrigin = SocialOrigin.ENCOUNTER_PARLEY
+
+    # The participants in this social interaction
+    participants: list[SocialParticipant] = field(default_factory=list)
+
+    # The reaction roll that led to parley (if from encounter)
+    initial_reaction: Optional[ReactionResult] = None
+
+    # Location context
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+    location_description: str = ""
+
+    # The encounter this spawned from (if any)
+    source_encounter_id: Optional[str] = None
+
+    # Previous state to return to when conversation ends
+    return_state: Optional[str] = None
+
+    # Available topics and information
+    # These are populated based on participant knowledge
+    available_quest_hooks: list[dict[str, Any]] = field(default_factory=list)
+    available_secrets: list[str] = field(default_factory=list)
+    available_rumors: list[str] = field(default_factory=list)
+
+    # Conversation tracking
+    topics_discussed: list[str] = field(default_factory=list)
+    secrets_revealed: list[str] = field(default_factory=list)
+    quests_offered: list[str] = field(default_factory=list)
+    disposition_changes: dict[str, int] = field(default_factory=dict)
+
+    # Time tracking
+    turns_elapsed: int = 0
+
+    # Context from the triggering event
+    trigger_context: dict[str, Any] = field(default_factory=dict)
+
+    def get_primary_participant(self) -> Optional[SocialParticipant]:
+        """Get the main NPC/monster being spoken to."""
+        if self.participants:
+            return self.participants[0]
+        return None
+
+    def can_parley(self) -> bool:
+        """Check if any participant can communicate."""
+        return any(p.can_communicate for p in self.participants)
+
+    def get_available_languages(self) -> set[str]:
+        """Get all languages spoken by participants."""
+        languages = set()
+        for p in self.participants:
+            languages.update(p.languages)
+        return languages
+
+    def get_all_secrets(self) -> list[str]:
+        """Get all secrets held by participants (DM info)."""
+        secrets = []
+        for p in self.participants:
+            secrets.extend(p.secrets)
+        return secrets
+
+    def get_all_quest_hooks(self) -> list[dict[str, Any]]:
+        """Get all quest hooks available from participants."""
+        hooks = []
+        for p in self.participants:
+            hooks.extend(p.quest_hooks)
+        return hooks
+
+    def add_disposition_change(self, participant_id: str, change: int) -> None:
+        """Track a disposition change for a participant."""
+        current = self.disposition_changes.get(participant_id, 0)
+        self.disposition_changes[participant_id] = current + change
+
+
+# =============================================================================
 # CONTENT SOURCE REFERENCES (Section 7.2)
 # =============================================================================
 

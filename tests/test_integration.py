@@ -603,3 +603,166 @@ class TestTransitionHooks:
 
         # Encounter should still be present (combat needs it)
         assert controller_with_encounter.get_encounter() is not None
+
+    def test_social_context_initialized_on_parley(self, controller_with_encounter):
+        """Test that social context is initialized when entering SOCIAL_INTERACTION from encounter."""
+        # Transition to encounter
+        controller_with_encounter.transition("encounter_triggered")
+        assert controller_with_encounter.current_state == GameState.ENCOUNTER
+
+        # No social context yet
+        assert controller_with_encounter.social_context is None
+
+        # Transition to social interaction (parley)
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "friendly"}
+        )
+        assert controller_with_encounter.current_state == GameState.SOCIAL_INTERACTION
+
+        # Social context should be initialized
+        assert controller_with_encounter.social_context is not None
+        assert controller_with_encounter.social_context.origin.value == "encounter_parley"
+        assert controller_with_encounter.social_context.initial_reaction.value == "friendly"
+
+    def test_social_context_has_participants_from_encounter(self, controller_with_encounter):
+        """Test that social context includes participants from encounter actors."""
+        # Setup encounter with actors
+        encounter = controller_with_encounter.get_encounter()
+        assert "goblin_1" in encounter.actors
+
+        # Transition to parley
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "friendly"}
+        )
+
+        # Social context should have participants
+        social_context = controller_with_encounter.social_context
+        assert social_context is not None
+        assert len(social_context.participants) > 0
+
+        # First participant should be based on the encounter actor
+        participant = social_context.participants[0]
+        assert participant.participant_id == "goblin_1"
+
+    def test_social_context_cleared_on_exit(self, controller_with_encounter):
+        """Test that social context is cleared when exiting SOCIAL_INTERACTION."""
+        # Transition to social interaction
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "helpful"}
+        )
+        assert controller_with_encounter.social_context is not None
+
+        # Exit back to wilderness
+        controller_with_encounter.transition("conversation_end_wilderness")
+        assert controller_with_encounter.current_state == GameState.WILDERNESS_TRAVEL
+
+        # Social context should be cleared
+        assert controller_with_encounter.social_context is None
+
+    def test_social_context_with_npc_from_context(self, controller_with_party):
+        """Test social context initialization with NPC data in context."""
+        # Transition to settlement first
+        controller_with_party.transition("enter_settlement")
+        assert controller_with_party.current_state == GameState.SETTLEMENT_EXPLORATION
+
+        # Initiate conversation with NPC data in context
+        controller_with_party.transition(
+            "initiate_conversation",
+            context={
+                "npc_id": "merchant_bob",
+                "npc_name": "Bob the Merchant",
+                "hex_id": "0505",
+            }
+        )
+        assert controller_with_party.current_state == GameState.SOCIAL_INTERACTION
+
+        # Verify social context
+        social_context = controller_with_party.social_context
+        assert social_context is not None
+        assert social_context.origin.value == "settlement"
+        assert len(social_context.participants) == 1
+        assert social_context.participants[0].name == "Bob the Merchant"
+        assert social_context.participants[0].hex_id == "0505"
+
+    def test_social_context_parley_capability_check(self, controller_with_party):
+        """Test that social context correctly tracks whether participants can communicate."""
+        from src.data_models import SocialParticipant, SocialParticipantType
+
+        # Create a social participant that cannot communicate
+        non_sentient = SocialParticipant(
+            participant_id="mindless_skeleton",
+            name="Skeleton",
+            participant_type=SocialParticipantType.MONSTER,
+            sentience="Non-Sentient",
+            can_communicate=False,
+        )
+
+        # Transition to encounter then parley with explicit participants
+        controller_with_party.transition("encounter_triggered")
+        controller_with_party.transition(
+            "encounter_to_parley",
+            context={
+                "reaction": "neutral",
+                "participants": [non_sentient],
+            }
+        )
+
+        social_context = controller_with_party.social_context
+        assert social_context is not None
+        assert social_context.can_parley() is False
+
+    def test_social_context_return_state_tracking(self, controller_with_encounter):
+        """Test that social context correctly tracks the return state."""
+        # Start from wilderness -> encounter -> social
+        assert controller_with_encounter.current_state == GameState.WILDERNESS_TRAVEL
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "friendly"}
+        )
+
+        # Social context should track that we should return to wilderness
+        social_context = controller_with_encounter.social_context
+        assert social_context is not None
+        assert social_context.return_state == "wilderness_travel"
+
+    def test_social_context_preserves_encounter_for_possible_combat(self, controller_with_encounter):
+        """Test that encounter is preserved when transitioning to social (might escalate)."""
+        # Start encounter
+        controller_with_encounter.transition("encounter_triggered")
+        original_encounter = controller_with_encounter.get_encounter()
+
+        # Transition to social
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "unfriendly"}
+        )
+
+        # Encounter should still be available (conversation might escalate)
+        assert controller_with_encounter.get_encounter() is not None
+        assert controller_with_encounter.get_encounter() == original_encounter
+
+    def test_social_to_combat_transition(self, controller_with_encounter):
+        """Test transitioning from social interaction to combat when conversation escalates."""
+        # Setup: encounter -> social
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition(
+            "encounter_to_parley",
+            context={"reaction": "unfriendly"}
+        )
+        assert controller_with_encounter.social_context is not None
+
+        # Conversation escalates to combat
+        controller_with_encounter.transition("conversation_escalates")
+        assert controller_with_encounter.current_state == GameState.COMBAT
+
+        # Social context should be cleared
+        assert controller_with_encounter.social_context is None
+
+        # Combat engine should be initialized (from the preserved encounter)
+        assert controller_with_encounter.combat_engine is not None
