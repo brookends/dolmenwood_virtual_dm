@@ -425,6 +425,119 @@ class HexCrawlEngine:
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
 
+        # Register hook to process hunting results when combat ends
+        self._register_combat_exit_hook()
+
+    def _register_combat_exit_hook(self) -> None:
+        """Register a hook to process hunting rations when combat ends."""
+        from src.game_state.state_machine import GameState
+
+        def on_exit_combat(
+            from_state: GameState,
+            to_state: GameState,
+            trigger: str,
+            context: dict[str, Any],
+        ) -> None:
+            """Process hunting combat results before encounter is cleared."""
+            self._process_hunting_combat_result(context)
+
+        self.controller.register_on_exit_hook(GameState.COMBAT, on_exit_combat)
+
+    def _process_hunting_combat_result(self, combat_context: dict[str, Any]) -> None:
+        """
+        Process the result of a hunting combat and add rations to inventory.
+
+        Per Campaign Book p120-121:
+        - Calculate rations based on HP of killed animals
+        - Small: 1 ration/HP, Medium: 2 rations/HP, Large: 4 rations/HP
+        - Add rations to party inventory
+
+        Args:
+            combat_context: Context from combat end transition
+        """
+        # Get the encounter before it's cleared
+        encounter = self.controller.get_encounter()
+        if not encounter:
+            return
+
+        # Check if this was a hunting encounter
+        contextual_data = encounter.contextual_data
+        if not contextual_data or contextual_data.get("source") != "hunting":
+            return
+
+        # Get hunting data
+        game_animal_data = contextual_data.get("game_animal")
+        hex_id = contextual_data.get("hex_id")
+
+        if not game_animal_data:
+            return
+
+        # Calculate total HP killed from defeated enemy combatants
+        total_hp_killed = 0
+        for combatant in encounter.combatants:
+            if combatant.is_enemy and not combatant.is_active:
+                # Combatant was defeated - add their max HP
+                total_hp_killed += combatant.hp_max
+
+        if total_hp_killed <= 0:
+            # No animals were killed, no rations
+            return
+
+        # Import hunting table functions
+        from src.tables.hunting_tables import (
+            GAME_ANIMALS,
+            AnimalSize,
+            hunting_to_rations_item,
+        )
+
+        # Get the GameAnimal instance
+        monster_id = game_animal_data.get("monster_id")
+        if monster_id and monster_id in GAME_ANIMALS:
+            animal = GAME_ANIMALS[monster_id]
+        else:
+            # Fallback: create a temporary GameAnimal from the data
+            from src.tables.hunting_tables import GameAnimal
+            size_str = game_animal_data.get("size", "medium")
+            size = AnimalSize(size_str) if size_str in [s.value for s in AnimalSize] else AnimalSize.MEDIUM
+            animal = GameAnimal(
+                name=game_animal_data.get("name", "Game Animal"),
+                monster_id=monster_id or "unknown",
+                size=size,
+                number_appearing="1",
+                description=game_animal_data.get("description", ""),
+            )
+
+        # Create rations item
+        rations_item = hunting_to_rations_item(
+            animal=animal,
+            total_hp_killed=total_hp_killed,
+            source_hex=hex_id,
+        )
+
+        if not rations_item:
+            return
+
+        # Add rations to party leader's inventory (or first available character)
+        party_leader = self._state.party_leader if self._state else None
+        if not party_leader:
+            # Get first party member
+            characters = list(self.controller._characters.values())
+            if characters:
+                party_leader = characters[0].character_id
+
+        if party_leader:
+            character = self.controller.get_character(party_leader)
+            if character:
+                character.inventory.append(rations_item)
+
+                # Log the rations gained
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    f"Hunting yielded {rations_item.quantity} rations of {animal.name} meat "
+                    f"(from {total_hp_killed} HP killed) - added to {character.name}'s inventory"
+                )
+
     def set_has_guide(self, has_guide: bool) -> None:
         """Set whether party has a local guide."""
         self._has_guide = has_guide
@@ -1513,6 +1626,15 @@ class HexCrawlEngine:
                                 enemies_surprised=True,  # Enemies ARE surprised
                                 context=f"Hunting {result.game_animal.get('name', 'game')} in {current_hex}",
                             )
+
+                            # Store hunting-specific data for post-combat ration calculation
+                            encounter.contextual_data = {
+                                "source": "hunting",
+                                "hex_id": current_hex,
+                                "game_animal": result.game_animal,
+                                "number_appearing": num_appearing,
+                                "potential_rations": result.potential_rations,
+                            }
 
                             self.controller.set_encounter(encounter)
                             self.controller.transition(

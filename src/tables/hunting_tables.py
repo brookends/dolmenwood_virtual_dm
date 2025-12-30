@@ -563,8 +563,9 @@ def calculate_rations_yield(animal: GameAnimal, total_hp_killed: int) -> int:
 # =============================================================================
 
 # Map hex terrain types to hunting terrain types
+# This maps from data_models.TerrainType values to hunting TerrainType
 TERRAIN_TO_HUNTING: dict[str, TerrainType] = {
-    # Direct mappings
+    # Direct mappings from Campaign Book terrain types
     "bog": TerrainType.BOG,
     "farmland": TerrainType.FARMLAND,
     "forest_boggy": TerrainType.FOREST_BOGGY,
@@ -579,15 +580,23 @@ TERRAIN_TO_HUNTING: dict[str, TerrainType] = {
     "swamp": TerrainType.SWAMP,
     # Generic forest defaults to open forest
     "forest": TerrainType.FOREST_OPEN,
+    # Deep forest uses tangled forest (dense undergrowth)
+    "deep_forest": TerrainType.FOREST_TANGLED,
+    # Moor uses bog table (similar boggy terrain)
+    "moor": TerrainType.BOG,
     # Settlement surroundings default to farmland
     "settlement": TerrainType.FARMLAND,
     "village": TerrainType.FARMLAND,
     "town": TerrainType.FARMLAND,
+    # Roads/trails use farmland (cleared paths near civilization)
+    "road": TerrainType.FARMLAND,
+    "trail": TerrainType.FARMLAND,
     # Water areas default to swamp (river banks, lake shores)
     "river": TerrainType.SWAMP,
     "lake": TerrainType.SWAMP,
     # Mountain areas default to hills
     "mountain": TerrainType.HILLS,
+    "mountains": TerrainType.HILLS,
     "crag": TerrainType.HILLS,
 }
 
@@ -626,3 +635,68 @@ def animal_appears_in_terrain(animal_id: str, terrain: TerrainType) -> bool:
     """Check if an animal can appear in a given terrain."""
     table = HUNTING_TABLES.get(terrain, {})
     return animal_id in table.values()
+
+
+def hunting_to_rations_item(
+    animal: GameAnimal,
+    total_hp_killed: int,
+    source_hex: Optional[str] = None,
+) -> "Item":
+    """
+    Convert hunting kills to a rations Item for character inventory.
+
+    Per Campaign Book p120-121:
+    - Small animals: 1 ration per HP
+    - Medium animals: 2 rations per HP
+    - Large animals: 4 rations per HP
+
+    Args:
+        animal: The GameAnimal that was hunted
+        total_hp_killed: Total HP of animals killed in combat
+        source_hex: Optional hex where hunting occurred
+
+    Returns:
+        Item instance ready for inventory storage
+    """
+    from src.data_models import Item
+
+    # Calculate rations from HP killed
+    rations = calculate_rations_yield(animal, total_hp_killed)
+
+    if rations <= 0:
+        # No rations if nothing was killed
+        return None
+
+    # Generate a unique item_id based on animal name
+    item_id = f"{animal.monster_id}_meat"
+
+    # Determine meat name based on animal
+    meat_name = f"Fresh {animal.name} Meat"
+    if animal.name.lower() in ("gelatinous ape",):
+        meat_name = f"Fresh {animal.name} Jelly"
+    elif animal.name.lower() in ("lurkey", "gobble"):
+        meat_name = f"Fresh {animal.name}"
+
+    return Item(
+        item_id=item_id,
+        name=meat_name,
+        weight=4,  # Standard weight for rations
+        quantity=rations,
+        item_type="consumable",
+        slot_size=0,
+        description=f"Fresh game meat from hunting. {animal.description}",
+        consumption_effect={
+            "effect_type": "rations",
+            "description": f"Fresh {animal.name.lower()} meat - provides sustenance",
+            "flavor_text": animal.flavor_text or f"Meat from a {animal.size.value} {animal.name.lower()}.",
+            "source_animal": animal.name,
+            "animal_size": animal.size.value,
+        },
+        source_hex=source_hex,
+    )
+
+
+# Type hint for Item
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.data_models import Item
