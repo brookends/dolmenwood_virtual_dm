@@ -474,7 +474,12 @@ class DMAgent:
         Generate NPC dialogue using the active social context.
 
         This is the primary integration point between the game state's
-        SocialContext and the AI dialogue generation.
+        SocialContext and the AI dialogue generation. Uses the enhanced
+        topic matching system to:
+        - Match player questions to relevant known topics
+        - Filter topics by disposition requirements
+        - Track and hint at secrets
+        - Monitor NPC patience
 
         Args:
             social_context: The active social context from GlobalController
@@ -482,7 +487,7 @@ class DMAgent:
             participant_index: Which participant to speak (0 = primary)
 
         Returns:
-            DescriptionResult with the NPC dialogue
+            DescriptionResult with the NPC dialogue and metadata
         """
         if not social_context.participants:
             return DescriptionResult(
@@ -507,16 +512,43 @@ class DMAgent:
                 warnings=[warning],
             )
 
+        # Check if conversation has ended due to patience
+        if (participant.conversation and
+            participant.conversation.conversation_ended):
+            return DescriptionResult(
+                content=f"[{participant.name} has ended the conversation: "
+                        f"{participant.conversation.end_reason}]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[participant.conversation.end_reason],
+            )
+
         # Get previous interactions from context
         previous = social_context.topics_discussed.copy()
 
-        # Convert participant to dialogue inputs
+        # Convert participant to dialogue inputs (uses enhanced topic system)
         dialogue_data = participant.to_dialogue_inputs(
             conversation_topic=conversation_topic,
             previous_interactions=previous,
         )
 
-        # Create inputs and schema
+        # Check for conversation ended after processing query
+        if dialogue_data.get("_conversation_ended"):
+            patience_warning = dialogue_data.get("_patience_warning", "")
+            return DescriptionResult(
+                content=f"[{participant.name} has lost patience and ends the conversation]",
+                schema_used=PromptSchemaType.NPC_DIALOGUE,
+                success=False,
+                warnings=[patience_warning] if patience_warning else [],
+            )
+
+        # Extract enhanced metadata before creating schema inputs
+        query_result = dialogue_data.pop("_query_result", None)
+        is_relevant = dialogue_data.pop("_is_relevant", True)
+        dialogue_data.pop("_conversation_ended", None)
+        patience_warning = dialogue_data.pop("_patience_warning", None)
+
+        # Create inputs and schema (without underscore-prefixed keys)
         inputs = NPCDialogueInputs(**dialogue_data)
         schema = NPCDialogueSchema(inputs)
 
@@ -527,9 +559,36 @@ class DMAgent:
         if result.success and conversation_topic not in social_context.topics_discussed:
             social_context.topics_discussed.append(conversation_topic)
 
-        # Add communication warning if present
+        # Track secrets that were hinted or revealed
+        if query_result:
+            for hint_info in query_result.get("hints_to_give", []):
+                secret = hint_info.get("secret")
+                if secret and secret.secret_id not in social_context.secrets_revealed:
+                    if hasattr(secret, 'status'):
+                        from src.data_models import SecretStatus
+                        secret.status = SecretStatus.HINTED
+                        secret.hint_count += 1
+
+            for reveal_info in query_result.get("secrets_to_reveal", []):
+                secret = reveal_info.get("secret")
+                if secret:
+                    if hasattr(secret, 'status'):
+                        from src.data_models import SecretStatus
+                        secret.status = SecretStatus.REVEALED
+                    if reveal_info.get("content") not in social_context.secrets_revealed:
+                        social_context.secrets_revealed.append(reveal_info["content"])
+
+        # Add warnings
+        warnings_to_add = []
         if warning:
-            result.warnings.append(warning)
+            warnings_to_add.append(warning)
+        if patience_warning:
+            warnings_to_add.append(f"NPC patience: {patience_warning}")
+        if not is_relevant:
+            warnings_to_add.append("Question was not relevant to NPC's knowledge")
+
+        for w in warnings_to_add:
+            result.warnings.append(w)
 
         return result
 

@@ -1045,3 +1045,286 @@ class TestSocialContextDialogueIntegration:
 
         assert len(context.topics_discussed) == 2
         assert "the weather" in context.topics_discussed
+
+
+class TestTopicIntelligence:
+    """Tests for the enhanced topic matching and intelligence system."""
+
+    def test_known_topic_keyword_matching(self):
+        """Test that KnownTopic matches queries by keywords."""
+        from src.data_models import KnownTopic, TopicRelevance
+
+        topic = KnownTopic(
+            topic_id="ruins_quest",
+            content="There are ancient ruins to the north that hide treasures",
+            keywords=["ruins", "ancient", "treasure", "north"],
+        )
+
+        # Exact keyword match
+        assert topic.matches_query("Tell me about the ruins") == TopicRelevance.EXACT
+        assert topic.matches_query("Where can I find treasure?") == TopicRelevance.EXACT
+
+        # Irrelevant
+        assert topic.matches_query("How's the weather?") == TopicRelevance.IRRELEVANT
+
+    def test_topic_disposition_gating(self):
+        """Test that topics are gated by disposition requirements."""
+        from src.data_models import KnownTopic
+
+        # Topic requires friendly disposition
+        friendly_topic = KnownTopic(
+            topic_id="secret_path",
+            content="There's a secret path through the forest",
+            required_disposition=2,  # Requires friendly
+        )
+
+        # Can share at disposition 2+
+        assert friendly_topic.can_share(2) is True
+        assert friendly_topic.can_share(3) is True
+
+        # Cannot share at lower disposition
+        assert friendly_topic.can_share(1) is False
+        assert friendly_topic.can_share(0) is False
+        assert friendly_topic.can_share(-1) is False
+
+    def test_secret_hinting_logic(self):
+        """Test that secrets are hinted at appropriately."""
+        from src.data_models import SecretInfo
+
+        secret = SecretInfo(
+            secret_id="hidden_treasure",
+            content="The treasure is buried under the old oak",
+            hint="Something about buried treasure...",
+            required_disposition=3,
+            required_trust=2,
+        )
+
+        # Should hint if asked about multiple times with neutral+ disposition
+        assert secret.should_hint(current_disposition=0, times_asked=2) is True
+
+        # Should not hint on first ask with low disposition
+        assert secret.should_hint(current_disposition=-1, times_asked=1) is False
+
+    def test_secret_reveal_conditions(self):
+        """Test conditions for revealing secrets."""
+        from src.data_models import SecretInfo
+
+        secret = SecretInfo(
+            secret_id="dark_secret",
+            content="The mayor is actually a werewolf",
+            required_disposition=3,
+            required_trust=2,
+            can_be_bribed=True,
+            bribe_amount=100,
+        )
+
+        # Cannot reveal without meeting requirements
+        assert secret.can_reveal(current_disposition=2, trust_level=1) is False
+
+        # Can reveal with high disposition and trust
+        assert secret.can_reveal(current_disposition=3, trust_level=2) is True
+
+        # Can reveal with bribe
+        assert secret.can_reveal(current_disposition=0, trust_level=0, bribe_offered=100) is True
+        assert secret.can_reveal(current_disposition=0, trust_level=0, bribe_offered=50) is False
+
+    def test_conversation_tracker_patience(self):
+        """Test that patience decays with irrelevant questions."""
+        from src.data_models import ConversationTracker
+
+        tracker = ConversationTracker(patience=3)
+
+        # Relevant questions maintain patience
+        tracker.record_question("about the ruins", was_relevant=True)
+        assert tracker.patience == 3
+        assert tracker.successful_exchanges == 1
+
+        # Irrelevant questions reduce patience
+        tracker.record_question("about bananas", was_relevant=False)
+        assert tracker.patience == 2
+        assert tracker.irrelevant_count == 1
+
+        # Multiple irrelevant questions (need to get to -3 to end)
+        tracker.record_question("about unicorns", was_relevant=False)  # patience = 1
+        tracker.record_question("about rainbows", was_relevant=False)  # patience = 0
+        tracker.record_question("about clouds", was_relevant=False)    # patience = -1
+        tracker.record_question("about stars", was_relevant=False)     # patience = -2
+        tracker.record_question("about moons", was_relevant=False)     # patience = -3
+
+        # Conversation should end when patience hits -3
+        assert tracker.conversation_ended is True
+        assert "patience" in tracker.end_reason.lower()
+
+    def test_conversation_tracker_trust_building(self):
+        """Test that trust builds with successful exchanges."""
+        from src.data_models import ConversationTracker
+
+        tracker = ConversationTracker(patience=3, trust_level=0)
+
+        # First exchange doesn't build trust yet
+        tracker.record_question("about the town", was_relevant=True)
+        assert tracker.trust_level == 0
+
+        # Second exchange starts building trust
+        tracker.record_question("about the mayor", was_relevant=True)
+        assert tracker.trust_level == 1
+
+        # More exchanges build more trust
+        tracker.record_question("about the history", was_relevant=True)
+        tracker.record_question("about the festivals", was_relevant=True)
+        assert tracker.trust_level >= 2
+
+    def test_participant_query_processing(self):
+        """Test full query processing through participant."""
+        from src.data_models import (
+            SocialParticipant, SocialParticipantType, KnownTopic, SecretInfo
+        )
+
+        participant = SocialParticipant(
+            participant_id="tavern_keeper",
+            name="Old Tom",
+            participant_type=SocialParticipantType.NPC,
+            disposition=1,
+            known_topics=[
+                KnownTopic(
+                    topic_id="local_rumors",
+                    content="Strange lights have been seen in the forest",
+                    keywords=["lights", "forest", "strange"],
+                    required_disposition=-5,  # Always share
+                ),
+                KnownTopic(
+                    topic_id="secret_path",
+                    content="There's a hidden path to the castle",
+                    keywords=["path", "castle", "hidden"],
+                    required_disposition=2,  # Requires friendly
+                ),
+            ],
+            secret_info=[
+                SecretInfo(
+                    secret_id="dark_truth",
+                    content="The baron murdered his brother",
+                    keywords=["baron", "brother", "murder"],
+                    hint="Something dark about the baron...",
+                    required_disposition=4,
+                    required_trust=3,
+                ),
+            ],
+        )
+
+        # Query about available topic
+        result = participant.process_query("Tell me about the strange lights")
+        assert result["is_relevant"] is True
+        assert len(result["relevant_topics"]) == 1
+        assert "lights" in result["relevant_topics"][0]["content"].lower()
+
+        # Query about locked topic (needs higher disposition)
+        result = participant.process_query("Is there a path to the castle?")
+        assert len(result["locked_topics"]) == 1
+
+    def test_participant_find_relevant_topics(self):
+        """Test finding relevant topics for a query."""
+        from src.data_models import (
+            SocialParticipant, SocialParticipantType, KnownTopic, TopicRelevance
+        )
+
+        participant = SocialParticipant(
+            participant_id="scholar",
+            name="Professor Elm",
+            participant_type=SocialParticipantType.NPC,
+            disposition=2,
+            known_topics=[
+                KnownTopic(
+                    topic_id="history",
+                    content="The ancient kingdom fell 500 years ago",
+                    keywords=["history", "ancient", "kingdom"],
+                ),
+                KnownTopic(
+                    topic_id="dragons",
+                    content="Dragons once ruled these lands",
+                    keywords=["dragons", "ruled", "lands"],
+                ),
+                KnownTopic(
+                    topic_id="magic",
+                    content="Magic flows from the ley lines",
+                    keywords=["magic", "ley", "lines"],
+                ),
+            ],
+        )
+
+        # Find exact match
+        results = participant.find_relevant_topics("Tell me about dragons")
+        assert len(results) == 1
+        assert results[0][1] == TopicRelevance.EXACT
+        assert "dragons" in results[0][0].content.lower()
+
+    def test_dialogue_inputs_with_enhanced_topics(self):
+        """Test that to_dialogue_inputs uses the enhanced topic system."""
+        from src.data_models import (
+            SocialParticipant, SocialParticipantType, KnownTopic
+        )
+
+        participant = SocialParticipant(
+            participant_id="guard",
+            name="Captain Stone",
+            participant_type=SocialParticipantType.NPC,
+            disposition=1,
+            known_topics=[
+                KnownTopic(
+                    topic_id="patrol",
+                    content="We patrol the northern border every dawn",
+                    keywords=["patrol", "border", "north", "dawn"],
+                ),
+                KnownTopic(
+                    topic_id="threat",
+                    content="Goblins have been spotted near the mountains",
+                    keywords=["goblins", "mountains", "spotted"],
+                ),
+            ],
+        )
+
+        # Ask about patrols - should get relevant topic
+        result = participant.to_dialogue_inputs("When do you patrol?")
+        assert any("patrol" in str(topic).lower() for topic in result["known_to_npc"])
+
+    def test_patience_affects_personality(self):
+        """Test that low patience is reflected in personality description."""
+        from src.data_models import SocialParticipant, SocialParticipantType
+
+        participant = SocialParticipant(
+            participant_id="innkeeper",
+            name="Grumpy Greg",
+            participant_type=SocialParticipantType.NPC,
+            personality="Usually cheerful",
+        )
+
+        # Reduce patience with irrelevant questions
+        for _ in range(3):
+            participant.conversation.record_question("nonsense", was_relevant=False)
+
+        # Get dialogue inputs
+        result = participant.to_dialogue_inputs("More nonsense")
+
+        # Personality should mention the impatience
+        assert "impatient" in result["npc_personality"].lower() or \
+               "annoyed" in result["npc_personality"].lower()
+
+    def test_legacy_topics_converted(self):
+        """Test that legacy dialogue_hooks are converted to KnownTopic."""
+        from src.data_models import SocialParticipant, SocialParticipantType
+
+        participant = SocialParticipant(
+            participant_id="merchant",
+            name="Trader Joe",
+            participant_type=SocialParticipantType.NPC,
+            dialogue_hooks=[
+                "Sells exotic spices from the east",
+                "Knows about trade routes",
+            ],
+        )
+
+        # Should have converted to known_topics
+        assert len(participant.known_topics) >= 2
+
+        # Should be able to query them
+        results = participant.find_relevant_topics("What spices do you have?")
+        assert len(results) >= 1
