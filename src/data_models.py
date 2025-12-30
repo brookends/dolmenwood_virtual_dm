@@ -4036,9 +4036,45 @@ class WorldState:
     active_threats: list[Threat] = field(default_factory=list)
     active_adventure: Optional[str] = None
 
+    # Enhanced weather from Dolmenwood Campaign Book
+    weather_description: str = ""  # Evocative description (e.g., "Befuddling green fog")
+    weather_effects_flags: int = 0  # WeatherEffect flags as int (I=1, V=2, W=4)
+
+    # Unseason tracking (Hitching, Colliggwyld, Chame, Vague)
+    active_unseason: str = "none"  # Unseason enum value as string
+    unseason_days_remaining: int = 0
+
     def __post_init__(self):
         # Ensure season matches date
         self.season = self.current_date.get_season()
+
+    @property
+    def travel_point_penalty(self) -> int:
+        """Get Travel Points penalty from weather effects (I flag)."""
+        # WeatherEffect.IMPEDED = 1
+        return 2 if (self.weather_effects_flags & 1) else 0
+
+    @property
+    def lost_chance_modifier(self) -> int:
+        """Get modifier to lost chance from weather effects (V flag)."""
+        # WeatherEffect.VISIBILITY = 2
+        return 1 if (self.weather_effects_flags & 2) else 0
+
+    @property
+    def encounter_distance_halved(self) -> bool:
+        """Check if encounter distance should be halved (V flag)."""
+        return bool(self.weather_effects_flags & 2)
+
+    @property
+    def campfire_difficult(self) -> bool:
+        """Check if building campfire is difficult (W flag)."""
+        # WeatherEffect.WET = 4
+        return bool(self.weather_effects_flags & 4)
+
+    @property
+    def has_active_unseason(self) -> bool:
+        """Check if an unseason is currently active."""
+        return self.active_unseason != "none" and self.unseason_days_remaining > 0
 
 
 # =============================================================================
