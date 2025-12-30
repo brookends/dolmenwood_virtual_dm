@@ -326,6 +326,31 @@ class TestTimeManagement:
         # Either season changed, or we cycled through multiple seasons
         assert controller_with_party.time_tracker.game_date.month != 6
 
+    def test_watch_transitions(self, controller_with_party):
+        """Test that watch transitions trigger correctly."""
+        # Start at 8:00 AM (third watch)
+        initial_watches = controller_with_party.time_tracker.watches
+
+        # Advance 24 turns (4 hours = 1 watch)
+        result = controller_with_party.advance_time(24)
+
+        assert result["watches_passed"] == 1
+        assert controller_with_party.time_tracker.watches == initial_watches + 1
+
+    def test_day_transition_triggers_callbacks(self, controller_with_party):
+        """Test that day transitions trigger resource consumption."""
+        # Give party some resources
+        controller_with_party.party_state.resources.food_days = 10
+        controller_with_party.party_state.resources.water_days = 10
+        initial_food = controller_with_party.party_state.resources.food_days
+
+        # Advance 144 turns (1 day)
+        result = controller_with_party.advance_time(144)
+
+        assert result["days_passed"] == 1
+        # Resources should have been consumed
+        assert controller_with_party.party_state.resources.food_days < initial_food
+
 
 class TestResourceManagement:
     """Integration tests for resource tracking."""

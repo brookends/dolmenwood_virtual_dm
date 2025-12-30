@@ -1794,8 +1794,13 @@ class GlobalController:
                 self.tick_location_effects(self.party_state.location.location_id)
 
     def _on_watch_advance(self, watches: int) -> None:
-        """Called when watches advance."""
-        pass  # Override in subclasses if needed
+        """Called when watches advance (every 4 hours)."""
+        current_watch = self.time_tracker.game_time.get_current_watch()
+        self._log_event("watch_advanced", {
+            "watches_passed": watches,
+            "current_watch": current_watch.value,
+            "time": str(self.time_tracker.game_time),
+        })
 
     def _on_day_advance(self, days: int) -> None:
         """Called when days advance."""
