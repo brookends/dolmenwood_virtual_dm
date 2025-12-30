@@ -66,7 +66,6 @@ class MagicType(str, Enum):
     ARCANE = "arcane"  # Wizard/Magic-User spells
     DIVINE = "divine"  # Cleric spells
     FAIRY_GLAMOUR = "fairy_glamour"  # Elf/Grimalkin/Woodgrue glamours
-    DRUIDIC = "druidic"  # Druid spells
     RUNE = "rune"  # Fairy runes (Enchanter)
 
 
@@ -2399,7 +2398,6 @@ class SpellNarrator:
             "arcane": "intones arcane syllables and traces glowing sigils",
             "divine": "offers a prayer and channels divine radiance",
             "fairy_glamour": "weaves silvery glamour with a lilting song",
-            "druidic": "calls upon the spirits of nature",
             "rune": "traces a luminous rune in the air",
         }
 

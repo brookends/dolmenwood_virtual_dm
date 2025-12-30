@@ -1518,9 +1518,6 @@ radiant light, heavenly presence, and spiritual manifestation.""",
             "fairy_glamour": """Fairy glamours are capricious and whimsical magic.
 The fey work their enchantments through song, laughter, and dreams. Describe
 shimmering illusions, silvery mist, the scent of flowers, and otherworldly beauty.""",
-            "druidic": """Druidic magic draws from the primal forces of nature.
-Druids commune with spirits of wood and stone. Describe rustling leaves,
-growing vines, the call of animals, and the pulse of the living forest.""",
             "rune": """Fairy runes are ancient marks of power carved or traced.
 The runes glow with inner light when invoked. Describe luminous symbols,
 crackling energy, and the weight of ancient fairy pacts.""",
