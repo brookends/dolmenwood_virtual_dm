@@ -1402,12 +1402,21 @@ class HexCrawlEngine:
 
         from src.narrative.intent_parser import ActionType
 
+        # Get terrain for hunting tables
+        terrain_str = "forest"  # Default
+        current_hex = self._state.current_hex
+        if current_hex:
+            hex_data = self._get_hex_data(current_hex)
+            if hex_data:
+                terrain_str = hex_data.terrain_type.value if hex_data.terrain_type else "forest"
+
         result = self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
             season=season,
             full_day=full_day,
             foraging_special=foraging_special,
+            terrain=terrain_str,
         )
 
         # Apply fishing-specific effects (Campaign Book p116-117)
@@ -1473,7 +1482,111 @@ class HexCrawlEngine:
                         "description": "The shriek attracted a wandering monster!",
                     })
 
+        # Apply hunting-specific effects (Campaign Book p120-121)
+        if method == "hunting" and result.success and result.combat_triggered:
+            # Set up combat encounter with the game animals
+            if result.game_animal:
+                current_hex = self._state.current_hex
+                if current_hex:
+                    # Create encounter with the game animals
+                    monster_id = result.game_animal.get("monster_id")
+                    num_appearing = result.number_appearing
+                    distance = result.encounter_distance
+
+                    if monster_id:
+                        # Create combatants from monster registry
+                        combatants = self._create_hunting_combatants(
+                            monster_id=monster_id,
+                            num_appearing=num_appearing,
+                            animal_name=result.game_animal.get("name", "game animal"),
+                        )
+
+                        if combatants:
+                            # Create the hunting encounter
+                            encounter = EncounterState(
+                                encounter_id=f"hunt_{current_hex}_{monster_id}",
+                                encounter_type=EncounterType.COMBAT,
+                                description=result.description,
+                                combatants=combatants,
+                                distance=distance,
+                                party_surprised=False,  # Party is NOT surprised
+                                enemies_surprised=True,  # Enemies ARE surprised
+                                context=f"Hunting {result.game_animal.get('name', 'game')} in {current_hex}",
+                            )
+
+                            self.controller.set_encounter(encounter)
+                            self.controller.transition(
+                                "encounter_triggered",
+                                context={
+                                    "hex_id": current_hex,
+                                    "source": "hunting",
+                                    "animal": result.game_animal.get("name"),
+                                    "number": num_appearing,
+                                    "distance": distance,
+                                    "party_has_surprise": True,
+                                },
+                            )
+
         return result
+
+    def _create_hunting_combatants(
+        self,
+        monster_id: str,
+        num_appearing: int,
+        animal_name: str,
+    ) -> list:
+        """
+        Create combatants for a hunting encounter.
+
+        Args:
+            monster_id: The monster ID from the game animal
+            num_appearing: How many animals in the group
+            animal_name: Display name for the animal
+
+        Returns:
+            List of Combatant objects for the encounter
+        """
+        from src.data_models import Combatant
+
+        combatants = []
+
+        # Get monster stats from registry
+        monster_stats = self.monster_registry.get(monster_id) if self.monster_registry else None
+
+        for i in range(num_appearing):
+            if monster_stats:
+                # Create combatant from monster registry
+                combatant = Combatant(
+                    combatant_id=f"{monster_id}_{i+1}",
+                    name=f"{animal_name} #{i+1}" if num_appearing > 1 else animal_name,
+                    monster_id=monster_id,
+                    hp_current=monster_stats.hp,
+                    hp_max=monster_stats.hp,
+                    armor_class=monster_stats.armor_class,
+                    attack_bonus=monster_stats.level,  # Use level as attack bonus
+                    damage=monster_stats.damage[0] if monster_stats.damage else "1d4",
+                    morale=monster_stats.morale,
+                    is_enemy=True,
+                    is_active=True,
+                )
+            else:
+                # Fallback with default stats
+                combatant = Combatant(
+                    combatant_id=f"{monster_id}_{i+1}",
+                    name=f"{animal_name} #{i+1}" if num_appearing > 1 else animal_name,
+                    monster_id=monster_id,
+                    hp_current=4,
+                    hp_max=4,
+                    armor_class=12,
+                    attack_bonus=0,
+                    damage="1d4",
+                    morale=6,
+                    is_enemy=True,
+                    is_active=True,
+                )
+            combatants.append(combatant)
+
+        return combatants
 
     # =========================================================================
     # HEX OVERVIEW AND POI VISIBILITY

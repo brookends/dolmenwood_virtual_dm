@@ -35,6 +35,15 @@ from src.tables.fishing_tables import (
     fish_triggers_combat,
     fish_is_fairy,
 )
+from src.tables.hunting_tables import (
+    GameAnimal,
+    TerrainType as HuntingTerrainType,
+    roll_game_animal,
+    roll_number_appearing,
+    roll_encounter_distance,
+    calculate_rations_yield,
+    get_hunting_terrain,
+)
 
 
 class HazardType(str, Enum):
@@ -115,6 +124,13 @@ class HazardResult:
     monster_attracted: bool = False  # Screaming jenny effect
     combat_triggered: bool = False  # Giant catfish
     blessing_offered: bool = False  # Queen's salmon
+
+    # Hunting-specific (Campaign Book p120-121)
+    game_animal: Optional[dict[str, Any]] = None  # The game animal found
+    number_appearing: int = 0  # How many animals in the group
+    encounter_distance: int = 0  # Starting distance in feet (1d4 × 30')
+    party_has_surprise: bool = False  # Party always has surprise when hunting
+    potential_rations: int = 0  # Rations if all animals killed
 
 
 @dataclass
@@ -1076,17 +1092,16 @@ class HazardResolver:
                 narrative_hints=["slim pickings", "nothing edible found"],
             )
 
-        # Handle hunting (requires combat, not table-based)
+        # Handle hunting using Campaign Book tables (p120-121)
         if method == "hunting":
-            return HazardResult(
-                success=True,
-                hazard_type=HazardType.HUNGER,
-                action_type=ActionType.HUNT,
-                description="Found game animals - combat required",
-                check_made=True,
-                check_result=roll.total + bonus,
-                check_target=target,
-                narrative_hints=["tracks lead to quarry", "game spotted ahead"],
+            terrain = kwargs.pop("terrain", "forest")
+            return self._resolve_hunting(
+                character=character,
+                survival_roll=roll.total,
+                survival_bonus=bonus,
+                survival_target=target,
+                terrain=terrain,
+                **kwargs,
             )
 
         # Handle fishing using Campaign Book tables (p116-117)
@@ -1415,3 +1430,117 @@ class HazardResolver:
             conditions_applied=conditions_applied,
             narrative_hints=narrative_hints,
         )
+
+    def _resolve_hunting(
+        self,
+        character: "CharacterState",
+        survival_roll: int,
+        survival_bonus: int,
+        survival_target: int,
+        terrain: str = "forest",
+        **kwargs: Any,
+    ) -> HazardResult:
+        """
+        Resolve hunting using Campaign Book tables (p120-121).
+
+        Hunting Procedure:
+        1. Survival check already passed (done by caller)
+        2. Roll d20 on terrain-specific Game Animals table
+        3. Roll number appearing dice
+        4. Set up combat encounter with party having surprise
+        5. Starting distance is 1d4 × 30'
+        6. Yield calculated after combat: 1/2/4 rations per HP based on size
+
+        Args:
+            character: The character hunting
+            survival_roll: The survival check roll
+            survival_bonus: Bonus applied to survival check
+            survival_target: Target number for survival check
+            terrain: Terrain type for animal selection
+
+        Returns:
+            HazardResult with game_animal data and encounter setup
+        """
+        narrative_hints: list[str] = []
+
+        # Step 1: Determine terrain type for hunting table
+        hunting_terrain = get_hunting_terrain(terrain)
+
+        # Step 2: Roll on the terrain-specific game animal table
+        animal = roll_game_animal(hunting_terrain)
+        narrative_hints.append(f"Tracked {animal.name.lower()} in the {terrain}")
+
+        # Step 3: Roll number appearing
+        num_appearing = roll_number_appearing(animal)
+        if num_appearing == 1:
+            narrative_hints.append(f"A lone {animal.name.lower()}")
+        else:
+            narrative_hints.append(f"A group of {num_appearing} {animal.name.lower()}s")
+
+        # Step 4: Roll encounter distance (1d4 × 30')
+        distance = roll_encounter_distance()
+        narrative_hints.append(f"Spotted {distance}' away")
+
+        # Step 5: Calculate potential rations if all killed
+        # This uses average HP from monster stats - actual yield depends on combat
+        # For now we estimate based on hit dice (rough HP estimate)
+        hp_per_animal = self._estimate_animal_hp(animal.monster_id)
+        total_hp = hp_per_animal * num_appearing
+        potential_rations = calculate_rations_yield(animal, total_hp)
+
+        # Build animal data for result
+        animal_data = animal.to_dict()
+        animal_data["terrain_found"] = terrain
+        animal_data["hunting_terrain"] = hunting_terrain.value
+
+        # Build description
+        if num_appearing == 1:
+            desc = f"Stalked a {animal.name}! Combat encounter at {distance}'"
+        else:
+            desc = f"Stalked {num_appearing} {animal.name}s! Combat encounter at {distance}'"
+
+        if animal.flavor_text:
+            narrative_hints.append(animal.flavor_text)
+
+        return HazardResult(
+            success=True,
+            hazard_type=HazardType.HUNGER,
+            action_type=ActionType.HUNT,
+            description=desc,
+            check_made=True,
+            check_result=survival_roll + survival_bonus,
+            check_target=survival_target,
+            game_animal=animal_data,
+            number_appearing=num_appearing,
+            encounter_distance=distance,
+            party_has_surprise=True,  # Party always has surprise when hunting
+            potential_rations=potential_rations,
+            combat_triggered=True,  # Hunting always triggers combat
+            narrative_hints=narrative_hints,
+        )
+
+    def _estimate_animal_hp(self, monster_id: str) -> int:
+        """
+        Estimate average HP for a game animal.
+
+        Uses known values from Monster Book - actual HP may vary in combat.
+        """
+        # Average HP values from Monster Book entries
+        hp_estimates = {
+            "boar": 13,
+            "false_unicorn": 9,
+            "gelatinous_ape": 9,
+            "gobble": 2,
+            "headhog": 2,
+            "honey_badger": 4,
+            "lurkey": 4,
+            "merriman": 4,
+            "moss_mole": 2,
+            "puggle": 4,
+            "red_deer": 13,
+            "swamp_sloth": 4,
+            "trotteling": 4,
+            "woad": 4,
+            "yegril": 18,
+        }
+        return hp_estimates.get(monster_id, 4)  # Default to 4 HP
