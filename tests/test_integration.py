@@ -409,3 +409,197 @@ class TestFullGameSession:
         # Verify session log has entries
         log = controller_with_party.get_session_log()
         assert len(log) > 0
+
+
+class TestTransitionHooks:
+    """Integration tests for state transition hooks."""
+
+    @pytest.fixture
+    def controller_with_encounter(self, controller_with_party, sample_party):
+        """Create controller with party and active encounter."""
+        for char in sample_party:
+            controller_with_party.add_character(char)
+
+        # Create an encounter with combatants
+        combatants = [
+            Combatant(
+                combatant_id="goblin_1",
+                name="Goblin",
+                side="enemy",
+                stat_block=StatBlock(
+                    armor_class=13,
+                    hit_dice="1d8",
+                    hp_max=4,
+                    hp_current=4,
+                    movement=30,
+                    attacks=[{"name": "Short Sword", "damage": "1d6", "bonus": 0}],
+                    morale=7,
+                ),
+            ),
+        ]
+
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER,
+            distance=60,
+            surprise_status=SurpriseStatus.NO_SURPRISE,
+            actors=["goblin_1"],
+            combatants=combatants,
+        )
+
+        controller_with_party.set_encounter(encounter)
+        return controller_with_party
+
+    def test_combat_engine_initialized_on_combat_transition(self, controller_with_encounter):
+        """Test that CombatEngine is automatically initialized when entering COMBAT."""
+        # Start encounter
+        controller_with_encounter.transition("encounter_triggered")
+        assert controller_with_encounter.current_state == GameState.ENCOUNTER
+
+        # Verify no combat engine yet
+        assert controller_with_encounter.combat_engine is None
+
+        # Transition to combat
+        controller_with_encounter.transition("encounter_to_combat")
+        assert controller_with_encounter.current_state == GameState.COMBAT
+
+        # Combat engine should now be initialized
+        assert controller_with_encounter.combat_engine is not None
+        assert controller_with_encounter.combat_engine._combat_state is not None
+
+    def test_combat_round_executable_after_transition(self, controller_with_encounter, sample_party):
+        """Test that combat rounds can be executed immediately after transition."""
+        # Add party members as combatants
+        for char in sample_party:
+            controller_with_encounter.add_character(char)
+
+        # Update the encounter to include party
+        encounter = controller_with_encounter.get_encounter()
+        for char in sample_party:
+            encounter.combatants.append(
+                Combatant(
+                    combatant_id=char.character_id,
+                    name=char.name,
+                    side="party",
+                    stat_block=StatBlock(
+                        armor_class=10,
+                        hit_dice="1d8",
+                        hp_max=char.hp_max,
+                        hp_current=char.hp_current,
+                        movement=30,
+                        attacks=[{"name": "Weapon", "damage": "1d6", "bonus": 0}],
+                        morale=12,
+                    ),
+                    character_ref=char.character_id,
+                )
+            )
+            encounter.actors.append(char.character_id)
+
+        # Transition through encounter to combat
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition("encounter_to_combat")
+
+        # Get the combat engine and verify it's properly initialized
+        combat_engine = controller_with_encounter.combat_engine
+        assert combat_engine is not None
+        assert combat_engine._combat_state is not None
+
+        # Combat state should have the combatants
+        combat_state = combat_engine._combat_state
+        assert combat_state.encounter == encounter
+        assert len(combat_state.encounter.combatants) > 0
+
+        # Combat state should be properly initialized
+        assert combat_state.round_number == 0  # Before first round
+        assert combat_state.enemy_starting_count == 1  # One goblin
+
+    def test_combat_engine_cleared_on_combat_exit(self, controller_with_encounter):
+        """Test that CombatEngine is cleared when exiting COMBAT."""
+        # Transition to combat
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition("encounter_to_combat")
+        assert controller_with_encounter.combat_engine is not None
+
+        # Exit combat back to wilderness
+        controller_with_encounter.transition("combat_end_wilderness")
+        assert controller_with_encounter.current_state == GameState.WILDERNESS_TRAVEL
+
+        # Combat engine should be cleared
+        assert controller_with_encounter.combat_engine is None
+
+    def test_custom_transition_hook_fires(self, controller_with_party):
+        """Test that custom transition hooks are called."""
+        hook_called = {"value": False, "context": None}
+
+        def custom_hook(from_state, to_state, trigger, context):
+            hook_called["value"] = True
+            hook_called["from"] = from_state
+            hook_called["to"] = to_state
+            hook_called["context"] = context
+
+        # Register custom hook for wilderness -> dungeon
+        controller_with_party.register_transition_hook(
+            GameState.WILDERNESS_TRAVEL,
+            GameState.DUNGEON_EXPLORATION,
+            custom_hook
+        )
+
+        # Trigger the transition
+        controller_with_party.transition("enter_dungeon")
+
+        # Verify hook was called
+        assert hook_called["value"] is True
+        assert hook_called["from"] == GameState.WILDERNESS_TRAVEL
+        assert hook_called["to"] == GameState.DUNGEON_EXPLORATION
+
+    def test_on_enter_hook_fires_from_any_state(self, controller_with_party):
+        """Test that on-enter hooks fire regardless of source state."""
+        enter_count = {"value": 0}
+
+        def on_enter_encounter(from_state, to_state, trigger, context):
+            enter_count["value"] += 1
+
+        # Register on-enter hook for ENCOUNTER
+        controller_with_party.register_on_enter_hook(
+            GameState.ENCOUNTER,
+            on_enter_encounter
+        )
+
+        # Enter from wilderness
+        controller_with_party.transition("encounter_triggered")
+        assert enter_count["value"] == 1
+
+        # Go back to wilderness
+        controller_with_party.transition("encounter_end_wilderness")
+
+        # Enter dungeon
+        controller_with_party.transition("enter_dungeon")
+
+        # Enter encounter from dungeon
+        controller_with_party.transition("encounter_triggered")
+        assert enter_count["value"] == 2
+
+    def test_encounter_cleared_on_exit_to_exploration(self, controller_with_encounter):
+        """Test that encounter is cleared when returning to exploration states."""
+        # Start with encounter
+        assert controller_with_encounter.get_encounter() is not None
+
+        # Transition to encounter state
+        controller_with_encounter.transition("encounter_triggered")
+
+        # Return to wilderness (evade)
+        controller_with_encounter.transition("encounter_end_wilderness")
+
+        # Encounter should be cleared
+        assert controller_with_encounter.get_encounter() is None
+
+    def test_encounter_preserved_for_combat(self, controller_with_encounter):
+        """Test that encounter is preserved when transitioning to combat."""
+        # Start with encounter
+        assert controller_with_encounter.get_encounter() is not None
+
+        # Transition through encounter to combat
+        controller_with_encounter.transition("encounter_triggered")
+        controller_with_encounter.transition("encounter_to_combat")
+
+        # Encounter should still be present (combat needs it)
+        assert controller_with_encounter.get_encounter() is not None

@@ -239,6 +239,8 @@ class GlobalController:
     3. Enforce procedure ordering
     4. Log all state mutations
     5. Disallow LLM authority over outcomes
+
+    Transition hooks allow engines to initialize when states change.
     """
 
     def __init__(
@@ -288,6 +290,9 @@ class GlobalController:
         # Current encounter (if any)
         self._current_encounter: Optional[EncounterState] = None
 
+        # Current combat engine (if any)
+        self._combat_engine: Optional[Any] = None
+
         # Narrative resolver for effect tracking (optional)
         self._narrative_resolver: Optional["NarrativeResolver"] = None
         if NARRATIVE_AVAILABLE:
@@ -301,6 +306,16 @@ class GlobalController:
         # Session log
         self._session_log: list[dict[str, Any]] = []
 
+        # Transition hooks: (from_state, to_state) -> list of callbacks
+        # Callbacks receive (from_state, to_state, trigger, context)
+        self._transition_hooks: dict[
+            tuple[GameState, GameState], list[Callable[[GameState, GameState, str, dict], None]]
+        ] = {}
+
+        # Wildcard hooks: to_state -> list of callbacks (fire on ANY transition to that state)
+        self._on_enter_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
+        self._on_exit_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
+
         # Register state machine hooks
         self.state_machine.register_post_hook(self._on_state_transition)
 
@@ -309,6 +324,9 @@ class GlobalController:
         self.time_tracker.register_watch_callback(self._on_watch_advance)
         self.time_tracker.register_day_callback(self._on_day_advance)
         self.time_tracker.register_season_callback(self._on_season_change)
+
+        # Register default transition hooks for engine initialization
+        self._register_default_transition_hooks()
 
         logger.info(f"GlobalController initialized in state: {initial_state.value}")
 
@@ -346,6 +364,209 @@ class GlobalController:
     def get_valid_actions(self) -> list[str]:
         """Get valid triggers/actions from current state."""
         return self.state_machine.get_valid_triggers()
+
+    # =========================================================================
+    # TRANSITION HOOKS
+    # =========================================================================
+
+    def register_transition_hook(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for a specific state transition.
+
+        The callback will be called with (from_state, to_state, trigger, context)
+        after the transition completes.
+
+        Args:
+            from_state: The starting state
+            to_state: The target state
+            callback: Function to call on this transition
+        """
+        key = (from_state, to_state)
+        if key not in self._transition_hooks:
+            self._transition_hooks[key] = []
+        self._transition_hooks[key].append(callback)
+        logger.debug(f"Registered transition hook: {from_state.value} -> {to_state.value}")
+
+    def register_on_enter_hook(
+        self,
+        state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for entering a state (from any source state).
+
+        The callback will be called with (from_state, to_state, trigger, context).
+
+        Args:
+            state: The state to monitor for entry
+            callback: Function to call when entering this state
+        """
+        if state not in self._on_enter_hooks:
+            self._on_enter_hooks[state] = []
+        self._on_enter_hooks[state].append(callback)
+        logger.debug(f"Registered on-enter hook for state: {state.value}")
+
+    def register_on_exit_hook(
+        self,
+        state: GameState,
+        callback: Callable[[GameState, GameState, str, dict], None]
+    ) -> None:
+        """
+        Register a callback for exiting a state (to any target state).
+
+        The callback will be called with (from_state, to_state, trigger, context).
+
+        Args:
+            state: The state to monitor for exit
+            callback: Function to call when exiting this state
+        """
+        if state not in self._on_exit_hooks:
+            self._on_exit_hooks[state] = []
+        self._on_exit_hooks[state].append(callback)
+        logger.debug(f"Registered on-exit hook for state: {state.value}")
+
+    def _fire_transition_hooks(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Fire all registered transition hooks for a state change.
+
+        Fires in order:
+        1. On-exit hooks for the old state
+        2. Specific (from_state, to_state) hooks
+        3. On-enter hooks for the new state
+
+        Args:
+            from_state: The state being left
+            to_state: The state being entered
+            trigger: The trigger that caused the transition
+            context: Transition context data
+        """
+        # 1. Fire on-exit hooks
+        for callback in self._on_exit_hooks.get(from_state, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in on-exit hook for {from_state.value}: {e}")
+
+        # 2. Fire specific transition hooks
+        key = (from_state, to_state)
+        for callback in self._transition_hooks.get(key, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in transition hook {from_state.value}->{to_state.value}: {e}")
+
+        # 3. Fire on-enter hooks
+        for callback in self._on_enter_hooks.get(to_state, []):
+            try:
+                callback(from_state, to_state, trigger, context)
+            except Exception as e:
+                logger.error(f"Error in on-enter hook for {to_state.value}: {e}")
+
+    def _register_default_transition_hooks(self) -> None:
+        """
+        Register default transition hooks for engine initialization.
+
+        These hooks ensure that when transitioning to a state, the appropriate
+        engine is initialized and ready to handle operations.
+        """
+        # Hook: Entering COMBAT initializes combat from the current encounter
+        self.register_on_enter_hook(GameState.COMBAT, self._on_enter_combat)
+
+        # Hook: Exiting COMBAT cleans up combat state
+        self.register_on_exit_hook(GameState.COMBAT, self._on_exit_combat)
+
+        # Hook: Exiting ENCOUNTER clears encounter if transitioning to non-combat
+        self.register_on_exit_hook(GameState.ENCOUNTER, self._on_exit_encounter)
+
+        logger.debug("Default transition hooks registered")
+
+    def _on_enter_combat(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when entering COMBAT state.
+
+        Initializes the CombatEngine with the current encounter.
+        """
+        # Import here to avoid circular import
+        from src.combat.combat_engine import CombatEngine
+
+        if self._current_encounter is None:
+            logger.warning("Entering COMBAT without an active encounter")
+            return
+
+        # Determine the return state based on the previous state
+        return_state = from_state
+        if from_state == GameState.ENCOUNTER:
+            # Get the origin from the encounter or previous state
+            return_state = self.state_machine.previous_state or GameState.WILDERNESS_TRAVEL
+
+        # Create and initialize the combat engine
+        self._combat_engine = CombatEngine(self)
+        result = self._combat_engine.start_combat(
+            encounter=self._current_encounter,
+            return_state=return_state,
+        )
+
+        if result.get("combat_started"):
+            logger.info(f"Combat initialized from {from_state.value} with {len(self._current_encounter.combatants)} combatants")
+        else:
+            logger.error(f"Failed to start combat: {result.get('error', 'Unknown error')}")
+
+    def _on_exit_combat(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting COMBAT state.
+
+        Cleans up the combat engine.
+        """
+        if self._combat_engine:
+            logger.debug("Clearing combat engine on exit from COMBAT")
+            self._combat_engine = None
+
+    def _on_exit_encounter(
+        self,
+        from_state: GameState,
+        to_state: GameState,
+        trigger: str,
+        context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when exiting ENCOUNTER state.
+
+        Clears encounter if transitioning to a non-combat state.
+        Combat needs the encounter state, so don't clear if going to COMBAT.
+        """
+        if to_state != GameState.COMBAT and to_state != GameState.SOCIAL_INTERACTION:
+            # Clear the encounter when returning to exploration states
+            if self._current_encounter:
+                logger.debug("Clearing encounter on exit to exploration state")
+                self.clear_encounter()
+
+    @property
+    def combat_engine(self) -> Optional[Any]:
+        """Get the current combat engine (if combat is active)."""
+        return self._combat_engine
 
     # =========================================================================
     # TIME MANAGEMENT
@@ -1177,6 +1398,9 @@ class GlobalController:
             "trigger": trigger,
             "context": context,
         })
+
+        # Fire transition hooks
+        self._fire_transition_hooks(old_state, new_state, trigger, context)
 
     def _on_turn_advance(self, turns: int) -> None:
         """Called when exploration turns advance."""
