@@ -31,12 +31,13 @@ logger = logging.getLogger(__name__)
 
 class AbilityScoreMethod(str, Enum):
     """Methods for generating NPC ability scores."""
+
     STANDARD_ARRAY = "standard_array"  # Use 15, 14, 13, 12, 10, 8
-    ROLL_3D6 = "roll_3d6"              # Roll 3d6 in order
-    ROLL_4D6_DROP = "roll_4d6_drop"    # Roll 4d6, drop lowest, arrange
-    POINT_BUY = "point_buy"             # All 10s (balanced average)
-    HEROIC = "heroic"                   # 16, 15, 14, 13, 12, 11 (strong NPCs)
-    ELITE = "elite"                     # 18, 16, 14, 12, 10, 8 (boss-level)
+    ROLL_3D6 = "roll_3d6"  # Roll 3d6 in order
+    ROLL_4D6_DROP = "roll_4d6_drop"  # Roll 4d6, drop lowest, arrange
+    POINT_BUY = "point_buy"  # All 10s (balanced average)
+    HEROIC = "heroic"  # 16, 15, 14, 13, 12, 11 (strong NPCs)
+    ELITE = "elite"  # 18, 16, 14, 12, 10, 8 (boss-level)
 
 
 # Standard ability score arrays
@@ -67,6 +68,7 @@ DEFAULT_ABILITY_PRIORITY = ["CON", "DEX", "STR", "WIS", "INT", "CHA"]
 @dataclass
 class NPCGenerationResult:
     """Result of NPC generation with the character and generation metadata."""
+
     character: CharacterState
     success: bool
     errors: list[str]
@@ -143,7 +145,11 @@ class NPCGenerator:
             "class_id": class_id,
             "level": level,
             "kindred_id": kindred_id,
-            "ability_method": ability_method.value if isinstance(ability_method, AbilityScoreMethod) else ability_method,
+            "ability_method": (
+                ability_method.value
+                if isinstance(ability_method, AbilityScoreMethod)
+                else ability_method
+            ),
             "hp_method": hp_method,
         }
 
@@ -195,9 +201,7 @@ class NPCGenerator:
             final_abilities = self._validate_ability_scores(ability_scores, errors)
             details["ability_source"] = "provided"
         else:
-            final_abilities = self._generate_ability_scores(
-                ability_method, class_id
-            )
+            final_abilities = self._generate_ability_scores(ability_method, class_id)
             details["ability_source"] = ability_method.value
 
         if not final_abilities:
@@ -222,9 +226,7 @@ class NPCGenerator:
         details["name"] = name
 
         # Calculate HP
-        hp_max = self._calculate_hp(
-            class_def, level, final_abilities.get("CON", 10), hp_method
-        )
+        hp_max = self._calculate_hp(class_def, level, final_abilities.get("CON", 10), hp_method)
         details["hp_max"] = hp_max
         details["hp_rolls"] = []  # Could track individual rolls if hp_method == "roll"
 
@@ -295,11 +297,7 @@ class NPCGenerator:
             generation_details=details,
         )
 
-    def generate_from_description(
-        self,
-        description: str,
-        **kwargs
-    ) -> NPCGenerationResult:
+    def generate_from_description(self, description: str, **kwargs) -> NPCGenerationResult:
         """
         Generate an NPC from a text description.
 
@@ -354,12 +352,12 @@ class NPCGenerator:
         result: dict[str, Any] = {}
 
         # Extract level (required)
-        level_match = re.search(r'level\s*(\d+)', description)
+        level_match = re.search(r"level\s*(\d+)", description)
         if level_match:
             result["level"] = int(level_match.group(1))
         else:
             # Try alternative patterns like "7th level" or just a number
-            level_match = re.search(r'(\d+)(?:st|nd|rd|th)?\s*level', description)
+            level_match = re.search(r"(\d+)(?:st|nd|rd|th)?\s*level", description)
             if level_match:
                 result["level"] = int(level_match.group(1))
             else:
@@ -379,7 +377,7 @@ class NPCGenerator:
         if not found_class:
             return {
                 "error": f"Could not determine class from: {description}. "
-                         f"Valid classes: {', '.join(valid_classes)}"
+                f"Valid classes: {', '.join(valid_classes)}"
             }
 
         result["class_id"] = found_class
@@ -394,11 +392,7 @@ class NPCGenerator:
 
         return result
 
-    def _generate_ability_scores(
-        self,
-        method: AbilityScoreMethod,
-        class_id: str
-    ) -> dict[str, int]:
+    def _generate_ability_scores(self, method: AbilityScoreMethod, class_id: str) -> dict[str, int]:
         """Generate ability scores using the specified method."""
         abilities = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 
@@ -438,9 +432,7 @@ class NPCGenerator:
             return self._generate_ability_scores(AbilityScoreMethod.STANDARD_ARRAY, class_id)
 
     def _validate_ability_scores(
-        self,
-        scores: dict[str, int],
-        errors: list[str]
+        self, scores: dict[str, int], errors: list[str]
     ) -> Optional[dict[str, int]]:
         """Validate provided ability scores."""
         required = {"STR", "DEX", "CON", "INT", "WIS", "CHA"}
@@ -463,11 +455,7 @@ class NPCGenerator:
         return normalized
 
     def _calculate_hp(
-        self,
-        class_def: ClassDefinition,
-        level: int,
-        con_score: int,
-        method: str
+        self, class_def: ClassDefinition, level: int, con_score: int, method: str
     ) -> int:
         """Calculate HP for the NPC."""
         con_mod = self._get_ability_modifier(con_score)
@@ -515,14 +503,10 @@ class NPCGenerator:
         else:
             return 3
 
-    def _generate_name(
-        self,
-        kindred_def: Optional[KindredDefinition],
-        gender: str
-    ) -> str:
+    def _generate_name(self, kindred_def: Optional[KindredDefinition], gender: str) -> str:
         """Generate a random name for the NPC."""
         # Try to use kindred name tables if available
-        if kindred_def and hasattr(kindred_def, 'name_tables'):
+        if kindred_def and hasattr(kindred_def, "name_tables"):
             try:
                 name_table = kindred_def.name_tables
                 if gender == "male" and "male" in name_table:
@@ -545,18 +529,50 @@ class NPCGenerator:
 
         # Generic fallback names
         male_names = [
-            "Aldric", "Bertram", "Cedric", "Dunstan", "Edmund",
-            "Godwin", "Harold", "Ivor", "Kendrick", "Leofric",
-            "Marcus", "Osric", "Radulf", "Siward", "Wulfric"
+            "Aldric",
+            "Bertram",
+            "Cedric",
+            "Dunstan",
+            "Edmund",
+            "Godwin",
+            "Harold",
+            "Ivor",
+            "Kendrick",
+            "Leofric",
+            "Marcus",
+            "Osric",
+            "Radulf",
+            "Siward",
+            "Wulfric",
         ]
         female_names = [
-            "Aelfleda", "Beatrice", "Cyneburh", "Edith", "Frideswide",
-            "Godgifu", "Hild", "Isolde", "Leofrun", "Mildred",
-            "Osthryth", "Rowena", "Sigrid", "Thyra", "Wulfhild"
+            "Aelfleda",
+            "Beatrice",
+            "Cyneburh",
+            "Edith",
+            "Frideswide",
+            "Godgifu",
+            "Hild",
+            "Isolde",
+            "Leofrun",
+            "Mildred",
+            "Osthryth",
+            "Rowena",
+            "Sigrid",
+            "Thyra",
+            "Wulfhild",
         ]
         surnames = [
-            "Ashwood", "Blackwood", "Clayborne", "Dunmore", "Evergreen",
-            "Fernwood", "Grimsby", "Holloway", "Ironside", "Thornberry"
+            "Ashwood",
+            "Blackwood",
+            "Clayborne",
+            "Dunmore",
+            "Evergreen",
+            "Fernwood",
+            "Grimsby",
+            "Holloway",
+            "Ironside",
+            "Thornberry",
         ]
 
         names = male_names if gender == "male" else female_names
@@ -565,11 +581,7 @@ class NPCGenerator:
 
         return f"{first} {surname}"
 
-    def _apply_extra_data(
-        self,
-        character: CharacterState,
-        extra_data: dict[str, Any]
-    ) -> None:
+    def _apply_extra_data(self, character: CharacterState, extra_data: dict[str, Any]) -> None:
         """Apply extra class-specific data to the character."""
         if not character.class_data:
             character.class_data = ClassSpecificData()

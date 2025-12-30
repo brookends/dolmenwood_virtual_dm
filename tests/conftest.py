@@ -410,11 +410,13 @@ def mock_llm_manager(mock_llm_config):
 def mock_llm_client(mock_llm_config):
     """A mock LLM client for testing."""
     client = MockLLMClient(mock_llm_config)
-    client.set_responses([
-        "The ancient forest stretches before you, dappled sunlight filtering through the canopy.",
-        "The goblin snarls and brandishes its crude blade.",
-        "Steel clashes against steel as the battle rages on.",
-    ])
+    client.set_responses(
+        [
+            "The ancient forest stretches before you, dappled sunlight filtering through the canopy.",
+            "The goblin snarls and brandishes its crude blade.",
+            "Steel clashes against steel as the battle rages on.",
+        ]
+    )
     return client
 
 
@@ -435,6 +437,7 @@ def dm_agent_config():
 def dm_agent(dm_agent_config):
     """A DM Agent using mock LLM."""
     from src.ai.dm_agent import reset_dm_agent
+
     reset_dm_agent()  # Clear singleton
     return DMAgent(dm_agent_config)
 
@@ -484,8 +487,12 @@ def create_test_character(
         character_class=character_class,
         level=level,
         ability_scores={
-            "STR": 12, "INT": 10, "WIS": 10,
-            "DEX": 12, "CON": 12, "CHA": 10,
+            "STR": 12,
+            "INT": 10,
+            "WIS": 10,
+            "DEX": 12,
+            "CON": 12,
+            "CHA": 10,
         },
         hp_current=hp,
         hp_max=hp,
@@ -502,20 +509,22 @@ def create_test_encounter(
     """Helper to create a test encounter."""
     combatants = []
     for i in range(num_enemies):
-        combatants.append(Combatant(
-            combatant_id=f"{enemy_name.lower()}_{i+1}",
-            name=f"{enemy_name} {i+1}" if num_enemies > 1 else enemy_name,
-            side="enemy",
-            stat_block=StatBlock(
-                armor_class=7,
-                hit_dice="1d8",
-                hp_current=4,
-                hp_max=4,
-                movement=60,
-                attacks=[{"name": "Attack", "damage": "1d6", "bonus": 0}],
-                morale=7,
-            ),
-        ))
+        combatants.append(
+            Combatant(
+                combatant_id=f"{enemy_name.lower()}_{i+1}",
+                name=f"{enemy_name} {i+1}" if num_enemies > 1 else enemy_name,
+                side="enemy",
+                stat_block=StatBlock(
+                    armor_class=7,
+                    hit_dice="1d8",
+                    hp_current=4,
+                    hp_max=4,
+                    movement=60,
+                    attacks=[{"name": "Attack", "damage": "1d6", "bonus": 0}],
+                    morale=7,
+                ),
+            )
+        )
 
     return EncounterState(
         encounter_type=EncounterType.MONSTER,

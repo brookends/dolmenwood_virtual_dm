@@ -280,12 +280,9 @@ FIGHTER_DEFINITION = ClassDefinition(
         "In an adventuring party, fighters usually take the front-line, "
         "battling foes and defending weaker characters."
     ),
-
     hit_die=HitDie.D8,
     prime_ability="STR",
-
     magic_type=MagicType.NONE,
-
     armor_proficiencies=[
         ArmorProficiency.ALL,
         ArmorProficiency.SHIELDS,
@@ -293,16 +290,12 @@ FIGHTER_DEFINITION = ClassDefinition(
     weapon_proficiencies=[
         WeaponProficiency.ALL,
     ],
-
     level_progression=FIGHTER_LEVEL_PROGRESSION,
-
     abilities=[
         FIGHTER_COMBAT_TALENTS,
     ],
-
     # No kindred restrictions - any kindred can be a fighter
     restricted_kindreds=[],
-
     starting_equipment=[
         # Armour (roll 1d6): 1. Leather armour. 2. Leather armour + shield.
         # 3. Chainmail. 4. Chainmail + shield. 5. Plate mail. 6. Plate mail + shield.
@@ -311,11 +304,9 @@ FIGHTER_DEFINITION = ClassDefinition(
         # 3. Longsword. 4. Mace. 5. Shortsword. 6. Spear.
         "weapon_roll_1d6_twice",
     ],
-
     extra_data={
         "combat_aptitude": "Martial",
     },
-
     source_book="Dolmenwood Player Book",
     source_page=64,
 )

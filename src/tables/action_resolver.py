@@ -16,21 +16,23 @@ from src.tables.table_types import SkillCheck
 
 class ResolutionType(str, Enum):
     """Types of resolution mechanics."""
-    SKILL_CHECK = "skill_check"       # X-in-6 check
-    ABILITY_CHECK = "ability_check"   # Roll under ability score
-    ATTACK_ROLL = "attack_roll"       # d20 vs AC
-    SAVING_THROW = "saving_throw"     # d20 vs save target
-    REACTION = "reaction"             # 2d6 reaction roll
-    MORALE = "morale"                 # 2d6 vs morale score
-    OPPOSED = "opposed"               # Opposed roll
-    AUTOMATIC = "automatic"           # No roll needed
+
+    SKILL_CHECK = "skill_check"  # X-in-6 check
+    ABILITY_CHECK = "ability_check"  # Roll under ability score
+    ATTACK_ROLL = "attack_roll"  # d20 vs AC
+    SAVING_THROW = "saving_throw"  # d20 vs save target
+    REACTION = "reaction"  # 2d6 reaction roll
+    MORALE = "morale"  # 2d6 vs morale score
+    OPPOSED = "opposed"  # Opposed roll
+    AUTOMATIC = "automatic"  # No roll needed
 
 
 class FailureSeverity(str, Enum):
     """Severity levels for failure consequences."""
-    MINIMAL = "minimal"       # Minor setback
-    MODERATE = "moderate"     # Significant consequence
-    SEVERE = "severe"         # Major consequence
+
+    MINIMAL = "minimal"  # Minor setback
+    MODERATE = "moderate"  # Significant consequence
+    SEVERE = "severe"  # Major consequence
     CATASTROPHIC = "catastrophic"  # Potentially fatal
 
 
@@ -42,23 +44,24 @@ class FailureConsequence:
     This is established BEFORE any roll is made, following the
     failure-first pattern.
     """
+
     severity: FailureSeverity
     description: str
     mechanical_effect: Optional[str] = None
 
     # Specific consequences
-    damage: Optional[str] = None           # Dice notation for damage
-    condition: Optional[str] = None        # Condition applied
-    resource_loss: Optional[str] = None    # Resource consumed
-    time_loss: Optional[str] = None        # Time consumed (turns)
-    noise_alert: bool = False              # Alerts nearby creatures
-    item_damaged: bool = False             # Equipment is damaged
-    position_compromised: bool = False     # Tactical disadvantage
+    damage: Optional[str] = None  # Dice notation for damage
+    condition: Optional[str] = None  # Condition applied
+    resource_loss: Optional[str] = None  # Resource consumed
+    time_loss: Optional[str] = None  # Time consumed (turns)
+    noise_alert: bool = False  # Alerts nearby creatures
+    item_damaged: bool = False  # Equipment is damaged
+    position_compromised: bool = False  # Tactical disadvantage
 
     # For saves
-    save_allowed: bool = False             # Can make a save to reduce
-    save_type: Optional[str] = None        # Type of save
-    save_reduction: str = ""               # What save reduces
+    save_allowed: bool = False  # Can make a save to reduce
+    save_type: Optional[str] = None  # Type of save
+    save_reduction: str = ""  # What save reduces
 
     def describe(self) -> str:
         """Get a full description of the consequence."""
@@ -81,14 +84,15 @@ class FailureConsequence:
 @dataclass
 class SuccessEffect:
     """Effects of a successful action."""
+
     description: str
     mechanical_effect: Optional[str] = None
 
     # Positive outcomes
-    damage_dealt: Optional[str] = None     # Damage to target
+    damage_dealt: Optional[str] = None  # Damage to target
     resource_gained: Optional[str] = None  # Resource acquired
-    information_gained: bool = False       # New information
-    progress_made: str = ""                # Progress toward goal
+    information_gained: bool = False  # New information
+    progress_made: str = ""  # Progress toward goal
 
 
 @dataclass
@@ -99,6 +103,7 @@ class ActionContext:
     Contains all information needed to determine appropriate
     failure consequences and success effects.
     """
+
     # Actor information
     actor_name: str
     actor_id: Optional[str] = None
@@ -115,7 +120,7 @@ class ActionContext:
 
     # Situation
     action_type: ActionType = ActionType.SEARCH
-    difficulty: str = "normal"            # easy, normal, hard, very_hard
+    difficulty: str = "normal"  # easy, normal, hard, very_hard
     is_combat: bool = False
     is_time_sensitive: bool = False
     enemies_nearby: bool = False
@@ -155,6 +160,7 @@ class ActionResolution:
     Contains the pre-determined consequences, the roll results,
     and the final outcome.
     """
+
     # The action
     action_description: str
     resolution_type: ResolutionType
@@ -306,7 +312,7 @@ class ActionResolver:
             resolution.success = total <= resolution.target_number
         elif resolution.resolution_type in (
             ResolutionType.ATTACK_ROLL,
-            ResolutionType.SAVING_THROW
+            ResolutionType.SAVING_THROW,
         ):
             # d20: roll must be >= target
             resolution.success = total >= resolution.target_number
@@ -390,9 +396,7 @@ class ActionResolver:
             return FailureSeverity.MINIMAL
 
     def _calculate_target(
-        self,
-        resolution_type: ResolutionType,
-        context: ActionContext
+        self, resolution_type: ResolutionType, context: ActionContext
     ) -> tuple[int, int]:
         """
         Calculate target number and modifier for a roll.
@@ -453,7 +457,7 @@ class ActionResolver:
         elif resolution_type in (
             ResolutionType.ATTACK_ROLL,
             ResolutionType.SAVING_THROW,
-            ResolutionType.ABILITY_CHECK
+            ResolutionType.ABILITY_CHECK,
         ):
             return DiceRoller.roll_d20("Resolution roll")
         elif resolution_type in (ResolutionType.REACTION, ResolutionType.MORALE):
@@ -465,7 +469,9 @@ class ActionResolver:
     # CONSEQUENCE GENERATORS FOR SPECIFIC ACTION TYPES
     # =========================================================================
 
-    def _search_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _search_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for search actions."""
         if success:
             return SuccessEffect(
@@ -480,7 +486,9 @@ class ActionResolver:
                 noise_alert=context.enemies_nearby,
             )
 
-    def _pick_lock_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _pick_lock_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for lock picking."""
         if success:
             return SuccessEffect(
@@ -488,7 +496,9 @@ class ActionResolver:
                 progress_made="Lock opened",
             )
         else:
-            severity = FailureSeverity.MODERATE if context.is_time_sensitive else FailureSeverity.MINIMAL
+            severity = (
+                FailureSeverity.MODERATE if context.is_time_sensitive else FailureSeverity.MINIMAL
+            )
             return FailureConsequence(
                 severity=severity,
                 description="The lock resists your attempts. Your tools slip.",
@@ -497,7 +507,9 @@ class ActionResolver:
                 mechanical_effect="lockpick_check" if not context.has_proper_tools else None,
             )
 
-    def _disarm_trap_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _disarm_trap_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for trap disarming."""
         if success:
             return SuccessEffect(
@@ -514,7 +526,9 @@ class ActionResolver:
                 save_reduction="half damage",
             )
 
-    def _open_door_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _open_door_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for forcing doors."""
         if success:
             return SuccessEffect(
@@ -529,7 +543,9 @@ class ActionResolver:
                 noise_alert=True,
             )
 
-    def _listen_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _listen_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for listening."""
         if success:
             return SuccessEffect(
@@ -542,21 +558,27 @@ class ActionResolver:
                 description="You hear nothing distinctive.",
             )
 
-    def _hide_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _hide_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for hiding."""
         if success:
             return SuccessEffect(
                 description="You blend into the shadows, unseen.",
             )
         else:
-            severity = FailureSeverity.MODERATE if context.enemies_nearby else FailureSeverity.MINIMAL
+            severity = (
+                FailureSeverity.MODERATE if context.enemies_nearby else FailureSeverity.MINIMAL
+            )
             return FailureConsequence(
                 severity=severity,
                 description="You fail to find adequate cover.",
                 position_compromised=True,
             )
 
-    def _attack_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _attack_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for attack actions."""
         if success:
             return SuccessEffect(
@@ -569,7 +591,9 @@ class ActionResolver:
                 description="Your attack misses.",
             )
 
-    def _spell_consequences(self, context: ActionContext, success: bool) -> Union[FailureConsequence, SuccessEffect]:
+    def _spell_consequences(
+        self, context: ActionContext, success: bool
+    ) -> Union[FailureConsequence, SuccessEffect]:
         """Generate consequences for spell casting."""
         if success:
             return SuccessEffect(
@@ -585,12 +609,9 @@ class ActionResolver:
 
 # Convenience functions
 
+
 def prepare_skill_check(
-    actor_name: str,
-    skill_name: str,
-    base_chance: int,
-    difficulty: str = "normal",
-    **context_kwargs
+    actor_name: str, skill_name: str, base_chance: int, difficulty: str = "normal", **context_kwargs
 ) -> ActionResolution:
     """
     Prepare a skill check with failure-first logic.
@@ -606,11 +627,7 @@ def prepare_skill_check(
         Prepared ActionResolution
     """
     resolver = ActionResolver()
-    context = ActionContext(
-        actor_name=actor_name,
-        difficulty=difficulty,
-        **context_kwargs
-    )
+    context = ActionContext(actor_name=actor_name, difficulty=difficulty, **context_kwargs)
 
     return resolver.prepare_resolution(
         action_description=f"{actor_name} attempts {skill_name}",
@@ -620,10 +637,7 @@ def prepare_skill_check(
 
 
 def quick_skill_check(
-    actor_name: str,
-    skill_name: str,
-    base_chance: int = 2,
-    modifier: int = 0
+    actor_name: str, skill_name: str, base_chance: int = 2, modifier: int = 0
 ) -> tuple[bool, str]:
     """
     Quick skill check for simple situations.

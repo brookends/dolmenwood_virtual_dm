@@ -24,6 +24,7 @@ class GameState(str, Enum):
     (wilderness, dungeon, or settlement). The encounter engine tracks the origin
     context to know where to return after the encounter resolves.
     """
+
     WILDERNESS_TRAVEL = "wilderness_travel"
     DUNGEON_EXPLORATION = "dungeon_exploration"
     ENCOUNTER = "encounter"  # Unified encounter state for all locations
@@ -39,12 +40,13 @@ class StateTransition:
     Defines a valid state transition.
     From Section 4.2 of the specification.
     """
+
     from_state: GameState
     to_state: GameState
     trigger: str
     description: str = ""
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.from_state, self.to_state, self.trigger))
 
 
@@ -56,205 +58,197 @@ VALID_TRANSITIONS: list[StateTransition] = [
         GameState.WILDERNESS_TRAVEL,
         GameState.ENCOUNTER,
         "encounter_triggered",
-        "Encounter roll indicates encounter occurs"
+        "Encounter roll indicates encounter occurs",
     ),
     StateTransition(
         GameState.WILDERNESS_TRAVEL,
         GameState.DUNGEON_EXPLORATION,
         "enter_dungeon",
-        "Party enters a dungeon or underground area"
+        "Party enters a dungeon or underground area",
     ),
     StateTransition(
         GameState.WILDERNESS_TRAVEL,
         GameState.SETTLEMENT_EXPLORATION,
         "enter_settlement",
-        "Party enters a settlement"
+        "Party enters a settlement",
     ),
     StateTransition(
         GameState.WILDERNESS_TRAVEL,
         GameState.DOWNTIME,
         "begin_rest",
-        "Party begins extended rest or downtime"
+        "Party begins extended rest or downtime",
     ),
-
     # Dungeon Exploration transitions
     StateTransition(
         GameState.DUNGEON_EXPLORATION,
         GameState.ENCOUNTER,
         "encounter_triggered",
-        "Wandering monster check or room encounter triggers encounter"
+        "Wandering monster check or room encounter triggers encounter",
     ),
     StateTransition(
         GameState.DUNGEON_EXPLORATION,
         GameState.WILDERNESS_TRAVEL,
         "exit_dungeon",
-        "Party exits dungeon to wilderness"
+        "Party exits dungeon to wilderness",
     ),
     StateTransition(
         GameState.DUNGEON_EXPLORATION,
         GameState.DOWNTIME,
         "begin_rest",
-        "Party begins rest in dungeon"
+        "Party begins rest in dungeon",
     ),
-
     # Settlement Exploration transitions
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.ENCOUNTER,
         "encounter_triggered",
-        "Encounter triggered in settlement"
+        "Encounter triggered in settlement",
     ),
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.SOCIAL_INTERACTION,
         "initiate_conversation",
-        "Party initiates conversation with NPC"
+        "Party initiates conversation with NPC",
     ),
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.COMBAT,
         "settlement_combat",
-        "Combat breaks out in settlement"
+        "Combat breaks out in settlement",
     ),
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.WILDERNESS_TRAVEL,
         "exit_settlement",
-        "Party leaves settlement"
+        "Party leaves settlement",
     ),
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.DOWNTIME,
         "begin_downtime",
-        "Party begins downtime activities"
+        "Party begins downtime activities",
     ),
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.DUNGEON_EXPLORATION,
         "enter_dungeon",
-        "Party enters dungeon from settlement"
+        "Party enters dungeon from settlement",
     ),
-
     # Unified Encounter transitions
     StateTransition(
         GameState.ENCOUNTER,
         GameState.COMBAT,
         "encounter_to_combat",
-        "Encounter escalates to combat (attack or hostile reaction)"
+        "Encounter escalates to combat (attack or hostile reaction)",
     ),
     StateTransition(
         GameState.ENCOUNTER,
         GameState.SOCIAL_INTERACTION,
         "encounter_to_parley",
-        "Encounter leads to social interaction (parley, negotiation)"
+        "Encounter leads to social interaction (parley, negotiation)",
     ),
     StateTransition(
         GameState.ENCOUNTER,
         GameState.WILDERNESS_TRAVEL,
         "encounter_end_wilderness",
-        "Encounter resolved, return to wilderness travel"
+        "Encounter resolved, return to wilderness travel",
     ),
     StateTransition(
         GameState.ENCOUNTER,
         GameState.DUNGEON_EXPLORATION,
         "encounter_end_dungeon",
-        "Encounter resolved, return to dungeon exploration"
+        "Encounter resolved, return to dungeon exploration",
     ),
     StateTransition(
         GameState.ENCOUNTER,
         GameState.SETTLEMENT_EXPLORATION,
         "encounter_end_settlement",
-        "Encounter resolved, return to settlement exploration"
+        "Encounter resolved, return to settlement exploration",
     ),
-
     # Combat transitions
     StateTransition(
         GameState.COMBAT,
         GameState.WILDERNESS_TRAVEL,
         "combat_end_wilderness",
-        "Combat ends, return to wilderness travel"
+        "Combat ends, return to wilderness travel",
     ),
     StateTransition(
         GameState.COMBAT,
         GameState.DUNGEON_EXPLORATION,
         "combat_end_dungeon",
-        "Combat ends, return to dungeon exploration"
+        "Combat ends, return to dungeon exploration",
     ),
     StateTransition(
         GameState.COMBAT,
         GameState.SETTLEMENT_EXPLORATION,
         "combat_end_settlement",
-        "Combat ends in settlement"
+        "Combat ends in settlement",
     ),
     StateTransition(
         GameState.COMBAT,
         GameState.DOWNTIME,
         "combat_end_downtime",
-        "Combat ends, return to rest/downtime (rest was interrupted)"
+        "Combat ends, return to rest/downtime (rest was interrupted)",
     ),
     StateTransition(
         GameState.COMBAT,
         GameState.SOCIAL_INTERACTION,
         "combat_to_parley",
-        "Combat transitions to negotiation (surrender, etc.)"
+        "Combat transitions to negotiation (surrender, etc.)",
     ),
-
     # Social Interaction transitions
     StateTransition(
         GameState.SOCIAL_INTERACTION,
         GameState.WILDERNESS_TRAVEL,
         "conversation_end_wilderness",
-        "Conversation ends, return to wilderness"
+        "Conversation ends, return to wilderness",
     ),
     StateTransition(
         GameState.SOCIAL_INTERACTION,
         GameState.DUNGEON_EXPLORATION,
         "conversation_end_dungeon",
-        "Conversation ends, return to dungeon"
+        "Conversation ends, return to dungeon",
     ),
     StateTransition(
         GameState.SOCIAL_INTERACTION,
         GameState.SETTLEMENT_EXPLORATION,
         "conversation_end_settlement",
-        "Conversation ends, return to settlement"
+        "Conversation ends, return to settlement",
     ),
     StateTransition(
         GameState.SOCIAL_INTERACTION,
         GameState.COMBAT,
         "conversation_escalates",
-        "Conversation escalates to combat"
+        "Conversation escalates to combat",
     ),
-
     # Downtime transitions
     StateTransition(
         GameState.DOWNTIME,
         GameState.WILDERNESS_TRAVEL,
         "downtime_end_wilderness",
-        "Downtime ends, resume travel"
+        "Downtime ends, resume travel",
     ),
     StateTransition(
         GameState.DOWNTIME,
         GameState.DUNGEON_EXPLORATION,
         "downtime_end_dungeon",
-        "Downtime ends, resume dungeon exploration"
+        "Downtime ends, resume dungeon exploration",
     ),
     StateTransition(
         GameState.DOWNTIME,
         GameState.SETTLEMENT_EXPLORATION,
         "downtime_end_settlement",
-        "Downtime ends, resume settlement exploration"
+        "Downtime ends, resume settlement exploration",
     ),
     StateTransition(
-        GameState.DOWNTIME,
-        GameState.COMBAT,
-        "rest_interrupted",
-        "Rest is interrupted by combat"
+        GameState.DOWNTIME, GameState.COMBAT, "rest_interrupted", "Rest is interrupted by combat"
     ),
 ]
 
 
 class InvalidTransitionError(Exception):
     """Raised when an invalid state transition is attempted."""
+
     pass
 
 
@@ -294,9 +288,7 @@ class StateMachine:
 
         # Log initial state
         self._log_transition(
-            from_state="INIT",
-            to_state=initial_state.value,
-            trigger="initialization"
+            from_state="INIT", to_state=initial_state.value, trigger="initialization"
         )
 
     @property
@@ -347,16 +339,9 @@ class StateMachine:
         Returns:
             List of StateTransition objects available from current state
         """
-        return [
-            t for t in VALID_TRANSITIONS
-            if t.from_state == self._current_state
-        ]
+        return [t for t in VALID_TRANSITIONS if t.from_state == self._current_state]
 
-    def transition(
-        self,
-        trigger: str,
-        context: Optional[dict[str, Any]] = None
-    ) -> GameState:
+    def transition(self, trigger: str, context: Optional[dict[str, Any]] = None) -> GameState:
         """
         Attempt to transition to a new state.
 
@@ -394,10 +379,7 @@ class StateMachine:
 
         # Log the transition
         self._log_transition(
-            from_state=old_state.value,
-            to_state=new_state.value,
-            trigger=trigger,
-            context=context
+            from_state=old_state.value, to_state=new_state.value, trigger=trigger, context=context
         )
 
         # Run post-transition hooks
@@ -438,9 +420,18 @@ class StateMachine:
             (GameState.COMBAT, GameState.SETTLEMENT_EXPLORATION): "combat_end_settlement",
             (GameState.COMBAT, GameState.DOWNTIME): "combat_end_downtime",
             # Social interaction endings
-            (GameState.SOCIAL_INTERACTION, GameState.WILDERNESS_TRAVEL): "conversation_end_wilderness",
-            (GameState.SOCIAL_INTERACTION, GameState.DUNGEON_EXPLORATION): "conversation_end_dungeon",
-            (GameState.SOCIAL_INTERACTION, GameState.SETTLEMENT_EXPLORATION): "conversation_end_settlement",
+            (
+                GameState.SOCIAL_INTERACTION,
+                GameState.WILDERNESS_TRAVEL,
+            ): "conversation_end_wilderness",
+            (
+                GameState.SOCIAL_INTERACTION,
+                GameState.DUNGEON_EXPLORATION,
+            ): "conversation_end_dungeon",
+            (
+                GameState.SOCIAL_INTERACTION,
+                GameState.SETTLEMENT_EXPLORATION,
+            ): "conversation_end_settlement",
             # Encounter endings (unified state)
             (GameState.ENCOUNTER, GameState.WILDERNESS_TRAVEL): "encounter_end_wilderness",
             (GameState.ENCOUNTER, GameState.DUNGEON_EXPLORATION): "encounter_end_dungeon",
@@ -458,10 +449,7 @@ class StateMachine:
         return self.transition(trigger, context)
 
     def force_state(
-        self,
-        new_state: GameState,
-        reason: str,
-        context: Optional[dict[str, Any]] = None
+        self, new_state: GameState, reason: str, context: Optional[dict[str, Any]] = None
     ) -> None:
         """
         Force a state change without validation (for debugging/recovery only).
@@ -486,15 +474,10 @@ class StateMachine:
             from_state=old_state.value,
             to_state=new_state.value,
             trigger=f"FORCED: {reason}",
-            context=context
+            context=context,
         )
 
-    def register_callback(
-        self,
-        from_state: GameState,
-        trigger: str,
-        callback: Callable
-    ) -> None:
+    def register_callback(self, from_state: GameState, trigger: str, callback: Callable) -> None:
         """
         Register a callback for a specific transition.
 
@@ -534,11 +517,7 @@ class StateMachine:
         self._post_transition_hooks.append(hook)
 
     def _log_transition(
-        self,
-        from_state: str,
-        to_state: str,
-        trigger: str,
-        context: Optional[dict[str, Any]] = None
+        self, from_state: str, to_state: str, trigger: str, context: Optional[dict[str, Any]] = None
     ) -> None:
         """Log a state transition."""
         log_entry = TransitionLog(
@@ -546,9 +525,32 @@ class StateMachine:
             from_state=from_state,
             to_state=to_state,
             trigger=trigger,
-            context=context or {}
+            context=context or {},
         )
         self._state_history.append(log_entry)
+
+        # Also log to RunLog for observability
+        self._log_to_run_log(from_state, to_state, trigger, context)
+
+    def _log_to_run_log(
+        self,
+        from_state: str,
+        to_state: str,
+        trigger: str,
+        context: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Log transition to the observability RunLog."""
+        try:
+            from src.observability.run_log import get_run_log
+
+            get_run_log().log_transition(
+                from_state=from_state,
+                to_state=to_state,
+                trigger=trigger,
+                context=context,
+            )
+        except ImportError:
+            pass  # Observability module not available
 
     def get_state_info(self) -> dict[str, Any]:
         """
@@ -562,7 +564,7 @@ class StateMachine:
             "previous_state": self._previous_state.value if self._previous_state else None,
             "valid_triggers": self.get_valid_triggers(),
             "transition_count": len(self._state_history),
-            "last_transition": self._state_history[-1] if self._state_history else None
+            "last_transition": self._state_history[-1] if self._state_history else None,
         }
 
     def is_exploration_state(self) -> bool:
@@ -570,7 +572,7 @@ class StateMachine:
         return self._current_state in {
             GameState.WILDERNESS_TRAVEL,
             GameState.DUNGEON_EXPLORATION,
-            GameState.SETTLEMENT_EXPLORATION
+            GameState.SETTLEMENT_EXPLORATION,
         }
 
     def is_encounter_state(self) -> bool:
@@ -595,7 +597,7 @@ class StateMachine:
         if self._current_state in {
             GameState.COMBAT,
             GameState.SOCIAL_INTERACTION,
-            GameState.ENCOUNTER
+            GameState.ENCOUNTER,
         }:
             return self._previous_state
         return None

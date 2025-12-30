@@ -55,6 +55,7 @@ class POIStateDelta:
 
     Only stores what changed from the base POI definition.
     """
+
     poi_name: str
     hex_id: str
 
@@ -102,7 +103,9 @@ class POIStateDelta:
             hex_id=data["hex_id"],
             discovered=data.get("discovered"),
             triggered_alerts={int(k): v for k, v in data.get("triggered_alerts", {}).items()},
-            found_concealed_items={int(k): v for k, v in data.get("found_concealed_items", {}).items()},
+            found_concealed_items={
+                int(k): v for k, v in data.get("found_concealed_items", {}).items()
+            },
             variable_inhabitants_roll=data.get("variable_inhabitants_roll"),
             items_taken=data.get("items_taken", []),
             found_roll_table_entries=data.get("found_roll_table_entries", {}),
@@ -115,6 +118,7 @@ class NPCStateDelta:
     """
     Tracks changes to an NPC's state during the session.
     """
+
     npc_id: str
     hex_id: str
 
@@ -171,6 +175,7 @@ class HexStateDelta:
     """
     Tracks changes to a hex's state during the session.
     """
+
     hex_id: str
 
     # Exploration state
@@ -212,12 +217,10 @@ class HexStateDelta:
             hex_id=data["hex_id"],
             explored=data.get("explored", False),
             poi_deltas={
-                k: POIStateDelta.from_dict(v)
-                for k, v in data.get("poi_deltas", {}).items()
+                k: POIStateDelta.from_dict(v) for k, v in data.get("poi_deltas", {}).items()
             },
             npc_deltas={
-                k: NPCStateDelta.from_dict(v)
-                for k, v in data.get("npc_deltas", {}).items()
+                k: NPCStateDelta.from_dict(v) for k, v in data.get("npc_deltas", {}).items()
             },
             discovered_secrets=data.get("discovered_secrets", []),
             items_taken=data.get("items_taken", []),
@@ -238,6 +241,7 @@ class SerializableCharacter:
 
     Properly handles Item serialization with all unique item fields.
     """
+
     character_id: str
     name: str
     character_class: str
@@ -248,9 +252,9 @@ class SerializableCharacter:
     base_speed: int = 40  # Base Speed in feet (p146)
 
     # Abilities (stored as dict for compatibility with CharacterState)
-    ability_scores: dict[str, int] = field(default_factory=lambda: {
-        "STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10
-    })
+    ability_scores: dict[str, int] = field(
+        default_factory=lambda: {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
+    )
 
     # Equipment and resources - Items serialized with all fields
     inventory: list[dict[str, Any]] = field(default_factory=list)
@@ -312,9 +316,9 @@ class SerializableCharacter:
         # Serialize inventory items using Item.to_dict()
         serialized_inventory = []
         for item in char.inventory:
-            if hasattr(item, 'to_dict'):
+            if hasattr(item, "to_dict"):
                 serialized_inventory.append(item.to_dict())
-            elif hasattr(item, '__dataclass_fields__'):
+            elif hasattr(item, "__dataclass_fields__"):
                 serialized_inventory.append(asdict(item))
             else:
                 serialized_inventory.append(item)
@@ -322,7 +326,7 @@ class SerializableCharacter:
         # Serialize spells
         serialized_spells = []
         for spell in char.spells:
-            if hasattr(spell, '__dataclass_fields__'):
+            if hasattr(spell, "__dataclass_fields__"):
                 serialized_spells.append(asdict(spell))
             else:
                 serialized_spells.append(spell)
@@ -361,8 +365,16 @@ class SerializableCharacter:
             morale=char.morale,
             is_retainer=char.is_retainer,
             employer_id=char.employer_id,
-            encumbrance_system=char.encumbrance_system.value if hasattr(char.encumbrance_system, 'value') else str(char.encumbrance_system),
-            armor_weight=char.armor_weight.value if hasattr(char.armor_weight, 'value') else str(char.armor_weight),
+            encumbrance_system=(
+                char.encumbrance_system.value
+                if hasattr(char.encumbrance_system, "value")
+                else str(char.encumbrance_system)
+            ),
+            armor_weight=(
+                char.armor_weight.value
+                if hasattr(char.armor_weight, "value")
+                else str(char.armor_weight)
+            ),
             # Kindred fields
             kindred=char.kindred,
             gender=char.gender,
@@ -388,13 +400,15 @@ class SerializableCharacter:
         spell_objects = []
         for spell_data in self.spells:
             if isinstance(spell_data, dict):
-                spell_objects.append(Spell(
-                    spell_id=spell_data.get("spell_id", ""),
-                    name=spell_data.get("name", ""),
-                    level=spell_data.get("level", 1),
-                    prepared=spell_data.get("prepared", True),
-                    cast_today=spell_data.get("cast_today", False),
-                ))
+                spell_objects.append(
+                    Spell(
+                        spell_id=spell_data.get("spell_id", ""),
+                        name=spell_data.get("name", ""),
+                        level=spell_data.get("level", 1),
+                        prepared=spell_data.get("prepared", True),
+                        cast_today=spell_data.get("cast_today", False),
+                    )
+                )
             else:
                 spell_objects.append(spell_data)
 
@@ -402,19 +416,23 @@ class SerializableCharacter:
         condition_objects = []
         for c in self.conditions:
             if isinstance(c, dict):
-                condition_objects.append(Condition(
-                    condition_type=ConditionType(c.get("condition_type", c.get("type", "exhausted"))),
-                    duration_turns=c.get("duration_turns", c.get("duration")),
-                    source=c.get("source", ""),
-                    severity=c.get("severity", 1),
-                    duration_days=c.get("duration_days"),
-                    days_elapsed=c.get("days_elapsed", 0),
-                    periodic_effect=c.get("periodic_effect"),
-                    recovery_condition=c.get("recovery_condition"),
-                    recovery_rate=c.get("recovery_rate"),
-                    spell_effects=c.get("spell_effects"),
-                    threshold_effect=c.get("threshold_effect"),
-                ))
+                condition_objects.append(
+                    Condition(
+                        condition_type=ConditionType(
+                            c.get("condition_type", c.get("type", "exhausted"))
+                        ),
+                        duration_turns=c.get("duration_turns", c.get("duration")),
+                        source=c.get("source", ""),
+                        severity=c.get("severity", 1),
+                        duration_days=c.get("duration_days"),
+                        days_elapsed=c.get("days_elapsed", 0),
+                        periodic_effect=c.get("periodic_effect"),
+                        recovery_condition=c.get("recovery_condition"),
+                        recovery_rate=c.get("recovery_rate"),
+                        spell_effects=c.get("spell_effects"),
+                        threshold_effect=c.get("threshold_effect"),
+                    )
+                )
             else:
                 condition_objects.append(c)
 
@@ -463,6 +481,7 @@ class SerializableCharacter:
 @dataclass
 class SerializablePartyState:
     """Serializable version of party state."""
+
     # Location
     location_type: str
     location_id: str
@@ -496,6 +515,7 @@ class SerializablePartyState:
 @dataclass
 class SerializableWorldState:
     """Serializable version of world state."""
+
     # Time
     year: int
     month: int
@@ -527,6 +547,7 @@ class SerializableWorldState:
 @dataclass
 class SerializableScheduledEvent:
     """Serializable version of a scheduled event."""
+
     event_id: str
     event_type: str
 
@@ -568,6 +589,7 @@ class SerializableScheduledEvent:
 @dataclass
 class SerializableGrantedAbility:
     """Serializable version of a granted ability."""
+
     grant_id: str
     character_id: str
     ability_name: str
@@ -607,6 +629,7 @@ class SerializableGrantedAbility:
 @dataclass
 class SerializableWorldChange:
     """Serializable version of a world state change."""
+
     change_id: str
     hex_id: str
     poi_name: Optional[str]
@@ -648,6 +671,7 @@ class GameSession:
     This captures everything needed to save and restore a game,
     while keeping base content data immutable.
     """
+
     # Session metadata
     session_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     session_name: str = "Untitled Session"
@@ -734,16 +758,32 @@ class GameSession:
             created_at=data.get("created_at", datetime.now().isoformat()),
             last_saved_at=data.get("last_saved_at"),
             version=data.get("version", "1.0.0"),
-            world_state=SerializableWorldState.from_dict(data["world_state"]) if data.get("world_state") else None,
-            party_state=SerializablePartyState.from_dict(data["party_state"]) if data.get("party_state") else None,
+            world_state=(
+                SerializableWorldState.from_dict(data["world_state"])
+                if data.get("world_state")
+                else None
+            ),
+            party_state=(
+                SerializablePartyState.from_dict(data["party_state"])
+                if data.get("party_state")
+                else None
+            ),
             characters=[SerializableCharacter.from_dict(c) for c in data.get("characters", [])],
-            hex_deltas={k: HexStateDelta.from_dict(v) for k, v in data.get("hex_deltas", {}).items()},
+            hex_deltas={
+                k: HexStateDelta.from_dict(v) for k, v in data.get("hex_deltas", {}).items()
+            },
             explored_hexes=data.get("explored_hexes", []),
             discovered_secrets=data.get("discovered_secrets", []),
             met_npcs=data.get("met_npcs", []),
-            scheduled_events=[SerializableScheduledEvent.from_dict(e) for e in data.get("scheduled_events", [])],
-            granted_abilities=[SerializableGrantedAbility.from_dict(a) for a in data.get("granted_abilities", [])],
-            world_changes=[SerializableWorldChange.from_dict(c) for c in data.get("world_changes", [])],
+            scheduled_events=[
+                SerializableScheduledEvent.from_dict(e) for e in data.get("scheduled_events", [])
+            ],
+            granted_abilities=[
+                SerializableGrantedAbility.from_dict(a) for a in data.get("granted_abilities", [])
+            ],
+            world_changes=[
+                SerializableWorldChange.from_dict(c) for c in data.get("world_changes", [])
+            ],
             completed_quests=data.get("completed_quests", []),
             poi_visits=data.get("poi_visits", {}),
             unique_items_acquired=data.get("unique_items_acquired", {}),
@@ -909,22 +949,23 @@ class SessionManager:
                 with open(filepath, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
-                sessions.append({
-                    "filepath": str(filepath),
-                    "filename": filepath.name,
-                    "session_id": data.get("session_id", "unknown"),
-                    "session_name": data.get("session_name", "Untitled"),
-                    "created_at": data.get("created_at"),
-                    "last_saved_at": data.get("last_saved_at"),
-                    "version": data.get("version", "unknown"),
-                })
+                sessions.append(
+                    {
+                        "filepath": str(filepath),
+                        "filename": filepath.name,
+                        "session_id": data.get("session_id", "unknown"),
+                        "session_name": data.get("session_name", "Untitled"),
+                        "created_at": data.get("created_at"),
+                        "last_saved_at": data.get("last_saved_at"),
+                        "version": data.get("version", "unknown"),
+                    }
+                )
             except (json.JSONDecodeError, KeyError) as e:
                 logger.warning(f"Could not read save file {filepath}: {e}")
 
         # Sort by last saved date, most recent first
         sessions.sort(
-            key=lambda s: s.get("last_saved_at") or s.get("created_at") or "",
-            reverse=True
+            key=lambda s: s.get("last_saved_at") or s.get("created_at") or "", reverse=True
         )
 
         return sessions
@@ -1353,7 +1394,8 @@ class SessionManager:
             return []
 
         return [
-            uid for uid, info in self._current_session.unique_items_acquired.items()
+            uid
+            for uid, info in self._current_session.unique_items_acquired.items()
             if info.get("acquired_by") == character_id
         ]
 
@@ -1378,7 +1420,11 @@ class SessionManager:
             hour=world_state.current_time.hour,
             minute=world_state.current_time.minute,
             season=world_state.season.value,
-            weather=world_state.weather.value if hasattr(world_state.weather, 'value') else str(world_state.weather),
+            weather=(
+                world_state.weather.value
+                if hasattr(world_state.weather, "value")
+                else str(world_state.weather)
+            ),
             global_flags=world_state.global_flags.copy(),
             cleared_locations=list(world_state.cleared_locations),
             active_adventure=world_state.active_adventure,
@@ -1397,14 +1443,16 @@ class SessionManager:
         return SerializablePartyState(
             location_type=party_state.location.location_type.value,
             location_id=party_state.location.location_id,
-            location_name=party_state.location.name,
+            location_name=None,  # Location doesn't have a name attribute
             marching_order=party_state.marching_order.copy(),
             food_days=party_state.resources.food_days,
             water_days=party_state.resources.water_days,
             torches=party_state.resources.torches,
             lantern_oil_flasks=party_state.resources.lantern_oil_flasks,
             ammunition=party_state.resources.ammunition.copy(),
-            active_light_source=party_state.active_light_source.value if party_state.active_light_source else None,
+            active_light_source=(
+                party_state.active_light_source.value if party_state.active_light_source else None
+            ),
             light_remaining_turns=party_state.light_remaining_turns,
             party_conditions=[
                 {"type": c.condition_type.value, "duration": c.duration_remaining}
@@ -1606,7 +1654,6 @@ class SessionManager:
         party_state.location = Location(
             location_type=LocationType(saved.location_type),
             location_id=saved.location_id,
-            name=saved.location_name,
         )
         party_state.marching_order = saved.marching_order.copy()
         party_state.resources.food_days = saved.food_days
@@ -1614,7 +1661,9 @@ class SessionManager:
         party_state.resources.torches = saved.torches
         party_state.resources.lantern_oil_flasks = saved.lantern_oil_flasks
         party_state.resources.ammunition = saved.ammunition.copy()
-        party_state.active_light_source = LightSourceType(saved.active_light_source) if saved.active_light_source else None
+        party_state.active_light_source = (
+            LightSourceType(saved.active_light_source) if saved.active_light_source else None
+        )
         party_state.light_remaining_turns = saved.light_remaining_turns
 
         # Restore party conditions
@@ -1659,6 +1708,7 @@ class SessionManager:
 
         # POI visits - need to import POIVisit
         from src.hex_crawl.hex_crawl_engine import POIVisit
+
         for key, visit_data in self._current_session.poi_visits.items():
             engine._poi_visits[key] = POIVisit(
                 poi_name=visit_data["poi_name"],
@@ -1669,6 +1719,7 @@ class SessionManager:
 
         # World changes
         from src.data_models import HexStateChange, WorldStateChanges
+
         engine._world_state_changes = WorldStateChanges()
         for saved in self._current_session.world_changes:
             change = HexStateChange(
@@ -1693,6 +1744,7 @@ class SessionManager:
 
         # Scheduled events
         from src.data_models import ScheduledEvent, EventType, EventScheduler
+
         engine._event_scheduler = EventScheduler()
         for saved in self._current_session.scheduled_events:
             event = ScheduledEvent(
@@ -1706,11 +1758,15 @@ class SessionManager:
                 source_hex_id=saved.source_hex_id,
                 source_poi_name=saved.source_poi_name,
                 trigger_condition=saved.trigger_condition,
-                trigger_date=GameDate(
-                    year=saved.trigger_year,
-                    month=saved.trigger_month,
-                    day=saved.trigger_day,
-                ) if saved.trigger_year else None,
+                trigger_date=(
+                    GameDate(
+                        year=saved.trigger_year,
+                        month=saved.trigger_month,
+                        day=saved.trigger_day,
+                    )
+                    if saved.trigger_year
+                    else None
+                ),
                 title=saved.title,
                 description=saved.description,
                 player_message=saved.player_message,
@@ -1724,6 +1780,7 @@ class SessionManager:
 
         # Granted abilities
         from src.data_models import GrantedAbility, AbilityType, AbilityGrantTracker
+
         engine._ability_tracker = AbilityGrantTracker()
         for saved in self._current_session.granted_abilities:
             ability = GrantedAbility(
@@ -1839,4 +1896,3 @@ class SessionManager:
         if not self._current_session:
             return False
         return quest_id in self._current_session.completed_quests
-

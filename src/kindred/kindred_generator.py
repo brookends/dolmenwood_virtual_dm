@@ -134,9 +134,11 @@ class KindredGenerator:
         base = physical.height_base
 
         # Handle gender-specific height for humans
-        if (gender == "female" and
-            physical.extra_data and
-            "female_height_base" in physical.extra_data):
+        if (
+            gender == "female"
+            and physical.extra_data
+            and "female_height_base" in physical.extra_data
+        ):
             base = physical.extra_data["female_height_base"]
 
         dice_roll = roll_dice(physical.height_dice)
@@ -287,9 +289,7 @@ class KindredGenerator:
         Returns:
             List of ability IDs the character can use
         """
-        abilities = self.manager.get_abilities_for_level(
-            self.definition.kindred_id, level
-        )
+        abilities = self.manager.get_abilities_for_level(self.definition.kindred_id, level)
         return [a.ability_id for a in abilities]
 
     def get_starting_languages(self) -> list[str]:

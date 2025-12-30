@@ -56,6 +56,7 @@ logger = logging.getLogger(__name__)
 
 class CombatActionType(str, Enum):
     """Types of combat actions."""
+
     MELEE_ATTACK = "melee_attack"
     MISSILE_ATTACK = "missile_attack"
     CAST_SPELL = "cast_spell"
@@ -66,12 +67,13 @@ class CombatActionType(str, Enum):
     DEFEND = "defend"
     FLEE = "flee"
     PARLEY = "parley"
-    BACKSTAB = "backstab"         # Thief special attack
-    TURN_UNDEAD = "turn_undead"   # Cleric/Friar special action
+    BACKSTAB = "backstab"  # Thief special attack
+    TURN_UNDEAD = "turn_undead"  # Cleric/Friar special action
 
 
 class MoraleCheckTrigger(str, Enum):
     """Triggers for morale checks."""
+
     FIRST_DEATH = "first_death"
     HALF_CASUALTIES = "half_casualties"
     LEADER_KILLED = "leader_killed"
@@ -84,23 +86,26 @@ class MoraleCheckTrigger(str, Enum):
 
 class MissileRange(str, Enum):
     """Missile attack range bands (p167)."""
-    SHORT = "short"   # +1 Attack
+
+    SHORT = "short"  # +1 Attack
     MEDIUM = "medium"  # No modifier
-    LONG = "long"     # -1 Attack
+    LONG = "long"  # -1 Attack
 
 
 class CoverType(str, Enum):
     """Cover levels affecting missile attacks (p167)."""
-    NONE = "none"         # No penalty
-    QUARTER = "quarter"   # -1 Attack
-    HALF = "half"         # -2 Attack
+
+    NONE = "none"  # No penalty
+    QUARTER = "quarter"  # -1 Attack
+    HALF = "half"  # -2 Attack
     THREE_QUARTER = "three_quarter"  # -3 Attack
-    FULL = "full"         # -4 Attack (or cannot target)
+    FULL = "full"  # -4 Attack (or cannot target)
 
 
 @dataclass
 class CombatAction:
     """A declared combat action."""
+
     combatant_id: str
     action_type: CombatActionType
     target_id: Optional[str] = None
@@ -115,6 +120,7 @@ class CombatantStatus:
     Tracks morale successes (two = fight to death), fleeing/parrying/charging
     flags, non-lethal damage, and running exhaustion (p147, p167).
     """
+
     combatant_id: str
     # Morale tracking (p167)
     successful_morale_checks: int = 0  # Two successes = fight to death
@@ -138,6 +144,7 @@ class AttackModifierResult:
 
     Combines STR/DEX modifiers, range, cover, and situational bonuses.
     """
+
     attack_bonus: int = 0  # Total attack roll modifier
     damage_bonus: int = 0  # Total damage modifier (STR for melee only)
     details: list[str] = field(default_factory=list)  # Description of modifiers
@@ -146,6 +153,7 @@ class AttackModifierResult:
 @dataclass
 class AttackResult:
     """Result of an action resolved during combat."""
+
     attacker_id: str
     defender_id: str
     action_type: CombatActionType
@@ -163,6 +171,7 @@ class AttackResult:
 @dataclass
 class CombatRoundResult:
     """Result of processing one combat round."""
+
     round_number: int
     party_initiative: int
     enemy_initiative: int
@@ -179,6 +188,7 @@ class CombatRoundResult:
 @dataclass
 class CombatState:
     """Overall state of the current combat."""
+
     encounter: EncounterState
     round_number: int = 0
     party_initiative: int = 0
@@ -207,9 +217,7 @@ class CombatEngine:
     """
 
     def __init__(
-        self,
-        controller: GlobalController,
-        spell_resolver: Optional[SpellResolver] = None
+        self, controller: GlobalController, spell_resolver: Optional[SpellResolver] = None
     ):
         """
         Initialize the combat engine.
@@ -239,11 +247,7 @@ class CombatEngine:
     # COMBAT INITIALIZATION
     # =========================================================================
 
-    def start_combat(
-        self,
-        encounter: EncounterState,
-        return_state: GameState
-    ) -> dict[str, Any]:
+    def start_combat(self, encounter: EncounterState, return_state: GameState) -> dict[str, Any]:
         """
         Start a new combat from an encounter.
 
@@ -323,9 +327,7 @@ class CombatEngine:
     # =========================================================================
 
     def execute_round(
-        self,
-        party_actions: list[CombatAction],
-        enemy_actions: Optional[list[CombatAction]] = None
+        self, party_actions: list[CombatAction], enemy_actions: Optional[list[CombatAction]] = None
     ) -> CombatRoundResult:
         """
         Execute one combat round.
@@ -345,7 +347,7 @@ class CombatEngine:
                 party_initiative=0,
                 enemy_initiative=0,
                 first_side="",
-                messages=["No active combat"]
+                messages=["No active combat"],
             )
 
         self._combat_state.round_number += 1
@@ -379,9 +381,7 @@ class CombatEngine:
             result.first_side = "simultaneous"
             action_order = ["simultaneous"]
 
-        result.messages.append(
-            f"Initiative: Party {party_init.total} vs Enemy {enemy_init.total}"
-        )
+        result.messages.append(f"Initiative: Party {party_init.total} vs Enemy {enemy_init.total}")
 
         # 2. Generate enemy actions if not provided
         if enemy_actions is None:
@@ -495,21 +495,22 @@ class CombatEngine:
         damaged_this_resolution: set[str] = set()
 
         movement_actions = [
-            a for a in actions if a.action_type in {
-                CombatActionType.MOVE, CombatActionType.CHARGE,
-                CombatActionType.WITHDRAW, CombatActionType.FLEE
+            a
+            for a in actions
+            if a.action_type
+            in {
+                CombatActionType.MOVE,
+                CombatActionType.CHARGE,
+                CombatActionType.WITHDRAW,
+                CombatActionType.FLEE,
             }
         ]
-        missile_actions = [
-            a for a in actions if a.action_type == CombatActionType.MISSILE_ATTACK
-        ]
-        magic_actions = [
-            a for a in actions if a.action_type == CombatActionType.CAST_SPELL
-        ]
+        missile_actions = [a for a in actions if a.action_type == CombatActionType.MISSILE_ATTACK]
+        magic_actions = [a for a in actions if a.action_type == CombatActionType.CAST_SPELL]
         melee_actions = [
-            a for a in actions if a.action_type in {
-                CombatActionType.MELEE_ATTACK, CombatActionType.DEFEND
-            }
+            a
+            for a in actions
+            if a.action_type in {CombatActionType.MELEE_ATTACK, CombatActionType.DEFEND}
         ]
 
         # Movement phase (apply round modifiers like charge/flee/parry)
@@ -518,8 +519,7 @@ class CombatEngine:
 
         # Missile phase
         missile_results = [
-            self._resolve_attack(action, round_modifiers)
-            for action in missile_actions
+            self._resolve_attack(action, round_modifiers) for action in missile_actions
         ]
         damaged_this_resolution.update(self._apply_attack_results(missile_results))
         results.extend(missile_results)
@@ -588,7 +588,11 @@ class CombatEngine:
             # Range modifiers
             range_band = action.parameters.get("range", MissileRange.MEDIUM)
             if isinstance(range_band, str):
-                range_band = MissileRange(range_band) if range_band in [r.value for r in MissileRange] else MissileRange.MEDIUM
+                range_band = (
+                    MissileRange(range_band)
+                    if range_band in [r.value for r in MissileRange]
+                    else MissileRange.MEDIUM
+                )
             if range_band == MissileRange.SHORT:
                 result.attack_bonus += 1
                 result.details.append("Short range +1")
@@ -599,7 +603,9 @@ class CombatEngine:
             # Cover modifiers
             cover = action.parameters.get("cover", CoverType.NONE)
             if isinstance(cover, str):
-                cover = CoverType(cover) if cover in [c.value for c in CoverType] else CoverType.NONE
+                cover = (
+                    CoverType(cover) if cover in [c.value for c in CoverType] else CoverType.NONE
+                )
             cover_penalties = {
                 CoverType.QUARTER: -1,
                 CoverType.HALF: -2,
@@ -612,9 +618,7 @@ class CombatEngine:
                 result.details.append(f"Cover {penalty}")
 
         # Class ability modifiers
-        class_mods = self._get_class_ability_combat_modifiers(
-            attacker, defender, action
-        )
+        class_mods = self._get_class_ability_combat_modifiers(attacker, defender, action)
         result.attack_bonus += class_mods.get("attack_bonus", 0)
         result.damage_bonus += class_mods.get("damage_bonus", 0)
         result.details.extend(class_mods.get("details", []))
@@ -638,7 +642,7 @@ class CombatEngine:
 
         Works for both party members and NPCs with class abilities (via character_ref).
         """
-        result = {
+        result: dict[str, Any] = {
             "attack_bonus": 0,
             "damage_bonus": 0,
             "damage_dice": None,
@@ -661,7 +665,9 @@ class CombatEngine:
             "target_aware": action.parameters.get("target_aware", True),
             "weapon": action.parameters.get("weapon", ""),
             "is_mounted": action.parameters.get("is_mounted", False),
-            "talents": char_state.get_combat_talents() if hasattr(char_state, "get_combat_talents") else [],
+            "talents": (
+                char_state.get_combat_talents() if hasattr(char_state, "get_combat_talents") else []
+            ),
         }
 
         # Query ability registry for combat modifiers
@@ -693,7 +699,7 @@ class CombatEngine:
         # Check for creature type in stat block
         creature_type = getattr(combatant.stat_block, "creature_type", None)
         if creature_type:
-            return creature_type.lower()
+            return str(creature_type).lower()
 
         # Check for undead tag
         tags = getattr(combatant.stat_block, "tags", [])
@@ -741,7 +747,7 @@ class CombatEngine:
         class_ac_mod = self._get_class_ability_ac_modifier(defender)
         base_ac += class_ac_mod
 
-        return base_ac
+        return int(base_ac)
 
     def _get_class_ability_ac_modifier(self, combatant: Combatant) -> int:
         """
@@ -780,7 +786,7 @@ class CombatEngine:
                     # but we can add the modifier if stat_block AC is lower
                     stat_ac = combatant.stat_block.armor_class if combatant.stat_block else 10
                     if stat_ac < 13:
-                        total_modifier += (13 - stat_ac)
+                        total_modifier += 13 - stat_ac
 
         return total_modifier
 
@@ -810,6 +816,9 @@ class CombatEngine:
                 action_type=action.action_type,
             )
 
+        # At this point defender_id must be non-None since defender exists
+        assert defender_id is not None
+
         round_modifiers = round_modifiers or self._init_round_modifiers()
         declarations = declarations or {}
 
@@ -817,9 +826,7 @@ class CombatEngine:
         defender_ac = self._get_effective_ac(defender, attacker, round_modifiers)
 
         # Calculate attack modifiers (STR/DEX, range, cover)
-        modifiers = self._calculate_attack_modifiers(
-            attacker, defender, action, round_modifiers
-        )
+        modifiers = self._calculate_attack_modifiers(attacker, defender, action, round_modifiers)
 
         # Roll attack
         attack_roll = self.dice.roll_d20(f"{attacker.name} attacks {defender.name}")
@@ -871,7 +878,11 @@ class CombatEngine:
                 result.special_effects.append("Unarmed (1d2)")
             else:
                 # Get attack damage from stat block
-                attack_info = attacker.stat_block.attacks[0] if attacker.stat_block.attacks else {"damage": "1d6"}
+                attack_info = (
+                    attacker.stat_block.attacks[0]
+                    if attacker.stat_block.attacks
+                    else {"damage": "1d6"}
+                )
                 damage_dice = attack_info.get("damage", "1d6")
                 damage_roll = self.dice.roll(damage_dice, "damage")
                 result.damage_roll = damage_roll.total
@@ -1044,9 +1055,7 @@ class CombatEngine:
                 else:
                     # Apply lethal damage through controller
                     self.controller.apply_damage(
-                        result.defender_id,
-                        result.damage_dealt,
-                        "physical"
+                        result.defender_id, result.damage_dealt, "physical"
                     )
                     # Also update combatant in encounter
                     defender.stat_block.hp_current -= result.damage_dealt
@@ -1121,8 +1130,9 @@ class CombatEngine:
         if action.combatant_id in round_modifiers["ac_bonus"]:
             return
         parry_bonus = max(action.parameters.get("parry_bonus", 1), 1)
-        round_modifiers["ac_bonus"][action.combatant_id] = \
+        round_modifiers["ac_bonus"][action.combatant_id] = (
             round_modifiers["ac_bonus"].get(action.combatant_id, 0) + parry_bonus
+        )
 
     def _apply_declared_modifiers(
         self,
@@ -1135,16 +1145,19 @@ class CombatEngine:
         """
         for action in actions:
             if action.action_type == CombatActionType.CHARGE:
-                round_modifiers["attack_bonus"][action.combatant_id] = \
+                round_modifiers["attack_bonus"][action.combatant_id] = (
                     round_modifiers["attack_bonus"].get(action.combatant_id, 0) + 2
-                round_modifiers["ac_penalty"][action.combatant_id] = \
+                )
+                round_modifiers["ac_penalty"][action.combatant_id] = (
                     round_modifiers["ac_penalty"].get(action.combatant_id, 0) + 1
+                )
             elif action.action_type == CombatActionType.FLEE:
                 round_modifiers["fleeing"].add(action.combatant_id)
             elif action.action_type == CombatActionType.DEFEND:
                 parry_bonus = max(action.parameters.get("parry_bonus", 1), 1)
-                round_modifiers["ac_bonus"][action.combatant_id] = \
+                round_modifiers["ac_bonus"][action.combatant_id] = (
                     round_modifiers["ac_bonus"].get(action.combatant_id, 0) + parry_bonus
+                )
 
     # =========================================================================
     # ENEMY AI
@@ -1152,13 +1165,14 @@ class CombatEngine:
 
     def _generate_enemy_actions(self) -> list[CombatAction]:
         """Generate actions for enemy combatants."""
-        actions = []
+        actions: list[CombatAction] = []
 
         if not self._combat_state:
             return actions
 
         party_targets = [
-            c for c in self._combat_state.encounter.get_party_combatants()
+            c
+            for c in self._combat_state.encounter.get_party_combatants()
             if c.stat_block and c.stat_block.hp_current > 0
         ]
 
@@ -1172,11 +1186,13 @@ class CombatEngine:
                 self.dice.roll_d6(1, "target selection").total % len(party_targets)
             ]
 
-            actions.append(CombatAction(
-                combatant_id=enemy.combatant_id,
-                action_type=CombatActionType.MELEE_ATTACK,
-                target_id=target.combatant_id,
-            ))
+            actions.append(
+                CombatAction(
+                    combatant_id=enemy.combatant_id,
+                    action_type=CombatActionType.MELEE_ATTACK,
+                    target_id=target.combatant_id,
+                )
+            )
 
         return actions
 
@@ -1196,7 +1212,7 @@ class CombatEngine:
         - When first harmed
         - When reduced to 1/4 HP or less
         """
-        triggers = []
+        triggers: list[MoraleCheckTrigger] = []
 
         if not self._combat_state:
             return triggers
@@ -1223,9 +1239,14 @@ class CombatEngine:
                     # First harmed trigger - only once
                     if status.first_harmed and status.took_damage_this_round:
                         # Check if this is the first time being harmed
-                        prev_rounds = self._combat_state.round_results[:-1] if self._combat_state.round_results else []
+                        prev_rounds = (
+                            self._combat_state.round_results[:-1]
+                            if self._combat_state.round_results
+                            else []
+                        )
                         was_previously_harmed = any(
-                            solo.combatant_id in [r.defender_id for r in round.actions_resolved if r.hit]
+                            solo.combatant_id
+                            in [r.defender_id for r in round.actions_resolved if r.hit]
                             for round in prev_rounds
                         )
                         if not was_previously_harmed:
@@ -1248,7 +1269,7 @@ class CombatEngine:
         - Morale 12: Never checks morale, always fights to death
         - Two successful morale checks: Fights to death for rest of combat
         """
-        result = {
+        result: dict[str, Any] = {
             "trigger": trigger.value,
             "failed": False,
             "fleeing": [],
@@ -1285,10 +1306,7 @@ class CombatEngine:
             return result
 
         # Get average morale of enemies that need to check
-        morale_scores = [
-            e.stat_block.morale if e.stat_block else 7
-            for e in enemies_to_check
-        ]
+        morale_scores = [e.stat_block.morale if e.stat_block else 7 for e in enemies_to_check]
         avg_morale = sum(morale_scores) // len(morale_scores)
 
         # Roll morale
@@ -1318,14 +1336,16 @@ class CombatEngine:
 
     def _check_casualties(self) -> list[str]:
         """Check for new casualties this round."""
-        casualties = []
+        casualties: list[str] = []
 
         if not self._combat_state:
             return casualties
 
         for combatant in self._combat_state.encounter.combatants:
             if combatant.stat_block and combatant.stat_block.hp_current <= 0:
-                if combatant.combatant_id not in [c for r in self._combat_state.round_results for c in r.casualties]:
+                if combatant.combatant_id not in [
+                    c for r in self._combat_state.round_results for c in r.casualties
+                ]:
                     casualties.append(combatant.name)
                     if combatant.side == "enemy":
                         self._combat_state.enemy_casualties += 1
@@ -1347,7 +1367,8 @@ class CombatEngine:
 
         active_enemies = self._combat_state.encounter.get_active_enemies()
         active_party = [
-            c for c in self._combat_state.encounter.get_party_combatants()
+            c
+            for c in self._combat_state.encounter.get_party_combatants()
             if c.stat_block and c.stat_block.hp_current > 0
         ]
 
@@ -1366,7 +1387,9 @@ class CombatEngine:
             return result
 
         # Check for morale break (enemies fleeing)
-        last_round = self._combat_state.round_results[-1] if self._combat_state.round_results else None
+        last_round = (
+            self._combat_state.round_results[-1] if self._combat_state.round_results else None
+        )
         if last_round and last_round.fleeing:
             # If all remaining enemies are fleeing
             fleeing_ids = set(last_round.fleeing)
@@ -1470,15 +1493,15 @@ class CombatEngine:
         round_modifiers["fleeing"].add(character_id)
 
         # Free attacks from engaged enemies with +2 bonus and ignore shield
-        free_attacks = []
+        free_attacks: list[AttackResult] = []
         for enemy in self._combat_state.encounter.get_active_enemies():
             attack = CombatAction(
                 combatant_id=enemy.combatant_id,
                 action_type=CombatActionType.MELEE_ATTACK,
                 target_id=character_id,
             )
-            result = self._resolve_attack(attack, round_modifiers)
-            free_attacks.append(result)
+            attack_result = self._resolve_attack(attack, round_modifiers)
+            free_attacks.append(attack_result)
 
         # Apply free attack damage
         self._apply_attack_results(free_attacks)
@@ -1616,7 +1639,7 @@ class CombatEngine:
         target_ac = target.stat_block.armor_class if target.stat_block else 10
         hit = (attack_roll.total + attack_bonus) >= target_ac
 
-        result = {
+        result: dict[str, Any] = {
             "hit": hit,
             "attack_roll": attack_roll.total,
             "attack_bonus": attack_bonus,
@@ -1629,7 +1652,7 @@ class CombatEngine:
             save_roll = self.dice.roll_d20(f"{target.name} saves vs Hold")
             # Default save target is 16 (can be adjusted based on creature)
             save_target = 16
-            if target.stat_block and hasattr(target.stat_block, 'save_hold'):
+            if target.stat_block and hasattr(target.stat_block, "save_hold"):
                 save_target = target.stat_block.save_hold
 
             if save_roll.total < save_target:
@@ -1786,21 +1809,25 @@ class CombatEngine:
             if not spell_entry.cast_today:
                 spell_data = self.spell_resolver.lookup_spell(spell_entry.spell_id)
                 if spell_data:
-                    available.append({
-                        "spell_id": spell_entry.spell_id,
-                        "name": spell_data.name,
-                        "level": spell_data.level,
-                        "range": spell_data.range,
-                        "duration": spell_data.duration,
-                        "requires_concentration": spell_data.requires_concentration,
-                    })
+                    available.append(
+                        {
+                            "spell_id": spell_entry.spell_id,
+                            "name": spell_data.name,
+                            "level": spell_data.level,
+                            "range": spell_data.range,
+                            "duration": spell_data.duration,
+                            "requires_concentration": spell_data.requires_concentration,
+                        }
+                    )
                 else:
                     # Spell not in resolver cache, return basic info
-                    available.append({
-                        "spell_id": spell_entry.spell_id,
-                        "name": spell_entry.spell_id,
-                        "cast_today": False,
-                    })
+                    available.append(
+                        {
+                            "spell_id": spell_entry.spell_id,
+                            "name": spell_entry.spell_id,
+                            "cast_today": False,
+                        }
+                    )
 
         return available
 
@@ -1883,10 +1910,7 @@ class CombatEngine:
 
         # Check target awareness
         surprise_status = self._combat_state.encounter.surprise_status
-        target_unaware = (
-            stealth_success or
-            surprise_status == SurpriseStatus.ENEMIES_SURPRISED
-        )
+        target_unaware = stealth_success or surprise_status == SurpriseStatus.ENEMIES_SURPRISED
         if not target_unaware:
             return {
                 "success": False,
@@ -1943,9 +1967,7 @@ class CombatEngine:
             else:
                 result["save_success"] = False
                 result["noticed"] = True
-                result["special_effects"].append(
-                    "Natural 1! Failed save - target noticed you!"
-                )
+                result["special_effects"].append("Natural 1! Failed save - target noticed you!")
             return result
 
         # Roll damage on hit
@@ -2111,9 +2133,7 @@ class CombatEngine:
             affected_count = min(affected_roll.total, len(undead_targets))
             result["affected_count"] = affected_count
             result["effect"] = "destroyed"
-            result["description"] = (
-                f"{affected_count} undead are destroyed by divine power!"
-            )
+            result["description"] = f"{affected_count} undead are destroyed by divine power!"
             # Kill the affected undead
             destroyed_names = []
             for i, undead in enumerate(undead_targets[:affected_count]):

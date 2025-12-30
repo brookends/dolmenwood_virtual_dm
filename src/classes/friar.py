@@ -36,13 +36,13 @@ FRIAR_ARMOUR_OF_FAITH = ClassAbility(
     scales_with_level=True,
     extra_data={
         "ac_bonus_by_level": {
-            1: 2,   # Levels 1-3
+            1: 2,  # Levels 1-3
             2: 2,
             3: 2,
-            4: 3,   # Levels 4-6
+            4: 3,  # Levels 4-6
             5: 3,
             6: 3,
-            7: 4,   # Levels 7-10
+            7: 4,  # Levels 7-10
             8: 4,
             9: 4,
             10: 4,
@@ -72,9 +72,7 @@ FRIAR_CULINARY_IMPLEMENTS = ClassAbility(
 FRIAR_SKILLS = ClassAbility(
     ability_id="friar_skills",
     name="Friar Skills",
-    description=(
-        "Friars have a Skill Target of 5 for Survival when foraging."
-    ),
+    description=("Friars have a Skill Target of 5 for Survival when foraging."),
     is_passive=True,
     extra_data={
         "skills": ["survival_foraging"],
@@ -329,12 +327,9 @@ FRIAR_DEFINITION = ClassDefinition(
         "are thus beloved by the common folk, whom they often aid where the "
         "Church does not."
     ),
-
     hit_die=HitDie.D4,
     prime_ability="INT,WIS",  # Dual prime abilities
-
     magic_type=MagicType.HOLY,
-
     armor_proficiencies=[
         ArmorProficiency.NONE,
         # Note: Armour of Faith provides AC bonus instead
@@ -343,9 +338,7 @@ FRIAR_DEFINITION = ClassDefinition(
         WeaponProficiency.SIMPLE,  # Club, dagger, sling, staff, torch
         # Also: holy water, oil (see weapons list)
     ],
-
     level_progression=FRIAR_LEVEL_PROGRESSION,
-
     abilities=[
         FRIAR_ARMOUR_OF_FAITH,
         FRIAR_CULINARY_IMPLEMENTS,
@@ -356,11 +349,9 @@ FRIAR_DEFINITION = ClassDefinition(
         FRIAR_POVERTY,
         FRIAR_TURN_UNDEAD,
     ],
-
     # Only mortals can be friars - fairies and demi-fey have no spiritual
     # connection with the deities of mortals
     restricted_kindreds=["elf", "grimalkin", "woodgrue", "mossling"],
-
     starting_equipment=[
         # Weapon (roll 1d6): 1. Club. 2. Dagger. 3–4. Sling + 20 stones. 5–6. Staff.
         "weapon_roll_1d6",
@@ -368,7 +359,6 @@ FRIAR_DEFINITION = ClassDefinition(
         "friars_habit",
         "wooden_holy_symbol",
     ],
-
     extra_data={
         "combat_aptitude": "Non-martial",
         "alignment_restriction": ["Lawful", "Neutral"],
@@ -399,7 +389,6 @@ FRIAR_DEFINITION = ClassDefinition(
             "character to perform a quest of atonement to regain favour."
         ),
     },
-
     source_book="Dolmenwood Player Book",
     source_page=66,
 )

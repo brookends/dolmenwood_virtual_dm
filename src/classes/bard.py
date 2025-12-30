@@ -38,15 +38,15 @@ BARD_SKILLS = ClassAbility(
         "skills": ["listen", "decipher_document", "legerdemain", "monster_lore"],
         # Skill Targets by level (lower is better, roll d6 >= target to succeed)
         "skill_targets": {
-            1:  {"listen": 6, "decipher_document": 6, "legerdemain": 5, "monster_lore": 5},
-            2:  {"listen": 5, "decipher_document": 6, "legerdemain": 5, "monster_lore": 5},
-            3:  {"listen": 5, "decipher_document": 6, "legerdemain": 5, "monster_lore": 4},
-            4:  {"listen": 5, "decipher_document": 5, "legerdemain": 5, "monster_lore": 4},
-            5:  {"listen": 5, "decipher_document": 5, "legerdemain": 4, "monster_lore": 4},
-            6:  {"listen": 4, "decipher_document": 5, "legerdemain": 4, "monster_lore": 4},
-            7:  {"listen": 4, "decipher_document": 5, "legerdemain": 4, "monster_lore": 3},
-            8:  {"listen": 4, "decipher_document": 4, "legerdemain": 4, "monster_lore": 3},
-            9:  {"listen": 4, "decipher_document": 4, "legerdemain": 3, "monster_lore": 3},
+            1: {"listen": 6, "decipher_document": 6, "legerdemain": 5, "monster_lore": 5},
+            2: {"listen": 5, "decipher_document": 6, "legerdemain": 5, "monster_lore": 5},
+            3: {"listen": 5, "decipher_document": 6, "legerdemain": 5, "monster_lore": 4},
+            4: {"listen": 5, "decipher_document": 5, "legerdemain": 5, "monster_lore": 4},
+            5: {"listen": 5, "decipher_document": 5, "legerdemain": 4, "monster_lore": 4},
+            6: {"listen": 4, "decipher_document": 5, "legerdemain": 4, "monster_lore": 4},
+            7: {"listen": 4, "decipher_document": 5, "legerdemain": 4, "monster_lore": 3},
+            8: {"listen": 4, "decipher_document": 4, "legerdemain": 4, "monster_lore": 3},
+            9: {"listen": 4, "decipher_document": 4, "legerdemain": 3, "monster_lore": 3},
             10: {"listen": 3, "decipher_document": 4, "legerdemain": 3, "monster_lore": 3},
             11: {"listen": 3, "decipher_document": 3, "legerdemain": 3, "monster_lore": 3},
             12: {"listen": 3, "decipher_document": 3, "legerdemain": 3, "monster_lore": 2},
@@ -289,33 +289,26 @@ BARD_DEFINITION = ClassDefinition(
         "Worldly and well-travelled, bards are storehouses of folklore and hearsay. "
         "Their music and songs are woven with magic, which can both protect and beguile."
     ),
-
     hit_die=HitDie.D6,
     prime_ability="CHA,DEX",  # Dual prime abilities
-
     magic_type=MagicType.NONE,  # Bardic music is magical but not spellcasting
-
     armor_proficiencies=[
         ArmorProficiency.LIGHT,
         ArmorProficiency.MEDIUM,
         # Note: No shields
     ],
     weapon_proficiencies=[
-        WeaponProficiency.SIMPLE,   # Small weapons
+        WeaponProficiency.SIMPLE,  # Small weapons
         WeaponProficiency.MARTIAL,  # Medium weapons
     ],
-
     level_progression=BARD_LEVEL_PROGRESSION,
-
     abilities=[
         BARD_SKILLS,
         BARD_COUNTER_CHARM,
         BARD_ENCHANTMENT,
     ],
-
     # No kindred restrictions
     restricted_kindreds=[],
-
     starting_equipment=[
         # Armour (roll 1d6): 1-2 None, 3-4 Leather, 5-6 Chainmail
         "armor_roll_1d6",
@@ -324,7 +317,6 @@ BARD_DEFINITION = ClassDefinition(
         # Class items
         "musical_instrument_stringed_or_wind",
     ],
-
     source_book="Dolmenwood Player Book",
     source_page=58,
 )

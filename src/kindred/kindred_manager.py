@@ -42,6 +42,7 @@ class KindredManager:
         # Import and register each kindred
         try:
             from src.kindred.breggle import BREGGLE_DEFINITION
+
             self.register(BREGGLE_DEFINITION)
             logger.info(f"Loaded kindred: {BREGGLE_DEFINITION.name}")
         except ImportError as e:
@@ -49,6 +50,7 @@ class KindredManager:
 
         try:
             from src.kindred.elf import ELF_DEFINITION
+
             self.register(ELF_DEFINITION)
             logger.info(f"Loaded kindred: {ELF_DEFINITION.name}")
         except ImportError as e:
@@ -56,6 +58,7 @@ class KindredManager:
 
         try:
             from src.kindred.grimalkin import GRIMALKIN_DEFINITION
+
             self.register(GRIMALKIN_DEFINITION)
             logger.info(f"Loaded kindred: {GRIMALKIN_DEFINITION.name}")
         except ImportError as e:
@@ -63,6 +66,7 @@ class KindredManager:
 
         try:
             from src.kindred.human import HUMAN_DEFINITION
+
             self.register(HUMAN_DEFINITION)
             logger.info(f"Loaded kindred: {HUMAN_DEFINITION.name}")
         except ImportError as e:
@@ -70,6 +74,7 @@ class KindredManager:
 
         try:
             from src.kindred.mossling import MOSSLING_DEFINITION
+
             self.register(MOSSLING_DEFINITION)
             logger.info(f"Loaded kindred: {MOSSLING_DEFINITION.name}")
         except ImportError as e:
@@ -77,6 +82,7 @@ class KindredManager:
 
         try:
             from src.kindred.woodgrue import WOODGRUE_DEFINITION
+
             self.register(WOODGRUE_DEFINITION)
             logger.info(f"Loaded kindred: {WOODGRUE_DEFINITION.name}")
         except ImportError as e:
@@ -131,9 +137,7 @@ class KindredManager:
             return kindred.get_ability(ability_id)
         return None
 
-    def get_abilities_for_level(
-        self, kindred_id: str, level: int
-    ) -> list[KindredAbility]:
+    def get_abilities_for_level(self, kindred_id: str, level: int) -> list[KindredAbility]:
         """
         Get all abilities available to a kindred at a given level.
 

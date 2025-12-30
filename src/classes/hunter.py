@@ -67,15 +67,15 @@ HUNTER_SKILLS = ClassAbility(
         "skills": ["alertness", "stalking", "survival", "tracking"],
         # Skill Targets by level (roll d6 >= target to succeed)
         "skill_targets": {
-            1:  {"alertness": 6, "stalking": 6, "survival": 5, "tracking": 5},
-            2:  {"alertness": 6, "stalking": 6, "survival": 4, "tracking": 5},
-            3:  {"alertness": 6, "stalking": 6, "survival": 4, "tracking": 4},
-            4:  {"alertness": 6, "stalking": 5, "survival": 4, "tracking": 4},
-            5:  {"alertness": 5, "stalking": 5, "survival": 4, "tracking": 4},
-            6:  {"alertness": 5, "stalking": 5, "survival": 3, "tracking": 4},
-            7:  {"alertness": 5, "stalking": 5, "survival": 3, "tracking": 3},
-            8:  {"alertness": 5, "stalking": 4, "survival": 3, "tracking": 3},
-            9:  {"alertness": 4, "stalking": 4, "survival": 3, "tracking": 3},
+            1: {"alertness": 6, "stalking": 6, "survival": 5, "tracking": 5},
+            2: {"alertness": 6, "stalking": 6, "survival": 4, "tracking": 5},
+            3: {"alertness": 6, "stalking": 6, "survival": 4, "tracking": 4},
+            4: {"alertness": 6, "stalking": 5, "survival": 4, "tracking": 4},
+            5: {"alertness": 5, "stalking": 5, "survival": 4, "tracking": 4},
+            6: {"alertness": 5, "stalking": 5, "survival": 3, "tracking": 4},
+            7: {"alertness": 5, "stalking": 5, "survival": 3, "tracking": 3},
+            8: {"alertness": 5, "stalking": 4, "survival": 3, "tracking": 3},
+            9: {"alertness": 4, "stalking": 4, "survival": 3, "tracking": 3},
             10: {"alertness": 4, "stalking": 3, "survival": 3, "tracking": 3},
             11: {"alertness": 4, "stalking": 3, "survival": 2, "tracking": 3},
             12: {"alertness": 4, "stalking": 3, "survival": 2, "tracking": 2},
@@ -140,9 +140,7 @@ HUNTER_SKILLS = ClassAbility(
 HUNTER_MISSILE_ATTACKS = ClassAbility(
     ability_id="hunter_missile_attacks",
     name="Missile Attacks",
-    description=(
-        "Hunters gain a +1 Attack bonus with all missile weapons."
-    ),
+    description=("Hunters gain a +1 Attack bonus with all missile weapons."),
     is_passive=True,
     extra_data={
         "missile_attack_bonus": 1,
@@ -320,12 +318,9 @@ HUNTER_DEFINITION = ClassDefinition(
         "knowledge of tracking, hunting, and survival is invaluable to any "
         "party travelling deep into Dolmenwood."
     ),
-
     hit_die=HitDie.D8,
     prime_ability="CON,DEX",  # Dual prime abilities
-
     magic_type=MagicType.NONE,
-
     armor_proficiencies=[
         ArmorProficiency.LIGHT,
         ArmorProficiency.SHIELDS,
@@ -333,9 +328,7 @@ HUNTER_DEFINITION = ClassDefinition(
     weapon_proficiencies=[
         WeaponProficiency.ALL,
     ],
-
     level_progression=HUNTER_LEVEL_PROGRESSION,
-
     abilities=[
         HUNTER_ANIMAL_COMPANION,
         HUNTER_SKILLS,
@@ -343,10 +336,8 @@ HUNTER_DEFINITION = ClassDefinition(
         HUNTER_TROPHIES,
         HUNTER_WAYFINDING,
     ],
-
     # No kindred restrictions
     restricted_kindreds=[],
-
     starting_equipment=[
         # Armour (roll 1d6): 1–3. Leather armour. 4–6. Leather armour + shield.
         "armor_roll_1d6",
@@ -355,7 +346,6 @@ HUNTER_DEFINITION = ClassDefinition(
         # 6. Sling + 20 stones.
         "weapon_roll_1d6_twice",
     ],
-
     extra_data={
         "combat_aptitude": "Martial",
         "small_character_note": (
@@ -363,7 +353,6 @@ HUNTER_DEFINITION = ClassDefinition(
             "starting equipment roll 3-4."
         ),
     },
-
     source_book="Dolmenwood Player Book",
     source_page=68,
 )

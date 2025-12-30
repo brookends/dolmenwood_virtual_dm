@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 # RESULT DATACLASSES
 # =============================================================================
 
+
 @dataclass
 class EncounterFactoryResult:
     """
@@ -56,6 +57,7 @@ class EncounterFactoryResult:
     Contains the EncounterState plus additional context useful for
     the DM Agent or other systems.
     """
+
     encounter_state: EncounterState
 
     # Original roll details
@@ -82,6 +84,7 @@ class EncounterFactoryResult:
 # =============================================================================
 # ENCOUNTER FACTORY
 # =============================================================================
+
 
 class EncounterFactory:
     """
@@ -162,9 +165,7 @@ class EncounterFactory:
 
         # Step 2: Roll surprise
         party_surprised, enemies_surprised = self.encounter_roller.roll_surprise()
-        surprise_status = self._determine_surprise_status(
-            party_surprised, enemies_surprised
-        )
+        surprise_status = self._determine_surprise_status(party_surprised, enemies_surprised)
 
         # Step 3: Roll encounter distance
         both_surprised = party_surprised and enemies_surprised
@@ -173,6 +174,7 @@ class EncounterFactory:
         else:
             # Dungeon: 2d6 × 10' (or 1d4 × 10' if both surprised)
             from src.data_models import DiceRoller
+
             if both_surprised:
                 distance = DiceRoller.roll("1d4", "Dungeon encounter distance").total * 10
             else:
@@ -287,9 +289,7 @@ class EncounterFactory:
             else:
                 # Fallback: create basic combatant
                 logger.warning(f"Monster '{monster_id}' not found, creating fallback")
-                combatants.append(self._create_basic_combatant(
-                    combatant_id, name
-                ))
+                combatants.append(self._create_basic_combatant(combatant_id, name))
 
         return combatants
 
@@ -321,6 +321,7 @@ class EncounterFactory:
         for i in range(rolled_encounter.number_appearing):
             # Roll a random level (1-5 range, weighted toward lower)
             from src.data_models import DiceRoller
+
             level_roll = DiceRoller.roll("1d6", "Adventurer level").total
             level = min(level_roll, 5)  # Cap at 5
 
@@ -331,18 +332,20 @@ class EncounterFactory:
 
             if adventurer:
                 adventurers.append(adventurer)
-                combatants.append(Combatant(
-                    combatant_id=adventurer.adventurer_id,
-                    name=adventurer.name,
-                    side="enemy",
-                    stat_block=adventurer.stat_block,
-                ))
+                combatants.append(
+                    Combatant(
+                        combatant_id=adventurer.adventurer_id,
+                        name=adventurer.name,
+                        side="enemy",
+                        stat_block=adventurer.stat_block,
+                    )
+                )
             else:
                 # Fallback
                 combatant_id = f"adventurer_{uuid.uuid4().hex[:8]}"
-                combatants.append(self._create_basic_combatant(
-                    combatant_id, f"{class_name} #{i + 1}"
-                ))
+                combatants.append(
+                    self._create_basic_combatant(combatant_id, f"{class_name} #{i + 1}")
+                )
 
         return combatants, adventurers
 
@@ -366,12 +369,14 @@ class EncounterFactory:
 
         for mortal in mortals:
             mortals_list.append(mortal)
-            combatants.append(Combatant(
-                combatant_id=mortal.mortal_id,
-                name=mortal.name,
-                side="enemy",  # Default to enemy, can change based on reaction
-                stat_block=mortal.stat_block,
-            ))
+            combatants.append(
+                Combatant(
+                    combatant_id=mortal.mortal_id,
+                    name=mortal.name,
+                    side="enemy",  # Default to enemy, can change based on reaction
+                    stat_block=mortal.stat_block,
+                )
+            )
 
         return combatants, mortals_list
 
@@ -384,12 +389,14 @@ class EncounterFactory:
 
         combatants = []
         for member in party.members:
-            combatants.append(Combatant(
-                combatant_id=member.adventurer_id,
-                name=member.name,
-                side="enemy",  # Default, changes based on alignment/reaction
-                stat_block=member.stat_block,
-            ))
+            combatants.append(
+                Combatant(
+                    combatant_id=member.adventurer_id,
+                    name=member.name,
+                    side="enemy",  # Default, changes based on alignment/reaction
+                    stat_block=member.stat_block,
+                )
+            )
 
         return combatants, party
 
@@ -564,6 +571,7 @@ def create_wilderness_encounter(
 # =============================================================================
 # INTEGRATED ENCOUNTER FUNCTIONS (Factory + Engine + State Machine)
 # =============================================================================
+
 
 def start_wilderness_encounter(
     controller: "GlobalController",
@@ -767,5 +775,6 @@ def start_settlement_encounter(
 
 # Type hint for GlobalController (avoid circular import)
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from src.game_state.global_controller import GlobalController

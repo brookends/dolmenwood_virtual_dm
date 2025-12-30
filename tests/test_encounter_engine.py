@@ -88,7 +88,9 @@ class TestEncounterStart:
 class TestSurprisePhase:
     """Tests for surprise determination."""
 
-    def test_resolve_surprise_neither_surprised(self, encounter_engine, basic_encounter, seeded_dice):
+    def test_resolve_surprise_neither_surprised(
+        self, encounter_engine, basic_encounter, seeded_dice
+    ):
         """Test when neither side is surprised."""
         encounter_engine.start_encounter(
             encounter=basic_encounter,
@@ -101,7 +103,9 @@ class TestSurprisePhase:
         assert isinstance(result, SurpriseResult)
         assert result.surprise_status in SurpriseStatus
 
-    def test_resolve_surprise_party_aware_cannot_be_surprised(self, encounter_engine, basic_encounter):
+    def test_resolve_surprise_party_aware_cannot_be_surprised(
+        self, encounter_engine, basic_encounter
+    ):
         """Test that aware party cannot be surprised."""
         encounter_engine.start_encounter(
             encounter=basic_encounter,

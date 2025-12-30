@@ -146,24 +146,31 @@ class TreasureTableManager:
         if not notation:
             return 0
 
-        if 'd' not in notation.lower():
+        if "d" not in notation.lower():
             return int(notation)
 
         modifier = 0
-        if '+' in notation:
-            dice_part, mod_part = notation.split('+')
+        if "+" in notation:
+            dice_part, mod_part = notation.split("+")
             modifier = int(mod_part)
-        elif '-' in notation:
-            dice_part, mod_part = notation.split('-')
+        elif "-" in notation:
+            dice_part, mod_part = notation.split("-")
             modifier = -int(mod_part)
         else:
             dice_part = notation
 
-        num_dice, die_size = dice_part.lower().split('d')
+        num_dice, die_size = dice_part.lower().split("d")
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
-        return DiceRoller.roll(f"{num_dice}d{die_size}+{modifier}" if modifier >= 0 else f"{num_dice}d{die_size}{modifier}", "treasure quantity").total
+        return DiceRoller.roll(
+            (
+                f"{num_dice}d{die_size}+{modifier}"
+                if modifier >= 0
+                else f"{num_dice}d{die_size}{modifier}"
+            ),
+            "treasure quantity",
+        ).total
 
     def _roll_d100(self) -> int:
         """Roll d100 (1-100)."""
@@ -174,9 +181,7 @@ class TreasureTableManager:
     # =========================================================================
 
     def roll_on_table(
-        self,
-        table_id: str,
-        context: Optional[TreasureTableContext] = None
+        self, table_id: str, context: Optional[TreasureTableContext] = None
     ) -> Optional[RollResult]:
         """
         Roll on a table by ID.
@@ -215,9 +220,7 @@ class TreasureTableManager:
     # =========================================================================
 
     def generate_treasure(
-        self,
-        components: list[TreasureComponent],
-        context: Optional[TreasureTableContext] = None
+        self, components: list[TreasureComponent], context: Optional[TreasureTableContext] = None
     ) -> TreasureResult:
         """
         Generate treasure from a list of components.
@@ -270,40 +273,29 @@ class TreasureTableManager:
                 result.art_objects.extend(items)
 
             elif component.treasure_type == TreasureType.MAGIC_ITEM:
-                items = self._generate_magic_items(
-                    quantity, component.magic_item_category, context
-                )
+                items = self._generate_magic_items(quantity, component.magic_item_category, context)
                 result.magic_items.extend(items)
 
         return result
 
-    def _generate_coins(
-        self,
-        component: TreasureComponent,
-        quantity: int
-    ) -> GeneratedTreasureItem:
+    def _generate_coins(self, component: TreasureComponent, quantity: int) -> GeneratedTreasureItem:
         """Generate a coin treasure item."""
         total = quantity * component.multiplier
         return GeneratedTreasureItem(
             treasure_type=TreasureType.COINS,
             coin_type=component.coin_type,
             coin_value=total,
-            quantity=1
+            quantity=1,
         )
 
     def _generate_gems(
-        self,
-        quantity: int,
-        context: Optional[TreasureTableContext] = None
+        self, quantity: int, context: Optional[TreasureTableContext] = None
     ) -> list[GeneratedTreasureItem]:
         """Generate gem treasure items."""
         items = []
 
         for _ in range(quantity):
-            item = GeneratedTreasureItem(
-                treasure_type=TreasureType.GEMS,
-                quantity=1
-            )
+            item = GeneratedTreasureItem(treasure_type=TreasureType.GEMS, quantity=1)
 
             # Roll gem value (from database table)
             gem_value_result = self.roll_on_table("gem_value", context)
@@ -323,18 +315,13 @@ class TreasureTableManager:
         return items
 
     def _generate_jewelry(
-        self,
-        quantity: int,
-        context: Optional[TreasureTableContext] = None
+        self, quantity: int, context: Optional[TreasureTableContext] = None
     ) -> list[GeneratedTreasureItem]:
         """Generate jewelry treasure items."""
         items = []
 
         for _ in range(quantity):
-            item = GeneratedTreasureItem(
-                treasure_type=TreasureType.JEWELRY,
-                quantity=1
-            )
+            item = GeneratedTreasureItem(treasure_type=TreasureType.JEWELRY, quantity=1)
 
             # Roll jewelry type
             jewelry_result = self.roll_on_table("jewelry", context)
@@ -368,18 +355,13 @@ class TreasureTableManager:
         return items
 
     def _generate_art_objects(
-        self,
-        quantity: int,
-        context: Optional[TreasureTableContext] = None
+        self, quantity: int, context: Optional[TreasureTableContext] = None
     ) -> list[GeneratedTreasureItem]:
         """Generate art object treasure items."""
         items = []
 
         for _ in range(quantity):
-            item = GeneratedTreasureItem(
-                treasure_type=TreasureType.ART_OBJECT,
-                quantity=1
-            )
+            item = GeneratedTreasureItem(treasure_type=TreasureType.ART_OBJECT, quantity=1)
 
             # Roll art object type
             art_result = self.roll_on_table("art_object", context)
@@ -416,16 +398,13 @@ class TreasureTableManager:
         self,
         quantity: int,
         category: Optional[MagicItemCategory] = None,
-        context: Optional[TreasureTableContext] = None
+        context: Optional[TreasureTableContext] = None,
     ) -> list[GeneratedTreasureItem]:
         """Generate magic item treasure items."""
         items = []
 
         for _ in range(quantity):
-            item = GeneratedTreasureItem(
-                treasure_type=TreasureType.MAGIC_ITEM,
-                quantity=1
-            )
+            item = GeneratedTreasureItem(treasure_type=TreasureType.MAGIC_ITEM, quantity=1)
 
             # Determine category if not specified
             if category:
@@ -450,9 +429,7 @@ class TreasureTableManager:
         return items
 
     def _generate_magic_item_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """
         Generate details for a magic item based on its category.
@@ -487,9 +464,7 @@ class TreasureTableManager:
             handler(item, context)
 
     def _generate_armour_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate armour magic item details from database tables."""
         # Roll armour type
@@ -519,9 +494,7 @@ class TreasureTableManager:
                 item.rolls["armour_oddity"] = oddity_result.roll
 
     def _generate_weapon_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate weapon magic item details from database tables."""
         # Roll weapon type
@@ -551,9 +524,7 @@ class TreasureTableManager:
                 item.rolls["weapon_oddity"] = oddity_result.roll
 
     def _generate_potion_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate potion magic item details from database tables."""
         potion_result = self.roll_on_table("potion", context)
@@ -562,9 +533,7 @@ class TreasureTableManager:
             item.rolls["potion"] = potion_result.roll
 
     def _generate_ring_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate ring magic item details from database tables."""
         ring_result = self.roll_on_table("ring", context)
@@ -578,9 +547,7 @@ class TreasureTableManager:
             item.rolls["ring_appearance"] = appearance_result.roll
 
     def _generate_rod_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate rod magic item details from database tables."""
         rod_result = self.roll_on_table("rod", context)
@@ -599,9 +566,7 @@ class TreasureTableManager:
             item.rolls["rod_power"] = power_result.roll
 
     def _generate_staff_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate staff magic item details from database tables."""
         staff_result = self.roll_on_table("staff", context)
@@ -620,9 +585,7 @@ class TreasureTableManager:
             item.rolls["staff_power"] = power_result.roll
 
     def _generate_wand_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate wand magic item details from database tables."""
         wand_result = self.roll_on_table("wand", context)
@@ -641,9 +604,7 @@ class TreasureTableManager:
             item.rolls["wand_spell"] = spell_result.roll
 
     def _generate_spell_book_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate spell book magic item details from database tables."""
         book_result = self.roll_on_table("spell_book", context)
@@ -662,9 +623,7 @@ class TreasureTableManager:
             item.rolls["language"] = language_result.roll
 
     def _generate_spell_scroll_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate spell scroll magic item details from database tables."""
         # Roll number of spells
@@ -692,9 +651,7 @@ class TreasureTableManager:
             item.rolls["language"] = language_result.roll
 
     def _generate_garment_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate magic garment details from database tables."""
         garment_result = self.roll_on_table("magic_garment", context)
@@ -703,9 +660,7 @@ class TreasureTableManager:
             item.rolls["magic_garment"] = garment_result.roll
 
     def _generate_amulet_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate amulet/talisman magic item details from database tables."""
         amulet_result = self.roll_on_table("amulet_talisman", context)
@@ -719,9 +674,7 @@ class TreasureTableManager:
             item.rolls["amulet_appearance"] = appearance_result.roll
 
     def _generate_crystal_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate magic crystal details from database tables."""
         crystal_result = self.roll_on_table("magic_crystal", context)
@@ -730,9 +683,7 @@ class TreasureTableManager:
             item.rolls["magic_crystal"] = crystal_result.roll
 
     def _generate_balm_oil_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate magic balm/oil details from database tables."""
         balm_result = self.roll_on_table("magic_balm_oil", context)
@@ -741,9 +692,7 @@ class TreasureTableManager:
             item.rolls["magic_balm_oil"] = balm_result.roll
 
     def _generate_wondrous_details(
-        self,
-        item: GeneratedTreasureItem,
-        context: Optional[TreasureTableContext] = None
+        self, item: GeneratedTreasureItem, context: Optional[TreasureTableContext] = None
     ) -> None:
         """Generate wondrous item details from database tables."""
         wondrous_result = self.roll_on_table("wondrous_item", context)

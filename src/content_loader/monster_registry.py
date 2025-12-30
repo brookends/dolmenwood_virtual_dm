@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MonsterLookupResult:
     """Result of a monster lookup operation."""
+
     monster: Optional[Monster] = None
     found: bool = False
     error: Optional[str] = None
@@ -38,6 +39,7 @@ class MonsterLookupResult:
 @dataclass
 class StatBlockResult:
     """Result of converting a monster/NPC to a StatBlock."""
+
     stat_block: Optional[StatBlock] = None
     source_type: str = ""  # "monster", "npc_generated", "npc_data"
     source_id: str = ""
@@ -53,6 +55,7 @@ class NPCStatRequest:
     NPCs can be specified in hex/location data as simple descriptions
     like "level 4 breggle fighter" or "3rd level human cleric".
     """
+
     description: str
     name: Optional[str] = None
     # Additional overrides
@@ -187,7 +190,7 @@ class MonsterRegistry:
     def _load_file(self, file_path: Path) -> None:
         """Load monsters from a single JSON file."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             error = f"Invalid JSON in {file_path}: {e}"
@@ -221,26 +224,24 @@ class MonsterRegistry:
         return Monster(
             # Core identification
             name=item.get("name", "Unknown Monster"),
-            monster_id=item.get("monster_id", item.get("name", "unknown").lower().replace(" ", "_")),
-
+            monster_id=item.get(
+                "monster_id", item.get("name", "unknown").lower().replace(" ", "_")
+            ),
             # Combat statistics
             armor_class=item.get("armor_class", 10),
             hit_dice=item.get("hit_dice", "1d8"),
             hp=item.get("hp", 4),
             level=item.get("level", 1),
             morale=item.get("morale", 7),
-
             # Movement
             movement=item.get("movement", "40'"),
             speed=item.get("speed", 40),
             burrow_speed=item.get("burrow_speed"),
             fly_speed=item.get("fly_speed"),
             swim_speed=item.get("swim_speed"),
-
             # Combat
             attacks=item.get("attacks", []),
             damage=item.get("damage", []),
-
             # Saving throws
             save_doom=item.get("save_doom", 14),
             save_ray=item.get("save_ray", 15),
@@ -248,41 +249,34 @@ class MonsterRegistry:
             save_blast=item.get("save_blast", 17),
             save_spell=item.get("save_spell", 18),
             saves_as=item.get("saves_as"),
-
             # Treasure
             treasure_type=item.get("treasure_type"),
             hoard=item.get("hoard"),
             possessions=item.get("possessions"),
-
             # Classification
             size=item.get("size", "Medium"),
             monster_type=item.get("monster_type", "Mortal"),
             sentience=item.get("sentience", "Sentient"),
             alignment=item.get("alignment", "Neutral"),
             intelligence=item.get("intelligence"),
-
             # Abilities
             special_abilities=item.get("special_abilities", []),
             immunities=item.get("immunities", []),
             resistances=item.get("resistances", []),
             vulnerabilities=item.get("vulnerabilities", []),
-
             # Description and behavior
             description=item.get("description"),
             behavior=item.get("behavior"),
             speech=item.get("speech"),
             traits=item.get("traits", []),
-
             # Encounter information
             number_appearing=item.get("number_appearing"),
             lair_percentage=item.get("lair_percentage"),
             encounter_scenarios=item.get("encounter_scenarios", []),
             lair_descriptions=item.get("lair_descriptions", []),
-
             # Experience and habitat
             xp_value=item.get("xp_value", 0),
             habitat=item.get("habitat", []),
-
             # Source tracking
             page_reference=item.get("page_reference", ""),
         )
@@ -387,10 +381,7 @@ class MonsterRegistry:
             List of matching Monster objects
         """
         type_lower = monster_type.lower()
-        return [
-            m for m in self._monsters.values()
-            if m.monster_type.lower() == type_lower
-        ]
+        return [m for m in self._monsters.values() if m.monster_type.lower() == type_lower]
 
     def get_monsters_by_level(self, level: int) -> list[Monster]:
         """
@@ -433,11 +424,7 @@ class MonsterRegistry:
             success=True,
         )
 
-    def _create_stat_block_from_monster(
-        self,
-        monster: Monster,
-        roll_hp: bool = True
-    ) -> StatBlock:
+    def _create_stat_block_from_monster(self, monster: Monster, roll_hp: bool = True) -> StatBlock:
         """
         Create a StatBlock from a Monster, optionally rolling HP.
 
@@ -460,11 +447,13 @@ class MonsterRegistry:
         for i, atk_str in enumerate(monster.attacks):
             damage = monster.damage[i] if i < len(monster.damage) else "1d6"
             bonus = self._parse_attack_bonus(atk_str, monster.level)
-            attack_list.append({
-                'name': atk_str,
-                'damage': damage,
-                'bonus': bonus,
-            })
+            attack_list.append(
+                {
+                    "name": atk_str,
+                    "damage": damage,
+                    "bonus": bonus,
+                }
+            )
 
         return StatBlock(
             armor_class=monster.armor_class,
@@ -490,7 +479,7 @@ class MonsterRegistry:
             Attack bonus as integer
         """
         # Try to find (+N) or (+N,
-        match = re.search(r'\(\+?(-?\d+)', attack_str)
+        match = re.search(r"\(\+?(-?\d+)", attack_str)
         if match:
             return int(match.group(1))
         return default_level
@@ -512,6 +501,7 @@ class MonsterRegistry:
         if self._npc_generator is None:
             try:
                 from src.npc.npc_generator import NPCGenerator
+
                 self._npc_generator = NPCGenerator()
             except ImportError as e:
                 return StatBlockResult(
@@ -539,7 +529,7 @@ class MonsterRegistry:
         # Create StatBlock from CharacterState
         hp = request.hp_override or character.hp_current
         ac = request.ac_override or character.armor_class
-        morale = request.morale_override or getattr(character, 'morale', 7)
+        morale = request.morale_override or getattr(character, "morale", 7)
 
         stat_block = StatBlock(
             armor_class=ac,
@@ -578,15 +568,16 @@ class MonsterRegistry:
         }
 
         weapon = class_weapons.get(
-            character.character_class.lower(),
-            {"name": "Weapon", "damage": "1d6"}
+            character.character_class.lower(), {"name": "Weapon", "damage": "1d6"}
         )
 
-        return [{
-            'name': f"{weapon['name']} (+{attack_bonus})",
-            'damage': weapon['damage'],
-            'bonus': attack_bonus,
-        }]
+        return [
+            {
+                "name": f"{weapon['name']} (+{attack_bonus})",
+                "damage": weapon["damage"],
+                "bonus": attack_bonus,
+            }
+        ]
 
     def create_combatant(
         self,
@@ -594,7 +585,7 @@ class MonsterRegistry:
         combatant_id: str,
         side: str = "enemy",
         name_override: Optional[str] = None,
-        roll_hp: bool = True
+        roll_hp: bool = True,
     ) -> Optional[Combatant]:
         """
         Create a Combatant from a monster, ready for combat.
@@ -677,10 +668,7 @@ class MonsterRegistry:
             return 1
 
         try:
-            roll = DiceRoller.roll(
-                monster.number_appearing,
-                f"Number appearing: {monster.name}"
-            )
+            roll = DiceRoller.roll(monster.number_appearing, f"Number appearing: {monster.name}")
             return max(1, roll.total)
         except Exception:
             return 1

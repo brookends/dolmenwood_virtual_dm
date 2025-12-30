@@ -50,7 +50,7 @@ BASIC_DETAILS = {
             2: "Female",
             3: "Male",
             4: "Male",
-        }
+        },
     },
     "age": {
         "die": "d6",
@@ -61,7 +61,7 @@ BASIC_DETAILS = {
             4: "Mature",
             5: "Old",
             6: "Decrepit",
-        }
+        },
     },
     "dress": {
         "die": "d8",
@@ -74,7 +74,7 @@ BASIC_DETAILS = {
             6: "Scant",
             7: "Tatty",
             8: "Uniform",
-        }
+        },
     },
     "feature": {
         "die": "d10",
@@ -89,7 +89,7 @@ BASIC_DETAILS = {
             8: "Short",
             9: "Tall",
             10: "Ugly",
-        }
+        },
     },
     "kindred": {
         "die": "d12",
@@ -106,7 +106,7 @@ BASIC_DETAILS = {
             10: "Human",
             11: "Mossling",
             12: "Mossling",
-        }
+        },
     },
 }
 
@@ -129,7 +129,6 @@ EVERYDAY_MORTAL_TYPES = {
         ],
         "roll_tables": {},
     },
-
     "crier": {
         "name": "Crier",
         "description": "Flamboyantly dressed officials carrying news to local settlements. Sometimes accompanied by fanfare-blowers.",
@@ -145,11 +144,10 @@ EVERYDAY_MORTAL_TYPES = {
                     4: "Lady Zoemina (duke's daughter) to marry Lord Ramius.",
                     5: "Strong youths to be trained for impending war.",
                     6: "Upcoming 2 week religious festival, travel banned.",
-                }
+                },
             }
         },
     },
-
     "fortune_teller": {
         "name": "Fortune-Teller",
         "description": "Minor oracles and seers—some genuine, some deluded, and some charlatans. Wander from settlement to settlement, consulting the fates in return for a small consideration.",
@@ -170,7 +168,7 @@ EVERYDAY_MORTAL_TYPES = {
                     4: "Woe. The proposed course of action ends in ruin.",
                     5: "Truth. Weal or woe, per the Referee's judgement of the likely outcome. Alternatively, a cryptic message or riddle.",
                     6: "Truth. Weal or woe, per the Referee's judgement of the likely outcome. Alternatively, a cryptic message or riddle.",
-                }
+                },
             },
             "method": {
                 "die": "d12",
@@ -187,11 +185,10 @@ EVERYDAY_MORTAL_TYPES = {
                     10: "Sparrow entrails",
                     11: "Spirit board",
                     12: "Tea leaves",
-                }
+                },
             },
         },
     },
-
     "lost_soul": {
         "name": "Lost Soul",
         "description": "Befuddled individuals utterly unaware of their current whereabouts, trying to find their way back home.",
@@ -207,7 +204,7 @@ EVERYDAY_MORTAL_TYPES = {
                     4: "Slept for 1d100 years, recently awoke.",
                     5: "Teleported by ley line discharge, now lost.",
                     6: "Wandered in Fairy for 2d100 years.",
-                }
+                },
             },
             "home": {
                 "die": "d10",
@@ -222,11 +219,10 @@ EVERYDAY_MORTAL_TYPES = {
                     8: "Prigwort (Hex 1106)",
                     9: "Woodcutters' Encampment (Hex 1109)",
                     10: "Servant at noble estate (roll 1d4: 1. Bogwitt Manor hex 1210, 2. Hall of Sleep hex 1304, 3. Harrowmoor Keep hex 1105, 4. Nodding Castle hex 0210)",
-                }
+                },
             },
         },
     },
-
     "merchant": {
         "name": "Merchant",
         "description": "Organised traders who travel between settlements in well-armed convoys, buying and selling trade goods.",
@@ -269,11 +265,10 @@ EVERYDAY_MORTAL_TYPES = {
                         "wealth": "1d100x6gp, 2d4 gems, 1d4 art objects",
                         "guards": "7 soldiers per wagon, 2 lieutenants per 3 wagons, 1 captain",
                     },
-                }
+                },
             },
         },
     },
-
     "pedlar": {
         "name": "Pedlar",
         "description": "Roving vendors of all manner of items, both quotidian and singular.",
@@ -286,7 +281,6 @@ EVERYDAY_MORTAL_TYPES = {
         ],
         "roll_tables": {},
     },
-
     "pilgrim": {
         "name": "Pilgrim",
         "description": "Zealous adherents of the Pluritine Church heading to a site of religious significance.",
@@ -308,11 +302,10 @@ EVERYDAY_MORTAL_TYPES = {
                     4: "Lost shrine (in an incorrect location)",
                     5: "The Cathedral of St Signis (Castle Brackenwold)",
                     6: "Three Martyrs Minster (High-Hankle)",
-                }
+                },
             },
         },
     },
-
     "priest": {
         "name": "Priest",
         "description": "Non-adventuring clergy of the Pluritine Church travelling from one settlement to another.",
@@ -334,11 +327,10 @@ EVERYDAY_MORTAL_TYPES = {
                     10: "Scholar",
                     11: "Scribe",
                     12: "Tithe collector",
-                }
+                },
             },
         },
     },
-
     "villager": {
         "name": "Villager",
         "description": "Common folk going about their day-to-day business, seldom venturing far from their home.",
@@ -360,7 +352,7 @@ EVERYDAY_MORTAL_TYPES = {
                     10: "Praying to a saint",
                     11: "Trysting",
                     12: "Whittling",
-                }
+                },
             },
         },
     },
@@ -402,6 +394,7 @@ CREATURE_ACTIVITY = {
 @dataclass
 class EverydayMortalType:
     """Definition of an everyday mortal type."""
+
     type_id: str
     name: str
     description: str

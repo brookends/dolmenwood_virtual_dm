@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 class EncounterPhase(str, Enum):
     """Phases of the encounter sequence."""
+
     AWARENESS = "awareness"
     SURPRISE = "surprise"
     DISTANCE = "distance"
@@ -49,6 +50,7 @@ class EncounterPhase(str, Enum):
 
 class EncounterOrigin(str, Enum):
     """Where the encounter originated from."""
+
     WILDERNESS = "wilderness"
     DUNGEON = "dungeon"
     SETTLEMENT = "settlement"
@@ -56,16 +58,18 @@ class EncounterOrigin(str, Enum):
 
 class EncounterAction(str, Enum):
     """Available actions during an encounter."""
-    ATTACK = "attack"           # Initiates combat
-    PARLEY = "parley"           # Attempt communication
-    EVASION = "evasion"         # Attempt to flee/avoid
-    WAIT = "wait"               # Hold position, observe
-    ENCHANTMENT = "enchantment" # Bard special action
+
+    ATTACK = "attack"  # Initiates combat
+    PARLEY = "parley"  # Attempt communication
+    EVASION = "evasion"  # Attempt to flee/avoid
+    WAIT = "wait"  # Hold position, observe
+    ENCHANTMENT = "enchantment"  # Bard special action
 
 
 @dataclass
 class AwarenessResult:
     """Result of awareness check."""
+
     party_aware: bool
     enemies_aware: bool
     party_had_prior_knowledge: bool = False
@@ -76,6 +80,7 @@ class AwarenessResult:
 @dataclass
 class SurpriseResult:
     """Result of surprise determination."""
+
     surprise_status: SurpriseStatus
     party_roll: int = 0
     enemy_roll: int = 0
@@ -88,6 +93,7 @@ class SurpriseResult:
 @dataclass
 class DistanceResult:
     """Result of distance determination."""
+
     distance_feet: int
     base_roll: int
     multiplier: int
@@ -99,6 +105,7 @@ class DistanceResult:
 @dataclass
 class InitiativeResult:
     """Result of initiative determination."""
+
     party_initiative: int
     enemy_initiative: int
     first_to_act: str  # "party", "enemy", or "simultaneous"
@@ -108,6 +115,7 @@ class InitiativeResult:
 @dataclass
 class ActionDeclaration:
     """A declared action by one side."""
+
     side: str  # "party" or "enemy"
     action: EncounterAction
     target: Optional[str] = None
@@ -117,6 +125,7 @@ class ActionDeclaration:
 @dataclass
 class EncounterRoundResult:
     """Result of processing one encounter round."""
+
     phase: EncounterPhase
     success: bool
     actions_declared: list[ActionDeclaration] = field(default_factory=list)
@@ -132,6 +141,7 @@ class EncounterRoundResult:
 @dataclass
 class EncounterEngineState:
     """Internal state of the encounter engine."""
+
     encounter: EncounterState
     origin: EncounterOrigin
     current_phase: EncounterPhase
@@ -249,10 +259,10 @@ class EncounterEngine:
                 "encounter_type": encounter.encounter_type.value,
                 "poi_name": poi_name,
                 "hex_id": hex_id,
-            }
+            },
         )
 
-        result = {
+        result: dict[str, Any] = {
             "encounter_started": True,
             "origin": origin.value,
             "encounter_type": encounter.encounter_type.value,
@@ -274,9 +284,7 @@ class EncounterEngine:
     # =========================================================================
 
     def _resolve_awareness(
-        self,
-        party_already_aware: bool,
-        enemies_already_aware: bool
+        self, party_already_aware: bool, enemies_already_aware: bool
     ) -> AwarenessResult:
         """
         Resolve the awareness phase.
@@ -293,9 +301,7 @@ class EncounterEngine:
         """
         if not self._state:
             return AwarenessResult(
-                party_aware=False,
-                enemies_aware=False,
-                message="No active encounter"
+                party_aware=False, enemies_aware=False, message="No active encounter"
             )
 
         # If either side was already aware (scouting, tracking, etc.)
@@ -350,8 +356,7 @@ class EncounterEngine:
         """
         if not self._state:
             return SurpriseResult(
-                surprise_status=SurpriseStatus.NO_SURPRISE,
-                message="No active encounter"
+                surprise_status=SurpriseStatus.NO_SURPRISE, message="No active encounter"
             )
 
         result = SurpriseResult(
@@ -361,14 +366,8 @@ class EncounterEngine:
         )
 
         # Check if either side was already aware (from awareness phase)
-        party_aware = (
-            self._state.awareness.party_aware
-            if self._state.awareness else False
-        )
-        enemies_aware = (
-            self._state.awareness.enemies_aware
-            if self._state.awareness else False
-        )
+        party_aware = self._state.awareness.party_aware if self._state.awareness else False
+        enemies_aware = self._state.awareness.enemies_aware if self._state.awareness else False
 
         # Roll surprise for unaware sides
         # 2-in-6 base chance to be surprised (roll 1-2)
@@ -438,7 +437,7 @@ class EncounterEngine:
                 base_roll=6,
                 multiplier=10,
                 is_outdoor=True,
-                message="No active encounter"
+                message="No active encounter",
             )
 
         is_outdoor = self._state.origin == EncounterOrigin.WILDERNESS
@@ -462,8 +461,10 @@ class EncounterEngine:
         )
 
         # If mutual surprise, roll 1d4 multiplier for closer encounter
-        if (self._state.surprise and
-            self._state.surprise.surprise_status == SurpriseStatus.MUTUAL_SURPRISE):
+        if (
+            self._state.surprise
+            and self._state.surprise.surprise_status == SurpriseStatus.MUTUAL_SURPRISE
+        ):
             surprise_mult = self.dice.roll_d6(1, "surprise distance modifier")
             # Use 1-4 range (reroll 5-6)
             mult_value = min(surprise_mult.total, 4)
@@ -510,7 +511,7 @@ class EncounterEngine:
                 party_initiative=0,
                 enemy_initiative=0,
                 first_to_act="simultaneous",
-                message="No active encounter"
+                message="No active encounter",
             )
 
         # Roll initiative
@@ -575,9 +576,7 @@ class EncounterEngine:
         """
         if not self._state:
             return EncounterRoundResult(
-                phase=EncounterPhase.ACTIONS,
-                success=False,
-                messages=["No active encounter"]
+                phase=EncounterPhase.ACTIONS, success=False, messages=["No active encounter"]
             )
 
         parameters = parameters or {}
@@ -608,11 +607,7 @@ class EncounterEngine:
 
         return result
 
-    def _handle_attack(
-        self,
-        actor: str,
-        result: EncounterRoundResult
-    ) -> EncounterRoundResult:
+    def _handle_attack(self, actor: str, result: EncounterRoundResult) -> EncounterRoundResult:
         """Handle attack action - transitions to combat."""
         if not self._state:
             return result
@@ -628,18 +623,14 @@ class EncounterEngine:
             context={
                 "attacker": actor,
                 "origin": self._state.origin.value,
-            }
+            },
         )
 
         self._state.current_phase = EncounterPhase.ENDED
 
         return result
 
-    def _handle_parley(
-        self,
-        actor: str,
-        result: EncounterRoundResult
-    ) -> EncounterRoundResult:
+    def _handle_parley(self, actor: str, result: EncounterRoundResult) -> EncounterRoundResult:
         """Handle parley action - roll reaction and potentially transition to social."""
         if not self._state:
             return result
@@ -660,29 +651,19 @@ class EncounterEngine:
             result.end_reason = "hostile_reaction"
             result.transition_to = "encounter_to_combat"
             self.controller.transition(
-                "encounter_to_combat",
-                context={"reason": "hostile_reaction"}
+                "encounter_to_combat", context={"reason": "hostile_reaction"}
             )
         elif result.reaction_result == ReactionResult.HOSTILE:
-            result.messages.append(
-                f"Hostile ({reaction_roll.total}) - They may attack"
-            )
+            result.messages.append(f"Hostile ({reaction_roll.total}) - They may attack")
             # May escalate or allow further parley
         elif result.reaction_result == ReactionResult.UNCERTAIN:
-            result.messages.append(
-                f"Uncertain ({reaction_roll.total}) - They are wary"
-            )
+            result.messages.append(f"Uncertain ({reaction_roll.total}) - They are wary")
         elif result.reaction_result == ReactionResult.INDIFFERENT:
-            result.messages.append(
-                f"Indifferent ({reaction_roll.total}) - They may negotiate"
-            )
+            result.messages.append(f"Indifferent ({reaction_roll.total}) - They may negotiate")
             result.encounter_ended = True
             result.end_reason = "parley_success"
             result.transition_to = "encounter_to_parley"
-            self.controller.transition(
-                "encounter_to_parley",
-                context={"reaction": "indifferent"}
-            )
+            self.controller.transition("encounter_to_parley", context={"reaction": "indifferent"})
         else:  # FRIENDLY (12+)
             result.messages.append(
                 f"Friendly ({reaction_roll.total}) - They are eager and friendly!"
@@ -690,10 +671,7 @@ class EncounterEngine:
             result.encounter_ended = True
             result.end_reason = "parley_success"
             result.transition_to = "encounter_to_parley"
-            self.controller.transition(
-                "encounter_to_parley",
-                context={"reaction": "friendly"}
-            )
+            self.controller.transition("encounter_to_parley", context={"reaction": "friendly"})
 
         # Update encounter state
         self._state.encounter.reaction_result = result.reaction_result
@@ -704,11 +682,7 @@ class EncounterEngine:
 
         return result
 
-    def _handle_evasion(
-        self,
-        actor: str,
-        result: EncounterRoundResult
-    ) -> EncounterRoundResult:
+    def _handle_evasion(self, actor: str, result: EncounterRoundResult) -> EncounterRoundResult:
         """
         Handle evasion action - attempt to flee the encounter.
 
@@ -730,11 +704,11 @@ class EncounterEngine:
         surprise = self._state.encounter.surprise_status
 
         # Can't evade if surprised
-        if (actor == "party" and surprise == SurpriseStatus.PARTY_SURPRISED):
+        if actor == "party" and surprise == SurpriseStatus.PARTY_SURPRISED:
             result.success = False
             result.messages.append("Cannot evade while surprised!")
             return result
-        if (actor == "enemy" and surprise == SurpriseStatus.ENEMIES_SURPRISED):
+        if actor == "enemy" and surprise == SurpriseStatus.ENEMIES_SURPRISED:
             result.success = False
             result.messages.append("Enemies cannot evade while surprised!")
             return result
@@ -781,11 +755,7 @@ class EncounterEngine:
             )
             result.encounter_ended = True
             result.end_reason = "evaded"
-            result.actions_resolved.append({
-                "action": "evasion",
-                "success": True,
-                **result_detail
-            })
+            result.actions_resolved.append({"action": "evasion", "success": True, **result_detail})
 
             # Transition back to origin state
             if self._state.origin == EncounterOrigin.WILDERNESS:
@@ -802,23 +772,14 @@ class EncounterEngine:
         else:
             result.success = False
             result.messages.append(
-                f"Evasion failed! (rolled {evasion_roll.total}, "
-                f"needed {target}+)"
+                f"Evasion failed! (rolled {evasion_roll.total}, " f"needed {target}+)"
             )
-            result.actions_resolved.append({
-                "action": "evasion",
-                "success": False,
-                **result_detail
-            })
+            result.actions_resolved.append({"action": "evasion", "success": False, **result_detail})
             # Other side may react
 
         return result
 
-    def _handle_wait(
-        self,
-        actor: str,
-        result: EncounterRoundResult
-    ) -> EncounterRoundResult:
+    def _handle_wait(self, actor: str, result: EncounterRoundResult) -> EncounterRoundResult:
         """Handle wait action - observe and hold position."""
         if not self._state:
             return result
@@ -827,12 +788,14 @@ class EncounterEngine:
         result.success = True
 
         # Waiting grants +1 to reaction if other side acts
-        result.actions_resolved.append({
-            "action": "wait",
-            "actor": actor,
-            "effect": "reaction_bonus",
-            "value": 1,
-        })
+        result.actions_resolved.append(
+            {
+                "action": "wait",
+                "actor": actor,
+                "effect": "reaction_bonus",
+                "value": 1,
+            }
+        )
 
         return result
 
@@ -841,7 +804,7 @@ class EncounterEngine:
         actor: str,
         target: Optional[str],
         parameters: dict[str, Any],
-        result: EncounterRoundResult
+        result: EncounterRoundResult,
     ) -> EncounterRoundResult:
         """
         Handle Bard enchantment action per Dolmenwood rules (p58-59).
@@ -942,11 +905,13 @@ class EncounterEngine:
                 "The enchantment has created a friendly disposition toward the bard."
             )
 
-        result.actions_resolved.append({
-            "action": "enchantment",
-            "actor": bard_id,
-            "result": enchantment_result,
-        })
+        result.actions_resolved.append(
+            {
+                "action": "enchantment",
+                "actor": bard_id,
+                "result": enchantment_result,
+            }
+        )
 
         return result
 
@@ -1037,7 +1002,8 @@ class EncounterEngine:
             "surprise_status": self._state.encounter.surprise_status.value,
             "reaction": (
                 self._state.encounter.reaction_result.value
-                if self._state.encounter.reaction_result else None
+                if self._state.encounter.reaction_result
+                else None
             ),
             "actors": self._state.encounter.actors,
             "round": self._state.current_round,
@@ -1076,14 +1042,11 @@ class EncounterEngine:
         if not self._state:
             return {"error": "No active encounter"}
 
-        result = {}
+        result: dict[str, Any] = {}
 
         # Run surprise if in that phase
         if self._state.current_phase == EncounterPhase.SURPRISE:
-            result["surprise"] = self.resolve_surprise(
-                party_surprise_mod,
-                enemy_surprise_mod
-            )
+            result["surprise"] = self.resolve_surprise(party_surprise_mod, enemy_surprise_mod)
 
         # Run distance if in that phase
         if self._state.current_phase == EncounterPhase.DISTANCE:
@@ -1091,15 +1054,10 @@ class EncounterEngine:
 
         # Run initiative if in that phase
         if self._state.current_phase == EncounterPhase.INITIATIVE:
-            result["initiative"] = self.resolve_initiative(
-                party_init_mod,
-                enemy_init_mod
-            )
+            result["initiative"] = self.resolve_initiative(party_init_mod, enemy_init_mod)
 
         result["current_phase"] = self._state.current_phase.value
-        result["ready_for_action"] = (
-            self._state.current_phase == EncounterPhase.ACTIONS
-        )
+        result["ready_for_action"] = self._state.current_phase == EncounterPhase.ACTIONS
 
         return result
 
@@ -1275,15 +1233,18 @@ class EncounterEngine:
                 if "day" in time_str.lower():
                     # Extract dice notation
                     import re
+
                     dice_match = re.match(r"(\d+d\d+)", time_str)
                     if dice_match:
                         roll = self.dice.roll(dice_match.group(1), "time dilation")
                         total_days += roll.total
-                        effects_applied.append({
-                            "effect": time_str,
-                            "rolled": roll.total,
-                            "description": effect.get("description", ""),
-                        })
+                        effects_applied.append(
+                            {
+                                "effect": time_str,
+                                "rolled": roll.total,
+                                "description": effect.get("description", ""),
+                            }
+                        )
 
         # Apply time passage to the controller
         if total_days > 0:

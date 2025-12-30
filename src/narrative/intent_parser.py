@@ -12,21 +12,23 @@ from typing import Any, Optional
 
 class ActionCategory(str, Enum):
     """High-level categories of player actions."""
-    SPELL = "spell"                 # Casting a spell or using magic
-    HAZARD = "hazard"               # Physical challenges (climb, jump, swim, etc.)
-    EXPLORATION = "exploration"     # Search, listen, probe
-    SOCIAL = "social"               # Parley, intimidate, persuade
-    COMBAT = "combat"               # Attack, defend, flee
-    SURVIVAL = "survival"           # Forage, fish, hunt, camp
-    MOVEMENT = "movement"           # Travel, enter location
-    INVENTORY = "inventory"         # Use item, equip, drop
-    CREATIVE = "creative"           # Non-standard problem solving
-    NARRATIVE = "narrative"         # Pure roleplay, no mechanics
-    UNKNOWN = "unknown"             # Could not classify
+
+    SPELL = "spell"  # Casting a spell or using magic
+    HAZARD = "hazard"  # Physical challenges (climb, jump, swim, etc.)
+    EXPLORATION = "exploration"  # Search, listen, probe
+    SOCIAL = "social"  # Parley, intimidate, persuade
+    COMBAT = "combat"  # Attack, defend, flee
+    SURVIVAL = "survival"  # Forage, fish, hunt, camp
+    MOVEMENT = "movement"  # Travel, enter location
+    INVENTORY = "inventory"  # Use item, equip, drop
+    CREATIVE = "creative"  # Non-standard problem solving
+    NARRATIVE = "narrative"  # Pure roleplay, no mechanics
+    UNKNOWN = "unknown"  # Could not classify
 
 
 class ActionType(str, Enum):
     """Specific action types within categories."""
+
     # Spell actions
     CAST_SPELL = "cast_spell"
     USE_MAGIC_ITEM = "use_magic_item"
@@ -42,7 +44,7 @@ class ActionType(str, Enum):
     # Exploration actions
     SEARCH = "search"
     LISTEN = "listen"
-    PROBE = "probe"                 # Using pole, pouring water, etc.
+    PROBE = "probe"  # Using pole, pouring water, etc.
     EXAMINE = "examine"
 
     # Social actions
@@ -85,39 +87,42 @@ class ActionType(str, Enum):
 
 class ResolutionType(str, Enum):
     """How an action should be mechanically resolved."""
-    AUTO_SUCCESS = "auto_success"       # Adventurer competency, trivial task
-    AUTO_FAIL = "auto_fail"             # Impossible action
-    CHECK_REQUIRED = "check_required"   # Standard ability/skill check
-    CHECK_ADVANTAGE = "check_advantage" # Check with bonus (creative solution)
+
+    AUTO_SUCCESS = "auto_success"  # Adventurer competency, trivial task
+    AUTO_FAIL = "auto_fail"  # Impossible action
+    CHECK_REQUIRED = "check_required"  # Standard ability/skill check
+    CHECK_ADVANTAGE = "check_advantage"  # Check with bonus (creative solution)
     CHECK_DISADVANTAGE = "check_disadvantage"  # Check with penalty
-    SAVE_REQUIRED = "save_required"     # Saving throw needed
-    NARRATIVE_ONLY = "narrative_only"   # No mechanical effect
-    COMBAT_TRIGGER = "combat_trigger"   # Transitions to combat
-    TIME_ONLY = "time_only"             # Just consumes time, no roll
-    RESOURCE_ONLY = "resource_only"     # Just consumes resources
+    SAVE_REQUIRED = "save_required"  # Saving throw needed
+    NARRATIVE_ONLY = "narrative_only"  # No mechanical effect
+    COMBAT_TRIGGER = "combat_trigger"  # Transitions to combat
+    TIME_ONLY = "time_only"  # Just consumes time, no roll
+    RESOURCE_ONLY = "resource_only"  # Just consumes resources
 
 
 class CheckType(str, Enum):
     """Types of ability checks per Dolmenwood rules."""
+
     STRENGTH = "strength"
     DEXTERITY = "dexterity"
     CONSTITUTION = "constitution"
     INTELLIGENCE = "intelligence"
     WISDOM = "wisdom"
     CHARISMA = "charisma"
-    SEARCH = "search"               # Search check (secret doors, traps)
-    LISTEN = "listen"               # Listen check
-    SURVIVAL = "survival"           # Survival check (foraging, hunting)
+    SEARCH = "search"  # Search check (secret doors, traps)
+    LISTEN = "listen"  # Listen check
+    SURVIVAL = "survival"  # Survival check (foraging, hunting)
     NONE = "none"
 
 
 class SaveType(str, Enum):
     """Saving throw types per Dolmenwood rules."""
-    DOOM = "doom"                   # Death/Poison
-    RAY = "ray"                     # Wands/Rays
-    HOLD = "hold"                   # Paralysis/Petrification
-    BLAST = "blast"                 # Breath Weapons
-    SPELL = "spell"                 # Spells/Magic
+
+    DOOM = "doom"  # Death/Poison
+    RAY = "ray"  # Wands/Rays
+    HOLD = "hold"  # Paralysis/Petrification
+    BLAST = "blast"  # Breath Weapons
+    SPELL = "spell"  # Spells/Magic
 
 
 @dataclass
@@ -128,41 +133,42 @@ class ParsedIntent:
     This is the JSON schema that the LLM will populate when
     parsing player input.
     """
+
     # Core classification
     action_category: ActionCategory
     action_type: ActionType
-    confidence: float = 1.0         # 0.0-1.0 confidence in classification
+    confidence: float = 1.0  # 0.0-1.0 confidence in classification
 
     # Original input
     raw_input: str = ""
 
     # Target information
-    target_type: Optional[str] = None       # "self", "creature", "object", "area", "door"
-    target_id: Optional[str] = None         # Specific ID if known
-    target_description: Optional[str] = None # "the goblin", "the locked door"
+    target_type: Optional[str] = None  # "self", "creature", "object", "area", "door"
+    target_id: Optional[str] = None  # Specific ID if known
+    target_description: Optional[str] = None  # "the goblin", "the locked door"
 
     # For spells specifically
-    spell_id: Optional[str] = None          # Matched spell_id from DB
-    spell_name: Optional[str] = None        # For fuzzy matching if id not found
+    spell_id: Optional[str] = None  # Matched spell_id from DB
+    spell_name: Optional[str] = None  # For fuzzy matching if id not found
 
     # For creative solutions
     proposed_approach: Optional[str] = None  # "pour water to reveal pit"
     narrative_description: Optional[str] = None  # Full description of action
 
     # Rule matching
-    applicable_rule: Optional[str] = None    # "p152 - Hidden Features"
+    applicable_rule: Optional[str] = None  # "p152 - Hidden Features"
     suggested_resolution: ResolutionType = ResolutionType.CHECK_REQUIRED
     suggested_check: CheckType = CheckType.NONE
     suggested_save: Optional[SaveType] = None
 
     # Modifiers
-    check_modifier: int = 0                  # Bonus/penalty to check
+    check_modifier: int = 0  # Bonus/penalty to check
 
     # Context flags
     requires_check: bool = True
     is_combat_action: bool = False
-    consumes_time: bool = True              # Does this take a Turn?
-    time_cost_turns: int = 1                # How many turns it takes
+    consumes_time: bool = True  # Does this take a Turn?
+    time_cost_turns: int = 1  # How many turns it takes
 
     # For ambiguous cases
     alternative_interpretations: list[str] = field(default_factory=list)
@@ -173,20 +179,23 @@ class ParsedIntent:
 @dataclass
 class IntentParserConfig:
     """Configuration for the intent parser."""
+
     # LLM settings
     use_semantic_spell_search: bool = True
     spell_match_threshold: float = 0.8
 
     # Known action patterns for quick matching
     # These bypass LLM for common actions
-    quick_patterns: dict[str, ActionType] = field(default_factory=lambda: {
-        "search": ActionType.SEARCH,
-        "listen": ActionType.LISTEN,
-        "attack": ActionType.ATTACK,
-        "flee": ActionType.FLEE,
-        "rest": ActionType.REST,
-        "camp": ActionType.CAMP,
-    })
+    quick_patterns: dict[str, ActionType] = field(
+        default_factory=lambda: {
+            "search": ActionType.SEARCH,
+            "listen": ActionType.LISTEN,
+            "attack": ActionType.ATTACK,
+            "flee": ActionType.FLEE,
+            "rest": ActionType.REST,
+            "camp": ActionType.CAMP,
+        }
+    )
 
 
 # Adventurer competency rules (p150)
@@ -262,8 +271,17 @@ def is_adventurer_competency(action_description: str) -> bool:
     """
     description_lower = action_description.lower()
     competency_keywords = [
-        "set up camp", "make camp", "light fire", "tie rope", "tie knot",
-        "pack gear", "basic swimming", "tread water", "value gem", "appraise",
-        "climb into tree", "lower branches",
+        "set up camp",
+        "make camp",
+        "light fire",
+        "tie rope",
+        "tie knot",
+        "pack gear",
+        "basic swimming",
+        "tread water",
+        "value gem",
+        "appraise",
+        "climb into tree",
+        "lower branches",
     ]
     return any(kw in description_lower for kw in competency_keywords)

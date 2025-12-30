@@ -37,6 +37,7 @@ from src.data_models import (
     CharacterState,
     RollTableEntry,
 )
+
 # Import narrative components (optional, may not be initialized yet)
 try:
     from src.narrative.narrative_resolver import (
@@ -46,6 +47,7 @@ try:
     )
     from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
     from src.narrative.spell_resolver import SpellResolver
+
     NARRATIVE_AVAILABLE = True
 except ImportError:
     NARRATIVE_AVAILABLE = False
@@ -63,6 +65,7 @@ logger = logging.getLogger(__name__)
 
 class DungeonActionType(str, Enum):
     """Types of actions that take a dungeon turn."""
+
     MOVE = "move"  # Move to adjacent room/corridor
     SEARCH = "search"  # Search 10x10 area
     LISTEN = "listen"  # Listen at door
@@ -82,6 +85,7 @@ class DungeonDoomResult(str, Enum):
 
     Used when characters fail to exit dungeon via the escape roll option.
     """
+
     ESCAPED_LOST_ITEMS = "escaped_lost_items"  # 1: Escaped, 1d6 items lost
     ESCAPED_1HP = "escaped_1hp"  # 2: Escaped, 1 HP remaining
     ESCAPED_1HP_ABILITY_LOSS = "escaped_1hp_ability_loss"  # 3: Escaped, 1 HP, -1 random ability
@@ -96,6 +100,7 @@ class DungeonDoomResult(str, Enum):
 
 class DoorState(str, Enum):
     """State of a door."""
+
     OPEN = "open"
     CLOSED = "closed"
     LOCKED = "locked"
@@ -106,6 +111,7 @@ class DoorState(str, Enum):
 
 class LightLevel(str, Enum):
     """Light levels in dungeon areas."""
+
     BRIGHT = "bright"  # Full visibility
     DIM = "dim"  # Reduced visibility, -2 to hit
     DARK = "dark"  # No visibility without light source
@@ -114,6 +120,7 @@ class LightLevel(str, Enum):
 @dataclass
 class DungeonRoom:
     """Represents a room or area in the dungeon."""
+
     room_id: str
     name: str = ""
     description: str = ""
@@ -133,6 +140,7 @@ class DungeonRoom:
 @dataclass
 class DungeonTurnResult:
     """Result of processing one dungeon turn."""
+
     success: bool
     action_type: DungeonActionType
     action_result: dict[str, Any] = field(default_factory=dict)
@@ -153,6 +161,7 @@ class DungeonState:
 
     Tracks exploration state, rest requirements, and escape modifiers.
     """
+
     dungeon_id: str
     name: str = ""
     current_room: str = ""
@@ -292,11 +301,7 @@ class DungeonEngine:
         speed = self._get_party_speed()
         return MovementCalculator.get_familiar_movement(speed)
 
-    def calculate_turns_for_route(
-        self,
-        distance_feet: int,
-        is_explored: bool = False
-    ) -> int:
+    def calculate_turns_for_route(self, distance_feet: int, is_explored: bool = False) -> int:
         """
         Calculate turns needed to travel a route.
 
@@ -338,7 +343,7 @@ class DungeonEngine:
         # Validate state
         if self.controller.current_state not in {
             GameState.WILDERNESS_TRAVEL,
-            GameState.SETTLEMENT_EXPLORATION
+            GameState.SETTLEMENT_EXPLORATION,
         }:
             return {"error": "Cannot enter dungeon from current state"}
 
@@ -371,17 +376,18 @@ class DungeonEngine:
             self._dungeon_state.rooms[entry_room] = DungeonRoom(room_id=entry_room)
 
         # Transition to dungeon exploration
-        self.controller.transition("enter_dungeon", context={
-            "dungeon_id": dungeon_id,
-            "entry_room": entry_room,
-            "poi_name": poi_config.get("poi_name") if poi_config else None,
-        })
+        self.controller.transition(
+            "enter_dungeon",
+            context={
+                "dungeon_id": dungeon_id,
+                "entry_room": entry_room,
+                "poi_name": poi_config.get("poi_name") if poi_config else None,
+            },
+        )
 
         # Update party location
         self.controller.set_party_location(
-            LocationType.DUNGEON_ROOM,
-            entry_room,
-            sub_location=dungeon_id
+            LocationType.DUNGEON_ROOM, entry_room, sub_location=dungeon_id
         )
 
         # Check if party has light
@@ -414,10 +420,13 @@ class DungeonEngine:
         dungeon_id = self._dungeon_state.dungeon_id if self._dungeon_state else "unknown"
 
         # Transition back to wilderness
-        self.controller.transition("exit_dungeon", context={
-            "dungeon_id": dungeon_id,
-            "turns_spent": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
-        })
+        self.controller.transition(
+            "exit_dungeon",
+            context={
+                "dungeon_id": dungeon_id,
+                "turns_spent": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
+            },
+        )
 
         result = {
             "dungeon_id": dungeon_id,
@@ -439,9 +448,7 @@ class DungeonEngine:
     # =========================================================================
 
     def execute_turn(
-        self,
-        action: DungeonActionType,
-        action_params: Optional[dict[str, Any]] = None
+        self, action: DungeonActionType, action_params: Optional[dict[str, Any]] = None
     ) -> DungeonTurnResult:
         """
         Execute one dungeon exploration turn per Dolmenwood rules (p162).
@@ -462,16 +469,12 @@ class DungeonEngine:
         # Validate state
         if self.controller.current_state != GameState.DUNGEON_EXPLORATION:
             return DungeonTurnResult(
-                success=False,
-                action_type=action,
-                warnings=["Not in DUNGEON_EXPLORATION state"]
+                success=False, action_type=action, warnings=["Not in DUNGEON_EXPLORATION state"]
             )
 
         if not self._dungeon_state:
             return DungeonTurnResult(
-                success=False,
-                action_type=action,
-                warnings=["No active dungeon"]
+                success=False, action_type=action, warnings=["No active dungeon"]
             )
 
         action_params = action_params or {}
@@ -545,7 +548,10 @@ class DungeonEngine:
             current_room.visited = True
 
         # 7. Request description (if callback registered and action warrants it)
-        if self._description_callback and action in {DungeonActionType.MOVE, DungeonActionType.SEARCH}:
+        if self._description_callback and action in {
+            DungeonActionType.MOVE,
+            DungeonActionType.SEARCH,
+        }:
             self._description_callback(
                 room_id=self._dungeon_state.current_room,
                 action=action.value,
@@ -554,11 +560,7 @@ class DungeonEngine:
 
         return result
 
-    def _resolve_action(
-        self,
-        action: DungeonActionType,
-        params: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _resolve_action(self, action: DungeonActionType, params: dict[str, Any]) -> dict[str, Any]:
         """Resolve a specific dungeon action."""
         handlers = {
             DungeonActionType.MOVE: self._handle_move,
@@ -617,9 +619,7 @@ class DungeonEngine:
 
         # Update party location
         self.controller.set_party_location(
-            LocationType.DUNGEON_ROOM,
-            exit_target,
-            sub_location=self._dungeon_state.dungeon_id
+            LocationType.DUNGEON_ROOM, exit_target, sub_location=self._dungeon_state.dungeon_id
         )
 
         return {
@@ -869,20 +869,14 @@ class DungeonEngine:
         # If only destination provided, try to find route through explored rooms
         if not route and destination:
             if destination not in self._dungeon_state.explored_rooms:
-                return {
-                    "success": False,
-                    "message": "Cannot fast travel to unexplored area"
-                }
+                return {"success": False, "message": "Cannot fast travel to unexplored area"}
             # Simplified: direct travel if destination is explored
             route = [self._dungeon_state.current_room, destination]
 
         # Verify all rooms in route are explored
         for room_id in route:
             if room_id not in self._dungeon_state.explored_rooms:
-                return {
-                    "success": False,
-                    "message": f"Route includes unexplored room: {room_id}"
-                }
+                return {"success": False, "message": f"Route includes unexplored room: {room_id}"}
 
         # Calculate Turns required (simplified: 1 Turn per room transition)
         turns_required = len(route) - 1
@@ -894,7 +888,7 @@ class DungeonEngine:
         if light_remaining < turns_required:
             return {
                 "success": False,
-                "message": f"Not enough light. Need {turns_required} Turns, have {light_remaining}"
+                "message": f"Not enough light. Need {turns_required} Turns, have {light_remaining}",
             }
 
         # Make wandering monster checks for the journey
@@ -906,10 +900,12 @@ class DungeonEngine:
                 # Check for wandering monster
                 roll = self.dice.roll_d6(1, f"fast travel monster check {turn + 1}")
                 if roll.total <= (1 + self._dungeon_state.alert_level):
-                    encounters.append({
-                        "turn": turn + 1,
-                        "room": route[turn + 1] if turn + 1 < len(route) else route[-1]
-                    })
+                    encounters.append(
+                        {
+                            "turn": turn + 1,
+                            "room": route[turn + 1] if turn + 1 < len(route) else route[-1],
+                        }
+                    )
                     break  # Stop at first encounter
 
         if encounters:
@@ -931,9 +927,7 @@ class DungeonEngine:
 
         # Update party location
         self.controller.set_party_location(
-            LocationType.DUNGEON_ROOM,
-            route[-1],
-            sub_location=self._dungeon_state.dungeon_id
+            LocationType.DUNGEON_ROOM, route[-1], sub_location=self._dungeon_state.dungeon_id
         )
 
         return {
@@ -1076,7 +1070,9 @@ class DungeonEngine:
         # Standard Dolmenwood check: 1-in-6 every 2 Turns
         if roll.total <= 1:
             surprise = self._check_dungeon_surprise()
-            distance = self._roll_dungeon_distance(mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE)
+            distance = self._roll_dungeon_distance(
+                mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE
+            )
 
             encounter = EncounterState(
                 encounter_type=EncounterType.MONSTER,
@@ -1086,15 +1082,18 @@ class DungeonEngine:
             )
 
             self.controller.set_encounter(encounter)
-            self.controller.transition("encounter_triggered", context={
-                "dungeon_id": self._dungeon_state.dungeon_id,
-                "room_id": self._dungeon_state.current_room,
-                "source": "wandering_monster",
-                # Pass roll tables for EncounterEngine to use
-                "roll_tables": self._dungeon_state.roll_tables,
-                "poi_name": self._dungeon_state.poi_name,
-                "hex_id": self._dungeon_state.hex_id,
-            })
+            self.controller.transition(
+                "encounter_triggered",
+                context={
+                    "dungeon_id": self._dungeon_state.dungeon_id,
+                    "room_id": self._dungeon_state.current_room,
+                    "source": "wandering_monster",
+                    # Pass roll tables for EncounterEngine to use
+                    "roll_tables": self._dungeon_state.roll_tables,
+                    "poi_name": self._dungeon_state.poi_name,
+                    "hex_id": self._dungeon_state.hex_id,
+                },
+            )
 
             return encounter
 
@@ -1382,7 +1381,7 @@ class DungeonEngine:
         self,
         has_map: Optional[bool] = None,
         known_exit_path: Optional[bool] = None,
-        dungeon_level: Optional[int] = None
+        dungeon_level: Optional[int] = None,
     ) -> None:
         """
         Update escape roll modifiers for the current dungeon.
@@ -1420,14 +1419,13 @@ class DungeonEngine:
 
         # Verify all rooms are explored
         unexplored = [
-            room_id for room_id in room_ids
-            if room_id not in self._dungeon_state.explored_rooms
+            room_id for room_id in room_ids if room_id not in self._dungeon_state.explored_rooms
         ]
 
         if unexplored:
             return {
                 "success": False,
-                "error": f"Cannot establish path through unexplored rooms: {unexplored}"
+                "error": f"Cannot establish path through unexplored rooms: {unexplored}",
             }
 
         self._dungeon_state.safe_path_to_exit = room_ids
@@ -1474,8 +1472,7 @@ class DungeonEngine:
             return {"active": False}
 
         visited_rooms = [
-            room_id for room_id, room in self._dungeon_state.rooms.items()
-            if room.visited
+            room_id for room_id, room in self._dungeon_state.rooms.items() if room.visited
         ]
 
         # Calculate turns until rest needed (p163)
@@ -1557,13 +1554,23 @@ class DungeonEngine:
 
         # Build context with dungeon-specific information
         action_context = context or {}
-        action_context.update({
-            "game_state": "dungeon_exploration",
-            "current_room": self._dungeon_state.current_room if self._dungeon_state else "unknown",
-            "dungeon_id": self._dungeon_state.dungeon_id if self._dungeon_state else "unknown",
-            "light_level": self._check_light_status().get("level", "dark") if self._dungeon_state else "dark",
-            "turns_in_dungeon": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
-        })
+        action_context.update(
+            {
+                "game_state": "dungeon_exploration",
+                "current_room": (
+                    self._dungeon_state.current_room if self._dungeon_state else "unknown"
+                ),
+                "dungeon_id": self._dungeon_state.dungeon_id if self._dungeon_state else "unknown",
+                "light_level": (
+                    self._check_light_status().get("level", "dark")
+                    if self._dungeon_state
+                    else "dark"
+                ),
+                "turns_in_dungeon": (
+                    self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0
+                ),
+            }
+        )
 
         # Resolve through NarrativeResolver
         result = self.narrative_resolver.resolve_player_input(
@@ -1575,6 +1582,10 @@ class DungeonEngine:
         # Apply any damage from the action
         for target_id, damage in result.apply_damage:
             self.controller.apply_damage(target_id, damage, "environmental")
+
+        # Apply any conditions
+        for target_id, condition in result.apply_conditions:
+            self.controller.apply_condition(target_id, condition, "narrative_action")
 
         return result
 
@@ -1724,13 +1735,15 @@ class DungeonEngine:
         Returns:
             Dictionary with spell casting results
         """
-        return self._handle_cast_spell({
-            "character_id": character_id,
-            "spell_name": spell_name,
-            "spell_id": spell_id,
-            "target_id": target_id,
-            "target_description": target_description,
-        })
+        return self._handle_cast_spell(
+            {
+                "character_id": character_id,
+                "spell_name": spell_name,
+                "spell_id": spell_id,
+                "target_id": target_id,
+                "target_description": target_description,
+            }
+        )
 
     # =========================================================================
     # DYNAMIC ROOM GENERATION (for POIs like The Spectral Manse)

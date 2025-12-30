@@ -322,12 +322,9 @@ CLERIC_DEFINITION = ClassDefinition(
         "determination, allowing them to roam freely and carry out the will "
         "of God as they see fit."
     ),
-
     hit_die=HitDie.D6,
     prime_ability="WIS",
-
     magic_type=MagicType.HOLY,
-
     armor_proficiencies=[
         ArmorProficiency.ALL,
         ArmorProficiency.SHIELDS,
@@ -337,9 +334,7 @@ CLERIC_DEFINITION = ClassDefinition(
         WeaponProficiency.ALL,
         # Note: Cannot use arcane or fairy magic weapons
     ],
-
     level_progression=CLERIC_LEVEL_PROGRESSION,
-
     abilities=[
         CLERIC_DETECT_HOLY_MAGIC,
         CLERIC_HOLY_MAGIC,
@@ -347,11 +342,9 @@ CLERIC_DEFINITION = ClassDefinition(
         CLERIC_TURN_UNDEAD,
         CLERIC_LANGUAGES,
     ],
-
     # Only mortals can be clerics - fairies and demi-fey have no spiritual
     # connection with the deities of mortals
     restricted_kindreds=["elf", "grimalkin", "woodgrue", "mossling"],
-
     starting_equipment=[
         # Armour (roll 1d6): 1. Leather. 2. Leather + shield. 3. Chainmail.
         # 4. Chainmail + shield. 5. Plate mail. 6. Plate mail + shield.
@@ -362,7 +355,6 @@ CLERIC_DEFINITION = ClassDefinition(
         # Class items
         "wooden_holy_symbol",
     ],
-
     extra_data={
         "alignment_restriction": ["Lawful", "Neutral"],
         "magic_item_restriction": (
@@ -392,7 +384,6 @@ CLERIC_DEFINITION = ClassDefinition(
             "character to perform a quest of atonement to regain favour."
         ),
     },
-
     source_book="Dolmenwood Player Book",
     source_page=60,
 )

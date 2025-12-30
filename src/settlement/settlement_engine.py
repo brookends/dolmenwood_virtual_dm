@@ -61,11 +61,12 @@ class SettlementSize(str, Enum):
 
     Population ranges determine available services and encounter tables.
     """
-    HAMLET = "hamlet"           # 20-49 inhabitants
-    VILLAGE = "village"         # 50-999 inhabitants
-    SMALL_TOWN = "small_town"   # 1,000-3,999 inhabitants
-    LARGE_TOWN = "large_town"   # 4,000-7,999 inhabitants
-    CITY = "city"               # 8,000+ inhabitants
+
+    HAMLET = "hamlet"  # 20-49 inhabitants
+    VILLAGE = "village"  # 50-999 inhabitants
+    SMALL_TOWN = "small_town"  # 1,000-3,999 inhabitants
+    LARGE_TOWN = "large_town"  # 4,000-7,999 inhabitants
+    CITY = "city"  # 8,000+ inhabitants
 
 
 class LifestyleType(str, Enum):
@@ -75,10 +76,11 @@ class LifestyleType(str, Enum):
     Optional rule for abstracting daily living expenses.
     Affects healing and costs during settlement stays.
     """
+
     WRETCHED = "wretched"  # Free, sleeping in alleys/begging - NO HEALING
-    POOR = "poor"          # 5sp/day, 15gp/month - poor quality inns
-    COMMON = "common"      # 2gp/day, 60gp/month - common quality inns
-    FANCY = "fancy"        # 10gp/day, 300gp/month - fancy quality inns
+    POOR = "poor"  # 5sp/day, 15gp/month - poor quality inns
+    COMMON = "common"  # 2gp/day, 60gp/month - common quality inns
+    FANCY = "fancy"  # 10gp/day, 300gp/month - fancy quality inns
 
 
 # Lifestyle costs and effects per Dolmenwood rules (p161)
@@ -116,6 +118,7 @@ class ServiceType(str, Enum):
 
     Settlement services include common shops and specialists.
     """
+
     INN = "inn"
     TAVERN = "tavern"
     BLACKSMITH = "blacksmith"
@@ -129,14 +132,15 @@ class ServiceType(str, Enum):
     ARMORER = "armorer"
     WEAPONSMITH = "weaponsmith"
     # Dolmenwood-specific services (p161)
-    APOTHECARY = "apothecary"        # Herbalist - identify 5gp, buy/sell at 50% (p161)
+    APOTHECARY = "apothecary"  # Herbalist - identify 5gp, buy/sell at 50% (p161)
     MONEY_CHANGER = "money_changer"  # Banking - 3% exchange, storage, loans (p161)
-    JEWELER = "jeweler"              # Gems/jewelry - sell at 100%, buy at 80% (p161)
+    JEWELER = "jeweler"  # Gems/jewelry - sell at 100%, buy at 80% (p161)
     HIRELING_HALL = "hireling_hall"  # Find specialists/retainers (p160)
 
 
 class BuildingType(str, Enum):
     """Types of buildings in settlements."""
+
     RESIDENCE = "residence"
     SHOP = "shop"
     TAVERN = "tavern"
@@ -151,6 +155,7 @@ class BuildingType(str, Enum):
 
 class ConversationTopic(str, Enum):
     """Topics for NPC conversations."""
+
     GREETING = "greeting"
     RUMORS = "rumors"
     LOCAL_INFO = "local_info"
@@ -166,6 +171,7 @@ class ConversationTopic(str, Enum):
 @dataclass
 class Building:
     """A building within a settlement."""
+
     building_id: str
     name: str
     building_type: BuildingType
@@ -180,6 +186,7 @@ class Building:
 @dataclass
 class Settlement:
     """A settlement in Dolmenwood."""
+
     settlement_id: str
     name: str
     size: SettlementSize
@@ -199,6 +206,7 @@ class Settlement:
 @dataclass
 class ConversationState:
     """State of an active conversation."""
+
     npc_id: str
     npc_name: str
     topics_discussed: list[ConversationTopic] = field(default_factory=list)
@@ -284,9 +292,7 @@ class SettlementEngine:
     # =========================================================================
 
     def enter_settlement(
-        self,
-        settlement_id: str,
-        settlement_data: Optional[Settlement] = None
+        self, settlement_id: str, settlement_data: Optional[Settlement] = None
     ) -> dict[str, Any]:
         """
         Enter a settlement.
@@ -321,16 +327,16 @@ class SettlementEngine:
         self._current_settlement = settlement_id
 
         # Transition to settlement exploration
-        self.controller.transition("enter_settlement", context={
-            "settlement_id": settlement_id,
-            "settlement_name": settlement.name,
-        })
+        self.controller.transition(
+            "enter_settlement",
+            context={
+                "settlement_id": settlement_id,
+                "settlement_name": settlement.name,
+            },
+        )
 
         # Update party location
-        self.controller.set_party_location(
-            LocationType.SETTLEMENT,
-            settlement_id
-        )
+        self.controller.set_party_location(LocationType.SETTLEMENT, settlement_id)
 
         result = {
             "settlement_id": settlement_id,
@@ -482,7 +488,7 @@ class SettlementEngine:
         self,
         planned_actions: list[str],
         active_at_night: bool = False,
-        lifestyle: Optional[LifestyleType] = None
+        lifestyle: Optional[LifestyleType] = None,
     ) -> dict[str, Any]:
         """
         Execute one settlement day following Dolmenwood procedures (p160).
@@ -557,13 +563,19 @@ class SettlementEngine:
             self._description_callback(
                 settlement_id=self._current_settlement,
                 name=self.get_current_settlement().name if self.get_current_settlement() else "",
-                size=self.get_current_settlement().size.value if self.get_current_settlement() else "",
+                size=(
+                    self.get_current_settlement().size.value
+                    if self.get_current_settlement()
+                    else ""
+                ),
                 time_of_day=self.controller.time_tracker.game_time.get_time_of_day().value,
             )
 
         return summary
 
-    def _check_settlement_encounter(self, time_of_day: TimeOfDay, night: bool = False) -> Optional[dict[str, Any]]:
+    def _check_settlement_encounter(
+        self, time_of_day: TimeOfDay, night: bool = False
+    ) -> Optional[dict[str, Any]]:
         """
         Settlement random encounter check per Dolmenwood rules (p160).
 
@@ -584,10 +596,7 @@ class SettlementEngine:
         return None
 
     def _apply_rest_healing(
-        self,
-        full_day_rest: bool,
-        nights: int = 1,
-        apply: bool = False
+        self, full_day_rest: bool, nights: int = 1, apply: bool = False
     ) -> dict[str, Any]:
         """
         Apply rest healing while in settlement per Dolmenwood rules (p160).
@@ -674,9 +683,7 @@ class SettlementEngine:
 
         # Update location
         self.controller.set_party_location(
-            LocationType.BUILDING,
-            building_id,
-            sub_location=self._current_settlement
+            LocationType.BUILDING, building_id, sub_location=self._current_settlement
         )
 
         return result
@@ -740,10 +747,13 @@ class SettlementEngine:
         )
 
         # Transition to social interaction
-        self.controller.transition("initiate_conversation", context={
-            "npc_id": npc_id,
-            "npc_name": npc.name,
-        })
+        self.controller.transition(
+            "initiate_conversation",
+            context={
+                "npc_id": npc_id,
+                "npc_name": npc.name,
+            },
+        )
 
         result = {
             "npc_id": npc_id,
@@ -766,9 +776,7 @@ class SettlementEngine:
         return result
 
     def continue_conversation(
-        self,
-        topic: ConversationTopic,
-        player_approach: str = ""
+        self, topic: ConversationTopic, player_approach: str = ""
     ) -> dict[str, Any]:
         """
         Continue an active conversation.
@@ -870,11 +878,13 @@ class SettlementEngine:
 
         # Log interaction
         if npc:
-            npc.interactions.append({
-                "date": str(self.controller.world_state.current_date),
-                "topics": [t.value for t in self._conversation.topics_discussed],
-                "disposition_change": self._conversation.disposition - npc.disposition,
-            })
+            npc.interactions.append(
+                {
+                    "date": str(self.controller.world_state.current_date),
+                    "topics": [t.value for t in self._conversation.topics_discussed],
+                    "disposition_change": self._conversation.disposition - npc.disposition,
+                }
+            )
 
         # Determine return state
         if self._current_settlement:
@@ -1000,7 +1010,7 @@ class SettlementEngine:
         self,
         service_type: ServiceType,
         building_id: Optional[str] = None,
-        parameters: Optional[dict[str, Any]] = None
+        parameters: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """
         Use a service in the settlement.

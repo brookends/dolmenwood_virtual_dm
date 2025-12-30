@@ -24,22 +24,26 @@ from typing import Optional
 # ENUMS
 # =============================================================================
 
+
 class TimeOfDay(str, Enum):
     """Time of day for encounter type determination."""
+
     DAYTIME = "daytime"
     NIGHTTIME = "nighttime"
 
 
 class LocationType(str, Enum):
     """Location type for encounter type determination."""
-    ROAD = "road"      # Road or track
-    WILD = "wild"      # Wilderness, off road
-    FIRE = "fire"      # Nighttime with fire/camp
+
+    ROAD = "road"  # Road or track
+    WILD = "wild"  # Wilderness, off road
+    FIRE = "fire"  # Nighttime with fire/camp
     NO_FIRE = "no_fire"  # Nighttime without fire
 
 
 class EncounterCategory(str, Enum):
     """Categories of encounters."""
+
     ANIMAL = "animal"
     MONSTER = "monster"
     MORTAL = "mortal"
@@ -102,9 +106,11 @@ ENCOUNTER_TYPE_TABLE = {
 # COMMON ENCOUNTER TABLES (d20)
 # =============================================================================
 
+
 @dataclass
 class EncounterEntry:
     """An entry in an encounter table."""
+
     name: str
     number_appearing: str
     monster_id: Optional[str] = None  # For MonsterRegistry lookup
@@ -117,7 +123,9 @@ class EncounterEntry:
             if self.monster_id is None:
                 # Convert name to monster_id: "Bat, Giant*" -> "bat_giant"
                 clean_name = self.name.rstrip("*").strip()
-                self.monster_id = clean_name.lower().replace(", ", "_").replace(" ", "_").replace("—", "_")
+                self.monster_id = (
+                    clean_name.lower().replace(", ", "_").replace(" ", "_").replace("—", "_")
+                )
         elif self.name.endswith("†"):
             self.entry_type = "adventurer"
         elif self.name.endswith("‡"):
@@ -127,7 +135,9 @@ class EncounterEntry:
         else:
             if self.monster_id is None:
                 # Convert name to monster_id
-                self.monster_id = self.name.lower().replace(", ", "_").replace(" ", "_").replace("—", "_")
+                self.monster_id = (
+                    self.name.lower().replace(", ", "_").replace(" ", "_").replace("—", "_")
+                )
 
 
 # Helper function to create entries
@@ -644,14 +654,13 @@ UNSEASON_TABLES = {
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def get_encounter_type_table(
-    time_of_day: TimeOfDay,
-    location_type: LocationType
+    time_of_day: TimeOfDay, location_type: LocationType
 ) -> dict[int, EncounterCategory]:
     """Get the encounter type table for the given conditions."""
     return ENCOUNTER_TYPE_TABLE.get(
-        (time_of_day, location_type),
-        ENCOUNTER_TYPE_TABLE[(TimeOfDay.DAYTIME, LocationType.WILD)]
+        (time_of_day, location_type), ENCOUNTER_TYPE_TABLE[(TimeOfDay.DAYTIME, LocationType.WILD)]
     )
 
 

@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MonsterFileMetadata:
     """Metadata from a monster JSON file."""
+
     source_file: str = ""
     pages: list[int] = field(default_factory=list)
     content_type: str = "monsters"
@@ -57,6 +58,7 @@ class MonsterFileMetadata:
 @dataclass
 class MonsterFileLoadResult:
     """Result of loading a single monster JSON file."""
+
     file_path: Path
     success: bool
     metadata: Optional[MonsterFileMetadata] = None
@@ -69,6 +71,7 @@ class MonsterFileLoadResult:
 @dataclass
 class MonsterDirectoryLoadResult:
     """Result of loading all monster files from a directory."""
+
     directory: Path
     files_processed: int = 0
     files_successful: int = 0
@@ -102,7 +105,7 @@ class MonsterDataLoader:
         self,
         pipeline: ContentPipeline,
         default_source_id: Optional[str] = None,
-        auto_register_source: bool = True
+        auto_register_source: bool = True,
     ):
         """
         Initialize the monster data loader.
@@ -136,10 +139,7 @@ class MonsterDataLoader:
             logger.info(f"Registered default source: {self.default_source_id}")
 
     def load_directory(
-        self,
-        directory: Path,
-        recursive: bool = False,
-        pattern: str = "*.json"
+        self, directory: Path, recursive: bool = False, pattern: str = "*.json"
     ) -> MonsterDirectoryLoadResult:
         """
         Load all monster JSON files from a directory.
@@ -210,7 +210,7 @@ class MonsterDataLoader:
             return result
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             result.errors.append(f"Invalid JSON: {e}")
@@ -252,7 +252,9 @@ class MonsterDataLoader:
                 else:
                     result.monsters_failed += 1
                     if import_result.error:
-                        result.errors.append(f"Monster {item.get('name', '?')}: {import_result.error}")
+                        result.errors.append(
+                            f"Monster {item.get('name', '?')}: {import_result.error}"
+                        )
 
             except Exception as e:
                 result.monsters_failed += 1
@@ -293,26 +295,24 @@ class MonsterDataLoader:
         return Monster(
             # Core identification
             name=item.get("name", "Unknown Monster"),
-            monster_id=item.get("monster_id", item.get("name", "unknown").lower().replace(" ", "_")),
-
+            monster_id=item.get(
+                "monster_id", item.get("name", "unknown").lower().replace(" ", "_")
+            ),
             # Combat statistics
             armor_class=item.get("armor_class", 10),
             hit_dice=item.get("hit_dice", "1d8"),
             hp=item.get("hp", 4),
             level=item.get("level", 1),
             morale=item.get("morale", 7),
-
             # Movement
             movement=item.get("movement", "40'"),
             speed=item.get("speed", 40),
             burrow_speed=item.get("burrow_speed"),
             fly_speed=item.get("fly_speed"),
             swim_speed=item.get("swim_speed"),
-
             # Combat
             attacks=item.get("attacks", []),
             damage=item.get("damage", []),
-
             # Saving throws
             save_doom=item.get("save_doom", 14),
             save_ray=item.get("save_ray", 15),
@@ -320,50 +320,39 @@ class MonsterDataLoader:
             save_blast=item.get("save_blast", 17),
             save_spell=item.get("save_spell", 18),
             saves_as=item.get("saves_as"),
-
             # Treasure
             treasure_type=item.get("treasure_type"),
             hoard=item.get("hoard"),
             possessions=item.get("possessions"),
-
             # Classification
             size=item.get("size", "Medium"),
             monster_type=item.get("monster_type", "Mortal"),
             sentience=item.get("sentience", "Sentient"),
             alignment=item.get("alignment", "Neutral"),
             intelligence=item.get("intelligence"),
-
             # Abilities
             special_abilities=item.get("special_abilities", []),
             immunities=item.get("immunities", []),
             resistances=item.get("resistances", []),
             vulnerabilities=item.get("vulnerabilities", []),
-
             # Description and behavior
             description=item.get("description"),
             behavior=item.get("behavior"),
             speech=item.get("speech"),
             traits=item.get("traits", []),
-
             # Encounter information
             number_appearing=item.get("number_appearing"),
             lair_percentage=item.get("lair_percentage"),
             encounter_scenarios=item.get("encounter_scenarios", []),
             lair_descriptions=item.get("lair_descriptions", []),
-
             # Experience and habitat
             xp_value=item.get("xp_value", 0),
             habitat=item.get("habitat", []),
-
             # Source tracking
             page_reference=item.get("page_reference", ""),
         )
 
-    def _add_monster_to_pipeline(
-        self,
-        monster: Monster,
-        source: SourceReference
-    ) -> ImportResult:
+    def _add_monster_to_pipeline(self, monster: Monster, source: SourceReference) -> ImportResult:
         """
         Add a monster to the ContentPipeline.
 
@@ -388,78 +377,67 @@ class MonsterDataLoader:
             content_type=ContentType.MONSTER,
             data=data,
             source=source,
-            tags=tags
+            tags=tags,
         )
 
     def _monster_to_dict(self, monster: Monster) -> dict[str, Any]:
         """Convert Monster dataclass to dictionary for storage."""
         return {
             # Core identification
-            'name': monster.name,
-            'monster_id': monster.monster_id,
-
+            "name": monster.name,
+            "monster_id": monster.monster_id,
             # Combat statistics
-            'armor_class': monster.armor_class,
-            'hit_dice': monster.hit_dice,
-            'hp': monster.hp,
-            'level': monster.level,
-            'morale': monster.morale,
-
+            "armor_class": monster.armor_class,
+            "hit_dice": monster.hit_dice,
+            "hp": monster.hp,
+            "level": monster.level,
+            "morale": monster.morale,
             # Movement
-            'movement': monster.movement,
-            'speed': monster.speed,
-            'burrow_speed': monster.burrow_speed,
-            'fly_speed': monster.fly_speed,
-            'swim_speed': monster.swim_speed,
-
+            "movement": monster.movement,
+            "speed": monster.speed,
+            "burrow_speed": monster.burrow_speed,
+            "fly_speed": monster.fly_speed,
+            "swim_speed": monster.swim_speed,
             # Combat
-            'attacks': monster.attacks,
-            'damage': monster.damage,
-
+            "attacks": monster.attacks,
+            "damage": monster.damage,
             # Saving throws
-            'save_doom': monster.save_doom,
-            'save_ray': monster.save_ray,
-            'save_hold': monster.save_hold,
-            'save_blast': monster.save_blast,
-            'save_spell': monster.save_spell,
-            'saves_as': monster.saves_as,
-
+            "save_doom": monster.save_doom,
+            "save_ray": monster.save_ray,
+            "save_hold": monster.save_hold,
+            "save_blast": monster.save_blast,
+            "save_spell": monster.save_spell,
+            "saves_as": monster.saves_as,
             # Treasure
-            'treasure_type': monster.treasure_type,
-            'hoard': monster.hoard,
-            'possessions': monster.possessions,
-
+            "treasure_type": monster.treasure_type,
+            "hoard": monster.hoard,
+            "possessions": monster.possessions,
             # Classification
-            'size': monster.size,
-            'monster_type': monster.monster_type,
-            'sentience': monster.sentience,
-            'alignment': monster.alignment,
-            'intelligence': monster.intelligence,
-
+            "size": monster.size,
+            "monster_type": monster.monster_type,
+            "sentience": monster.sentience,
+            "alignment": monster.alignment,
+            "intelligence": monster.intelligence,
             # Abilities
-            'special_abilities': monster.special_abilities,
-            'immunities': monster.immunities,
-            'resistances': monster.resistances,
-            'vulnerabilities': monster.vulnerabilities,
-
+            "special_abilities": monster.special_abilities,
+            "immunities": monster.immunities,
+            "resistances": monster.resistances,
+            "vulnerabilities": monster.vulnerabilities,
             # Description and behavior
-            'description': monster.description,
-            'behavior': monster.behavior,
-            'speech': monster.speech,
-            'traits': monster.traits,
-
+            "description": monster.description,
+            "behavior": monster.behavior,
+            "speech": monster.speech,
+            "traits": monster.traits,
             # Encounter information
-            'number_appearing': monster.number_appearing,
-            'lair_percentage': monster.lair_percentage,
-            'encounter_scenarios': monster.encounter_scenarios,
-            'lair_descriptions': monster.lair_descriptions,
-
+            "number_appearing": monster.number_appearing,
+            "lair_percentage": monster.lair_percentage,
+            "encounter_scenarios": monster.encounter_scenarios,
+            "lair_descriptions": monster.lair_descriptions,
             # Experience and habitat
-            'xp_value': monster.xp_value,
-            'habitat': monster.habitat,
-
+            "xp_value": monster.xp_value,
+            "habitat": monster.habitat,
             # Source tracking
-            'page_reference': monster.page_reference,
+            "page_reference": monster.page_reference,
         }
 
     def scan_directory(self, directory: Path) -> list[Path]:
@@ -493,7 +471,7 @@ class MonsterDataLoader:
             return False, ["File not found"]
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             return False, [f"Invalid JSON: {e}"]
@@ -524,8 +502,7 @@ class MonsterDataLoader:
 
 
 def load_all_monsters(
-    pipeline: ContentPipeline,
-    data_dir: Optional[Path] = None
+    pipeline: ContentPipeline, data_dir: Optional[Path] = None
 ) -> MonsterDirectoryLoadResult:
     """
     Convenience function to load all monsters from the default directory.

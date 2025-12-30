@@ -16,41 +16,42 @@ from typing import Any, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from src.data_models import CharacterState, DiceRoller, ArmorWeight
 
-from src.narrative.intent_parser import (
-    ActionType, ResolutionType, CheckType, ParsedIntent
-)
+from src.narrative.intent_parser import ActionType, ResolutionType, CheckType, ParsedIntent
 
 
 class HazardType(str, Enum):
     """Types of hazards per Dolmenwood rules."""
+
     # Physical challenges
-    CLIMBING = "climbing"           # p150
-    COLD = "cold"                   # p150
-    DARKNESS = "darkness"           # p150
-    DIVING = "diving"               # Swimming underwater with breath tracking
-    DOOR_STUCK = "door_stuck"       # p151
-    DOOR_LOCKED = "door_locked"     # p151
-    DOOR_LISTEN = "door_listen"     # p151
-    EXHAUSTION = "exhaustion"       # p151
-    FALLING = "falling"             # p151
-    HUNGER = "hunger"               # p153
-    THIRST = "thirst"               # p153
-    JUMPING = "jumping"             # p153
-    SWIMMING = "swimming"           # p154
-    SUFFOCATION = "suffocation"     # p154
-    TRAP = "trap"                   # p155
+    CLIMBING = "climbing"  # p150
+    COLD = "cold"  # p150
+    DARKNESS = "darkness"  # p150
+    DIVING = "diving"  # Swimming underwater with breath tracking
+    DOOR_STUCK = "door_stuck"  # p151
+    DOOR_LOCKED = "door_locked"  # p151
+    DOOR_LISTEN = "door_listen"  # p151
+    EXHAUSTION = "exhaustion"  # p151
+    FALLING = "falling"  # p151
+    HUNGER = "hunger"  # p153
+    THIRST = "thirst"  # p153
+    JUMPING = "jumping"  # p153
+    SWIMMING = "swimming"  # p154
+    SUFFOCATION = "suffocation"  # p154
+    TRAP = "trap"  # p155
 
 
 class DarknessLevel(str, Enum):
     """Light levels affecting visibility."""
-    BRIGHT = "bright"               # Normal vision
-    LOW_LIGHT = "low_light"         # -2 Attack, half Speed
-    PITCH_DARK = "pitch_dark"       # -4 Attack/AC/Saves, Speed 10
+
+    BRIGHT = "bright"  # Normal vision
+    LOW_LIGHT = "low_light"  # -2 Attack, half Speed
+    PITCH_DARK = "pitch_dark"  # -4 Attack/AC/Saves, Speed 10
 
 
 @dataclass
 class HazardResult:
     """Result of resolving a hazard."""
+
     success: bool
     hazard_type: HazardType
     action_type: ActionType
@@ -96,6 +97,7 @@ class DivingState:
     - Swimming is at half speed
     - Armor imposes penalties on swimming checks
     """
+
     character_id: str
     rounds_underwater: int = 0
     max_rounds: int = 10  # Will be set from CON score
@@ -196,10 +198,10 @@ HUNGER_EFFECTS_MORTAL = {
 }
 
 # Jump distances (p153)
-JUMP_TRIVIAL_LONG = 5   # feet with 20' run-up
-JUMP_CHECK_LONG = 10    # feet with Strength Check
-JUMP_TRIVIAL_HIGH = 3   # feet with 20' run-up
-JUMP_CHECK_HIGH = 5     # feet with Strength Check
+JUMP_TRIVIAL_LONG = 5  # feet with 20' run-up
+JUMP_CHECK_LONG = 10  # feet with Strength Check
+JUMP_TRIVIAL_HIGH = 3  # feet with 20' run-up
+JUMP_CHECK_HIGH = 5  # feet with Strength Check
 
 # Armor jump modifiers (p153)
 JUMP_ARMOR_MODIFIERS = {
@@ -224,7 +226,7 @@ TRAP_TRIGGER_CHANCE = 2  # X-in-6
 # A character can survive for up to 1 Round (10 seconds) per point of Constitution
 # before suffocating to death
 SECONDS_PER_ROUND = 10  # 1 round = 10 seconds
-ROUNDS_PER_TURN = 6     # 1 turn = 60 seconds = 6 rounds
+ROUNDS_PER_TURN = 6  # 1 turn = 60 seconds = 6 rounds
 
 # Foraging yields (p152)
 FORAGING_YIELDS = {
@@ -250,13 +252,11 @@ class HazardResolver:
             dice_roller: Optional dice roller (will create one if not provided)
         """
         from src.data_models import DiceRoller
+
         self.dice = dice_roller or DiceRoller()
 
     def resolve_hazard(
-        self,
-        hazard_type: HazardType,
-        character: "CharacterState",
-        **kwargs: Any
+        self, hazard_type: HazardType, character: "CharacterState", **kwargs: Any
     ) -> HazardResult:
         """
         Resolve a hazard for a character.
@@ -294,7 +294,7 @@ class HazardResolver:
             success=False,
             hazard_type=hazard_type,
             action_type=ActionType.UNKNOWN,
-            description=f"Unknown hazard type: {hazard_type}"
+            description=f"Unknown hazard type: {hazard_type}",
         )
 
     def _resolve_climbing(
@@ -302,7 +302,7 @@ class HazardResolver:
         character: "CharacterState",
         height_feet: int = 10,
         is_trivial: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve a climbing attempt (p150).
@@ -316,7 +316,7 @@ class HazardResolver:
                 hazard_type=HazardType.CLIMBING,
                 action_type=ActionType.CLIMB,
                 description="Trivial climb completed without difficulty",
-                narrative_hints=["character climbs easily"]
+                narrative_hints=["character climbs easily"],
             )
 
         # Make DEX check
@@ -339,7 +339,7 @@ class HazardResolver:
                 check_target=target,
                 check_result=check_result,
                 check_modifier=dex_mod,
-                narrative_hints=["character finds handholds", "steady progress upward"]
+                narrative_hints=["character finds handholds", "steady progress upward"],
             )
         else:
             # Fall at halfway point
@@ -359,14 +359,11 @@ class HazardResolver:
                 check_result=check_result,
                 check_modifier=dex_mod,
                 narrative_hints=["grip slips", "tumbles down"],
-                nested_results=[fall_result]
+                nested_results=[fall_result],
             )
 
     def _resolve_cold(
-        self,
-        character: "CharacterState",
-        has_protection: bool = False,
-        **kwargs: Any
+        self, character: "CharacterState", has_protection: bool = False, **kwargs: Any
     ) -> HazardResult:
         """
         Resolve cold exposure (p150).
@@ -379,7 +376,7 @@ class HazardResolver:
                 hazard_type=HazardType.COLD,
                 action_type=ActionType.NARRATIVE_ACTION,
                 description="Protected from cold",
-                narrative_hints=["winter cloak keeps character warm"]
+                narrative_hints=["winter cloak keeps character warm"],
             )
 
         damage_roll = self.dice.roll(COLD_DAMAGE_PER_DAY, "Cold damage")
@@ -391,14 +388,14 @@ class HazardResolver:
             description=f"Suffered {damage_roll.total} cold damage",
             damage_dealt=damage_roll.total,
             damage_type="cold",
-            narrative_hints=["fingers go numb", "shivering uncontrollably"]
+            narrative_hints=["fingers go numb", "shivering uncontrollably"],
         )
 
     def _resolve_darkness(
         self,
         character: "CharacterState",
         darkness_level: DarknessLevel = DarknessLevel.PITCH_DARK,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve darkness penalties (p150).
@@ -414,10 +411,11 @@ class HazardResolver:
             action_type=ActionType.NARRATIVE_ACTION,
             description=f"Operating in {darkness_level.value}",
             penalties_applied=penalties,
-            narrative_hints=[
-                "can barely see",
-                "stumbling in darkness"
-            ] if darkness_level != DarknessLevel.BRIGHT else []
+            narrative_hints=(
+                ["can barely see", "stumbling in darkness"]
+                if darkness_level != DarknessLevel.BRIGHT
+                else []
+            ),
         )
 
     def _resolve_diving(
@@ -427,7 +425,7 @@ class HazardResolver:
         rounds_to_spend: int = 1,
         armor_weight: str = "unarmoured",
         action: str = "dive",  # "dive", "swim", "surface", "action"
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve diving/underwater exploration with breath tracking.
@@ -466,7 +464,7 @@ class HazardResolver:
                 description="Surfaced successfully, catching breath",
                 rounds_underwater=0,
                 rounds_remaining=con_score,
-                narrative_hints=["breaks the surface", "gasps for air", "breathes deeply"]
+                narrative_hints=["breaks the surface", "gasps for air", "breathes deeply"],
             )
 
         # Handle initial dive
@@ -487,7 +485,11 @@ class HazardResolver:
                     conditions_applied=["dead"],
                     rounds_underwater=diving_state.rounds_underwater,
                     rounds_remaining=0,
-                    narrative_hints=["lungs burn", "darkness closes in", "cannot hold breath any longer"]
+                    narrative_hints=[
+                        "lungs burn",
+                        "darkness closes in",
+                        "cannot hold breath any longer",
+                    ],
                 )
 
         # Check swimming ability (for movement actions)
@@ -560,10 +562,7 @@ class HazardResolver:
         return state
 
     def _resolve_door_stuck(
-        self,
-        character: "CharacterState",
-        has_tools: bool = False,
-        **kwargs: Any
+        self, character: "CharacterState", has_tools: bool = False, **kwargs: Any
     ) -> HazardResult:
         """
         Resolve forcing a stuck door (p151).
@@ -593,8 +592,8 @@ class HazardResolver:
             turns_spent=1,
             narrative_hints=[
                 "door bursts open" if success else "door holds firm",
-                "loud noise echoes" if not success else ""
-            ]
+                "loud noise echoes" if not success else "",
+            ],
         )
 
         if not success:
@@ -607,7 +606,7 @@ class HazardResolver:
         character: "CharacterState",
         has_key: bool = False,
         can_pick: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve a locked door (p151).
@@ -620,7 +619,7 @@ class HazardResolver:
                 hazard_type=HazardType.DOOR_LOCKED,
                 action_type=ActionType.NARRATIVE_ACTION,
                 description="Unlocked door with key",
-                narrative_hints=["key turns smoothly in lock"]
+                narrative_hints=["key turns smoothly in lock"],
             )
 
         if can_pick:
@@ -631,7 +630,7 @@ class HazardResolver:
                 action_type=ActionType.PICK_LOCK,
                 description="Lock picked successfully",
                 turns_spent=1,
-                narrative_hints=["tumblers click into place"]
+                narrative_hints=["tumblers click into place"],
             )
 
         return HazardResult(
@@ -639,7 +638,7 @@ class HazardResolver:
             hazard_type=HazardType.DOOR_LOCKED,
             action_type=ActionType.NARRATIVE_ACTION,
             description="Door is locked",
-            narrative_hints=["lock holds fast", "need key or other means"]
+            narrative_hints=["lock holds fast", "need key or other means"],
         )
 
     def _resolve_door_listen(
@@ -647,7 +646,7 @@ class HazardResolver:
         character: "CharacterState",
         monsters_present: bool = False,
         monsters_silent: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve listening at a door (p151).
@@ -685,25 +684,19 @@ class HazardResolver:
             turns_spent=1,
             narrative_hints=[
                 "presses ear against door",
-                "strains to hear" if not success else "hears something moving"
-            ]
+                "strains to hear" if not success else "hears something moving",
+            ],
         )
 
     def _resolve_exhaustion(
-        self,
-        character: "CharacterState",
-        exhaustion_sources: int = 1,
-        **kwargs: Any
+        self, character: "CharacterState", exhaustion_sources: int = 1, **kwargs: Any
     ) -> HazardResult:
         """
         Resolve exhaustion effects (p151).
 
         -1 penalty to Attack and Damage per source, max -4.
         """
-        penalty = min(
-            exhaustion_sources * EXHAUSTION_PENALTY_PER_SOURCE,
-            EXHAUSTION_MAX_PENALTY
-        )
+        penalty = min(exhaustion_sources * EXHAUSTION_PENALTY_PER_SOURCE, EXHAUSTION_MAX_PENALTY)
 
         return HazardResult(
             success=True,  # Just applies penalties
@@ -712,14 +705,11 @@ class HazardResolver:
             description=f"Exhaustion penalty: {penalty}",
             penalties_applied={"attack": penalty, "damage": penalty},
             conditions_applied=["exhausted"],
-            narrative_hints=["weary limbs", "struggling to focus"]
+            narrative_hints=["weary limbs", "struggling to focus"],
         )
 
     def _resolve_falling(
-        self,
-        character: "CharacterState",
-        height_feet: int = 10,
-        **kwargs: Any
+        self, character: "CharacterState", height_feet: int = 10, **kwargs: Any
     ) -> HazardResult:
         """
         Resolve falling damage (p151).
@@ -736,10 +726,7 @@ class HazardResolver:
             description=f"Fell {height_feet} feet, took {damage_roll.total} damage",
             damage_dealt=damage_roll.total,
             damage_type="falling",
-            narrative_hints=[
-                "crashes to the ground",
-                "painful landing"
-            ]
+            narrative_hints=["crashes to the ground", "painful landing"],
         )
 
     def _resolve_hunger(
@@ -747,7 +734,7 @@ class HazardResolver:
         character: "CharacterState",
         days_without_food: int = 1,
         is_fairy: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve hunger effects (p153).
@@ -778,7 +765,7 @@ class HazardResolver:
             description=description,
             penalties_applied=effects,
             conditions_applied=["hungry"] if days_without_food > 0 else [],
-            narrative_hints=hints
+            narrative_hints=hints,
         )
 
     def _resolve_jumping(
@@ -788,7 +775,7 @@ class HazardResolver:
         is_high_jump: bool = False,
         has_runup: bool = True,
         armor_weight: str = "unarmoured",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve a jump attempt (p153).
@@ -807,7 +794,7 @@ class HazardResolver:
                 hazard_type=HazardType.JUMPING,
                 action_type=ActionType.JUMP,
                 description=f"Easily jumped {distance_feet} feet",
-                narrative_hints=["clears the gap with ease"]
+                narrative_hints=["clears the gap with ease"],
             )
 
         # Check if impossible
@@ -817,7 +804,7 @@ class HazardResolver:
                 hazard_type=HazardType.JUMPING,
                 action_type=ActionType.JUMP,
                 description=f"Cannot jump {distance_feet} feet - too far",
-                narrative_hints=["impossible distance"]
+                narrative_hints=["impossible distance"],
             )
 
         # Strength check required
@@ -843,8 +830,8 @@ class HazardResolver:
             check_modifier=total_mod,
             narrative_hints=[
                 "leaps across" if success else "falls short",
-                "lands safely" if success else "tumbles"
-            ]
+                "lands safely" if success else "tumbles",
+            ],
         )
 
     def _resolve_swimming(
@@ -852,7 +839,7 @@ class HazardResolver:
         character: "CharacterState",
         armor_weight: str = "unarmoured",
         rough_waters: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve swimming (p154).
@@ -873,7 +860,7 @@ class HazardResolver:
                 action_type=ActionType.SWIM,
                 description="Swimming at half speed",
                 penalties_applied={"speed_multiplier": 0.5},
-                narrative_hints=["strokes through the water"]
+                narrative_hints=["strokes through the water"],
             )
 
         # STR check required
@@ -898,7 +885,7 @@ class HazardResolver:
                 check_target=target,
                 check_result=check_result,
                 check_modifier=total_mod,
-                narrative_hints=["struggles but stays afloat"]
+                narrative_hints=["struggles but stays afloat"],
             )
         else:
             return HazardResult(
@@ -912,14 +899,11 @@ class HazardResolver:
                 check_result=check_result,
                 check_modifier=total_mod,
                 conditions_applied=["drowning"],
-                narrative_hints=["sinks beneath the surface", "armor drags down"]
+                narrative_hints=["sinks beneath the surface", "armor drags down"],
             )
 
     def _resolve_suffocation(
-        self,
-        character: "CharacterState",
-        rounds_elapsed: int = 0,
-        **kwargs: Any
+        self, character: "CharacterState", rounds_elapsed: int = 0, **kwargs: Any
     ) -> HazardResult:
         """
         Resolve suffocation (p154).
@@ -937,7 +921,7 @@ class HazardResolver:
                 action_type=ActionType.NARRATIVE_ACTION,
                 description="Suffocated to death",
                 conditions_applied=["dead"],
-                narrative_hints=["lungs burn", "darkness closes in"]
+                narrative_hints=["lungs burn", "darkness closes in"],
             )
 
         return HazardResult(
@@ -948,8 +932,8 @@ class HazardResolver:
             conditions_applied=["holding_breath"],
             narrative_hints=[
                 f"can hold breath for {rounds_remaining} more rounds",
-                "chest tightens" if rounds_remaining < 5 else ""
-            ]
+                "chest tightens" if rounds_remaining < 5 else "",
+            ],
         )
 
     def _resolve_trap(
@@ -958,7 +942,7 @@ class HazardResolver:
         trap_type: str = "generic",
         trap_damage: str = "1d6",
         trigger_chance: int = TRAP_TRIGGER_CHANCE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve triggering a trap (p155).
@@ -980,8 +964,8 @@ class HazardResolver:
                 check_target=trigger_chance,
                 narrative_hints=[
                     "mechanism clicks but doesn't fire",
-                    "feels pressure plate shift slightly"
-                ]
+                    "feels pressure plate shift slightly",
+                ],
             )
 
         # Trap triggered - apply effects
@@ -997,10 +981,7 @@ class HazardResolver:
             check_made=True,
             check_result=trigger_roll.total,
             check_target=trigger_chance,
-            narrative_hints=[
-                "trap springs",
-                f"{trap_type} strikes"
-            ]
+            narrative_hints=["trap springs", f"{trap_type} strikes"],
         )
 
     def resolve_foraging(
@@ -1009,7 +990,7 @@ class HazardResolver:
         method: str = "foraging",
         season: str = "normal",
         full_day: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve finding food in the wild (p152).
@@ -1038,7 +1019,7 @@ class HazardResolver:
                 check_made=True,
                 check_result=roll.total + bonus,
                 check_target=target,
-                narrative_hints=["slim pickings", "nothing edible found"]
+                narrative_hints=["slim pickings", "nothing edible found"],
             )
 
         # Determine yield
@@ -1061,7 +1042,7 @@ class HazardResolver:
                 check_made=True,
                 check_result=roll.total + bonus,
                 check_target=target,
-                narrative_hints=["tracks lead to quarry", "game spotted ahead"]
+                narrative_hints=["tracks lead to quarry", "game spotted ahead"],
             )
 
         yield_roll = self.dice.roll(yield_dice, f"{method} yield")
@@ -1088,7 +1069,7 @@ class HazardResolver:
         # Build narrative hints
         hints = [
             f"gathered {yield_roll.total} fresh rations",
-            "basket fills with edibles" if method == "foraging" else "fish on the line"
+            "basket fills with edibles" if method == "foraging" else "fish on the line",
         ]
         if special_yields:
             for special in special_yields:
@@ -1102,7 +1083,7 @@ class HazardResolver:
             check_made=True,
             check_result=roll.total + bonus,
             check_target=target,
-            narrative_hints=hints
+            narrative_hints=hints,
         )
 
         # Store special yields in result for caller

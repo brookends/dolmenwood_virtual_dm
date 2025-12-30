@@ -19,6 +19,7 @@ import json
 
 class PromptSchemaType(str, Enum):
     """Types of prompt schemas."""
+
     EXPLORATION_DESCRIPTION = "exploration_description"
     ENCOUNTER_FRAMING = "encounter_framing"
     COMBAT_NARRATION = "combat_narration"
@@ -42,6 +43,7 @@ class PromptSchemaType(str, Enum):
 @dataclass
 class PromptSchema:
     """Base class for prompt schemas."""
+
     schema_type: PromptSchemaType
     inputs: dict[str, Any]
     instructions: str = ""
@@ -91,6 +93,7 @@ all mechanical resolutions. You bring the world to life through evocative prose.
 @dataclass
 class ExplorationDescriptionInputs:
     """Inputs for exploration description schema."""
+
     current_state: str  # GameState enum value
     location_summary: str  # From LocationState
     sensory_tags: list[str]  # ["damp", "echoing", "dim"]
@@ -103,6 +106,7 @@ class ExplorationDescriptionInputs:
 @dataclass
 class ExplorationDescriptionOutput:
     """Output structure for exploration description."""
+
     sensory_description: str  # What they see, hear, smell
     atmosphere: str  # Emotional tone
 
@@ -190,6 +194,7 @@ Remember: Describe only. No actions, no suggestions, no hidden dangers."""
 @dataclass
 class EncounterFramingInputs:
     """Inputs for encounter framing schema."""
+
     encounter_type: str  # Monster name or NPC type
     number_appearing: int  # How many
     distance_feet: int  # Determined by system
@@ -203,6 +208,7 @@ class EncounterFramingInputs:
 @dataclass
 class EncounterFramingOutput:
     """Output structure for encounter framing."""
+
     initial_sight: str  # First visual impression
     notable_details: str  # Distinctive features
 
@@ -294,6 +300,7 @@ Remember: Visual description only. No actions, no speech, no intentions."""
 @dataclass
 class ResolvedAction:
     """A combat action that has been mechanically resolved."""
+
     actor: str  # Who acted
     action: str  # What they did
     target: str  # Who they targeted
@@ -305,6 +312,7 @@ class ResolvedAction:
 @dataclass
 class CombatNarrationInputs:
     """Inputs for combat narration schema."""
+
     round_number: int  # Current round
     resolved_actions: list[ResolvedAction]  # Already determined outcomes
     damage_results: dict[str, int]  # Who took how much damage
@@ -316,6 +324,7 @@ class CombatNarrationInputs:
 @dataclass
 class CombatNarrationOutput:
     """Output structure for combat narration."""
+
     narration: str  # Dramatic description of what happened
 
 
@@ -372,11 +381,11 @@ SPECIFIC CONSTRAINTS:
         for action in inputs.resolved_actions:
             if isinstance(action, dict):
                 action_line = f"- {action.get('actor', 'Someone')} {action.get('action', 'acts')}"
-                if action.get('target'):
+                if action.get("target"):
                     action_line += f" targeting {action['target']}"
-                if action.get('result'):
+                if action.get("result"):
                     action_line += f" -> {action['result']}"
-                if action.get('damage'):
+                if action.get("damage"):
                     action_line += f" ({action['damage']} damage)"
                 actions_text.append(action_line)
             else:
@@ -415,6 +424,7 @@ Remember: Describe ONLY what is listed above. Add no new outcomes."""
 @dataclass
 class NPCDialogueInputs:
     """Inputs for NPC dialogue schema."""
+
     npc_name: str
     npc_personality: str  # Brief personality description
     npc_voice: str  # Speech patterns, accent hints
@@ -429,6 +439,7 @@ class NPCDialogueInputs:
 @dataclass
 class NPCDialogueOutput:
     """Output structure for NPC dialogue."""
+
     dialogue: str  # What NPC says
     body_language: str  # Non-verbal cues
     hidden_reaction: str  # Internal thoughts (DM reference)
@@ -525,6 +536,7 @@ Remember: Stay in character. Never reveal hidden topics."""
 @dataclass
 class FailureConsequenceInputs:
     """Inputs for failure consequence description schema."""
+
     failed_action: str  # What was attempted
     failure_type: str  # Missed attack, failed save, botched skill
     visible_warning: str  # Warning signs that were present
@@ -535,6 +547,7 @@ class FailureConsequenceInputs:
 @dataclass
 class FailureConsequenceOutput:
     """Output structure for failure consequence description."""
+
     description: str  # Narrative of what went wrong
 
 
@@ -610,6 +623,7 @@ Remember: Describe ONLY the consequence listed. Add nothing extra."""
 @dataclass
 class DowntimeSummaryInputs:
     """Inputs for downtime summary schema."""
+
     days_elapsed: int  # How long downtime lasted
     activities: list[str]  # What characters did
     world_events: list[str]  # What happened in the world
@@ -623,6 +637,7 @@ class DowntimeSummaryInputs:
 @dataclass
 class DowntimeSummaryOutput:
     """Output structure for downtime summary."""
+
     summary: str  # Narrative of time passage
 
 
@@ -715,6 +730,7 @@ Write a summary (2-4 sentences) that:
 @dataclass
 class CombatConclusionInputs:
     """Inputs for combat conclusion narration."""
+
     outcome: str  # "victory", "defeat", "fled", "morale_broken"
     victor_side: str  # "party", "enemies", "none"
     party_casualties: list[str] = field(default_factory=list)  # Names of fallen
@@ -802,8 +818,9 @@ Write a brief conclusion (2-3 sentences) that:
 @dataclass
 class DungeonEventInputs:
     """Inputs for dungeon event narration."""
+
     event_type: str  # "trap_triggered", "trap_disarmed", "trap_discovered",
-                     # "secret_found", "feature_discovered", "sound_heard"
+    # "secret_found", "feature_discovered", "sound_heard"
     event_name: str  # Name of trap/secret/feature
     success: bool  # Was the event handled successfully?
     damage_taken: int = 0  # If trap triggered
@@ -905,6 +922,7 @@ Write a dramatic description (2-3 sentences) of this event."""
 @dataclass
 class RestExperienceInputs:
     """Inputs for rest/camping narration."""
+
     rest_type: str  # "short", "long", "full", "camping"
     location_type: str  # "wilderness", "dungeon", "settlement", "camp"
     watch_events: list[str] = field(default_factory=list)  # What happened on watches
@@ -1023,6 +1041,7 @@ Write a brief narration (2-3 sentences) that:
 @dataclass
 class POIApproachInputs:
     """Inputs for POI approach narration."""
+
     poi_name: str
     poi_type: str  # manse, ruin, grove, cave, etc.
     description: str  # Exterior description
@@ -1042,10 +1061,7 @@ class POIApproachSchema(PromptSchema):
     """Schema for describing approach to a Point of Interest."""
 
     def __init__(self, inputs: POIApproachInputs):
-        super().__init__(
-            schema_type=PromptSchemaType.POI_APPROACH,
-            inputs=vars(inputs)
-        )
+        super().__init__(schema_type=PromptSchemaType.POI_APPROACH, inputs=vars(inputs))
         self.typed_inputs = inputs
 
     def get_required_inputs(self) -> dict[str, type]:
@@ -1114,6 +1130,7 @@ Write a brief narration (2-3 sentences) that:
 @dataclass
 class POIEntryInputs:
     """Inputs for POI entry narration."""
+
     poi_name: str
     poi_type: str
     entering: str  # Entry description from data model
@@ -1130,10 +1147,7 @@ class POIEntrySchema(PromptSchema):
     """Schema for describing entry into a Point of Interest."""
 
     def __init__(self, inputs: POIEntryInputs):
-        super().__init__(
-            schema_type=PromptSchemaType.POI_ENTRY,
-            inputs=vars(inputs)
-        )
+        super().__init__(schema_type=PromptSchemaType.POI_ENTRY, inputs=vars(inputs))
         self.typed_inputs = inputs
 
     def get_required_inputs(self) -> dict[str, type]:
@@ -1200,6 +1214,7 @@ Write a brief narration (2-3 sentences) that:
 @dataclass
 class POIFeatureInputs:
     """Inputs for POI feature exploration narration."""
+
     poi_name: str
     feature_name: str
     feature_description: str
@@ -1218,10 +1233,7 @@ class POIFeatureSchema(PromptSchema):
     """Schema for describing POI feature exploration."""
 
     def __init__(self, inputs: POIFeatureInputs):
-        super().__init__(
-            schema_type=PromptSchemaType.POI_FEATURE,
-            inputs=vars(inputs)
-        )
+        super().__init__(schema_type=PromptSchemaType.POI_FEATURE, inputs=vars(inputs))
         self.typed_inputs = inputs
 
     def get_required_inputs(self) -> dict[str, type]:
@@ -1296,6 +1308,7 @@ Write a brief narration (2-3 sentences) that:
 @dataclass
 class ResolvedActionInputs:
     """Inputs for narrating a mechanically resolved action."""
+
     action_description: str  # What the character attempted
     action_category: str  # spell, hazard, exploration, survival, creative
     action_type: str  # climb, swim, cast_spell, search, etc.
@@ -1324,10 +1337,7 @@ class ResolvedActionSchema(PromptSchema):
     """Schema for narrating mechanically resolved actions."""
 
     def __init__(self, inputs: ResolvedActionInputs):
-        super().__init__(
-            schema_type=PromptSchemaType.RESOLVED_ACTION,
-            inputs=vars(inputs)
-        )
+        super().__init__(schema_type=PromptSchemaType.RESOLVED_ACTION, inputs=vars(inputs))
         self.typed_inputs = inputs
 
     def get_required_inputs(self) -> dict[str, type]:
@@ -1341,7 +1351,11 @@ class ResolvedActionSchema(PromptSchema):
         inputs = self.typed_inputs
 
         actor = inputs.character_name or "The adventurer"
-        outcome = "succeeds" if inputs.success else ("partially succeeds" if inputs.partial_success else "fails")
+        outcome = (
+            "succeeds"
+            if inputs.success
+            else ("partially succeeds" if inputs.partial_success else "fails")
+        )
 
         prompt = f"""Narrate this resolved action:
 

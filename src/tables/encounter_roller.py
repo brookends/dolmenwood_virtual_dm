@@ -50,7 +50,7 @@ def _roll_number_appearing(dice_expr: str, entry_name: str) -> int:
         The rolled or fixed number
     """
     # Check if it's a plain number
-    if 'd' not in dice_expr.lower():
+    if "d" not in dice_expr.lower():
         try:
             return int(dice_expr)
         except ValueError:
@@ -64,8 +64,10 @@ def _roll_number_appearing(dice_expr: str, entry_name: str) -> int:
 # RESULT DATACLASSES
 # =============================================================================
 
+
 class EncounterEntryType(str, Enum):
     """Type of encounter entry."""
+
     MONSTER = "monster"
     ANIMAL = "animal"
     ADVENTURER = "adventurer"
@@ -80,6 +82,7 @@ class RolledEncounter:
 
     Contains the raw roll results before resolution to actual creatures.
     """
+
     # The rolled entry
     entry: EncounterEntry
     entry_type: EncounterEntryType
@@ -119,6 +122,7 @@ class EncounterContext:
 
     Provides all the information needed to determine which tables to use.
     """
+
     time_of_day: TimeOfDay = TimeOfDay.DAYTIME
     location_type: LocationType = LocationType.WILD
     region: str = "tithelands"  # Default region
@@ -135,9 +139,11 @@ class EncounterContext:
 # ENCOUNTER ROLLER
 # =============================================================================
 
+
 @dataclass
 class LairCheckResult:
     """Result of checking for a lair encounter."""
+
     in_lair: bool = False
     lair_chance: Optional[int] = None
     lair_description: Optional[str] = None
@@ -180,6 +186,7 @@ class EncounterRoller:
         """Get the monster registry, loading default if needed."""
         if self._monster_registry is None:
             from src.content_loader.monster_registry import get_monster_registry
+
             self._monster_registry = get_monster_registry()
         return self._monster_registry
 
@@ -410,10 +417,7 @@ class EncounterRoller:
             hoard=lair_result.hoard,
         )
 
-    def _roll_common(
-        self,
-        category: EncounterCategory
-    ) -> tuple[EncounterEntry, int]:
+    def _roll_common(self, category: EncounterCategory) -> tuple[EncounterEntry, int]:
         """Roll on a common encounter table."""
         table = get_common_table(category)
         if not table:
@@ -523,10 +527,7 @@ class EncounterRoller:
 
         return party_surprised, enemy_surprised
 
-    def roll_encounter_distance(
-        self,
-        both_surprised: bool = False
-    ) -> int:
+    def roll_encounter_distance(self, both_surprised: bool = False) -> int:
         """
         Roll encounter distance.
 

@@ -60,9 +60,7 @@ class ItemCatalog:
                 logger.error(f"Error loading {json_file}: {e}")
 
         self._loaded = True
-        logger.info(
-            f"Loaded {len(self._items)} items in {len(self._categories)} categories"
-        )
+        logger.info(f"Loaded {len(self._items)} items in {len(self._categories)} categories")
 
     def _load_file(self, json_file: Path) -> None:
         """Load items from a single JSON file."""

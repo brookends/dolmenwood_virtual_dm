@@ -14,15 +14,17 @@ from typing import Any, Optional
 
 class MagicType(str, Enum):
     """Types of magic available to spellcasting classes."""
+
     NONE = "none"
-    ARCANE = "arcane"           # Magician
-    HOLY = "holy"               # Cleric, Friar
-    GLAMOUR = "glamour"         # Enchanter (fairy glamours)
-    RUNE = "rune"               # Enchanter only (lesser, greater, mighty)
+    ARCANE = "arcane"  # Magician
+    HOLY = "holy"  # Cleric, Friar
+    GLAMOUR = "glamour"  # Enchanter (fairy glamours)
+    RUNE = "rune"  # Enchanter only (lesser, greater, mighty)
 
 
 class HitDie(str, Enum):
     """Hit die types by class."""
+
     D4 = "d4"
     D6 = "d6"
     D8 = "d8"
@@ -30,20 +32,22 @@ class HitDie(str, Enum):
 
 class ArmorProficiency(str, Enum):
     """Armor proficiency levels."""
-    NONE = "none"               # Magician, Enchanter
-    LIGHT = "light"             # Leather, padded
-    MEDIUM = "medium"           # Chain, scale
-    HEAVY = "heavy"             # Plate
-    ALL = "all"                 # Any armor
-    SHIELDS = "shields"         # Can use shields
+
+    NONE = "none"  # Magician, Enchanter
+    LIGHT = "light"  # Leather, padded
+    MEDIUM = "medium"  # Chain, scale
+    HEAVY = "heavy"  # Plate
+    ALL = "all"  # Any armor
+    SHIELDS = "shields"  # Can use shields
 
 
 class WeaponProficiency(str, Enum):
     """Weapon proficiency categories."""
-    SIMPLE = "simple"           # Daggers, staves, clubs
-    MARTIAL = "martial"         # Swords, axes, polearms
-    RANGED = "ranged"           # Bows, crossbows
-    ALL = "all"                 # Any weapon
+
+    SIMPLE = "simple"  # Daggers, staves, clubs
+    MARTIAL = "martial"  # Swords, axes, polearms
+    RANGED = "ranged"  # Bows, crossbows
+    ALL = "all"  # Any weapon
 
 
 @dataclass
@@ -54,11 +58,12 @@ class SavingThrows:
     Uses the 5 Dolmenwood save categories (p152-153).
     Lower is better - must roll >= target on d20.
     """
-    doom: int = 14      # Death, poison, doom effects
-    ray: int = 15       # Wands, rays, gaze attacks
-    hold: int = 16      # Paralysis, petrification, hold
-    blast: int = 17     # Breath weapons, area effects
-    spell: int = 18     # Spells and spell-like effects
+
+    doom: int = 14  # Death, poison, doom effects
+    ray: int = 15  # Wands, rays, gaze attacks
+    hold: int = 16  # Paralysis, petrification, hold
+    blast: int = 17  # Breath weapons, area effects
+    spell: int = 18  # Spells and spell-like effects
 
     def get_save(self, save_type: str) -> int:
         """Get save value by type name."""
@@ -72,11 +77,12 @@ class LevelProgression:
 
     Defines what changes when a character reaches this level.
     """
+
     level: int
-    experience_required: int        # XP needed to reach this level
-    attack_bonus: int               # Base attack bonus at this level
-    saving_throws: SavingThrows     # Save values at this level
-    hit_dice: str                   # Total HD at this level (e.g., "3d8")
+    experience_required: int  # XP needed to reach this level
+    attack_bonus: int  # Base attack bonus at this level
+    saving_throws: SavingThrows  # Save values at this level
+    hit_dice: str  # Total HD at this level (e.g., "3d8")
 
     # Spellcasting (for spellcasters only)
     spell_slots: dict[int, int] = field(default_factory=dict)  # Spell level -> slots
@@ -98,6 +104,7 @@ class ClassAbility:
 
     Similar to KindredAbility but for class features.
     """
+
     ability_id: str
     name: str
     description: str
@@ -150,14 +157,15 @@ class ClassDefinition:
 
     Contains all mechanical and descriptive data for a class.
     """
+
     # Identification
-    class_id: str                   # e.g., "fighter", "magician"
-    name: str                       # Display name
-    description: str                # Flavor text description
+    class_id: str  # e.g., "fighter", "magician"
+    name: str  # Display name
+    description: str  # Flavor text description
 
     # Core mechanics
-    hit_die: HitDie                 # HP die type
-    prime_ability: str              # Primary ability score (STR, INT, etc.)
+    hit_die: HitDie  # HP die type
+    prime_ability: str  # Primary ability score (STR, INT, etc.)
 
     # Magic type
     magic_type: MagicType = MagicType.NONE

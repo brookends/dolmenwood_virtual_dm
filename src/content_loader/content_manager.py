@@ -46,11 +46,12 @@ from src.data_models import (
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ContentType(str, Enum):
     """Types of content that can be managed."""
+
     HEX = "hex"
     NPC = "npc"
     MONSTER = "monster"
@@ -65,6 +66,7 @@ class ContentType(str, Enum):
 @dataclass
 class ContentEntry(Generic[T]):
     """A content entry with metadata."""
+
     content_id: str
     content_type: ContentType
     data: T
@@ -79,6 +81,7 @@ class ContentEntry(Generic[T]):
 @dataclass
 class ConflictResolution:
     """Result of resolving a content conflict."""
+
     winning_source: str
     losing_sources: list[str]
     reason: str
@@ -131,7 +134,8 @@ class ContentManager:
             cursor = conn.cursor()
 
             # Content sources table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS content_sources (
                     source_id TEXT PRIMARY KEY,
                     source_type TEXT NOT NULL,
@@ -143,10 +147,12 @@ class ContentManager:
                     page_count INTEGER,
                     imported_at TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
             # Content entries table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS content_entries (
                     content_id TEXT NOT NULL,
                     content_type TEXT NOT NULL,
@@ -160,21 +166,28 @@ class ContentManager:
                     PRIMARY KEY (content_id, content_type, source_id),
                     FOREIGN KEY (source_id) REFERENCES content_sources(source_id)
                 )
-            """)
+            """
+            )
 
             # Create indexes for common queries
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_content_type
                 ON content_entries(content_type)
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_content_priority
                 ON content_entries(priority)
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_content_tags
                 ON content_entries(tags)
-            """)
+            """
+            )
 
             conn.commit()
 
@@ -182,7 +195,7 @@ class ContentManager:
         """Get a database connection."""
         if str(self.db_path) == ":memory:":
             # For in-memory database, maintain a single connection
-            if not hasattr(self, '_memory_conn'):
+            if not hasattr(self, "_memory_conn"):
                 self._memory_conn = sqlite3.connect(":memory:")
             return self._memory_conn
         return sqlite3.connect(str(self.db_path))
@@ -202,22 +215,25 @@ class ContentManager:
 
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO content_sources
                 (source_id, source_type, book_name, book_code, version,
                  file_path, file_hash, page_count, imported_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                source.source_id,
-                source.source_type.value,
-                source.book_name,
-                source.book_code,
-                source.version,
-                source.file_path,
-                source.file_hash,
-                source.page_count,
-                source.imported_at.isoformat(),
-            ))
+            """,
+                (
+                    source.source_id,
+                    source.source_type.value,
+                    source.book_name,
+                    source.book_code,
+                    source.version,
+                    source.file_path,
+                    source.file_hash,
+                    source.page_count,
+                    source.imported_at.isoformat(),
+                ),
+            )
             conn.commit()
 
         logger.info(f"Registered source: {source.book_name} ({source.source_id})")
@@ -249,7 +265,7 @@ class ContentManager:
         data: dict[str, Any],
         source: SourceReference,
         tags: Optional[list[str]] = None,
-        version: str = "1.0"
+        version: str = "1.0",
     ) -> bool:
         """
         Add content to the manager.
@@ -281,22 +297,25 @@ class ContentManager:
 
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO content_entries
                 (content_id, content_type, source_id, priority, version,
                  data_json, tags, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                content_id,
-                content_type.value,
-                source.source_id,
-                priority,
-                version,
-                json.dumps(data),
-                json.dumps(tags),
-                now,
-                now,
-            ))
+            """,
+                (
+                    content_id,
+                    content_type.value,
+                    source.source_id,
+                    priority,
+                    version,
+                    json.dumps(data),
+                    json.dumps(tags),
+                    now,
+                    now,
+                ),
+            )
             conn.commit()
 
         # Invalidate cache for this content
@@ -307,11 +326,7 @@ class ContentManager:
         logger.debug(f"Added content: {content_type.value}/{content_id} from {source.source_id}")
         return True
 
-    def get_content(
-        self,
-        content_id: str,
-        content_type: ContentType
-    ) -> Optional[dict[str, Any]]:
+    def get_content(self, content_id: str, content_type: ContentType) -> Optional[dict[str, Any]]:
         """
         Get content by ID, resolving conflicts by priority.
 
@@ -332,19 +347,22 @@ class ContentManager:
 
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT data_json, source_id, priority
                 FROM content_entries
                 WHERE content_id = ? AND content_type = ?
                 ORDER BY priority ASC
                 LIMIT 1
-            """, (content_id, content_type.value))
+            """,
+                (content_id, content_type.value),
+            )
 
             row = cursor.fetchone()
             if row:
                 data = json.loads(row[0])
-                data['_source_id'] = row[1]
-                data['_priority'] = row[2]
+                data["_source_id"] = row[1]
+                data["_priority"] = row[2]
 
                 # Cache the result
                 self._content_cache[cache_key] = data
@@ -353,9 +371,7 @@ class ContentManager:
         return None
 
     def get_all_content(
-        self,
-        content_type: ContentType,
-        tags: Optional[list[str]] = None
+        self, content_type: ContentType, tags: Optional[list[str]] = None
     ) -> list[dict[str, Any]]:
         """
         Get all content of a specific type.
@@ -373,7 +389,8 @@ class ContentManager:
             cursor = conn.cursor()
 
             # Get highest priority version of each content_id
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT ce.content_id, ce.data_json, ce.source_id, ce.priority
                 FROM content_entries ce
                 INNER JOIN (
@@ -385,17 +402,19 @@ class ContentManager:
                 ON ce.content_id = grouped.content_id
                    AND ce.priority = grouped.min_priority
                 WHERE ce.content_type = ?
-            """, (content_type.value, content_type.value))
+            """,
+                (content_type.value, content_type.value),
+            )
 
             results = []
             for row in cursor.fetchall():
                 data = json.loads(row[1])
-                data['_source_id'] = row[2]
-                data['_priority'] = row[3]
+                data["_source_id"] = row[2]
+                data["_priority"] = row[3]
 
                 # Filter by tags if specified
                 if tags:
-                    entry_tags = data.get('tags', [])
+                    entry_tags = data.get("tags", [])
                     if not any(tag in entry_tags for tag in tags):
                         continue
 
@@ -404,10 +423,7 @@ class ContentManager:
             return results
 
     def search_content(
-        self,
-        content_type: ContentType,
-        query: str,
-        fields: Optional[list[str]] = None
+        self, content_type: ContentType, query: str, fields: Optional[list[str]] = None
     ) -> list[dict[str, Any]]:
         """
         Search content by text query.
@@ -429,7 +445,7 @@ class ContentManager:
             search_fields = fields or content.keys()
 
             for field in search_fields:
-                if field.startswith('_'):
+                if field.startswith("_"):
                     continue
 
                 value = content.get(field)
@@ -445,10 +461,7 @@ class ContentManager:
         return results
 
     def delete_content(
-        self,
-        content_id: str,
-        content_type: ContentType,
-        source_id: Optional[str] = None
+        self, content_id: str, content_type: ContentType, source_id: Optional[str] = None
     ) -> bool:
         """
         Delete content.
@@ -465,15 +478,21 @@ class ContentManager:
             cursor = conn.cursor()
 
             if source_id:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     DELETE FROM content_entries
                     WHERE content_id = ? AND content_type = ? AND source_id = ?
-                """, (content_id, content_type.value, source_id))
+                """,
+                    (content_id, content_type.value, source_id),
+                )
             else:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     DELETE FROM content_entries
                     WHERE content_id = ? AND content_type = ?
-                """, (content_id, content_type.value))
+                """,
+                    (content_id, content_type.value),
+                )
 
             conn.commit()
             deleted = cursor.rowcount > 0
@@ -490,9 +509,7 @@ class ContentManager:
     # =========================================================================
 
     def get_content_versions(
-        self,
-        content_id: str,
-        content_type: ContentType
+        self, content_id: str, content_type: ContentType
     ) -> list[dict[str, Any]]:
         """
         Get all versions of content from all sources.
@@ -508,28 +525,29 @@ class ContentManager:
         """
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT data_json, source_id, priority, version, updated_at
                 FROM content_entries
                 WHERE content_id = ? AND content_type = ?
                 ORDER BY priority ASC
-            """, (content_id, content_type.value))
+            """,
+                (content_id, content_type.value),
+            )
 
             versions = []
             for row in cursor.fetchall():
                 data = json.loads(row[0])
-                data['_source_id'] = row[1]
-                data['_priority'] = row[2]
-                data['_version'] = row[3]
-                data['_updated_at'] = row[4]
+                data["_source_id"] = row[1]
+                data["_priority"] = row[2]
+                data["_version"] = row[3]
+                data["_updated_at"] = row[4]
                 versions.append(data)
 
             return versions
 
     def resolve_conflict(
-        self,
-        content_id: str,
-        content_type: ContentType
+        self, content_id: str, content_type: ContentType
     ) -> Optional[ConflictResolution]:
         """
         Analyze and report on content conflicts.
@@ -550,8 +568,8 @@ class ContentManager:
         losing = versions[1:]
 
         return ConflictResolution(
-            winning_source=winning['_source_id'],
-            losing_sources=[v['_source_id'] for v in losing],
+            winning_source=winning["_source_id"],
+            losing_sources=[v["_source_id"] for v in losing],
             reason=f"Priority: {winning['_priority']} < {[v['_priority'] for v in losing]}",
         )
 
@@ -571,49 +589,54 @@ class ContentManager:
             True if added successfully
         """
         data = {
-            'hex_id': hex_data.hex_id,
-            'terrain': hex_data.terrain,
-            'name': hex_data.name,
-            'description': hex_data.description,
-            'features': [
-                {'feature_id': f.feature_id, 'name': f.name, 'description': f.description,
-                 'searchable': f.searchable, 'hidden': f.hidden}
+            "hex_id": hex_data.hex_id,
+            "terrain": hex_data.terrain,
+            "name": hex_data.name,
+            "description": hex_data.description,
+            "features": [
+                {
+                    "feature_id": f.feature_id,
+                    "name": f.name,
+                    "description": f.description,
+                    "searchable": f.searchable,
+                    "hidden": f.hidden,
+                }
                 for f in hex_data.features
             ],
-            'lairs': [
-                {'lair_id': l.lair_id, 'monster_type': l.monster_type,
-                 'monster_count': l.monster_count, 'treasure_type': l.treasure_type}
+            "lairs": [
+                {
+                    "lair_id": l.lair_id,
+                    "monster_type": l.monster_type,
+                    "monster_count": l.monster_count,
+                    "treasure_type": l.treasure_type,
+                }
                 for l in hex_data.lairs
             ],
-            'landmarks': [
-                {'landmark_id': l.landmark_id, 'name': l.name, 'description': l.description,
-                 'visible_from_adjacent': l.visible_from_adjacent}
+            "landmarks": [
+                {
+                    "landmark_id": l.landmark_id,
+                    "name": l.name,
+                    "description": l.description,
+                    "visible_from_adjacent": l.visible_from_adjacent,
+                }
                 for l in hex_data.landmarks
             ],
-            'fairy_influence': hex_data.fairy_influence,
-            'drune_presence': hex_data.drune_presence,
-            'seasonal_variations': {
-                s.value: v for s, v in hex_data.seasonal_variations.items()
-            },
-            'encounter_table': hex_data.encounter_table,
-            'adjacent_hexes': hex_data.adjacent_hexes,
-            'roads': hex_data.roads,
-            'rivers': hex_data.rivers,
+            "fairy_influence": hex_data.fairy_influence,
+            "drune_presence": hex_data.drune_presence,
+            "seasonal_variations": {s.value: v for s, v in hex_data.seasonal_variations.items()},
+            "encounter_table": hex_data.encounter_table,
+            "adjacent_hexes": hex_data.adjacent_hexes,
+            "roads": hex_data.roads,
+            "rivers": hex_data.rivers,
         }
 
         tags = [hex_data.terrain]
         if hex_data.fairy_influence:
-            tags.append('fairy')
+            tags.append("fairy")
         if hex_data.drune_presence:
-            tags.append('drune')
+            tags.append("drune")
 
-        return self.add_content(
-            hex_data.hex_id,
-            ContentType.HEX,
-            data,
-            source,
-            tags=tags
-        )
+        return self.add_content(hex_data.hex_id, ContentType.HEX, data, source, tags=tags)
 
     def get_hex(self, hex_id: str) -> Optional[HexLocation]:
         """
@@ -640,25 +663,27 @@ class ContentManager:
         """Convert dictionary to HexLocation."""
         # Parse features - handle both new HexFeature and legacy Feature formats
         features = []
-        for f in data.get('features', []):
-            if 'feature_id' in f:
+        for f in data.get("features", []):
+            if "feature_id" in f:
                 # Legacy Feature format - skip or convert
                 continue
             else:
                 # New HexFeature format
-                features.append(HexFeature(
-                    name=f.get('name', 'Unknown'),
-                    description=f.get('description', ''),
-                    feature_type=f.get('feature_type', 'general'),
-                    is_hidden=f.get('is_hidden', False),
-                    npcs=f.get('npcs', []),
-                    monsters=f.get('monsters', []),
-                    treasure=f.get('treasure'),
-                    hooks=f.get('hooks', []),
-                ))
+                features.append(
+                    HexFeature(
+                        name=f.get("name", "Unknown"),
+                        description=f.get("description", ""),
+                        feature_type=f.get("feature_type", "general"),
+                        is_hidden=f.get("is_hidden", False),
+                        npcs=f.get("npcs", []),
+                        monsters=f.get("monsters", []),
+                        treasure=f.get("treasure"),
+                        hooks=f.get("hooks", []),
+                    )
+                )
 
         # Parse coordinates
-        coords = data.get('coordinates', [0, 0])
+        coords = data.get("coordinates", [0, 0])
         if isinstance(coords, list) and len(coords) >= 2:
             coordinates = (coords[0], coords[1])
         else:
@@ -666,94 +691,98 @@ class ContentManager:
 
         # Parse procedural (new format)
         procedural = None
-        proc_data = data.get('procedural')
+        proc_data = data.get("procedural")
         if proc_data and isinstance(proc_data, dict):
             procedural = HexProcedural(
-                lost_chance=proc_data.get('lost_chance', '1-in-6'),
-                encounter_chance=proc_data.get('encounter_chance', '1-in-6'),
-                encounter_notes=proc_data.get('encounter_notes', ''),
-                foraging_results=proc_data.get('foraging_results', ''),
-                foraging_special=proc_data.get('foraging_special', []),
-                encounter_modifiers=proc_data.get('encounter_modifiers', []),
-                lost_behavior=proc_data.get('lost_behavior'),
-                night_hazards=proc_data.get('night_hazards', []),
+                lost_chance=proc_data.get("lost_chance", "1-in-6"),
+                encounter_chance=proc_data.get("encounter_chance", "1-in-6"),
+                encounter_notes=proc_data.get("encounter_notes", ""),
+                foraging_results=proc_data.get("foraging_results", ""),
+                foraging_special=proc_data.get("foraging_special", []),
+                encounter_modifiers=proc_data.get("encounter_modifiers", []),
+                lost_behavior=proc_data.get("lost_behavior"),
+                night_hazards=proc_data.get("night_hazards", []),
             )
 
         # Parse points of interest (new format)
         points_of_interest = []
-        for poi_data in data.get('points_of_interest', []):
+        for poi_data in data.get("points_of_interest", []):
             if isinstance(poi_data, dict):
                 poi = self._dict_to_poi(poi_data)
                 points_of_interest.append(poi)
 
         # Parse roll tables (new format)
         roll_tables = []
-        for table_data in data.get('roll_tables', []):
+        for table_data in data.get("roll_tables", []):
             if isinstance(table_data, dict):
                 table = self._dict_to_roll_table(table_data)
                 roll_tables.append(table)
 
         # Parse NPCs - handle both HexNPC format and legacy string format
         npcs = []
-        for npc_data in data.get('npcs', []):
+        for npc_data in data.get("npcs", []):
             if isinstance(npc_data, dict):
                 # Parse known_topics if present
                 known_topics = []
-                for topic_data in npc_data.get('known_topics', []):
-                    known_topics.append(KnownTopic(
-                        topic_id=topic_data.get('topic_id', ''),
-                        content=topic_data.get('content', ''),
-                        keywords=topic_data.get('keywords', []),
-                        required_disposition=topic_data.get('required_disposition', -5),
-                        category=topic_data.get('category', 'general'),
-                        shared=topic_data.get('shared', False),
-                        priority=topic_data.get('priority', 0),
-                    ))
+                for topic_data in npc_data.get("known_topics", []):
+                    known_topics.append(
+                        KnownTopic(
+                            topic_id=topic_data.get("topic_id", ""),
+                            content=topic_data.get("content", ""),
+                            keywords=topic_data.get("keywords", []),
+                            required_disposition=topic_data.get("required_disposition", -5),
+                            category=topic_data.get("category", "general"),
+                            shared=topic_data.get("shared", False),
+                            priority=topic_data.get("priority", 0),
+                        )
+                    )
 
                 # Parse secret_info if present
                 secret_info = []
-                for secret_data in npc_data.get('secret_info', []):
-                    status_str = secret_data.get('status', 'unknown')
+                for secret_data in npc_data.get("secret_info", []):
+                    status_str = secret_data.get("status", "unknown")
                     try:
                         status = SecretStatus(status_str)
                     except ValueError:
                         status = SecretStatus.UNKNOWN
-                    secret_info.append(SecretInfo(
-                        secret_id=secret_data.get('secret_id', ''),
-                        content=secret_data.get('content', ''),
-                        hint=secret_data.get('hint', ''),
-                        keywords=secret_data.get('keywords', []),
-                        required_disposition=secret_data.get('required_disposition', 3),
-                        required_trust=secret_data.get('required_trust', 2),
-                        can_be_bribed=secret_data.get('can_be_bribed', False),
-                        bribe_amount=secret_data.get('bribe_amount', 0),
-                        status=status,
-                        hint_count=secret_data.get('hint_count', 0),
-                    ))
+                    secret_info.append(
+                        SecretInfo(
+                            secret_id=secret_data.get("secret_id", ""),
+                            content=secret_data.get("content", ""),
+                            hint=secret_data.get("hint", ""),
+                            keywords=secret_data.get("keywords", []),
+                            required_disposition=secret_data.get("required_disposition", 3),
+                            required_trust=secret_data.get("required_trust", 2),
+                            can_be_bribed=secret_data.get("can_be_bribed", False),
+                            bribe_amount=secret_data.get("bribe_amount", 0),
+                            status=status,
+                            hint_count=secret_data.get("hint_count", 0),
+                        )
+                    )
 
                 npc = HexNPC(
-                    npc_id=npc_data.get('npc_id', 'unknown'),
-                    name=npc_data.get('name', 'Unknown NPC'),
-                    description=npc_data.get('description', ''),
-                    kindred=npc_data.get('kindred', 'Human'),
-                    alignment=npc_data.get('alignment', 'Neutral'),
-                    title=npc_data.get('title'),
-                    demeanor=npc_data.get('demeanor', []),
-                    speech=npc_data.get('speech', ''),
-                    languages=npc_data.get('languages', []),
-                    desires=npc_data.get('desires', []),
-                    secrets=npc_data.get('secrets', []),
+                    npc_id=npc_data.get("npc_id", "unknown"),
+                    name=npc_data.get("name", "Unknown NPC"),
+                    description=npc_data.get("description", ""),
+                    kindred=npc_data.get("kindred", "Human"),
+                    alignment=npc_data.get("alignment", "Neutral"),
+                    title=npc_data.get("title"),
+                    demeanor=npc_data.get("demeanor", []),
+                    speech=npc_data.get("speech", ""),
+                    languages=npc_data.get("languages", []),
+                    desires=npc_data.get("desires", []),
+                    secrets=npc_data.get("secrets", []),
                     known_topics=known_topics,
                     secret_info=secret_info,
-                    possessions=npc_data.get('possessions', []),
-                    location=npc_data.get('location', ''),
-                    stat_reference=npc_data.get('stat_reference'),
-                    is_combatant=npc_data.get('is_combatant', False),
-                    relationships=npc_data.get('relationships', []),
-                    faction=npc_data.get('faction'),
-                    loyalty=npc_data.get('loyalty', 'loyal'),
-                    personal_feelings=npc_data.get('personal_feelings'),
-                    binding=npc_data.get('binding'),
+                    possessions=npc_data.get("possessions", []),
+                    location=npc_data.get("location", ""),
+                    stat_reference=npc_data.get("stat_reference"),
+                    is_combatant=npc_data.get("is_combatant", False),
+                    relationships=npc_data.get("relationships", []),
+                    faction=npc_data.get("faction"),
+                    loyalty=npc_data.get("loyalty", "loyal"),
+                    personal_feelings=npc_data.get("personal_feelings"),
+                    binding=npc_data.get("binding"),
                 )
                 npcs.append(npc)
             else:
@@ -763,142 +792,134 @@ class ContentManager:
 
         return HexLocation(
             # Core identification
-            hex_id=data['hex_id'],
+            hex_id=data["hex_id"],
             coordinates=coordinates,
-            name=data.get('name'),
-            tagline=data.get('tagline', ''),
-
+            name=data.get("name"),
+            tagline=data.get("tagline", ""),
             # Terrain and region
-            terrain_type=data.get('terrain_type', data.get('terrain', 'forest')),
-            terrain_description=data.get('terrain_description', ''),
-            terrain_difficulty=data.get('terrain_difficulty', 1),
-            region=data.get('region', ''),
-
+            terrain_type=data.get("terrain_type", data.get("terrain", "forest")),
+            terrain_description=data.get("terrain_description", ""),
+            terrain_difficulty=data.get("terrain_difficulty", 1),
+            region=data.get("region", ""),
             # Descriptions
-            description=data.get('description', ''),
-            dm_notes=data.get('dm_notes', ''),
-
+            description=data.get("description", ""),
+            dm_notes=data.get("dm_notes", ""),
             # Procedural rules (new format)
             procedural=procedural,
-
             # Points of interest (new format)
             points_of_interest=points_of_interest,
-
             # Roll tables (new format)
             roll_tables=roll_tables,
-
             # NPCs (new format)
             npcs=npcs,
-
             # Associated content
-            items=data.get('items', []),
-            secrets=data.get('secrets', []),
-
+            items=data.get("items", []),
+            secrets=data.get("secrets", []),
             # Navigation
-            adjacent_hexes=data.get('adjacent_hexes', []),
-            roads=data.get('roads', []),
-
+            adjacent_hexes=data.get("adjacent_hexes", []),
+            roads=data.get("roads", []),
             # Source tracking
-            page_reference=data.get('page_reference', ''),
-
+            page_reference=data.get("page_reference", ""),
             # Legacy fields
-            flavour_text=data.get('flavour_text', data.get('tagline', '')),
-            travel_point_cost=data.get('travel_point_cost', 1),
-            lost_chance=data.get('lost_chance', 1),
-            encounter_chance=data.get('encounter_chance', 1),
-            special_encounter_chance=data.get('special_encounter_chance', 0),
-            encounter_table=data.get('encounter_table'),
-            special_encounters=data.get('special_encounters', []),
+            flavour_text=data.get("flavour_text", data.get("tagline", "")),
+            travel_point_cost=data.get("travel_point_cost", 1),
+            lost_chance=data.get("lost_chance", 1),
+            encounter_chance=data.get("encounter_chance", 1),
+            special_encounter_chance=data.get("special_encounter_chance", 0),
+            encounter_table=data.get("encounter_table"),
+            special_encounters=data.get("special_encounters", []),
             features=features,
-            ley_lines=data.get('ley_lines'),
-            foraging_yields=data.get('foraging_yields', []),
-            terrain=data.get('terrain', data.get('terrain_type', 'forest')),
+            ley_lines=data.get("ley_lines"),
+            foraging_yields=data.get("foraging_yields", []),
+            terrain=data.get("terrain", data.get("terrain_type", "forest")),
             lairs=[
                 Lair(
-                    lair_id=l['lair_id'],
-                    monster_type=l['monster_type'],
-                    monster_count=l.get('monster_count', '1d6'),
-                    treasure_type=l.get('treasure_type'),
+                    lair_id=l["lair_id"],
+                    monster_type=l["monster_type"],
+                    monster_count=l.get("monster_count", "1d6"),
+                    treasure_type=l.get("treasure_type"),
                 )
-                for l in data.get('lairs', [])
+                for l in data.get("lairs", [])
             ],
             landmarks=[
                 Landmark(
-                    landmark_id=l['landmark_id'],
-                    name=l['name'],
-                    description=l.get('description', ''),
-                    visible_from_adjacent=l.get('visible_from_adjacent', True),
+                    landmark_id=l["landmark_id"],
+                    name=l["name"],
+                    description=l.get("description", ""),
+                    visible_from_adjacent=l.get("visible_from_adjacent", True),
                 )
-                for l in data.get('landmarks', [])
+                for l in data.get("landmarks", [])
             ],
-            fairy_influence=data.get('fairy_influence'),
-            drune_presence=data.get('drune_presence', False),
+            fairy_influence=data.get("fairy_influence"),
+            drune_presence=data.get("drune_presence", False),
             seasonal_variations={
-                Season(k): v for k, v in data.get('seasonal_variations', {}).items()
+                Season(k): v for k, v in data.get("seasonal_variations", {}).items()
             },
-            rivers=data.get('rivers', []),
+            rivers=data.get("rivers", []),
             source=SourceReference(
-                source_id=data.get('_source_id', ''),
-                book_code=data.get('_source_id', '').split('_')[0] if data.get('_source_id') else '',
+                source_id=data.get("_source_id", ""),
+                book_code=(
+                    data.get("_source_id", "").split("_")[0] if data.get("_source_id") else ""
+                ),
             ),
         )
 
     def _dict_to_poi(self, data: dict) -> PointOfInterest:
         """Convert dictionary to PointOfInterest."""
         roll_tables = []
-        for table_data in data.get('roll_tables', []):
+        for table_data in data.get("roll_tables", []):
             if isinstance(table_data, dict):
                 table = self._dict_to_roll_table(table_data)
                 roll_tables.append(table)
 
         return PointOfInterest(
-            name=data.get('name', 'Unknown'),
-            poi_type=data.get('poi_type', 'general'),
-            description=data.get('description', ''),
-            tagline=data.get('tagline'),
-            entering=data.get('entering'),
-            interior=data.get('interior'),
-            exploring=data.get('exploring'),
-            leaving=data.get('leaving'),
-            inhabitants=data.get('inhabitants'),
+            name=data.get("name", "Unknown"),
+            poi_type=data.get("poi_type", "general"),
+            description=data.get("description", ""),
+            tagline=data.get("tagline"),
+            entering=data.get("entering"),
+            interior=data.get("interior"),
+            exploring=data.get("exploring"),
+            leaving=data.get("leaving"),
+            inhabitants=data.get("inhabitants"),
             roll_tables=roll_tables,
-            npcs=data.get('npcs', []),
-            special_features=data.get('special_features', []),
-            secrets=data.get('secrets', []),
-            is_dungeon=data.get('is_dungeon', False),
-            dungeon_levels=data.get('dungeon_levels'),
-            quest_hooks=data.get('quest_hooks', []),
-            encounter_modifiers=data.get('encounter_modifiers', []),
-            item_persistence=data.get('item_persistence'),
-            dynamic_layout=data.get('dynamic_layout'),
-            availability=data.get('availability'),
+            npcs=data.get("npcs", []),
+            special_features=data.get("special_features", []),
+            secrets=data.get("secrets", []),
+            is_dungeon=data.get("is_dungeon", False),
+            dungeon_levels=data.get("dungeon_levels"),
+            quest_hooks=data.get("quest_hooks", []),
+            encounter_modifiers=data.get("encounter_modifiers", []),
+            item_persistence=data.get("item_persistence"),
+            dynamic_layout=data.get("dynamic_layout"),
+            availability=data.get("availability"),
         )
 
     def _dict_to_roll_table(self, data: dict) -> RollTable:
         """Convert dictionary to RollTable."""
         entries = []
-        for entry_data in data.get('entries', []):
+        for entry_data in data.get("entries", []):
             if isinstance(entry_data, dict):
                 entry = RollTableEntry(
-                    roll=entry_data.get('roll', 1),
-                    description=entry_data.get('description', ''),
-                    title=entry_data.get('title'),
-                    monsters=entry_data.get('monsters', []),
-                    npcs=entry_data.get('npcs', []),
-                    items=entry_data.get('items', []),
-                    mechanical_effect=entry_data.get('mechanical_effect'),
-                    sub_table=entry_data.get('sub_table'),
-                    reaction_conditions=entry_data.get('reaction_conditions'),
-                    transportation_effect=entry_data.get('transportation_effect'),
-                    time_effect=entry_data.get('time_effect'),
-                    quest_hook=entry_data.get('quest_hook'),
+                    roll=entry_data.get("roll", 1),
+                    description=entry_data.get("description", ""),
+                    title=entry_data.get("title"),
+                    monsters=entry_data.get("monsters", []),
+                    npcs=entry_data.get("npcs", []),
+                    items=entry_data.get("items", []),
+                    mechanical_effect=entry_data.get("mechanical_effect"),
+                    sub_table=entry_data.get("sub_table"),
+                    reaction_conditions=entry_data.get("reaction_conditions"),
+                    transportation_effect=entry_data.get("transportation_effect"),
+                    time_effect=entry_data.get("time_effect"),
+                    quest_hook=entry_data.get("quest_hook"),
                 )
                 entries.append(entry)
 
         return RollTable(
-            name=data.get('name', 'Unknown Table'),
-            die_type=data.get('die_type', 'd6'),
-            description=data.get('description', ''),
+            name=data.get("name", "Unknown Table"),
+            die_type=data.get("die_type", "d6"),
+            description=data.get("description", ""),
             entries=entries,
         )
 
@@ -918,18 +939,18 @@ class ContentManager:
             True if added successfully
         """
         data = {
-            'npc_id': npc.npc_id,
-            'name': npc.name,
-            'title': npc.title,
-            'location': npc.location,
-            'faction': npc.faction,
-            'personality': npc.personality,
-            'goals': npc.goals,
-            'secrets': npc.secrets,
-            'stat_block': self._stat_block_to_dict(npc.stat_block) if npc.stat_block else None,
-            'dialogue_hooks': npc.dialogue_hooks,
-            'relationships': npc.relationships,
-            'disposition': npc.disposition,
+            "npc_id": npc.npc_id,
+            "name": npc.name,
+            "title": npc.title,
+            "location": npc.location,
+            "faction": npc.faction,
+            "personality": npc.personality,
+            "goals": npc.goals,
+            "secrets": npc.secrets,
+            "stat_block": self._stat_block_to_dict(npc.stat_block) if npc.stat_block else None,
+            "dialogue_hooks": npc.dialogue_hooks,
+            "relationships": npc.relationships,
+            "disposition": npc.disposition,
         }
 
         tags = []
@@ -938,13 +959,7 @@ class ContentManager:
         if npc.location:
             tags.append(npc.location)
 
-        return self.add_content(
-            npc.npc_id,
-            ContentType.NPC,
-            data,
-            source,
-            tags=tags
-        )
+        return self.add_content(npc.npc_id, ContentType.NPC, data, source, tags=tags)
 
     def get_npc(self, npc_id: str) -> Optional[NPC]:
         """Get NPC by ID."""
@@ -967,51 +982,53 @@ class ContentManager:
     def _dict_to_npc(self, data: dict) -> NPC:
         """Convert dictionary to NPC."""
         stat_block = None
-        if data.get('stat_block'):
-            sb = data['stat_block']
+        if data.get("stat_block"):
+            sb = data["stat_block"]
             stat_block = StatBlock(
-                armor_class=sb['armor_class'],
-                hit_dice=sb['hit_dice'],
-                hp_current=sb['hp_current'],
-                hp_max=sb['hp_max'],
-                movement=sb['movement'],
-                attacks=sb.get('attacks', []),
-                morale=sb.get('morale', 7),
-                save_as=sb.get('save_as', ''),
-                special_abilities=sb.get('special_abilities', []),
+                armor_class=sb["armor_class"],
+                hit_dice=sb["hit_dice"],
+                hp_current=sb["hp_current"],
+                hp_max=sb["hp_max"],
+                movement=sb["movement"],
+                attacks=sb.get("attacks", []),
+                morale=sb.get("morale", 7),
+                save_as=sb.get("save_as", ""),
+                special_abilities=sb.get("special_abilities", []),
             )
 
         return NPC(
-            npc_id=data['npc_id'],
-            name=data['name'],
-            title=data.get('title'),
-            location=data.get('location', ''),
-            faction=data.get('faction'),
-            personality=data.get('personality', ''),
-            goals=data.get('goals', []),
-            secrets=data.get('secrets', []),
+            npc_id=data["npc_id"],
+            name=data["name"],
+            title=data.get("title"),
+            location=data.get("location", ""),
+            faction=data.get("faction"),
+            personality=data.get("personality", ""),
+            goals=data.get("goals", []),
+            secrets=data.get("secrets", []),
             stat_block=stat_block,
-            dialogue_hooks=data.get('dialogue_hooks', []),
-            relationships=data.get('relationships', {}),
-            disposition=data.get('disposition', 0),
+            dialogue_hooks=data.get("dialogue_hooks", []),
+            relationships=data.get("relationships", {}),
+            disposition=data.get("disposition", 0),
             source=SourceReference(
-                source_id=data.get('_source_id', ''),
-                book_code=data.get('_source_id', '').split('_')[0] if data.get('_source_id') else '',
+                source_id=data.get("_source_id", ""),
+                book_code=(
+                    data.get("_source_id", "").split("_")[0] if data.get("_source_id") else ""
+                ),
             ),
         )
 
     def _stat_block_to_dict(self, sb: StatBlock) -> dict:
         """Convert StatBlock to dictionary."""
         return {
-            'armor_class': sb.armor_class,
-            'hit_dice': sb.hit_dice,
-            'hp_current': sb.hp_current,
-            'hp_max': sb.hp_max,
-            'movement': sb.movement,
-            'attacks': sb.attacks,
-            'morale': sb.morale,
-            'save_as': sb.save_as,
-            'special_abilities': sb.special_abilities,
+            "armor_class": sb.armor_class,
+            "hit_dice": sb.hit_dice,
+            "hp_current": sb.hp_current,
+            "hp_max": sb.hp_max,
+            "movement": sb.movement,
+            "attacks": sb.attacks,
+            "morale": sb.morale,
+            "save_as": sb.save_as,
+            "special_abilities": sb.special_abilities,
         }
 
     # =========================================================================
@@ -1029,7 +1046,7 @@ class ContentManager:
         treasure_type: Optional[str] = None,
         number_appearing: str = "1d6",
         alignment: str = "neutral",
-        tags: Optional[list[str]] = None
+        tags: Optional[list[str]] = None,
     ) -> bool:
         """
         Add monster data.
@@ -1050,14 +1067,14 @@ class ContentManager:
             True if added successfully
         """
         data = {
-            'monster_id': monster_id,
-            'name': name,
-            'stat_block': self._stat_block_to_dict(stat_block),
-            'description': description,
-            'habitat': habitat or [],
-            'treasure_type': treasure_type,
-            'number_appearing': number_appearing,
-            'alignment': alignment,
+            "monster_id": monster_id,
+            "name": name,
+            "stat_block": self._stat_block_to_dict(stat_block),
+            "description": description,
+            "habitat": habitat or [],
+            "treasure_type": treasure_type,
+            "number_appearing": number_appearing,
+            "alignment": alignment,
         }
 
         all_tags = tags or []
@@ -1065,13 +1082,7 @@ class ContentManager:
             all_tags.extend(habitat)
         all_tags.append(alignment)
 
-        return self.add_content(
-            monster_id,
-            ContentType.MONSTER,
-            data,
-            source,
-            tags=all_tags
-        )
+        return self.add_content(monster_id, ContentType.MONSTER, data, source, tags=all_tags)
 
     def get_monster(self, monster_id: str) -> Optional[dict[str, Any]]:
         """Get monster by ID."""
@@ -1093,29 +1104,31 @@ class ContentManager:
             file_path: Output file path
         """
         export_data = {
-            'sources': [],
-            'content': {},
+            "sources": [],
+            "content": {},
         }
 
         # Export sources
         for source in self._sources.values():
-            export_data['sources'].append({
-                'source_id': source.source_id,
-                'source_type': source.source_type.value,
-                'book_name': source.book_name,
-                'book_code': source.book_code,
-                'version': source.version,
-                'file_path': source.file_path,
-                'file_hash': source.file_hash,
-            })
+            export_data["sources"].append(
+                {
+                    "source_id": source.source_id,
+                    "source_type": source.source_type.value,
+                    "book_name": source.book_name,
+                    "book_code": source.book_code,
+                    "version": source.version,
+                    "file_path": source.file_path,
+                    "file_hash": source.file_hash,
+                }
+            )
 
         # Export content by type
         for content_type in ContentType:
             content_list = self.get_all_content(content_type)
             if content_list:
-                export_data['content'][content_type.value] = content_list
+                export_data["content"][content_type.value] = content_list
 
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             json.dump(export_data, f, indent=2, default=str)
 
         logger.info(f"Exported content to {file_path}")
@@ -1130,39 +1143,44 @@ class ContentManager:
         Returns:
             Number of content entries imported
         """
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             import_data = json.load(f)
 
         count = 0
 
         # Import sources first
-        for source_data in import_data.get('sources', []):
+        for source_data in import_data.get("sources", []):
             source = ContentSource(
-                source_id=source_data['source_id'],
-                source_type=SourceType(source_data['source_type']),
-                book_name=source_data['book_name'],
-                book_code=source_data['book_code'],
-                version=source_data['version'],
-                file_path=source_data.get('file_path', ''),
-                file_hash=source_data.get('file_hash'),
+                source_id=source_data["source_id"],
+                source_type=SourceType(source_data["source_type"]),
+                book_name=source_data["book_name"],
+                book_code=source_data["book_code"],
+                version=source_data["version"],
+                file_path=source_data.get("file_path", ""),
+                file_hash=source_data.get("file_hash"),
             )
             self.register_source(source)
 
         # Import content
-        for content_type_str, content_list in import_data.get('content', {}).items():
+        for content_type_str, content_list in import_data.get("content", {}).items():
             content_type = ContentType(content_type_str)
 
             for content in content_list:
-                source_id = content.pop('_source_id', 'imported')
-                content.pop('_priority', None)
-                content_id = content.get(f'{content_type_str}_id') or content.get('hex_id') or content.get('npc_id') or content.get('monster_id')
+                source_id = content.pop("_source_id", "imported")
+                content.pop("_priority", None)
+                content_id = (
+                    content.get(f"{content_type_str}_id")
+                    or content.get("hex_id")
+                    or content.get("npc_id")
+                    or content.get("monster_id")
+                )
 
                 if content_id:
                     self.add_content(
                         content_id,
                         content_type,
                         content,
-                        SourceReference(source_id=source_id, book_code='imported'),
+                        SourceReference(source_id=source_id, book_code="imported"),
                     )
                     count += 1
 
@@ -1176,22 +1194,25 @@ class ContentManager:
     def get_statistics(self) -> dict[str, Any]:
         """Get content statistics."""
         stats = {
-            'sources': len(self._sources),
-            'content_counts': {},
-            'total_entries': 0,
+            "sources": len(self._sources),
+            "content_counts": {},
+            "total_entries": 0,
         }
 
         with self._get_connection() as conn:
             cursor = conn.cursor()
 
             for content_type in ContentType:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT COUNT(DISTINCT content_id)
                     FROM content_entries
                     WHERE content_type = ?
-                """, (content_type.value,))
+                """,
+                    (content_type.value,),
+                )
                 count = cursor.fetchone()[0]
-                stats['content_counts'][content_type.value] = count
-                stats['total_entries'] += count
+                stats["content_counts"][content_type.value] = count
+                stats["total_entries"] += count
 
         return stats

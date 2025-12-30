@@ -14,6 +14,7 @@ from src.data_models import DiceRoller
 
 class Kindred(str, Enum):
     """Playable kindreds (races) in Dolmenwood."""
+
     BREGGLE = "breggle"
     ELF = "elf"
     GRIMALKIN = "grimalkin"
@@ -24,16 +25,18 @@ class Kindred(str, Enum):
 
 class NameColumn(str, Enum):
     """Name table column types."""
+
     MALE = "male"
     FEMALE = "female"
     UNISEX = "unisex"
     SURNAME = "surname"
-    RUSTIC = "rustic"      # For elves
-    COURTLY = "courtly"    # For elves
+    RUSTIC = "rustic"  # For elves
+    COURTLY = "courtly"  # For elves
 
 
 class CharacterAspectType(str, Enum):
     """Types of character aspect tables."""
+
     NAME = "name"
     BACKGROUND = "background"
     TRINKET = "trinket"
@@ -43,7 +46,7 @@ class CharacterAspectType(str, Enum):
     FACE = "face"
     DRESS = "dress"
     BELIEFS = "beliefs"
-    FUR_BODY = "fur_body"      # Fur for some, body type for others
+    FUR_BODY = "fur_body"  # Fur for some, body type for others
     SPEECH = "speech"
 
 
@@ -54,38 +57,42 @@ class CharacterAspectType(str, Enum):
 
 class EncounterLocationType(str, Enum):
     """Types of locations for encounter tables."""
-    WILDERNESS = "wilderness"          # General wilderness
-    SETTLEMENT = "settlement"          # Town/village encounters
-    FAIRY_ROAD = "fairy_road"          # Fairy road encounters
-    HEX_SPECIFIC = "hex_specific"      # Specific hex encounters
-    REGIONAL = "regional"              # Regional wilderness tables
-    DUNGEON = "dungeon"                # Dungeon encounters
+
+    WILDERNESS = "wilderness"  # General wilderness
+    SETTLEMENT = "settlement"  # Town/village encounters
+    FAIRY_ROAD = "fairy_road"  # Fairy road encounters
+    HEX_SPECIFIC = "hex_specific"  # Specific hex encounters
+    REGIONAL = "regional"  # Regional wilderness tables
+    DUNGEON = "dungeon"  # Dungeon encounters
 
 
 class EncounterTimeOfDay(str, Enum):
     """Time of day for encounter tables."""
-    ANY = "any"                        # Applies any time
-    DAY = "day"                        # Daytime only
-    NIGHT = "night"                    # Nighttime only
-    DAWN = "dawn"                      # Dawn specifically
-    DUSK = "dusk"                      # Dusk specifically
+
+    ANY = "any"  # Applies any time
+    DAY = "day"  # Daytime only
+    NIGHT = "night"  # Nighttime only
+    DAWN = "dawn"  # Dawn specifically
+    DUSK = "dusk"  # Dusk specifically
 
 
 class EncounterSeason(str, Enum):
     """Seasons for encounter tables, including Dolmenwood unseasons."""
-    ANY = "any"                        # Applies any season
+
+    ANY = "any"  # Applies any season
     SPRING = "spring"
     SUMMER = "summer"
     AUTUMN = "autumn"
     WINTER = "winter"
     # Dolmenwood Unseasons
-    CHAME = "chame"                    # Unseason of Chame
-    VAGUE = "vague"                    # Unseason of Vague
+    CHAME = "chame"  # Unseason of Chame
+    VAGUE = "vague"  # Unseason of Vague
 
 
 class DolmenwoodRegion(str, Enum):
     """Regions of Dolmenwood for regional encounter tables."""
-    ANY = "any"                        # Applies anywhere
+
+    ANY = "any"  # Applies anywhere
     NORTHERN_SCRATCH = "northern_scratch"
     LAKE_LONGMERE = "lake_longmere"
     MULCHGROVE = "mulchgrove"
@@ -99,6 +106,7 @@ class DolmenwoodRegion(str, Enum):
 
 class DolmenwoodSettlement(str, Enum):
     """Named settlements in Dolmenwood with encounter tables."""
+
     BLACKESWELL = "blackeswell"
     CASTLE_BRACKENWOLD = "castle_brackenwold"
     COBTON = "cobton"
@@ -115,17 +123,18 @@ class DolmenwoodSettlement(str, Enum):
 
 class EncounterResultType(str, Enum):
     """Types of encounter results."""
-    MONSTER = "monster"                # Monster encounter
-    NPC = "npc"                        # NPC encounter
-    LAIR = "lair"                      # Monster lair discovery
-    SPOOR = "spoor"                    # Signs of creature activity
-    SPECIAL = "special"                # Special/unique encounter
-    ENVIRONMENTAL = "environmental"    # Environmental hazard
-    FAIRY = "fairy"                    # Fairy-related encounter
-    PATROL = "patrol"                  # Guard/military patrol
-    MERCHANT = "merchant"              # Traveling merchant
-    PILGRIM = "pilgrim"                # Religious travelers
-    EVENT = "event"                    # Local event/happening
+
+    MONSTER = "monster"  # Monster encounter
+    NPC = "npc"  # NPC encounter
+    LAIR = "lair"  # Monster lair discovery
+    SPOOR = "spoor"  # Signs of creature activity
+    SPECIAL = "special"  # Special/unique encounter
+    ENVIRONMENTAL = "environmental"  # Environmental hazard
+    FAIRY = "fairy"  # Fairy-related encounter
+    PATROL = "patrol"  # Guard/military patrol
+    MERCHANT = "merchant"  # Traveling merchant
+    PILGRIM = "pilgrim"  # Religious travelers
+    EVENT = "event"  # Local event/happening
 
 
 class TableCategory(str, Enum):
@@ -135,58 +144,60 @@ class TableCategory(str, Enum):
     Tables are grouped by category to allow the system to load and use
     appropriate tables based on game context.
     """
+
     # Character creation
     CHARACTER_ASPECT = "character_aspect"  # Appearance, beliefs, background
-    CHARACTER_NAME = "character_name"      # Name generation tables
+    CHARACTER_NAME = "character_name"  # Name generation tables
 
     # Treasure and items
-    TREASURE_TYPE = "treasure_type"        # What types/amounts of treasure
-    TREASURE_ITEM = "treasure_item"        # Specific treasure items
-    MAGIC_ITEM = "magic_item"              # Magic item generation
+    TREASURE_TYPE = "treasure_type"  # What types/amounts of treasure
+    TREASURE_ITEM = "treasure_item"  # Specific treasure items
+    MAGIC_ITEM = "magic_item"  # Magic item generation
 
     # Weather
-    WEATHER = "weather"                    # Weather conditions by season
+    WEATHER = "weather"  # Weather conditions by season
 
     # Encounters (generic)
-    ENCOUNTER_GENERIC = "encounter_generic"     # Generic wilderness encounters
-    ENCOUNTER_TYPE = "encounter_type"           # Type of encounter (monster, NPC, etc.)
-    ENCOUNTER_COMMON = "encounter_common"       # Common encounter table
-    ENCOUNTER_REGIONAL = "encounter_regional"   # Regional encounter tables
+    ENCOUNTER_GENERIC = "encounter_generic"  # Generic wilderness encounters
+    ENCOUNTER_TYPE = "encounter_type"  # Type of encounter (monster, NPC, etc.)
+    ENCOUNTER_COMMON = "encounter_common"  # Common encounter table
+    ENCOUNTER_REGIONAL = "encounter_regional"  # Regional encounter tables
     ENCOUNTER_SETTLEMENT = "encounter_settlement"  # Settlement encounters
     ENCOUNTER_FAIRY_ROAD = "encounter_fairy_road"  # Fairy road encounters
-    ENCOUNTER_UNSEASON = "encounter_unseason"   # Unseason-specific encounters
-    REACTION = "reaction"                       # 2d6 reaction roll
-    MORALE = "morale"                           # Morale check
-    SURPRISE = "surprise"                       # Surprise determination
+    ENCOUNTER_UNSEASON = "encounter_unseason"  # Unseason-specific encounters
+    REACTION = "reaction"  # 2d6 reaction roll
+    MORALE = "morale"  # Morale check
+    SURPRISE = "surprise"  # Surprise determination
 
     # Encounters (hex-specific)
-    ENCOUNTER_HEX = "encounter_hex"        # Hex-specific encounter tables
+    ENCOUNTER_HEX = "encounter_hex"  # Hex-specific encounter tables
 
     # Dungeon (generic)
-    DUNGEON_ROOM = "dungeon_room"          # Room contents
-    DUNGEON_FEATURE = "dungeon_feature"    # Room features
-    DUNGEON_TRAP = "dungeon_trap"          # Trap generation
-    DUNGEON_GENERIC = "dungeon_generic"    # Generic dungeon tables
+    DUNGEON_ROOM = "dungeon_room"  # Room contents
+    DUNGEON_FEATURE = "dungeon_feature"  # Room features
+    DUNGEON_TRAP = "dungeon_trap"  # Trap generation
+    DUNGEON_GENERIC = "dungeon_generic"  # Generic dungeon tables
 
     # Dungeon (hex-specific)
-    DUNGEON_HEX = "dungeon_hex"            # Hex-specific dungeon rooms
+    DUNGEON_HEX = "dungeon_hex"  # Hex-specific dungeon rooms
 
     # Rumors
-    RUMOR_GENERIC = "rumor_generic"        # Generic rumors
+    RUMOR_GENERIC = "rumor_generic"  # Generic rumors
     RUMOR_SETTLEMENT = "rumor_settlement"  # Settlement-specific rumors
-    RUMOR_MONSTER = "rumor_monster"        # Monster-related rumors
+    RUMOR_MONSTER = "rumor_monster"  # Monster-related rumors
 
     # Flavor
-    FLAVOR = "flavor"                      # Context-specific flavor tables
-    NPC_TRAIT = "npc_trait"               # NPC personality/traits
+    FLAVOR = "flavor"  # Context-specific flavor tables
+    NPC_TRAIT = "npc_trait"  # NPC personality/traits
 
     # Procedural
-    FORAGING = "foraging"                  # Foraging results
-    LOST = "lost"                          # Getting lost results
+    FORAGING = "foraging"  # Foraging results
+    LOST = "lost"  # Getting lost results
 
 
 class DieType(str, Enum):
     """Standard die types for table rolls."""
+
     D4 = "d4"
     D6 = "d6"
     D8 = "d8"
@@ -206,30 +217,31 @@ class TableEntry:
     Entries can contain simple text results, nested table references,
     monster/NPC/item references, or mechanical effects.
     """
+
     # Roll range (inclusive)
     roll_min: int
     roll_max: int
 
     # Result content
-    result: str                           # Text description of result
-    title: Optional[str] = None           # Optional title
+    result: str  # Text description of result
+    title: Optional[str] = None  # Optional title
 
     # References to other content
-    monster_refs: list[str] = field(default_factory=list)   # Monster IDs
-    npc_refs: list[str] = field(default_factory=list)       # NPC IDs
-    item_refs: list[str] = field(default_factory=list)      # Item IDs
-    hex_refs: list[str] = field(default_factory=list)       # Hex IDs
+    monster_refs: list[str] = field(default_factory=list)  # Monster IDs
+    npc_refs: list[str] = field(default_factory=list)  # NPC IDs
+    item_refs: list[str] = field(default_factory=list)  # Item IDs
+    hex_refs: list[str] = field(default_factory=list)  # Hex IDs
 
     # Nested tables
-    sub_table: Optional[str] = None       # Reference to another table to roll on
-    sub_roll: Optional[str] = None        # Dice notation for sub-roll
+    sub_table: Optional[str] = None  # Reference to another table to roll on
+    sub_roll: Optional[str] = None  # Dice notation for sub-roll
 
     # Mechanical effects
     mechanical_effect: Optional[str] = None  # Game mechanical effect
-    modifier: int = 0                        # Modifier to apply (e.g., reaction mod)
+    modifier: int = 0  # Modifier to apply (e.g., reaction mod)
 
     # Quantity
-    quantity: Optional[str] = None        # Dice notation for quantity, e.g., "2d6"
+    quantity: Optional[str] = None  # Dice notation for quantity, e.g., "2d6"
 
     def matches_roll(self, roll: int) -> bool:
         """Check if a roll value falls within this entry's range."""
@@ -245,6 +257,7 @@ class DolmenwoodTable:
     other tables for nested rolls. They are categorized for
     context-appropriate access.
     """
+
     # Identification
     table_id: str
     name: str
@@ -253,24 +266,24 @@ class DolmenwoodTable:
     # Die configuration
     die_type: DieType = DieType.D6
     num_dice: int = 1
-    base_modifier: int = 0                # Permanent modifier to all rolls
+    base_modifier: int = 0  # Permanent modifier to all rolls
 
     # Description
-    description: str = ""                  # When/how to use this table
-    source_reference: str = ""             # Book and page reference
+    description: str = ""  # When/how to use this table
+    source_reference: str = ""  # Book and page reference
 
     # Entries
     entries: list[TableEntry] = field(default_factory=list)
 
     # Context
     context_required: Optional[str] = None  # Required context (hex_id, season, etc.)
-    hex_id: Optional[str] = None           # For hex-specific tables
-    dungeon_id: Optional[str] = None       # For dungeon-specific tables
-    settlement_id: Optional[str] = None    # For settlement-specific tables
+    hex_id: Optional[str] = None  # For hex-specific tables
+    dungeon_id: Optional[str] = None  # For dungeon-specific tables
+    settlement_id: Optional[str] = None  # For settlement-specific tables
 
     # Flags
-    allows_reroll: bool = False            # Can results be rerolled
-    cumulative: bool = False               # Results accumulate (treasure)
+    allows_reroll: bool = False  # Can results be rerolled
+    cumulative: bool = False  # Results accumulate (treasure)
 
     def get_max_roll(self) -> int:
         """Get the maximum possible roll for this table."""
@@ -318,6 +331,7 @@ class TableResult:
 
     Captures the full chain of results for complex nested tables.
     """
+
     table_id: str
     table_name: str
     category: TableCategory
@@ -362,6 +376,7 @@ class TableContext:
     Passed to tables to allow context-sensitive modifiers (e.g.,
     CHA modifier for reaction rolls, terrain for encounter tables).
     """
+
     # Location context
     hex_id: Optional[str] = None
     dungeon_id: Optional[str] = None
@@ -375,14 +390,14 @@ class TableContext:
 
     # Character context
     party_level: int = 1
-    cha_modifier: int = 0                 # For reaction rolls
+    cha_modifier: int = 0  # For reaction rolls
 
     # Terrain context
     terrain_type: Optional[str] = None
     terrain_difficulty: int = 1
 
     # Modifiers
-    explicit_modifier: int = 0            # User-specified modifier
+    explicit_modifier: int = 0  # User-specified modifier
     situational_modifiers: dict[str, int] = field(default_factory=dict)
 
     # State
@@ -404,10 +419,11 @@ class SkillCheck:
     Used for OSR-style skills like Hear Noise, Find Secret Doors,
     Forage, Hunt, etc.
     """
+
     skill_name: str
-    target: int           # X in X-in-6 (1-5 typically)
-    roll: int             # d6 result
-    success: bool         # roll <= target
+    target: int  # X in X-in-6 (1-5 typically)
+    roll: int  # d6 result
+    success: bool  # roll <= target
 
     @classmethod
     def check(cls, skill_name: str, target: int, modifier: int = 0) -> "SkillCheck":
@@ -426,25 +442,21 @@ class SkillCheck:
         roll = DiceRoller.roll("1d6", f"{skill_name} check").total
         success = roll <= effective_target
 
-        return cls(
-            skill_name=skill_name,
-            target=effective_target,
-            roll=roll,
-            success=success
-        )
+        return cls(skill_name=skill_name, target=effective_target, roll=roll, success=success)
 
 
 # Common skill targets
 class SkillTarget(Enum):
     """Standard X-in-6 skill targets for common abilities."""
-    HEAR_NOISE = 1         # 1-in-6 base
-    FIND_TRAPS = 1         # 1-in-6 base (Thieves get better)
+
+    HEAR_NOISE = 1  # 1-in-6 base
+    FIND_TRAPS = 1  # 1-in-6 base (Thieves get better)
     FIND_SECRET_DOORS = 1  # 1-in-6 base (Elves get 2-in-6)
-    FORAGE = 1             # 1-in-6 base
-    HUNT = 1               # 1-in-6 base
-    FORCE_DOOR = 2         # 2-in-6 base
-    GET_LOST = 2           # 2-in-6 base in wilderness
-    ENCOUNTER = 2          # 2-in-6 base encounter check
+    FORAGE = 1  # 1-in-6 base
+    HUNT = 1  # 1-in-6 base
+    FORCE_DOOR = 2  # 2-in-6 base
+    GET_LOST = 2  # 2-in-6 base in wilderness
+    ENCOUNTER = 2  # 2-in-6 base encounter check
 
 
 # =============================================================================
@@ -460,6 +472,7 @@ class NameTableColumn:
     Represents one category of names (male, female, unisex, surname, etc.)
     with a list of possible values to roll on.
     """
+
     column_type: NameColumn
     names: list[str] = field(default_factory=list)
     die_type: DieType = DieType.D20
@@ -483,6 +496,7 @@ class KindredNameTable:
     - Grimalkin: first names, surnames (no gender distinction)
     - Elves: rustic names, courtly names (no surnames)
     """
+
     kindred: Kindred
     columns: dict[NameColumn, NameTableColumn] = field(default_factory=dict)
     description: str = ""
@@ -501,7 +515,7 @@ class KindredNameTable:
     def roll_full_name(
         self,
         gender: Optional[str] = None,
-        style: Optional[str] = None  # For elves: "rustic" or "courtly"
+        style: Optional[str] = None,  # For elves: "rustic" or "courtly"
     ) -> str:
         """
         Roll a complete name appropriate for the kindred.
@@ -557,6 +571,7 @@ class CharacterAspectTable:
     like background, demeanour, dress, etc. Each kindred has its own
     set of aspect tables with kindred-appropriate results.
     """
+
     table_id: str
     kindred: Kindred
     aspect_type: CharacterAspectType
@@ -589,6 +604,7 @@ class CharacterAspectTable:
 @dataclass
 class CharacterAspectResult:
     """Result of rolling on a character aspect table."""
+
     kindred: Kindred
     aspect_type: CharacterAspectType
     roll: int
@@ -606,6 +622,7 @@ class GeneratedCharacterAspects:
 
     Contains all rolled aspects for a character of a specific kindred.
     """
+
     kindred: Kindred
     name: str = ""
     gender: Optional[str] = None
@@ -718,22 +735,24 @@ class GeneratedCharacterAspects:
 
 class EncounterTableCategory(str, Enum):
     """Categories of encounter tables for eligibility determination."""
-    COMMON = "common"              # Common wilderness encounters
+
+    COMMON = "common"  # Common wilderness encounters
     HEX_SPECIFIC = "hex_specific"  # Specific to a hex
-    REGIONAL = "regional"          # Regional wilderness table
-    SEASONAL = "seasonal"          # Season-specific encounters (including unseasons)
-    SETTLEMENT = "settlement"      # Settlement encounters (day/night)
-    FAIRY_ROAD = "fairy_road"      # Fairy road only
+    REGIONAL = "regional"  # Regional wilderness table
+    SEASONAL = "seasonal"  # Season-specific encounters (including unseasons)
+    SETTLEMENT = "settlement"  # Settlement encounters (day/night)
+    FAIRY_ROAD = "fairy_road"  # Fairy road only
 
 
 class NestedTableConditionType(str, Enum):
     """Types of conditions for selecting nested sub-tables."""
-    TIME_OF_DAY = "time_of_day"      # Day vs night
-    ON_ROAD = "on_road"              # Traveling on road vs wild
-    HAS_FIRE = "has_fire"            # Fire present (for night encounters)
-    TERRAIN = "terrain"              # Terrain type
-    WEATHER = "weather"              # Weather conditions
-    CUSTOM = "custom"                # Custom condition
+
+    TIME_OF_DAY = "time_of_day"  # Day vs night
+    ON_ROAD = "on_road"  # Traveling on road vs wild
+    HAS_FIRE = "has_fire"  # Fire present (for night encounters)
+    TERRAIN = "terrain"  # Terrain type
+    WEATHER = "weather"  # Weather conditions
+    CUSTOM = "custom"  # Custom condition
 
 
 @dataclass
@@ -744,21 +763,18 @@ class NestedTableCondition:
     Used when a parent table contains multiple sub-tables
     selected based on situational conditions.
     """
+
     condition_type: NestedTableConditionType
-    condition_value: Any              # The value to match (e.g., "day", True)
-    condition_label: str = ""         # Human-readable label for the condition
+    condition_value: Any  # The value to match (e.g., "day", True)
+    condition_label: str = ""  # Human-readable label for the condition
 
     def matches(self, context: "EncounterTableContext") -> bool:
         """Check if this condition matches the given context."""
         if self.condition_type == NestedTableConditionType.TIME_OF_DAY:
             if self.condition_value == "day":
-                return context.time_of_day in [
-                    EncounterTimeOfDay.DAY, EncounterTimeOfDay.DAWN
-                ]
+                return context.time_of_day in [EncounterTimeOfDay.DAY, EncounterTimeOfDay.DAWN]
             elif self.condition_value == "night":
-                return context.time_of_day in [
-                    EncounterTimeOfDay.NIGHT, EncounterTimeOfDay.DUSK
-                ]
+                return context.time_of_day in [EncounterTimeOfDay.NIGHT, EncounterTimeOfDay.DUSK]
             return str(context.time_of_day.value) == str(self.condition_value)
 
         elif self.condition_type == NestedTableConditionType.ON_ROAD:
@@ -775,9 +791,7 @@ class NestedTableCondition:
 
         # Custom conditions use extra_conditions dict
         elif self.condition_type == NestedTableConditionType.CUSTOM:
-            return context.extra_conditions.get(
-                self.condition_label, None
-            ) == self.condition_value
+            return context.extra_conditions.get(self.condition_label, None) == self.condition_value
 
         return False
 
@@ -790,6 +804,7 @@ class EncounterTableContext:
     Used to determine which encounter table(s) apply and
     any modifiers to the roll.
     """
+
     # Location context
     location_type: EncounterLocationType = EncounterLocationType.WILDERNESS
     hex_id: Optional[str] = None
@@ -803,18 +818,18 @@ class EncounterTableContext:
     is_unseason: bool = False
 
     # Situational conditions (for nested table selection)
-    on_road: bool = False              # Traveling on a road
-    has_fire: bool = False             # Fire/light source present
-    terrain_type: Optional[str] = None # Current terrain
-    weather: Optional[str] = None      # Current weather
+    on_road: bool = False  # Traveling on a road
+    has_fire: bool = False  # Fire/light source present
+    terrain_type: Optional[str] = None  # Current terrain
+    weather: Optional[str] = None  # Current weather
 
     # Extra conditions for custom nested table logic
     extra_conditions: dict[str, Any] = field(default_factory=dict)
 
     # Modifiers
-    stealth_modifier: int = 0          # Party attempting stealth
-    noise_modifier: int = 0            # Party making noise
-    light_modifier: int = 0            # Light sources at night
+    stealth_modifier: int = 0  # Party attempting stealth
+    noise_modifier: int = 0  # Party making noise
+    light_modifier: int = 0  # Light sources at night
 
     def matches_table(
         self,
@@ -822,7 +837,7 @@ class EncounterTableContext:
         table_time: EncounterTimeOfDay,
         table_season: EncounterSeason,
         table_settlement: Optional[DolmenwoodSettlement] = None,
-        table_region: Optional[DolmenwoodRegion] = None
+        table_region: Optional[DolmenwoodRegion] = None,
     ) -> bool:
         """Check if this context matches a table's requirements."""
         # Check location type
@@ -844,10 +859,14 @@ class EncounterTableContext:
         if table_time != EncounterTimeOfDay.ANY:
             if self.time_of_day != table_time:
                 # Day/night don't match
-                if not (table_time == EncounterTimeOfDay.DAY and
-                        self.time_of_day in [EncounterTimeOfDay.DAWN, EncounterTimeOfDay.DAY]):
-                    if not (table_time == EncounterTimeOfDay.NIGHT and
-                            self.time_of_day in [EncounterTimeOfDay.DUSK, EncounterTimeOfDay.NIGHT]):
+                if not (
+                    table_time == EncounterTimeOfDay.DAY
+                    and self.time_of_day in [EncounterTimeOfDay.DAWN, EncounterTimeOfDay.DAY]
+                ):
+                    if not (
+                        table_time == EncounterTimeOfDay.NIGHT
+                        and self.time_of_day in [EncounterTimeOfDay.DUSK, EncounterTimeOfDay.NIGHT]
+                    ):
                         return False
 
         # Check season
@@ -865,6 +884,7 @@ class EncounterEntry:
 
     Extends TableEntry with encounter-specific fields.
     """
+
     # Roll range
     roll_min: int
     roll_max: int
@@ -879,12 +899,12 @@ class EncounterEntry:
     number_appearing: Optional[str] = None  # Dice notation
 
     # Sub-tables
-    sub_table: Optional[str] = None         # Reference to another table
-    regional_table: bool = False            # Roll on regional table instead
+    sub_table: Optional[str] = None  # Reference to another table
+    regional_table: bool = False  # Roll on regional table instead
 
     # Behavioral hints
-    activity: Optional[str] = None          # What the encounter is doing
-    disposition: Optional[str] = None       # Starting attitude
+    activity: Optional[str] = None  # What the encounter is doing
+    disposition: Optional[str] = None  # Starting attitude
 
     # Special flags
     is_lair: bool = False
@@ -903,8 +923,9 @@ class NestedTableSelector:
     Used when a parent table contains multiple sub-tables that are
     selected based on situational conditions (time of day, on road, etc.).
     """
+
     conditions: list[NestedTableCondition]  # All must match for this table
-    table: "EncounterTable"                  # The nested table to use
+    table: "EncounterTable"  # The nested table to use
 
     def matches(self, context: EncounterTableContext) -> bool:
         """Check if all conditions match the given context."""
@@ -922,6 +943,7 @@ class EncounterTable:
     - Equal probability selection among eligible wilderness tables
     - Exclusive table types (fairy road, settlement)
     """
+
     table_id: str
     name: str
 
@@ -1002,8 +1024,10 @@ class EncounterTable:
             return total, self.entries[-1]
 
         return total, EncounterEntry(
-            roll_min=total, roll_max=total,
-            result="No encounter", result_type=EncounterResultType.SPECIAL
+            roll_min=total,
+            roll_max=total,
+            result="No encounter",
+            result_type=EncounterResultType.SPECIAL,
         )
 
     def matches_context(self, context: EncounterTableContext) -> bool:
@@ -1013,7 +1037,7 @@ class EncounterTable:
             table_time=self.time_of_day,
             table_season=self.season,
             table_settlement=self.settlement,
-            table_region=self.region
+            table_region=self.region,
         )
 
     def is_eligible_for_context(self, context: EncounterTableContext) -> bool:
@@ -1059,6 +1083,7 @@ class EncounterTable:
 @dataclass
 class EncounterResult:
     """Complete result of an encounter roll."""
+
     table_id: str
     table_name: str
 
@@ -1111,11 +1136,12 @@ class EncounterResult:
 
 class TreasureTableCategory(str, Enum):
     """Categories of treasure tables for organization."""
+
     # Main treasure tables (p.393)
-    COINS = "coins"                        # Coin quantities
-    RICHES = "riches"                      # Gems, jewelry, art
-    MAGIC_ITEM = "magic_item"              # Magic item determination
-    MAGIC_ITEM_TYPE = "magic_item_type"    # Type of magic item
+    COINS = "coins"  # Coin quantities
+    RICHES = "riches"  # Gems, jewelry, art
+    MAGIC_ITEM = "magic_item"  # Magic item determination
+    MAGIC_ITEM_TYPE = "magic_item_type"  # Type of magic item
 
     # Detail tables for gems/jewelry/art (p.394)
     GEM_VALUE = "gem_value"
@@ -1188,6 +1214,7 @@ class TreasureTableCategory(str, Enum):
 
 class TreasureType(str, Enum):
     """Types of treasure items."""
+
     COINS = "coins"
     GEMS = "gems"
     JEWELRY = "jewelry"
@@ -1197,6 +1224,7 @@ class TreasureType(str, Enum):
 
 class CoinType(str, Enum):
     """Types of coins in Dolmenwood."""
+
     COPPER = "cp"
     SILVER = "sp"
     GOLD = "gp"
@@ -1205,6 +1233,7 @@ class CoinType(str, Enum):
 
 class MagicItemCategory(str, Enum):
     """Categories of magic items in Dolmenwood."""
+
     ARMOUR = "armour"
     AMULET_TALISMAN = "amulet_talisman"
     WEAPON = "weapon"
@@ -1228,6 +1257,7 @@ class TreasureEntry:
 
     Supports variable roll ranges and references to sub-tables.
     """
+
     # Roll range (inclusive)
     roll_min: int
     roll_max: int
@@ -1237,23 +1267,23 @@ class TreasureEntry:
     result_type: TreasureType = TreasureType.COINS
 
     # Value (for gems, jewelry, art)
-    value_gp: Optional[int] = None           # Base value in gold pieces
-    value_dice: Optional[str] = None         # Dice notation for value
+    value_gp: Optional[int] = None  # Base value in gold pieces
+    value_dice: Optional[str] = None  # Dice notation for value
 
     # Magic item specifics
     magic_item_category: Optional[MagicItemCategory] = None
-    magic_item_ref: Optional[str] = None     # Specific magic item ID
+    magic_item_ref: Optional[str] = None  # Specific magic item ID
 
     # Sub-tables for further detail
-    sub_table: Optional[str] = None          # Reference to another table
+    sub_table: Optional[str] = None  # Reference to another table
     sub_tables: list[str] = field(default_factory=list)  # Multiple sub-tables
 
     # Quantity (if this entry can appear multiple times)
-    quantity_dice: Optional[str] = None      # e.g., "1d6" gems
+    quantity_dice: Optional[str] = None  # e.g., "1d6" gems
 
     # Coin type (for coin entries)
     coin_type: Optional[CoinType] = None
-    coin_multiplier: int = 1                 # e.g., x1000 for "1d6 x 1000cp"
+    coin_multiplier: int = 1  # e.g., x1000 for "1d6 x 1000cp"
 
     # Descriptive details
     description: Optional[str] = None
@@ -1272,15 +1302,16 @@ class TreasureTableContext:
     Provides information about the source of treasure
     and any modifiers to treasure rolls.
     """
+
     # Source context
     treasure_type_code: Optional[str] = None  # e.g., "A", "B", "H" etc.
-    source_monster: Optional[str] = None      # Monster that dropped it
-    source_location: Optional[str] = None     # Where treasure was found
+    source_monster: Optional[str] = None  # Monster that dropped it
+    source_location: Optional[str] = None  # Where treasure was found
 
     # Modifiers
-    value_multiplier: float = 1.0             # Multiply all values
-    quantity_modifier: int = 0                # Add to quantity rolls
-    magic_item_bonus: int = 0                 # Bonus to magic item chance
+    value_multiplier: float = 1.0  # Multiply all values
+    quantity_modifier: int = 0  # Add to quantity rolls
+    magic_item_bonus: int = 0  # Bonus to magic item chance
 
     # Extra conditions for nested table selection
     extra_conditions: dict[str, Any] = field(default_factory=dict)
@@ -1294,8 +1325,9 @@ class TreasureNestedTableSelector:
     Used when a treasure table has conditional sub-tables
     (e.g., different tables based on item type).
     """
-    conditions: dict[str, Any]               # Conditions to match
-    table_id: str                            # The table to use when matched
+
+    conditions: dict[str, Any]  # Conditions to match
+    table_id: str  # The table to use when matched
 
     def matches(self, context: TreasureTableContext) -> bool:
         """Check if all conditions match the given context."""
@@ -1316,6 +1348,7 @@ class TreasureTable:
     - Percentage chance rolls
     - Quantity dice rolls
     """
+
     table_id: str
     name: str
     category: TreasureTableCategory
@@ -1364,10 +1397,7 @@ class TreasureTable:
         if self.entries:
             return total, self.entries[-1]
 
-        return total, TreasureEntry(
-            roll_min=total, roll_max=total,
-            result="No treasure"
-        )
+        return total, TreasureEntry(roll_min=total, roll_max=total, result="No treasure")
 
 
 @dataclass
@@ -1378,10 +1408,11 @@ class TreasureComponent:
     Represents one line in a treasure type definition, e.g.:
     "25% chance of 1d6 x 1000 cp"
     """
+
     treasure_type: TreasureType
-    chance_percent: int                      # Percentage chance (roll d100)
-    quantity_dice: str                       # Dice for quantity, e.g., "1d6"
-    multiplier: int = 1                      # e.g., x1000 for coins
+    chance_percent: int  # Percentage chance (roll d100)
+    quantity_dice: str  # Dice for quantity, e.g., "1d6"
+    multiplier: int = 1  # e.g., x1000 for coins
 
     # For coins
     coin_type: Optional[CoinType] = None
@@ -1391,7 +1422,7 @@ class TreasureComponent:
 
     # For magic items
     magic_item_category: Optional[MagicItemCategory] = None
-    specific_table: Optional[str] = None     # Specific magic item table
+    specific_table: Optional[str] = None  # Specific magic item table
 
     def roll_present(self) -> bool:
         """Roll to see if this component is present."""
@@ -1401,12 +1432,13 @@ class TreasureComponent:
 @dataclass
 class GeneratedTreasureItem:
     """A single generated treasure item with all details."""
+
     treasure_type: TreasureType
     quantity: int = 1
 
     # For coins
     coin_type: Optional[CoinType] = None
-    coin_value: int = 0                      # Total coin value
+    coin_value: int = 0  # Total coin value
 
     # For gems/jewelry/art
     item_name: Optional[str] = None
@@ -1432,9 +1464,9 @@ class GeneratedTreasureItem:
         if self.treasure_type == TreasureType.COINS:
             # Convert coins to GP (Dolmenwood rates: 10cp=1sp, 10sp=1gp, 5gp=1pp)
             conversion = {
-                CoinType.COPPER: 0.01,      # 100 cp = 1 gp
-                CoinType.SILVER: 0.1,       # 10 sp = 1 gp
-                CoinType.GOLD: 1.0,         # 1 gp = 1 gp
+                CoinType.COPPER: 0.01,  # 100 cp = 1 gp
+                CoinType.SILVER: 0.1,  # 10 sp = 1 gp
+                CoinType.GOLD: 1.0,  # 1 gp = 1 gp
                 CoinType.PELLUCIDIUM: 5.0,  # 1 pp = 5 gp
             }
             if self.coin_type:
@@ -1479,6 +1511,7 @@ class GeneratedTreasureItem:
 @dataclass
 class TreasureResult:
     """Complete result of treasure generation."""
+
     treasure_type_code: Optional[str] = None  # The treasure type rolled
 
     # Generated items by type
@@ -1552,6 +1585,7 @@ class TreasureResult:
 
 class RollTableType(str, Enum):
     """Types of roll tables in the game system."""
+
     # Character tables
     CHARACTER_NAME = "character_name"
     CHARACTER_ASPECT = "character_aspect"
@@ -1601,6 +1635,7 @@ class RollTableEntry:
     This is a generic structure that can represent any table entry
     loaded from JSON and stored in the database.
     """
+
     # Roll range (inclusive)
     roll_min: int
     roll_max: int
@@ -1656,12 +1691,13 @@ class RollTableMetadata:
 
     Contains information about the table but not the entries themselves.
     """
-    table_id: str                          # Unique identifier
-    name: str                              # Human-readable name
-    table_type: RollTableType              # Type classification
+
+    table_id: str  # Unique identifier
+    name: str  # Human-readable name
+    table_type: RollTableType  # Type classification
 
     # Die configuration
-    die_type: str = "d20"                  # e.g., "d6", "d8", "d12", "d100"
+    die_type: str = "d20"  # e.g., "d6", "d8", "d12", "d100"
     num_dice: int = 1
 
     # Source reference
@@ -1669,14 +1705,14 @@ class RollTableMetadata:
     page_number: Optional[int] = None
 
     # Category for filtering/organization
-    category: Optional[str] = None         # e.g., "regional", "settlement"
-    subcategory: Optional[str] = None      # e.g., "aldweald", "prigwort"
+    category: Optional[str] = None  # e.g., "regional", "settlement"
+    subcategory: Optional[str] = None  # e.g., "aldweald", "prigwort"
 
     # Conditions for table applicability
     conditions: dict[str, Any] = field(default_factory=dict)
 
     # Nested table configuration
-    is_container: bool = False             # True if contains conditional sub-tables
+    is_container: bool = False  # True if contains conditional sub-tables
     nested_conditions: list[dict[str, Any]] = field(default_factory=list)
 
     # Description
@@ -1728,6 +1764,7 @@ class RollTable:
     This is the primary structure for database-loaded tables.
     Entries can be loaded lazily from the database as needed.
     """
+
     metadata: RollTableMetadata
     entries: list[RollTableEntry] = field(default_factory=list)
 
@@ -1745,7 +1782,7 @@ class RollTable:
     def get_die_size(self) -> int:
         """Get the die size from the die_type string."""
         die_type = self.metadata.die_type.lower()
-        if die_type.startswith('d'):
+        if die_type.startswith("d"):
             return int(die_type[1:])
         return 20  # Default
 
@@ -1781,10 +1818,7 @@ class RollTable:
     def from_json(cls, json_data: dict[str, Any]) -> "RollTable":
         """Create a RollTable from JSON data."""
         metadata = RollTableMetadata.from_json(json_data.get("metadata", json_data))
-        entries = [
-            RollTableEntry.from_json(e)
-            for e in json_data.get("entries", [])
-        ]
+        entries = [RollTableEntry.from_json(e) for e in json_data.get("entries", [])]
         return cls(metadata=metadata, entries=entries, _entries_loaded=True)
 
     def to_json(self) -> dict[str, Any]:
@@ -1802,6 +1836,7 @@ class RollTableReference:
 
     Used when you need to reference a table without loading all entries.
     """
+
     table_id: str
     table_type: RollTableType
     name: str = ""
@@ -1820,6 +1855,7 @@ class RollResult:
 
     Captures the full roll history including any sub-table rolls.
     """
+
     table_id: str
     table_name: str
     roll: int
@@ -1864,18 +1900,28 @@ class HexTableCategory(str, Enum):
     Used to distinguish between different types of tables found in hex data,
     so the system knows which tables to use for encounters vs dungeon exploration.
     """
-    ENCOUNTER = "encounter"      # Wilderness/hex encounter tables
+
+    ENCOUNTER = "encounter"  # Wilderness/hex encounter tables
     DUNGEON_ROOM = "dungeon_room"  # Dungeon room/location tables
     DUNGEON_ENCOUNTER = "dungeon_encounter"  # Dungeon-specific encounters
-    TREASURE = "treasure"        # Treasure tables
-    EVENT = "event"              # Random event tables
-    NPC = "npc"                  # NPC tables
-    OTHER = "other"              # Miscellaneous tables
+    TREASURE = "treasure"  # Treasure tables
+    EVENT = "event"  # Random event tables
+    NPC = "npc"  # NPC tables
+    OTHER = "other"  # Miscellaneous tables
 
 
 # Keywords used to infer table category from name
 _ENCOUNTER_KEYWORDS = {"encounter", "encounters", "wandering", "random encounter"}
-_DUNGEON_ROOM_KEYWORDS = {"room", "rooms", "location", "locations", "area", "areas", "chamber", "chambers"}
+_DUNGEON_ROOM_KEYWORDS = {
+    "room",
+    "rooms",
+    "location",
+    "locations",
+    "area",
+    "areas",
+    "chamber",
+    "chambers",
+}
 _TREASURE_KEYWORDS = {"treasure", "loot", "hoard"}
 _EVENT_KEYWORDS = {"event", "events", "happening", "occurrence"}
 _NPC_KEYWORDS = {"npc", "npcs", "character", "characters", "inhabitant", "inhabitants"}
@@ -1893,6 +1939,7 @@ class HexRollTableEntry:
     - "mechanical_effect" for game rules
     - "sub_table" for inline text sub-tables
     """
+
     roll: int
     title: Optional[str] = None
     description: str = ""
@@ -1994,6 +2041,7 @@ class HexRollTable:
     - DUNGEON_ENCOUNTER: Encounters specific to a dungeon
     - TREASURE, EVENT, NPC, OTHER: Other specialized tables
     """
+
     name: str
     die_type: str
     description: str = ""
@@ -2008,16 +2056,10 @@ class HexRollTable:
 
     @classmethod
     def from_json(
-        cls,
-        json_data: dict[str, Any],
-        hex_id: Optional[str] = None,
-        poi_name: Optional[str] = None
+        cls, json_data: dict[str, Any], hex_id: Optional[str] = None, poi_name: Optional[str] = None
     ) -> "HexRollTable":
         """Parse a hex table from JSON."""
-        entries = [
-            HexRollTableEntry.from_json(e)
-            for e in json_data.get("entries", [])
-        ]
+        entries = [HexRollTableEntry.from_json(e) for e in json_data.get("entries", [])]
 
         name = json_data.get("name", "")
 
@@ -2049,7 +2091,7 @@ class HexRollTable:
         """Check if this is a dungeon-related table."""
         return self.table_category in (
             HexTableCategory.DUNGEON_ROOM,
-            HexTableCategory.DUNGEON_ENCOUNTER
+            HexTableCategory.DUNGEON_ENCOUNTER,
         )
 
     def to_roll_table(self) -> RollTable:
@@ -2094,7 +2136,7 @@ class HexRollTable:
 
     def roll(self) -> tuple[int, Optional[HexRollTableEntry]]:
         """Roll on this table and return the result."""
-        die_size = int(self.die_type.lower().replace('d', ''))
+        die_size = int(self.die_type.lower().replace("d", ""))
         roll_value = DiceRoller.roll(f"1d{die_size}", "hex table roll").total
 
         for entry in self.entries:
@@ -2129,11 +2171,7 @@ def parse_hex_roll_tables(hex_data: dict[str, Any]) -> list[HexRollTable]:
     for poi in hex_data.get("points_of_interest", []):
         poi_name = poi.get("name", "unknown")
         for table_data in poi.get("roll_tables", []):
-            tables.append(HexRollTable.from_json(
-                table_data,
-                hex_id=hex_id,
-                poi_name=poi_name
-            ))
+            tables.append(HexRollTable.from_json(table_data, hex_id=hex_id, poi_name=poi_name))
 
     return tables
 

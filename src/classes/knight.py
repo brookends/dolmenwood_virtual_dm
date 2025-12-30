@@ -40,9 +40,7 @@ KNIGHT_CHIVALRIC_CODE = ClassAbility(
                 "is of utmost importance. Death is preferable to dishonour."
             ),
             "service": "Service to one's liege is the greatest honour.",
-            "glory": (
-                "A knight must seek glory in battle—especially in single combat."
-            ),
+            "glory": ("A knight must seek glory in battle—especially in single combat."),
             "protecting_the_weak": (
                 "Any person in the knight's charge must be defended to the death."
             ),
@@ -77,8 +75,7 @@ KNIGHT_HORSEMANSHIP = ClassAbility(
     scales_with_level=True,
     extra_data={
         "assess_steeds": (
-            "Determine whether an animal has low, average, or high Hit Points "
-            "for its type."
+            "Determine whether an animal has low, average, or high Hit Points " "for its type."
         ),
         "urge_great_speed": {
             "min_level": 5,
@@ -131,9 +128,7 @@ KNIGHT_MONSTER_SLAYER = ClassAbility(
 KNIGHT_MOUNTED_COMBAT = ClassAbility(
     ability_id="knight_mounted_combat",
     name="Mounted Combat",
-    description=(
-        "Knights gain a +1 Attack bonus when mounted."
-    ),
+    description=("Knights gain a +1 Attack bonus when mounted."),
     is_passive=True,
     extra_data={
         "mounted_attack_bonus": 1,
@@ -297,12 +292,9 @@ KNIGHT_DEFINITION = ClassDefinition(
         "typically knights-errant—those who wander the land in pursuit of "
         "adventure to prove their chivalric virtues."
     ),
-
     hit_die=HitDie.D8,
     prime_ability="CHA,STR",  # Dual prime abilities
-
     magic_type=MagicType.NONE,
-
     armor_proficiencies=[
         ArmorProficiency.MEDIUM,
         ArmorProficiency.HEAVY,
@@ -313,9 +305,7 @@ KNIGHT_DEFINITION = ClassDefinition(
         WeaponProficiency.MARTIAL,  # Melee weapons only
         # Note: Knights CANNOT use missile weapons (dishonourable)
     ],
-
     level_progression=KNIGHT_LEVEL_PROGRESSION,
-
     abilities=[
         KNIGHT_CHIVALRIC_CODE,
         KNIGHT_HORSEMANSHIP,
@@ -324,10 +314,8 @@ KNIGHT_DEFINITION = ClassDefinition(
         KNIGHT_MOUNTED_COMBAT,
         KNIGHT_STRENGTH_OF_WILL,
     ],
-
     # Typically humans and breggles, uncommon for other kindreds
     restricted_kindreds=["elf", "grimalkin", "woodgrue", "mossling"],
-
     starting_equipment=[
         # Armour (roll 1d6): 1. Chainmail. 2–3. Chainmail + shield.
         # 4. Plate mail. 5–6. Plate mail + shield.
@@ -336,7 +324,6 @@ KNIGHT_DEFINITION = ClassDefinition(
         # 5. Longsword. 6. Mace.
         "weapon_roll_1d6_twice",
     ],
-
     extra_data={
         "combat_aptitude": "Martial",
         "alignment_restriction": "Must match liege's Alignment",
@@ -412,11 +399,9 @@ KNIGHT_DEFINITION = ClassDefinition(
             },
         },
         "small_character_note": (
-            "Small characters receive spear instead of lance for starting "
-            "equipment roll 2-4."
+            "Small characters receive spear instead of lance for starting " "equipment roll 2-4."
         ),
     },
-
     source_book="Dolmenwood Player Book",
     source_page=70,
 )

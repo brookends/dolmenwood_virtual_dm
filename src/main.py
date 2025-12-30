@@ -40,7 +40,14 @@ from src.data_models import (
     DiceRoller,
     LightSourceType,
 )
-from src.game_state import GameState, StateMachine, GlobalController, TimeTracker
+from src.game_state import (
+    GameState,
+    StateMachine,
+    GlobalController,
+    TimeTracker,
+    SessionManager,
+    GameSession,
+)
 from src.hex_crawl import HexCrawlEngine
 from src.dungeon import DungeonEngine
 from src.combat import CombatEngine
@@ -53,6 +60,7 @@ from src.ai import (
     LLMProvider,
     DescriptionResult,
 )
+from src.ai.lore_search import create_lore_search, LoreSearchInterface
 from src.narrative import NarrationContext
 
 
@@ -60,10 +68,7 @@ from src.narrative import NarrationContext
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging based on verbosity level."""
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 logger = logging.getLogger(__name__)
@@ -73,11 +78,13 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION
 # =============================================================================
 
+
 @dataclass
 class GameConfig:
     """Configuration for the game session."""
 
     data_dir: Path = field(default_factory=lambda: Path("data"))
+    save_dir: Path = field(default_factory=lambda: Path("saves"))
     campaign_name: str = "default"
     dm_style: str = "standard"
 
@@ -107,6 +114,8 @@ class GameConfig:
         """Ensure paths are Path objects."""
         if isinstance(self.data_dir, str):
             self.data_dir = Path(self.data_dir)
+        if isinstance(self.save_dir, str):
+            self.save_dir = Path(self.save_dir)
         if isinstance(self.content_dir, str):
             self.content_dir = Path(self.content_dir)
         if isinstance(self.ingest_pdf, str):
@@ -116,6 +125,7 @@ class GameConfig:
 # =============================================================================
 # VIRTUAL DM CLASS
 # =============================================================================
+
 
 class VirtualDM:
     """
@@ -170,6 +180,10 @@ class VirtualDM:
         self.downtime = DowntimeEngine(self.controller)
         self.encounter = EncounterEngine(self.controller)
 
+        # Initialize session manager for save/load
+        self.session_manager = SessionManager(save_directory=self.config.save_dir)
+        self.session_manager.new_session(session_name=self.config.campaign_name)
+
         # Initialize the DM Agent for narrative descriptions
         self._dm_agent: Optional[DMAgent] = None
         if self.config.enable_narration:
@@ -190,7 +204,16 @@ class VirtualDM:
             llm_provider=provider,
             llm_model=self.config.llm_model or "claude-sonnet-4-20250514",
         )
-        self._dm_agent = DMAgent(dm_config)
+
+        # Create lore search based on config
+        lore_search = create_lore_search(
+            use_vector_db=self.config.use_vector_db,
+            mock_embeddings=self.config.mock_embeddings,
+        )
+        lore_status = lore_search.get_status()
+        logger.info(f"Lore search initialized: {lore_status}")
+
+        self._dm_agent = DMAgent(dm_config, lore_search=lore_search)
         logger.info(f"DM Agent initialized with provider: {provider.value}")
 
         # Set up narration callback on NarrativeResolver
@@ -281,6 +304,428 @@ class VirtualDM:
             List of valid action names
         """
         return self.controller.get_valid_actions()
+
+    # =========================================================================
+    # SAVE/LOAD
+    # =========================================================================
+
+    def save_game(self, slot: int = 1) -> Path:
+        """
+        Save the current game state to a numbered slot.
+
+        Args:
+            slot: Save slot number (1-9)
+
+        Returns:
+            Path to the saved file
+        """
+        if not 1 <= slot <= 9:
+            raise ValueError("Save slot must be 1-9")
+
+        # Extract current state into the session
+        session = self.session_manager.current_session
+        if not session:
+            session = self.session_manager.new_session()
+
+        # Update session name with slot
+        session.session_name = f"Slot {slot}: {self.config.campaign_name}"
+
+        # Extract world state
+        world_state = self.controller.world_state
+        if world_state:
+            session.world_state = self.session_manager.extract_world_state(world_state)
+
+        # Extract party state
+        party_state = self.controller.party_state
+        if party_state:
+            session.party_state = self.session_manager.extract_party_state(party_state)
+
+        # Extract characters
+        characters = self.controller.get_all_characters()
+        session.characters = self.session_manager.extract_characters(characters)
+
+        # Extract hex crawl state (explored hexes, secrets, POI visits, etc.)
+        self.session_manager.extract_hex_crawl_state(self.hex_crawl)
+
+        # Extract combat state if in combat
+        if self.combat._combat_state:
+            session.custom_data["combat_state"] = self._serialize_combat_state()
+
+        # Extract encounter state if in encounter
+        if self.encounter._state:
+            session.custom_data["encounter_state"] = self._serialize_encounter_state()
+
+        # Save current game state enum
+        session.custom_data["current_game_state"] = self.current_state.value
+
+        # Save to slot file
+        filename = f"slot_{slot}.json"
+        filepath = self.session_manager.save_session(session, filename)
+
+        logger.info(f"Game saved to slot {slot}: {filepath}")
+        return filepath
+
+    def load_game(self, slot: int = 1) -> bool:
+        """
+        Load a game state from a numbered slot.
+
+        Args:
+            slot: Save slot number (1-9)
+
+        Returns:
+            True if load was successful
+        """
+        if not 1 <= slot <= 9:
+            raise ValueError("Save slot must be 1-9")
+
+        filename = f"slot_{slot}.json"
+        filepath = self.config.save_dir / filename
+
+        if not filepath.exists():
+            logger.warning(f"No save file found in slot {slot}")
+            return False
+
+        try:
+            # Load session
+            session = self.session_manager.load_session(filepath)
+
+            # Apply world state
+            world_state = self.controller.world_state
+            if world_state and session.world_state:
+                self.session_manager.apply_world_state(world_state)
+
+            # Apply party state
+            party_state = self.controller.party_state
+            if party_state and session.party_state:
+                self.session_manager.apply_party_state(party_state)
+
+            # Restore characters
+            if session.characters:
+                # Clear existing characters and add restored ones
+                self.controller._characters.clear()
+                for char in self.session_manager.get_characters():
+                    self.controller.add_character(char)
+
+            # Apply hex crawl state
+            self.session_manager.apply_to_hex_engine(self.hex_crawl)
+
+            # Restore game state if saved
+            if "current_game_state" in session.custom_data:
+                saved_state = GameState(session.custom_data["current_game_state"])
+                self.controller._current_state = saved_state
+
+            # Restore combat state if present
+            if "combat_state" in session.custom_data:
+                self._deserialize_combat_state(session.custom_data["combat_state"])
+
+            # Restore encounter state if present
+            if "encounter_state" in session.custom_data:
+                self._deserialize_encounter_state(session.custom_data["encounter_state"])
+
+            logger.info(f"Game loaded from slot {slot}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to load game from slot {slot}: {e}")
+            return False
+
+    def list_saves(self) -> list[dict[str, Any]]:
+        """
+        List all save slots with their info.
+
+        Returns:
+            List of save slot info dictionaries
+        """
+        saves = []
+        for slot in range(1, 10):
+            filepath = self.config.save_dir / f"slot_{slot}.json"
+            if filepath.exists():
+                try:
+                    with open(filepath, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    saves.append(
+                        {
+                            "slot": slot,
+                            "session_name": data.get("session_name", "Unknown"),
+                            "last_saved": data.get("last_saved_at", "Unknown"),
+                            "filepath": str(filepath),
+                        }
+                    )
+                except Exception:
+                    saves.append(
+                        {
+                            "slot": slot,
+                            "session_name": "(corrupted)",
+                            "last_saved": "Unknown",
+                            "filepath": str(filepath),
+                        }
+                    )
+            else:
+                saves.append(
+                    {
+                        "slot": slot,
+                        "session_name": "(empty)",
+                        "last_saved": None,
+                        "filepath": None,
+                    }
+                )
+        return saves
+
+    def _serialize_combat_state(self) -> dict[str, Any]:
+        """Serialize current combat state for saving."""
+        cs = self.combat._combat_state
+        if not cs:
+            return {}
+
+        return {
+            "round_number": cs.round_number,
+            "party_initiative": cs.party_initiative,
+            "enemy_initiative": cs.enemy_initiative,
+            "is_solo_creature": cs.is_solo_creature,
+            "enemy_starting_count": cs.enemy_starting_count,
+            "enemy_casualties": cs.enemy_casualties,
+            "return_state": self.combat._return_state.value if self.combat._return_state else None,
+            "encounter": {
+                "encounter_id": cs.encounter.encounter_id,
+                "combatants": [
+                    {
+                        "combatant_id": c.combatant_id,
+                        "name": c.name,
+                        "side": c.side,
+                        "initiative": c.initiative,
+                        "has_acted": c.has_acted,
+                        "character_ref": c.character_ref,
+                        "stat_block": (
+                            {
+                                "armor_class": c.stat_block.armor_class,
+                                "hit_dice": c.stat_block.hit_dice,
+                                "hp_current": c.stat_block.hp_current,
+                                "hp_max": c.stat_block.hp_max,
+                                "movement": c.stat_block.movement,
+                                "attacks": c.stat_block.attacks,
+                                "morale": c.stat_block.morale,
+                                "save_as": c.stat_block.save_as,
+                                "special_abilities": c.stat_block.special_abilities,
+                            }
+                            if c.stat_block
+                            else None
+                        ),
+                    }
+                    for c in cs.encounter.combatants
+                ],
+            },
+            "combatant_status": {
+                cid: {
+                    "combatant_id": status.combatant_id,
+                    "successful_morale_checks": status.successful_morale_checks,
+                    "is_fleeing": status.is_fleeing,
+                    "is_parrying": status.is_parrying,
+                    "is_charging": status.is_charging,
+                    "declared_spell": status.declared_spell,
+                    "took_damage_this_round": status.took_damage_this_round,
+                    "first_harmed": status.first_harmed,
+                    "non_lethal_damage": status.non_lethal_damage,
+                }
+                for cid, status in cs.combatant_status.items()
+            },
+        }
+
+    def _deserialize_combat_state(self, data: dict[str, Any]) -> None:
+        """Restore combat state from saved data."""
+        if not data or "encounter" not in data:
+            return
+
+        from src.combat.combat_engine import CombatState, CombatantStatus
+        from src.data_models import EncounterState, Combatant, StatBlock, ConditionType
+
+        # Rebuild combatants
+        combatants = []
+        for c_data in data["encounter"]["combatants"]:
+            stat_block = None
+            if c_data.get("stat_block"):
+                sb = c_data["stat_block"]
+                stat_block = StatBlock(
+                    armor_class=sb["armor_class"],
+                    hit_dice=sb["hit_dice"],
+                    hp_current=sb["hp_current"],
+                    hp_max=sb["hp_max"],
+                    movement=sb["movement"],
+                    attacks=sb["attacks"],
+                    morale=sb["morale"],
+                    save_as=sb["save_as"],
+                    special_abilities=sb.get("special_abilities", []),
+                )
+
+            combatants.append(
+                Combatant(
+                    combatant_id=c_data["combatant_id"],
+                    name=c_data["name"],
+                    side=c_data.get("side", "enemy"),
+                    initiative=c_data.get("initiative", 0),
+                    has_acted=c_data.get("has_acted", False),
+                    stat_block=stat_block,
+                    character_ref=c_data.get("character_ref"),
+                )
+            )
+
+        encounter = EncounterState(
+            encounter_id=data["encounter"]["encounter_id"],
+            combatants=combatants,
+        )
+
+        # Rebuild combat state
+        self.combat._combat_state = CombatState(
+            encounter=encounter,
+            round_number=data["round_number"],
+            party_initiative=data["party_initiative"],
+            enemy_initiative=data["enemy_initiative"],
+        )
+        self.combat._combat_state.is_solo_creature = data.get("is_solo_creature", False)
+        self.combat._combat_state.enemy_starting_count = data.get("enemy_starting_count", 0)
+        self.combat._combat_state.enemy_casualties = data.get("enemy_casualties", 0)
+
+        if data.get("return_state"):
+            self.combat._return_state = GameState(data["return_state"])
+
+        # Rebuild combatant status
+        for cid, status_data in data.get("combatant_status", {}).items():
+            self.combat._combat_state.combatant_status[cid] = CombatantStatus(
+                combatant_id=status_data.get("combatant_id", cid),
+                successful_morale_checks=status_data.get("successful_morale_checks", 0),
+                is_fleeing=status_data.get("is_fleeing", False),
+                is_parrying=status_data.get("is_parrying", False),
+                is_charging=status_data.get("is_charging", False),
+                declared_spell=status_data.get("declared_spell", False),
+                took_damage_this_round=status_data.get("took_damage_this_round", False),
+                first_harmed=status_data.get("first_harmed", False),
+                non_lethal_damage=status_data.get("non_lethal_damage", 0),
+            )
+
+    def _serialize_encounter_state(self) -> dict[str, Any]:
+        """Serialize current encounter state for saving."""
+        state = self.encounter._state
+        if not state:
+            return {}
+
+        return {
+            "current_phase": state.current_phase.value,
+            "origin": state.origin.value,
+            "reaction_attempted": state.reaction_attempted,
+            "encounter": {
+                "encounter_id": state.encounter.encounter_id,
+                "encounter_type": state.encounter.encounter_type.value,
+                "distance": state.encounter.distance,
+                "party_initiative": state.encounter.party_initiative,
+                "enemy_initiative": state.encounter.enemy_initiative,
+                "surprise_status": (
+                    state.encounter.surprise_status.value
+                    if state.encounter.surprise_status
+                    else None
+                ),
+                "reaction_result": (
+                    state.encounter.reaction_result.value
+                    if state.encounter.reaction_result
+                    else None
+                ),
+                "combatants": [
+                    {
+                        "combatant_id": c.combatant_id,
+                        "name": c.name,
+                        "side": c.side,
+                        "initiative": c.initiative,
+                        "has_acted": c.has_acted,
+                        "character_ref": c.character_ref,
+                        "stat_block": (
+                            {
+                                "armor_class": c.stat_block.armor_class,
+                                "hit_dice": c.stat_block.hit_dice,
+                                "hp_current": c.stat_block.hp_current,
+                                "hp_max": c.stat_block.hp_max,
+                                "movement": c.stat_block.movement,
+                                "attacks": c.stat_block.attacks,
+                                "morale": c.stat_block.morale,
+                                "save_as": c.stat_block.save_as,
+                                "special_abilities": c.stat_block.special_abilities,
+                            }
+                            if c.stat_block
+                            else None
+                        ),
+                    }
+                    for c in state.encounter.combatants
+                ],
+            },
+        }
+
+    def _deserialize_encounter_state(self, data: dict[str, Any]) -> None:
+        """Restore encounter state from saved data."""
+        if not data or "encounter" not in data:
+            return
+
+        from src.encounter.encounter_engine import EncounterEngineState, EncounterPhase
+        from src.data_models import (
+            EncounterState,
+            EncounterType,
+            SurpriseStatus,
+            Combatant,
+            StatBlock,
+            ReactionResult,
+        )
+
+        # Rebuild combatants
+        combatants = []
+        for c_data in data["encounter"]["combatants"]:
+            stat_block = None
+            if c_data.get("stat_block"):
+                sb = c_data["stat_block"]
+                stat_block = StatBlock(
+                    armor_class=sb["armor_class"],
+                    hit_dice=sb["hit_dice"],
+                    hp_current=sb["hp_current"],
+                    hp_max=sb["hp_max"],
+                    movement=sb["movement"],
+                    attacks=sb["attacks"],
+                    morale=sb["morale"],
+                    save_as=sb["save_as"],
+                    special_abilities=sb.get("special_abilities", []),
+                )
+
+            combatants.append(
+                Combatant(
+                    combatant_id=c_data["combatant_id"],
+                    name=c_data["name"],
+                    side=c_data.get("side", "enemy"),
+                    initiative=c_data.get("initiative", 0),
+                    has_acted=c_data.get("has_acted", False),
+                    stat_block=stat_block,
+                    character_ref=c_data.get("character_ref"),
+                )
+            )
+
+        surprise_status = None
+        if data["encounter"].get("surprise_status"):
+            surprise_status = SurpriseStatus(data["encounter"]["surprise_status"])
+
+        reaction_result = None
+        if data["encounter"].get("reaction_result"):
+            reaction_result = ReactionResult(data["encounter"]["reaction_result"])
+
+        encounter = EncounterState(
+            encounter_id=data["encounter"]["encounter_id"],
+            encounter_type=EncounterType(data["encounter"]["encounter_type"]),
+            distance=data["encounter"].get("distance", 60),
+            party_initiative=data["encounter"].get("party_initiative", 0),
+            enemy_initiative=data["encounter"].get("enemy_initiative", 0),
+            surprise_status=surprise_status,
+            reaction_result=reaction_result,
+            combatants=combatants,
+        )
+
+        self.encounter._state = EncounterEngineState(
+            encounter=encounter,
+            origin=EncounterOrigin(data["origin"]),
+            current_phase=EncounterPhase(data["current_phase"]),
+        )
+        self.encounter._state.reaction_attempted = data.get("reaction_attempted", False)
 
     # =========================================================================
     # CHARACTER MANAGEMENT
@@ -651,8 +1096,10 @@ class VirtualDM:
 
         try:
             # Derive victor_side from combat_outcome
-            victor_side = "party" if combat_outcome in ("victory", "rout") else (
-                "enemies" if combat_outcome == "defeat" else "none"
+            victor_side = (
+                "party"
+                if combat_outcome in ("victory", "rout")
+                else ("enemies" if combat_outcome == "defeat" else "none")
             )
 
             result = self._dm_agent.narrate_combat_end(
@@ -714,7 +1161,9 @@ class VirtualDM:
             total_damage = sum(damage_dict.values()) if damage_dict else 0
 
             # Determine success from mechanical_outcome
-            success = "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+            success = (
+                "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+            )
 
             result = self._dm_agent.narrate_dungeon_event(
                 event_type=event_type,
@@ -1096,7 +1545,9 @@ class VirtualDM:
         ]
 
         if party["light_source"]:
-            lines.append(f"  Active Light: {party['light_source']} ({party['light_remaining']} turns)")
+            lines.append(
+                f"  Active Light: {party['light_source']} ({party['light_remaining']} turns)"
+            )
 
         lines.append("")
         lines.append("Party Members:")
@@ -1115,6 +1566,7 @@ class VirtualDM:
 # =============================================================================
 # DEMO SESSION CREATION
 # =============================================================================
+
 
 def create_demo_session(config: Optional[GameConfig] = None) -> VirtualDM:
     """
@@ -1189,6 +1641,7 @@ def create_demo_session(config: Optional[GameConfig] = None) -> VirtualDM:
 # CLI INTERFACE
 # =============================================================================
 
+
 class DolmenwoodCLI:
     """Interactive command-line interface for the game."""
 
@@ -1209,6 +1662,9 @@ class DolmenwoodCLI:
             "log": self.cmd_log,
             "dice": self.cmd_dice,
             "transition": self.cmd_transition,
+            "save": self.cmd_save,
+            "load": self.cmd_load,
+            "saves": self.cmd_saves,
         }
 
     def run(self) -> None:
@@ -1247,7 +1703,8 @@ class DolmenwoodCLI:
 
     def cmd_help(self, args: str) -> None:
         """Show help information."""
-        print("""
+        print(
+            """
 Available Commands:
   status      - Show current game status
   actions     - Show valid actions from current state
@@ -1259,9 +1716,13 @@ Available Commands:
   resources   - Show party resources
   log         - Show session event log
   dice        - Show dice roll history
+  save SLOT   - Save game to slot 1-9 (e.g., 'save 1')
+  load SLOT   - Load game from slot 1-9 (e.g., 'load 1')
+  saves       - List all save slots
   help        - Show this help
   quit/exit   - Exit the game
-""")
+"""
+        )
 
     def cmd_status(self, args: str) -> None:
         """Show game status."""
@@ -1359,10 +1820,73 @@ Available Commands:
         except Exception as e:
             print(f"Transition failed: {e}")
 
+    def cmd_save(self, args: str) -> None:
+        """Save game to a slot."""
+        if not args:
+            print("Usage: save SLOT (1-9)")
+            return
+
+        try:
+            slot = int(args.strip())
+            if not 1 <= slot <= 9:
+                print("Slot must be 1-9")
+                return
+
+            filepath = self.dm.save_game(slot)
+            print(f"Game saved to slot {slot}")
+            print(f"  File: {filepath}")
+
+        except ValueError:
+            print("Invalid slot number. Usage: save SLOT (1-9)")
+        except Exception as e:
+            print(f"Save failed: {e}")
+
+    def cmd_load(self, args: str) -> None:
+        """Load game from a slot."""
+        if not args:
+            print("Usage: load SLOT (1-9)")
+            return
+
+        try:
+            slot = int(args.strip())
+            if not 1 <= slot <= 9:
+                print("Slot must be 1-9")
+                return
+
+            success = self.dm.load_game(slot)
+            if success:
+                print(f"Game loaded from slot {slot}")
+                print(f"  State: {self.dm.current_state.value}")
+                print(f"  Location: {self.dm.controller.party_state.location}")
+            else:
+                print(f"No save found in slot {slot}")
+
+        except ValueError:
+            print("Invalid slot number. Usage: load SLOT (1-9)")
+        except Exception as e:
+            print(f"Load failed: {e}")
+
+    def cmd_saves(self, args: str) -> None:
+        """List all save slots."""
+        saves = self.dm.list_saves()
+        print("\nSave Slots:")
+        print("-" * 50)
+        for save in saves:
+            slot = save["slot"]
+            name = save["session_name"]
+            last_saved = save.get("last_saved")
+            if last_saved:
+                print(f"  Slot {slot}: {name}")
+                print(f"           Last saved: {last_saved}")
+            else:
+                print(f"  Slot {slot}: {name}")
+        print("-" * 50)
+
 
 # =============================================================================
 # INDIVIDUAL LOOP TESTERS
 # =============================================================================
+
 
 def test_hex_exploration_loop(dm: VirtualDM) -> None:
     """Test the hex exploration/wilderness travel loop."""
@@ -1646,9 +2170,11 @@ def test_combat_loop(dm: VirtualDM) -> None:
     print(f"   Actions resolved: {len(round_result.actions_resolved)}")
 
     for action in round_result.actions_resolved[:3]:
-        print(f"     - {action.attacker_id} attacked {action.defender_id}: "
-              f"{'HIT' if action.hit else 'MISS'} "
-              f"(roll: {action.attack_roll}, damage: {action.damage_dealt})")
+        print(
+            f"     - {action.attacker_id} attacked {action.defender_id}: "
+            f"{'HIT' if action.hit else 'MISS'} "
+            f"(roll: {action.attack_roll}, damage: {action.damage_dealt})"
+        )
 
     print("\n4. Combat summary:")
     summary = dm.combat.get_combat_summary()
@@ -1767,6 +2293,7 @@ def test_social_interaction_loop(dm: VirtualDM) -> None:
 # ARGUMENT PARSING
 # =============================================================================
 
+
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -1779,7 +2306,7 @@ Examples:
   python -m src.main --test-combat            # Test combat loop
   python -m src.main --campaign my_campaign   # Load specific campaign
   python -m src.main --llm-provider anthropic # Use Anthropic for descriptions
-        """
+        """,
     )
 
     # General options
@@ -1803,7 +2330,8 @@ Examples:
         help="DM narration style (default: standard)",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose logging",
     )
@@ -1934,6 +2462,7 @@ def create_config_from_args(args: argparse.Namespace) -> GameConfig:
 # MAIN ENTRY POINT
 # =============================================================================
 
+
 def main():
     """Main entry point for CLI usage."""
     args = parse_arguments()
@@ -1958,9 +2487,13 @@ def main():
 
     # Check for test loop modes
     test_any = (
-        args.test_hex or args.test_encounter or args.test_dungeon or
-        args.test_combat or args.test_settlement or args.test_social or
-        args.test_all
+        args.test_hex
+        or args.test_encounter
+        or args.test_dungeon
+        or args.test_combat
+        or args.test_settlement
+        or args.test_social
+        or args.test_all
     )
 
     if test_any:

@@ -128,9 +128,7 @@ WOODGRUE_MOON_SIGHT_ABILITY = KindredAbility(
 WOODGRUE_MUSICAL_INSTRUMENTS_ABILITY = KindredAbility(
     ability_id="woodgrue_musical_instruments",
     name="Musical Instruments",
-    description=(
-        "A woodgrue can employ a musical instrument as a melee weapon, doing 1d4 damage."
-    ),
+    description=("A woodgrue can employ a musical instrument as a melee weapon, doing 1d4 damage."),
     is_passive=True,
     is_attack=True,
     damage_by_level={1: "1d4"},
@@ -157,9 +155,7 @@ WOODGRUE_COLD_IRON_VULNERABILITY_ABILITY = KindredAbility(
 WOODGRUE_SKILLS_ABILITY = KindredAbility(
     ability_id="woodgrue_skills",
     name="Woodgrue Skills",
-    description=(
-        "Woodgrues have a Skill Target of 5 for Listen."
-    ),
+    description=("Woodgrues have a Skill Target of 5 for Listen."),
     is_passive=True,
     extra_data={
         "skill_bonuses": {
@@ -176,28 +172,92 @@ WOODGRUE_SKILLS_ABILITY = KindredAbility(
 WOODGRUE_NAME_TABLE = NameTable(
     columns={
         NameColumn.MALE: [
-            "Bagnack", "Barmcudgel", "Bloomfext", "Bunglebone", "Capratt",
-            "Chimm", "Delgodand", "Drunker", "Eortban", "Grunkle",
-            "Gubber", "Gumroot", "Gunkuss", "Kungus", "Longtittle",
-            "Lubbal", "Olpipes", "Runkelgate", "Weepooze", "Wumpus",
+            "Bagnack",
+            "Barmcudgel",
+            "Bloomfext",
+            "Bunglebone",
+            "Capratt",
+            "Chimm",
+            "Delgodand",
+            "Drunker",
+            "Eortban",
+            "Grunkle",
+            "Gubber",
+            "Gumroot",
+            "Gunkuss",
+            "Kungus",
+            "Longtittle",
+            "Lubbal",
+            "Olpipes",
+            "Runkelgate",
+            "Weepooze",
+            "Wumpus",
         ],
         NameColumn.FEMALE: [
-            "Bishga", "Canaghoop", "Cheruffue", "Doola", "Frogfyrr",
-            "Gruecalle", "Hoolbootes", "Maulspoorer", "Mogsmote", "Molemoch",
-            "Moonmilk", "Munmun", "Nettaclare", "Oorcha", "Palliepalm",
-            "Pimplepook", "Puggump", "Rolliepolk", "Sasserpipe", "Whipsee",
+            "Bishga",
+            "Canaghoop",
+            "Cheruffue",
+            "Doola",
+            "Frogfyrr",
+            "Gruecalle",
+            "Hoolbootes",
+            "Maulspoorer",
+            "Mogsmote",
+            "Molemoch",
+            "Moonmilk",
+            "Munmun",
+            "Nettaclare",
+            "Oorcha",
+            "Palliepalm",
+            "Pimplepook",
+            "Puggump",
+            "Rolliepolk",
+            "Sasserpipe",
+            "Whipsee",
         ],
         NameColumn.UNISEX: [
-            "Bogfrink", "Bongwretch", "Chunder", "Danklob", "Frondbong",
-            "Gobblebag", "Hootbra", "Longsnipe", "Lumpfrisk", "Mabmungle",
-            "Mungus", "Obblehob", "Oddler", "Oodler", "Pipplepoke",
-            "Slovend", "Umple", "Unclord", "Undermap", "Whoopla",
+            "Bogfrink",
+            "Bongwretch",
+            "Chunder",
+            "Danklob",
+            "Frondbong",
+            "Gobblebag",
+            "Hootbra",
+            "Longsnipe",
+            "Lumpfrisk",
+            "Mabmungle",
+            "Mungus",
+            "Obblehob",
+            "Oddler",
+            "Oodler",
+            "Pipplepoke",
+            "Slovend",
+            "Umple",
+            "Unclord",
+            "Undermap",
+            "Whoopla",
         ],
         NameColumn.SURNAME: [
-            "Bobbleslime", "Bogbabble", "Bootswap", "Chumley", "Cobwallop",
-            "Drooglight", "Dungobble", "Eggmumble", "Hogslapper", "Hortleswoop",
-            "Hungerslip", "Lankwobble", "Moorsnob", "Mundersnog", "Pencecrump",
-            "Persnickle", "Shunderbog", "Snodgrass", "Wallerbog", "Woodfuffle",
+            "Bobbleslime",
+            "Bogbabble",
+            "Bootswap",
+            "Chumley",
+            "Cobwallop",
+            "Drooglight",
+            "Dungobble",
+            "Eggmumble",
+            "Hogslapper",
+            "Hortleswoop",
+            "Hungerslip",
+            "Lankwobble",
+            "Moorsnob",
+            "Mundersnog",
+            "Pencecrump",
+            "Persnickle",
+            "Shunderbog",
+            "Snodgrass",
+            "Wallerbog",
+            "Woodfuffle",
         ],
     }
 )
@@ -231,7 +291,7 @@ WOODGRUE_BACKGROUND_TABLE = AspectTable(
         AspectTableEntry(18, 18, "Tent maker"),
         AspectTableEntry(19, 19, "Tomb robber"),
         AspectTableEntry(20, 20, "Wizard's servant"),
-    ]
+    ],
 )
 
 WOODGRUE_HEAD_TABLE = AspectTable(
@@ -250,7 +310,7 @@ WOODGRUE_HEAD_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Round, droopy ears"),
         AspectTableEntry(11, 11, "Stripe of silver hair"),
         AspectTableEntry(12, 12, "Twitching, pointy ears"),
-    ]
+    ],
 )
 
 WOODGRUE_DEMEANOUR_TABLE = AspectTable(
@@ -269,7 +329,7 @@ WOODGRUE_DEMEANOUR_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Shady and unscrupulous"),
         AspectTableEntry(11, 11, "Trickster (but loyal friend)"),
         AspectTableEntry(12, 12, "Wide-eyed innocence"),
-    ]
+    ],
 )
 
 WOODGRUE_DESIRES_TABLE = AspectTable(
@@ -288,7 +348,7 @@ WOODGRUE_DESIRES_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Popularise moth sausages"),
         AspectTableEntry(11, 11, "Rule a human town in secret"),
         AspectTableEntry(12, 12, "Steal secrets of the Drune"),
-    ]
+    ],
 )
 
 WOODGRUE_FACE_TABLE = AspectTable(
@@ -307,7 +367,7 @@ WOODGRUE_FACE_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Sagging, bloated throat"),
         AspectTableEntry(11, 11, "Shifty eyes constantly blink"),
         AspectTableEntry(12, 12, "Straggly beard"),
-    ]
+    ],
 )
 
 WOODGRUE_DRESS_TABLE = AspectTable(
@@ -326,7 +386,7 @@ WOODGRUE_DRESS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Soft brushed suede"),
         AspectTableEntry(11, 11, "Stockings and baggy jumper"),
         AspectTableEntry(12, 12, "Stripy hose and bodice"),
-    ]
+    ],
 )
 
 WOODGRUE_BELIEFS_TABLE = AspectTable(
@@ -345,7 +405,7 @@ WOODGRUE_BELIEFS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Never reveal your name"),
         AspectTableEntry(11, 11, "Penal system must be a joke"),
         AspectTableEntry(12, 12, "The Nag-Lord really is a wag"),
-    ]
+    ],
 )
 
 WOODGRUE_BODY_TABLE = AspectTable(
@@ -364,7 +424,7 @@ WOODGRUE_BODY_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Thick, matted, auburn fur"),
         AspectTableEntry(11, 11, "Utterly hairless"),
         AspectTableEntry(12, 12, "Vestigial wings (flightless)"),
-    ]
+    ],
 )
 
 WOODGRUE_SPEECH_TABLE = AspectTable(
@@ -383,7 +443,7 @@ WOODGRUE_SPEECH_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Shrill"),
         AspectTableEntry(11, 11, "Sinister whispering"),
         AspectTableEntry(12, 12, "Staccato"),
-    ]
+    ],
 )
 
 # Trinket table - references item IDs in adventuring_gear_woodgrue_trinkets.json
@@ -392,56 +452,263 @@ WOODGRUE_TRINKET_TABLE = AspectTable(
     die_size=100,
     entries=[
         AspectTableEntry(1, 2, "A bag of delicious boiled sweets", item_id="bag_of_boiled_sweets"),
-        AspectTableEntry(3, 4, "A basket of snakes, intended for juggling", item_id="basket_of_snakes"),
-        AspectTableEntry(5, 6, "A battered hat with a stuffed swan's head stitched proudly at the summit", item_id="battered_hat_with_swan_head"),
-        AspectTableEntry(7, 8, "A bone whistle. When blown at night, it sends nearby bats and night birds into a frenzy", item_id="bone_whistle"),
-        AspectTableEntry(9, 10, "A bottle containing dirty water from the Baths of Astralon", item_id="bottle_of_dirty_water"),
-        AspectTableEntry(11, 12, "A bottle of ink that always seems to spill everywhere when opened", item_id="spilling_ink_bottle"),
-        AspectTableEntry(13, 14, "A bronze statuette of a chimera made up of a dozen different animals. The person who gave it to you insists it depicts a real creature", item_id="bronze_chimera_statuette"),
-        AspectTableEntry(15, 16, "A burial shroud seemingly imprinted with a face. The face becomes more distinguishable every day", item_id="burial_shroud_with_face"),
-        AspectTableEntry(17, 18, "A ceramic plate that emits a simple tune when scratched", item_id="musical_ceramic_plate"),
-        AspectTableEntry(19, 20, "A collection of fungi, loaned to you by a mossling", item_id="collection_of_fungi"),
-        AspectTableEntry(21, 22, "A dead crow in a bag. Before you killed it, you were pretty sure it was spying on you", item_id="dead_crow_in_bag"),
-        AspectTableEntry(23, 24, "A fake moustache. When worn, you appear to have a full beard", item_id="fake_moustache"),
-        AspectTableEntry(25, 26, "A forbidden treatise claiming grimalkins and woodgrues share the same ancestors", item_id="forbidden_treatise"),
-        AspectTableEntry(27, 28, "A glass case with a giant moth pinned inside", item_id="glass_case_with_moth"),
-        AspectTableEntry(29, 30, "A harp shaped like a duck. Playing it attracts the attention of nearby waterfowl", item_id="duck_shaped_harp"),
-        AspectTableEntry(31, 32, "A harp string, sharp and tinged with blood", item_id="bloody_harp_string"),
-        AspectTableEntry(33, 34, "A hooded cloak made from thousands of moth wings stitched together", item_id="moth_wing_cloak"),
-        AspectTableEntry(35, 36, "A mead tankard that is perpetually sticky", item_id="sticky_mead_tankard"),
-        AspectTableEntry(37, 38, "A misshapen ocarina. Each note sounds eerily similar to a baby's cries", item_id="misshapen_ocarina"),
-        AspectTableEntry(39, 40, "A mossling pipe you found in a pile of compost. Its smoke makes people nostalgic", item_id="nostalgic_mossling_pipe"),
-        AspectTableEntry(41, 42, "A note promising that a 'Mr Fox' will come to your aid in your hour of greatest need", item_id="mr_fox_note"),
-        AspectTableEntry(43, 44, "A pair of matching eyeballs. Whenever possible, they rotate to stare at you", item_id="staring_eyeballs"),
+        AspectTableEntry(
+            3, 4, "A basket of snakes, intended for juggling", item_id="basket_of_snakes"
+        ),
+        AspectTableEntry(
+            5,
+            6,
+            "A battered hat with a stuffed swan's head stitched proudly at the summit",
+            item_id="battered_hat_with_swan_head",
+        ),
+        AspectTableEntry(
+            7,
+            8,
+            "A bone whistle. When blown at night, it sends nearby bats and night birds into a frenzy",
+            item_id="bone_whistle",
+        ),
+        AspectTableEntry(
+            9,
+            10,
+            "A bottle containing dirty water from the Baths of Astralon",
+            item_id="bottle_of_dirty_water",
+        ),
+        AspectTableEntry(
+            11,
+            12,
+            "A bottle of ink that always seems to spill everywhere when opened",
+            item_id="spilling_ink_bottle",
+        ),
+        AspectTableEntry(
+            13,
+            14,
+            "A bronze statuette of a chimera made up of a dozen different animals. The person who gave it to you insists it depicts a real creature",
+            item_id="bronze_chimera_statuette",
+        ),
+        AspectTableEntry(
+            15,
+            16,
+            "A burial shroud seemingly imprinted with a face. The face becomes more distinguishable every day",
+            item_id="burial_shroud_with_face",
+        ),
+        AspectTableEntry(
+            17,
+            18,
+            "A ceramic plate that emits a simple tune when scratched",
+            item_id="musical_ceramic_plate",
+        ),
+        AspectTableEntry(
+            19,
+            20,
+            "A collection of fungi, loaned to you by a mossling",
+            item_id="collection_of_fungi",
+        ),
+        AspectTableEntry(
+            21,
+            22,
+            "A dead crow in a bag. Before you killed it, you were pretty sure it was spying on you",
+            item_id="dead_crow_in_bag",
+        ),
+        AspectTableEntry(
+            23,
+            24,
+            "A fake moustache. When worn, you appear to have a full beard",
+            item_id="fake_moustache",
+        ),
+        AspectTableEntry(
+            25,
+            26,
+            "A forbidden treatise claiming grimalkins and woodgrues share the same ancestors",
+            item_id="forbidden_treatise",
+        ),
+        AspectTableEntry(
+            27, 28, "A glass case with a giant moth pinned inside", item_id="glass_case_with_moth"
+        ),
+        AspectTableEntry(
+            29,
+            30,
+            "A harp shaped like a duck. Playing it attracts the attention of nearby waterfowl",
+            item_id="duck_shaped_harp",
+        ),
+        AspectTableEntry(
+            31, 32, "A harp string, sharp and tinged with blood", item_id="bloody_harp_string"
+        ),
+        AspectTableEntry(
+            33,
+            34,
+            "A hooded cloak made from thousands of moth wings stitched together",
+            item_id="moth_wing_cloak",
+        ),
+        AspectTableEntry(
+            35, 36, "A mead tankard that is perpetually sticky", item_id="sticky_mead_tankard"
+        ),
+        AspectTableEntry(
+            37,
+            38,
+            "A misshapen ocarina. Each note sounds eerily similar to a baby's cries",
+            item_id="misshapen_ocarina",
+        ),
+        AspectTableEntry(
+            39,
+            40,
+            "A mossling pipe you found in a pile of compost. Its smoke makes people nostalgic",
+            item_id="nostalgic_mossling_pipe",
+        ),
+        AspectTableEntry(
+            41,
+            42,
+            "A note promising that a 'Mr Fox' will come to your aid in your hour of greatest need",
+            item_id="mr_fox_note",
+        ),
+        AspectTableEntry(
+            43,
+            44,
+            "A pair of matching eyeballs. Whenever possible, they rotate to stare at you",
+            item_id="staring_eyeballs",
+        ),
         AspectTableEntry(45, 46, "A pair of small, bronze cymbals", item_id="bronze_cymbals"),
-        AspectTableEntry(47, 48, "A personalised invitation to 'THE FEAST.' No further details are provided", item_id="feast_invitation"),
-        AspectTableEntry(49, 50, "A pocketbook of bad jokes. Emits the occasional snicker", item_id="snickering_joke_book"),
-        AspectTableEntry(51, 52, "A poster for your parent's last, ill-fated circus performance", item_id="circus_performance_poster"),
-        AspectTableEntry(53, 54, "A quill made from a stirge-owl feather", item_id="stirge_owl_quill"),
-        AspectTableEntry(55, 56, "A rope woven from a mix of human and breggle hair", item_id="hair_rope"),
-        AspectTableEntry(57, 58, "A stack of angry letters, all accusing you of arson", item_id="arson_accusation_letters"),
-        AspectTableEntry(59, 60, "A strange disk that produces the sound of flatulence whenever a weight is placed atop it", item_id="flatulence_disk"),
-        AspectTableEntry(61, 62, "A tent that slowly raises itself when you loudly sing it a jaunty song", item_id="self_raising_tent"),
-        AspectTableEntry(63, 64, "A vial of guano. Your last reminder of a deceased loved one", item_id="vial_of_guano"),
-        AspectTableEntry(65, 66, "A wooden sceptre topped with a jester's head. When struck, the head tells an ill-considered joke", item_id="jester_sceptre"),
-        AspectTableEntry(67, 68, "An advice book that ultimately suggests a liberal application of fire as the solution to every problem", item_id="fire_solution_book"),
-        AspectTableEntry(69, 70, "An ancient coin, stolen from a grave. Far colder to the touch than it should be", item_id="cold_ancient_coin"),
-        AspectTableEntry(71, 72, "An empty pan flute case, its contents stolen", item_id="empty_pan_flute_case"),
-        AspectTableEntry(73, 74, "An enormous firework with a tag that reads 'Untested'", item_id="untested_firework"),
-        AspectTableEntry(75, 76, "An extravagant wig, stolen from the head of an elf noble", item_id="stolen_elf_wig"),
-        AspectTableEntry(77, 78, "An ordinary-looking metal bucket. When filled with water, leeches appear inside", item_id="leech_bucket"),
-        AspectTableEntry(79, 80, "An ornate flute, said to be handed down by your ancestors since before they left Fairy", item_id="ancestral_flute"),
-        AspectTableEntry(81, 82, "An unhatched egg that sweats blood", item_id="blood_sweating_egg"),
-        AspectTableEntry(83, 84, "Faded parchment that lists the names of everyone you've ever wronged. It updates itself periodically", item_id="updating_wronged_list"),
-        AspectTableEntry(85, 86, "Light from a fireworks display, caught in a shard of glass", item_id="captured_fireworks_light"),
-        AspectTableEntry(87, 88, "Lyrics to a half-written song about rodents visiting from the moon", item_id="moon_rodent_lyrics"),
-        AspectTableEntry(89, 90, "Small vials of syrups, each labelled with the type of mood they're supposed to cure", item_id="mood_cure_syrups"),
-        AspectTableEntry(91, 92, "The corpse of a mouse, dressed in tiny clothes", item_id="dressed_mouse_corpse"),
-        AspectTableEntry(93, 94, "The crest of an unknown longhorn noble house, found on a dead breggle", item_id="unknown_longhorn_crest"),
-        AspectTableEntry(95, 96, "The squirming pieces for maggot chess", item_id="maggot_chess_pieces"),
-        AspectTableEntry(97, 98, "Woollen ear warmers, knitted by your grandmother", item_id="woollen_ear_warmers"),
-        AspectTableEntry(99, 100, "Your uncle's famed recipe for moth cakes", item_id="moth_cake_recipe"),
-    ]
+        AspectTableEntry(
+            47,
+            48,
+            "A personalised invitation to 'THE FEAST.' No further details are provided",
+            item_id="feast_invitation",
+        ),
+        AspectTableEntry(
+            49,
+            50,
+            "A pocketbook of bad jokes. Emits the occasional snicker",
+            item_id="snickering_joke_book",
+        ),
+        AspectTableEntry(
+            51,
+            52,
+            "A poster for your parent's last, ill-fated circus performance",
+            item_id="circus_performance_poster",
+        ),
+        AspectTableEntry(
+            53, 54, "A quill made from a stirge-owl feather", item_id="stirge_owl_quill"
+        ),
+        AspectTableEntry(
+            55, 56, "A rope woven from a mix of human and breggle hair", item_id="hair_rope"
+        ),
+        AspectTableEntry(
+            57,
+            58,
+            "A stack of angry letters, all accusing you of arson",
+            item_id="arson_accusation_letters",
+        ),
+        AspectTableEntry(
+            59,
+            60,
+            "A strange disk that produces the sound of flatulence whenever a weight is placed atop it",
+            item_id="flatulence_disk",
+        ),
+        AspectTableEntry(
+            61,
+            62,
+            "A tent that slowly raises itself when you loudly sing it a jaunty song",
+            item_id="self_raising_tent",
+        ),
+        AspectTableEntry(
+            63,
+            64,
+            "A vial of guano. Your last reminder of a deceased loved one",
+            item_id="vial_of_guano",
+        ),
+        AspectTableEntry(
+            65,
+            66,
+            "A wooden sceptre topped with a jester's head. When struck, the head tells an ill-considered joke",
+            item_id="jester_sceptre",
+        ),
+        AspectTableEntry(
+            67,
+            68,
+            "An advice book that ultimately suggests a liberal application of fire as the solution to every problem",
+            item_id="fire_solution_book",
+        ),
+        AspectTableEntry(
+            69,
+            70,
+            "An ancient coin, stolen from a grave. Far colder to the touch than it should be",
+            item_id="cold_ancient_coin",
+        ),
+        AspectTableEntry(
+            71, 72, "An empty pan flute case, its contents stolen", item_id="empty_pan_flute_case"
+        ),
+        AspectTableEntry(
+            73,
+            74,
+            "An enormous firework with a tag that reads 'Untested'",
+            item_id="untested_firework",
+        ),
+        AspectTableEntry(
+            75,
+            76,
+            "An extravagant wig, stolen from the head of an elf noble",
+            item_id="stolen_elf_wig",
+        ),
+        AspectTableEntry(
+            77,
+            78,
+            "An ordinary-looking metal bucket. When filled with water, leeches appear inside",
+            item_id="leech_bucket",
+        ),
+        AspectTableEntry(
+            79,
+            80,
+            "An ornate flute, said to be handed down by your ancestors since before they left Fairy",
+            item_id="ancestral_flute",
+        ),
+        AspectTableEntry(
+            81, 82, "An unhatched egg that sweats blood", item_id="blood_sweating_egg"
+        ),
+        AspectTableEntry(
+            83,
+            84,
+            "Faded parchment that lists the names of everyone you've ever wronged. It updates itself periodically",
+            item_id="updating_wronged_list",
+        ),
+        AspectTableEntry(
+            85,
+            86,
+            "Light from a fireworks display, caught in a shard of glass",
+            item_id="captured_fireworks_light",
+        ),
+        AspectTableEntry(
+            87,
+            88,
+            "Lyrics to a half-written song about rodents visiting from the moon",
+            item_id="moon_rodent_lyrics",
+        ),
+        AspectTableEntry(
+            89,
+            90,
+            "Small vials of syrups, each labelled with the type of mood they're supposed to cure",
+            item_id="mood_cure_syrups",
+        ),
+        AspectTableEntry(
+            91, 92, "The corpse of a mouse, dressed in tiny clothes", item_id="dressed_mouse_corpse"
+        ),
+        AspectTableEntry(
+            93,
+            94,
+            "The crest of an unknown longhorn noble house, found on a dead breggle",
+            item_id="unknown_longhorn_crest",
+        ),
+        AspectTableEntry(
+            95, 96, "The squirming pieces for maggot chess", item_id="maggot_chess_pieces"
+        ),
+        AspectTableEntry(
+            97,
+            98,
+            "Woollen ear warmers, knitted by your grandmother",
+            item_id="woollen_ear_warmers",
+        ),
+        AspectTableEntry(
+            99, 100, "Your uncle's famed recipe for moth cakes", item_id="moth_cake_recipe"
+        ),
+    ],
 )
 
 
@@ -461,7 +728,6 @@ WOODGRUE_DEFINITION = KindredDefinition(
         "Dolmenwood alone or in small groups, following where their whims and noses lead."
     ),
     kindred_type=KindredType.DEMI_FEY,
-
     physical=PhysicalRanges(
         # Age at Level 1: 50 + 3d6 years
         age_base=50,
@@ -477,9 +743,7 @@ WOODGRUE_DEFINITION = KindredDefinition(
         weight_dice=DiceFormula(2, 10),
         size="Small",
     ),
-
     native_languages=["Woldish", "Sylvan"],
-
     abilities=[
         WOODGRUE_COMPULSIVE_JUBILATION_ABILITY,
         WOODGRUE_DEFENSIVE_BONUS_ABILITY,
@@ -489,14 +753,10 @@ WOODGRUE_DEFINITION = KindredDefinition(
         WOODGRUE_COLD_IRON_VULNERABILITY_ABILITY,
         WOODGRUE_SKILLS_ABILITY,
     ],
-
     level_progression=[],
-
     preferred_classes=["Bard", "Magician", "Thief"],
     restricted_classes=["Knight", "Cleric", "Friar"],
-
     name_table=WOODGRUE_NAME_TABLE,
-
     aspect_tables={
         AspectType.BACKGROUND: WOODGRUE_BACKGROUND_TABLE,
         AspectType.HEAD: WOODGRUE_HEAD_TABLE,
@@ -509,27 +769,58 @@ WOODGRUE_DEFINITION = KindredDefinition(
         AspectType.SPEECH: WOODGRUE_SPEECH_TABLE,
         AspectType.TRINKET: WOODGRUE_TRINKET_TABLE,
     },
-
     trinket_item_ids=[
-        "bag_of_boiled_sweets", "basket_of_snakes", "battered_hat_with_swan_head",
-        "bone_whistle", "bottle_of_dirty_water", "spilling_ink_bottle",
-        "bronze_chimera_statuette", "burial_shroud_with_face", "musical_ceramic_plate",
-        "collection_of_fungi", "dead_crow_in_bag", "fake_moustache",
-        "forbidden_treatise", "glass_case_with_moth", "duck_shaped_harp",
-        "bloody_harp_string", "moth_wing_cloak", "sticky_mead_tankard",
-        "misshapen_ocarina", "nostalgic_mossling_pipe", "mr_fox_note",
-        "staring_eyeballs", "bronze_cymbals", "feast_invitation",
-        "snickering_joke_book", "circus_performance_poster", "stirge_owl_quill",
-        "hair_rope", "arson_accusation_letters", "flatulence_disk",
-        "self_raising_tent", "vial_of_guano", "jester_sceptre",
-        "fire_solution_book", "cold_ancient_coin", "empty_pan_flute_case",
-        "untested_firework", "stolen_elf_wig", "leech_bucket",
-        "ancestral_flute", "blood_sweating_egg", "updating_wronged_list",
-        "captured_fireworks_light", "moon_rodent_lyrics", "mood_cure_syrups",
-        "dressed_mouse_corpse", "unknown_longhorn_crest", "maggot_chess_pieces",
-        "woollen_ear_warmers", "moth_cake_recipe",
+        "bag_of_boiled_sweets",
+        "basket_of_snakes",
+        "battered_hat_with_swan_head",
+        "bone_whistle",
+        "bottle_of_dirty_water",
+        "spilling_ink_bottle",
+        "bronze_chimera_statuette",
+        "burial_shroud_with_face",
+        "musical_ceramic_plate",
+        "collection_of_fungi",
+        "dead_crow_in_bag",
+        "fake_moustache",
+        "forbidden_treatise",
+        "glass_case_with_moth",
+        "duck_shaped_harp",
+        "bloody_harp_string",
+        "moth_wing_cloak",
+        "sticky_mead_tankard",
+        "misshapen_ocarina",
+        "nostalgic_mossling_pipe",
+        "mr_fox_note",
+        "staring_eyeballs",
+        "bronze_cymbals",
+        "feast_invitation",
+        "snickering_joke_book",
+        "circus_performance_poster",
+        "stirge_owl_quill",
+        "hair_rope",
+        "arson_accusation_letters",
+        "flatulence_disk",
+        "self_raising_tent",
+        "vial_of_guano",
+        "jester_sceptre",
+        "fire_solution_book",
+        "cold_ancient_coin",
+        "empty_pan_flute_case",
+        "untested_firework",
+        "stolen_elf_wig",
+        "leech_bucket",
+        "ancestral_flute",
+        "blood_sweating_egg",
+        "updating_wronged_list",
+        "captured_fireworks_light",
+        "moon_rodent_lyrics",
+        "mood_cure_syrups",
+        "dressed_mouse_corpse",
+        "unknown_longhorn_crest",
+        "maggot_chess_pieces",
+        "woollen_ear_warmers",
+        "moth_cake_recipe",
     ],
-
     kindred_relations=(
         "Woodgrues enjoy the company of all Kindreds, mortal, fairy, or demi-fey, "
         "though they favour those who share their raucous sense of humour. In human "
@@ -537,12 +828,10 @@ WOODGRUE_DEFINITION = KindredDefinition(
         "aware of their rambunctious nature. However, it is known that barring "
         "woodgrues entry would likely only lead to greater misfortune."
     ),
-
     religion_notes=(
         "Woodgrues cannot be clerics or friars as they have no spiritual connection "
         "with the deities of mortals."
     ),
-
     source_book="Dolmenwood Player Book",
     source_page=52,
 )

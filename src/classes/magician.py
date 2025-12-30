@@ -50,9 +50,7 @@ MAGICIAN_ARCANE_MAGIC = ClassAbility(
 MAGICIAN_SKILLS = ClassAbility(
     ability_id="magician_skills",
     name="Magician Skills",
-    description=(
-        "Magicians have one additional, specialised skill: Detect Magic."
-    ),
+    description=("Magicians have one additional, specialised skill: Detect Magic."),
     is_passive=True,
     scales_with_level=True,
     extra_data={
@@ -296,30 +294,23 @@ MAGICIAN_DEFINITION = ClassDefinition(
         "magic items. Magicians begin play able to cast just a single spell "
         "each day, but gain access to extremely potent magic as they advance."
     ),
-
     hit_die=HitDie.D4,
     prime_ability="INT",
-
     magic_type=MagicType.ARCANE,
-
     armor_proficiencies=[
         ArmorProficiency.NONE,
     ],
     weapon_proficiencies=[
         WeaponProficiency.SIMPLE,  # Dagger, holy water, oil, staff, torch
     ],
-
     level_progression=MAGICIAN_LEVEL_PROGRESSION,
-
     abilities=[
         MAGICIAN_ARCANE_MAGIC,
         MAGICIAN_SKILLS,
         MAGICIAN_STARTING_SPELLBOOKS,
     ],
-
     # No kindred restrictions
     restricted_kindreds=[],
-
     starting_equipment=[
         # Weapon (roll 1d6): 1-3. Dagger. 4-6. Staff.
         "weapon_roll_1d6",
@@ -327,7 +318,6 @@ MAGICIAN_DEFINITION = ClassDefinition(
         "ritual_robes",
         "spell_book",  # One of 6 starting spell books
     ],
-
     extra_data={
         "combat_aptitude": "Non-martial",
         "allowed_weapons": ["dagger", "holy_water", "oil", "staff", "torch"],
@@ -340,7 +330,6 @@ MAGICIAN_DEFINITION = ClassDefinition(
             "stolen Drune spells",
         ],
     },
-
     source_book="Dolmenwood Player Book",
     source_page=72,
 )

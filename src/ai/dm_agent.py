@@ -74,6 +74,15 @@ from src.data_models import (
     SocialOrigin,
 )
 
+# Import lore search types (optional integration)
+from src.ai.lore_search import (
+    LoreSearchInterface,
+    LoreSearchQuery,
+    LoreSearchResult,
+    LoreCategory,
+    NullLoreSearch,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +90,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DMAgentConfig:
     """Configuration for the DM Agent."""
+
     llm_provider: LLMProvider = LLMProvider.ANTHROPIC
     llm_model: str = "claude-sonnet-4-20250514"
     max_tokens: int = 1024
@@ -95,6 +105,7 @@ class DMAgentConfig:
 @dataclass
 class DescriptionResult:
     """Result of a description request."""
+
     content: str
     schema_used: PromptSchemaType
     success: bool
@@ -111,12 +122,18 @@ class DMAgent:
     the sole arbiter of outcomes - this agent only describes them.
     """
 
-    def __init__(self, config: Optional[DMAgentConfig] = None):
+    def __init__(
+        self,
+        config: Optional[DMAgentConfig] = None,
+        lore_search: Optional[LoreSearchInterface] = None,
+    ):
         """
         Initialize the DM Agent.
 
         Args:
             config: Agent configuration. If None, uses defaults.
+            lore_search: Optional lore search interface for content enrichment.
+                         If None, uses NullLoreSearch (returns empty results).
         """
         self.config = config or DMAgentConfig()
 
@@ -129,6 +146,9 @@ class DMAgent:
         )
         self._llm = get_llm_manager(llm_config)
 
+        # Initialize lore search (optional enrichment)
+        self._lore_search: LoreSearchInterface = lore_search or NullLoreSearch()
+
         # Response cache (simple dict-based)
         self._cache: dict[str, str] = {}
 
@@ -139,6 +159,85 @@ class DMAgent:
     def is_available(self) -> bool:
         """Check if the LLM is available."""
         return self._llm.is_available()
+
+    # =========================================================================
+    # LORE SEARCH INTEGRATION
+    # =========================================================================
+
+    def retrieve_lore(
+        self,
+        query: str,
+        category: Optional[LoreCategory] = None,
+        max_results: int = 3,
+        current_hex: Optional[str] = None,
+        current_npc: Optional[str] = None,
+        current_faction: Optional[str] = None,
+    ) -> list[LoreSearchResult]:
+        """
+        Retrieve relevant lore from the content database.
+
+        This is used to enrich LLM prompts with setting-specific information.
+        Returns empty list if lore search is disabled or unavailable.
+
+        Args:
+            query: Natural language search query
+            category: Optional category filter (e.g., FACTION, NPC, HEX)
+            max_results: Maximum number of results
+            current_hex: Current hex ID for relevance boosting
+            current_npc: Current NPC name for relevance boosting
+            current_faction: Current faction for relevance boosting
+
+        Returns:
+            List of LoreSearchResult with content and citations
+        """
+        if not self._lore_search.is_available():
+            return []
+
+        search_query = LoreSearchQuery(
+            query=query,
+            categories=[category] if category else [],
+            max_results=max_results,
+            current_hex=current_hex,
+            current_npc=current_npc,
+            current_faction=current_faction,
+        )
+
+        return self._lore_search.search(search_query)
+
+    def get_lore_enrichment(
+        self,
+        query: str,
+        category: Optional[LoreCategory] = None,
+        max_results: int = 2,
+    ) -> str:
+        """
+        Get lore as a formatted string for prompt enrichment.
+
+        Args:
+            query: Search query
+            category: Optional category filter
+            max_results: Maximum results
+
+        Returns:
+            Formatted lore string, or empty string if none found
+        """
+        results = self.retrieve_lore(query, category, max_results)
+        if not results:
+            return ""
+
+        lines = ["Relevant lore:"]
+        for result in results:
+            lines.append(f"- {result.content} [{result.source}]")
+        return "\n".join(lines)
+
+    def get_lore_status(self) -> dict[str, Any]:
+        """Get status of the lore search system."""
+        return self._lore_search.get_status()
+
+    @property
+    def lore_search_available(self) -> bool:
+        """Check if lore search is available."""
+        return self._lore_search.is_available()
 
     # =========================================================================
     # EXPLORATION DESCRIPTIONS
@@ -360,14 +459,16 @@ class DMAgent:
         action_objects = []
         for action in resolved_actions:
             if isinstance(action, dict):
-                action_objects.append(ResolvedAction(
-                    actor=action.get("actor", "Unknown"),
-                    action=action.get("action", "acts"),
-                    target=action.get("target", ""),
-                    result=action.get("result", ""),
-                    damage=action.get("damage", 0),
-                    special_effects=action.get("special_effects", []),
-                ))
+                action_objects.append(
+                    ResolvedAction(
+                        actor=action.get("actor", "Unknown"),
+                        action=action.get("action", "acts"),
+                        target=action.get("target", ""),
+                        result=action.get("result", ""),
+                        damage=action.get("damage", 0),
+                        special_effects=action.get("special_effects", []),
+                    )
+                )
             else:
                 action_objects.append(action)
 
@@ -527,11 +628,10 @@ class DMAgent:
             )
 
         # Check if conversation has ended due to patience
-        if (participant.conversation and
-            participant.conversation.conversation_ended):
+        if participant.conversation and participant.conversation.conversation_ended:
             return DescriptionResult(
                 content=f"[{participant.name} has ended the conversation: "
-                        f"{participant.conversation.end_reason}]",
+                f"{participant.conversation.end_reason}]",
                 schema_used=PromptSchemaType.NPC_DIALOGUE,
                 success=False,
                 warnings=[participant.conversation.end_reason],
@@ -578,16 +678,18 @@ class DMAgent:
             for hint_info in query_result.get("hints_to_give", []):
                 secret = hint_info.get("secret")
                 if secret and secret.secret_id not in social_context.secrets_revealed:
-                    if hasattr(secret, 'status'):
+                    if hasattr(secret, "status"):
                         from src.data_models import SecretStatus
+
                         secret.status = SecretStatus.HINTED
                         secret.hint_count += 1
 
             for reveal_info in query_result.get("secrets_to_reveal", []):
                 secret = reveal_info.get("secret")
                 if secret:
-                    if hasattr(secret, 'status'):
+                    if hasattr(secret, "status"):
                         from src.data_models import SecretStatus
+
                         secret.status = SecretStatus.REVEALED
                     if reveal_info.get("content") not in social_context.secrets_revealed:
                         social_context.secrets_revealed.append(reveal_info["content"])
@@ -721,14 +823,19 @@ class DMAgent:
         }.get(social_context.origin, "A social encounter begins")
 
         # Use exploration description schema for framing
-        sensory_tags = ["voices", "tension" if reaction in ("hostile", "unfriendly") else "anticipation"]
+        sensory_tags = [
+            "voices",
+            "tension" if reaction in ("hostile", "unfriendly") else "anticipation",
+        ]
 
         inputs = ExplorationDescriptionInputs(
             current_state="social_interaction",
             location_summary=f"{origin_text}. Participants: {', '.join(participant_descs)}. "
-                           f"Location: {location_summary}. Mood: {tone}.",
+            f"Location: {location_summary}. Mood: {tone}.",
             sensory_tags=sensory_tags,
-            known_threats=[] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"],
+            known_threats=(
+                [] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"]
+            ),
         )
 
         schema = ExplorationDescriptionSchema(inputs)
@@ -1318,10 +1425,14 @@ class DMAgent:
                 return {k: serialize(v) for k, v in obj.items()}
             return obj
 
-        data = json.dumps({
-            "type": schema.schema_type.value,
-            "inputs": serialize(schema.inputs),
-        }, sort_keys=True, default=str)
+        data = json.dumps(
+            {
+                "type": schema.schema_type.value,
+                "inputs": serialize(schema.inputs),
+            },
+            sort_keys=True,
+            default=str,
+        )
         return hashlib.md5(data.encode()).hexdigest()
 
     def _add_to_recent(self, content: str) -> None:
