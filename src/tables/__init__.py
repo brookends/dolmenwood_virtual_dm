@@ -6,7 +6,6 @@ This module provides:
 - Table management and resolution with nested rolls
 - Dolmenwood-specific game tables (encounters, treasure, NPCs, etc.)
 - Action resolution with failure-first logic
-- Procedure triggers for automated game mechanics
 - Skill check system (X-in-6)
 """
 
@@ -110,23 +109,6 @@ from src.tables.action_resolver import (
     quick_skill_check,
 )
 
-from src.tables.procedure_triggers import (
-    # Enums
-    TriggerEvent,
-    TriggerPriority,
-    # Data classes
-    TriggerCondition,
-    ProcedureResult,
-    GameProcedure,
-    # Main class
-    ProcedureManager,
-    get_procedure_manager,
-    # Convenience functions
-    fire_turn_passed,
-    fire_hex_entered,
-    fire_combat_round,
-)
-
 from src.tables.encounter_tables import (
     EncounterTableManager,
     get_encounter_table_manager,
@@ -224,15 +206,4 @@ __all__ = [
     "ActionResolver",
     "prepare_skill_check",
     "quick_skill_check",
-    # Procedure triggers
-    "TriggerEvent",
-    "TriggerPriority",
-    "TriggerCondition",
-    "ProcedureResult",
-    "GameProcedure",
-    "ProcedureManager",
-    "get_procedure_manager",
-    "fire_turn_passed",
-    "fire_hex_entered",
-    "fire_combat_round",
 ]
