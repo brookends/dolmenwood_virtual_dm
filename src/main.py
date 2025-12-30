@@ -53,6 +53,7 @@ from src.ai import (
     LLMProvider,
     DescriptionResult,
 )
+from src.ai.lore_search import create_lore_search, LoreSearchInterface
 from src.narrative import NarrationContext
 
 
@@ -190,7 +191,16 @@ class VirtualDM:
             llm_provider=provider,
             llm_model=self.config.llm_model or "claude-sonnet-4-20250514",
         )
-        self._dm_agent = DMAgent(dm_config)
+
+        # Create lore search based on config
+        lore_search = create_lore_search(
+            use_vector_db=self.config.use_vector_db,
+            mock_embeddings=self.config.mock_embeddings,
+        )
+        lore_status = lore_search.get_status()
+        logger.info(f"Lore search initialized: {lore_status}")
+
+        self._dm_agent = DMAgent(dm_config, lore_search=lore_search)
         logger.info(f"DM Agent initialized with provider: {provider.value}")
 
         # Set up narration callback on NarrativeResolver

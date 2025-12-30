@@ -63,6 +63,17 @@ from src.ai.dm_agent import (
     reset_dm_agent,
 )
 
+from src.ai.lore_search import (
+    LoreCategory,
+    LoreSearchResult,
+    LoreSearchQuery,
+    LoreSearchInterface,
+    NullLoreSearch,
+    MockLoreSearch,
+    VectorLoreSearch,
+    create_lore_search,
+)
+
 __all__ = [
     # LLM Provider
     "LLMProvider",
@@ -105,4 +116,13 @@ __all__ = [
     "DMAgent",
     "get_dm_agent",
     "reset_dm_agent",
+    # Lore Search
+    "LoreCategory",
+    "LoreSearchResult",
+    "LoreSearchQuery",
+    "LoreSearchInterface",
+    "NullLoreSearch",
+    "MockLoreSearch",
+    "VectorLoreSearch",
+    "create_lore_search",
 ]

@@ -74,6 +74,15 @@ from src.data_models import (
     SocialOrigin,
 )
 
+# Import lore search types (optional integration)
+from src.ai.lore_search import (
+    LoreSearchInterface,
+    LoreSearchQuery,
+    LoreSearchResult,
+    LoreCategory,
+    NullLoreSearch,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +120,18 @@ class DMAgent:
     the sole arbiter of outcomes - this agent only describes them.
     """
 
-    def __init__(self, config: Optional[DMAgentConfig] = None):
+    def __init__(
+        self,
+        config: Optional[DMAgentConfig] = None,
+        lore_search: Optional[LoreSearchInterface] = None,
+    ):
         """
         Initialize the DM Agent.
 
         Args:
             config: Agent configuration. If None, uses defaults.
+            lore_search: Optional lore search interface for content enrichment.
+                         If None, uses NullLoreSearch (returns empty results).
         """
         self.config = config or DMAgentConfig()
 
@@ -129,6 +144,9 @@ class DMAgent:
         )
         self._llm = get_llm_manager(llm_config)
 
+        # Initialize lore search (optional enrichment)
+        self._lore_search: LoreSearchInterface = lore_search or NullLoreSearch()
+
         # Response cache (simple dict-based)
         self._cache: dict[str, str] = {}
 
@@ -139,6 +157,85 @@ class DMAgent:
     def is_available(self) -> bool:
         """Check if the LLM is available."""
         return self._llm.is_available()
+
+    # =========================================================================
+    # LORE SEARCH INTEGRATION
+    # =========================================================================
+
+    def retrieve_lore(
+        self,
+        query: str,
+        category: Optional[LoreCategory] = None,
+        max_results: int = 3,
+        current_hex: Optional[str] = None,
+        current_npc: Optional[str] = None,
+        current_faction: Optional[str] = None,
+    ) -> list[LoreSearchResult]:
+        """
+        Retrieve relevant lore from the content database.
+
+        This is used to enrich LLM prompts with setting-specific information.
+        Returns empty list if lore search is disabled or unavailable.
+
+        Args:
+            query: Natural language search query
+            category: Optional category filter (e.g., FACTION, NPC, HEX)
+            max_results: Maximum number of results
+            current_hex: Current hex ID for relevance boosting
+            current_npc: Current NPC name for relevance boosting
+            current_faction: Current faction for relevance boosting
+
+        Returns:
+            List of LoreSearchResult with content and citations
+        """
+        if not self._lore_search.is_available():
+            return []
+
+        search_query = LoreSearchQuery(
+            query=query,
+            categories=[category] if category else [],
+            max_results=max_results,
+            current_hex=current_hex,
+            current_npc=current_npc,
+            current_faction=current_faction,
+        )
+
+        return self._lore_search.search(search_query)
+
+    def get_lore_enrichment(
+        self,
+        query: str,
+        category: Optional[LoreCategory] = None,
+        max_results: int = 2,
+    ) -> str:
+        """
+        Get lore as a formatted string for prompt enrichment.
+
+        Args:
+            query: Search query
+            category: Optional category filter
+            max_results: Maximum results
+
+        Returns:
+            Formatted lore string, or empty string if none found
+        """
+        results = self.retrieve_lore(query, category, max_results)
+        if not results:
+            return ""
+
+        lines = ["Relevant lore:"]
+        for result in results:
+            lines.append(f"- {result.content} [{result.source}]")
+        return "\n".join(lines)
+
+    def get_lore_status(self) -> dict[str, Any]:
+        """Get status of the lore search system."""
+        return self._lore_search.get_status()
+
+    @property
+    def lore_search_available(self) -> bool:
+        """Check if lore search is available."""
+        return self._lore_search.is_available()
 
     # =========================================================================
     # EXPLORATION DESCRIPTIONS
