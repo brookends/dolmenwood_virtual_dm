@@ -46,6 +46,12 @@ from src.ai.prompt_schemas import (
     FailureConsequenceSchema,
     DowntimeSummaryInputs,
     DowntimeSummarySchema,
+    CombatConclusionInputs,
+    CombatConclusionSchema,
+    DungeonEventInputs,
+    DungeonEventSchema,
+    RestExperienceInputs,
+    RestExperienceSchema,
     create_schema,
 )
 from src.data_models import (
@@ -836,6 +842,151 @@ class DMAgent:
         )
 
         schema = DowntimeSummarySchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # COMBAT CONCLUSION
+    # =========================================================================
+
+    def narrate_combat_end(
+        self,
+        outcome: str,
+        victor_side: str,
+        party_casualties: Optional[list[str]] = None,
+        enemy_casualties: Optional[list[str]] = None,
+        fled_combatants: Optional[list[str]] = None,
+        rounds_fought: int = 0,
+        notable_moments: Optional[list[str]] = None,
+        terrain: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for the conclusion of combat.
+
+        Args:
+            outcome: "victory", "defeat", "fled", "morale_broken"
+            victor_side: "party", "enemies", "none"
+            party_casualties: Names of fallen party members
+            enemy_casualties: Names of slain enemies
+            fled_combatants: Names of those who fled
+            rounds_fought: How many rounds combat lasted
+            notable_moments: Key events during the battle
+            terrain: Where combat took place
+
+        Returns:
+            DescriptionResult with combat conclusion narration
+        """
+        inputs = CombatConclusionInputs(
+            outcome=outcome,
+            victor_side=victor_side,
+            party_casualties=party_casualties or [],
+            enemy_casualties=enemy_casualties or [],
+            fled_combatants=fled_combatants or [],
+            rounds_fought=rounds_fought,
+            notable_moments=notable_moments or [],
+            terrain=terrain,
+        )
+
+        schema = CombatConclusionSchema(inputs)
+        return self._execute_schema(schema, allow_narration_context=True)
+
+    # =========================================================================
+    # DUNGEON EVENTS
+    # =========================================================================
+
+    def narrate_dungeon_event(
+        self,
+        event_type: str,
+        event_name: str,
+        success: bool,
+        damage_taken: int = 0,
+        damage_type: str = "",
+        character_name: str = "",
+        description: str = "",
+        room_context: str = "",
+        narrative_hints: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a dungeon event (trap, discovery, etc.).
+
+        Args:
+            event_type: "trap_triggered", "trap_disarmed", "trap_discovered",
+                       "secret_found", "feature_discovered", "sound_heard"
+            event_name: Name of the trap/secret/feature
+            success: Was the event handled successfully?
+            damage_taken: Damage if trap triggered (use exact number)
+            damage_type: Type of damage (piercing, poison, etc.)
+            character_name: Who triggered/discovered it
+            description: Brief description of the thing
+            room_context: Where this happened
+            narrative_hints: Hints from the resolver
+
+        Returns:
+            DescriptionResult with dungeon event narration
+        """
+        inputs = DungeonEventInputs(
+            event_type=event_type,
+            event_name=event_name,
+            success=success,
+            damage_taken=damage_taken,
+            damage_type=damage_type,
+            character_name=character_name,
+            description=description,
+            room_context=room_context,
+            narrative_hints=narrative_hints or [],
+        )
+
+        schema = DungeonEventSchema(inputs)
+        return self._execute_schema(schema, allow_narration_context=True)
+
+    # =========================================================================
+    # REST EXPERIENCE
+    # =========================================================================
+
+    def narrate_rest(
+        self,
+        rest_type: str,
+        location_type: str,
+        watch_events: Optional[list[str]] = None,
+        sleep_quality: str = "normal",
+        healing_done: Optional[dict[str, int]] = None,
+        resources_consumed: Optional[dict[str, int]] = None,
+        time_of_day_start: str = "",
+        time_of_day_end: str = "",
+        weather: str = "",
+        interruptions: Optional[list[str]] = None,
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a rest/camping period.
+
+        Args:
+            rest_type: "short", "long", "full", "camping"
+            location_type: "wilderness", "dungeon", "settlement", "camp"
+            watch_events: What happened during watches
+            sleep_quality: "good", "normal", "poor", "impossible"
+            healing_done: Character name -> HP recovered
+            resources_consumed: Resource name -> amount used
+            time_of_day_start: When rest started
+            time_of_day_end: When rest ended
+            weather: Weather during rest
+            interruptions: Any disturbances
+
+        Returns:
+            DescriptionResult with rest narration
+        """
+        inputs = RestExperienceInputs(
+            rest_type=rest_type,
+            location_type=location_type,
+            watch_events=watch_events or [],
+            sleep_quality=sleep_quality,
+            healing_done=healing_done or {},
+            resources_consumed=resources_consumed or {},
+            time_of_day_start=time_of_day_start,
+            time_of_day_end=time_of_day_end,
+            weather=weather,
+            interruptions=interruptions or [],
+        )
+
+        schema = RestExperienceSchema(inputs)
         return self._execute_schema(schema)
 
     # =========================================================================

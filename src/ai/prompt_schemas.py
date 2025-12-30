@@ -25,6 +25,9 @@ class PromptSchemaType(str, Enum):
     NPC_DIALOGUE = "npc_dialogue"
     FAILURE_CONSEQUENCE = "failure_consequence_description"
     DOWNTIME_SUMMARY = "downtime_summary"
+    COMBAT_CONCLUSION = "combat_conclusion"
+    DUNGEON_EVENT = "dungeon_event"
+    REST_EXPERIENCE = "rest_experience"
 
 
 # =============================================================================
@@ -696,6 +699,314 @@ Write a summary (2-4 sentences) that:
 2. Briefly mentions activities
 3. Hints at world events
 4. Transitions back to active adventure"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 7: COMBAT CONCLUSION
+# =============================================================================
+
+
+@dataclass
+class CombatConclusionInputs:
+    """Inputs for combat conclusion narration."""
+    outcome: str  # "victory", "defeat", "fled", "morale_broken"
+    victor_side: str  # "party", "enemies", "none"
+    party_casualties: list[str] = field(default_factory=list)  # Names of fallen
+    enemy_casualties: list[str] = field(default_factory=list)  # Names of slain
+    fled_combatants: list[str] = field(default_factory=list)  # Who fled
+    rounds_fought: int = 0
+    notable_moments: list[str] = field(default_factory=list)  # Key events
+    terrain: str = ""
+
+
+class CombatConclusionSchema(PromptSchema):
+    """
+    Schema for narrating the end of combat.
+
+    Used when:
+    - All enemies defeated
+    - Party defeated/captured
+    - One side flees
+    - Morale breaks cause rout
+
+    Constraints:
+    - Summarize what happened
+    - Do not invent new casualties or effects
+    - Transition to post-combat state
+    """
+
+    def __init__(self, inputs: CombatConclusionInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.COMBAT_CONCLUSION,
+            inputs=inputs.__dict__,
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "outcome": str,
+            "victor_side": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        return f"""{base}
+
+COMBAT CONCLUSION TASK:
+You are narrating the end of a battle in Dolmenwood.
+The mechanical outcome has already been determined.
+
+SPECIFIC CONSTRAINTS:
+- Describe the final moments and aftermath
+- Acknowledge casualties listed (do not invent others)
+- If enemies fled, describe their retreat
+- Transition to aftermath/recovery
+- Maintain appropriate tone for outcome (triumph/grief/relief)"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Narrate the conclusion of this combat:
+
+OUTCOME: {inputs.outcome}
+VICTOR: {inputs.victor_side}
+ROUNDS FOUGHT: {inputs.rounds_fought}
+TERRAIN: {inputs.terrain or 'unknown'}
+
+PARTY CASUALTIES: {', '.join(inputs.party_casualties) if inputs.party_casualties else 'None'}
+ENEMY CASUALTIES: {', '.join(inputs.enemy_casualties) if inputs.enemy_casualties else 'None'}
+FLED: {', '.join(inputs.fled_combatants) if inputs.fled_combatants else 'None'}
+
+NOTABLE MOMENTS:
+{chr(10).join('- ' + m for m in inputs.notable_moments) if inputs.notable_moments else '- A hard-fought battle'}
+
+Write a brief conclusion (2-3 sentences) that:
+1. Describes the final moments
+2. Acknowledges the fallen (if any)
+3. Sets the scene for aftermath"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 8: DUNGEON EVENT
+# =============================================================================
+
+
+@dataclass
+class DungeonEventInputs:
+    """Inputs for dungeon event narration."""
+    event_type: str  # "trap_triggered", "trap_disarmed", "trap_discovered",
+                     # "secret_found", "feature_discovered", "sound_heard"
+    event_name: str  # Name of trap/secret/feature
+    success: bool  # Was the event handled successfully?
+    damage_taken: int = 0  # If trap triggered
+    damage_type: str = ""  # Type of damage
+    character_name: str = ""  # Who triggered/found it
+    description: str = ""  # Brief description of the thing
+    room_context: str = ""  # Where this happened
+    narrative_hints: list[str] = field(default_factory=list)  # From resolver
+
+
+class DungeonEventSchema(PromptSchema):
+    """
+    Schema for narrating dungeon events.
+
+    Used when:
+    - Trap triggered or disarmed
+    - Secret door/passage found
+    - Hidden feature discovered
+    - Strange sound heard
+
+    Constraints:
+    - Describe the event dramatically
+    - Use provided damage numbers exactly
+    - Do not invent additional effects
+    """
+
+    def __init__(self, inputs: DungeonEventInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.DUNGEON_EVENT,
+            inputs=inputs.__dict__,
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "event_type": str,
+            "event_name": str,
+            "success": bool,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        return f"""{base}
+
+DUNGEON EVENT TASK:
+You are narrating a dungeon event in Dolmenwood.
+The mechanical outcome has already been determined.
+
+SPECIFIC CONSTRAINTS:
+- Describe the event dramatically
+- If damage was taken, mention the EXACT amount provided
+- Do not invent additional effects or damage
+- Match the tone to the event (danger for traps, triumph for discoveries)
+- Use narrative hints provided as inspiration"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        event_descriptions = {
+            "trap_triggered": "A trap has been triggered",
+            "trap_disarmed": "A trap has been disarmed",
+            "trap_discovered": "A trap has been discovered",
+            "secret_found": "A secret has been discovered",
+            "feature_discovered": "Something interesting has been found",
+            "sound_heard": "A sound was detected",
+        }
+
+        prompt = f"""Narrate this dungeon event:
+
+EVENT: {event_descriptions.get(inputs.event_type, inputs.event_type)}
+NAME: {inputs.event_name}
+OUTCOME: {'Success' if inputs.success else 'Failure'}
+CHARACTER: {inputs.character_name or 'A party member'}
+LOCATION: {inputs.room_context or 'In the dungeon'}
+DESCRIPTION: {inputs.description or 'A dungeon hazard'}"""
+
+        if inputs.damage_taken > 0:
+            prompt += f"""
+DAMAGE: {inputs.damage_taken} {inputs.damage_type} damage"""
+
+        if inputs.narrative_hints:
+            prompt += f"""
+
+NARRATIVE HINTS:
+{chr(10).join('- ' + h for h in inputs.narrative_hints)}"""
+
+        prompt += """
+
+Write a dramatic description (2-3 sentences) of this event."""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 9: REST EXPERIENCE
+# =============================================================================
+
+
+@dataclass
+class RestExperienceInputs:
+    """Inputs for rest/camping narration."""
+    rest_type: str  # "short", "long", "full", "camping"
+    location_type: str  # "wilderness", "dungeon", "settlement", "camp"
+    watch_events: list[str] = field(default_factory=list)  # What happened on watches
+    sleep_quality: str = "normal"  # "good", "normal", "poor", "impossible"
+    healing_done: dict[str, int] = field(default_factory=dict)  # Character -> HP
+    resources_consumed: dict[str, int] = field(default_factory=dict)  # food, water, etc.
+    time_of_day_start: str = ""  # When rest started
+    time_of_day_end: str = ""  # When rest ended
+    weather: str = ""
+    interruptions: list[str] = field(default_factory=list)  # Any disturbances
+
+
+class RestExperienceSchema(PromptSchema):
+    """
+    Schema for narrating rest/camping experiences.
+
+    Used when:
+    - Short rest completed
+    - Long rest completed
+    - Camping in wilderness
+    - Sleeping in dungeon
+
+    Constraints:
+    - Describe the rest period evocatively
+    - Mention any watch events or disturbances
+    - Note healing if significant
+    - Set appropriate mood for location
+    """
+
+    def __init__(self, inputs: RestExperienceInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.REST_EXPERIENCE,
+            inputs=inputs.__dict__,
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "rest_type": str,
+            "location_type": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        return f"""{base}
+
+REST EXPERIENCE TASK:
+You are narrating a rest period in Dolmenwood.
+The mechanical outcomes have already been determined.
+
+SPECIFIC CONSTRAINTS:
+- Create atmosphere appropriate to location
+- Mention watch events if any occurred
+- Note sleep quality and any disturbances
+- Transition smoothly to waking/continuing
+- Match Dolmenwood's atmospheric tone (mysterious, slightly ominous)"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        rest_descriptions = {
+            "short": "a brief rest",
+            "long": "an extended rest",
+            "full": "a full day of recuperation",
+            "camping": "making camp for the night",
+        }
+
+        location_moods = {
+            "wilderness": "under the ancient trees of Dolmenwood",
+            "dungeon": "in the cold darkness of the dungeon",
+            "settlement": "in the relative safety of civilization",
+            "camp": "at the campsite",
+        }
+
+        prompt = f"""Narrate this rest period:
+
+REST TYPE: {rest_descriptions.get(inputs.rest_type, inputs.rest_type)}
+LOCATION: {location_moods.get(inputs.location_type, inputs.location_type)}
+SLEEP QUALITY: {inputs.sleep_quality}
+WEATHER: {inputs.weather or 'unremarkable'}"""
+
+        if inputs.time_of_day_start:
+            prompt += f"\nTIME: {inputs.time_of_day_start} to {inputs.time_of_day_end}"
+
+        if inputs.watch_events:
+            prompt += f"""
+
+WATCH EVENTS:
+{chr(10).join('- ' + e for e in inputs.watch_events)}"""
+
+        if inputs.interruptions:
+            prompt += f"""
+
+DISTURBANCES:
+{chr(10).join('- ' + i for i in inputs.interruptions)}"""
+
+        if inputs.healing_done:
+            total_healing = sum(inputs.healing_done.values())
+            prompt += f"\n\nHEALING: {total_healing} HP recovered across the party"
+
+        prompt += """
+
+Write a brief narration (2-3 sentences) that:
+1. Evokes the rest experience
+2. Mentions any notable events
+3. Transitions to waking/continuing"""
 
         return prompt
 

@@ -1506,6 +1506,60 @@ class TestNarrationIntegration:
         assert narration is not None
         assert isinstance(narration, str)
 
+    def test_combat_end_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_combat_end method."""
+        narration = virtual_dm_with_narration.narrate_combat_end(
+            combat_outcome="victory",
+            surviving_party=["Aldric the Bold", "Elara Moonwhisper"],
+            fallen_party=[],
+            defeated_enemies=["Goblin Warrior", "Goblin Archer"],
+            fled_enemies=[],
+            significant_moments=["Aldric landed a critical hit"],
+            total_rounds=3,
+            xp_gained=50,
+            treasure_found=["12 silver coins"],
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_dungeon_event_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_dungeon_event method."""
+        narration = virtual_dm_with_narration.narrate_dungeon_event(
+            event_type="trap",
+            event_description="A pressure plate triggers a poison dart trap",
+            location_name="The Sunken Library",
+            location_atmosphere="dust motes drift in stale air",
+            party_formation=["Aldric", "Thief", "Cleric"],
+            triggering_action="stepping on stone tile",
+            mechanical_outcome="Save vs Poison succeeded",
+            damage_dealt={"Aldric": 4},
+            items_involved=["10-foot pole"],
+            hidden_elements=["mechanism behind wall panel"],
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_rest_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_rest method."""
+        narration = virtual_dm_with_narration.narrate_rest(
+            rest_type="camp",
+            location_name="Sheltered Glen",
+            location_safety="relatively safe",
+            duration_hours=8,
+            healing_received={"Aldric": 4, "Elara": 2},
+            spells_recovered={"Elara": ["Light", "Cure Light Wounds"]},
+            watch_schedule=["Aldric: 1st watch", "Elara: 2nd watch"],
+            interruptions=[],
+            weather_conditions="clear and cool",
+            ambient_events=["owl hooting in distance"],
+            resources_consumed={"rations": 2},
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
     def test_narration_disabled_returns_none(self, virtual_dm_no_narration, basic_encounter):
         """Test that narration methods return None when disabled."""
         result = virtual_dm_no_narration.narrate_encounter_start(
@@ -1527,6 +1581,32 @@ class TestNarrationIntegration:
             failure_type="test",
             consequence_type="test",
             consequence_details="test",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_combat_end(
+            combat_outcome="victory",
+            surviving_party=["Test"],
+            fallen_party=[],
+            defeated_enemies=["Enemy"],
+            fled_enemies=[],
+            significant_moments=[],
+            total_rounds=1,
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_dungeon_event(
+            event_type="trap",
+            event_description="Test trap",
+            location_name="Test Location",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_rest(
+            rest_type="camp",
+            location_name="Test Camp",
+            location_safety="safe",
+            duration_hours=8,
         )
         assert result is None
 

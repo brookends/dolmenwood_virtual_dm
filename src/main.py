@@ -560,6 +560,187 @@ class VirtualDM:
             logger.warning(f"Error generating failure narration: {e}")
             return None
 
+    def narrate_combat_end(
+        self,
+        *,
+        combat_outcome: str,
+        surviving_party: list[str],
+        fallen_party: list[str],
+        defeated_enemies: list[str],
+        fled_enemies: list[str],
+        significant_moments: list[str],
+        total_rounds: int,
+        xp_gained: int = 0,
+        treasure_found: list[str] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for combat conclusion.
+
+        Describes the aftermath of combat, honoring the fallen and
+        celebrating victories without minimizing consequences.
+
+        Args:
+            combat_outcome: Result (victory, retreat, defeat, rout)
+            surviving_party: Party members still standing
+            fallen_party: Party members who fell in combat
+            defeated_enemies: Enemies killed or incapacitated
+            fled_enemies: Enemies who escaped
+            significant_moments: Notable events during combat
+            total_rounds: How long combat lasted
+            xp_gained: Experience points earned
+            treasure_found: Items discovered on enemies
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Derive victor_side from combat_outcome
+            victor_side = "party" if combat_outcome in ("victory", "rout") else (
+                "enemies" if combat_outcome == "defeat" else "none"
+            )
+
+            result = self._dm_agent.narrate_combat_end(
+                outcome=combat_outcome,
+                victor_side=victor_side,
+                party_casualties=fallen_party,
+                enemy_casualties=defeated_enemies,
+                fled_combatants=fled_enemies,
+                rounds_fought=total_rounds,
+                notable_moments=significant_moments,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating combat end narration: {e}")
+            return None
+
+    def narrate_dungeon_event(
+        self,
+        *,
+        event_type: str,
+        event_description: str,
+        location_name: str,
+        location_atmosphere: str = "",
+        party_formation: list[str] | None = None,
+        triggering_action: str = "",
+        mechanical_outcome: str = "",
+        damage_dealt: dict[str, int] | None = None,
+        items_involved: list[str] | None = None,
+        hidden_elements: list[str] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for dungeon events.
+
+        Covers traps, discoveries, environmental hazards, and
+        atmospheric moments in dungeon exploration.
+
+        Args:
+            event_type: Type of event (trap, discovery, hazard, secret)
+            event_description: What happened mechanically
+            location_name: Where this occurred
+            location_atmosphere: Ambient description
+            party_formation: Who was where in marching order
+            triggering_action: What triggered the event
+            mechanical_outcome: Game mechanics result
+            damage_dealt: Damage to party members if any
+            items_involved: Relevant items
+            hidden_elements: Things that might be discovered
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Extract damage from first affected character
+            damage_dict = damage_dealt or {}
+            first_victim = list(damage_dict.keys())[0] if damage_dict else ""
+            total_damage = sum(damage_dict.values()) if damage_dict else 0
+
+            # Determine success from mechanical_outcome
+            success = "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+
+            result = self._dm_agent.narrate_dungeon_event(
+                event_type=event_type,
+                event_name=event_description,
+                success=success,
+                damage_taken=total_damage,
+                damage_type="",  # Could be enhanced to extract from description
+                character_name=first_victim,
+                description=f"{triggering_action}. {location_atmosphere}".strip(". "),
+                room_context=location_name,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating dungeon event narration: {e}")
+            return None
+
+    def narrate_rest(
+        self,
+        *,
+        rest_type: str,
+        location_name: str,
+        location_safety: str,
+        duration_hours: int,
+        healing_received: dict[str, int] | None = None,
+        spells_recovered: dict[str, list[str]] | None = None,
+        watch_schedule: list[str] | None = None,
+        interruptions: list[str] | None = None,
+        weather_conditions: str = "",
+        ambient_events: list[str] | None = None,
+        resources_consumed: dict[str, int] | None = None,
+    ) -> Optional[str]:
+        """
+        Generate narrative description for rest and camping.
+
+        Creates atmospheric rest scenes that emphasize fellowship,
+        respite, and the quiet moments between adventures.
+
+        Args:
+            rest_type: Type of rest (short, long, camp, safe_haven)
+            location_name: Where party is resting
+            location_safety: Safety level of location
+            duration_hours: How long the rest lasted
+            healing_received: HP restored per character
+            spells_recovered: Spells recovered per caster
+            watch_schedule: Who took watch and when
+            interruptions: Events that disturbed rest
+            weather_conditions: Current weather
+            ambient_events: Atmospheric background events
+            resources_consumed: Food, fuel, etc. used
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            # Determine sleep quality from interruptions
+            sleep_quality = "poor" if interruptions else "good"
+            if location_safety == "safe":
+                sleep_quality = "good"
+            elif location_safety in ("dangerous", "hostile"):
+                sleep_quality = "poor"
+
+            result = self._dm_agent.narrate_rest(
+                rest_type=rest_type,
+                location_type=location_name,
+                watch_events=watch_schedule or [],
+                sleep_quality=sleep_quality,
+                healing_done=healing_received or {},
+                resources_consumed=resources_consumed or {},
+                weather=weather_conditions,
+                interruptions=interruptions or [],
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating rest narration: {e}")
+            return None
+
     @property
     def dm_agent(self) -> Optional[DMAgent]:
         """Get the DM Agent for direct access if needed."""
