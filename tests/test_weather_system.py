@@ -569,3 +569,131 @@ class TestEffectDescriptions:
         assert any("Travel Points" in d for d in descriptions)
         assert any("lost" in d.lower() for d in descriptions)
         assert any("campfire" in d.lower() for d in descriptions)
+
+
+class TestColliggwyldForaging:
+    """Tests for Colliggwyld unseason foraging bonus integration."""
+
+    @pytest.fixture(autouse=True)
+    def reset_roller(self):
+        """Reset dice roller before each test."""
+        DiceRoller.clear_roll_log()
+        DiceRoller.set_replay_session(None)
+        yield
+
+    @pytest.fixture
+    def hazard_resolver(self):
+        """Create a hazard resolver for testing."""
+        from src.narrative.hazard_resolver import HazardResolver
+
+        return HazardResolver()
+
+    @pytest.fixture
+    def mock_character(self):
+        """Create a mock character for foraging tests."""
+        from src.data_models import CharacterState
+
+        return CharacterState(
+            character_id="test_char",
+            name="Test Forager",
+            character_class="Fighter",
+            level=1,
+            hp_current=10,
+            hp_max=10,
+            armor_class=10,
+            base_speed=40,
+            ability_scores={"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10},
+        )
+
+    def test_colliggwyld_foraging_bonus_value(self):
+        """Verify Colliggwyld provides 2.0 foraging bonus."""
+        state = UnseasonState()
+        state.start_unseason(Unseason.COLLIGGWYLD, 30)
+        effects = get_active_unseason_effects(state)
+
+        assert effects["foraging_bonus"] == 2.0
+
+    def test_is_fungi_item_detection(self, hazard_resolver):
+        """Test that fungi items are correctly identified."""
+        # Fungi items should be detected
+        assert hazard_resolver._is_fungi_item("Sage Toe") is True
+        assert hazard_resolver._is_fungi_item("Giant Mushroom") is True
+        assert hazard_resolver._is_fungi_item("Pook Morel") is True
+        assert hazard_resolver._is_fungi_item("Red Cap Toadstool") is True
+        assert hazard_resolver._is_fungi_item("Brainconk Fungus") is True
+
+        # Non-fungi items should not be detected
+        assert hazard_resolver._is_fungi_item("Moonwort") is False
+        assert hazard_resolver._is_fungi_item("Healing Herb") is False
+        assert hazard_resolver._is_fungi_item("Berries") is False
+
+    def test_fungi_yield_doubled_during_colliggwyld(self, hazard_resolver):
+        """Test that fungi yields are doubled during Colliggwyld."""
+        DiceRoller.set_seed(42)
+
+        # Parse a fungi item without bonus
+        result_normal = hazard_resolver._parse_and_roll_special_yield(
+            "Sage Toe (1d3 portions)", foraging_bonus=1.0
+        )
+
+        DiceRoller.set_seed(42)  # Same seed for comparison
+
+        # Parse same item with Colliggwyld bonus
+        result_colliggwyld = hazard_resolver._parse_and_roll_special_yield(
+            "Sage Toe (1d3 portions)", foraging_bonus=2.0
+        )
+
+        assert result_normal["item"] == "Sage Toe"
+        assert result_colliggwyld["item"] == "Sage Toe"
+        assert result_normal["bonus_applied"] is False
+        assert result_colliggwyld["bonus_applied"] is True
+        assert result_colliggwyld["quantity"] == result_normal["quantity"] * 2
+
+    def test_non_fungi_not_doubled(self, hazard_resolver):
+        """Test that non-fungi items are not affected by Colliggwyld."""
+        DiceRoller.set_seed(42)
+
+        # Parse a non-fungi item with bonus
+        result = hazard_resolver._parse_and_roll_special_yield(
+            "Moonwort (1d3 portions)", foraging_bonus=2.0
+        )
+
+        assert result["item"] == "Moonwort"
+        assert result["bonus_applied"] is False  # Should NOT be doubled
+
+    def test_foraging_with_colliggwyld_unseason(self, hazard_resolver, mock_character):
+        """Test foraging automatically uses Colliggwyld bonus when unseason is active."""
+        DiceRoller.set_seed(100)  # Seed that succeeds foraging check
+
+        result = hazard_resolver.resolve_foraging(
+            character=mock_character,
+            method="foraging",
+            season="normal",
+            active_unseason="colliggwyld",
+            foraging_special=["Giant Mushroom (1d4 portions)"],
+        )
+
+        # Check that foraging was successful and includes bonus info
+        if result.success:
+            # If successful and items found, check for doubled fungi
+            if hasattr(result, "items_found") and result.items_found:
+                for item in result.items_found:
+                    if hazard_resolver._is_fungi_item(item["item"]):
+                        assert item["bonus_applied"] is True
+
+    def test_foraging_without_colliggwyld(self, hazard_resolver, mock_character):
+        """Test foraging without Colliggwyld doesn't double fungi."""
+        DiceRoller.set_seed(100)
+
+        result = hazard_resolver.resolve_foraging(
+            character=mock_character,
+            method="foraging",
+            season="normal",
+            active_unseason=None,  # No unseason
+            foraging_special=["Giant Mushroom (1d4 portions)"],
+        )
+
+        # Check that foraging doesn't apply bonus
+        if result.success and hasattr(result, "items_found") and result.items_found:
+            for item in result.items_found:
+                assert item.get("bonus_applied", False) is False

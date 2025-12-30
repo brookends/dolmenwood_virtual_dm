@@ -990,6 +990,8 @@ class HazardResolver:
         method: str = "foraging",
         season: str = "normal",
         full_day: bool = False,
+        foraging_bonus: float = 1.0,
+        active_unseason: Optional[str] = None,
         **kwargs: Any,
     ) -> HazardResult:
         """
@@ -1001,7 +1003,21 @@ class HazardResolver:
 
         Hex-specific foraging_special yields are added on successful foraging.
         Example: "Sage Toe (1d3 portions)" from hex 0102.
+
+        Colliggwyld Unseason: During Colliggwyld, fungi yields are doubled.
+        This is handled by passing foraging_bonus=2.0 or active_unseason="colliggwyld".
+
+        Args:
+            character: The character foraging
+            method: "foraging", "fishing", or "hunting"
+            season: "normal", "winter", or "autumn"
+            full_day: Whether spending a full day foraging (+2 bonus)
+            foraging_bonus: Multiplier for fungi yields (default 1.0, 2.0 for Colliggwyld)
+            active_unseason: Current unseason (used to auto-set foraging_bonus)
         """
+        # Auto-set foraging bonus for Colliggwyld if not explicitly provided
+        if active_unseason == "colliggwyld" and foraging_bonus == 1.0:
+            foraging_bonus = 2.0
         # Survival check
         # TODO: Get best Survival skill in party
         roll = self.dice.roll_d6(1, "Survival check")
@@ -1054,11 +1070,13 @@ class HazardResolver:
 
         for special in foraging_special:
             # Parse format like "Sage Toe (1d3 portions)"
-            special_result = self._parse_and_roll_special_yield(special)
+            special_result = self._parse_and_roll_special_yield(special, foraging_bonus)
             if special_result:
                 special_yields.append(special_result)
+                # Note if Colliggwyld bonus was applied
+                bonus_note = " (doubled by Colliggwyld!)" if special_result.get("bonus_applied") else ""
                 special_descriptions.append(
-                    f"{special_result['quantity']} {special_result['item']}"
+                    f"{special_result['quantity']} {special_result['item']}{bonus_note}"
                 )
 
         # Build description
@@ -1092,15 +1110,34 @@ class HazardResolver:
 
         return result
 
-    def _parse_and_roll_special_yield(self, special_str: str) -> Optional[dict[str, Any]]:
+    # Common fungi/mushroom keywords for Colliggwyld bonus detection
+    FUNGI_KEYWORDS = frozenset([
+        "mushroom", "mushrooms", "fungus", "fungi", "toadstool", "toadstools",
+        "morel", "morels", "puffball", "puffballs", "bracket", "truffle", "truffles",
+        "cap", "caps", "shroom", "shrooms", "spore", "spores",
+        # Specific Dolmenwood fungi
+        "sage toe", "brainconk", "pook morel", "redslob", "mould",
+    ])
+
+    def _is_fungi_item(self, item_name: str) -> bool:
+        """Check if an item is a fungi/mushroom type (for Colliggwyld bonus)."""
+        name_lower = item_name.lower()
+        return any(keyword in name_lower for keyword in self.FUNGI_KEYWORDS)
+
+    def _parse_and_roll_special_yield(
+        self,
+        special_str: str,
+        foraging_bonus: float = 1.0,
+    ) -> Optional[dict[str, Any]]:
         """
         Parse a special foraging yield string and roll for quantity.
 
         Args:
             special_str: Format like "Sage Toe (1d3 portions)" or "Moonwort (2d4)"
+            foraging_bonus: Multiplier for fungi yields (2.0 during Colliggwyld)
 
         Returns:
-            Dict with item name and rolled quantity, or None if parsing fails
+            Dict with item name, rolled quantity, and whether bonus was applied
         """
         import re
 
@@ -1108,13 +1145,28 @@ class HazardResolver:
         match = re.match(r"(.+?)\s*\((\d+d\d+)(?:\s+\w+)?\)", special_str)
         if not match:
             # Simple format without dice, like "Rare Herb"
-            return {"item": special_str.strip(), "quantity": 1}
+            item_name = special_str.strip()
+            quantity = 1
+            # Apply bonus if it's a fungi item
+            bonus_applied = False
+            if self._is_fungi_item(item_name) and foraging_bonus > 1.0:
+                quantity = int(quantity * foraging_bonus)
+                bonus_applied = True
+            return {"item": item_name, "quantity": quantity, "bonus_applied": bonus_applied}
 
         item_name = match.group(1).strip()
         dice_expr = match.group(2)
 
         try:
             quantity_roll = self.dice.roll(dice_expr, f"special yield: {item_name}")
-            return {"item": item_name, "quantity": quantity_roll.total}
+            quantity = quantity_roll.total
+
+            # Apply Colliggwyld bonus to fungi items
+            bonus_applied = False
+            if self._is_fungi_item(item_name) and foraging_bonus > 1.0:
+                quantity = int(quantity * foraging_bonus)
+                bonus_applied = True
+
+            return {"item": item_name, "quantity": quantity, "bonus_applied": bonus_applied}
         except Exception:
-            return {"item": item_name, "quantity": 1}
+            return {"item": item_name, "quantity": 1, "bonus_applied": False}
