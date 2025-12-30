@@ -44,6 +44,18 @@ from src.tables.hunting_tables import (
     calculate_rations_yield,
     get_hunting_terrain,
 )
+from src.narrative.sensory_details import (
+    SensoryContext,
+    TerrainContext,
+    TimeOfDayContext,
+    WeatherContext,
+    get_foraging_scene,
+    get_fishing_scene,
+    get_hunting_scene,
+    get_trap_scene,
+    get_secret_door_scene,
+    build_narrative_hints,
+)
 
 
 class HazardType(str, Enum):
@@ -1024,6 +1036,19 @@ class HazardResolver:
         triggered = trigger_roll.total <= trigger_chance
 
         if not triggered:
+            # Generate sensory scene for non-triggered trap
+            sensory_scene = get_trap_scene(
+                trigger_type="proximity",
+                effect_type="generic",
+                avoided=True,
+                dice=self.dice,
+            )
+            base_hints = [
+                "mechanism clicks but doesn't fire",
+                "feels pressure plate shift slightly",
+            ]
+            hints_with_sensory = build_narrative_hints(base_hints, sensory_scene)
+
             return HazardResult(
                 success=True,  # Avoided trap
                 hazard_type=HazardType.TRAP,
@@ -1032,10 +1057,7 @@ class HazardResolver:
                 check_made=True,
                 check_result=trigger_roll.total,
                 check_target=trigger_chance,
-                narrative_hints=[
-                    "mechanism clicks but doesn't fire",
-                    "feels pressure plate shift slightly",
-                ],
+                narrative_hints=hints_with_sensory,
             )
 
         # Get character ID for applying effects
@@ -1048,6 +1070,16 @@ class HazardResolver:
             if damage_roll.total > 0 and character_id:
                 apply_damage.append((character_id, damage_roll.total))
 
+            # Generate sensory scene for legacy trap
+            sensory_scene = get_trap_scene(
+                trigger_type="touch",
+                effect_type=trap_type,
+                avoided=False,
+                dice=self.dice,
+            )
+            base_hints = ["trap springs", f"{trap_type} strikes"]
+            hints_with_sensory = build_narrative_hints(base_hints, sensory_scene)
+
             return HazardResult(
                 success=False,
                 hazard_type=HazardType.TRAP,
@@ -1059,7 +1091,7 @@ class HazardResolver:
                 check_made=True,
                 check_result=trigger_roll.total,
                 check_target=trigger_chance,
-                narrative_hints=["trap springs", f"{trap_type} strikes"],
+                narrative_hints=hints_with_sensory,
             )
 
         # Use full trap resolution with proper mechanics
@@ -1164,6 +1196,26 @@ class HazardResolver:
                 apply_damage.append((character_id, damage_dealt))
             for condition in conditions:
                 apply_conditions.append((character_id, condition))
+
+        # Generate sensory scene for triggered trap
+        # Determine trigger type from trap mechanics
+        trigger_type = "pressure_plate"  # default
+        if trap.trigger:
+            trigger_str = str(trap.trigger).lower()
+            if "tripwire" in trigger_str or "wire" in trigger_str:
+                trigger_type = "tripwire"
+            elif "touch" in trigger_str:
+                trigger_type = "touch"
+            elif "proximity" in trigger_str or "rune" in trigger_str:
+                trigger_type = "proximity"
+
+        sensory_scene = get_trap_scene(
+            trigger_type=trigger_type,
+            effect_type=effect.effect_type.value,
+            avoided=save_made and effect.save_negates,
+            dice=self.dice,
+        )
+        narrative_hints = build_narrative_hints(narrative_hints, sensory_scene)
 
         return HazardResult(
             success=False,
@@ -1342,6 +1394,26 @@ class HazardResolver:
 
         # Filter empty hints
         hints = [h for h in hints if h]
+
+        # Add sensory details for immersive narration
+        terrain_context = kwargs.get("terrain", "forest")
+        try:
+            sensory_terrain = TerrainContext(terrain_context)
+        except ValueError:
+            sensory_terrain = TerrainContext.FOREST
+
+        sensory_context = SensoryContext(
+            terrain=sensory_terrain,
+            season=season,
+            unseason_active=active_unseason,
+        )
+        sensory_scene = get_foraging_scene(
+            context=sensory_context,
+            success=True,
+            is_fungi=(forage_type == ForageType.FUNGI),
+            dice=self.dice,
+        )
+        hints = build_narrative_hints(hints, sensory_scene)
 
         # Compile all foraged items
         all_foraged = [foraged_item_data]
@@ -1585,6 +1657,23 @@ class HazardResolver:
         if fish.special_condition and not has_pipe_music:
             narrative_hints.append(fish.special_condition)
 
+        # Add sensory details for immersive narration
+        fish_size = "large" if fish.rations_per_hp and fish.rations_per_hp >= 4 else (
+            "small" if rations <= 2 else "medium"
+        )
+        is_magical = blessing_offered or fish_is_fairy(fish)
+
+        sensory_context = SensoryContext(
+            terrain=TerrainContext.RIVER,  # Default to river for fishing
+        )
+        sensory_scene = get_fishing_scene(
+            context=sensory_context,
+            fish_size=fish_size,
+            is_magical=is_magical,
+            dice=self.dice,
+        )
+        narrative_hints = build_narrative_hints(narrative_hints, sensory_scene)
+
         return HazardResult(
             success=True,
             hazard_type=HazardType.HUNGER,
@@ -1676,6 +1765,20 @@ class HazardResolver:
 
         if animal.flavor_text:
             narrative_hints.append(animal.flavor_text)
+
+        # Add sensory details for immersive narration
+        try:
+            sensory_terrain = TerrainContext(terrain)
+        except ValueError:
+            sensory_terrain = TerrainContext.FOREST
+
+        sensory_context = SensoryContext(terrain=sensory_terrain)
+        sensory_scene = get_hunting_scene(
+            context=sensory_context,
+            distance=distance,
+            dice=self.dice,
+        )
+        narrative_hints = build_narrative_hints(narrative_hints, sensory_scene)
 
         return HazardResult(
             success=True,

@@ -56,6 +56,10 @@ try:
         generate_secret_door,
         LOCATION_DESCRIPTIONS,
     )
+    from src.narrative.sensory_details import (
+        get_secret_door_scene,
+        build_narrative_hints,
+    )
 
     NARRATIVE_AVAILABLE = True
 except ImportError:
@@ -767,6 +771,26 @@ class DungeonEngine:
                         door_info["required_action"] = secret_door.get_required_action()
                         door_info["mechanism_type"] = secret_door.mechanism_type.value
 
+                    # Add sensory scene details for immersive narration
+                    if NARRATIVE_AVAILABLE:
+                        if search_result["door_found"]:
+                            sensory_scene = get_secret_door_scene(
+                                phase="found_hidden_door",
+                                mechanism_type=None,
+                                dice=self.dice,
+                            )
+                        else:
+                            mech_type = "magical" if secret_door.mechanism_type == MechanismType.MAGICAL else "mechanical"
+                            sensory_scene = get_secret_door_scene(
+                                phase="found_mechanism",
+                                mechanism_type=mech_type,
+                                dice=self.dice,
+                            )
+                        door_info["narrative_hints"] = build_narrative_hints(
+                            [search_result["message"]],
+                            sensory_scene,
+                        )
+
                     results["found_secret_doors"].append(door_info)
 
                 # Add any clues found during partial search
@@ -899,6 +923,28 @@ class DungeonEngine:
                 result["item_required"] = interaction.item_required
             if target_door.get_required_action():
                 result["required_action"] = target_door.get_required_action()
+
+        # Add sensory scene details for immersive narration
+        if NARRATIVE_AVAILABLE:
+            mech_type = "magical" if target_door.mechanism_type == MechanismType.MAGICAL else "mechanical"
+            if interaction.door_opened:
+                # Door opening scene
+                sensory_scene = get_secret_door_scene(
+                    phase="opening",
+                    mechanism_type=mech_type,
+                    dice=self.dice,
+                )
+            else:
+                # Mechanism interaction scene (failed or no result yet)
+                sensory_scene = get_secret_door_scene(
+                    phase="found_mechanism",
+                    mechanism_type=mech_type,
+                    dice=self.dice,
+                )
+            result["narrative_hints"] = build_narrative_hints(
+                [interaction.message],
+                sensory_scene,
+            )
 
         return result
 
