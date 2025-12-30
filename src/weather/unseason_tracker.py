@@ -200,50 +200,14 @@ def get_active_unseason_effects(state: UnseasonState) -> dict[str, Any]:
     }
 
 
-# Special encounter tables for Chame and Vague
-CHAME_ENCOUNTERS: dict[int, tuple[str, str]] = {
-    1: ("Galosher", "2d6"),
-    2: ("Snake—Adder", "1d8"),
-    3: ("Snake—Adder", "1d8"),
-    4: ("Snake—Adder", "1d8"),
-    5: ("Snake—Giant Python", "1d3"),
-    6: ("Snake—Giant Python", "1d3"),
-    7: ("Wyrm—Black Bile", "1"),
-    8: ("Wyrm—Blood", "1"),
-    9: ("Wyrm—Phlegm", "1"),
-    10: ("Wyrm—Yellow Bile", "1"),
-}
-
-VAGUE_ENCOUNTERS: dict[int, tuple[str, str]] = {
-    1: ("Banshee", "1"),
-    2: ("Bog Corpse", "2d4"),
-    3: ("Bog Corpse", "2d4"),
-    4: ("Ghoul", "2d4"),
-    5: ("Ghoul", "2d4"),
-    6: ("Gloam", "1"),
-    7: ("Headless Rider", "1"),
-    8: ("Skeleton", "3d6"),
-    9: ("Spectre", "1d4"),
-    10: ("Wight", "1d6"),
-}
-
-
-def roll_unseason_encounter(unseason: Unseason) -> Optional[tuple[str, str]]:
-    """
-    Roll on the special encounter table for an unseason.
-
-    Args:
-        unseason: The active unseason
-
-    Returns:
-        Tuple of (creature_name, number_appearing) or None
-    """
-    if unseason == Unseason.CHAME:
-        roll = DiceRoller.roll("1d10", "Chame encounter").total
-        return CHAME_ENCOUNTERS.get(roll)
-
-    elif unseason == Unseason.VAGUE:
-        roll = DiceRoller.roll("1d10", "Vague encounter").total
-        return VAGUE_ENCOUNTERS.get(roll)
-
-    return None
+# Note: Unseason encounter tables (Chame and Vague) are defined in
+# src/tables/wilderness_encounter_tables.py and used by the EncounterRoller.
+# The encounter system already handles unseason encounters with a 2-in-6 chance
+# when active_unseason is set in the EncounterContext.
+#
+# To roll unseason encounters, use:
+#   from src.tables.encounter_roller import roll_wilderness_encounter
+#   result = roll_wilderness_encounter(region, active_unseason="chame")
+#
+# The EncounterRoller._check_unseason_encounter() method handles the 2-in-6
+# trigger chance and rolls on the appropriate CHAME_TABLE or VAGUE_TABLE.

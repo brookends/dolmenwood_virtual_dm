@@ -31,8 +31,9 @@ from src.weather.unseason_tracker import (
     UnseasonState,
     check_unseason_trigger,
     get_active_unseason_effects,
-    roll_unseason_encounter,
 )
+from src.tables.encounter_roller import EncounterRoller, EncounterContext
+from src.tables.wilderness_encounter_tables import get_unseason_table
 
 
 class TestDolmenwoodCalendar:
@@ -442,7 +443,7 @@ class TestUnseasonEffects:
 
 
 class TestUnseasonEncounters:
-    """Tests for special unseason encounter tables."""
+    """Tests for special unseason encounter tables integration."""
 
     @pytest.fixture(autouse=True)
     def reset_roller(self):
@@ -451,48 +452,104 @@ class TestUnseasonEncounters:
         DiceRoller.set_replay_session(None)
         yield
 
-    def test_chame_encounter_roll(self):
-        """Test rolling on Chame encounter table."""
-        DiceRoller.set_seed(42)
-        result = roll_unseason_encounter(Unseason.CHAME)
+    def test_chame_table_exists(self):
+        """Test that Chame encounter table exists in encounter system."""
+        table = get_unseason_table("chame")
+        assert table is not None
+        assert table["die"] == "d10"
+        assert len(table["entries"]) == 10
 
-        assert result is not None
-        creature, number = result
-        assert creature in [
-            "Galosher",
-            "Snake—Adder",
-            "Snake—Giant Python",
-            "Wyrm—Black Bile",
-            "Wyrm—Blood",
-            "Wyrm—Phlegm",
-            "Wyrm—Yellow Bile",
-        ]
+        # Verify expected creatures are in the table
+        creature_names = {entry.name for entry in table["entries"].values()}
+        assert "Galosher" in creature_names
+        assert "Snake—Adder" in creature_names
+        assert "Snake—Giant Python" in creature_names
+        assert "Wyrm—Black Bile" in creature_names
 
-    def test_vague_encounter_roll(self):
-        """Test rolling on Vague encounter table."""
-        DiceRoller.set_seed(42)
-        result = roll_unseason_encounter(Unseason.VAGUE)
+    def test_vague_table_exists(self):
+        """Test that Vague encounter table exists in encounter system."""
+        table = get_unseason_table("vague")
+        assert table is not None
+        assert table["die"] == "d10"
+        assert len(table["entries"]) == 10
 
-        assert result is not None
-        creature, number = result
-        assert creature in [
-            "Banshee",
-            "Bog Corpse",
-            "Ghoul",
-            "Gloam",
-            "Headless Rider",
-            "Skeleton",
-            "Spectre",
-            "Wight",
-        ]
+        # Verify expected creatures are in the table
+        creature_names = {entry.name for entry in table["entries"].values()}
+        assert "Banshee" in creature_names
+        assert "Bog Corpse" in creature_names
+        assert "Ghoul" in creature_names
+        assert "Skeleton" in creature_names
 
-    def test_no_encounter_for_other_unseasons(self):
-        """Hitching and Colliggwyld don't have special encounters."""
-        result = roll_unseason_encounter(Unseason.HITCHING)
-        assert result is None
+    def test_encounter_roller_handles_chame(self):
+        """Test EncounterRoller correctly uses Chame unseason."""
+        DiceRoller.set_seed(1)  # Seed that triggers unseason encounter
+        roller = EncounterRoller()
+        context = EncounterContext(
+            region="tithelands",
+            active_unseason="chame",
+        )
 
-        result = roll_unseason_encounter(Unseason.COLLIGGWYLD)
-        assert result is None
+        # Roll multiple times - some should be unseason encounters (2-in-6 chance)
+        unseason_count = 0
+        for _ in range(30):
+            DiceRoller.set_seed(_)  # Different seed each time
+            result = roller.roll_encounter(context, check_lair=False)
+            if result.unseason == "chame":
+                unseason_count += 1
+                # Verify it's a valid Chame creature
+                assert result.entry.name in [
+                    "Galosher",
+                    "Snake—Adder",
+                    "Snake—Giant Python",
+                    "Wyrm—Black Bile",
+                    "Wyrm—Blood",
+                    "Wyrm—Phlegm",
+                    "Wyrm—Yellow Bile",
+                ]
+
+        # With 2-in-6 chance over 30 rolls, we should get some unseason encounters
+        # (statistically ~10, but we just check > 0)
+        assert unseason_count > 0
+
+    def test_encounter_roller_handles_vague(self):
+        """Test EncounterRoller correctly uses Vague unseason."""
+        DiceRoller.set_seed(1)
+        roller = EncounterRoller()
+        context = EncounterContext(
+            region="tithelands",
+            active_unseason="vague",
+        )
+
+        # Roll multiple times - some should be unseason encounters
+        unseason_count = 0
+        for _ in range(30):
+            DiceRoller.set_seed(_)
+            result = roller.roll_encounter(context, check_lair=False)
+            if result.unseason == "vague":
+                unseason_count += 1
+                # Verify it's a valid Vague creature
+                assert result.entry.name in [
+                    "Banshee",
+                    "Bog Corpse",
+                    "Ghoul",
+                    "Gloam",
+                    "Headless Rider",
+                    "Skeleton",
+                    "Spectre",
+                    "Wight",
+                ]
+
+        assert unseason_count > 0
+
+    def test_no_unseason_table_for_hitching(self):
+        """Hitching doesn't have a special encounter table."""
+        table = get_unseason_table("hitching")
+        assert table is None
+
+    def test_no_unseason_table_for_colliggwyld(self):
+        """Colliggwyld doesn't have a special encounter table."""
+        table = get_unseason_table("colliggwyld")
+        assert table is None
 
 
 class TestEffectDescriptions:
