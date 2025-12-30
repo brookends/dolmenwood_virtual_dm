@@ -11,13 +11,7 @@ from enum import Enum, auto
 from typing import Any, Callable, Optional, Union
 
 from src.data_models import DiceResult, DiceRoller, ActionType
-from src.tables.table_types import (
-    SkillCheck,
-    ReactionRoll,
-    MoraleResult,
-    interpret_reaction_roll,
-    check_morale,
-)
+from src.tables.table_types import SkillCheck
 
 
 class ResolutionType(str, Enum):

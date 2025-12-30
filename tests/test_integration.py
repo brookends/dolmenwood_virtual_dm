@@ -786,7 +786,7 @@ class TestSocialContextDialogueIntegration:
             secrets=["knows location of hidden treasure"],
             dialogue_hooks=["complains about adventurers", "mentions tribute demands"],
             faction="Goblin Warrens",
-            reaction_result=ReactionResult.UNFRIENDLY,
+            reaction_result=ReactionResult.HOSTILE,
             can_communicate=True,
         )
 
@@ -796,7 +796,7 @@ class TestSocialContextDialogueIntegration:
         assert "Cunning and paranoid" in result["npc_personality"]
         assert "shifty eyes" in result["npc_personality"]
         assert "broken Common" in result["npc_voice"]
-        assert result["reaction_result"] == "unfriendly"
+        assert result["reaction_result"] == "hostile"
         assert result["conversation_topic"] == "Where is your lair?"
         assert "complains about adventurers" in result["known_to_npc"]
         assert "Goal: protect the tribe" in result["known_to_npc"]
@@ -956,7 +956,7 @@ class TestSocialContextDialogueIntegration:
 
         participant = SocialParticipant.from_monster(
             monster,
-            reaction=ReactionResult.NEUTRAL,
+            reaction=ReactionResult.UNCERTAIN,
             hex_id="0303",
         )
 
@@ -964,7 +964,7 @@ class TestSocialContextDialogueIntegration:
         assert participant.sentience == "Sentient"
         assert participant.can_communicate is True
         assert participant.monster_type == "Fairy"
-        assert participant.reaction_result == ReactionResult.NEUTRAL
+        assert participant.reaction_result == ReactionResult.UNCERTAIN
         assert participant.hex_id == "0303"
         assert "demands tribute" in participant.dialogue_hooks
         assert "Haughty and dismissive" in participant.personality

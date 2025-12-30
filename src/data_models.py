@@ -84,12 +84,43 @@ class SurpriseStatus(str, Enum):
 
 
 class ReactionResult(str, Enum):
-    """Results of 2d6 reaction roll."""
-    HOSTILE = "hostile"
-    UNFRIENDLY = "unfriendly"
-    NEUTRAL = "neutral"
-    FRIENDLY = "friendly"
-    HELPFUL = "helpful"
+    """
+    Results of 2d6 reaction roll per Dolmenwood Player's Book.
+
+    Encounter Reactions Table (2d6):
+    - 2 or less: Attacks
+    - 3-5: Hostile, may attack
+    - 6-8: Uncertain, wary
+    - 9-11: Indifferent, may negotiate
+    - 12 or more: Eager, friendly
+    """
+    ATTACKS = "attacks"           # 2 or less - Attacks immediately
+    HOSTILE = "hostile"           # 3-5 - Hostile, may attack
+    UNCERTAIN = "uncertain"       # 6-8 - Uncertain, wary
+    INDIFFERENT = "indifferent"   # 9-11 - Indifferent, may negotiate
+    FRIENDLY = "friendly"         # 12+ - Eager, friendly
+
+
+def interpret_reaction(roll: int) -> ReactionResult:
+    """
+    Interpret a 2d6 reaction roll per Dolmenwood Player's Book.
+
+    Args:
+        roll: The 2d6 roll result (with any CHA modifiers applied)
+
+    Returns:
+        ReactionResult indicating creature's disposition
+    """
+    if roll <= 2:
+        return ReactionResult.ATTACKS
+    elif roll <= 5:
+        return ReactionResult.HOSTILE
+    elif roll <= 8:
+        return ReactionResult.UNCERTAIN
+    elif roll <= 11:
+        return ReactionResult.INDIFFERENT
+    else:
+        return ReactionResult.FRIENDLY
 
 
 class ConditionType(str, Enum):

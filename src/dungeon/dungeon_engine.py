@@ -24,6 +24,7 @@ from src.data_models import (
     EncounterType,
     SurpriseStatus,
     ReactionResult,
+    interpret_reaction,
     LocationState,
     LocationType,
     LightSourceType,
@@ -1167,7 +1168,7 @@ class DungeonEngine:
         """Roll reaction for dungeon encounter."""
         encounter = self.controller.get_encounter()
         if not encounter:
-            return ReactionResult.NEUTRAL
+            return ReactionResult.UNCERTAIN
 
         roll = self.dice.roll_2d6("dungeon reaction")
 
@@ -1175,16 +1176,8 @@ class DungeonEngine:
         modifier = -1 if self._dungeon_state.alert_level > 2 else 0
         total = roll.total + modifier
 
-        if total <= 2:
-            result = ReactionResult.HOSTILE
-        elif total <= 5:
-            result = ReactionResult.UNFRIENDLY
-        elif total <= 8:
-            result = ReactionResult.NEUTRAL
-        elif total <= 11:
-            result = ReactionResult.FRIENDLY
-        else:
-            result = ReactionResult.HELPFUL
+        # Use canonical interpretation
+        result = interpret_reaction(total)
 
         encounter.reaction_result = result
         return result
@@ -1202,13 +1195,13 @@ class DungeonEngine:
         Returns:
             Trigger name for state transition
         """
-        if reaction == ReactionResult.HOSTILE:
+        if reaction == ReactionResult.ATTACKS:
             return "encounter_to_combat"
-        elif reaction in {ReactionResult.FRIENDLY, ReactionResult.HELPFUL}:
+        elif reaction == ReactionResult.FRIENDLY:
             return "encounter_to_parley"
-        elif reaction == ReactionResult.UNFRIENDLY:
+        elif reaction == ReactionResult.HOSTILE:
             # More likely to attack in dungeon
-            roll = self.dice.roll_d6(1, "unfriendly action")
+            roll = self.dice.roll_d6(1, "hostile action")
             if roll.total <= 3:
                 return "encounter_to_combat"
             return "encounter_end_dungeon"

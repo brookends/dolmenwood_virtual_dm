@@ -13,8 +13,6 @@ from src.tables.table_types import (
     # Enums
     TableCategory,
     DieType,
-    ReactionRoll,
-    MoraleResult,
     SkillTarget,
     Kindred,
     NameColumn,
@@ -72,8 +70,6 @@ from src.tables.table_types import (
     HexRollTableEntry,
     HexRollTable,
     # Functions
-    interpret_reaction_roll,
-    check_morale,
     parse_hex_roll_tables,
     convert_hex_tables_to_roll_tables,
 )
@@ -123,8 +119,6 @@ __all__ = [
     # Table types
     "TableCategory",
     "DieType",
-    "ReactionRoll",
-    "MoraleResult",
     "SkillTarget",
     "Kindred",
     "NameColumn",
@@ -139,8 +133,6 @@ __all__ = [
     "CharacterAspectTable",
     "CharacterAspectResult",
     "GeneratedCharacterAspects",
-    "interpret_reaction_roll",
-    "check_morale",
     # Encounter types
     "EncounterLocationType",
     "EncounterTimeOfDay",

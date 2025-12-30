@@ -18,11 +18,7 @@ from src.tables.table_types import (
     DolmenwoodTable,
     TableResult,
     TableContext,
-    ReactionRoll,
-    MoraleResult,
     SkillCheck,
-    interpret_reaction_roll,
-    check_morale,
 )
 
 
@@ -355,55 +351,6 @@ class TableManager:
 
         dice_result = DiceRoller.roll(f"{num_dice}d{die_size}", "quantity roll")
         return dice_result.total + modifier
-
-    def roll_reaction(
-        self,
-        cha_modifier: int = 0,
-        situational_modifier: int = 0
-    ) -> tuple[int, ReactionRoll, str]:
-        """
-        Roll a reaction check.
-
-        Args:
-            cha_modifier: CHA modifier of the speaking character
-            situational_modifier: Additional modifiers
-
-        Returns:
-            Tuple of (roll_total, reaction_result, description)
-        """
-        context = TableContext(cha_modifier=cha_modifier, explicit_modifier=situational_modifier)
-        result = self.roll_table("reaction_2d6", context)
-
-        reaction = interpret_reaction_roll(result.roll_total)
-        return result.roll_total, reaction, result.result_text
-
-    def roll_morale(
-        self,
-        morale_score: int,
-        situational_modifier: int = 0
-    ) -> tuple[int, MoraleResult, str]:
-        """
-        Roll a morale check.
-
-        Args:
-            morale_score: The creature's morale score (2-12)
-            situational_modifier: Modifiers from situation
-
-        Returns:
-            Tuple of (roll_total, morale_result, description)
-        """
-        dice_result = DiceRoller.roll("2d6", "morale check")
-        roll_total = dice_result.total
-
-        result = check_morale(roll_total, morale_score, situational_modifier)
-
-        descriptions = {
-            MoraleResult.PASS: "Morale holds. The creature continues fighting.",
-            MoraleResult.FAIL: "Morale breaks! The creature flees or surrenders.",
-            MoraleResult.RALLY: "Rally! The creature fights with renewed vigor.",
-        }
-
-        return roll_total, result, descriptions[result]
 
     def roll_surprise(self, modifier: int = 0) -> tuple[int, bool]:
         """
