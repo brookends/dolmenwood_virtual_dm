@@ -25,6 +25,10 @@ from src.encounter.encounter_factory import (
     reset_encounter_factory,
     create_encounter_from_roll,
     create_wilderness_encounter,
+    # Integrated encounter functions (Factory + Engine + State Machine)
+    start_wilderness_encounter,
+    start_dungeon_encounter,
+    start_settlement_encounter,
 )
 
 __all__ = [
@@ -46,4 +50,8 @@ __all__ = [
     "reset_encounter_factory",
     "create_encounter_from_roll",
     "create_wilderness_encounter",
+    # Integrated Encounter Functions (preferred API)
+    "start_wilderness_encounter",
+    "start_dungeon_encounter",
+    "start_settlement_encounter",
 ]

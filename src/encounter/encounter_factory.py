@@ -524,6 +524,10 @@ def create_wilderness_encounter(
 
     This combines the EncounterRoller and EncounterFactory into one call.
 
+    NOTE: This function creates the encounter state but does NOT transition
+    the game state. Use start_wilderness_encounter() to also trigger the
+    state transition and start the encounter sequence.
+
     Args:
         region: Region identifier
         terrain: Terrain description
@@ -555,3 +559,213 @@ def create_wilderness_encounter(
 
     factory = get_encounter_factory()
     return factory.create_encounter(rolled, terrain=terrain, is_outdoor=True)
+
+
+# =============================================================================
+# INTEGRATED ENCOUNTER FUNCTIONS (Factory + Engine + State Machine)
+# =============================================================================
+
+def start_wilderness_encounter(
+    controller: "GlobalController",
+    region: str,
+    terrain: str = "",
+    is_day: bool = True,
+    on_road: bool = False,
+    has_fire: bool = True,
+    is_aquatic: bool = False,
+    active_unseason: Optional[str] = None,
+    party_aware: bool = False,
+    enemies_aware: bool = False,
+    hex_id: Optional[str] = None,
+) -> dict:
+    """
+    Roll, create, and start a wilderness encounter with full state integration.
+
+    This is the preferred way to trigger a wilderness encounter as it:
+    1. Rolls on encounter tables (EncounterRoller)
+    2. Creates combatants and EncounterState (EncounterFactory)
+    3. Transitions game state to ENCOUNTER (StateMachine)
+    4. Initializes the encounter sequence (EncounterEngine)
+
+    Args:
+        controller: The GlobalController managing game state
+        region: Region identifier (e.g., "tithelands", "aldweald")
+        terrain: Terrain description for the encounter
+        is_day: True for daytime, False for night
+        on_road: True if on road/track
+        has_fire: True if party has fire (nighttime only)
+        is_aquatic: True for water encounters
+        active_unseason: Current unseason if any
+        party_aware: Whether party was already aware of the encounter
+        enemies_aware: Whether enemies were already aware of the party
+        hex_id: Optional hex ID for location context
+
+    Returns:
+        Dictionary with encounter initialization results including:
+        - factory_result: EncounterFactoryResult with encounter details
+        - engine_result: Result from EncounterEngine.start_encounter()
+        - rolled_encounter: The original RolledEncounter
+    """
+    from src.encounter.encounter_engine import EncounterEngine, EncounterOrigin
+
+    # Step 1: Roll and create the encounter
+    factory_result = create_wilderness_encounter(
+        region=region,
+        terrain=terrain,
+        is_day=is_day,
+        on_road=on_road,
+        has_fire=has_fire,
+        is_aquatic=is_aquatic,
+        active_unseason=active_unseason,
+    )
+
+    # Step 2: Initialize encounter engine and start encounter
+    engine = EncounterEngine(controller)
+    engine_result = engine.start_encounter(
+        encounter=factory_result.encounter_state,
+        origin=EncounterOrigin.WILDERNESS,
+        party_aware=party_aware,
+        enemies_aware=enemies_aware,
+        hex_id=hex_id,
+    )
+
+    return {
+        "factory_result": factory_result,
+        "engine_result": engine_result,
+        "rolled_encounter": factory_result.rolled_encounter,
+        "encounter_state": factory_result.encounter_state,
+        "in_lair": factory_result.in_lair,
+        "lair_description": factory_result.lair_description,
+        "hoard": factory_result.hoard,
+    }
+
+
+def start_dungeon_encounter(
+    controller: "GlobalController",
+    rolled_encounter: RolledEncounter,
+    terrain: str = "",
+    party_aware: bool = False,
+    enemies_aware: bool = False,
+    roll_tables: Optional[list] = None,
+    poi_name: Optional[str] = None,
+    hex_id: Optional[str] = None,
+) -> dict:
+    """
+    Create and start a dungeon encounter with full state integration.
+
+    For dungeon encounters, the RolledEncounter is typically provided by the
+    dungeon's own encounter tables rather than wilderness tables.
+
+    This function:
+    1. Creates combatants and EncounterState (EncounterFactory)
+    2. Transitions game state to ENCOUNTER (StateMachine)
+    3. Initializes the encounter sequence (EncounterEngine)
+
+    Args:
+        controller: The GlobalController managing game state
+        rolled_encounter: Pre-rolled encounter from dungeon tables
+        terrain: Terrain description (e.g., "dark corridor", "flooded chamber")
+        party_aware: Whether party was already aware of the encounter
+        enemies_aware: Whether enemies were already aware of the party
+        roll_tables: Optional list of RollTable objects from POI
+        poi_name: Optional POI name for location context
+        hex_id: Optional hex ID for location context
+
+    Returns:
+        Dictionary with encounter initialization results
+    """
+    from src.encounter.encounter_engine import EncounterEngine, EncounterOrigin
+
+    # Step 1: Create the encounter (dungeon = not outdoor)
+    factory = get_encounter_factory()
+    factory_result = factory.create_encounter(
+        rolled_encounter=rolled_encounter,
+        terrain=terrain,
+        is_outdoor=False,
+    )
+
+    # Step 2: Initialize encounter engine and start encounter
+    engine = EncounterEngine(controller)
+    engine_result = engine.start_encounter(
+        encounter=factory_result.encounter_state,
+        origin=EncounterOrigin.DUNGEON,
+        party_aware=party_aware,
+        enemies_aware=enemies_aware,
+        roll_tables=roll_tables,
+        poi_name=poi_name,
+        hex_id=hex_id,
+    )
+
+    return {
+        "factory_result": factory_result,
+        "engine_result": engine_result,
+        "rolled_encounter": factory_result.rolled_encounter,
+        "encounter_state": factory_result.encounter_state,
+        "in_lair": factory_result.in_lair,
+        "lair_description": factory_result.lair_description,
+        "hoard": factory_result.hoard,
+    }
+
+
+def start_settlement_encounter(
+    controller: "GlobalController",
+    rolled_encounter: RolledEncounter,
+    terrain: str = "",
+    party_aware: bool = False,
+    enemies_aware: bool = False,
+    poi_name: Optional[str] = None,
+) -> dict:
+    """
+    Create and start a settlement encounter with full state integration.
+
+    For settlement encounters, the RolledEncounter typically comes from
+    settlement-specific encounter tables.
+
+    This function:
+    1. Creates combatants and EncounterState (EncounterFactory)
+    2. Transitions game state to ENCOUNTER (StateMachine)
+    3. Initializes the encounter sequence (EncounterEngine)
+
+    Args:
+        controller: The GlobalController managing game state
+        rolled_encounter: Pre-rolled encounter from settlement tables
+        terrain: Terrain description (e.g., "busy marketplace", "quiet alley")
+        party_aware: Whether party was already aware of the encounter
+        enemies_aware: Whether enemies were already aware of the party
+        poi_name: Optional POI name for location context
+
+    Returns:
+        Dictionary with encounter initialization results
+    """
+    from src.encounter.encounter_engine import EncounterEngine, EncounterOrigin
+
+    # Step 1: Create the encounter (settlement = not outdoor, but different handling)
+    factory = get_encounter_factory()
+    factory_result = factory.create_encounter(
+        rolled_encounter=rolled_encounter,
+        terrain=terrain,
+        is_outdoor=True,  # Settlement uses outdoor distances
+    )
+
+    # Step 2: Initialize encounter engine and start encounter
+    engine = EncounterEngine(controller)
+    engine_result = engine.start_encounter(
+        encounter=factory_result.encounter_state,
+        origin=EncounterOrigin.SETTLEMENT,
+        party_aware=party_aware,
+        enemies_aware=enemies_aware,
+        poi_name=poi_name,
+    )
+
+    return {
+        "factory_result": factory_result,
+        "engine_result": engine_result,
+        "rolled_encounter": factory_result.rolled_encounter,
+        "encounter_state": factory_result.encounter_state,
+    }
+
+
+# Type hint for GlobalController (avoid circular import)
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.game_state.global_controller import GlobalController

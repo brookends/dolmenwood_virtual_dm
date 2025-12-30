@@ -30,7 +30,12 @@ from src.encounter.encounter_factory import (
     reset_encounter_factory,
     create_encounter_from_roll,
     create_wilderness_encounter,
+    start_wilderness_encounter,
+    start_dungeon_encounter,
+    start_settlement_encounter,
 )
+from src.game_state.global_controller import GlobalController
+from src.game_state.state_machine import GameState
 
 
 # =============================================================================
@@ -480,3 +485,245 @@ class TestEncounterFactoryIntegration:
 
             assert result.encounter_state is not None
             assert len(result.encounter_state.combatants) >= 0
+
+
+# =============================================================================
+# INTEGRATED ENCOUNTER TESTS (Factory + Engine + State Machine)
+# =============================================================================
+
+class TestStartWildernessEncounter:
+    """Tests for the integrated start_wilderness_encounter function."""
+
+    @pytest.fixture
+    def controller(self):
+        """Create a fresh GlobalController."""
+        return GlobalController()
+
+    def test_starts_encounter_and_transitions_state(self, controller):
+        """Test that start_wilderness_encounter transitions to ENCOUNTER state."""
+        # Verify we start in WILDERNESS_TRAVEL
+        assert controller.current_state == GameState.WILDERNESS_TRAVEL
+
+        # Start the encounter
+        result = start_wilderness_encounter(
+            controller=controller,
+            region="tithelands",
+            terrain="dense forest",
+        )
+
+        # Verify state transitioned to ENCOUNTER
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Verify result contains expected keys
+        assert "factory_result" in result
+        assert "engine_result" in result
+        assert "encounter_state" in result
+        assert result["encounter_state"] is not None
+
+    def test_returns_factory_and_engine_results(self, controller):
+        """Test that the result contains both factory and engine results."""
+        result = start_wilderness_encounter(
+            controller=controller,
+            region="aldweald",
+        )
+
+        # Check factory result
+        assert isinstance(result["factory_result"], EncounterFactoryResult)
+        assert result["rolled_encounter"] is not None
+
+        # Check engine result
+        assert result["engine_result"]["encounter_started"] is True
+        assert result["engine_result"]["origin"] == "wilderness"
+
+    def test_encounter_stored_in_controller(self, controller):
+        """Test that the encounter is stored in the controller."""
+        result = start_wilderness_encounter(
+            controller=controller,
+            region="tithelands",
+        )
+
+        encounter = controller.get_encounter()
+        assert encounter is not None
+        assert encounter == result["encounter_state"]
+
+    def test_with_awareness_flags(self, controller):
+        """Test starting encounter with awareness flags."""
+        result = start_wilderness_encounter(
+            controller=controller,
+            region="tithelands",
+            party_aware=True,
+            enemies_aware=False,
+        )
+
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Check awareness was passed through
+        engine_result = result["engine_result"]
+        awareness = engine_result["awareness"]
+        # AwarenessResult is a dataclass, so use attribute access
+        assert awareness.party_aware is True
+        assert awareness.enemies_aware is False
+
+
+class TestStartDungeonEncounter:
+    """Tests for the integrated start_dungeon_encounter function."""
+
+    @pytest.fixture
+    def controller(self):
+        """Create a GlobalController in dungeon exploration state."""
+        controller = GlobalController()
+        controller.transition("enter_dungeon")  # Transition to dungeon
+        return controller
+
+    @pytest.fixture
+    def monster_encounter(self):
+        """Create a sample monster RolledEncounter."""
+        entry = EncounterEntry(
+            name="Giant Rat",
+            number_appearing="2d4",
+            monster_id="giant_rat",
+        )
+        return RolledEncounter(
+            entry=entry,
+            entry_type=EncounterEntryType.MONSTER,
+            category=EncounterCategory.MONSTER,
+            number_appearing_dice="2d4",
+            number_appearing=3,
+        )
+
+    def test_starts_dungeon_encounter(self, controller, monster_encounter):
+        """Test that start_dungeon_encounter transitions to ENCOUNTER state."""
+        # Verify we start in DUNGEON_EXPLORATION
+        assert controller.current_state == GameState.DUNGEON_EXPLORATION
+
+        # Start the encounter
+        result = start_dungeon_encounter(
+            controller=controller,
+            rolled_encounter=monster_encounter,
+            terrain="dark corridor",
+        )
+
+        # Verify state transitioned to ENCOUNTER
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Verify origin is dungeon
+        assert result["engine_result"]["origin"] == "dungeon"
+
+    def test_with_poi_context(self, controller, monster_encounter):
+        """Test starting dungeon encounter with POI context."""
+        result = start_dungeon_encounter(
+            controller=controller,
+            rolled_encounter=monster_encounter,
+            poi_name="The Spectral Manse",
+            hex_id="0604",
+        )
+
+        engine_result = result["engine_result"]
+        assert engine_result["poi_name"] == "The Spectral Manse"
+        assert engine_result["hex_id"] == "0604"
+
+
+class TestStartSettlementEncounter:
+    """Tests for the integrated start_settlement_encounter function."""
+
+    @pytest.fixture
+    def controller(self):
+        """Create a GlobalController in settlement exploration state."""
+        controller = GlobalController()
+        controller.transition("enter_settlement")  # Transition to settlement
+        return controller
+
+    @pytest.fixture
+    def mortal_encounter(self):
+        """Create a sample mortal RolledEncounter."""
+        entry = EncounterEntry(
+            name="Merchant‡",
+            number_appearing="1d4",
+        )
+        return RolledEncounter(
+            entry=entry,
+            entry_type=EncounterEntryType.EVERYDAY_MORTAL,
+            category=EncounterCategory.MORTAL,
+            number_appearing_dice="1d4",
+            number_appearing=2,
+        )
+
+    def test_starts_settlement_encounter(self, controller, mortal_encounter):
+        """Test that start_settlement_encounter transitions to ENCOUNTER state."""
+        # Verify we start in SETTLEMENT_EXPLORATION
+        assert controller.current_state == GameState.SETTLEMENT_EXPLORATION
+
+        # Start the encounter
+        result = start_settlement_encounter(
+            controller=controller,
+            rolled_encounter=mortal_encounter,
+            terrain="busy marketplace",
+        )
+
+        # Verify state transitioned to ENCOUNTER
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Verify origin is settlement
+        assert result["engine_result"]["origin"] == "settlement"
+
+
+class TestEncounterStateTransitionFlow:
+    """Tests for the complete encounter state transition flow."""
+
+    @pytest.fixture
+    def controller(self):
+        """Create a fresh GlobalController."""
+        return GlobalController()
+
+    def test_wilderness_encounter_to_combat_flow(self, controller):
+        """Test complete flow: wilderness -> encounter -> combat."""
+        # Start in wilderness
+        assert controller.current_state == GameState.WILDERNESS_TRAVEL
+
+        # Start encounter
+        result = start_wilderness_encounter(
+            controller=controller,
+            region="tithelands",
+        )
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Transition to combat
+        controller.transition("encounter_to_combat")
+        assert controller.current_state == GameState.COMBAT
+
+        # End combat back to wilderness
+        controller.transition("combat_end_wilderness")
+        assert controller.current_state == GameState.WILDERNESS_TRAVEL
+
+    def test_dungeon_encounter_to_parley_flow(self):
+        """Test complete flow: dungeon -> encounter -> social interaction."""
+        controller = GlobalController()
+        controller.transition("enter_dungeon")
+
+        # Create an NPC encounter
+        entry = EncounterEntry(
+            name="Pilgrim‡",
+            number_appearing="1d4",
+        )
+        rolled = RolledEncounter(
+            entry=entry,
+            entry_type=EncounterEntryType.EVERYDAY_MORTAL,
+            category=EncounterCategory.MORTAL,
+            number_appearing_dice="1d4",
+            number_appearing=2,
+        )
+
+        # Start encounter
+        start_dungeon_encounter(
+            controller=controller,
+            rolled_encounter=rolled,
+        )
+        assert controller.current_state == GameState.ENCOUNTER
+
+        # Transition to social interaction (parley)
+        controller.transition("encounter_to_parley")
+        assert controller.current_state == GameState.SOCIAL_INTERACTION
+
+        # End conversation back to dungeon
+        controller.transition("conversation_end_dungeon")
+        assert controller.current_state == GameState.DUNGEON_EXPLORATION
