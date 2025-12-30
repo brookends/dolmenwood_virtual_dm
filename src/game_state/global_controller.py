@@ -37,6 +37,9 @@ from src.data_models import (
     SocialParticipant,
     SocialParticipantType,
     ReactionResult,
+    KnownTopic,
+    SecretInfo,
+    SecretStatus,
 )
 
 # Import NarrativeResolver (optional, may not be initialized yet)
@@ -688,11 +691,19 @@ class GlobalController:
             actors = self._current_encounter.actors
             reaction = self._social_context.initial_reaction
 
+            # Check for contextual encounter data with topic intelligence
+            contextual_data = getattr(self._current_encounter, 'contextual_data', None)
+
             for actor_id in actors:
                 participant = self._lookup_and_build_participant(
                     actor_id, reaction, context
                 )
                 if participant:
+                    # Apply topic intelligence from contextual encounter if available
+                    if contextual_data and contextual_data.get("topic_intelligence"):
+                        self._apply_contextual_topic_intelligence(
+                            participant, contextual_data
+                        )
                     participants.append(participant)
 
         # Check context for NPC data (from settlement conversations, etc.)
@@ -789,6 +800,85 @@ class GlobalController:
             participant_type=SocialParticipantType.MONSTER,
             hex_id=hex_id,
             reaction_result=reaction,
+        )
+
+    def _apply_contextual_topic_intelligence(
+        self,
+        participant: SocialParticipant,
+        contextual_data: dict[str, Any],
+    ) -> None:
+        """
+        Apply topic intelligence from a contextual encounter to a participant.
+
+        This injects known_topics and secret_info from hex-specific encounter
+        modifiers into the SocialParticipant for social interaction.
+
+        Args:
+            participant: The participant to enhance
+            contextual_data: Dict with topic_intelligence, behavior, demeanor, speech
+        """
+        topic_intel = contextual_data.get("topic_intelligence", {})
+
+        # Apply known topics
+        known_topics_data = topic_intel.get("known_topics", [])
+        for topic_data in known_topics_data:
+            topic = KnownTopic(
+                topic_id=topic_data.get("topic_id", ""),
+                content=topic_data.get("content", ""),
+                keywords=topic_data.get("keywords", []),
+                required_disposition=topic_data.get("required_disposition", -5),
+                category=topic_data.get("category", "general"),
+                shared=topic_data.get("shared", False),
+                priority=topic_data.get("priority", 0),
+            )
+            participant.known_topics.append(topic)
+
+        # Apply secret info
+        secret_info_data = topic_intel.get("secret_info", [])
+        for secret_data in secret_info_data:
+            status_str = secret_data.get("status", "unknown")
+            try:
+                status = SecretStatus(status_str)
+            except ValueError:
+                status = SecretStatus.UNKNOWN
+
+            secret = SecretInfo(
+                secret_id=secret_data.get("secret_id", ""),
+                content=secret_data.get("content", ""),
+                hint=secret_data.get("hint", ""),
+                keywords=secret_data.get("keywords", []),
+                required_disposition=secret_data.get("required_disposition", 3),
+                required_trust=secret_data.get("required_trust", 2),
+                can_be_bribed=secret_data.get("can_be_bribed", False),
+                bribe_amount=secret_data.get("bribe_amount", 0),
+                status=status,
+                hint_count=secret_data.get("hint_count", 0),
+            )
+            participant.secret_info.append(secret)
+
+        # Apply behavioral modifiers
+        if contextual_data.get("demeanor"):
+            demeanor = contextual_data["demeanor"]
+            if isinstance(demeanor, list):
+                participant.demeanor = demeanor
+            else:
+                participant.demeanor = [demeanor]
+
+        if contextual_data.get("speech"):
+            participant.speech = contextual_data["speech"]
+
+        if contextual_data.get("behavior"):
+            # Store behavior hint in personality
+            behavior = contextual_data["behavior"]
+            if behavior == "non_hostile":
+                if participant.personality:
+                    participant.personality += ". Appears non-hostile."
+                else:
+                    participant.personality = "Appears non-hostile."
+
+        logger.debug(
+            f"Applied contextual topic intelligence to {participant.name}: "
+            f"{len(participant.known_topics)} topics, {len(participant.secret_info)} secrets"
         )
 
     def _determine_exploration_return_state(self, context: dict[str, Any]) -> GameState:

@@ -674,6 +674,9 @@ class ContentManager:
                 encounter_notes=proc_data.get('encounter_notes', ''),
                 foraging_results=proc_data.get('foraging_results', ''),
                 foraging_special=proc_data.get('foraging_special', []),
+                encounter_modifiers=proc_data.get('encounter_modifiers', []),
+                lost_behavior=proc_data.get('lost_behavior'),
+                night_hazards=proc_data.get('night_hazards', []),
             )
 
         # Parse points of interest (new format)

@@ -45,7 +45,12 @@ from src.data_models import (
     AbilityGrantTracker,
     GrantedAbility,
     AbilityType,
+    Combatant,
+    KnownTopic,
+    SecretInfo,
+    SecretStatus,
 )
+from src.monsters.monster_registry import get_monster_registry
 # Import narrative components (optional, may not be initialized yet)
 try:
     from src.narrative.narrative_resolver import (
@@ -662,7 +667,20 @@ class HexCrawlEngine:
 
         # Create encounter state
         if contextual_result:
-            # Use the contextual encounter from a POI
+            # Use the contextual encounter - create proper combatants if monster_id provided
+            modifier = contextual_result.get("modifier", {})
+            monster_id = modifier.get("monster_id")
+            combatants = []
+
+            if monster_id:
+                # Create combatant(s) from monster registry
+                num_appearing = modifier.get("number_appearing", 1)
+                combatants = self._create_contextual_combatants(
+                    monster_id=monster_id,
+                    num_appearing=num_appearing,
+                    modifier=modifier,
+                )
+
             encounter = EncounterState(
                 encounter_type=EncounterType.MONSTER,
                 distance=distance,
@@ -670,7 +688,17 @@ class HexCrawlEngine:
                 terrain=terrain.value,
                 context=contextual_result.get("context", ""),
                 actors=[contextual_result.get("result", "unknown creature")],
+                combatants=combatants,
             )
+
+            # Store topic intelligence for social interaction use
+            if modifier.get("topic_intelligence"):
+                encounter.contextual_data = {
+                    "topic_intelligence": modifier.get("topic_intelligence"),
+                    "behavior": modifier.get("behavior", "neutral"),
+                    "demeanor": modifier.get("demeanor", []),
+                    "speech": modifier.get("speech", ""),
+                }
         else:
             # Standard encounter
             encounter = EncounterState(
@@ -769,6 +797,66 @@ class HexCrawlEngine:
             return 0
         except (ValueError, IndexError):
             return 0
+
+    def _create_contextual_combatants(
+        self,
+        monster_id: str,
+        num_appearing: int,
+        modifier: dict[str, Any],
+    ) -> list[Combatant]:
+        """
+        Create combatants for a contextual encounter.
+
+        Uses the monster registry to create proper combatants with stat blocks,
+        and applies any behavioral modifiers from the encounter definition.
+
+        Args:
+            monster_id: ID of the monster in the registry
+            num_appearing: Number of creatures to create
+            modifier: The encounter modifier dict with behavior, demeanor, etc.
+
+        Returns:
+            List of Combatant objects ready for combat or social interaction
+        """
+        combatants = []
+        registry = get_monster_registry()
+
+        for i in range(num_appearing):
+            # Try to create combatant from monster registry
+            combatant = registry.create_combatant(
+                monster_id=monster_id,
+                name_override=modifier.get("result") if num_appearing == 1 else None,
+            )
+
+            if combatant:
+                combatant.side = "enemy"
+                # Store contextual behavior for social interaction
+                if modifier.get("behavior"):
+                    combatant.behavior = modifier.get("behavior")
+                combatants.append(combatant)
+            else:
+                # Fallback: create a basic combatant with the name
+                logger.warning(
+                    f"Could not find monster '{monster_id}' in registry, "
+                    f"creating placeholder combatant"
+                )
+                from uuid import uuid4
+                fallback_name = modifier.get("result", monster_id)
+                if num_appearing > 1:
+                    fallback_name = f"{fallback_name} #{i + 1}"
+                combatants.append(Combatant(
+                    combatant_id=f"{monster_id}_{uuid4().hex[:8]}",
+                    name=fallback_name,
+                    side="enemy",
+                    current_hp=1,
+                    max_hp=1,
+                    armor_class=10,
+                    attack_bonus=0,
+                    damage="1d4",
+                    is_active=True,
+                ))
+
+        return combatants
 
     def _roll_encounter_distance(self, surprise: SurpriseStatus) -> int:
         """

@@ -17,6 +17,66 @@
     "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm, in addition to the normal results",
     "foraging_special": [
       "Bosun's Balm (1d2 portions)"
+    ],
+    "encounter_modifiers": [
+      {
+        "chance": "2-in-6",
+        "monster_id": "banshee",
+        "result": "bewildered banshee",
+        "number_appearing": 1,
+        "context": "A translucent figure in tattered finery drifts through the mist, clutching an invitation and muttering about being late. She seems confused and distracted, as if searching for something.",
+        "behavior": "non_hostile",
+        "demeanor": ["bewildered", "distracted", "anxious about tardiness"],
+        "speech": "Ethereal whispers, trailing off mid-sentence",
+        "topic_intelligence": {
+          "known_topics": [
+            {
+              "topic_id": "the_ball",
+              "content": "There is a grand ball at the Spectral Manse tonight! All the finest spirits are invited. The music is simply divine - Lord Hobbled-and-Blackened plays such haunting melodies.",
+              "keywords": ["ball", "party", "dance", "event", "invitation", "manse", "manor", "spectral"],
+              "required_disposition": -5,
+              "category": "event",
+              "priority": 10
+            },
+            {
+              "topic_id": "spectral_manse_location",
+              "content": "The Spectral Manse lies within a thicket of twisted blackthorns, somewhere in this accursed bog. It appears only when the veil between worlds grows thin. Follow the violin music if you wish to find it.",
+              "keywords": ["where", "location", "find", "directions", "blackthorns", "thicket"],
+              "required_disposition": -3,
+              "category": "location",
+              "priority": 8
+            },
+            {
+              "topic_id": "lord_hobbled",
+              "content": "Lord Hobbled-and-Blackened is our host, a frost elf of exquisite musical talent. He has been hosting these balls for... oh, I cannot recall how long. Time moves strangely here.",
+              "keywords": ["lord", "hobbled", "blackened", "host", "elf", "frost", "musician"],
+              "required_disposition": -2,
+              "category": "npc",
+              "priority": 5
+            },
+            {
+              "topic_id": "the_invitation",
+              "content": "My invitation! It is written in frost that never melts, sealed with a frozen rose. One must have an invitation to attend... though mortals sometimes wander in uninvited.",
+              "keywords": ["invitation", "invite", "attend", "enter", "mortals", "living"],
+              "required_disposition": -4,
+              "category": "lore",
+              "priority": 3
+            }
+          ],
+          "secret_info": [
+            {
+              "secret_id": "manse_nature",
+              "content": "The Spectral Manse exists between Fairy and the mortal world. Those who enter may find it difficult to leave, and time passes strangely within its walls. Items taken from inside evaporate into mist when brought to the mortal realm.",
+              "hint": "Her form flickers as she speaks, and you notice the fog around her seems to pull toward some unseen point in the bog.",
+              "keywords": ["danger", "warning", "trapped", "time", "fairy", "dimension", "leave", "escape"],
+              "required_disposition": 1,
+              "required_trust": 1,
+              "can_be_bribed": false,
+              "bribe_amount": 0
+            }
+          ]
+        }
+      }
     ]
   },
   "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",

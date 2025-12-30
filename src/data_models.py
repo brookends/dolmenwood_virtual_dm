@@ -4911,6 +4911,10 @@ class EncounterState:
     reaction_result: Optional[ReactionResult] = None
     terrain: str = ""
 
+    # Contextual encounter data (for hex-specific encounters with topic intelligence)
+    # Stores: topic_intelligence, behavior, demeanor, speech for social interaction
+    contextual_data: Optional[dict[str, Any]] = None
+
     # Combat-specific
     combatants: list[Combatant] = field(default_factory=list)
     current_round: int = 0
