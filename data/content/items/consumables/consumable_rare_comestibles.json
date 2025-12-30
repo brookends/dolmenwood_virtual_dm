@@ -10,11 +10,11 @@
       "cost_sp": 400,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Induces out-of-body experiences when smoked",
+        "method": "smoked"
+      },
       "properties": [
         "psychedelic",
         "out_of_body_experience",
@@ -29,11 +29,12 @@
       "cost_sp": 50,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Wondrously succulent and sweet",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Provides sustenance and healing; may cause fairy yearning",
+        "risk": "fairy_yearning"
+      },
       "properties": [
         "food",
         "healing",
@@ -48,11 +49,13 @@
       "cost_sp": 500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Odourless",
+      "taste": "Faint, bitter",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Amplifies empathy; allows detection of lies and prevents lying",
+        "effects": ["empathic_amplification", "detect_lies", "prevents_lying"]
+      },
       "properties": [
         "psychedelic",
         "empathic_amplification",
@@ -68,11 +71,12 @@
       "cost_sp": 200,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Exquisite (differs based on imbiber's preferences)",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces sublime joviality",
+        "category": "fairy_beverage"
+      },
       "properties": [
         "beverage",
         "sublime_joviality"
@@ -86,11 +90,13 @@
       "cost_sp": 800,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Exquisite (differs based on imbiber's preferences)",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces sublime joviality",
+        "category": "fairy_beverage",
+        "portions": 5
+      },
       "properties": [
         "beverage",
         "sublime_joviality",
@@ -105,11 +111,12 @@
       "cost_sp": 100,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Bitter herbs tempered with sweetness of spring nectar",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces merry boisterousness; allows sight of invisible fairies",
+        "effects": ["merry_boisterousness", "see_invisible_fairies"]
+      },
       "properties": [
         "beverage",
         "merry_boisterousness",
@@ -124,11 +131,13 @@
       "cost_sp": 400,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Bitter herbs tempered with sweetness of spring nectar",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Induces merry boisterousness; allows sight of invisible fairies",
+        "effects": ["merry_boisterousness", "see_invisible_fairies"],
+        "portions": 5
+      },
       "properties": [
         "beverage",
         "merry_boisterousness",
@@ -144,11 +153,12 @@
       "cost_sp": 10000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Strong pine sap",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Creates incapacitating smoke cloud; may cause curse of befuddlement",
+        "effects": ["incapacitating_smoke_cloud", "curse_of_befuddlement"]
+      },
       "properties": [
         "psychedelic",
         "incapacitating_smoke_cloud",
@@ -163,11 +173,12 @@
       "cost_sp": 500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Almond",
+      "consumption_effect": {
+        "effect_type": "combat_bonus",
+        "description": "Grants attack bonus when in Grimalkin form",
+        "condition": "grimalkin_form"
+      },
       "properties": [
         "food",
         "grimalkin_attack_bonus"
@@ -181,11 +192,12 @@
       "cost_sp": 500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rust",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Induces deep introspection; grants Wisdom bonus",
+        "effects": ["deep_introspection", "wisdom_bonus"]
+      },
       "properties": [
         "psychedelic",
         "deep_introspection",
@@ -200,11 +212,12 @@
       "cost_sp": 150,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rich, smoky apple",
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Produces mobile puffs of smoke when smoked",
+        "method": "smoked"
+      },
       "properties": [
         "pipeleaf",
         "mobile_puffs_of_smoke"
@@ -218,11 +231,12 @@
       "cost_sp": 3500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Allows memorisation of additional spell; highly addictive",
+        "effects": ["memorise_additional_spell"],
+        "risk": "addictive"
+      },
       "properties": [
         "psychedelic",
         "memorise_additional_spell",
@@ -237,11 +251,12 @@
       "cost_sp": 500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Acidic rot",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Causes digestive bubbling; pacifies fungal creatures",
+        "effects": ["digestive_bubbling", "pacifies_fungal_creatures"]
+      },
       "properties": [
         "beverage",
         "digestive_bubbling",
@@ -256,11 +271,12 @@
       "cost_sp": 200,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Aniseed with undertone of lemon",
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Grants sharpness of mind; allows seeing auras and detecting alignment",
+        "effects": ["sharpness_of_mind", "see_auras", "detect_alignment"]
+      },
       "properties": [
         "beverage",
         "sharpness_of_mind",
@@ -276,11 +292,13 @@
       "cost_sp": 800,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Aniseed with undertone of lemon",
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Grants sharpness of mind; allows seeing auras and detecting alignment",
+        "effects": ["sharpness_of_mind", "see_auras", "detect_alignment"],
+        "portions": 5
+      },
       "properties": [
         "beverage",
         "sharpness_of_mind",
@@ -297,11 +315,12 @@
       "cost_sp": 300,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Dewy grass; sweet-scented smoke",
+      "consumption_effect": {
+        "effect_type": "morale",
+        "description": "Induces frivolity; grants morale bonus and fear resistance",
+        "effects": ["frivolity", "morale_bonus", "fear_resistance"]
+      },
       "properties": [
         "pipeleaf",
         "frivolity",
@@ -317,11 +336,12 @@
       "cost_sp": 1000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Luscious, ripe fruit (different each time)",
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "Causes changing skin and hair hues; dispels polymorph effects",
+        "effects": ["changing_skin_hair_hues", "dispels_polymorph"]
+      },
       "properties": [
         "beverage",
         "changing_skin_hair_hues",
@@ -336,11 +356,13 @@
       "cost_sp": 4000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Luscious, ripe fruit (different each time)",
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "Causes changing skin and hair hues; dispels polymorph effects",
+        "effects": ["changing_skin_hair_hues", "dispels_polymorph"],
+        "portions": 5
+      },
       "properties": [
         "beverage",
         "changing_skin_hair_hues",
@@ -356,11 +378,13 @@
       "cost_sp": 500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Delightful, elusive; reminiscent of high summer",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Induces daydreams and reverie; heals 1 HP; repels mogglewomps",
+        "healing": 1,
+        "effects": ["daydreams_reverie", "repels_mogglewomps"]
+      },
       "properties": [
         "beverage",
         "daydreams_reverie",
@@ -376,11 +400,12 @@
       "cost_sp": 750,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Honey and hypnagogia",
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Grants semi-invisibility while speaking or singing",
+        "condition": "while_speaking_or_singing"
+      },
       "properties": [
         "food",
         "semi_invisible_while_speaking_singing"
@@ -394,11 +419,12 @@
       "cost_sp": 2000,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Pondweed",
+      "consumption_effect": {
+        "effect_type": "magical",
+        "description": "Grants water breathing ability when smoked",
+        "method": "smoked"
+      },
       "properties": [
         "pipeleaf",
         "water_breathing"
@@ -412,11 +438,12 @@
       "cost_sp": 2500,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "taste": "Almond glaze with glacé cherry",
+      "consumption_effect": {
+        "effect_type": "enchantment",
+        "description": "Causes the consumer to view the giver as a trusted friend",
+        "category": "charm"
+      },
       "properties": [
         "food",
         "trusted_friend_enchantment"
@@ -430,11 +457,12 @@
       "cost_sp": 250,
       "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rosemary and peach",
+      "consumption_effect": {
+        "effect_type": "entertainment",
+        "description": "Produces smoke faces that entertain with sylvan songs and jokes",
+        "effects": ["smoke_faces_entertain", "sylvan_songs_jokes"]
+      },
       "properties": [
         "pipeleaf",
         "smoke_faces_entertain",
@@ -450,10 +478,13 @@
       "slot_size": 1,
       "item_type": "consumable",
       "damage": "1d10",
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "consumption_effect": {
+        "effect_type": "combat",
+        "description": "Allows exhaling a fire blast in a cone 15' long by 10' wide",
+        "damage": "1d10",
+        "area": "cone_15_long_10_wide",
+        "method": "smoked"
+      },
       "properties": [
         "pipeleaf",
         "exhale_fire_blast",
@@ -467,6 +498,6 @@
       428,
       429
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, smell, taste fields"
   }
 }

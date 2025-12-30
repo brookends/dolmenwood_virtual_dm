@@ -10,11 +10,13 @@
       "cost_sp": 0.4,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Malty undertones",
+      "taste": "Smooth, sweet",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Aids digestion after a heavy meal",
+        "method": "smoked"
+      },
       "properties": [
         "aids_digestion"
       ]
@@ -27,11 +29,12 @@
       "cost_sp": 0.3,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Coarse, bonfire aroma",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Keeps one awake in the dead of night",
+        "method": "smoked"
+      },
       "properties": [
         "keeps_awake"
       ]
@@ -44,11 +47,12 @@
       "cost_sp": 0.5,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Smooth with note of citrus",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Makes one feel happy with one's lot",
+        "method": "smoked"
+      },
       "properties": [
         "happiness"
       ]
@@ -61,11 +65,13 @@
       "cost_sp": 2,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Rosewood",
+      "taste": "Cherry",
+      "consumption_effect": {
+        "effect_type": "social",
+        "description": "Elicits a state of jovial eloquence",
+        "method": "smoked_or_snuff"
+      },
       "properties": [
         "jovial_eloquence",
         "snuff"
@@ -79,11 +85,13 @@
       "cost_sp": 0.7,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Elderberries",
+      "taste": "Sweet and nutty",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Brings on a ravenous appetite",
+        "method": "smoked"
+      },
       "properties": [
         "ravenous_appetite"
       ]
@@ -96,11 +104,12 @@
       "cost_sp": 1,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Heady spice",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Brings on a state of light-hearted whimsy",
+        "method": "smoked"
+      },
       "properties": [
         "light_hearted_whimsy"
       ]
@@ -113,11 +122,12 @@
       "cost_sp": 0.5,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Pungent with edge of ammonia; smoke is smooth and floral",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Causes a heavy sleepiness",
+        "method": "smoked"
+      },
       "properties": [
         "heavy_sleepiness"
       ]
@@ -130,11 +140,13 @@
       "cost_sp": 0.7,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Almost odourless",
+      "taste": "Strong gravy",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Aids one in following through with unpleasant decisions",
+        "method": "smoked"
+      },
       "properties": [
         "aids_unpleasant_decisions"
       ]
@@ -147,11 +159,14 @@
       "cost_sp": 0.8,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Thin and astringent smoke",
+      "taste": "Sublime with notes of apple and walnut",
+      "consumption_effect": {
+        "effect_type": "visual",
+        "description": "Excessive smoking causes vision to take on green tinge",
+        "condition": "excessive_use",
+        "method": "smoked"
+      },
       "properties": [
         "green_vision"
       ]
@@ -164,11 +179,12 @@
       "cost_sp": 0.6,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Robust chocolate",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Brings on a state of merry arrogance",
+        "method": "smoked"
+      },
       "properties": [
         "merry_arrogance"
       ]
@@ -181,11 +197,13 @@
       "cost_sp": 1.8,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Springtime",
+      "taste": "Cheese and onion",
+      "consumption_effect": {
+        "effect_type": "mental",
+        "description": "Causes an introspective state in which the obscure may become clear",
+        "method": "smoked"
+      },
       "properties": [
         "introspective_clarity"
       ]
@@ -198,11 +216,12 @@
       "cost_sp": 0.8,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Pungent nutmeg",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Inspires jollity and hijinks",
+        "method": "smoked"
+      },
       "properties": [
         "jollity_hijinks"
       ]
@@ -215,11 +234,13 @@
       "cost_sp": 0.6,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Woods in autumn",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Calms the nerves and lightens the spirit",
+        "effects": ["calms_nerves", "lightens_spirit"],
+        "method": "smoked"
+      },
       "properties": [
         "calms_nerves",
         "lightens_spirit"
@@ -233,11 +254,12 @@
       "cost_sp": 0.7,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Summer rain",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Enhances determination for foot-travellers with distant destinations",
+        "method": "smoked"
+      },
       "properties": [
         "enhances_determination"
       ]
@@ -250,11 +272,13 @@
       "cost_sp": 0.7,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Horse; smoke is sweet and horsey",
+      "taste": "Baked tomato",
+      "consumption_effect": {
+        "effect_type": "mundane",
+        "description": "Aids deep and restful sleep",
+        "method": "smoked"
+      },
       "properties": [
         "aids_sleep"
       ]
@@ -267,11 +291,12 @@
       "cost_sp": 3,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Plum blossom",
+      "consumption_effect": {
+        "effect_type": "mental",
+        "description": "Enhances good judgement in trying times",
+        "method": "smoked"
+      },
       "properties": [
         "enhances_judgement"
       ]
@@ -284,11 +309,13 @@
       "cost_sp": 2.5,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Woody smoke with glittering silver motes",
+      "taste": "Hoppy",
+      "consumption_effect": {
+        "effect_type": "mental",
+        "description": "Brings about a state of intent concentration",
+        "method": "smoked"
+      },
       "properties": [
         "intent_concentration"
       ]
@@ -301,11 +328,12 @@
       "cost_sp": 2.5,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Lavender",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Brings on a state of wonder and glee",
+        "method": "smoked"
+      },
       "properties": [
         "wonder_glee"
       ]
@@ -318,11 +346,12 @@
       "cost_sp": 2,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Smoked fish",
+      "consumption_effect": {
+        "effect_type": "mental",
+        "description": "Inspires dreams of travel and adventure",
+        "method": "smoked"
+      },
       "properties": [
         "inspires_travel_dreams"
       ]
@@ -335,11 +364,12 @@
       "cost_sp": 0.8,
       "slot_size": 0.5,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "smell": "Smooth and fruity smoke",
+      "consumption_effect": {
+        "effect_type": "mood",
+        "description": "Inspires a pleasant dizziness",
+        "method": "smoked"
+      },
       "properties": [
         "pleasant_dizziness"
       ]
@@ -351,6 +381,6 @@
       130,
       131
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, smell, taste fields"
   }
 }

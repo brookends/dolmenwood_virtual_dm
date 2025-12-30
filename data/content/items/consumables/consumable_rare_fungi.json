@@ -8,13 +8,16 @@
       "description": "A fungus formed of hollow chimneys of shining, golden hue. Smells of wet wool and has a taste akin to intense horseradish, painfully attacking the sinuses.",
       "weight": 4,
       "cost_sp": 2000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Wet wool",
+      "taste": "Intense horseradish, painfully attacking the sinuses",
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Poisonous fungus with mental effects",
+        "category": "mental_effect"
+      },
       "properties": [
         "poison",
         "mental_effect"
@@ -26,13 +29,16 @@
       "description": "Dainty little amber-coloured mushrooms with a pointed cap. Their odour is reminiscent of bad blue cheese and they have an oily taste.",
       "weight": 4,
       "cost_sp": 1500,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Bad blue cheese",
+      "taste": "Oily",
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Affects the cardiovascular system",
+        "category": "cardiovascular_effect"
+      },
       "properties": [
         "poison",
         "cardiovascular_effect"
@@ -44,13 +50,16 @@
       "description": "A slime-mould that gathers in cracks in trees. It is jet black in colour, with an aura of ultraviolet. Its odour is like off sausage and it tastes of goose grease.",
       "weight": 4,
       "cost_sp": 750,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Off sausage",
+      "taste": "Goose grease",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Psychedelic effects with potential Constitution loss",
+        "risk_effect": "constitution_loss"
+      },
       "properties": [
         "psychedelic",
         "constitution_loss"
@@ -62,13 +71,16 @@
       "description": "Cream-coloured mushrooms with large, floppy caps, flecked with orange. Smell distinctly of cloves and taste earthy.",
       "weight": 4,
       "cost_sp": 3000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Cloves",
+      "taste": "Earthy",
+      "consumption_effect": {
+        "effect_type": "transformation",
+        "description": "May cause lycanthropic transformation",
+        "category": "lycanthropic"
+      },
       "properties": [
         "transformation",
         "lycanthropic"
@@ -80,13 +92,16 @@
       "description": "Miniature, orange, goblet-shaped fungi that sprout from fuzzy patches on rotting wood. Smell of goat's milk and taste like blood.",
       "weight": 4,
       "cost_sp": 100,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Goat's milk",
+      "taste": "Blood",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Intoxicating with physical changes",
+        "category": "physical_change"
+      },
       "properties": [
         "intoxicant",
         "physical_change"
@@ -98,13 +113,14 @@
       "description": "Drab, olive capped toadstools whose rims tend to curl up like leering grins.",
       "weight": 4,
       "cost_sp": 4000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "consumption_effect": {
+        "effect_type": "combat_bonus",
+        "description": "Grants combat bonus but may cause catatonia",
+        "risk_effect": "catatonia"
+      },
       "properties": [
         "combat_bonus",
         "catatonia"
@@ -116,13 +132,15 @@
       "description": "Towering, horn-like nodules of slimy black fungus. The slime, if collected when fresh, is sweet-tasting and highly psychoactive.",
       "weight": 4,
       "cost_sp": 150,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "taste": "Sweet (when fresh)",
+      "consumption_effect": {
+        "effect_type": "intoxication",
+        "description": "Highly psychoactive intoxicant; requires sleep afterward",
+        "condition": "sleep_requirement"
+      },
       "properties": [
         "intoxicant",
         "sleep_requirement"
@@ -134,13 +152,17 @@
       "description": "8″ fungi with a long, fleshy stem topped with a pink, lattice-like veil. Reek of stale urine but are virtually flavourless. In darkness, lambent stinkhorns produce a faint, blue luminescence.",
       "weight": 4,
       "cost_sp": 3000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Stale urine",
+      "taste": "Virtually flavourless",
+      "consumption_effect": {
+        "effect_type": "fungal_infection",
+        "description": "May cause fungal infection but grants HP bonus; luminescent",
+        "bonus": "hp_bonus",
+        "special": "luminescent"
+      },
       "properties": [
         "fungal_infection",
         "hp_bonus",
@@ -153,13 +175,16 @@
       "description": "Tiny pink mushrooms with delicate, pointed caps and long, stringy stems. Have a faintly floral odour and taste of sand.",
       "weight": 4,
       "cost_sp": 150,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Faintly floral",
+      "taste": "Sand",
+      "consumption_effect": {
+        "effect_type": "charisma_bonus",
+        "description": "Grants Charisma bonus toward specific target",
+        "condition": "targeted_effect"
+      },
       "properties": [
         "charisma_bonus",
         "targeted_effect"
@@ -171,13 +196,16 @@
       "description": "A frothy, grey sludge that reeks of awful cheese and tastes worse.",
       "weight": 4,
       "cost_sp": 3500,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Awful cheese",
+      "taste": "Worse than it smells",
+      "consumption_effect": {
+        "effect_type": "healing",
+        "description": "Healing properties with weightlessness side effect",
+        "side_effect": "weightlessness"
+      },
       "properties": [
         "healing",
         "weightlessness"
@@ -189,13 +217,14 @@
       "description": "Dark green, drooping fungi covered in seaweed-like tendrils.",
       "weight": 4,
       "cost_sp": 1750,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Poisonous; causes delirium and may induce coma",
+        "effects": ["delirium", "coma"]
+      },
       "properties": [
         "poison",
         "delirium",
@@ -208,13 +237,15 @@
       "description": "Wide-capped toadstools of mottled green/brown colouration. Have an unpleasant odour akin to cat's urine.",
       "weight": 4,
       "cost_sp": 1000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Cat's urine",
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Causes sleeplessness and susceptibility to enchantments",
+        "effects": ["sleeplessness", "enchantment_susceptibility"]
+      },
       "properties": [
         "poison",
         "sleeplessness",
@@ -227,13 +258,14 @@
       "description": "Slimy, scarlet fungus bearing an eerie resemblance to various bodily organs, including brain, heart, eyeball, tongue, finger, nose.",
       "weight": 4,
       "cost_sp": 2000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "consumption_effect": {
+        "effect_type": "regeneration",
+        "description": "Causes organ growth and regeneration",
+        "special": "organ_growth"
+      },
       "properties": [
         "organ_growth",
         "regeneration"
@@ -245,13 +277,16 @@
       "description": "Glistening black, ear-shaped fungi that grow on bark. Smell of vinegar but taste fruity.",
       "weight": 4,
       "cost_sp": 200,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Vinegar",
+      "taste": "Fruity",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Induces trance; may attract sprite assault",
+        "risk": "sprite_assault"
+      },
       "properties": [
         "psychedelic",
         "trance",
@@ -264,13 +299,16 @@
       "description": "A deep purple fungus with long stems and tiny button caps. Smells of milk and has a yeasty flavour.",
       "weight": 4,
       "cost_sp": 10000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Milk",
+      "taste": "Yeasty",
+      "consumption_effect": {
+        "effect_type": "deadly_poison",
+        "description": "Extremely deadly; causes asphyxiation, coma, and death",
+        "effects": ["asphyxiation", "coma", "death"]
+      },
       "properties": [
         "poison",
         "asphyxiation",
@@ -284,13 +322,16 @@
       "description": "Densely packed balls of fibres that appear to be of purple or orange hue, depending on the viewing angle. The fungi smell of rotten parsnips and taste of lime sorbet.",
       "weight": 4,
       "cost_sp": 5000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Rotten parsnips",
+      "taste": "Lime sorbet",
+      "consumption_effect": {
+        "effect_type": "poison",
+        "description": "Causes Constitution loss and weakness",
+        "effects": ["constitution_loss", "weakness"]
+      },
       "properties": [
         "poison",
         "constitution_loss",
@@ -303,13 +344,16 @@
       "description": "A tiny, yellow fungus that grows in frothing clumps. Reeks of pungent spice and tastes of aniseed.",
       "weight": 4,
       "cost_sp": 500,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Pungent spice",
+      "taste": "Aniseed",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Induces hypnotic sleep with otherworldly dreams; risk of obsession",
+        "effects": ["hypnotic_sleep", "otherworldly_dreams", "obsession"]
+      },
       "properties": [
         "psychedelic",
         "hypnotic_sleep",
@@ -323,13 +367,17 @@
       "description": "White puffballs, flecked with gold. Odourless, but have a very strong citrus flavour.",
       "weight": 4,
       "cost_sp": 2000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Odourless",
+      "taste": "Very strong citrus",
+      "consumption_effect": {
+        "effect_type": "constitution_bonus",
+        "description": "Grants Constitution bonus but may cause random ability loss",
+        "risk": "ability_loss",
+        "random": true
+      },
       "properties": [
         "constitution_bonus",
         "ability_loss",
@@ -342,13 +390,14 @@
       "description": "Luxuriant, purple mushrooms covered in swirling crimson patterns.",
       "weight": 4,
       "cost_sp": 1000,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "consumption_effect": {
+        "effect_type": "berserk",
+        "description": "Induces blood lust and berserk rage",
+        "effects": ["blood_lust", "berserk"]
+      },
       "properties": [
         "blood_lust",
         "berserk"
@@ -360,13 +409,16 @@
       "description": "Big, floppy bracket fungus of deep purple hue and woody consistency. The fungi smell of fine wine and taste of aniseed.",
       "weight": 4,
       "cost_sp": 100,
-      "slot_size": null,
+      "slot_size": 1,
       "item_type": "consumable",
-      "damage": null,
-      "ac_bonus": null,
-      "ac_value": null,
-      "range": null,
-      "size": null,
+      "forage_type": "fungi",
+      "smell": "Fine wine",
+      "taste": "Aniseed",
+      "consumption_effect": {
+        "effect_type": "psychedelia",
+        "description": "Vision tinged purple; may cause skin discoloration",
+        "effects": ["purple_vision", "skin_discoloration"]
+      },
       "properties": [
         "psychedelic",
         "purple_vision",
@@ -380,6 +432,6 @@
       430,
       431
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Updated with consumption_effect, forage_type, smell, taste fields"
   }
 }
