@@ -50,7 +50,7 @@ from src.data_models import (
     SecretInfo,
     SecretStatus,
 )
-from src.monsters.monster_registry import get_monster_registry
+from src.content_loader.monster_registry import get_monster_registry
 # Import narrative components (optional, may not be initialized yet)
 try:
     from src.narrative.narrative_resolver import (

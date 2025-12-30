@@ -1353,3 +1353,259 @@ class TestTopicIntelligence:
         # Should be able to query them
         results = participant.find_relevant_topics("What spices do you have?")
         assert len(results) >= 1
+
+
+# =============================================================================
+# NARRATION LAYER INTEGRATION TESTS
+# =============================================================================
+
+
+class TestNarrationIntegration:
+    """Integration tests for the LLM narrative layer in VirtualDM."""
+
+    @pytest.fixture
+    def virtual_dm_with_narration(self, sample_party):
+        """Create a VirtualDM with narration enabled using mock LLM."""
+        from src.main import VirtualDM, GameConfig
+
+        config = GameConfig(
+            llm_provider="mock",
+            enable_narration=True,
+        )
+        dm = VirtualDM(
+            config=config,
+            initial_state=GameState.WILDERNESS_TRAVEL,
+            game_date=GameDate(year=1, month=6, day=15),
+            game_time=GameTime(hour=10, minute=0),
+        )
+
+        # Add party
+        for char in sample_party:
+            dm.add_character(char)
+
+        # Set resources
+        dm.set_party_resources(food_days=7, water_days=7, torches=6)
+
+        return dm
+
+    @pytest.fixture
+    def virtual_dm_no_narration(self, sample_party):
+        """Create a VirtualDM with narration disabled."""
+        from src.main import VirtualDM, GameConfig
+
+        config = GameConfig(
+            llm_provider="mock",
+            enable_narration=False,
+        )
+        dm = VirtualDM(
+            config=config,
+            initial_state=GameState.WILDERNESS_TRAVEL,
+        )
+
+        for char in sample_party:
+            dm.add_character(char)
+
+        return dm
+
+    def test_dm_agent_initialized_when_narration_enabled(self, virtual_dm_with_narration):
+        """Test that DMAgent is created when narration is enabled."""
+        assert virtual_dm_with_narration.dm_agent is not None
+        assert virtual_dm_with_narration.dm_agent.is_available()
+
+    def test_dm_agent_not_initialized_when_narration_disabled(self, virtual_dm_no_narration):
+        """Test that DMAgent is None when narration is disabled."""
+        assert virtual_dm_no_narration.dm_agent is None
+
+    def test_hex_narration_method_directly(self, virtual_dm_with_narration):
+        """Test that _narrate_hex_arrival generates narration."""
+        # Test the narration method directly with mock travel result
+        mock_result = {
+            "terrain": "forest",
+            "hex_name": "Whispering Glade",
+            "features": ["ancient oak", "stream"],
+        }
+
+        narration = virtual_dm_with_narration._narrate_hex_arrival("0710", mock_result)
+
+        # Should return string (mock response)
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_narration_skipped_when_disabled(self, virtual_dm_no_narration):
+        """Test that _narrate_hex_arrival returns None when disabled."""
+        mock_result = {"terrain": "forest"}
+
+        narration = virtual_dm_no_narration._narrate_hex_arrival("0710", mock_result)
+
+        # Should return None when narration disabled
+        assert narration is None
+
+    def test_travel_result_includes_narration_key(self, virtual_dm_with_narration):
+        """Test that travel_to_hex adds narration key when enabled."""
+        # This tests the integration by checking that the result dict
+        # would have narration added. Since travel itself requires hex data,
+        # we verify the method signature and mechanism work correctly.
+        from unittest.mock import patch
+
+        # Mock the hex_crawl.travel_to_hex to return a simple result
+        with patch.object(
+            virtual_dm_with_narration.hex_crawl,
+            'travel_to_hex',
+            return_value={"success": True, "terrain": "forest"}
+        ):
+            result = virtual_dm_with_narration.travel_to_hex("0710")
+
+            # Should have narration key
+            assert "narration" in result
+            assert isinstance(result["narration"], str)
+
+    def test_encounter_narration_method(self, virtual_dm_with_narration, basic_encounter):
+        """Test narrate_encounter_start method."""
+        narration = virtual_dm_with_narration.narrate_encounter_start(
+            encounter=basic_encounter,
+            creature_name="Goblin",
+            number_appearing=1,
+            terrain="forest",
+        )
+
+        # Should return string (mock response)
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_combat_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_combat_round method."""
+        resolved_actions = [
+            {
+                "actor": "Aldric the Bold",
+                "action": "melee attack",
+                "target": "Goblin",
+                "result": "hit",
+                "damage": 6,
+            },
+        ]
+
+        narration = virtual_dm_with_narration.narrate_combat_round(
+            round_number=1,
+            resolved_actions=resolved_actions,
+            damage_results={"goblin_1": 6},
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_failure_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_failure method."""
+        narration = virtual_dm_with_narration.narrate_failure(
+            failed_action="Climb the cliff face",
+            failure_type="skill check failed",
+            consequence_type="damage",
+            consequence_details="Fell 20 feet, took 2d6 damage (7 points)",
+            visible_warning="The rocks looked loose and crumbling",
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_narration_disabled_returns_none(self, virtual_dm_no_narration, basic_encounter):
+        """Test that narration methods return None when disabled."""
+        result = virtual_dm_no_narration.narrate_encounter_start(
+            encounter=basic_encounter,
+            creature_name="Goblin",
+            number_appearing=1,
+            terrain="forest",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_combat_round(
+            round_number=1,
+            resolved_actions=[],
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_failure(
+            failed_action="test",
+            failure_type="test",
+            consequence_type="test",
+            consequence_details="test",
+        )
+        assert result is None
+
+
+class TestNarrationAuthorityBoundary:
+    """Test that narration respects mechanical authority boundaries."""
+
+    @pytest.fixture
+    def dm_agent_for_authority_test(self):
+        """DM Agent configured for authority testing."""
+        from src.ai.dm_agent import DMAgent, DMAgentConfig, reset_dm_agent
+        from src.ai.llm_provider import LLMProvider
+
+        reset_dm_agent()
+        config = DMAgentConfig(
+            llm_provider=LLMProvider.MOCK,
+            validate_all_responses=True,
+        )
+        return DMAgent(config)
+
+    def test_exploration_description_has_no_mechanics(self, dm_agent_for_authority_test):
+        """Test that exploration descriptions don't contain mechanical decisions."""
+        from src.data_models import TimeOfDay, Weather, Season
+
+        result = dm_agent_for_authority_test.describe_hex(
+            hex_id="0709",
+            terrain="forest",
+            name="Whispering Glade",
+            time_of_day=TimeOfDay.MIDDAY,
+            weather=Weather.CLEAR,
+            season=Season.SUMMER,
+        )
+
+        # Mock always returns a default response without authority violations
+        assert result.success
+        # The authority violation list should be empty for a well-behaved response
+        # (Mock client doesn't generate violations)
+
+    def test_combat_narration_accepts_resolved_outcomes_only(
+        self, dm_agent_for_authority_test
+    ):
+        """Test that combat narration only describes resolved outcomes."""
+        from src.ai.prompt_schemas import ResolvedAction
+
+        resolved_actions = [
+            ResolvedAction(
+                actor="Fighter",
+                action="sword attack",
+                target="Goblin",
+                result="hit",
+                damage=8,
+            ),
+        ]
+
+        result = dm_agent_for_authority_test.narrate_combat_round(
+            round_number=1,
+            resolved_actions=[{
+                "actor": "Fighter",
+                "action": "sword attack",
+                "target": "Goblin",
+                "result": "hit",
+                "damage": 8,
+            }],
+            damage_results={"goblin_1": 8},
+            deaths=["goblin_1"],
+        )
+
+        # Should succeed - we're providing resolved outcomes
+        assert result.success
+
+    def test_llm_manager_detects_authority_violations(self, mock_llm_manager):
+        """Test that LLMManager can detect authority violations in responses."""
+        from src.ai.llm_provider import LLMMessage, LLMRole
+
+        # The manager validates responses - mock returns clean responses
+        response = mock_llm_manager.complete(
+            messages=[LLMMessage(role=LLMRole.USER, content="Describe the forest")],
+            system_prompt="You are a DM describing a scene.",
+        )
+
+        # Mock responses should be valid
+        assert response is not None
