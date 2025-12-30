@@ -47,6 +47,15 @@ try:
     )
     from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
     from src.narrative.spell_resolver import SpellResolver
+    from src.tables.secret_door_tables import (
+        SecretDoor,
+        SecretDoorType,
+        MechanismType,
+        search_for_secret_door,
+        attempt_open_mechanism,
+        generate_secret_door,
+        LOCATION_DESCRIPTIONS,
+    )
 
     NARRATIVE_AVAILABLE = True
 except ImportError:
@@ -74,6 +83,7 @@ class DungeonActionType(str, Enum):
     DISARM_TRAP = "disarm_trap"  # Disarm detected trap
     REST = "rest"  # Short rest (1 turn) - required 1 per 5 turns (p163)
     INTERACT = "interact"  # Interact with feature
+    INTERACT_MECHANISM = "interact_mechanism"  # Interact with secret door mechanism (p104)
     CAST_SPELL = "cast_spell"  # Cast a spell
     MAP = "map"  # Map the current area
     FAST_TRAVEL = "fast_travel"  # Use established safe path (p162)
@@ -135,6 +145,8 @@ class DungeonRoom:
     visited: bool = False
     searched: bool = False
     noise_level: int = 0  # Accumulated noise
+    # Secret doors per Campaign Book p104
+    secret_doors: list[Any] = field(default_factory=list)  # List of SecretDoor objects
 
 
 @dataclass
@@ -571,6 +583,7 @@ class DungeonEngine:
             DungeonActionType.DISARM_TRAP: self._handle_disarm_trap,
             DungeonActionType.REST: self._handle_rest,
             DungeonActionType.INTERACT: self._handle_interact,
+            DungeonActionType.INTERACT_MECHANISM: self._handle_interact_mechanism,
             DungeonActionType.CAST_SPELL: self._handle_cast_spell,
             DungeonActionType.MAP: self._handle_map,
             DungeonActionType.FAST_TRAVEL: self._handle_fast_travel,
@@ -712,13 +725,57 @@ class DungeonEngine:
                             "area": "this area",
                         })
 
-        # Check for secret doors
+        # Check for secret doors - use new comprehensive system per Campaign Book p104
+        # First check legacy door states for backwards compatibility
         for direction, door_state in current_room.doors.items():
             if door_state == DoorState.SECRET:
                 roll = self.dice.roll_d6(1, f"find secret door: {direction}")
                 if roll.total <= 2:  # 2-in-6 chance
                     current_room.doors[direction] = DoorState.CLOSED
-                    results["found_secret_doors"].append(direction)
+                    results["found_secret_doors"].append({
+                        "direction": direction,
+                        "type": "simple",
+                        "message": f"You discover a secret door to the {direction}!",
+                    })
+
+        # Check new SecretDoor objects with full mechanics
+        search_bonus = params.get("search_bonus", 0)
+        searcher_class = params.get("character_class", "")
+
+        for secret_door in current_room.secret_doors:
+            if not secret_door.is_fully_discovered():
+                search_result = search_for_secret_door(
+                    door=secret_door,
+                    searcher_class=searcher_class,
+                    search_bonus=search_bonus,
+                    dice=self.dice,
+                )
+
+                if search_result["door_found"] or search_result["mechanism_found"]:
+                    door_info = {
+                        "door_id": secret_door.door_id,
+                        "name": secret_door.name,
+                        "type": secret_door.door_type.value,
+                        "direction": secret_door.direction,
+                        "message": search_result["message"],
+                        "door_found": search_result["door_found"],
+                        "mechanism_found": search_result["mechanism_found"],
+                    }
+
+                    # If mechanism door, include how to open it
+                    if secret_door.mechanism_discovered:
+                        door_info["required_action"] = secret_door.get_required_action()
+                        door_info["mechanism_type"] = secret_door.mechanism_type.value
+
+                    results["found_secret_doors"].append(door_info)
+
+                # Add any clues found during partial search
+                for clue in search_result.get("clues_found", []):
+                    results["exploration_clues"].append({
+                        "clue": clue["clue"],
+                        "type": clue["type"],
+                        "area": f"near {secret_door.location.value.replace('_', ' ')}",
+                    })
 
         current_room.searched = True
         return results
@@ -741,6 +798,109 @@ class DungeonEngine:
             results["description"] = "You hear indistinct sounds beyond"
 
         return results
+
+    def _handle_interact_mechanism(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Handle interacting with a secret door mechanism per Campaign Book p104.
+
+        Supports both mechanical mechanisms (pull lever, press button, etc.)
+        and magical mechanisms (speak password, answer riddle, etc.).
+
+        Params:
+            door_id: ID of the secret door to interact with
+            action: Description of what the player is doing
+            item_used: Optional item being used
+            spoken_word: Optional word/phrase being spoken
+            character_id: Character performing the action
+
+        Returns:
+            Dictionary with interaction results
+        """
+        door_id = params.get("door_id")
+        action = params.get("action", "")
+        item_used = params.get("item_used")
+        spoken_word = params.get("spoken_word")
+        character_id = params.get("character_id")
+
+        current_room = self._dungeon_state.rooms.get(self._dungeon_state.current_room)
+        if not current_room:
+            return {"success": False, "message": "Current room unknown"}
+
+        # Find the secret door
+        target_door = None
+        for secret_door in current_room.secret_doors:
+            if secret_door.door_id == door_id:
+                target_door = secret_door
+                break
+
+        if not target_door:
+            return {
+                "success": False,
+                "message": f"No secret door with id '{door_id}' found in this room",
+                "noise": 0,
+            }
+
+        # Check if door is discovered
+        if not target_door.door_discovered:
+            return {
+                "success": False,
+                "message": "You haven't found a secret door here yet",
+                "noise": 0,
+            }
+
+        # Check if mechanism is discovered (for mechanism-type doors)
+        if target_door.mechanism_type != MechanismType.NONE:
+            if not target_door.mechanism_discovered:
+                return {
+                    "success": False,
+                    "message": "You've found the door but not how to open it. Try searching more.",
+                    "noise": 1,
+                }
+
+        # Attempt to open via mechanism
+        interaction = attempt_open_mechanism(
+            door=target_door,
+            action=action,
+            item_used=item_used,
+            spoken_word=spoken_word,
+            dice=self.dice,
+        )
+
+        result: dict[str, Any] = {
+            "success": interaction.success,
+            "message": interaction.message,
+            "door_opened": interaction.door_opened,
+            "noise": 2 if interaction.mechanism_triggered else 1,
+        }
+
+        # Handle item consumption
+        if interaction.item_consumed and item_used:
+            result["item_consumed"] = item_used
+            # TODO: Wire to inventory system to remove item
+
+        # Handle damage from dangerous mechanisms
+        if interaction.damage_taken > 0:
+            result["damage_taken"] = interaction.damage_taken
+            result["message"] += f" You take {interaction.damage_taken} damage!"
+            if character_id:
+                self.controller.apply_damage(character_id, interaction.damage_taken, "mechanism")
+
+        # If door opened, add it as an available exit
+        if interaction.door_opened and target_door.destination_room:
+            if target_door.direction:
+                current_room.exits[target_door.direction] = target_door.destination_room
+                # Mark as normal door now that it's open
+                door_key = f"{current_room.room_id}_{target_door.direction}"
+                current_room.doors[door_key] = DoorState.OPEN
+
+        # Include info about what's required if failed
+        if not interaction.success:
+            if interaction.item_required:
+                result["item_required"] = interaction.item_required
+            if target_door.get_required_action():
+                result["required_action"] = target_door.get_required_action()
+
+        return result
 
     def _handle_open_door(self, params: dict[str, Any]) -> dict[str, Any]:
         """Handle opening a door."""
