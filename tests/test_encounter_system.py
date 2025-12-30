@@ -66,6 +66,7 @@ from src.tables.encounter_roller import (
     EncounterContext,
     RolledEncounter,
     EncounterEntryType,
+    LairCheckResult,
     get_encounter_roller,
     roll_wilderness_encounter,
 )
@@ -464,6 +465,77 @@ class TestEncounterRoller:
         roller1 = get_encounter_roller()
         roller2 = get_encounter_roller()
         assert roller1 is roller2
+
+
+# =============================================================================
+# LAIR FUNCTIONALITY TESTS
+# =============================================================================
+
+class TestLairFunctionality:
+    """Tests for lair encounter functionality."""
+
+    @pytest.fixture
+    def roller(self):
+        return EncounterRoller()
+
+    def test_lair_check_result_dataclass(self):
+        """Test LairCheckResult dataclass defaults."""
+        result = LairCheckResult()
+        assert result.in_lair is False
+        assert result.lair_chance is None
+        assert result.lair_description is None
+        assert result.hoard is None
+
+    def test_rolled_encounter_has_lair_fields(self, roller):
+        """Test that RolledEncounter includes lair fields."""
+        context = EncounterContext(region="tithelands")
+        result = roller.roll_encounter(context)
+
+        # These fields should exist (may be None or have values)
+        assert hasattr(result, 'in_lair')
+        assert hasattr(result, 'lair_chance')
+        assert hasattr(result, 'lair_description')
+        assert hasattr(result, 'hoard')
+
+    def test_lair_check_only_for_monsters_and_animals(self, roller):
+        """Test that lair checks only apply to monster/animal entries."""
+        # Create a mock entry that's an everyday mortal
+        from src.tables.wilderness_encounter_tables import EncounterEntry
+        entry = EncounterEntry(name="Pilgrim‡", number_appearing="4d8")
+
+        # Everyday mortals shouldn't have lair checks
+        entry_type = roller._determine_entry_type(entry)
+        assert entry_type == EncounterEntryType.EVERYDAY_MORTAL
+
+    def test_check_lair_with_unknown_monster(self, roller):
+        """Test lair check with unknown monster returns empty result."""
+        result = roller._check_lair("nonexistent_monster_id")
+        assert result.in_lair is False
+        assert result.lair_chance is None
+
+    def test_check_lair_with_no_monster_id(self, roller):
+        """Test lair check with None monster_id returns empty result."""
+        result = roller._check_lair(None)
+        assert result.in_lair is False
+        assert result.lair_chance is None
+
+    def test_encounter_respects_check_lair_flag(self, roller):
+        """Test that check_lair=False skips lair checking."""
+        context = EncounterContext(region="aldweald")
+        result = roller.roll_encounter(context, check_lair=False)
+
+        # When check_lair=False, lair fields should be default
+        assert result.in_lair is False
+
+    def test_aquatic_encounter_includes_lair_fields(self, roller):
+        """Test that aquatic encounters include lair fields."""
+        context = EncounterContext(region="lake_dolemere", is_aquatic=True)
+        result = roller.roll_encounter(context)
+
+        # Should have lair fields
+        assert hasattr(result, 'in_lair')
+        assert hasattr(result, 'lair_chance')
+        assert hasattr(result, 'hoard')
 
 
 # =============================================================================

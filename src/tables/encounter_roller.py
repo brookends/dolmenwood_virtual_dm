@@ -10,11 +10,15 @@ This is the main entry point for generating wilderness encounters.
 """
 
 import logging
+import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from src.data_models import DiceRoller
+
+if TYPE_CHECKING:
+    from src.content_loader.monster_registry import MonsterRegistry
 
 from src.tables.wilderness_encounter_tables import (
     TimeOfDay,
@@ -102,9 +106,11 @@ class RolledEncounter:
     # Optional activity
     activity: Optional[str] = None
 
-    # Lair information
+    # Lair information (from monster data)
     in_lair: bool = False
-    lair_chance: int = 30  # Default 30%
+    lair_chance: Optional[int] = None  # Monster's lair percentage (None = no lair possible)
+    lair_description: Optional[str] = None  # Randomly selected lair description
+    hoard: Optional[str] = None  # Treasure type code for lair (e.g., "C4 + R3")
 
 
 @dataclass
@@ -130,6 +136,15 @@ class EncounterContext:
 # ENCOUNTER ROLLER
 # =============================================================================
 
+@dataclass
+class LairCheckResult:
+    """Result of checking for a lair encounter."""
+    in_lair: bool = False
+    lair_chance: Optional[int] = None
+    lair_description: Optional[str] = None
+    hoard: Optional[str] = None
+
+
 class EncounterRoller:
     """
     Rolls on encounter tables based on context.
@@ -151,9 +166,69 @@ class EncounterRoller:
         print(f"Encountered: {result.entry.name} x{result.number_appearing}")
     """
 
-    def __init__(self):
-        """Initialize the encounter roller."""
-        pass
+    def __init__(self, monster_registry: Optional["MonsterRegistry"] = None):
+        """
+        Initialize the encounter roller.
+
+        Args:
+            monster_registry: Optional MonsterRegistry for lair data lookup.
+                              If not provided, uses the default singleton.
+        """
+        self._monster_registry = monster_registry
+
+    @property
+    def monster_registry(self) -> "MonsterRegistry":
+        """Get the monster registry, loading default if needed."""
+        if self._monster_registry is None:
+            from src.content_loader.monster_registry import get_monster_registry
+            self._monster_registry = get_monster_registry()
+        return self._monster_registry
+
+    def _check_lair(self, monster_id: Optional[str]) -> LairCheckResult:
+        """
+        Check if encounter is in a lair based on monster data.
+
+        Args:
+            monster_id: The monster's ID to look up
+
+        Returns:
+            LairCheckResult with lair information
+        """
+        if monster_id is None:
+            return LairCheckResult()
+
+        # Look up the monster
+        result = self.monster_registry.get_monster(monster_id)
+        if not result.found or result.monster is None:
+            logger.debug(f"Monster '{monster_id}' not found in registry, skipping lair check")
+            return LairCheckResult()
+
+        monster = result.monster
+
+        # Check if monster has a lair
+        if monster.lair_percentage is None:
+            # This monster has no lair
+            return LairCheckResult(lair_chance=None)
+
+        lair_chance = monster.lair_percentage
+
+        # Roll against the lair percentage
+        in_lair = DiceRoller.percent_check(lair_chance, f"Lair check ({monster.name})")
+
+        if not in_lair:
+            return LairCheckResult(in_lair=False, lair_chance=lair_chance)
+
+        # Monster is in lair - select a random lair description
+        lair_description = None
+        if monster.lair_descriptions:
+            lair_description = random.choice(monster.lair_descriptions)
+
+        return LairCheckResult(
+            in_lair=True,
+            lair_chance=lair_chance,
+            lair_description=lair_description,
+            hoard=monster.hoard,
+        )
 
     def roll_encounter(
         self,
@@ -174,7 +249,10 @@ class EncounterRoller:
         """
         # Check for unseason override first
         if context.active_unseason in ["chame", "vague"]:
-            unseason_result = self._check_unseason_encounter(context.active_unseason)
+            unseason_result = self._check_unseason_encounter(
+                context.active_unseason,
+                check_lair=check_lair,
+            )
             if unseason_result is not None:
                 return unseason_result
 
@@ -200,10 +278,10 @@ class EncounterRoller:
         # Step 4: Determine entry type
         entry_type = self._determine_entry_type(entry)
 
-        # Step 5: Check for lair
-        in_lair = False
-        if check_lair:
-            in_lair = DiceRoller.percent_check(30, "Lair check")
+        # Step 5: Check for lair (using monster-specific data)
+        lair_result = LairCheckResult()
+        if check_lair and entry_type in (EncounterEntryType.MONSTER, EncounterEntryType.ANIMAL):
+            lair_result = self._check_lair(entry.monster_id)
 
         # Step 6: Roll activity if requested
         activity = None
@@ -223,15 +301,23 @@ class EncounterRoller:
             encounter_type_roll=type_roll,
             creature_roll=creature_roll,
             activity=activity,
-            in_lair=in_lair,
+            in_lair=lair_result.in_lair,
+            lair_chance=lair_result.lair_chance,
+            lair_description=lair_result.lair_description,
+            hoard=lair_result.hoard,
         )
 
     def _check_unseason_encounter(
         self,
-        unseason: str
+        unseason: str,
+        check_lair: bool = True,
     ) -> Optional[RolledEncounter]:
         """
         Check if unseason encounter triggers and roll on unseason table.
+
+        Args:
+            unseason: The active unseason ("chame" or "vague")
+            check_lair: Whether to check for lair encounter
 
         Returns:
             RolledEncounter if unseason triggers, None otherwise
@@ -254,15 +340,25 @@ class EncounterRoller:
             return None
 
         num_appearing = _roll_number_appearing(entry.number_appearing, entry.name)
+        entry_type = self._determine_entry_type(entry)
+
+        # Check for lair using monster-specific data
+        lair_result = LairCheckResult()
+        if check_lair and entry_type in (EncounterEntryType.MONSTER, EncounterEntryType.ANIMAL):
+            lair_result = self._check_lair(entry.monster_id)
 
         return RolledEncounter(
             entry=entry,
-            entry_type=self._determine_entry_type(entry),
+            entry_type=entry_type,
             category=EncounterCategory.REGIONAL,  # Treat as regional
             unseason=unseason,
             number_appearing_dice=entry.number_appearing,
             number_appearing=num_appearing,
             creature_roll=roll,
+            in_lair=lair_result.in_lair,
+            lair_chance=lair_result.lair_chance,
+            lair_description=lair_result.lair_description,
+            hoard=lair_result.hoard,
         )
 
     def _roll_aquatic_encounter(
@@ -286,10 +382,12 @@ class EncounterRoller:
             entry = EncounterEntry(name="Fish", number_appearing="1d6", monster_id="fish")
 
         num_appearing = _roll_number_appearing(entry.number_appearing, entry.name)
+        entry_type = self._determine_entry_type(entry)
 
-        in_lair = False
-        if check_lair:
-            in_lair = DiceRoller.percent_check(30, "Lair check")
+        # Check for lair using monster-specific data
+        lair_result = LairCheckResult()
+        if check_lair and entry_type in (EncounterEntryType.MONSTER, EncounterEntryType.ANIMAL):
+            lair_result = self._check_lair(entry.monster_id)
 
         activity = None
         if roll_activity:
@@ -297,7 +395,7 @@ class EncounterRoller:
 
         return RolledEncounter(
             entry=entry,
-            entry_type=self._determine_entry_type(entry),
+            entry_type=entry_type,
             category=EncounterCategory.REGIONAL,
             region="aquatic",
             number_appearing_dice=entry.number_appearing,
@@ -307,7 +405,10 @@ class EncounterRoller:
             terrain_type="water",
             creature_roll=creature_roll,
             activity=activity,
-            in_lair=in_lair,
+            in_lair=lair_result.in_lair,
+            lair_chance=lair_result.lair_chance,
+            lair_description=lair_result.lair_description,
+            hoard=lair_result.hoard,
         )
 
     def _roll_common(
