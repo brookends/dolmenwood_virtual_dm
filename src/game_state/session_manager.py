@@ -1397,7 +1397,7 @@ class SessionManager:
         return SerializablePartyState(
             location_type=party_state.location.location_type.value,
             location_id=party_state.location.location_id,
-            location_name=party_state.location.name,
+            location_name=None,  # Location doesn't have a name attribute
             marching_order=party_state.marching_order.copy(),
             food_days=party_state.resources.food_days,
             water_days=party_state.resources.water_days,
@@ -1606,7 +1606,6 @@ class SessionManager:
         party_state.location = Location(
             location_type=LocationType(saved.location_type),
             location_id=saved.location_id,
-            name=saved.location_name,
         )
         party_state.marching_order = saved.marching_order.copy()
         party_state.resources.food_days = saved.food_days
