@@ -867,6 +867,11 @@ class ContentManager:
             secrets=data.get('secrets', []),
             is_dungeon=data.get('is_dungeon', False),
             dungeon_levels=data.get('dungeon_levels'),
+            quest_hooks=data.get('quest_hooks', []),
+            encounter_modifiers=data.get('encounter_modifiers', []),
+            item_persistence=data.get('item_persistence'),
+            dynamic_layout=data.get('dynamic_layout'),
+            availability=data.get('availability'),
         )
 
     def _dict_to_roll_table(self, data: dict) -> RollTable:
@@ -883,6 +888,10 @@ class ContentManager:
                     items=entry_data.get('items', []),
                     mechanical_effect=entry_data.get('mechanical_effect'),
                     sub_table=entry_data.get('sub_table'),
+                    reaction_conditions=entry_data.get('reaction_conditions'),
+                    transportation_effect=entry_data.get('transportation_effect'),
+                    time_effect=entry_data.get('time_effect'),
+                    quest_hook=entry_data.get('quest_hook'),
                 )
                 entries.append(entry)
 

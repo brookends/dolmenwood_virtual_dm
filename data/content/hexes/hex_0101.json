@@ -238,7 +238,12 @@
               "items": [
                 "silver dagger"
               ],
-              "mechanical_effect": "Fixing clock causes 1d12 days to pass upon leaving"
+              "mechanical_effect": "Fixing clock causes 1d12 days to pass upon leaving",
+              "time_effect": {
+                "time_passes": "1d12 days",
+                "trigger_condition": "on_exit",
+                "description": "Upon returning to the mortal world, time has passed strangely"
+              }
             },
             {
               "roll": 7,
@@ -247,7 +252,13 @@
               "monsters": [],
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Save Versus Hold or be ejected to mortal world; manor disappears until next full moon"
+              "mechanical_effect": "Save Versus Hold or be ejected to mortal world; manor disappears until next full moon",
+              "transportation_effect": {
+                "save_type": "Hold",
+                "destination": "mortal world (hex 0101)",
+                "failure_desc": "Ejected back into the mortal world",
+                "manor_effect": "Manor disappears until the next full moon"
+              }
             },
             {
               "roll": 8,
@@ -284,7 +295,29 @@
         }
       ],
       "is_dungeon": true,
-      "dungeon_levels": null
+      "dungeon_levels": null,
+      "dynamic_layout": {
+        "connections_per_room": "1d3",
+        "room_table": "Rooms",
+        "encounter_table": "Encounters",
+        "description": "Each room connects to 1d3 other rooms, via crooked doors and lurching hallways"
+      },
+      "item_persistence": {
+        "default": "evaporate",
+        "default_description": "Items from the manse evaporate into mist when taken into the real world",
+        "exceptions": [
+          {
+            "owner_npc": "lord_hobbled_and_blackened",
+            "persists": true,
+            "description": "Lord Hobbled-and-Blackened's possessions persist in the mortal world"
+          }
+        ]
+      },
+      "availability": {
+        "type": "special",
+        "description": "The manse appears only when the veil between worlds grows thin",
+        "hidden_message": "The thicket of blackthorns stands silent and impenetrable. No manor is visible."
+      }
     }
   ],
   "roll_tables": [],
