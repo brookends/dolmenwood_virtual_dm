@@ -34,6 +34,7 @@ class PromptSchemaType(str, Enum):
     POI_FEATURE = "poi_feature"
     RESOLVED_ACTION = "resolved_action"
     SPELL_CAST = "spell_cast"
+    SPELL_REVELATION = "spell_revelation"
 
 
 # =============================================================================
@@ -1646,6 +1647,143 @@ Write a vivid narration (3-5 sentences) that:
 
 
 # =============================================================================
+# SCHEMA 15: SPELL REVELATION (Divination/Detection)
+# =============================================================================
+
+
+@dataclass
+class SpellRevelationInputs:
+    """Inputs for spell revelation narration schema."""
+
+    # Core spell info
+    spell_name: str
+    caster_name: str
+    sensory_mode: str  # sight, sound, touch, smell, intuition
+
+    # What was revealed (from SpellContextProvider)
+    revelations: list[str]  # Pre-formatted revelation strings
+    nothing_detected: bool = False
+
+    # Context
+    detection_range: str = "60 feet"
+    location_context: str = ""
+    aesthetic_notes: list[str] = field(default_factory=list)
+
+    # Magic type for flavor
+    magic_type: str = "arcane"
+
+
+class SpellRevelationSchema(PromptSchema):
+    """
+    Schema for narrating divination/detection spell results.
+
+    CRITICAL CONSTRAINT: The LLM may ONLY describe the revelations
+    provided. It cannot invent additional information, creatures,
+    items, or effects not explicitly listed.
+
+    Used for:
+    - Detect Magic, Detect Evil, Detect Invisible
+    - Crystal Resonance, Wood Kenning
+    - Any spell that reveals information about the environment
+
+    The Python system determines WHAT exists.
+    The LLM describes the EXPERIENCE of perceiving it.
+    """
+
+    def __init__(self, inputs: SpellRevelationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.SPELL_REVELATION,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "spell_name": str,
+            "caster_name": str,
+            "sensory_mode": str,
+            "revelations": list,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        sensory_descriptions = {
+            "sight": "The caster perceives magical knowledge through mystical vision - auras, halos, glowing outlines, or spectral images.",
+            "sound": "Knowledge comes as whispers, echoes, or harmonics that only the caster can hear.",
+            "touch": "Secrets flow through physical contact - vibrations, warmth, or tingling sensations carry meaning.",
+            "smell": "Magical perception manifests as scents - the smell of decay for evil, flowers for enchantment.",
+            "intuition": "The caster simply KNOWS, with certainty that bypasses normal senses.",
+        }
+
+        sensory_desc = sensory_descriptions.get(
+            inputs.sensory_mode,
+            "Magical perception reveals hidden truths."
+        )
+
+        return f"""{base}
+
+SPELL REVELATION NARRATION TASK:
+You are narrating what a divination or detection spell reveals to the caster.
+
+SENSORY MODE: {inputs.sensory_mode.upper()}
+{sensory_desc}
+
+CRITICAL CONSTRAINTS - YOU MUST FOLLOW THESE:
+1. ONLY describe the revelations listed below - do NOT invent additional discoveries
+2. If "nothing_detected" is true, describe the absence of the thing being sought
+3. Describe the EXPERIENCE of perceiving each revelation atmospherically
+4. Do NOT add creatures, items, dangers, or information not in the revelations list
+5. The caster is actively perceiving - use present tense
+6. Match Dolmenwood's fairy-tale horror aesthetic
+
+The Python game system has already determined what exists in range.
+Your job is ONLY to describe how the caster experiences perceiving these specific things."""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Narrate this spell's revelations in Dolmenwood:
+
+SPELL: {inputs.spell_name}
+CASTER: {inputs.caster_name}
+SENSORY MODE: {inputs.sensory_mode}
+DETECTION RANGE: {inputs.detection_range}"""
+
+        if inputs.location_context:
+            prompt += f"\nLOCATION: {inputs.location_context}"
+
+        if inputs.nothing_detected:
+            prompt += """
+
+RESULT: Nothing detected within range.
+Describe the caster's perception confirming the absence of what they sought."""
+
+        elif inputs.revelations:
+            prompt += f"""
+
+REVELATIONS (describe ONLY these, do not add others):
+{chr(10).join('- ' + r for r in inputs.revelations)}"""
+
+        if inputs.aesthetic_notes:
+            prompt += f"""
+
+AESTHETIC GUIDANCE:
+{chr(10).join('- ' + note for note in inputs.aesthetic_notes)}"""
+
+        prompt += """
+
+Write a vivid narration (2-4 sentences) that:
+1. Describes how the magical perception activates (the sensory mode engaging)
+2. Conveys EACH listed revelation through atmospheric description
+3. Uses ONLY the information provided - invent nothing additional
+4. Captures the wonder or dread of magical sight"""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -1707,6 +1845,10 @@ def create_schema(
     elif schema_type == PromptSchemaType.SPELL_CAST:
         typed_inputs = SpellCastNarrationInputs(**inputs)
         return SpellCastNarrationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.SPELL_REVELATION:
+        typed_inputs = SpellRevelationInputs(**inputs)
+        return SpellRevelationSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")
