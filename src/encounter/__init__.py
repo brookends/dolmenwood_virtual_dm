@@ -18,7 +18,17 @@ from src.encounter.encounter_engine import (
     EncounterEngine,
 )
 
+from src.encounter.encounter_factory import (
+    EncounterFactory,
+    EncounterFactoryResult,
+    get_encounter_factory,
+    reset_encounter_factory,
+    create_encounter_from_roll,
+    create_wilderness_encounter,
+)
+
 __all__ = [
+    # Encounter Engine
     "EncounterPhase",
     "EncounterOrigin",
     "EncounterAction",
@@ -29,4 +39,11 @@ __all__ = [
     "ActionDeclaration",
     "EncounterRoundResult",
     "EncounterEngine",
+    # Encounter Factory
+    "EncounterFactory",
+    "EncounterFactoryResult",
+    "get_encounter_factory",
+    "reset_encounter_factory",
+    "create_encounter_from_roll",
+    "create_wilderness_encounter",
 ]
