@@ -28,6 +28,10 @@ class PromptSchemaType(str, Enum):
     COMBAT_CONCLUSION = "combat_conclusion"
     DUNGEON_EVENT = "dungeon_event"
     REST_EXPERIENCE = "rest_experience"
+    POI_APPROACH = "poi_approach"
+    POI_ENTRY = "poi_entry"
+    POI_FEATURE = "poi_feature"
+    RESOLVED_ACTION = "resolved_action"
 
 
 # =============================================================================
@@ -1012,6 +1016,386 @@ Write a brief narration (2-3 sentences) that:
 
 
 # =============================================================================
+# SCHEMA 10: POI APPROACH
+# =============================================================================
+
+
+@dataclass
+class POIApproachInputs:
+    """Inputs for POI approach narration."""
+    poi_name: str
+    poi_type: str  # manse, ruin, grove, cave, etc.
+    description: str  # Exterior description
+    tagline: str = ""  # Short evocative description
+    distance: str = "near"  # near, medium, far
+    time_of_day: str = ""
+    weather: str = ""
+    season: str = ""
+    discovery_hints: list[str] = field(default_factory=list)  # Sensory clues
+    visible_hazards: list[str] = field(default_factory=list)
+    visible_npcs: list[str] = field(default_factory=list)
+    party_approach: str = "cautious"  # cautious, direct, stealthy
+
+
+@dataclass
+class POIApproachSchema(PromptSchema):
+    """Schema for describing approach to a Point of Interest."""
+
+    def __init__(self, inputs: POIApproachInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.POI_APPROACH,
+            inputs=vars(inputs)
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "poi_name": str,
+            "poi_type": str,
+            "description": str,
+        }
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Describe the party approaching this Point of Interest:
+
+NAME: {inputs.poi_name}
+TYPE: {inputs.poi_type}
+DESCRIPTION: {inputs.description}"""
+
+        if inputs.tagline:
+            prompt += f"\nTAGLINE: {inputs.tagline}"
+
+        prompt += f"\nDISTANCE: {inputs.distance}"
+        prompt += f"\nAPPROACH: {inputs.party_approach}"
+
+        if inputs.time_of_day:
+            prompt += f"\nTIME: {inputs.time_of_day}"
+        if inputs.weather:
+            prompt += f"\nWEATHER: {inputs.weather}"
+        if inputs.season:
+            prompt += f"\nSEASON: {inputs.season}"
+
+        if inputs.discovery_hints:
+            prompt += f"""
+
+SENSORY CLUES (what draws attention):
+{chr(10).join('- ' + h for h in inputs.discovery_hints)}"""
+
+        if inputs.visible_hazards:
+            prompt += f"""
+
+VISIBLE HAZARDS:
+{chr(10).join('- ' + h for h in inputs.visible_hazards)}"""
+
+        if inputs.visible_npcs:
+            prompt += f"""
+
+VISIBLE FIGURES:
+{chr(10).join('- ' + n for n in inputs.visible_npcs)}"""
+
+        prompt += """
+
+Write a brief narration (2-3 sentences) that:
+1. Describes what the party sees as they approach
+2. Evokes the atmosphere and mystery of the location
+3. Hints at sensory details without revealing hidden secrets
+4. Do NOT reveal traps, hidden enemies, or secrets"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 11: POI ENTRY
+# =============================================================================
+
+
+@dataclass
+class POIEntryInputs:
+    """Inputs for POI entry narration."""
+    poi_name: str
+    poi_type: str
+    entering: str  # Entry description from data model
+    interior: str = ""  # Interior description
+    time_of_day: str = ""
+    inhabitants_visible: list[str] = field(default_factory=list)
+    atmosphere: list[str] = field(default_factory=list)  # Sensory tags
+    entry_method: str = "normal"  # normal, forced, secret, magical
+    entry_condition: str = ""  # diving, climbing, etc.
+
+
+@dataclass
+class POIEntrySchema(PromptSchema):
+    """Schema for describing entry into a Point of Interest."""
+
+    def __init__(self, inputs: POIEntryInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.POI_ENTRY,
+            inputs=vars(inputs)
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "poi_name": str,
+            "poi_type": str,
+            "entering": str,
+        }
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        entry_methods = {
+            "normal": "The party enters normally",
+            "forced": "The party forces their way in",
+            "secret": "The party enters through a hidden passage",
+            "magical": "The party uses magic to enter",
+        }
+
+        prompt = f"""Describe the party entering this location:
+
+NAME: {inputs.poi_name}
+TYPE: {inputs.poi_type}
+ENTRY: {inputs.entering}
+METHOD: {entry_methods.get(inputs.entry_method, inputs.entry_method)}"""
+
+        if inputs.entry_condition:
+            prompt += f"\nCONDITION: {inputs.entry_condition}"
+
+        if inputs.interior:
+            prompt += f"\nINTERIOR: {inputs.interior}"
+
+        if inputs.time_of_day:
+            prompt += f"\nTIME: {inputs.time_of_day}"
+
+        if inputs.atmosphere:
+            prompt += f"""
+
+ATMOSPHERE:
+{chr(10).join('- ' + a for a in inputs.atmosphere)}"""
+
+        if inputs.inhabitants_visible:
+            prompt += f"""
+
+VISIBLE INHABITANTS:
+{chr(10).join('- ' + i for i in inputs.inhabitants_visible)}"""
+
+        prompt += """
+
+Write a brief narration (2-3 sentences) that:
+1. Describes the moment of crossing the threshold
+2. Captures the first impressions of the interior
+3. Establishes the mood and atmosphere
+4. Do NOT reveal hidden dangers or secrets"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 12: POI FEATURE
+# =============================================================================
+
+
+@dataclass
+class POIFeatureInputs:
+    """Inputs for POI feature exploration narration."""
+    poi_name: str
+    feature_name: str
+    feature_description: str
+    interaction_type: str  # examine, search, touch, activate
+    discovery_success: bool = True
+    found_items: list[str] = field(default_factory=list)
+    found_secrets: list[str] = field(default_factory=list)
+    hazard_triggered: bool = False
+    hazard_description: str = ""
+    character_name: str = ""
+    sub_location_name: str = ""  # If exploring a sub-location
+
+
+@dataclass
+class POIFeatureSchema(PromptSchema):
+    """Schema for describing POI feature exploration."""
+
+    def __init__(self, inputs: POIFeatureInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.POI_FEATURE,
+            inputs=vars(inputs)
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "poi_name": str,
+            "feature_name": str,
+            "feature_description": str,
+            "interaction_type": str,
+        }
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        interaction_verbs = {
+            "examine": "carefully examines",
+            "search": "searches",
+            "touch": "touches",
+            "activate": "activates",
+            "open": "opens",
+            "read": "reads",
+        }
+
+        actor = inputs.character_name or "The party"
+        verb = interaction_verbs.get(inputs.interaction_type, inputs.interaction_type)
+
+        prompt = f"""Describe this feature exploration:
+
+LOCATION: {inputs.poi_name}"""
+
+        if inputs.sub_location_name:
+            prompt += f" ({inputs.sub_location_name})"
+
+        prompt += f"""
+FEATURE: {inputs.feature_name}
+DESCRIPTION: {inputs.feature_description}
+ACTION: {actor} {verb} the {inputs.feature_name}
+SUCCESS: {"Yes" if inputs.discovery_success else "No"}"""
+
+        if inputs.found_items:
+            prompt += f"""
+
+ITEMS DISCOVERED:
+{chr(10).join('- ' + i for i in inputs.found_items)}"""
+
+        if inputs.found_secrets:
+            prompt += f"""
+
+SECRETS REVEALED:
+{chr(10).join('- ' + s for s in inputs.found_secrets)}"""
+
+        if inputs.hazard_triggered:
+            prompt += f"""
+
+HAZARD TRIGGERED: {inputs.hazard_description}"""
+
+        prompt += """
+
+Write a brief narration (2-3 sentences) that:
+1. Describes the interaction with the feature
+2. Reveals discoveries dramatically if any were made
+3. Conveys the character's reaction
+4. If a hazard triggered, describe the danger"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 13: RESOLVED ACTION
+# =============================================================================
+
+
+@dataclass
+class ResolvedActionInputs:
+    """Inputs for narrating a mechanically resolved action."""
+    action_description: str  # What the character attempted
+    action_category: str  # spell, hazard, exploration, survival, creative
+    action_type: str  # climb, swim, cast_spell, search, etc.
+    success: bool
+    partial_success: bool = False
+    character_name: str = ""
+    target_description: str = ""
+    # Dice results
+    dice_rolled: str = ""  # e.g., "1d20+3"
+    dice_result: int = 0
+    dice_target: int = 0
+    # Outcomes
+    damage_dealt: int = 0
+    damage_taken: int = 0
+    conditions_applied: list[str] = field(default_factory=list)
+    effects_created: list[str] = field(default_factory=list)
+    resources_consumed: dict[str, int] = field(default_factory=dict)
+    # Context
+    narrative_hints: list[str] = field(default_factory=list)
+    location_context: str = ""
+    rule_reference: str = ""
+
+
+@dataclass
+class ResolvedActionSchema(PromptSchema):
+    """Schema for narrating mechanically resolved actions."""
+
+    def __init__(self, inputs: ResolvedActionInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.RESOLVED_ACTION,
+            inputs=vars(inputs)
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "action_description": str,
+            "action_category": str,
+            "success": bool,
+        }
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        actor = inputs.character_name or "The adventurer"
+        outcome = "succeeds" if inputs.success else ("partially succeeds" if inputs.partial_success else "fails")
+
+        prompt = f"""Narrate this resolved action:
+
+ACTION: {inputs.action_description}
+CATEGORY: {inputs.action_category}
+TYPE: {inputs.action_type}
+ACTOR: {actor}
+OUTCOME: {outcome.upper()}"""
+
+        if inputs.target_description:
+            prompt += f"\nTARGET: {inputs.target_description}"
+
+        if inputs.dice_rolled:
+            prompt += f"""
+
+DICE: Rolled {inputs.dice_rolled} = {inputs.dice_result} (target: {inputs.dice_target})"""
+
+        outcomes = []
+        if inputs.damage_dealt > 0:
+            outcomes.append(f"Dealt {inputs.damage_dealt} damage")
+        if inputs.damage_taken > 0:
+            outcomes.append(f"Took {inputs.damage_taken} damage")
+        if inputs.conditions_applied:
+            outcomes.append(f"Applied: {', '.join(inputs.conditions_applied)}")
+        if inputs.effects_created:
+            outcomes.append(f"Created: {', '.join(inputs.effects_created)}")
+
+        if outcomes:
+            prompt += f"""
+
+MECHANICAL OUTCOMES:
+{chr(10).join('- ' + o for o in outcomes)}"""
+
+        if inputs.narrative_hints:
+            prompt += f"""
+
+NARRATIVE HINTS:
+{chr(10).join('- ' + h for h in inputs.narrative_hints)}"""
+
+        if inputs.location_context:
+            prompt += f"\nLOCATION: {inputs.location_context}"
+
+        prompt += """
+
+Write a brief narration (2-3 sentences) that:
+1. Describes the action attempt
+2. Conveys the outcome dramatically
+3. Reflects the mechanical results in narrative form
+4. Use the EXACT damage/effect values provided"""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -1053,6 +1437,22 @@ def create_schema(
     elif schema_type == PromptSchemaType.DOWNTIME_SUMMARY:
         typed_inputs = DowntimeSummaryInputs(**inputs)
         return DowntimeSummarySchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.POI_APPROACH:
+        typed_inputs = POIApproachInputs(**inputs)
+        return POIApproachSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.POI_ENTRY:
+        typed_inputs = POIEntryInputs(**inputs)
+        return POIEntrySchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.POI_FEATURE:
+        typed_inputs = POIFeatureInputs(**inputs)
+        return POIFeatureSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.RESOLVED_ACTION:
+        typed_inputs = ResolvedActionInputs(**inputs)
+        return ResolvedActionSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")

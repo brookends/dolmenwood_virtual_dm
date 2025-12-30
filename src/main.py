@@ -53,6 +53,7 @@ from src.ai import (
     LLMProvider,
     DescriptionResult,
 )
+from src.narrative import NarrationContext
 
 
 # Configure logging
@@ -191,6 +192,58 @@ class VirtualDM:
         )
         self._dm_agent = DMAgent(dm_config)
         logger.info(f"DM Agent initialized with provider: {provider.value}")
+
+        # Set up narration callback on NarrativeResolver
+        narrative_resolver = self.controller.get_narrative_resolver()
+        if narrative_resolver:
+            narrative_resolver.set_narration_callback(self._narrate_from_context)
+
+    def _narrate_from_context(
+        self,
+        context: NarrationContext,
+        character_name: str,
+    ) -> Optional[str]:
+        """
+        Convert NarrationContext to narrated text.
+
+        This is the callback used by NarrativeResolver to generate
+        LLM narration for resolved actions.
+        """
+        if not self._dm_agent:
+            return None
+
+        # Extract damage totals from the context
+        damage_dealt = sum(context.damage_dealt.values()) if context.damage_dealt else 0
+        damage_taken = sum(context.healing_done.values()) if context.healing_done else 0
+
+        # Get dice info if available
+        dice_rolled = ""
+        dice_result = 0
+        dice_target = 0
+        if context.dice_results:
+            dice_info = context.dice_results[0]
+            dice_rolled = f"1d6"  # Default for Dolmenwood X-in-6 system
+            dice_result = dice_info.get("result", 0)
+            dice_target = dice_info.get("target", 0)
+
+        return self.narrate_resolved_action(
+            action_description=context.player_input,
+            action_category=context.action_category.value if context.action_category else "unknown",
+            action_type=context.action_type.value if context.action_type else "unknown",
+            success=context.success,
+            partial_success=context.partial_success,
+            character_name=character_name,
+            dice_rolled=dice_rolled,
+            dice_result=dice_result,
+            dice_target=dice_target,
+            damage_dealt=damage_dealt,
+            damage_taken=damage_taken,
+            conditions_applied=context.conditions_applied,
+            effects_created=context.effects_created,
+            resources_consumed=context.resources_consumed,
+            narrative_hints=context.narrative_hints,
+            rule_reference=context.rule_reference or "",
+        )
 
     # =========================================================================
     # STATE ACCESS
@@ -739,6 +792,251 @@ class VirtualDM:
             return result.content if result.success else None
         except Exception as e:
             logger.warning(f"Error generating rest narration: {e}")
+            return None
+
+    def narrate_poi_approach(
+        self,
+        *,
+        poi_name: str,
+        poi_type: str,
+        description: str,
+        tagline: str = "",
+        distance: str = "near",
+        discovery_hints: list[str] | None = None,
+        visible_hazards: list[str] | None = None,
+        visible_npcs: list[str] | None = None,
+        party_approach: str = "cautious",
+    ) -> Optional[str]:
+        """
+        Generate narrative for approaching a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type (manse, ruin, grove, cave, etc.)
+            description: Exterior description
+            tagline: Short evocative description
+            distance: near, medium, far
+            discovery_hints: Sensory clues that drew attention
+            visible_hazards: Hazards visible from approach
+            visible_npcs: Figures visible from approach
+            party_approach: cautious, direct, stealthy
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+        weather = self.controller.world_state.weather
+        season = Season(time_summary.get("season", "summer"))
+
+        try:
+            result = self._dm_agent.describe_poi_approach(
+                poi_name=poi_name,
+                poi_type=poi_type,
+                description=description,
+                tagline=tagline,
+                distance=distance,
+                time_of_day=time_of_day,
+                weather=weather,
+                season=season,
+                discovery_hints=discovery_hints or [],
+                visible_hazards=visible_hazards or [],
+                visible_npcs=visible_npcs or [],
+                party_approach=party_approach,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI approach narration: {e}")
+            return None
+
+    def narrate_poi_entry(
+        self,
+        *,
+        poi_name: str,
+        poi_type: str,
+        entering: str,
+        interior: str = "",
+        inhabitants_visible: list[str] | None = None,
+        atmosphere: list[str] | None = None,
+        entry_method: str = "normal",
+        entry_condition: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for entering a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type of POI
+            entering: Entry description from data model
+            interior: Interior description
+            inhabitants_visible: Visible inhabitants
+            atmosphere: Sensory tags for atmosphere
+            entry_method: normal, forced, secret, magical
+            entry_condition: diving, climbing, etc.
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        time_summary = self.time_tracker.get_time_summary()
+        time_of_day = TimeOfDay(time_summary.get("time_of_day", "day"))
+
+        try:
+            result = self._dm_agent.describe_poi_entry(
+                poi_name=poi_name,
+                poi_type=poi_type,
+                entering=entering,
+                interior=interior,
+                time_of_day=time_of_day,
+                inhabitants_visible=inhabitants_visible or [],
+                atmosphere=atmosphere or [],
+                entry_method=entry_method,
+                entry_condition=entry_condition,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI entry narration: {e}")
+            return None
+
+    def narrate_poi_feature(
+        self,
+        *,
+        poi_name: str,
+        feature_name: str,
+        feature_description: str,
+        interaction_type: str,
+        discovery_success: bool = True,
+        found_items: list[str] | None = None,
+        found_secrets: list[str] | None = None,
+        hazard_triggered: bool = False,
+        hazard_description: str = "",
+        character_name: str = "",
+        sub_location_name: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for exploring a POI feature.
+
+        Args:
+            poi_name: Name of the POI
+            feature_name: Name of the feature being explored
+            feature_description: Description of the feature
+            interaction_type: examine, search, touch, activate
+            discovery_success: Was the search/interaction successful?
+            found_items: Items discovered
+            found_secrets: Secrets revealed
+            hazard_triggered: Was a hazard triggered?
+            hazard_description: Description of triggered hazard
+            character_name: Who performed the action
+            sub_location_name: Sub-location within POI if applicable
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.describe_poi_feature(
+                poi_name=poi_name,
+                feature_name=feature_name,
+                feature_description=feature_description,
+                interaction_type=interaction_type,
+                discovery_success=discovery_success,
+                found_items=found_items or [],
+                found_secrets=found_secrets or [],
+                hazard_triggered=hazard_triggered,
+                hazard_description=hazard_description,
+                character_name=character_name,
+                sub_location_name=sub_location_name,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating POI feature narration: {e}")
+            return None
+
+    def narrate_resolved_action(
+        self,
+        *,
+        action_description: str,
+        action_category: str,
+        action_type: str,
+        success: bool,
+        partial_success: bool = False,
+        character_name: str = "",
+        target_description: str = "",
+        dice_rolled: str = "",
+        dice_result: int = 0,
+        dice_target: int = 0,
+        damage_dealt: int = 0,
+        damage_taken: int = 0,
+        conditions_applied: list[str] | None = None,
+        effects_created: list[str] | None = None,
+        resources_consumed: dict[str, int] | None = None,
+        narrative_hints: list[str] | None = None,
+        location_context: str = "",
+        rule_reference: str = "",
+    ) -> Optional[str]:
+        """
+        Generate narrative for a mechanically resolved action.
+
+        This is the generic method for narrating any action that has been
+        resolved by the narrative resolvers (spell, hazard, creative, etc.).
+
+        Args:
+            action_description: What the character attempted
+            action_category: spell, hazard, exploration, survival, creative
+            action_type: Specific action type
+            success: Was the action successful?
+            partial_success: Was it a partial success?
+            character_name: Who performed the action
+            target_description: Target of the action
+            dice_rolled: Dice expression (e.g., "1d20+3")
+            dice_result: Result of the roll
+            dice_target: Target number to beat
+            damage_dealt: Damage dealt to target
+            damage_taken: Damage taken by character
+            conditions_applied: Conditions applied
+            effects_created: Effects created
+            resources_consumed: Resources used
+            narrative_hints: Hints from the resolver
+            location_context: Where this happened
+            rule_reference: Rule reference if any
+
+        Returns:
+            Narrative description or None if narration disabled
+        """
+        if not self._dm_agent or not self.config.enable_narration:
+            return None
+
+        try:
+            result = self._dm_agent.narrate_resolved_action(
+                action_description=action_description,
+                action_category=action_category,
+                action_type=action_type,
+                success=success,
+                partial_success=partial_success,
+                character_name=character_name,
+                target_description=target_description,
+                dice_rolled=dice_rolled,
+                dice_result=dice_result,
+                dice_target=dice_target,
+                damage_dealt=damage_dealt,
+                damage_taken=damage_taken,
+                conditions_applied=conditions_applied or [],
+                effects_created=effects_created or [],
+                resources_consumed=resources_consumed or {},
+                narrative_hints=narrative_hints or [],
+                location_context=location_context,
+                rule_reference=rule_reference,
+            )
+            return result.content if result.success else None
+        except Exception as e:
+            logger.warning(f"Error generating resolved action narration: {e}")
             return None
 
     @property

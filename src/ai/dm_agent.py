@@ -52,6 +52,14 @@ from src.ai.prompt_schemas import (
     DungeonEventSchema,
     RestExperienceInputs,
     RestExperienceSchema,
+    POIApproachInputs,
+    POIApproachSchema,
+    POIEntryInputs,
+    POIEntrySchema,
+    POIFeatureInputs,
+    POIFeatureSchema,
+    ResolvedActionInputs,
+    ResolvedActionSchema,
     create_schema,
 )
 from src.data_models import (
@@ -987,6 +995,235 @@ class DMAgent:
         )
 
         schema = RestExperienceSchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # POI NARRATION
+    # =========================================================================
+
+    def describe_poi_approach(
+        self,
+        poi_name: str,
+        poi_type: str,
+        description: str,
+        tagline: str = "",
+        distance: str = "near",
+        time_of_day: Optional[TimeOfDay] = None,
+        weather: Optional[Weather] = None,
+        season: Optional[Season] = None,
+        discovery_hints: Optional[list[str]] = None,
+        visible_hazards: Optional[list[str]] = None,
+        visible_npcs: Optional[list[str]] = None,
+        party_approach: str = "cautious",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for approaching a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type (manse, ruin, grove, cave, etc.)
+            description: Exterior description
+            tagline: Short evocative description
+            distance: near, medium, far
+            time_of_day: Current time of day
+            weather: Current weather
+            season: Current season
+            discovery_hints: Sensory clues that drew attention
+            visible_hazards: Hazards visible from approach
+            visible_npcs: Figures visible from approach
+            party_approach: cautious, direct, stealthy
+
+        Returns:
+            DescriptionResult with approach narration
+        """
+        inputs = POIApproachInputs(
+            poi_name=poi_name,
+            poi_type=poi_type,
+            description=description,
+            tagline=tagline,
+            distance=distance,
+            time_of_day=time_of_day.value if time_of_day else "",
+            weather=weather.value if weather else "",
+            season=season.value if season else "",
+            discovery_hints=discovery_hints or [],
+            visible_hazards=visible_hazards or [],
+            visible_npcs=visible_npcs or [],
+            party_approach=party_approach,
+        )
+
+        schema = POIApproachSchema(inputs)
+        return self._execute_schema(schema)
+
+    def describe_poi_entry(
+        self,
+        poi_name: str,
+        poi_type: str,
+        entering: str,
+        interior: str = "",
+        time_of_day: Optional[TimeOfDay] = None,
+        inhabitants_visible: Optional[list[str]] = None,
+        atmosphere: Optional[list[str]] = None,
+        entry_method: str = "normal",
+        entry_condition: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for entering a Point of Interest.
+
+        Args:
+            poi_name: Name of the POI
+            poi_type: Type of POI
+            entering: Entry description from data model
+            interior: Interior description
+            time_of_day: Current time of day
+            inhabitants_visible: Visible inhabitants
+            atmosphere: Sensory tags for atmosphere
+            entry_method: normal, forced, secret, magical
+            entry_condition: diving, climbing, etc.
+
+        Returns:
+            DescriptionResult with entry narration
+        """
+        inputs = POIEntryInputs(
+            poi_name=poi_name,
+            poi_type=poi_type,
+            entering=entering,
+            interior=interior,
+            time_of_day=time_of_day.value if time_of_day else "",
+            inhabitants_visible=inhabitants_visible or [],
+            atmosphere=atmosphere or [],
+            entry_method=entry_method,
+            entry_condition=entry_condition,
+        )
+
+        schema = POIEntrySchema(inputs)
+        return self._execute_schema(schema)
+
+    def describe_poi_feature(
+        self,
+        poi_name: str,
+        feature_name: str,
+        feature_description: str,
+        interaction_type: str,
+        discovery_success: bool = True,
+        found_items: Optional[list[str]] = None,
+        found_secrets: Optional[list[str]] = None,
+        hazard_triggered: bool = False,
+        hazard_description: str = "",
+        character_name: str = "",
+        sub_location_name: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for exploring a POI feature.
+
+        Args:
+            poi_name: Name of the POI
+            feature_name: Name of the feature being explored
+            feature_description: Description of the feature
+            interaction_type: examine, search, touch, activate
+            discovery_success: Was the search/interaction successful?
+            found_items: Items discovered
+            found_secrets: Secrets revealed
+            hazard_triggered: Was a hazard triggered?
+            hazard_description: Description of triggered hazard
+            character_name: Who performed the action
+            sub_location_name: Sub-location within POI if applicable
+
+        Returns:
+            DescriptionResult with feature exploration narration
+        """
+        inputs = POIFeatureInputs(
+            poi_name=poi_name,
+            feature_name=feature_name,
+            feature_description=feature_description,
+            interaction_type=interaction_type,
+            discovery_success=discovery_success,
+            found_items=found_items or [],
+            found_secrets=found_secrets or [],
+            hazard_triggered=hazard_triggered,
+            hazard_description=hazard_description,
+            character_name=character_name,
+            sub_location_name=sub_location_name,
+        )
+
+        schema = POIFeatureSchema(inputs)
+        return self._execute_schema(schema)
+
+    # =========================================================================
+    # RESOLVED ACTION NARRATION
+    # =========================================================================
+
+    def narrate_resolved_action(
+        self,
+        action_description: str,
+        action_category: str,
+        action_type: str,
+        success: bool,
+        partial_success: bool = False,
+        character_name: str = "",
+        target_description: str = "",
+        dice_rolled: str = "",
+        dice_result: int = 0,
+        dice_target: int = 0,
+        damage_dealt: int = 0,
+        damage_taken: int = 0,
+        conditions_applied: Optional[list[str]] = None,
+        effects_created: Optional[list[str]] = None,
+        resources_consumed: Optional[dict[str, int]] = None,
+        narrative_hints: Optional[list[str]] = None,
+        location_context: str = "",
+        rule_reference: str = "",
+    ) -> DescriptionResult:
+        """
+        Generate narrative for a mechanically resolved action.
+
+        This is the generic method for narrating any action that has been
+        resolved by the narrative resolvers (spell, hazard, creative, etc.).
+
+        Args:
+            action_description: What the character attempted
+            action_category: spell, hazard, exploration, survival, creative
+            action_type: Specific action type
+            success: Was the action successful?
+            partial_success: Was it a partial success?
+            character_name: Who performed the action
+            target_description: Target of the action
+            dice_rolled: Dice expression (e.g., "1d20+3")
+            dice_result: Result of the roll
+            dice_target: Target number to beat
+            damage_dealt: Damage dealt to target
+            damage_taken: Damage taken by character
+            conditions_applied: Conditions applied
+            effects_created: Effects created
+            resources_consumed: Resources used
+            narrative_hints: Hints from the resolver
+            location_context: Where this happened
+            rule_reference: Rule reference if any
+
+        Returns:
+            DescriptionResult with action narration
+        """
+        inputs = ResolvedActionInputs(
+            action_description=action_description,
+            action_category=action_category,
+            action_type=action_type,
+            success=success,
+            partial_success=partial_success,
+            character_name=character_name,
+            target_description=target_description,
+            dice_rolled=dice_rolled,
+            dice_result=dice_result,
+            dice_target=dice_target,
+            damage_dealt=damage_dealt,
+            damage_taken=damage_taken,
+            conditions_applied=conditions_applied or [],
+            effects_created=effects_created or [],
+            resources_consumed=resources_consumed or {},
+            narrative_hints=narrative_hints or [],
+            location_context=location_context,
+            rule_reference=rule_reference,
+        )
+
+        schema = ResolvedActionSchema(inputs)
         return self._execute_schema(schema)
 
     # =========================================================================

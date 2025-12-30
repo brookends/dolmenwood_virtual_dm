@@ -1560,6 +1560,69 @@ class TestNarrationIntegration:
         assert narration is not None
         assert isinstance(narration, str)
 
+    def test_poi_approach_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_poi_approach method."""
+        narration = virtual_dm_with_narration.narrate_poi_approach(
+            poi_name="The Ruined Tower",
+            poi_type="ruin",
+            description="A crumbling stone tower rises from the forest floor",
+            tagline="Ancient sentinel of forgotten days",
+            distance="near",
+            discovery_hints=["smell of damp stone", "crows circling above"],
+            visible_hazards=["collapsed wall section"],
+            party_approach="cautious",
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_poi_entry_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_poi_entry method."""
+        narration = virtual_dm_with_narration.narrate_poi_entry(
+            poi_name="The Ruined Tower",
+            poi_type="ruin",
+            entering="Through the cracked wooden door, barely hanging on its hinges",
+            interior="Dust motes dance in shafts of light from holes in the ceiling",
+            inhabitants_visible=["rats scurrying away"],
+            atmosphere=["damp", "echoing", "dim"],
+            entry_method="normal",
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_poi_feature_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_poi_feature method."""
+        narration = virtual_dm_with_narration.narrate_poi_feature(
+            poi_name="The Ruined Tower",
+            feature_name="Ancient Chest",
+            feature_description="A weathered wooden chest bound with rusted iron",
+            interaction_type="search",
+            discovery_success=True,
+            found_items=["Silver ring", "10 gold coins"],
+            character_name="Aldric",
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
+    def test_resolved_action_narration_method(self, virtual_dm_with_narration):
+        """Test narrate_resolved_action method."""
+        narration = virtual_dm_with_narration.narrate_resolved_action(
+            action_description="Climb the ivy-covered wall",
+            action_category="hazard",
+            action_type="climb",
+            success=True,
+            character_name="Aldric",
+            dice_rolled="1d6",
+            dice_result=2,
+            dice_target=3,
+            narrative_hints=["with practiced ease", "using the ivy as handholds"],
+        )
+
+        assert narration is not None
+        assert isinstance(narration, str)
+
     def test_narration_disabled_returns_none(self, virtual_dm_no_narration, basic_encounter):
         """Test that narration methods return None when disabled."""
         result = virtual_dm_no_narration.narrate_encounter_start(
@@ -1607,6 +1670,36 @@ class TestNarrationIntegration:
             location_name="Test Camp",
             location_safety="safe",
             duration_hours=8,
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_poi_approach(
+            poi_name="Test POI",
+            poi_type="ruin",
+            description="Test description",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_poi_entry(
+            poi_name="Test POI",
+            poi_type="ruin",
+            entering="Test entry",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_poi_feature(
+            poi_name="Test POI",
+            feature_name="Test feature",
+            feature_description="Test description",
+            interaction_type="examine",
+        )
+        assert result is None
+
+        result = virtual_dm_no_narration.narrate_resolved_action(
+            action_description="Test action",
+            action_category="hazard",
+            action_type="climb",
+            success=True,
         )
         assert result is None
 

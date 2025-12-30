@@ -110,6 +110,9 @@ class ResolutionResult:
     requires_follow_up: bool = False
     follow_up_prompt: Optional[str] = None
 
+    # LLM-generated narration (if callback was set)
+    narration: Optional[str] = None
+
 
 class NarrativeResolver:
     """
@@ -147,8 +150,27 @@ class NarrativeResolver:
         # LLM interface for intent parsing
         self._intent_parser: Optional[Callable[[str, dict], ParsedIntent]] = None
 
+        # LLM narration callback - called after each resolution
+        # Signature: (NarrationContext, character_name: str) -> Optional[str]
+        self._narration_callback: Optional[Callable[[NarrationContext, str], Optional[str]]] = None
+
         # Active effects tracking
         self._active_effects: list[ActiveSpellEffect] = []
+
+    def set_narration_callback(
+        self,
+        callback: Callable[[NarrationContext, str], Optional[str]]
+    ) -> None:
+        """
+        Set the LLM narration callback for resolved actions.
+
+        The callback receives the NarrationContext and character name,
+        and should return narrative text or None.
+
+        Args:
+            callback: Function that takes (NarrationContext, character_name) and returns narrative
+        """
+        self._narration_callback = callback
 
     def set_intent_parser(
         self,
@@ -188,6 +210,15 @@ class NarrativeResolver:
 
         # Step 2: Route to appropriate resolver
         result = self._route_action(parsed, character, context)
+
+        # Step 3: Generate narration if callback is set
+        if self._narration_callback:
+            try:
+                character_name = getattr(character, 'name', str(character))
+                narration = self._narration_callback(result.narration_context, character_name)
+                result.narration = narration
+            except Exception as e:
+                logger.warning(f"Narration callback failed: {e}")
 
         return result
 
