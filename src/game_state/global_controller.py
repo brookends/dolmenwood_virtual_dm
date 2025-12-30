@@ -1375,6 +1375,157 @@ class GlobalController:
         return result
 
     # =========================================================================
+    # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)
+    # =========================================================================
+
+    def apply_buff(
+        self,
+        character_id: str,
+        stat: str,
+        value: int,
+        source: str,
+        source_id: Optional[str] = None,
+        duration_turns: Optional[int] = None,
+        duration_rounds: Optional[int] = None,
+        condition: Optional[str] = None,
+        stacks: bool = False,
+        stack_group: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply a stat modifier (buff or debuff) to a character.
+
+        Args:
+            character_id: The character to buff/debuff
+            stat: Stat to modify (e.g., "AC", "attack", "damage", "STR")
+            value: Modifier value (positive = buff, negative = debuff)
+            source: What caused this modifier (spell name, item, ability)
+            source_id: Optional ID for removal (spell effect ID, item ID)
+            duration_turns: Duration in exploration turns (10 min each)
+            duration_rounds: Duration in combat rounds
+            condition: When this applies (e.g., "vs_missiles", "vs_melee")
+            stacks: Whether multiple instances stack
+            stack_group: Group name for non-stacking (highest wins)
+
+        Returns:
+            Dictionary with buff application results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Generate unique modifier ID
+        import uuid
+        modifier_id = f"mod_{uuid.uuid4().hex[:8]}"
+
+        # Create the modifier
+        from src.data_models import StatModifier
+        modifier = StatModifier(
+            modifier_id=modifier_id,
+            stat=stat,
+            value=value,
+            source=source,
+            source_id=source_id,
+            duration_turns=duration_turns,
+            duration_rounds=duration_rounds,
+            condition=condition,
+            stacks=stacks,
+            stack_group=stack_group,
+        )
+
+        # Add to character
+        character.add_stat_modifier(modifier)
+
+        result = {
+            "character_id": character_id,
+            "modifier_id": modifier_id,
+            "stat": stat,
+            "value": value,
+            "source": source,
+            "condition": condition,
+            "duration_turns": duration_turns,
+            "duration_rounds": duration_rounds,
+            "applied": True,
+        }
+
+        self._log_event("buff_applied", result)
+        return result
+
+    def remove_buff(
+        self, character_id: str, modifier_id: Optional[str] = None, source_id: Optional[str] = None
+    ) -> dict[str, Any]:
+        """
+        Remove a stat modifier from a character.
+
+        Args:
+            character_id: The character to affect
+            modifier_id: Specific modifier ID to remove
+            source_id: Remove all modifiers from this source
+
+        Returns:
+            Dictionary with removal results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        removed_count = 0
+
+        if modifier_id:
+            removed = character.remove_stat_modifier(modifier_id)
+            if removed:
+                removed_count = 1
+        elif source_id:
+            removed = character.remove_modifiers_by_source(source_id)
+            removed_count = len(removed)
+
+        result = {
+            "character_id": character_id,
+            "removed_count": removed_count,
+            "modifier_id": modifier_id,
+            "source_id": source_id,
+        }
+
+        if removed_count > 0:
+            self._log_event("buff_removed", result)
+
+        return result
+
+    def tick_character_modifiers(self, character_id: str, time_unit: str = "turn") -> dict[str, Any]:
+        """
+        Advance all stat modifiers for a character by one time unit.
+
+        Args:
+            character_id: The character to advance
+            time_unit: "turn" for exploration turns, "round" for combat rounds
+
+        Returns:
+            Dictionary with expired modifier info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        if time_unit == "round":
+            expired = character.tick_stat_modifiers_round()
+        else:
+            expired = character.tick_stat_modifiers_turn()
+
+        result = {
+            "character_id": character_id,
+            "time_unit": time_unit,
+            "expired_count": len(expired),
+            "expired_modifiers": [
+                {"modifier_id": m.modifier_id, "stat": m.stat, "source": m.source}
+                for m in expired
+            ],
+        }
+
+        if expired:
+            self._log_event("modifiers_expired", result)
+
+        return result
+
+    # =========================================================================
     # LOCATION MANAGEMENT
     # =========================================================================
 

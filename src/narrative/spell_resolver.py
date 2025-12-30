@@ -130,6 +130,7 @@ class MechanicalEffect:
     stat_modified: Optional[str] = None  # e.g., "AC", "attack", "speed"
     modifier_value: Optional[int] = None  # e.g., +2, -4
     modifier_dice: Optional[str] = None  # For variable modifiers
+    condition_context: Optional[str] = None  # When modifier applies: "vs_missiles", "vs_melee"
 
     # Saving throw for this effect
     save_type: Optional[str] = None  # doom, ray, hold, blast, spell
@@ -171,6 +172,90 @@ class ParsedMechanicalEffects:
             self.affects_multiple = True
         if effect.area_radius:
             self.affects_multiple = True
+
+
+# =============================================================================
+# SPELL COMPONENTS DATA CLASSES
+# =============================================================================
+
+
+@dataclass
+class SpellComponent:
+    """
+    A material component required to cast a spell.
+
+    Examples:
+    - Fairy Servant: 50gp trinket or magical fungus (consumed)
+    - Crystal Resonance: 50gp crystal (may be destroyed - 1-in-20 chance)
+    """
+
+    component_type: str  # "trinket", "crystal", "fungus", "gem"
+    min_value_gp: int = 0  # Minimum GP value required
+    consumed: bool = True  # Whether component is used up on casting
+    destruction_chance: float = 0.0  # Chance of destruction (0.0-1.0)
+    alternatives: list[str] = field(default_factory=list)  # Alternative component types
+    description: str = ""  # Original text description
+
+
+# =============================================================================
+# LEVEL SCALING DATA CLASSES
+# =============================================================================
+
+
+class LevelScalingType(str, Enum):
+    """What aspect of the spell scales with level."""
+
+    DURATION = "duration"  # Duration increases with level
+    TARGETS = "targets"  # Number of targets increases
+    PROJECTILES = "projectiles"  # Number of projectiles/shards
+    DAMAGE = "damage"  # Damage dice scale
+    HEALING = "healing"  # Healing dice scale
+    AREA = "area"  # Area of effect expands
+    RANGE = "range"  # Range increases
+
+
+@dataclass
+class LevelScaling:
+    """
+    Defines how a spell effect scales with caster level.
+
+    Examples:
+    - "1 Turn per Level" -> base_value=1, per_levels=1, scaling_type=DURATION
+    - "one stream per Level" -> base_value=1, per_levels=1, scaling_type=PROJECTILES
+    - "one additional per 3 Levels" -> base_value=1, per_levels=3, scaling_type=PROJECTILES
+    """
+
+    scaling_type: LevelScalingType
+    base_value: int = 1  # Value at minimum level
+    per_levels: int = 1  # Add 1 per X levels
+    minimum_level: int = 1  # Level at which scaling starts
+    maximum_value: Optional[int] = None  # Cap on the scaled value
+    description: str = ""  # Original text for reference
+
+    def calculate_scaled_value(self, caster_level: int) -> int:
+        """
+        Calculate the scaled value for a given caster level.
+
+        Args:
+            caster_level: The caster's level
+
+        Returns:
+            The scaled value
+        """
+        if caster_level < self.minimum_level:
+            return self.base_value
+
+        # Calculate additional value from level scaling
+        effective_level = caster_level - self.minimum_level + 1
+        additional = effective_level // self.per_levels
+
+        scaled = self.base_value + additional
+
+        # Apply cap if specified
+        if self.maximum_value is not None:
+            scaled = min(scaled, self.maximum_value)
+
+        return scaled
 
 
 # =============================================================================
@@ -386,6 +471,11 @@ class SpellData:
     save_type: Optional[SaveType] = None
     save_negates: bool = False  # Does save completely negate?
 
+    # Target restrictions (HD/level limits)
+    max_target_level: Optional[int] = None  # Max level of affected targets
+    max_target_hd: Optional[int] = None  # Max HD of affected monsters
+    affects_living_only: bool = False  # Only affects living creatures
+
     # Usage limits (especially for glamours)
     usage_frequency: Optional[str] = None  # "once per turn", "once per day per subject"
     parsed_usage_frequency: Optional[UsageFrequency] = None  # Parsed enum value
@@ -401,6 +491,12 @@ class SpellData:
 
     # Mechanical effects (parsed from description)
     mechanical_effects: dict[str, Any] = field(default_factory=dict)
+
+    # Level scaling effects (parsed from description)
+    level_scaling: list["LevelScaling"] = field(default_factory=list)
+
+    # Material components required
+    required_components: list["SpellComponent"] = field(default_factory=list)
 
     # Source tracking
     page_reference: str = ""
@@ -444,6 +540,13 @@ class ActiveSpellEffect:
     is_active: bool = True
     dismissed: bool = False
     created_at: datetime = field(default_factory=datetime.now)
+
+    # Recurring save mechanics (for effects like Ingratiate's daily saves)
+    recurring_save_type: Optional[str] = None  # "spell", "doom", etc.
+    recurring_save_frequency: Optional[str] = None  # "daily", "hourly", "per_turn"
+    recurring_save_ends_effect: bool = True  # If save succeeds, does effect end?
+    last_save_check_day: int = 0  # Day number of last save check (for daily)
+    last_save_check_turn: int = 0  # Turn number of last save check (for per_turn)
 
     def tick(self, time_unit: str = "turns") -> bool:
         """
@@ -844,6 +947,13 @@ class SpellResolver:
         conditions_applied: list[str] = []
         stat_modifiers_applied: list[dict[str, Any]] = []
 
+        # Calculate duration first (needed for buff application)
+        duration_remaining = self._calculate_duration(spell, caster, dice_roller)
+
+        # Generate effect ID for tracking buffs from this spell cast
+        import uuid
+        effect_id = f"spell_{spell.spell_id}_{uuid.uuid4().hex[:8]}"
+
         if spell.effect_type in (SpellEffectType.MECHANICAL, SpellEffectType.HYBRID):
             effects_result = self._apply_mechanical_effects(
                 spell=spell,
@@ -852,14 +962,13 @@ class SpellResolver:
                 targets_saved=targets_saved,
                 save_negates=spell.save_negates,
                 dice_roller=dice_roller,
+                duration_turns=duration_remaining if spell.duration_type == DurationType.TURNS else None,
+                effect_id=effect_id,
             )
             damage_dealt = effects_result.get("damage_dealt", {})
             healing_applied = effects_result.get("healing_applied", {})
             conditions_applied = effects_result.get("conditions_applied", [])
             stat_modifiers_applied = effects_result.get("stat_modifiers_applied", [])
-
-        # Calculate duration
-        duration_remaining = self._calculate_duration(spell, caster, dice_roller)
 
         # Create active effect if duration > instant
         effect_created = None
@@ -1031,6 +1140,296 @@ class SpellResolver:
         before = len(self._active_effects)
         self._active_effects = [e for e in self._active_effects if e.is_active]
         return before - len(self._active_effects)
+
+    def check_recurring_saves(
+        self,
+        current_day: int,
+        current_turn: int,
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Check recurring saves for all active effects.
+
+        Called during time advancement to process effects like Ingratiate
+        that require periodic saving throws.
+
+        Args:
+            current_day: Current day number
+            current_turn: Current turn number
+            dice_roller: Dice roller for save rolls
+
+        Returns:
+            List of save results with effect outcomes
+        """
+        results = []
+
+        for effect in self._active_effects:
+            if not effect.is_active:
+                continue
+            if not effect.recurring_save_type:
+                continue
+
+            needs_check = False
+            if effect.recurring_save_frequency == "daily":
+                if current_day > effect.last_save_check_day:
+                    needs_check = True
+                    effect.last_save_check_day = current_day
+            elif effect.recurring_save_frequency == "per_turn":
+                if current_turn > effect.last_save_check_turn:
+                    needs_check = True
+                    effect.last_save_check_turn = current_turn
+
+            if not needs_check:
+                continue
+
+            # Make the save
+            if dice_roller:
+                roll = dice_roller.roll("1d20", f"{effect.spell_name} recurring save")
+                roll_value = roll.total
+            else:
+                import random
+                roll_value = random.randint(1, 20)
+
+            # Default save target is 15 for spell effects
+            save_target = 15
+            success = roll_value >= save_target or roll_value == 20
+
+            result = {
+                "effect_id": effect.effect_id,
+                "spell_name": effect.spell_name,
+                "target_id": effect.target_id,
+                "save_type": effect.recurring_save_type,
+                "roll": roll_value,
+                "target": save_target,
+                "success": success,
+                "effect_ended": False,
+            }
+
+            if success and effect.recurring_save_ends_effect:
+                effect.is_active = False
+                effect.dismissed = True
+                result["effect_ended"] = True
+
+                # Remove any buffs associated with this effect
+                if self._controller:
+                    self._controller.remove_buff(
+                        effect.target_id,
+                        source_id=effect.effect_id,
+                    )
+
+            results.append(result)
+
+        # Clean up ended effects
+        self._active_effects = [e for e in self._active_effects if e.is_active]
+
+        return results
+
+    def parse_recurring_save(self, spell: SpellData) -> dict[str, Any]:
+        """
+        Parse recurring save requirements from spell description.
+
+        Detects patterns like:
+        - "Save Versus Spell once per day"
+        - "makes a further save once per day"
+
+        Args:
+            spell: The spell to parse
+
+        Returns:
+            Dict with recurring save info:
+            - save_type: str or None
+            - frequency: str or None ("daily", "per_turn")
+            - ends_effect: bool
+        """
+        description = spell.description.lower()
+        result: dict[str, Any] = {
+            "save_type": None,
+            "frequency": None,
+            "ends_effect": True,
+        }
+
+        # Pattern: "save versus X once per day"
+        daily_save_pattern = r"save\s+(?:versus|vs\.?)\s+(\w+)\s+once\s+per\s+day"
+        daily_match = re.search(daily_save_pattern, description)
+        if daily_match:
+            result["save_type"] = daily_match.group(1)
+            result["frequency"] = "daily"
+
+        # Pattern: "makes a further save" or "another save"
+        if "once per day" in description and "save" in description:
+            if not result["save_type"]:
+                result["save_type"] = "spell"  # Default
+                result["frequency"] = "daily"
+
+        return result
+
+    # =========================================================================
+    # SPELL COMPONENT VERIFICATION
+    # =========================================================================
+
+    def parse_spell_components(self, spell: SpellData) -> list[SpellComponent]:
+        """
+        Parse material components from spell description.
+
+        Detects patterns like:
+        - "requires a 50gp trinket" / "50gp crystal"
+        - "component is consumed" / "used up"
+        - "magical fungus" as alternative
+
+        Args:
+            spell: The spell to parse
+
+        Returns:
+            List of SpellComponent objects
+        """
+        description = spell.description.lower()
+        components: list[SpellComponent] = []
+
+        # Pattern: "Xgp trinket/crystal/component"
+        value_pattern = r"(\d+)\s*gp\s+(trinket|crystal|gem|component|item)"
+        value_matches = re.findall(value_pattern, description)
+        for value, comp_type in value_matches:
+            component = SpellComponent(
+                component_type=comp_type,
+                min_value_gp=int(value),
+                consumed="consumed" in description or "used up" in description,
+                description=f"{value}gp {comp_type}",
+            )
+
+            # Check for destruction chance (e.g., "1-in-20 chance of shattering")
+            destroy_pattern = r"(\d+)-in-(\d+)\s+chance"
+            destroy_match = re.search(destroy_pattern, description)
+            if destroy_match:
+                numerator = int(destroy_match.group(1))
+                denominator = int(destroy_match.group(2))
+                component.destruction_chance = numerator / denominator
+
+            # Check for alternatives (e.g., "or magical fungus")
+            if "or magical fungus" in description or "magical fungus" in description:
+                component.alternatives = ["magical_fungus"]
+
+            components.append(component)
+
+        return components
+
+    def verify_components(
+        self,
+        caster: "CharacterState",
+        spell: SpellData,
+    ) -> tuple[bool, str, list[Any]]:
+        """
+        Verify that the caster has required spell components.
+
+        Args:
+            caster: The character casting the spell
+            spell: The spell being cast
+
+        Returns:
+            Tuple of (has_components, reason, matching_items)
+        """
+        # Parse components if not already done
+        if not spell.required_components:
+            spell.required_components = self.parse_spell_components(spell)
+
+        # If no components required, automatically valid
+        if not spell.required_components:
+            return True, "No components required", []
+
+        matching_items = []
+
+        for component in spell.required_components:
+            found = False
+            found_item = None
+
+            # Search inventory for matching item
+            for item in caster.inventory:
+                # Check primary type match
+                type_match = (
+                    component.component_type.lower() in item.item_type.lower()
+                    or component.component_type.lower() in item.name.lower()
+                )
+
+                # Check alternative types
+                alt_match = any(
+                    alt.lower() in item.item_type.lower() or alt.lower() in item.name.lower()
+                    for alt in component.alternatives
+                )
+
+                if type_match or alt_match:
+                    # Check value requirement
+                    item_value = item.value_gp or 0
+                    if item_value >= component.min_value_gp:
+                        found = True
+                        found_item = item
+                        break
+
+            if not found:
+                return (
+                    False,
+                    f"Missing component: {component.description}",
+                    matching_items,
+                )
+            matching_items.append(found_item)
+
+        return True, "All components available", matching_items
+
+    def consume_components(
+        self,
+        caster: "CharacterState",
+        spell: SpellData,
+        matching_items: list[Any],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Consume or potentially destroy spell components.
+
+        Args:
+            caster: The character casting the spell
+            spell: The spell being cast
+            matching_items: Items matched by verify_components
+            dice_roller: For destruction chance rolls
+
+        Returns:
+            Dict with consumption results
+        """
+        result = {
+            "consumed": [],
+            "destroyed": [],
+            "preserved": [],
+        }
+
+        if not spell.required_components:
+            return result
+
+        for i, component in enumerate(spell.required_components):
+            if i >= len(matching_items):
+                break
+
+            item = matching_items[i]
+
+            if component.consumed:
+                # Remove item from inventory
+                caster.remove_item(item.item_id, quantity=1)
+                result["consumed"].append(item.name)
+
+            elif component.destruction_chance > 0:
+                # Roll for destruction
+                if dice_roller:
+                    roll = dice_roller.roll_percentile("Component destruction check")
+                    destroyed = roll.total <= (component.destruction_chance * 100)
+                else:
+                    import random
+                    destroyed = random.random() < component.destruction_chance
+
+                if destroyed:
+                    caster.remove_item(item.item_id, quantity=1)
+                    result["destroyed"].append(item.name)
+                else:
+                    result["preserved"].append(item.name)
+            else:
+                result["preserved"].append(item.name)
+
+        return result
 
     # =========================================================================
     # GLAMOUR USAGE TRACKING
@@ -1426,6 +1825,241 @@ class SpellResolver:
 
         return parsed
 
+    def parse_level_scaling(self, spell: SpellData) -> list[LevelScaling]:
+        """
+        Parse level scaling patterns from spell description.
+
+        Detects patterns like:
+        - "one per Level" -> 1 additional per level
+        - "one stream per Level" -> projectiles scale
+        - "one additional per 3 Levels" -> scales per 3 levels
+        - "1 Turn per Level" -> duration scales
+        - "at higher Levels...one additional per 3 Levels" -> complex scaling
+
+        Args:
+            spell: The spell to parse
+
+        Returns:
+            List of LevelScaling objects found in description
+        """
+        scalings: list[LevelScaling] = []
+        description = spell.description.lower()
+        duration_str = spell.duration.lower() if spell.duration else ""
+
+        # Pattern: "X per Level" or "X per level of the caster"
+        per_level_pattern = r"(\d+|one|two|three|four|five)\s*(?:stream|shard|target|flame|creature)?s?\s+per\s+level"
+        matches = re.findall(per_level_pattern, description)
+        for match in matches:
+            base = self._parse_number_word(match)
+            # Determine type based on context
+            if "stream" in description or "shard" in description or "projectile" in description:
+                scaling_type = LevelScalingType.PROJECTILES
+            elif "target" in description or "creature" in description or "flame" in description:
+                scaling_type = LevelScalingType.TARGETS
+            else:
+                scaling_type = LevelScalingType.PROJECTILES  # Default for counted things
+            scalings.append(LevelScaling(
+                scaling_type=scaling_type,
+                base_value=base,
+                per_levels=1,
+                description=match,
+            ))
+
+        # Pattern: "one additional per X Levels" (like Ioun Shard: "one additional per 3 Levels")
+        additional_pattern = r"(\d+|one|two)\s+additional\s+(?:shard|target|stream)?s?\s+per\s+(\d+)\s+levels?"
+        add_matches = re.findall(additional_pattern, description)
+        for add_val, per_lvl in add_matches:
+            base = self._parse_number_word(add_val)
+            per = int(per_lvl)
+            scalings.append(LevelScaling(
+                scaling_type=LevelScalingType.PROJECTILES,
+                base_value=1,  # Base shard/target
+                per_levels=per,
+                minimum_level=1,
+                description=f"{add_val} additional per {per_lvl} levels",
+            ))
+
+        # Duration scaling in duration field: "X Turns + Y Turn per Level"
+        duration_scale_pattern = r"(\d+)\s*turns?\s*\+\s*(\d+)\s*turn\s+per\s+level"
+        dur_match = re.search(duration_scale_pattern, duration_str)
+        if dur_match:
+            base_dur = int(dur_match.group(1))
+            per_level_dur = int(dur_match.group(2))
+            scalings.append(LevelScaling(
+                scaling_type=LevelScalingType.DURATION,
+                base_value=base_dur,
+                per_levels=1,  # 1 per level
+                description=f"{base_dur} turns + {per_level_dur} per level",
+            ))
+
+        # Concentration duration: "up to X Round per Level"
+        conc_pattern = r"up\s+to\s+(\d+)\s+rounds?\s+per\s+level"
+        conc_match = re.search(conc_pattern, duration_str)
+        if conc_match:
+            per_round = int(conc_match.group(1))
+            scalings.append(LevelScaling(
+                scaling_type=LevelScalingType.DURATION,
+                base_value=per_round,
+                per_levels=1,
+                description=f"up to {per_round} round per level",
+            ))
+
+        return scalings
+
+    def _parse_number_word(self, word: str) -> int:
+        """Convert number words to integers."""
+        word_map = {
+            "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+        }
+        word_lower = word.lower().strip()
+        if word_lower in word_map:
+            return word_map[word_lower]
+        try:
+            return int(word_lower)
+        except ValueError:
+            return 1
+
+    def get_scaled_value(
+        self,
+        spell: SpellData,
+        scaling_type: LevelScalingType,
+        caster_level: int,
+    ) -> int:
+        """
+        Get the scaled value for a specific scaling type.
+
+        Args:
+            spell: The spell with level scaling
+            scaling_type: The type of scaling to look up
+            caster_level: The caster's level
+
+        Returns:
+            The scaled value, or 1 if no scaling found
+        """
+        # Parse scaling if not already done
+        if not spell.level_scaling:
+            spell.level_scaling = self.parse_level_scaling(spell)
+
+        for scaling in spell.level_scaling:
+            if scaling.scaling_type == scaling_type:
+                return scaling.calculate_scaled_value(caster_level)
+
+        return 1  # Default
+
+    def parse_target_restrictions(self, spell: SpellData) -> dict[str, Any]:
+        """
+        Parse HD/level restrictions from spell description.
+
+        Detects patterns like:
+        - "Level 4 or lower" / "of level 4 or lower"
+        - "X HD or less" / "of X HD or fewer"
+        - "Living creatures"
+
+        Args:
+            spell: The spell to parse
+
+        Returns:
+            Dict with parsed restrictions:
+            - max_level: int or None
+            - max_hd: int or None
+            - living_only: bool
+        """
+        description = spell.description.lower()
+        result: dict[str, Any] = {
+            "max_level": None,
+            "max_hd": None,
+            "living_only": False,
+        }
+
+        # Pattern: "Level X or lower" / "of Level X or lower"
+        level_pattern = r"(?:of\s+)?level\s+(\d+)\s+or\s+(?:lower|less|fewer)"
+        level_match = re.search(level_pattern, description)
+        if level_match:
+            result["max_level"] = int(level_match.group(1))
+
+        # Pattern: "X HD or less/fewer" / "of X HD or less"
+        hd_pattern = r"(\d+)\s*hd\s+or\s+(?:less|fewer|lower)"
+        hd_match = re.search(hd_pattern, description)
+        if hd_match:
+            result["max_hd"] = int(hd_match.group(1))
+
+        # Pattern: "living creatures" / "affects living"
+        if "living creature" in description or "affects living" in description:
+            result["living_only"] = True
+
+        return result
+
+    def filter_valid_targets(
+        self,
+        spell: SpellData,
+        target_ids: list[str],
+        get_target_info: Optional[callable] = None,
+    ) -> tuple[list[str], list[str]]:
+        """
+        Filter targets based on spell's HD/level restrictions.
+
+        Args:
+            spell: The spell being cast
+            target_ids: List of potential target IDs
+            get_target_info: Callback to get target level/HD:
+                            fn(target_id) -> {"level": int, "hd": int, "is_living": bool}
+
+        Returns:
+            Tuple of (valid_targets, excluded_targets)
+        """
+        if not get_target_info:
+            # No way to check, assume all valid
+            return target_ids, []
+
+        # Parse restrictions if not already set
+        if spell.max_target_level is None and spell.max_target_hd is None:
+            restrictions = self.parse_target_restrictions(spell)
+            spell.max_target_level = restrictions["max_level"]
+            spell.max_target_hd = restrictions["max_hd"]
+            spell.affects_living_only = restrictions["living_only"]
+
+        # If no restrictions, all targets are valid
+        if (spell.max_target_level is None and
+            spell.max_target_hd is None and
+            not spell.affects_living_only):
+            return target_ids, []
+
+        valid = []
+        excluded = []
+
+        for target_id in target_ids:
+            try:
+                info = get_target_info(target_id)
+                target_level = info.get("level", 0)
+                target_hd = info.get("hd", target_level)  # Default HD to level
+                is_living = info.get("is_living", True)
+
+                # Check living restriction
+                if spell.affects_living_only and not is_living:
+                    excluded.append(target_id)
+                    continue
+
+                # Check level restriction
+                if spell.max_target_level is not None:
+                    if target_level > spell.max_target_level:
+                        excluded.append(target_id)
+                        continue
+
+                # Check HD restriction
+                if spell.max_target_hd is not None:
+                    if target_hd > spell.max_target_hd:
+                        excluded.append(target_id)
+                        continue
+
+                valid.append(target_id)
+
+            except Exception:
+                # If we can't get info, assume valid
+                valid.append(target_id)
+
+        return valid, excluded
+
     def _apply_mechanical_effects(
         self,
         spell: SpellData,
@@ -1434,6 +2068,8 @@ class SpellResolver:
         targets_saved: list[str],
         save_negates: bool,
         dice_roller: Optional["DiceRoller"],
+        duration_turns: Optional[int] = None,
+        effect_id: Optional[str] = None,
     ) -> dict[str, Any]:
         """
         Apply mechanical effects from a spell.
@@ -1445,6 +2081,8 @@ class SpellResolver:
             targets_saved: List of target IDs that made their save
             save_negates: Whether save completely negates effects
             dice_roller: Dice roller for damage/healing
+            duration_turns: Duration in turns for buffs/debuffs
+            effect_id: The spell effect ID for buff source tracking
 
         Returns:
             Dictionary with applied effects:
@@ -1515,7 +2153,7 @@ class SpellResolver:
 
                         # Apply to game state if controller available
                         if self._controller:
-                            self._controller.apply_healing(target_id, healing)
+                            self._controller.heal_character(target_id, healing)
 
                 # Apply conditions
                 if effect.category == MechanicalEffectCategory.CONDITION and effect.condition_applied:
@@ -1527,15 +2165,29 @@ class SpellResolver:
                             target_id, effect.condition_applied, source=spell.name
                         )
 
-                # Record stat modifiers (these are typically handled by active effects)
+                # Apply stat modifiers (buffs/debuffs)
                 if effect.category in (MechanicalEffectCategory.BUFF, MechanicalEffectCategory.DEBUFF):
                     if effect.modifier_value is not None:
-                        result["stat_modifiers_applied"].append({
+                        modifier_info = {
                             "target_id": target_id,
                             "stat": effect.stat_modified or "general",
                             "modifier": effect.modifier_value,
                             "source": spell.name,
-                        })
+                            "condition": effect.condition_context,  # For conditional modifiers
+                        }
+                        result["stat_modifiers_applied"].append(modifier_info)
+
+                        # Apply to game state if controller available
+                        if self._controller:
+                            self._controller.apply_buff(
+                                character_id=target_id,
+                                stat=effect.stat_modified or "general",
+                                value=effect.modifier_value,
+                                source=spell.name,
+                                source_id=effect_id,
+                                duration_turns=duration_turns,
+                                condition=effect.condition_context,
+                            )
 
         return result
 
