@@ -375,20 +375,26 @@ class TestHazardResolverForagingIntegration:
         assert result.foraged_items == []
         assert result.rations_found == 0
 
-    def test_fishing_does_not_use_tables(self, resolver, mock_character):
-        """Fishing should return rations, not table items."""
-        # Force successful survival check
-        with patch.object(resolver.dice, "roll_d6") as mock_d6:
-            mock_d6.return_value = MagicMock(total=6)
+    def test_fishing_uses_fish_tables(self, resolver, mock_character):
+        """Fishing should use fish tables, not foraging tables."""
+        # Force successful survival check and mock the fish roll
+        from src.tables.fishing_tables import get_fish_by_name
 
-            with patch.object(resolver.dice, "roll") as mock_roll:
-                mock_roll.return_value = MagicMock(total=7)  # 2d6 = 7
+        with patch("src.narrative.hazard_resolver.roll_fish") as mock_fish:
+            mock_fish.return_value = get_fish_by_name("Gaffer")
 
-                result = resolver.resolve_foraging(mock_character, method="fishing")
+            with patch("src.narrative.hazard_resolver.roll_fish_rations") as mock_rations:
+                mock_rations.return_value = 7
+
+                result = resolver.resolve_foraging(
+                    mock_character, method="fishing", difficulty=1
+                )
 
         assert result.success
         assert result.rations_found == 7
-        assert result.foraged_items == []  # Fish, not table items
+        assert result.foraged_items == []  # Fish stored in fish_caught, not foraged_items
+        assert result.fish_caught is not None
+        assert result.fish_caught["name"] == "Gaffer"
 
 
 class TestEffectMetadataForConsumption:

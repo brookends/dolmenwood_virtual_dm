@@ -1,0 +1,321 @@
+{
+  "category": "consumable",
+  "subcategory": "fish",
+  "items": [
+    {
+      "item_id": "bally_tom",
+      "name": "Bally-tom",
+      "description": "Rotund, slow-swimming fish with silver scales and bulbous green eyes",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "When threatened, their eyes flash hypnotically. The party member with the lowest Wisdom must Save Versus Hold or be dazzled and fall splashing into the water.",
+      "properties": ["fish", "edible", "catchable"]
+    },
+    {
+      "item_id": "braithgilly",
+      "name": "Braithgilly",
+      "description": "Lithe, white-scaled trout with adorable pink eyes",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "When unafraid, braithgillies poke their heads above the surface and sing beautiful, wistful melodies. According to folklore, braithgillies willingly leap into the net of a maiden who sings to them under the light of the moon.",
+      "properties": ["fish", "edible", "catchable", "singing"]
+    },
+    {
+      "item_id": "butter_eel",
+      "name": "Butter-eel",
+      "description": "3′-long, buttery-brown eels with startled, gaping mouths and a tendency to writhe vigorously when caught",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh eel providing sustenance"
+      },
+      "catch_notes": "Butter-eels are coated with a fatty slime, making them difficult to land, requiring at least two PCs make a successful Dexterity Check.",
+      "properties": ["fish", "edible", "catchable", "slippery"]
+    },
+    {
+      "item_id": "gaffer",
+      "name": "Gaffer",
+      "description": "Foot-long catfish with tufts of coarse white fur around their face and gills, often formed into a goat-like beard upon the chin",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "Tough but palatable sweet-sour",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh catfish providing sustenance"
+      },
+      "catch_notes": "Bleat when dragged from the water.",
+      "properties": ["fish", "edible", "catchable"]
+    },
+    {
+      "item_id": "giant_catfish",
+      "name": "Giant catfish",
+      "description": "A real monster! Predatory fish 9–14′ long that attack anything nearby when hungry",
+      "weight": 100,
+      "cost_sp": null,
+      "slot_size": 4,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Massive fish providing 4 rations per Hit Point of the slain creature",
+        "rations_per_hp": 4
+      },
+      "catch_notes": "Handle as a normal combat encounter. Spawn in the deeps of the Groaning Loch, but sometimes swim in other lakes and rivers.",
+      "properties": ["fish", "edible", "combat_required", "monster"]
+    },
+    {
+      "item_id": "groper",
+      "name": "Groper",
+      "description": "Flat-bodied, green-skinned bottom feeders with gaping mouths and spacious gullets",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "There is a 2-in-6 chance of finding a random human trinket in a fish's belly.",
+      "properties": ["fish", "edible", "catchable", "treasure_belly"]
+    },
+    {
+      "item_id": "gurney",
+      "name": "Gurney",
+      "description": "Big, ball-shaped fish with beady eyes, misshapen faces, and wide, flapping mouths",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "Known among anglers for their habit of suddenly snapping with their concealed rows of vicious, spiny teeth. Characters who have not caught gurneys before must Save Versus Doom or suffer 1 point of damage.",
+      "properties": ["fish", "edible", "catchable", "dangerous"]
+    },
+    {
+      "item_id": "hameth_sprat",
+      "name": "Hameth sprat",
+      "description": "Little black-scaled fish with long, ribbon tails",
+      "weight": 2,
+      "cost_sp": 2,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Small fish eaten whole, bones and all, typically fried in batter",
+        "yield_note": "A catch of hameth sprats only provides 2d4 rations"
+      },
+      "catch_notes": "Flit around in great swarms, especially numerous in the River Hameth.",
+      "properties": ["fish", "edible", "catchable", "reduced_yield"]
+    },
+    {
+      "item_id": "lardfish",
+      "name": "Lardfish",
+      "description": "Head-sized, translucent cream jellyfish with tangled tentacles dotted with clusters of grape-like nodules",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "Body is tough and fatty; tentacles are sweet and succulent",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Jellyfish providing sustenance"
+      },
+      "properties": ["fish", "edible", "catchable", "jellyfish"]
+    },
+    {
+      "item_id": "maid_o_the_lake",
+      "name": "Maid-o'-the-lake",
+      "description": "Thigh-sized, pink, translucent squids renowned as a Dolmenwood delicacy",
+      "weight": 4,
+      "cost_sp": 10,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "Succulent with a mildly fruity flavour",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Delicacy squid providing sustenance"
+      },
+      "catch_notes": "According to folklore, feasting beneath the moon on these squids fried in garlic butter is a sure way to summon the attentions of a witch, who will visit in the dead of night.",
+      "properties": ["fish", "edible", "catchable", "delicacy", "squid"]
+    },
+    {
+      "item_id": "mummer",
+      "name": "Mummer",
+      "description": "Sluggish, puffy fish with mud-brown scales, pink, ribbon-like fins, and bulbous, yellow faces of an unnervingly human-like cast",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "There is a 3-in-6 chance that the face of one of the caught fish has an uncanny resemblance to a family member of someone in the party.",
+      "properties": ["fish", "edible", "catchable", "human_faced"]
+    },
+    {
+      "item_id": "nag_pike",
+      "name": "Nag-pike",
+      "description": "Muscular, 3′-long, snaggle-toothed pikes with nine crooked horns upon their heads",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "When sliced and fried, deliciously gamy",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh pike providing sustenance"
+      },
+      "catch_notes": "Nag-pikes are vicious and tenacious, making them tricky to catch. The catch is only landed if at least two PCs make a successful Strength Check.",
+      "properties": ["fish", "edible", "catchable", "vicious"]
+    },
+    {
+      "item_id": "orbling",
+      "name": "Orbling",
+      "description": "Silvery, spherical jellyfish that hide in weeds during the day and only emerge after sundown",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "Outer skin is rubbery, insides are soft and taste of toffee",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Jellyfish eaten like boiled eggs, by slicing off the top and scooping out the insides"
+      },
+      "catch_notes": "In shaded waters, they bob near the surface, resembling reflected moonlight.",
+      "properties": ["fish", "edible", "catchable", "jellyfish", "nocturnal"]
+    },
+    {
+      "item_id": "pilgrim_crab",
+      "name": "Pilgrim crab",
+      "description": "Chunky violet crabs with long, delicate pincers and creamy-white underbellies",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh crab providing sustenance"
+      },
+      "catch_notes": "Their shells are graven with lines that look curiously like a religious script (sometimes used for fortune-telling). If cooked alive, pilgrim crabs emit a shrill tone reminiscent of choirboys at practice.",
+      "properties": ["fish", "edible", "catchable", "crab", "fortune_telling"]
+    },
+    {
+      "item_id": "puffer",
+      "name": "Puffer",
+      "description": "2′-round, near-spherical fish covered with hard scales and spines",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh pufferfish providing sustenance if properly prepared"
+      },
+      "catch_notes": "Puffers are slow moving and easy to catch. Killing and preparing them is the tricky part: they have a gas-filled organ that explodes if not handled correctly. Characters who have not caught puffers before must Save Versus Blast or suffer 1d3 damage when the fish explode.",
+      "properties": ["fish", "edible", "catchable", "explosive", "dangerous"]
+    },
+    {
+      "item_id": "queens_salmon",
+      "name": "Queen's salmon",
+      "description": "Iridescent-scaled salmon that dart and leap playfully",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fairy salmon providing sustenance"
+      },
+      "catch_notes": "Queen's salmon are fairy fish that visit Dolmenwood to spawn. They speak Sylvan and basic Woldish, and address anglers in squeaking little voices when caught. In return for their lives, they offer to place their blessing upon the noble anglers. If released, each member of the fishing party gains a +4 bonus to the next Saving Throw rolled against a deadly effect (death, petrification, poison, etc.).",
+      "properties": ["fish", "edible", "catchable", "fairy", "blessing"]
+    },
+    {
+      "item_id": "screaming_jenny",
+      "name": "Screaming jenny",
+      "description": "Long, slender fish with frilly purple fins and tails",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "When pulled from the water, they emit a startling shriek, which has a 3-in-6 chance of attracting a wandering monster.",
+      "properties": ["fish", "edible", "catchable", "shrieking", "dangerous"]
+    },
+    {
+      "item_id": "smuggler_fish",
+      "name": "Smuggler-fish",
+      "description": "Puffed up, putrid green fish with lemon yellow bellies and wide, astonished eyes",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "Sigh plaintively then give up the ghost when landed. There is a 2-in-6 chance of finding a small gem (1d20 × 10gp) in the belly of one of the caught fish.",
+      "properties": ["fish", "edible", "catchable", "treasure_belly"]
+    },
+    {
+      "item_id": "twine_eel",
+      "name": "Twine-eel",
+      "description": "3′-long, twisty, finger-thick eels with scales of purple or burnished pink",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "taste": "Delectably sweet flesh",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh eel providing sustenance; fiddly to prepare due to fine bones"
+      },
+      "catch_notes": "Swim in great schools and voraciously attack small prey and tempting morsels of bait.",
+      "properties": ["fish", "edible", "catchable", "eel"]
+    },
+    {
+      "item_id": "wraithfish",
+      "name": "Wraithfish",
+      "description": "Lazy weed-browsers with near-transparent, jelly-like, white flesh",
+      "weight": 4,
+      "cost_sp": null,
+      "slot_size": 0,
+      "item_type": "consumable",
+      "consumption_effect": {
+        "effect_type": "rations",
+        "description": "Fresh fish providing sustenance"
+      },
+      "catch_notes": "Wraithfish can turn incorporeal for brief periods, a trick they invariably perform when yanked out of the water by anglers. Madcap pipe music stymies this ability, and woodgrues are expert wraithfish catchers. Parties fishing without the requisite musical accompaniment only land fish sufficient for 1d6 rations.",
+      "properties": ["fish", "edible", "catchable", "incorporeal", "reduced_yield"]
+    }
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      116,
+      117
+    ],
+    "extraction_note": "Fish species from the Fishing tables (d20). Catch effects happen during fishing, not consumption. Most fish are simply rations when consumed."
+  }
+}

@@ -25,6 +25,16 @@ from src.tables.foraging_tables import (
     roll_forage_quantity,
     is_fungi,
 )
+from src.tables.fishing_tables import (
+    CatchableFish,
+    roll_fish,
+    roll_fish_rations,
+    check_treasure_in_fish,
+    check_monster_attracted,
+    fish_requires_landing_check,
+    fish_triggers_combat,
+    fish_is_fairy,
+)
 
 
 class HazardType(str, Enum):
@@ -96,6 +106,15 @@ class HazardResult:
     # Foraging-specific
     foraged_items: list[dict[str, Any]] = field(default_factory=list)
     rations_found: int = 0
+
+    # Fishing-specific (Campaign Book p116-117)
+    fish_caught: Optional[dict[str, Any]] = None  # The fish species caught
+    landing_required: Optional[dict[str, Any]] = None  # Landing check needed
+    catch_events: list[dict[str, Any]] = field(default_factory=list)  # Events during catch
+    treasure_found: Optional[dict[str, Any]] = None  # Treasure in fish belly
+    monster_attracted: bool = False  # Screaming jenny effect
+    combat_triggered: bool = False  # Giant catfish
+    blessing_offered: bool = False  # Queen's salmon
 
 
 @dataclass
@@ -1070,19 +1089,15 @@ class HazardResolver:
                 narrative_hints=["tracks lead to quarry", "game spotted ahead"],
             )
 
-        # Handle fishing (generic fish, not foraging tables)
+        # Handle fishing using Campaign Book tables (p116-117)
         if method == "fishing":
-            yield_roll = self.dice.roll(FORAGING_YIELDS["fishing"], "fishing yield")
-            return HazardResult(
-                success=True,
-                hazard_type=HazardType.HUNGER,
-                action_type=ActionType.FISH,
-                description=f"Caught {yield_roll.total} rations worth of fish",
-                check_made=True,
-                check_result=roll.total + bonus,
-                check_target=target,
-                rations_found=yield_roll.total,
-                narrative_hints=["fish on the line", f"caught {yield_roll.total} fish"],
+            return self._resolve_fishing(
+                character=character,
+                survival_roll=roll.total,
+                survival_bonus=bonus,
+                survival_target=target,
+                has_pipe_music=kwargs.get("has_pipe_music", False),
+                **kwargs,
             )
 
         # FORAGING: Use the Campaign Book tables (p118-119)
@@ -1215,3 +1230,150 @@ class HazardResolver:
             return {"item": item_name, "quantity": quantity, "bonus_applied": bonus_applied}
         except Exception:
             return {"item": item_name, "quantity": 1, "bonus_applied": False}
+
+    def _resolve_fishing(
+        self,
+        character: "CharacterState",
+        survival_roll: int,
+        survival_bonus: int,
+        survival_target: int,
+        has_pipe_music: bool = False,
+        **kwargs: Any,
+    ) -> HazardResult:
+        """
+        Resolve fishing using Campaign Book tables (p116-117).
+
+        Procedure:
+        1. Roll 1d20 to determine fish species
+        2. Check for landing requirements (DEX/STR checks for some fish)
+        3. Check for catch events (danger, treasure, monster attraction)
+        4. Roll for rations yield (varies by fish type)
+
+        Args:
+            character: The character fishing
+            survival_roll: Result of survival check
+            survival_bonus: Bonus applied to survival check
+            survival_target: Target number for survival check
+            has_pipe_music: Whether party has madcap pipe music (for Wraithfish)
+
+        Returns:
+            HazardResult with fish caught and any events
+        """
+        # Step 1: Roll d20 for fish species
+        fish = roll_fish()
+        fish_data = fish.to_dict()
+
+        catch_events: list[dict[str, Any]] = []
+        narrative_hints: list[str] = [fish.description]
+
+        # Step 2: Check if this fish requires special landing
+        landing_required = None
+        if fish_requires_landing_check(fish):
+            landing_required = fish.landing.to_dict()
+            catch_events.append({
+                "type": "landing_required",
+                "check_type": fish.landing.landing_type.value,
+                "num_characters": fish.landing.num_characters,
+                "description": fish.landing.check_description,
+            })
+            narrative_hints.append(fish.landing.check_description)
+
+        # Step 3: Check if this triggers combat
+        combat_triggered = fish_triggers_combat(fish)
+        if combat_triggered:
+            catch_events.append({
+                "type": "combat",
+                "monster_id": fish.monster_id,
+                "description": "This catch triggers a combat encounter!",
+                "rations_per_hp": fish.rations_per_hp,
+            })
+            narrative_hints.append("A massive fish! This will be a fight!")
+
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.HUNGER,
+                action_type=ActionType.FISH,
+                description=f"Hooked a {fish.name}! Combat required!",
+                check_made=True,
+                check_result=survival_roll + survival_bonus,
+                check_target=survival_target,
+                fish_caught=fish_data,
+                catch_events=catch_events,
+                combat_triggered=True,
+                narrative_hints=narrative_hints,
+            )
+
+        # Step 4: Check for treasure in fish belly
+        treasure = check_treasure_in_fish(fish)
+        if treasure:
+            catch_events.append({
+                "type": "treasure",
+                **treasure,
+            })
+            narrative_hints.append(treasure["description"])
+
+        # Step 5: Check if fish attracts monsters (Screaming jenny)
+        monster_attracted = check_monster_attracted(fish)
+        if monster_attracted:
+            catch_events.append({
+                "type": "monster_attracted",
+                "description": f"The {fish.name}'s shriek echoes through the area!",
+            })
+            narrative_hints.append("The shriek may have attracted something...")
+
+        # Step 6: Check for fairy fish blessing
+        blessing_offered = fish_is_fairy(fish)
+        if blessing_offered:
+            catch_events.append({
+                "type": "blessing_offered",
+                "bonus": fish.catch_effect.blessing_bonus,
+                "description": fish.catch_effect.description,
+            })
+            narrative_hints.append(
+                f"The {fish.name} speaks! It offers a blessing in exchange for its freedom."
+            )
+
+        # Step 7: Check for first-timer dangers (Gurney, Puffer)
+        if fish.catch_effect.requires_experience:
+            # Track fish experience on character (simplified - always treat as first time)
+            catch_events.append({
+                "type": "first_timer_danger",
+                "save_type": fish.catch_effect.save_type,
+                "damage": fish.catch_effect.damage,
+                "description": fish.catch_effect.description,
+            })
+            narrative_hints.append(fish.catch_effect.description)
+
+        # Step 8: Roll for rations
+        rations = roll_fish_rations(fish, has_pipe_music=has_pipe_music)
+
+        # Build description
+        if rations > 0:
+            desc = f"Caught {fish.name}! ({rations} rations)"
+        else:
+            desc = f"Hooked a {fish.name}!"
+
+        if fish.flavor_text:
+            narrative_hints.append(fish.flavor_text)
+
+        # Special condition notes
+        if fish.special_condition and not has_pipe_music:
+            narrative_hints.append(fish.special_condition)
+
+        return HazardResult(
+            success=True,
+            hazard_type=HazardType.HUNGER,
+            action_type=ActionType.FISH,
+            description=desc,
+            check_made=True,
+            check_result=survival_roll + survival_bonus,
+            check_target=survival_target,
+            rations_found=rations,
+            fish_caught=fish_data,
+            landing_required=landing_required,
+            catch_events=catch_events,
+            treasure_found=treasure,
+            monster_attracted=monster_attracted,
+            blessing_offered=blessing_offered,
+            narrative_hints=narrative_hints,
+        )
