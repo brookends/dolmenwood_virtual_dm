@@ -248,9 +248,7 @@ class TestCallbacks:
             callback_data["new"] = new
 
         state_machine.register_callback(
-            GameState.WILDERNESS_TRAVEL,
-            "encounter_triggered",
-            callback
+            GameState.WILDERNESS_TRAVEL, "encounter_triggered", callback
         )
 
         state_machine.transition("encounter_triggered")

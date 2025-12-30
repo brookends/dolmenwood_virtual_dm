@@ -59,7 +59,80 @@ exclude = '''
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
+warn_unused_ignores = true
+show_error_codes = true
+# Don't globally ignore missing imports - be explicit about external deps
+
+# Packages for which we want strict type checking (well-typed modules)
+[[tool.mypy.overrides]]
+module = [
+    "src.game_state.state_machine",
+    "src.combat.combat_engine",
+    "src.encounter.encounter_engine",
+]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+# External dependencies without type stubs - ignore imports only for these
+[[tool.mypy.overrides]]
+module = [
+    "anthropic",
+    "anthropic.*",
+    "openai",
+    "openai.*",
+    "chromadb",
+    "chromadb.*",
+    "sentence_transformers",
+    "sentence_transformers.*",
+    "fitz",  # PyMuPDF
+    "pdfplumber",
+    "pdfplumber.*",
+]
 ignore_missing_imports = true
+
+# Modules that need gradual typing improvement
+# These have many errors and should be fixed incrementally
+[[tool.mypy.overrides]]
+module = [
+    "src.hex_crawl.hex_crawl_engine",
+    "src.dungeon.dungeon_engine",
+    "src.game_state.session_manager",
+    "src.game_state.global_controller",
+    "src.npc.encounter_npc_generator",
+    "src.classes.ability_registry",
+    "src.ai.prompt_schemas",
+    "src.ai.lore_search",
+    "src.downtime.downtime_engine",
+    "src.content_loader.pdf_parser",
+    "src.content_loader.monster_registry",
+    "src.kindred.kindred_generator",
+    "src.content_loader.content_pipeline",
+    "src.tables.table_manager",
+    "src.tables.table_types",
+    "src.tables.treasure_tables",
+    "src.tables.encounter_tables",
+    "src.tables.action_resolver",
+    "src.tables.encounter_roller",
+    "src.tables.wilderness_encounter_tables",
+    "src.settlement.settlement_engine",
+    "src.npc.npc_generator",
+    "src.narrative.hazard_resolver",
+    "src.narrative.intent_parser",
+    "src.narrative.creative_resolver",
+    "src.content_loader.content_manager",
+    "src.npc.everyday_mortal_data",
+    "src.advancement.xp_manager",
+    "src.items.item_materializer",
+    "src.items.item_catalog",
+    "src.classes.class_manager",
+    "src.vector_db.rules_retriever",
+    "src.resolution.skill_resolver",
+    "src.data_models",
+    "src.main",
+]
+# Allow these to have type errors while being incrementally fixed
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

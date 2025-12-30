@@ -32,9 +32,9 @@ class ItemMaterializer:
 
     # Enchantment types and their probabilities (d100)
     ENCHANTMENT_TYPES = [
-        (1, 65, "arcane"),   # 65%
-        (66, 90, "fairy"),   # 25%
-        (91, 100, "holy"),   # 10%
+        (1, 65, "arcane"),  # 65%
+        (66, 90, "fairy"),  # 25%
+        (91, 100, "holy"),  # 10%
     ]
 
     # Special power chance by category
@@ -244,9 +244,7 @@ class ItemMaterializer:
                 "oddities": generated.oddities,
                 "appearance": generated.appearance,
                 "magic_item_category": (
-                    generated.magic_item_category.value
-                    if generated.magic_item_category
-                    else None
+                    generated.magic_item_category.value if generated.magic_item_category else None
                 ),
             }
 
@@ -281,15 +279,11 @@ class ItemMaterializer:
             special_powers=properties.get("special_powers", item.special_powers),
             oddities=properties.get("oddities", item.oddities),
             appearance=properties.get("appearance", item.appearance),
-            magic_item_category=properties.get(
-                "magic_item_category", item.magic_item_category
-            ),
+            magic_item_category=properties.get("magic_item_category", item.magic_item_category),
             is_materialized=True,
             materialization_template=None,  # Clear template after materialization
         )
 
-    def _apply_cached_properties(
-        self, item: Item, cached: dict[str, Any]
-    ) -> Item:
+    def _apply_cached_properties(self, item: Item, cached: dict[str, Any]) -> Item:
         """Apply cached properties to restore a previously materialized item."""
         return self._apply_properties(item, cached)

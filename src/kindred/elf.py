@@ -120,22 +120,48 @@ ELF_COLD_IRON_VULNERABILITY_ABILITY = KindredAbility(
 ELF_NAME_TABLE = NameTable(
     columns={
         NameColumn.RUSTIC: [
-            "Bucket-and-Broth", "Candle-Bent-Sidewise", "Glance-Askew-Guillem",
-            "Jack-of-Many-Colours", "Lace-and-Polkadot", "Lament-of-Bones-Broken",
-            "Lightly-Come-Softly", "Lillies-o'er-Heartsight", "Prick-of-the-Nail",
-            "Silver-and-Quicksilver", "Spring-to-the-Queen", "Sprue-Upon-Gallows",
-            "Sun's-Turning-Tide", "Supper-Before-Noon", "Too-Soon-Begotten",
-            "Trick-of-the-Light", "Tryst-about-Town", "Tumble-and-Thimble",
-            "Wine-By-The-Goblet", "Youth-Turned-Curdled",
+            "Bucket-and-Broth",
+            "Candle-Bent-Sidewise",
+            "Glance-Askew-Guillem",
+            "Jack-of-Many-Colours",
+            "Lace-and-Polkadot",
+            "Lament-of-Bones-Broken",
+            "Lightly-Come-Softly",
+            "Lillies-o'er-Heartsight",
+            "Prick-of-the-Nail",
+            "Silver-and-Quicksilver",
+            "Spring-to-the-Queen",
+            "Sprue-Upon-Gallows",
+            "Sun's-Turning-Tide",
+            "Supper-Before-Noon",
+            "Too-Soon-Begotten",
+            "Trick-of-the-Light",
+            "Tryst-about-Town",
+            "Tumble-and-Thimble",
+            "Wine-By-The-Goblet",
+            "Youth-Turned-Curdled",
         ],
         NameColumn.COURTLY: [
-            "Begets-Only-Dreams", "Breath-Upon-Candlelight", "Chalice-of-Duskviolet",
-            "Dream-of-Remembrance", "Gleanings-of-Lost-Days", "Hands-Bound-By-Crows",
-            "Impudence-Hath-Victory", "Indigo-and-Patchwork", "Marry-No-Man",
-            "Morning's-Last-Mists", "Murder-of-Ravens", "Quavering-of-Night",
-            "Revenge's-Sweet-Scent", "Seven-Steps-At-Dawn", "Shade-of-Winter-Betrayal",
-            "Shallow-Pained-Plight", "Shallow-Spirit's-Lament", "Slips-Behind-Shadows",
-            "Spring-Noon's-Arrogance", "Violet-and-Clementine",
+            "Begets-Only-Dreams",
+            "Breath-Upon-Candlelight",
+            "Chalice-of-Duskviolet",
+            "Dream-of-Remembrance",
+            "Gleanings-of-Lost-Days",
+            "Hands-Bound-By-Crows",
+            "Impudence-Hath-Victory",
+            "Indigo-and-Patchwork",
+            "Marry-No-Man",
+            "Morning's-Last-Mists",
+            "Murder-of-Ravens",
+            "Quavering-of-Night",
+            "Revenge's-Sweet-Scent",
+            "Seven-Steps-At-Dawn",
+            "Shade-of-Winter-Betrayal",
+            "Shallow-Pained-Plight",
+            "Shallow-Spirit's-Lament",
+            "Slips-Behind-Shadows",
+            "Spring-Noon's-Arrogance",
+            "Violet-and-Clementine",
         ],
     }
 )
@@ -169,7 +195,7 @@ ELF_BACKGROUND_TABLE = AspectTable(
         AspectTableEntry(18, 18, "Thespian"),
         AspectTableEntry(19, 19, "Unicorn handler"),
         AspectTableEntry(20, 20, "Vintner"),
-    ]
+    ],
 )
 
 ELF_HEAD_TABLE = AspectTable(
@@ -188,7 +214,7 @@ ELF_HEAD_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Ragged, cropped hair"),
         AspectTableEntry(11, 11, "Shadowy locks"),
         AspectTableEntry(12, 12, "Small, ivory horn nubs"),
-    ]
+    ],
 )
 
 ELF_DEMEANOUR_TABLE = AspectTable(
@@ -207,7 +233,7 @@ ELF_DEMEANOUR_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Sardonic observer"),
         AspectTableEntry(11, 11, "Wilful and whimsical"),
         AspectTableEntry(12, 12, "World-weary"),
-    ]
+    ],
 )
 
 ELF_DESIRES_TABLE = AspectTable(
@@ -226,7 +252,7 @@ ELF_DESIRES_TABLE = AspectTable(
         AspectTableEntry(10, 10, "To grow old and die"),
         AspectTableEntry(11, 11, "Understand mortal religion"),
         AspectTableEntry(12, 12, "Usurp noble house"),
-    ]
+    ],
 )
 
 ELF_FACE_TABLE = AspectTable(
@@ -245,7 +271,7 @@ ELF_FACE_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Violet eyes"),
         AspectTableEntry(11, 11, "Wide-eyed, childlike"),
         AspectTableEntry(12, 12, "Wide-set almond eyes"),
-    ]
+    ],
 )
 
 ELF_DRESS_TABLE = AspectTable(
@@ -264,7 +290,7 @@ ELF_DRESS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Sheer black"),
         AspectTableEntry(11, 11, "Silvery gossamer"),
         AspectTableEntry(12, 12, "Woven leaves"),
-    ]
+    ],
 )
 
 ELF_BELIEFS_TABLE = AspectTable(
@@ -283,7 +309,7 @@ ELF_BELIEFS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Time is seeping into Fairy"),
         AspectTableEntry(11, 11, "Understand speech of stars"),
         AspectTableEntry(12, 12, "Witches led by fairy queen"),
-    ]
+    ],
 )
 
 # Elves use "Body" instead of "Fur"
@@ -303,7 +329,7 @@ ELF_BODY_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Skin of a newborn"),
         AspectTableEntry(11, 11, "Skin rimed with frost"),
         AspectTableEntry(12, 12, "Sparkling skin"),
-    ]
+    ],
 )
 
 ELF_SPEECH_TABLE = AspectTable(
@@ -322,7 +348,7 @@ ELF_SPEECH_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Song and rhyme"),
         AspectTableEntry(11, 11, "Subtly threatening"),
         AspectTableEntry(12, 12, "Whispering"),
-    ]
+    ],
 )
 
 # Trinket table - references item IDs in adventuring_gear_elf_trinkets.json
@@ -330,57 +356,253 @@ ELF_TRINKET_TABLE = AspectTable(
     aspect_type=AspectType.TRINKET,
     die_size=100,
     entries=[
-        AspectTableEntry(1, 2, "A bag of caterpillars whose flesh have hallucinogenic properties", item_id="bag_of_caterpillars"),
-        AspectTableEntry(3, 4, "A bag of sticky sweets that never get any smaller when sucked on", item_id="bag_of_sticky_sweets"),
-        AspectTableEntry(5, 6, "A ball of silvery twine that is invisible in moonlight", item_id="ball_of_silvery_twine"),
-        AspectTableEntry(7, 8, "A ball of yarn, gifted to you by a grateful grimalkin", item_id="ball_of_yarn"),
+        AspectTableEntry(
+            1,
+            2,
+            "A bag of caterpillars whose flesh have hallucinogenic properties",
+            item_id="bag_of_caterpillars",
+        ),
+        AspectTableEntry(
+            3,
+            4,
+            "A bag of sticky sweets that never get any smaller when sucked on",
+            item_id="bag_of_sticky_sweets",
+        ),
+        AspectTableEntry(
+            5,
+            6,
+            "A ball of silvery twine that is invisible in moonlight",
+            item_id="ball_of_silvery_twine",
+        ),
+        AspectTableEntry(
+            7, 8, "A ball of yarn, gifted to you by a grateful grimalkin", item_id="ball_of_yarn"
+        ),
         AspectTableEntry(9, 10, "A black rose that never wilts", item_id="black_rose"),
-        AspectTableEntry(11, 12, "A block of chocolate made with cocoa harvested from a mossling", item_id="block_of_chocolate"),
-        AspectTableEntry(13, 14, "A book of amateur poetry, suspected to be by a powerful Fairy noble", item_id="book_of_amateur_poetry"),
-        AspectTableEntry(15, 16, "A crown woven from holly and poison ivy", item_id="crown_of_holly_and_poison_ivy"),
+        AspectTableEntry(
+            11,
+            12,
+            "A block of chocolate made with cocoa harvested from a mossling",
+            item_id="block_of_chocolate",
+        ),
+        AspectTableEntry(
+            13,
+            14,
+            "A book of amateur poetry, suspected to be by a powerful Fairy noble",
+            item_id="book_of_amateur_poetry",
+        ),
+        AspectTableEntry(
+            15,
+            16,
+            "A crown woven from holly and poison ivy",
+            item_id="crown_of_holly_and_poison_ivy",
+        ),
         AspectTableEntry(17, 18, "A daisy that glows in moonlight", item_id="glowing_daisy"),
-        AspectTableEntry(19, 20, "A fancy hat topped with elk antlers", item_id="fancy_hat_with_elk_antlers"),
-        AspectTableEntry(21, 22, "A fragment of glowing crystal that you found in a dream", item_id="fragment_of_glowing_crystal"),
-        AspectTableEntry(23, 24, "A fragment of horn from an evil unicorn", item_id="fragment_of_evil_unicorn_horn"),
-        AspectTableEntry(25, 26, "A glass bottle that annihilates any liquid poured into it", item_id="annihilating_glass_bottle"),
-        AspectTableEntry(27, 28, "A glass jar containing the tiny, frozen form of your only sister", item_id="glass_jar_with_frozen_sister"),
-        AspectTableEntry(29, 30, "A glass slipper, stained with blood", item_id="bloodstained_glass_slipper"),
-        AspectTableEntry(31, 32, "A harp that plays mood-inappropriate music when left unattended", item_id="mood_inappropriate_harp"),
-        AspectTableEntry(33, 34, "A Chapes (holy symbol of the Pluritine Church), given by a dying friar decades ago", item_id="chapes_holy_symbol"),
-        AspectTableEntry(35, 36, "A key fashioned from ice that melts in warmth and reforms in cold", item_id="ice_key"),
-        AspectTableEntry(37, 38, "A lantern that burns with a cold, blue flame when lit", item_id="cold_flame_lantern"),
-        AspectTableEntry(39, 40, "A letter promising your imminent demise, written in High Elfish, delivered over a hundred years ago", item_id="death_threat_letter"),
+        AspectTableEntry(
+            19, 20, "A fancy hat topped with elk antlers", item_id="fancy_hat_with_elk_antlers"
+        ),
+        AspectTableEntry(
+            21,
+            22,
+            "A fragment of glowing crystal that you found in a dream",
+            item_id="fragment_of_glowing_crystal",
+        ),
+        AspectTableEntry(
+            23,
+            24,
+            "A fragment of horn from an evil unicorn",
+            item_id="fragment_of_evil_unicorn_horn",
+        ),
+        AspectTableEntry(
+            25,
+            26,
+            "A glass bottle that annihilates any liquid poured into it",
+            item_id="annihilating_glass_bottle",
+        ),
+        AspectTableEntry(
+            27,
+            28,
+            "A glass jar containing the tiny, frozen form of your only sister",
+            item_id="glass_jar_with_frozen_sister",
+        ),
+        AspectTableEntry(
+            29, 30, "A glass slipper, stained with blood", item_id="bloodstained_glass_slipper"
+        ),
+        AspectTableEntry(
+            31,
+            32,
+            "A harp that plays mood-inappropriate music when left unattended",
+            item_id="mood_inappropriate_harp",
+        ),
+        AspectTableEntry(
+            33,
+            34,
+            "A Chapes (holy symbol of the Pluritine Church), given by a dying friar decades ago",
+            item_id="chapes_holy_symbol",
+        ),
+        AspectTableEntry(
+            35,
+            36,
+            "A key fashioned from ice that melts in warmth and reforms in cold",
+            item_id="ice_key",
+        ),
+        AspectTableEntry(
+            37,
+            38,
+            "A lantern that burns with a cold, blue flame when lit",
+            item_id="cold_flame_lantern",
+        ),
+        AspectTableEntry(
+            39,
+            40,
+            "A letter promising your imminent demise, written in High Elfish, delivered over a hundred years ago",
+            item_id="death_threat_letter",
+        ),
         AspectTableEntry(41, 42, "A mortal's heart, freely given", item_id="mortals_heart"),
-        AspectTableEntry(43, 44, "A mote of sunlight, trapped in a scintillating crystal", item_id="trapped_sunlight_crystal"),
+        AspectTableEntry(
+            43,
+            44,
+            "A mote of sunlight, trapped in a scintillating crystal",
+            item_id="trapped_sunlight_crystal",
+        ),
         AspectTableEntry(45, 46, "A necklace composed of honeybees", item_id="honeybee_necklace"),
-        AspectTableEntry(47, 48, "A nightmare, sealed inside a bottle", item_id="bottled_nightmare"),
-        AspectTableEntry(49, 50, "A pan flute stolen from a woodgrue, a single pipe is missing", item_id="stolen_pan_flute"),
-        AspectTableEntry(51, 52, "A peacock feather whose eye intermittently blinks", item_id="blinking_peacock_feather"),
-        AspectTableEntry(53, 54, "A pleasant dream, distilled into a liquor", item_id="distilled_dream_liquor"),
-        AspectTableEntry(55, 56, "A receipt for a loan of four rare tomes from a Fairy library, books no longer in possession", item_id="fairy_library_receipt"),
-        AspectTableEntry(57, 58, "A scabbard taken from the fallen body of a great knight", item_id="knights_scabbard"),
-        AspectTableEntry(59, 60, "A sealed scroll allegedly containing one of the Goblin King's myriad names", item_id="sealed_goblin_king_scroll"),
-        AspectTableEntry(61, 62, "A seemingly ordinary acorn that screams when its cap is removed", item_id="screaming_acorn"),
-        AspectTableEntry(63, 64, "A set of horseshoes, designed for a centaur", item_id="centaur_horseshoes"),
-        AspectTableEntry(65, 66, "A silver spoon that drips honey on command", item_id="honey_dripping_spoon"),
-        AspectTableEntry(67, 68, "A single crow feather, taken from the cloak of the Queen of Blackbirds", item_id="queen_of_blackbirds_feather"),
-        AspectTableEntry(69, 70, "A skeletal finger that writes macabre prophecies at dusk when given means to make marks", item_id="prophetic_skeletal_finger"),
-        AspectTableEntry(71, 72, "A small bell shaped like a breggle's eye with faint bleating when rung", item_id="breggle_eye_bell"),
-        AspectTableEntry(73, 74, "A spider that slowly weaves webs in the shape of clothing", item_id="clothing_weaving_spider"),
-        AspectTableEntry(75, 76, "A spyglass that always shows a view of a sea at night", item_id="night_sea_spyglass"),
-        AspectTableEntry(77, 78, "A thimble that is always magically full of sweet liqueur", item_id="liqueur_filled_thimble"),
-        AspectTableEntry(79, 80, "A white-and-gold parasol that creates darkness directly underneath it", item_id="darkness_creating_parasol"),
-        AspectTableEntry(81, 82, "A wolf pelt cloak with the wolf's head still attached, occasionally salivating", item_id="salivating_wolf_pelt_cloak"),
-        AspectTableEntry(83, 84, "An ancient bronze mask depicting a bearded face", item_id="ancient_bronze_mask"),
-        AspectTableEntry(85, 86, "An empty wine bottle that draws liquid inside until full when held over liquid", item_id="liquid_drawing_wine_bottle"),
-        AspectTableEntry(87, 88, "An hourglass which constantly flows in one direction and cannot be inverted", item_id="one_way_hourglass"),
+        AspectTableEntry(
+            47, 48, "A nightmare, sealed inside a bottle", item_id="bottled_nightmare"
+        ),
+        AspectTableEntry(
+            49,
+            50,
+            "A pan flute stolen from a woodgrue, a single pipe is missing",
+            item_id="stolen_pan_flute",
+        ),
+        AspectTableEntry(
+            51,
+            52,
+            "A peacock feather whose eye intermittently blinks",
+            item_id="blinking_peacock_feather",
+        ),
+        AspectTableEntry(
+            53, 54, "A pleasant dream, distilled into a liquor", item_id="distilled_dream_liquor"
+        ),
+        AspectTableEntry(
+            55,
+            56,
+            "A receipt for a loan of four rare tomes from a Fairy library, books no longer in possession",
+            item_id="fairy_library_receipt",
+        ),
+        AspectTableEntry(
+            57,
+            58,
+            "A scabbard taken from the fallen body of a great knight",
+            item_id="knights_scabbard",
+        ),
+        AspectTableEntry(
+            59,
+            60,
+            "A sealed scroll allegedly containing one of the Goblin King's myriad names",
+            item_id="sealed_goblin_king_scroll",
+        ),
+        AspectTableEntry(
+            61,
+            62,
+            "A seemingly ordinary acorn that screams when its cap is removed",
+            item_id="screaming_acorn",
+        ),
+        AspectTableEntry(
+            63, 64, "A set of horseshoes, designed for a centaur", item_id="centaur_horseshoes"
+        ),
+        AspectTableEntry(
+            65, 66, "A silver spoon that drips honey on command", item_id="honey_dripping_spoon"
+        ),
+        AspectTableEntry(
+            67,
+            68,
+            "A single crow feather, taken from the cloak of the Queen of Blackbirds",
+            item_id="queen_of_blackbirds_feather",
+        ),
+        AspectTableEntry(
+            69,
+            70,
+            "A skeletal finger that writes macabre prophecies at dusk when given means to make marks",
+            item_id="prophetic_skeletal_finger",
+        ),
+        AspectTableEntry(
+            71,
+            72,
+            "A small bell shaped like a breggle's eye with faint bleating when rung",
+            item_id="breggle_eye_bell",
+        ),
+        AspectTableEntry(
+            73,
+            74,
+            "A spider that slowly weaves webs in the shape of clothing",
+            item_id="clothing_weaving_spider",
+        ),
+        AspectTableEntry(
+            75,
+            76,
+            "A spyglass that always shows a view of a sea at night",
+            item_id="night_sea_spyglass",
+        ),
+        AspectTableEntry(
+            77,
+            78,
+            "A thimble that is always magically full of sweet liqueur",
+            item_id="liqueur_filled_thimble",
+        ),
+        AspectTableEntry(
+            79,
+            80,
+            "A white-and-gold parasol that creates darkness directly underneath it",
+            item_id="darkness_creating_parasol",
+        ),
+        AspectTableEntry(
+            81,
+            82,
+            "A wolf pelt cloak with the wolf's head still attached, occasionally salivating",
+            item_id="salivating_wolf_pelt_cloak",
+        ),
+        AspectTableEntry(
+            83, 84, "An ancient bronze mask depicting a bearded face", item_id="ancient_bronze_mask"
+        ),
+        AspectTableEntry(
+            85,
+            86,
+            "An empty wine bottle that draws liquid inside until full when held over liquid",
+            item_id="liquid_drawing_wine_bottle",
+        ),
+        AspectTableEntry(
+            87,
+            88,
+            "An hourglass which constantly flows in one direction and cannot be inverted",
+            item_id="one_way_hourglass",
+        ),
         AspectTableEntry(89, 90, "An icicle that never melts", item_id="never_melting_icicle"),
-        AspectTableEntry(91, 92, "Bronze chimes that tinkle in the presence of both ghosts and strong breezes", item_id="ghost_detecting_chimes"),
-        AspectTableEntry(93, 94, "Sculpting tools, preternaturally cold to the touch", item_id="cold_sculpting_tools"),
-        AspectTableEntry(95, 96, "Six vials of blood, each drawn from a different Kindred", item_id="six_vials_of_kindred_blood"),
-        AspectTableEntry(97, 98, "Star charts that match no sky seen from Dolmenwood", item_id="unknown_star_charts"),
+        AspectTableEntry(
+            91,
+            92,
+            "Bronze chimes that tinkle in the presence of both ghosts and strong breezes",
+            item_id="ghost_detecting_chimes",
+        ),
+        AspectTableEntry(
+            93,
+            94,
+            "Sculpting tools, preternaturally cold to the touch",
+            item_id="cold_sculpting_tools",
+        ),
+        AspectTableEntry(
+            95,
+            96,
+            "Six vials of blood, each drawn from a different Kindred",
+            item_id="six_vials_of_kindred_blood",
+        ),
+        AspectTableEntry(
+            97,
+            98,
+            "Star charts that match no sky seen from Dolmenwood",
+            item_id="unknown_star_charts",
+        ),
         AspectTableEntry(99, 100, "The severed tail of a fairy horse", item_id="fairy_horse_tail"),
-    ]
+    ],
 )
 
 
@@ -403,7 +625,6 @@ ELF_DEFINITION = KindredDefinition(
         "they carry an air of unearthliness about them (unless disguised by magic)."
     ),
     kindred_type=KindredType.FAIRY,
-
     physical=PhysicalRanges(
         # Age at Level 1: 1d100 × 10 years (handled specially in generator)
         # We use base=0, dice=100d10 as approximation, but generator handles this
@@ -420,9 +641,7 @@ ELF_DEFINITION = KindredDefinition(
         weight_dice=DiceFormula(3, 10),
         size="Medium",
     ),
-
     native_languages=["Woldish", "Sylvan", "High Elfish"],
-
     abilities=[
         ELF_SKILLS_ABILITY,
         ELF_GLAMOURS_ABILITY,
@@ -431,14 +650,10 @@ ELF_DEFINITION = KindredDefinition(
         ELF_UNEARTHLY_BEAUTY_ABILITY,
         ELF_COLD_IRON_VULNERABILITY_ABILITY,
     ],
-
     level_progression=[],  # Elves don't have level-based progression like breggles
-
     preferred_classes=["Enchanter", "Fighter", "Hunter", "Magician"],
     restricted_classes=["Cleric", "Friar"],  # Cannot be clerics/friars
-
     name_table=ELF_NAME_TABLE,
-
     aspect_tables={
         AspectType.BACKGROUND: ELF_BACKGROUND_TABLE,
         AspectType.HEAD: ELF_HEAD_TABLE,
@@ -451,27 +666,58 @@ ELF_DEFINITION = KindredDefinition(
         AspectType.SPEECH: ELF_SPEECH_TABLE,
         AspectType.TRINKET: ELF_TRINKET_TABLE,
     },
-
     trinket_item_ids=[
-        "bag_of_caterpillars", "bag_of_sticky_sweets", "ball_of_silvery_twine",
-        "ball_of_yarn", "black_rose", "block_of_chocolate",
-        "book_of_amateur_poetry", "crown_of_holly_and_poison_ivy", "glowing_daisy",
-        "fancy_hat_with_elk_antlers", "fragment_of_glowing_crystal", "fragment_of_evil_unicorn_horn",
-        "annihilating_glass_bottle", "glass_jar_with_frozen_sister", "bloodstained_glass_slipper",
-        "mood_inappropriate_harp", "chapes_holy_symbol", "ice_key",
-        "cold_flame_lantern", "death_threat_letter", "mortals_heart",
-        "trapped_sunlight_crystal", "honeybee_necklace", "bottled_nightmare",
-        "stolen_pan_flute", "blinking_peacock_feather", "distilled_dream_liquor",
-        "fairy_library_receipt", "knights_scabbard", "sealed_goblin_king_scroll",
-        "screaming_acorn", "centaur_horseshoes", "honey_dripping_spoon",
-        "queen_of_blackbirds_feather", "prophetic_skeletal_finger", "breggle_eye_bell",
-        "clothing_weaving_spider", "night_sea_spyglass", "liqueur_filled_thimble",
-        "darkness_creating_parasol", "salivating_wolf_pelt_cloak", "ancient_bronze_mask",
-        "liquid_drawing_wine_bottle", "one_way_hourglass", "never_melting_icicle",
-        "ghost_detecting_chimes", "cold_sculpting_tools", "six_vials_of_kindred_blood",
-        "unknown_star_charts", "fairy_horse_tail",
+        "bag_of_caterpillars",
+        "bag_of_sticky_sweets",
+        "ball_of_silvery_twine",
+        "ball_of_yarn",
+        "black_rose",
+        "block_of_chocolate",
+        "book_of_amateur_poetry",
+        "crown_of_holly_and_poison_ivy",
+        "glowing_daisy",
+        "fancy_hat_with_elk_antlers",
+        "fragment_of_glowing_crystal",
+        "fragment_of_evil_unicorn_horn",
+        "annihilating_glass_bottle",
+        "glass_jar_with_frozen_sister",
+        "bloodstained_glass_slipper",
+        "mood_inappropriate_harp",
+        "chapes_holy_symbol",
+        "ice_key",
+        "cold_flame_lantern",
+        "death_threat_letter",
+        "mortals_heart",
+        "trapped_sunlight_crystal",
+        "honeybee_necklace",
+        "bottled_nightmare",
+        "stolen_pan_flute",
+        "blinking_peacock_feather",
+        "distilled_dream_liquor",
+        "fairy_library_receipt",
+        "knights_scabbard",
+        "sealed_goblin_king_scroll",
+        "screaming_acorn",
+        "centaur_horseshoes",
+        "honey_dripping_spoon",
+        "queen_of_blackbirds_feather",
+        "prophetic_skeletal_finger",
+        "breggle_eye_bell",
+        "clothing_weaving_spider",
+        "night_sea_spyglass",
+        "liqueur_filled_thimble",
+        "darkness_creating_parasol",
+        "salivating_wolf_pelt_cloak",
+        "ancient_bronze_mask",
+        "liquid_drawing_wine_bottle",
+        "one_way_hourglass",
+        "never_melting_icicle",
+        "ghost_detecting_chimes",
+        "cold_sculpting_tools",
+        "six_vials_of_kindred_blood",
+        "unknown_star_charts",
+        "fairy_horse_tail",
     ],
-
     kindred_relations=(
         "The adventuresome elves who wander in the mortal world tend to be fascinated "
         "with mortal Kindreds, their short, spirited lifespans, and their inevitable "
@@ -482,12 +728,10 @@ ELF_DEFINITION = KindredDefinition(
         "fairy of any kind, and their folklore is stuffed with tales of the wickedness "
         "and treachery of elves in ancient times, when the Cold Prince ruled all of Dolmenwood."
     ),
-
     religion_notes=(
         "Elves cannot be clerics or friars as they have no spiritual connection with "
         "the deities of mortals."
     ),
-
     source_book="Dolmenwood Player Book",
     source_page=36,
 )

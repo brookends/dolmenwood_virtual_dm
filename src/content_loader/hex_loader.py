@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class HexFileMetadata:
     """Metadata from a hex JSON file."""
+
     source_file: str = ""
     pages: list[int] = field(default_factory=list)
     content_type: str = "hexes"
@@ -61,6 +62,7 @@ class HexFileMetadata:
 @dataclass
 class HexFileLoadResult:
     """Result of loading a single hex JSON file."""
+
     file_path: Path
     success: bool
     metadata: Optional[HexFileMetadata] = None
@@ -73,6 +75,7 @@ class HexFileLoadResult:
 @dataclass
 class HexDirectoryLoadResult:
     """Result of loading all hex files from a directory."""
+
     directory: Path
     files_processed: int = 0
     files_successful: int = 0
@@ -106,7 +109,7 @@ class HexDataLoader:
         self,
         pipeline: ContentPipeline,
         default_source_id: Optional[str] = None,
-        auto_register_source: bool = True
+        auto_register_source: bool = True,
     ):
         """
         Initialize the hex data loader.
@@ -140,10 +143,7 @@ class HexDataLoader:
             logger.info(f"Registered default source: {self.default_source_id}")
 
     def load_directory(
-        self,
-        directory: Path,
-        recursive: bool = False,
-        pattern: str = "*.json"
+        self, directory: Path, recursive: bool = False, pattern: str = "*.json"
     ) -> HexDirectoryLoadResult:
         """
         Load all hex JSON files from a directory.
@@ -214,7 +214,7 @@ class HexDataLoader:
             return result
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             result.errors.append(f"Invalid JSON: {e}")
@@ -266,10 +266,7 @@ class HexDataLoader:
         return result
 
     def _load_hex_item(
-        self,
-        item: dict[str, Any],
-        source_ref: SourceReference,
-        result: HexFileLoadResult
+        self, item: dict[str, Any], source_ref: SourceReference, result: HexFileLoadResult
     ) -> None:
         """Load a single hex item and add to pipeline."""
         try:
@@ -502,7 +499,7 @@ class HexDataLoader:
             return False, ["File not found"]
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             return False, [f"Invalid JSON: {e}"]
@@ -532,8 +529,7 @@ class HexDataLoader:
 
 
 def load_all_hexes(
-    pipeline: ContentPipeline,
-    data_dir: Optional[Path] = None
+    pipeline: ContentPipeline, data_dir: Optional[Path] = None
 ) -> HexDirectoryLoadResult:
     """
     Convenience function to load all hexes from the default directory.
@@ -574,7 +570,7 @@ def create_sample_hex_json(output_path: Path) -> None:
             "encounter_chance": "2-in-6",
             "encounter_notes": "Encounters are 2-in-6 likely to be with a bewildered banshee heading to a ball at the Spectral Manse",
             "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm, in addition to the normal results",
-            "foraging_special": ["Bosun's Balm (1d2 portions)"]
+            "foraging_special": ["Bosun's Balm (1d2 portions)"],
         },
         "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
         "points_of_interest": [
@@ -593,7 +589,7 @@ def create_sample_hex_json(output_path: Path) -> None:
                 "special_features": [],
                 "secrets": [],
                 "is_dungeon": True,
-                "dungeon_levels": None
+                "dungeon_levels": None,
             }
         ],
         "roll_tables": [],
@@ -609,11 +605,16 @@ def create_sample_hex_json(output_path: Path) -> None:
                 "speech": "Rapid babbling, laughing",
                 "languages": ["Woldish", "High Elfish"],
                 "desires": ["Freedom from the manse", "To see Ygraine once more"],
-                "secrets": ["Once a court musician to Prince Mallowheart", "Imprisoned here for falling in love with Ygraine Mordlin"],
-                "possessions": ["Magical violin, which when played skilfully can cast the arcane spell Dominate once a week (worth 10,000gp)"],
+                "secrets": [
+                    "Once a court musician to Prince Mallowheart",
+                    "Imprisoned here for falling in love with Ygraine Mordlin",
+                ],
+                "possessions": [
+                    "Magical violin, which when played skilfully can cast the arcane spell Dominate once a week (worth 10,000gp)"
+                ],
                 "location": "The Spectral Manse",
                 "stat_reference": "frost elf courtier (DMB)",
-                "is_combatant": True
+                "is_combatant": True,
             }
         ],
         "items": [],
@@ -624,12 +625,12 @@ def create_sample_hex_json(output_path: Path) -> None:
         "_metadata": {
             "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
             "pages": [192],
-            "extraction_note": "Review and correct this data before importing"
-        }
+            "extraction_note": "Review and correct this data before importing",
+        },
     }
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(sample_data, f, indent=2)
 
     logger.info(f"Created sample hex JSON at {output_path}")

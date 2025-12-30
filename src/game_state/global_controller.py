@@ -45,6 +45,7 @@ from src.data_models import (
 # Import NarrativeResolver (optional, may not be initialized yet)
 try:
     from src.narrative import NarrativeResolver, ActiveSpellEffect
+
     NARRATIVE_AVAILABLE = True
 except ImportError:
     NARRATIVE_AVAILABLE = False
@@ -54,6 +55,7 @@ except ImportError:
 # Import XPManager for advancement tracking
 try:
     from src.advancement import XPManager
+
     XP_MANAGER_AVAILABLE = True
 except ImportError:
     XP_MANAGER_AVAILABLE = False
@@ -78,6 +80,7 @@ class TimeTracker:
 
     All time advancement flows through this class to ensure consistency.
     """
+
     exploration_turns: int = 0
     watches: int = 0
     days: int = 0
@@ -324,8 +327,12 @@ class GlobalController:
         ] = {}
 
         # Wildcard hooks: to_state -> list of callbacks (fire on ANY transition to that state)
-        self._on_enter_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
-        self._on_exit_hooks: dict[GameState, list[Callable[[GameState, GameState, str, dict], None]]] = {}
+        self._on_enter_hooks: dict[
+            GameState, list[Callable[[GameState, GameState, str, dict], None]]
+        ] = {}
+        self._on_exit_hooks: dict[
+            GameState, list[Callable[[GameState, GameState, str, dict], None]]
+        ] = {}
 
         # Register state machine hooks
         self.state_machine.register_post_hook(self._on_state_transition)
@@ -384,7 +391,7 @@ class GlobalController:
         self,
         from_state: GameState,
         to_state: GameState,
-        callback: Callable[[GameState, GameState, str, dict], None]
+        callback: Callable[[GameState, GameState, str, dict], None],
     ) -> None:
         """
         Register a callback for a specific state transition.
@@ -404,9 +411,7 @@ class GlobalController:
         logger.debug(f"Registered transition hook: {from_state.value} -> {to_state.value}")
 
     def register_on_enter_hook(
-        self,
-        state: GameState,
-        callback: Callable[[GameState, GameState, str, dict], None]
+        self, state: GameState, callback: Callable[[GameState, GameState, str, dict], None]
     ) -> None:
         """
         Register a callback for entering a state (from any source state).
@@ -423,9 +428,7 @@ class GlobalController:
         logger.debug(f"Registered on-enter hook for state: {state.value}")
 
     def register_on_exit_hook(
-        self,
-        state: GameState,
-        callback: Callable[[GameState, GameState, str, dict], None]
+        self, state: GameState, callback: Callable[[GameState, GameState, str, dict], None]
     ) -> None:
         """
         Register a callback for exiting a state (to any target state).
@@ -442,11 +445,7 @@ class GlobalController:
         logger.debug(f"Registered on-exit hook for state: {state.value}")
 
     def _fire_transition_hooks(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Fire all registered transition hooks for a state change.
@@ -509,11 +508,7 @@ class GlobalController:
         logger.debug("Default transition hooks registered")
 
     def _on_enter_combat(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when entering COMBAT state.
@@ -541,16 +536,14 @@ class GlobalController:
         )
 
         if result.get("combat_started"):
-            logger.info(f"Combat initialized from {from_state.value} with {len(self._current_encounter.combatants)} combatants")
+            logger.info(
+                f"Combat initialized from {from_state.value} with {len(self._current_encounter.combatants)} combatants"
+            )
         else:
             logger.error(f"Failed to start combat: {result.get('error', 'Unknown error')}")
 
     def _on_exit_combat(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when exiting COMBAT state.
@@ -562,11 +555,7 @@ class GlobalController:
             self._combat_engine = None
 
     def _on_exit_encounter(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when exiting ENCOUNTER state.
@@ -586,11 +575,7 @@ class GlobalController:
         return self._combat_engine
 
     def _on_enter_social(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when entering SOCIAL_INTERACTION state.
@@ -678,12 +663,14 @@ class GlobalController:
                     participants.append(p_data)
                 elif isinstance(p_data, dict):
                     # Try to build from dict
-                    participants.append(SocialParticipant(
-                        participant_id=p_data.get("id", "unknown"),
-                        name=p_data.get("name", "Unknown"),
-                        participant_type=SocialParticipantType.NPC,
-                        **{k: v for k, v in p_data.items() if k not in ("id", "name")}
-                    ))
+                    participants.append(
+                        SocialParticipant(
+                            participant_id=p_data.get("id", "unknown"),
+                            name=p_data.get("name", "Unknown"),
+                            participant_type=SocialParticipantType.NPC,
+                            **{k: v for k, v in p_data.items() if k not in ("id", "name")},
+                        )
+                    )
 
         # If no explicit participants, try to extract from encounter
         if not participants and self._current_encounter:
@@ -692,18 +679,14 @@ class GlobalController:
             reaction = self._social_context.initial_reaction
 
             # Check for contextual encounter data with topic intelligence
-            contextual_data = getattr(self._current_encounter, 'contextual_data', None)
+            contextual_data = getattr(self._current_encounter, "contextual_data", None)
 
             for actor_id in actors:
-                participant = self._lookup_and_build_participant(
-                    actor_id, reaction, context
-                )
+                participant = self._lookup_and_build_participant(actor_id, reaction, context)
                 if participant:
                     # Apply topic intelligence from contextual encounter if available
                     if contextual_data and contextual_data.get("topic_intelligence"):
-                        self._apply_contextual_topic_intelligence(
-                            participant, contextual_data
-                        )
+                        self._apply_contextual_topic_intelligence(participant, contextual_data)
                     participants.append(participant)
 
         # Check context for NPC data (from settlement conversations, etc.)
@@ -748,6 +731,7 @@ class GlobalController:
         # Try monster registry first
         try:
             from src.content_loader import get_monster_registry
+
             registry = get_monster_registry()
             result = registry.lookup(actor_id)
             if result.found and result.monster:
@@ -906,11 +890,7 @@ class GlobalController:
         return GameState.WILDERNESS_TRAVEL
 
     def _on_exit_social(
-        self,
-        from_state: GameState,
-        to_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when exiting SOCIAL_INTERACTION state.
@@ -1062,7 +1042,7 @@ class GlobalController:
         result = {
             "party_speed": self.party_state.get_movement_rate(),
             "total_weight": self.party_state.encumbrance_total,
-            "members": {}
+            "members": {},
         }
 
         for char in characters:
@@ -1073,7 +1053,7 @@ class GlobalController:
                 "weight": enc_state.total_weight,
                 "equipped_slots": enc_state.equipped_slots,
                 "stowed_slots": enc_state.stowed_slots,
-                "over_capacity": char.is_over_capacity()
+                "over_capacity": char.is_over_capacity(),
             }
 
         return result
@@ -1109,12 +1089,15 @@ class GlobalController:
             npc: The CharacterState representing the NPC
         """
         self._npcs[npc.character_id] = npc
-        self._log_event("npc_registered", {
-            "character_id": npc.character_id,
-            "name": npc.name,
-            "class": npc.character_class,
-            "level": npc.level,
-        })
+        self._log_event(
+            "npc_registered",
+            {
+                "character_id": npc.character_id,
+                "name": npc.name,
+                "class": npc.character_class,
+                "level": npc.level,
+            },
+        )
 
     def get_npc(self, npc_id: str) -> Optional[CharacterState]:
         """Get a registered NPC by ID."""
@@ -1146,10 +1129,7 @@ class GlobalController:
         return count
 
     def apply_damage(
-        self,
-        character_id: str,
-        damage: int,
-        damage_type: str = "physical"
+        self, character_id: str, damage: int, damage_type: str = "physical"
     ) -> dict[str, Any]:
         """
         Apply damage to a character.
@@ -1183,31 +1163,21 @@ class GlobalController:
         if actual_damage > 0 and self._narrative_resolver:
             broken_effects = self._narrative_resolver.break_concentration(character_id)
             if broken_effects:
-                result["concentration_broken"] = [
-                    effect.spell_name for effect in broken_effects
-                ]
+                result["concentration_broken"] = [effect.spell_name for effect in broken_effects]
 
         if character.hp_current <= 0:
-            character.conditions.append(
-                Condition(ConditionType.UNCONSCIOUS, source="damage")
-            )
+            character.conditions.append(Condition(ConditionType.UNCONSCIOUS, source="damage"))
             result["unconscious"] = True
 
             # Check for death at -10 or negative equal to max HP
             if character.hp_current <= -10 or character.hp_current <= -character.hp_max:
-                character.conditions.append(
-                    Condition(ConditionType.DEAD, source="damage")
-                )
+                character.conditions.append(Condition(ConditionType.DEAD, source="damage"))
                 result["dead"] = True
 
         self._log_event("damage_applied", result)
         return result
 
-    def heal_character(
-        self,
-        character_id: str,
-        healing: int
-    ) -> dict[str, Any]:
+    def heal_character(self, character_id: str, healing: int) -> dict[str, Any]:
         """
         Heal a character.
 
@@ -1229,8 +1199,7 @@ class GlobalController:
         # Remove unconscious if healed above 0
         if old_hp <= 0 and character.hp_current > 0:
             character.conditions = [
-                c for c in character.conditions
-                if c.condition_type != ConditionType.UNCONSCIOUS
+                c for c in character.conditions if c.condition_type != ConditionType.UNCONSCIOUS
             ]
 
         result = {
@@ -1244,10 +1213,7 @@ class GlobalController:
         return result
 
     def apply_condition(
-        self,
-        character_id: str,
-        condition: str,
-        source: str = "hazard"
+        self, character_id: str, condition: str, source: str = "hazard"
     ) -> dict[str, Any]:
         """
         Apply a condition to a character.
@@ -1302,9 +1268,7 @@ class GlobalController:
             }
 
         # Check if character already has this condition
-        existing = any(
-            c.condition_type == condition_type for c in character.conditions
-        )
+        existing = any(c.condition_type == condition_type for c in character.conditions)
         if existing:
             return {
                 "character_id": character_id,
@@ -1328,11 +1292,7 @@ class GlobalController:
         self._log_event("condition_applied", result)
         return result
 
-    def remove_condition(
-        self,
-        character_id: str,
-        condition: str
-    ) -> dict[str, Any]:
+    def remove_condition(self, character_id: str, condition: str) -> dict[str, Any]:
         """
         Remove a condition from a character.
 
@@ -1403,20 +1363,13 @@ class GlobalController:
     # =========================================================================
 
     def set_party_location(
-        self,
-        location_type: LocationType,
-        location_id: str,
-        sub_location: Optional[str] = None
+        self, location_type: LocationType, location_id: str, sub_location: Optional[str] = None
     ) -> None:
         """Set the party's current location."""
         self.party_state.location = Location(
-            location_type=location_type,
-            location_id=location_id,
-            sub_location=sub_location
+            location_type=location_type, location_id=location_id, sub_location=sub_location
         )
-        self._log_event("location_changed", {
-            "location": str(self.party_state.location)
-        })
+        self._log_event("location_changed", {"location": str(self.party_state.location)})
 
     def get_location_state(self, location_id: str) -> Optional[LocationState]:
         """Get state for a specific location."""
@@ -1433,10 +1386,13 @@ class GlobalController:
     def set_encounter(self, encounter: EncounterState) -> None:
         """Set the current encounter."""
         self._current_encounter = encounter
-        self._log_event("encounter_started", {
-            "encounter_id": encounter.encounter_id,
-            "encounter_type": encounter.encounter_type.value,
-        })
+        self._log_event(
+            "encounter_started",
+            {
+                "encounter_id": encounter.encounter_id,
+                "encounter_type": encounter.encounter_type.value,
+            },
+        )
 
     def get_encounter(self) -> Optional[EncounterState]:
         """Get the current encounter."""
@@ -1445,9 +1401,12 @@ class GlobalController:
     def clear_encounter(self) -> None:
         """Clear the current encounter."""
         if self._current_encounter:
-            self._log_event("encounter_ended", {
-                "encounter_id": self._current_encounter.encounter_id,
-            })
+            self._log_event(
+                "encounter_ended",
+                {
+                    "encounter_id": self._current_encounter.encounter_id,
+                },
+            )
         self._current_encounter = None
 
     # =========================================================================
@@ -1455,11 +1414,7 @@ class GlobalController:
     # =========================================================================
 
     def consume_resources(
-        self,
-        food_days: float = 0,
-        water_days: float = 0,
-        torches: int = 0,
-        oil_flasks: int = 0
+        self, food_days: float = 0, water_days: float = 0, torches: int = 0, oil_flasks: int = 0
     ) -> dict[str, Any]:
         """
         Consume party resources.
@@ -1543,10 +1498,13 @@ class GlobalController:
         """Set current weather."""
         old_weather = self.world_state.weather
         self.world_state.weather = weather
-        self._log_event("weather_changed", {
-            "old_weather": old_weather.value,
-            "new_weather": weather.value,
-        })
+        self._log_event(
+            "weather_changed",
+            {
+                "old_weather": old_weather.value,
+                "new_weather": weather.value,
+            },
+        )
 
     def roll_weather(self) -> Weather:
         """
@@ -1690,20 +1648,18 @@ class GlobalController:
         for character in self._characters.values():
             if character.polymorph_overlay and character.polymorph_overlay.is_active:
                 if character.polymorph_overlay.tick():
-                    expired.append({
-                        "character_id": character.character_id,
-                        "character_name": character.name,
-                        "form_name": character.polymorph_overlay.form_name,
-                    })
+                    expired.append(
+                        {
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "form_name": character.polymorph_overlay.form_name,
+                        }
+                    )
                     character.polymorph_overlay = None
 
         return expired
 
-    def add_area_effect(
-        self,
-        location_id: str,
-        effect: AreaEffect
-    ) -> dict[str, Any]:
+    def add_area_effect(self, location_id: str, effect: AreaEffect) -> dict[str, Any]:
         """
         Add an area effect to a location.
 
@@ -1730,11 +1686,7 @@ class GlobalController:
         self._log_event("area_effect_added", result)
         return result
 
-    def remove_area_effect(
-        self,
-        location_id: str,
-        effect_id: str
-    ) -> dict[str, Any]:
+    def remove_area_effect(self, location_id: str, effect_id: str) -> dict[str, Any]:
         """
         Remove an area effect from a location.
 
@@ -1762,11 +1714,7 @@ class GlobalController:
         self._log_event("area_effect_removed", result)
         return result
 
-    def apply_polymorph(
-        self,
-        character_id: str,
-        overlay: PolymorphOverlay
-    ) -> dict[str, Any]:
+    def apply_polymorph(self, character_id: str, overlay: PolymorphOverlay) -> dict[str, Any]:
         """
         Apply a polymorph transformation to a character.
 
@@ -1826,10 +1774,7 @@ class GlobalController:
         self._log_event("polymorph_removed", result)
         return result
 
-    def get_active_effects_on_character(
-        self,
-        character_id: str
-    ) -> dict[str, Any]:
+    def get_active_effects_on_character(self, character_id: str) -> dict[str, Any]:
         """
         Get all active effects on a character.
 
@@ -1920,19 +1865,18 @@ class GlobalController:
     # =========================================================================
 
     def _on_state_transition(
-        self,
-        old_state: GameState,
-        new_state: GameState,
-        trigger: str,
-        context: dict[str, Any]
+        self, old_state: GameState, new_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """Called after any state transition."""
-        self._log_event("state_transition", {
-            "from": old_state.value,
-            "to": new_state.value,
-            "trigger": trigger,
-            "context": context,
-        })
+        self._log_event(
+            "state_transition",
+            {
+                "from": old_state.value,
+                "to": new_state.value,
+                "trigger": trigger,
+                "context": context,
+            },
+        )
 
         # Fire transition hooks
         self._fire_transition_hooks(old_state, new_state, trigger, context)
@@ -1951,11 +1895,14 @@ class GlobalController:
     def _on_watch_advance(self, watches: int) -> None:
         """Called when watches advance (every 4 hours)."""
         current_watch = self.time_tracker.game_time.get_current_watch()
-        self._log_event("watch_advanced", {
-            "watches_passed": watches,
-            "current_watch": current_watch.value,
-            "time": str(self.time_tracker.game_time),
-        })
+        self._log_event(
+            "watch_advanced",
+            {
+                "watches_passed": watches,
+                "current_watch": current_watch.value,
+                "time": str(self.time_tracker.game_time),
+            },
+        )
 
     def _on_day_advance(self, days: int) -> None:
         """Called when days advance."""
@@ -1964,10 +1911,13 @@ class GlobalController:
 
     def _on_season_change(self, old_season: Season, new_season: Season) -> None:
         """Called when season changes."""
-        self._log_event("season_changed", {
-            "old_season": old_season.value,
-            "new_season": new_season.value,
-        })
+        self._log_event(
+            "season_changed",
+            {
+                "old_season": old_season.value,
+                "new_season": new_season.value,
+            },
+        )
 
     def _tick_conditions(self, turns: int) -> list[dict[str, Any]]:
         """Tick all conditions and return expired ones."""
@@ -1978,10 +1928,12 @@ class GlobalController:
             for condition in character.conditions:
                 for _ in range(turns):
                     if condition.tick():
-                        expired.append({
-                            "character_id": character.character_id,
-                            "condition": condition.condition_type.value,
-                        })
+                        expired.append(
+                            {
+                                "character_id": character.character_id,
+                                "condition": condition.condition_type.value,
+                            }
+                        )
                         break
                 else:
                     still_active.append(condition)
@@ -1991,13 +1943,15 @@ class GlobalController:
 
     def _log_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Log an event to the session log."""
-        self._session_log.append({
-            "timestamp": datetime.now().isoformat(),
-            "event_type": event_type,
-            "game_time": str(self.time_tracker.game_time),
-            "game_date": str(self.time_tracker.game_date),
-            "data": data,
-        })
+        self._session_log.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "event_type": event_type,
+                "game_time": str(self.time_tracker.game_time),
+                "game_date": str(self.time_tracker.game_date),
+                "data": data,
+            }
+        )
         logger.debug(f"Event: {event_type} - {data}")
 
     # =========================================================================
@@ -2031,7 +1985,11 @@ class GlobalController:
                     "torches": self.party_state.resources.torches,
                     "oil_flasks": self.party_state.resources.lantern_oil_flasks,
                 },
-                "light_source": self.party_state.active_light_source.value if self.party_state.active_light_source else None,
+                "light_source": (
+                    self.party_state.active_light_source.value
+                    if self.party_state.active_light_source
+                    else None
+                ),
                 "light_remaining": self.party_state.light_remaining_turns,
             },
             "characters": {
@@ -2046,7 +2004,11 @@ class GlobalController:
             },
             "encounter": {
                 "active": self._current_encounter is not None,
-                "type": self._current_encounter.encounter_type.value if self._current_encounter else None,
+                "type": (
+                    self._current_encounter.encounter_type.value
+                    if self._current_encounter
+                    else None
+                ),
             },
         }
 

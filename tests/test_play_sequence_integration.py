@@ -484,10 +484,7 @@ class TestDungeonExplorationFlow:
         # =========================================================
         # Phase 2: Exploration Turn - Search Entry Hall
         # =========================================================
-        search_result = dungeon_engine.execute_turn(
-            DungeonActionType.SEARCH,
-            action_params={}
-        )
+        search_result = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
 
         assert search_result.success is True
         assert search_result.time_spent == 1
@@ -500,8 +497,7 @@ class TestDungeonExplorationFlow:
         # Phase 3: Move to Guard Room - Trigger Encounter
         # =========================================================
         move_result = dungeon_engine.execute_turn(
-            DungeonActionType.MOVE,
-            action_params={"direction": "north"}
+            DungeonActionType.MOVE, action_params={"direction": "north"}
         )
 
         assert move_result.success is True
@@ -583,8 +579,7 @@ class TestDungeonExplorationFlow:
         # =========================================================
         # First go back to entry hall
         move_back = dungeon_engine.execute_turn(
-            DungeonActionType.MOVE,
-            action_params={"direction": "south"}
+            DungeonActionType.MOVE, action_params={"direction": "south"}
         )
         assert move_back.success is True
         assert dungeon.current_room == "entry_hall"
@@ -594,8 +589,7 @@ class TestDungeonExplorationFlow:
 
         # Try to open locked door - should fail
         open_result = dungeon_engine.execute_turn(
-            DungeonActionType.OPEN_DOOR,
-            action_params={"direction": "east"}
+            DungeonActionType.OPEN_DOOR, action_params={"direction": "east"}
         )
         # Door should report locked status
         assert "locked" in open_result.action_result.get("message", "").lower()
@@ -603,7 +597,7 @@ class TestDungeonExplorationFlow:
         # Pick the lock
         pick_result = dungeon_engine.execute_turn(
             DungeonActionType.PICK_LOCK,
-            action_params={"door_id": "entry_hall_east", "character_id": "thief_1"}
+            action_params={"door_id": "entry_hall_east", "character_id": "thief_1"},
         )
         # Result depends on roll, but action should complete
 
@@ -612,23 +606,18 @@ class TestDungeonExplorationFlow:
 
         # Move to treasure room
         move_to_treasure = dungeon_engine.execute_turn(
-            DungeonActionType.MOVE,
-            action_params={"direction": "east"}
+            DungeonActionType.MOVE, action_params={"direction": "east"}
         )
         assert move_to_treasure.success is True
         assert dungeon.current_room == "treasure_room"
 
         # Search for treasure
-        search_treasure = dungeon_engine.execute_turn(
-            DungeonActionType.SEARCH,
-            action_params={}
-        )
+        search_treasure = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
         assert search_treasure.success is True
 
         # Interact with chest
         interact_result = dungeon_engine.execute_turn(
-            DungeonActionType.INTERACT,
-            action_params={"feature_id": "chest_1"}
+            DungeonActionType.INTERACT, action_params={"feature_id": "chest_1"}
         )
         assert interact_result.success is True
         assert interact_result.action_result.get("feature") == "Ancient Chest"
@@ -658,8 +647,9 @@ class TestDungeonExplorationFlow:
                 controller.transition("combat_end_dungeon")
 
         exit_result = dungeon_engine.exit_dungeon()
-        assert "dungeon_id" in exit_result or "error" not in exit_result, \
-            f"Exit should succeed from dungeon exploration: {exit_result}"
+        assert (
+            "dungeon_id" in exit_result or "error" not in exit_result
+        ), f"Exit should succeed from dungeon exploration: {exit_result}"
         if "dungeon_id" in exit_result:
             assert exit_result["dungeon_id"] == "test_dungeon"
             assert exit_result["turns_spent"] > 0
@@ -687,10 +677,7 @@ class TestDungeonExplorationFlow:
                 elif controller.current_state == GameState.COMBAT:
                     controller.transition("combat_end_dungeon")
 
-            result = dungeon_engine.execute_turn(
-                DungeonActionType.SEARCH,
-                action_params={}
-            )
+            result = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
             if any("rest" in w.lower() or "fatigue" in w.lower() for w in result.warnings):
                 found_rest_warning = True
 
@@ -706,22 +693,18 @@ class TestDungeonExplorationFlow:
                 controller.transition("encounter_end_dungeon")
 
         # Rest for one turn
-        rest_result = dungeon_engine.execute_turn(
-            DungeonActionType.REST,
-            action_params={}
-        )
+        rest_result = dungeon_engine.execute_turn(DungeonActionType.REST, action_params={})
         assert rest_result.success is True
         assert rest_result.action_result.get("rest_fulfilled") is True
 
         # Next exploration turn should not warn about rest immediately
-        next_result = dungeon_engine.execute_turn(
-            DungeonActionType.SEARCH,
-            action_params={}
-        )
+        next_result = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
         # The first turn after rest shouldn't have fatigue warnings
         # (though other warnings may still appear)
         fatigue_warnings = [w for w in next_result.warnings if "fatigue" in w.lower()]
-        assert len(fatigue_warnings) == 0, "Should not have fatigue warning immediately after resting"
+        assert (
+            len(fatigue_warnings) == 0
+        ), "Should not have fatigue warning immediately after resting"
 
     def test_dungeon_light_depletion(self, dungeon_party, test_dungeon_data):
         """Test that light sources deplete during dungeon exploration."""
@@ -743,14 +726,12 @@ class TestDungeonExplorationFlow:
 
         # Execute turns and verify light depletes
         for i in range(3):
-            result = dungeon_engine.execute_turn(
-                DungeonActionType.SEARCH,
-                action_params={}
-            )
+            result = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
             # Light should decrement each turn
             expected_remaining = initial_light - i - 1
-            assert controller.party_state.light_remaining_turns == max(0, expected_remaining), \
-                f"Light should deplete each turn: turn {i+1}"
+            assert controller.party_state.light_remaining_turns == max(
+                0, expected_remaining
+            ), f"Light should deplete each turn: turn {i+1}"
 
         # After 3 turns with 3 turns of light, should be at 0
         assert controller.party_state.light_remaining_turns == 0, "Light should be exhausted"
@@ -774,10 +755,7 @@ class TestDungeonExplorationFlow:
         # Execute multiple turns to trigger wandering monster check
         encounters_triggered = 0
         for i in range(10):
-            result = dungeon_engine.execute_turn(
-                DungeonActionType.SEARCH,
-                action_params={}
-            )
+            result = dungeon_engine.execute_turn(DungeonActionType.SEARCH, action_params={})
 
             if result.encounter_triggered:
                 encounters_triggered += 1
@@ -805,16 +783,14 @@ class TestDungeonExplorationFlow:
 
         # Try to move through stuck door - should fail
         move_result = dungeon_engine.execute_turn(
-            DungeonActionType.MOVE,
-            action_params={"direction": "north"}
+            DungeonActionType.MOVE, action_params={"direction": "north"}
         )
         assert move_result.success is False
         assert "stuck" in move_result.action_result.get("message", "").lower()
 
         # Try to force the door
         force_result = dungeon_engine.execute_turn(
-            DungeonActionType.OPEN_DOOR,
-            action_params={"direction": "north"}
+            DungeonActionType.OPEN_DOOR, action_params={"direction": "north"}
         )
         # Result depends on dice roll
         assert force_result.action_result.get("noise", 0) > 0  # Forcing is noisy
@@ -836,10 +812,7 @@ class TestDungeonExplorationFlow:
 
         # Move to guard room normally first
         dungeon.rooms["entry_hall"].doors["entry_hall_north"] = DoorState.OPEN
-        dungeon_engine.execute_turn(
-            DungeonActionType.MOVE,
-            action_params={"direction": "north"}
-        )
+        dungeon_engine.execute_turn(DungeonActionType.MOVE, action_params={"direction": "north"})
         assert dungeon.current_room == "guard_room"
 
         # Now fast travel back
@@ -848,7 +821,7 @@ class TestDungeonExplorationFlow:
             action_params={
                 "route": ["guard_room", "entry_hall"],
                 "destination": "entry_hall",
-            }
+            },
         )
 
         # Fast travel should succeed through explored areas
@@ -1056,9 +1029,7 @@ class TestMultiStatePlaySession:
         log = controller.get_session_log()
         assert len(log) > 0
 
-    def test_session_with_rest_and_combat(
-        self, controller_with_party, sample_party, seeded_dice
-    ):
+    def test_session_with_rest_and_combat(self, controller_with_party, sample_party, seeded_dice):
         """
         Test session with rest and combat interruption:
         1. Travel in wilderness
@@ -1088,9 +1059,7 @@ class TestMultiStatePlaySession:
         # Continue travel
         controller.advance_travel_segment()
 
-    def test_settlement_interaction_flow(
-        self, controller_with_party, sample_party
-    ):
+    def test_settlement_interaction_flow(self, controller_with_party, sample_party):
         """
         Test settlement interaction flow:
         1. Enter settlement
@@ -1104,11 +1073,7 @@ class TestMultiStatePlaySession:
         controller.transition("enter_settlement")
         assert controller.current_state == GameState.SETTLEMENT_EXPLORATION
 
-        controller.set_party_location(
-            LocationType.SETTLEMENT,
-            "prigwort",
-            "The Wicked Owl Inn"
-        )
+        controller.set_party_location(LocationType.SETTLEMENT, "prigwort", "The Wicked Owl Inn")
         assert controller.party_state.location.sub_location == "The Wicked Owl Inn"
 
         # Start conversation

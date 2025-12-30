@@ -31,7 +31,7 @@ SAMPLE_MONSTER_DATA = {
         "source_file": "test_monsters.pdf",
         "pages": [1, 2],
         "content_type": "monsters",
-        "item_count": 2
+        "item_count": 2,
     },
     "items": [
         {
@@ -58,7 +58,7 @@ SAMPLE_MONSTER_DATA = {
             "special_abilities": ["Cold iron vulnerability"],
             "vulnerabilities": ["cold iron"],
             "number_appearing": "2d6",
-            "xp_value": 35
+            "xp_value": 35,
         },
         {
             "name": "Test Skeleton",
@@ -83,9 +83,9 @@ SAMPLE_MONSTER_DATA = {
             "alignment": "Chaotic",
             "special_abilities": ["Undead immunities"],
             "immunities": ["poison", "disease"],
-            "xp_value": 10
-        }
-    ]
+            "xp_value": 10,
+        },
+    ],
 }
 
 
@@ -95,7 +95,7 @@ def temp_monster_dir():
     with TemporaryDirectory() as tmpdir:
         # Write sample monster file
         monster_file = Path(tmpdir) / "test_monsters.json"
-        with open(monster_file, 'w') as f:
+        with open(monster_file, "w") as f:
             json.dump(SAMPLE_MONSTER_DATA, f)
 
         yield Path(tmpdir)
@@ -242,7 +242,7 @@ class TestStatBlockConversion:
         assert stat_block.movement == 40
         assert stat_block.morale == 7
         assert len(stat_block.attacks) == 1
-        assert stat_block.attacks[0]['damage'] == "1d6"
+        assert stat_block.attacks[0]["damage"] == "1d6"
 
     def test_stat_block_hp_is_rolled(self, loaded_registry):
         """Test that HP is rolled from hit dice."""
@@ -271,9 +271,7 @@ class TestCombatantCreation:
     def test_create_combatant(self, loaded_registry):
         """Test creating a Combatant from a monster."""
         combatant = loaded_registry.create_combatant(
-            monster_id="test_goblin",
-            combatant_id="enemy_1",
-            side="enemy"
+            monster_id="test_goblin", combatant_id="enemy_1", side="enemy"
         )
 
         assert combatant is not None
@@ -288,7 +286,7 @@ class TestCombatantCreation:
             monster_id="test_goblin",
             combatant_id="enemy_1",
             side="enemy",
-            name_override="Goblin Chief"
+            name_override="Goblin Chief",
         )
 
         assert combatant.name == "Goblin Chief"
@@ -296,9 +294,7 @@ class TestCombatantCreation:
     def test_create_combatant_not_found(self, loaded_registry):
         """Test creating a Combatant from nonexistent monster."""
         combatant = loaded_registry.create_combatant(
-            monster_id="nonexistent",
-            combatant_id="enemy_1",
-            side="enemy"
+            monster_id="nonexistent", combatant_id="enemy_1", side="enemy"
         )
 
         assert combatant is None
@@ -331,10 +327,7 @@ class TestNPCStatGeneration:
 
     def test_get_npc_stat_block_fighter(self, loaded_registry):
         """Test generating stats for a fighter NPC."""
-        request = NPCStatRequest(
-            description="level 4 human fighter",
-            name="Guard Captain"
-        )
+        request = NPCStatRequest(description="level 4 human fighter", name="Guard Captain")
         result = loaded_registry.get_npc_stat_block(request)
 
         assert result.success is True
@@ -344,16 +337,13 @@ class TestNPCStatGeneration:
 
     def test_get_npc_stat_block_cleric(self, loaded_registry):
         """Test generating stats for a cleric NPC."""
-        request = NPCStatRequest(
-            description="level 3 cleric",
-            name="Brother Marcus"
-        )
+        request = NPCStatRequest(description="level 3 cleric", name="Brother Marcus")
         result = loaded_registry.get_npc_stat_block(request)
 
         assert result.success is True
         assert result.stat_block is not None
         # Cleric should have mace attack
-        assert any("Mace" in atk['name'] for atk in result.stat_block.attacks)
+        assert any("Mace" in atk["name"] for atk in result.stat_block.attacks)
 
     def test_get_npc_stat_block_with_overrides(self, loaded_registry):
         """Test generating NPC stats with manual overrides."""
@@ -362,7 +352,7 @@ class TestNPCStatGeneration:
             name="Tough Guard",
             hp_override=25,
             ac_override=16,
-            morale_override=10
+            morale_override=10,
         )
         result = loaded_registry.get_npc_stat_block(request)
 
@@ -373,9 +363,7 @@ class TestNPCStatGeneration:
 
     def test_get_npc_stat_block_invalid_description(self, loaded_registry):
         """Test generating stats from invalid description."""
-        request = NPCStatRequest(
-            description="some random text without level or class"
-        )
+        request = NPCStatRequest(description="some random text without level or class")
         result = loaded_registry.get_npc_stat_block(request)
 
         assert result.success is False
@@ -383,14 +371,9 @@ class TestNPCStatGeneration:
 
     def test_create_combatant_from_npc(self, loaded_registry):
         """Test creating a Combatant from NPC description."""
-        request = NPCStatRequest(
-            description="level 5 thief",
-            name="Shadow"
-        )
+        request = NPCStatRequest(description="level 5 thief", name="Shadow")
         combatant = loaded_registry.create_combatant_from_npc(
-            request=request,
-            combatant_id="npc_1",
-            side="enemy"
+            request=request, combatant_id="npc_1", side="enemy"
         )
 
         assert combatant is not None
@@ -511,7 +494,7 @@ class TestEdgeCases:
         with TemporaryDirectory() as tmpdir:
             # Write invalid JSON
             bad_file = Path(tmpdir) / "bad.json"
-            with open(bad_file, 'w') as f:
+            with open(bad_file, "w") as f:
                 f.write("{ invalid json }")
 
             registry = MonsterRegistry()
@@ -524,7 +507,7 @@ class TestEdgeCases:
         """Test handling of JSON file without items array."""
         with TemporaryDirectory() as tmpdir:
             empty_file = Path(tmpdir) / "empty.json"
-            with open(empty_file, 'w') as f:
+            with open(empty_file, "w") as f:
                 json.dump({"_metadata": {}}, f)
 
             registry = MonsterRegistry()
@@ -537,17 +520,13 @@ class TestEdgeCases:
         with TemporaryDirectory() as tmpdir:
             # First file
             file1 = Path(tmpdir) / "monsters1.json"
-            with open(file1, 'w') as f:
-                json.dump({
-                    "items": [{"name": "Goblin V1", "monster_id": "goblin"}]
-                }, f)
+            with open(file1, "w") as f:
+                json.dump({"items": [{"name": "Goblin V1", "monster_id": "goblin"}]}, f)
 
             # Second file with same monster_id
             file2 = Path(tmpdir) / "monsters2.json"
-            with open(file2, 'w') as f:
-                json.dump({
-                    "items": [{"name": "Goblin V2", "monster_id": "goblin"}]
-                }, f)
+            with open(file2, "w") as f:
+                json.dump({"items": [{"name": "Goblin V2", "monster_id": "goblin"}]}, f)
 
             registry = MonsterRegistry()
             registry.load_from_directory(Path(tmpdir))

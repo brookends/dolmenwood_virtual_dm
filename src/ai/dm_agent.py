@@ -90,6 +90,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DMAgentConfig:
     """Configuration for the DM Agent."""
+
     llm_provider: LLMProvider = LLMProvider.ANTHROPIC
     llm_model: str = "claude-sonnet-4-20250514"
     max_tokens: int = 1024
@@ -104,6 +105,7 @@ class DMAgentConfig:
 @dataclass
 class DescriptionResult:
     """Result of a description request."""
+
     content: str
     schema_used: PromptSchemaType
     success: bool
@@ -457,14 +459,16 @@ class DMAgent:
         action_objects = []
         for action in resolved_actions:
             if isinstance(action, dict):
-                action_objects.append(ResolvedAction(
-                    actor=action.get("actor", "Unknown"),
-                    action=action.get("action", "acts"),
-                    target=action.get("target", ""),
-                    result=action.get("result", ""),
-                    damage=action.get("damage", 0),
-                    special_effects=action.get("special_effects", []),
-                ))
+                action_objects.append(
+                    ResolvedAction(
+                        actor=action.get("actor", "Unknown"),
+                        action=action.get("action", "acts"),
+                        target=action.get("target", ""),
+                        result=action.get("result", ""),
+                        damage=action.get("damage", 0),
+                        special_effects=action.get("special_effects", []),
+                    )
+                )
             else:
                 action_objects.append(action)
 
@@ -624,11 +628,10 @@ class DMAgent:
             )
 
         # Check if conversation has ended due to patience
-        if (participant.conversation and
-            participant.conversation.conversation_ended):
+        if participant.conversation and participant.conversation.conversation_ended:
             return DescriptionResult(
                 content=f"[{participant.name} has ended the conversation: "
-                        f"{participant.conversation.end_reason}]",
+                f"{participant.conversation.end_reason}]",
                 schema_used=PromptSchemaType.NPC_DIALOGUE,
                 success=False,
                 warnings=[participant.conversation.end_reason],
@@ -675,16 +678,18 @@ class DMAgent:
             for hint_info in query_result.get("hints_to_give", []):
                 secret = hint_info.get("secret")
                 if secret and secret.secret_id not in social_context.secrets_revealed:
-                    if hasattr(secret, 'status'):
+                    if hasattr(secret, "status"):
                         from src.data_models import SecretStatus
+
                         secret.status = SecretStatus.HINTED
                         secret.hint_count += 1
 
             for reveal_info in query_result.get("secrets_to_reveal", []):
                 secret = reveal_info.get("secret")
                 if secret:
-                    if hasattr(secret, 'status'):
+                    if hasattr(secret, "status"):
                         from src.data_models import SecretStatus
+
                         secret.status = SecretStatus.REVEALED
                     if reveal_info.get("content") not in social_context.secrets_revealed:
                         social_context.secrets_revealed.append(reveal_info["content"])
@@ -818,14 +823,19 @@ class DMAgent:
         }.get(social_context.origin, "A social encounter begins")
 
         # Use exploration description schema for framing
-        sensory_tags = ["voices", "tension" if reaction in ("hostile", "unfriendly") else "anticipation"]
+        sensory_tags = [
+            "voices",
+            "tension" if reaction in ("hostile", "unfriendly") else "anticipation",
+        ]
 
         inputs = ExplorationDescriptionInputs(
             current_state="social_interaction",
             location_summary=f"{origin_text}. Participants: {', '.join(participant_descs)}. "
-                           f"Location: {location_summary}. Mood: {tone}.",
+            f"Location: {location_summary}. Mood: {tone}.",
             sensory_tags=sensory_tags,
-            known_threats=[] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"],
+            known_threats=(
+                [] if reaction not in ("hostile", "unfriendly") else ["Potential hostility"]
+            ),
         )
 
         schema = ExplorationDescriptionSchema(inputs)
@@ -1415,10 +1425,14 @@ class DMAgent:
                 return {k: serialize(v) for k, v in obj.items()}
             return obj
 
-        data = json.dumps({
-            "type": schema.schema_type.value,
-            "inputs": serialize(schema.inputs),
-        }, sort_keys=True, default=str)
+        data = json.dumps(
+            {
+                "type": schema.schema_type.value,
+                "inputs": serialize(schema.inputs),
+            },
+            sort_keys=True,
+            default=str,
+        )
         return hashlib.md5(data.encode()).hexdigest()
 
     def _add_to_recent(self, content: str) -> None:

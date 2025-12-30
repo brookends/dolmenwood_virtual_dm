@@ -28,9 +28,7 @@ from src.classes.class_data import (
 ENCHANTER_SKILLS = ClassAbility(
     ability_id="enchanter_skills",
     name="Enchanter Skills",
-    description=(
-        "Enchanters have one additional, specialised skill: Detect Magic."
-    ),
+    description=("Enchanters have one additional, specialised skill: Detect Magic."),
     is_passive=True,
     scales_with_level=True,
     extra_data={
@@ -331,24 +329,19 @@ ENCHANTER_DEFINITION = ClassDefinition(
         "fairy runes, guarded by the lords of Fairy, though such gifts are not "
         "always without cost."
     ),
-
     hit_die=HitDie.D6,
     prime_ability="CHA,INT",  # Dual prime abilities
-
     magic_type=MagicType.GLAMOUR,  # Covers both glamours and runes
-
     armor_proficiencies=[
         ArmorProficiency.LIGHT,
         ArmorProficiency.MEDIUM,
         # Note: No shields
     ],
     weapon_proficiencies=[
-        WeaponProficiency.SIMPLE,   # Small weapons
+        WeaponProficiency.SIMPLE,  # Small weapons
         WeaponProficiency.MARTIAL,  # Medium weapons
     ],
-
     level_progression=ENCHANTER_LEVEL_PROGRESSION,
-
     abilities=[
         ENCHANTER_SKILLS,
         ENCHANTER_GLAMOURS,
@@ -356,11 +349,9 @@ ENCHANTER_DEFINITION = ClassDefinition(
         ENCHANTER_MAGIC_ITEMS,
         ENCHANTER_DIVINE_RESISTANCE,
     ],
-
     # Typically only fairies and demi-fey, but mortals with strong Fairy
     # connection can also be enchanters
     restricted_kindreds=[],  # No hard restrictions, but typically fey/demi-fey
-
     starting_equipment=[
         # Armour (roll 1d6): 1-2. None. 3-4. Leather armour. 5-6. Chainmail.
         "armor_roll_1d6",
@@ -368,7 +359,6 @@ ENCHANTER_DEFINITION = ClassDefinition(
         # 4. Shortbow + 20 arrows. 5. Spear. 6. Staff.
         "weapon_roll_1d6_twice",
     ],
-
     extra_data={
         "kindred_note": (
             "Typically only fairies and demi-fey (elves, grimalkins, and "
@@ -379,7 +369,6 @@ ENCHANTER_DEFINITION = ClassDefinition(
         ),
         "combat_aptitude": "Semi-martial",
     },
-
     source_book="Dolmenwood Player Book",
     source_page=62,
 )

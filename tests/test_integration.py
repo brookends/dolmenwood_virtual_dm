@@ -360,12 +360,13 @@ class TestResourceManagement:
         controller_with_party.party_state.resources.torches = 5
 
         result = controller_with_party.light_source(
-            controller_with_party.party_state.active_light_source or
-            __import__('src.data_models', fromlist=['LightSourceType']).LightSourceType.TORCH
+            controller_with_party.party_state.active_light_source
+            or __import__("src.data_models", fromlist=["LightSourceType"]).LightSourceType.TORCH
         )
 
         # Advance 7 turns (torch lasts 6)
         from src.data_models import LightSourceType
+
         controller_with_party.party_state.active_light_source = LightSourceType.TORCH
         controller_with_party.party_state.light_remaining_turns = 6
 
@@ -491,7 +492,9 @@ class TestTransitionHooks:
         assert controller_with_encounter.combat_engine is not None
         assert controller_with_encounter.combat_engine._combat_state is not None
 
-    def test_combat_round_executable_after_transition(self, controller_with_encounter, sample_party):
+    def test_combat_round_executable_after_transition(
+        self, controller_with_encounter, sample_party
+    ):
         """Test that combat rounds can be executed immediately after transition."""
         # Add party members as combatants
         for char in sample_party:
@@ -563,9 +566,7 @@ class TestTransitionHooks:
 
         # Register custom hook for wilderness -> dungeon
         controller_with_party.register_transition_hook(
-            GameState.WILDERNESS_TRAVEL,
-            GameState.DUNGEON_EXPLORATION,
-            custom_hook
+            GameState.WILDERNESS_TRAVEL, GameState.DUNGEON_EXPLORATION, custom_hook
         )
 
         # Trigger the transition
@@ -584,10 +585,7 @@ class TestTransitionHooks:
             enter_count["value"] += 1
 
         # Register on-enter hook for ENCOUNTER
-        controller_with_party.register_on_enter_hook(
-            GameState.ENCOUNTER,
-            on_enter_encounter
-        )
+        controller_with_party.register_on_enter_hook(GameState.ENCOUNTER, on_enter_encounter)
 
         # Enter from wilderness
         controller_with_party.transition("encounter_triggered")
@@ -640,8 +638,7 @@ class TestTransitionHooks:
 
         # Transition to social interaction (parley)
         controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "friendly"}
+            "encounter_to_parley", context={"reaction": "friendly"}
         )
         assert controller_with_encounter.current_state == GameState.SOCIAL_INTERACTION
 
@@ -659,8 +656,7 @@ class TestTransitionHooks:
         # Transition to parley
         controller_with_encounter.transition("encounter_triggered")
         controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "friendly"}
+            "encounter_to_parley", context={"reaction": "friendly"}
         )
 
         # Social context should have participants
@@ -676,10 +672,7 @@ class TestTransitionHooks:
         """Test that social context is cleared when exiting SOCIAL_INTERACTION."""
         # Transition to social interaction
         controller_with_encounter.transition("encounter_triggered")
-        controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "helpful"}
-        )
+        controller_with_encounter.transition("encounter_to_parley", context={"reaction": "helpful"})
         assert controller_with_encounter.social_context is not None
 
         # Exit back to wilderness
@@ -702,7 +695,7 @@ class TestTransitionHooks:
                 "npc_id": "merchant_bob",
                 "npc_name": "Bob the Merchant",
                 "hex_id": "0505",
-            }
+            },
         )
         assert controller_with_party.current_state == GameState.SOCIAL_INTERACTION
 
@@ -734,7 +727,7 @@ class TestTransitionHooks:
             context={
                 "reaction": "neutral",
                 "participants": [non_sentient],
-            }
+            },
         )
 
         social_context = controller_with_party.social_context
@@ -747,8 +740,7 @@ class TestTransitionHooks:
         assert controller_with_encounter.current_state == GameState.WILDERNESS_TRAVEL
         controller_with_encounter.transition("encounter_triggered")
         controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "friendly"}
+            "encounter_to_parley", context={"reaction": "friendly"}
         )
 
         # Social context should track that we should return to wilderness
@@ -756,7 +748,9 @@ class TestTransitionHooks:
         assert social_context is not None
         assert social_context.return_state == "wilderness_travel"
 
-    def test_social_context_preserves_encounter_for_possible_combat(self, controller_with_encounter):
+    def test_social_context_preserves_encounter_for_possible_combat(
+        self, controller_with_encounter
+    ):
         """Test that encounter is preserved when transitioning to social (might escalate)."""
         # Start encounter
         controller_with_encounter.transition("encounter_triggered")
@@ -764,8 +758,7 @@ class TestTransitionHooks:
 
         # Transition to social
         controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "unfriendly"}
+            "encounter_to_parley", context={"reaction": "unfriendly"}
         )
 
         # Encounter should still be available (conversation might escalate)
@@ -777,8 +770,7 @@ class TestTransitionHooks:
         # Setup: encounter -> social
         controller_with_encounter.transition("encounter_triggered")
         controller_with_encounter.transition(
-            "encounter_to_parley",
-            context={"reaction": "unfriendly"}
+            "encounter_to_parley", context={"reaction": "unfriendly"}
         )
         assert controller_with_encounter.social_context is not None
 
@@ -1172,9 +1164,9 @@ class TestTopicIntelligence:
         # Multiple irrelevant questions (need to get to -3 to end)
         tracker.record_question("about unicorns", was_relevant=False)  # patience = 1
         tracker.record_question("about rainbows", was_relevant=False)  # patience = 0
-        tracker.record_question("about clouds", was_relevant=False)    # patience = -1
-        tracker.record_question("about stars", was_relevant=False)     # patience = -2
-        tracker.record_question("about moons", was_relevant=False)     # patience = -3
+        tracker.record_question("about clouds", was_relevant=False)  # patience = -1
+        tracker.record_question("about stars", was_relevant=False)  # patience = -2
+        tracker.record_question("about moons", was_relevant=False)  # patience = -3
 
         # Conversation should end when patience hits -3
         assert tracker.conversation_ended is True
@@ -1201,9 +1193,7 @@ class TestTopicIntelligence:
 
     def test_participant_query_processing(self):
         """Test full query processing through participant."""
-        from src.data_models import (
-            SocialParticipant, SocialParticipantType, KnownTopic, SecretInfo
-        )
+        from src.data_models import SocialParticipant, SocialParticipantType, KnownTopic, SecretInfo
 
         participant = SocialParticipant(
             participant_id="tavern_keeper",
@@ -1249,7 +1239,10 @@ class TestTopicIntelligence:
     def test_participant_find_relevant_topics(self):
         """Test finding relevant topics for a query."""
         from src.data_models import (
-            SocialParticipant, SocialParticipantType, KnownTopic, TopicRelevance
+            SocialParticipant,
+            SocialParticipantType,
+            KnownTopic,
+            TopicRelevance,
         )
 
         participant = SocialParticipant(
@@ -1284,9 +1277,7 @@ class TestTopicIntelligence:
 
     def test_dialogue_inputs_with_enhanced_topics(self):
         """Test that to_dialogue_inputs uses the enhanced topic system."""
-        from src.data_models import (
-            SocialParticipant, SocialParticipantType, KnownTopic
-        )
+        from src.data_models import SocialParticipant, SocialParticipantType, KnownTopic
 
         participant = SocialParticipant(
             participant_id="guard",
@@ -1330,8 +1321,10 @@ class TestTopicIntelligence:
         result = participant.to_dialogue_inputs("More nonsense")
 
         # Personality should mention the impatience
-        assert "impatient" in result["npc_personality"].lower() or \
-               "annoyed" in result["npc_personality"].lower()
+        assert (
+            "impatient" in result["npc_personality"].lower()
+            or "annoyed" in result["npc_personality"].lower()
+        )
 
     def test_legacy_topics_converted(self):
         """Test that legacy dialogue_hooks are converted to KnownTopic."""
@@ -1450,8 +1443,8 @@ class TestNarrationIntegration:
         # Mock the hex_crawl.travel_to_hex to return a simple result
         with patch.object(
             virtual_dm_with_narration.hex_crawl,
-            'travel_to_hex',
-            return_value={"success": True, "terrain": "forest"}
+            "travel_to_hex",
+            return_value={"success": True, "terrain": "forest"},
         ):
             result = virtual_dm_with_narration.travel_to_hex("0710")
 
@@ -1738,9 +1731,7 @@ class TestNarrationAuthorityBoundary:
         # The authority violation list should be empty for a well-behaved response
         # (Mock client doesn't generate violations)
 
-    def test_combat_narration_accepts_resolved_outcomes_only(
-        self, dm_agent_for_authority_test
-    ):
+    def test_combat_narration_accepts_resolved_outcomes_only(self, dm_agent_for_authority_test):
         """Test that combat narration only describes resolved outcomes."""
         from src.ai.prompt_schemas import ResolvedAction
 
@@ -1756,13 +1747,15 @@ class TestNarrationAuthorityBoundary:
 
         result = dm_agent_for_authority_test.narrate_combat_round(
             round_number=1,
-            resolved_actions=[{
-                "actor": "Fighter",
-                "action": "sword attack",
-                "target": "Goblin",
-                "result": "hit",
-                "damage": 8,
-            }],
+            resolved_actions=[
+                {
+                    "actor": "Fighter",
+                    "action": "sword attack",
+                    "target": "Goblin",
+                    "result": "hit",
+                    "damage": 8,
+                }
+            ],
             damage_results={"goblin_1": 8},
             deaths=["goblin_1"],
         )

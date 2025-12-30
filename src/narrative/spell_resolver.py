@@ -22,37 +22,41 @@ from src.narrative.intent_parser import SaveType
 
 class DurationType(str, Enum):
     """How a spell's duration is tracked."""
-    INSTANT = "instant"             # Immediate effect, no duration
-    ROUNDS = "rounds"               # Duration in combat rounds
-    TURNS = "turns"                 # Duration in exploration turns (10 min)
-    HOURS = "hours"                 # Duration in hours
-    DAYS = "days"                   # Duration in days
-    CONCENTRATION = "concentration" # Lasts while concentrating
-    PERMANENT = "permanent"         # Lasts until dispelled/dismissed
-    SPECIAL = "special"             # Custom duration logic
+
+    INSTANT = "instant"  # Immediate effect, no duration
+    ROUNDS = "rounds"  # Duration in combat rounds
+    TURNS = "turns"  # Duration in exploration turns (10 min)
+    HOURS = "hours"  # Duration in hours
+    DAYS = "days"  # Duration in days
+    CONCENTRATION = "concentration"  # Lasts while concentrating
+    PERMANENT = "permanent"  # Lasts until dispelled/dismissed
+    SPECIAL = "special"  # Custom duration logic
 
 
 class RangeType(str, Enum):
     """How a spell's range is specified."""
-    SELF = "self"                   # Affects caster only
-    TOUCH = "touch"                 # Must touch target
-    RANGED = "ranged"               # Has a range in feet
-    AREA = "area"                   # Affects an area
+
+    SELF = "self"  # Affects caster only
+    TOUCH = "touch"  # Must touch target
+    RANGED = "ranged"  # Has a range in feet
+    AREA = "area"  # Affects an area
 
 
 class SpellEffectType(str, Enum):
     """How a spell's effects are resolved."""
-    MECHANICAL = "mechanical"       # Fully resolved by Python (damage, conditions)
-    NARRATIVE = "narrative"         # LLM describes, minimal mechanics
-    HYBRID = "hybrid"               # Python mechanics + LLM narration
+
+    MECHANICAL = "mechanical"  # Fully resolved by Python (damage, conditions)
+    NARRATIVE = "narrative"  # LLM describes, minimal mechanics
+    HYBRID = "hybrid"  # Python mechanics + LLM narration
 
 
 class MagicType(str, Enum):
     """Type of magic."""
-    ARCANE = "arcane"               # Wizard/Magic-User spells
-    DIVINE = "divine"               # Cleric spells
-    FAIRY_GLAMOUR = "fairy_glamour" # Elf/Grimalkin/Woodgrue glamours
-    DRUIDIC = "druidic"             # Druid spells
+
+    ARCANE = "arcane"  # Wizard/Magic-User spells
+    DIVINE = "divine"  # Cleric spells
+    FAIRY_GLAMOUR = "fairy_glamour"  # Elf/Grimalkin/Woodgrue glamours
+    DRUIDIC = "druidic"  # Druid spells
 
 
 @dataclass
@@ -62,16 +66,17 @@ class SpellData:
 
     Contains both raw text fields and parsed mechanical components.
     """
+
     # Core identification
     spell_id: str
     name: str
-    level: Optional[int]            # None for fairy glamours
+    level: Optional[int]  # None for fairy glamours
     magic_type: MagicType
 
     # Raw text fields (from source)
-    duration: str                   # Raw text: "1d6 Turns + 1 Turn per Level"
-    range: str                      # Raw text: "60'"
-    description: str                # Full description
+    duration: str  # Raw text: "1d6 Turns + 1 Turn per Level"
+    range: str  # Raw text: "60'"
+    description: str  # Full description
 
     # Reversible spell info
     reversible: bool = False
@@ -79,18 +84,18 @@ class SpellData:
 
     # Parsed mechanical components
     duration_type: DurationType = DurationType.INSTANT
-    duration_value: Optional[str] = None    # Dice notation or fixed value
-    duration_per_level: bool = False        # Does duration scale with level?
-    range_feet: Optional[int] = None        # Parsed range in feet
+    duration_value: Optional[str] = None  # Dice notation or fixed value
+    duration_per_level: bool = False  # Does duration scale with level?
+    range_feet: Optional[int] = None  # Parsed range in feet
     range_type: RangeType = RangeType.RANGED
 
     # Effect classification
     effect_type: SpellEffectType = SpellEffectType.HYBRID
     save_type: Optional[SaveType] = None
-    save_negates: bool = False              # Does save completely negate?
+    save_negates: bool = False  # Does save completely negate?
 
     # Usage limits (especially for glamours)
-    usage_frequency: Optional[str] = None   # "once per turn", "once per day per subject"
+    usage_frequency: Optional[str] = None  # "once per turn", "once per day per subject"
     kindred_restricted: list[str] = field(default_factory=list)
 
     # Concentration
@@ -113,6 +118,7 @@ class ActiveSpellEffect:
 
     Tied to the turn/time system for duration tracking.
     """
+
     # Identification
     effect_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     spell_id: str = ""
@@ -120,14 +126,14 @@ class ActiveSpellEffect:
 
     # Caster and target
     caster_id: str = ""
-    target_id: str = ""             # Character, NPC, Monster, or "area:location_id"
-    target_type: str = "creature"   # "creature", "object", "area"
+    target_id: str = ""  # Character, NPC, Monster, or "area:location_id"
+    target_type: str = "creature"  # "creature", "object", "area"
 
     # Duration tracking (tied to turn/time system)
     duration_type: DurationType = DurationType.INSTANT
-    duration_remaining: Optional[int] = None    # Rounds or Turns remaining
-    duration_unit: str = "turns"    # "rounds" or "turns"
-    expires_at: Optional[datetime] = None       # For real-time tracking if needed
+    duration_remaining: Optional[int] = None  # Rounds or Turns remaining
+    duration_unit: str = "turns"  # "rounds" or "turns"
+    expires_at: Optional[datetime] = None  # For real-time tracking if needed
 
     # Concentration
     requires_concentration: bool = False
@@ -206,12 +212,13 @@ class ActiveSpellEffect:
 @dataclass
 class SpellCastResult:
     """Result of attempting to cast a spell."""
+
     success: bool
     spell_id: str
     spell_name: str
 
     # What happened
-    reason: str = ""                        # Why it succeeded/failed
+    reason: str = ""  # Why it succeeded/failed
     effect_created: Optional[ActiveSpellEffect] = None
 
     # Mechanical outcomes
@@ -282,10 +289,7 @@ class SpellResolver:
         return None
 
     def can_cast_spell(
-        self,
-        caster: "CharacterState",
-        spell: SpellData,
-        target_id: Optional[str] = None
+        self, caster: "CharacterState", spell: SpellData, target_id: Optional[str] = None
     ) -> tuple[bool, str]:
         """
         Check if a caster can cast a spell.
@@ -323,12 +327,12 @@ class SpellResolver:
 
         # For glamours, also check class_data.glamours_known
         if not has_spell and spell.magic_type == MagicType.FAIRY_GLAMOUR:
-            glamours = caster.get_glamours_known() if hasattr(caster, 'get_glamours_known') else []
+            glamours = caster.get_glamours_known() if hasattr(caster, "get_glamours_known") else []
             has_spell = spell.spell_id in glamours
 
         # For runes, check class_data.runes_known
         if not has_spell and spell_magic_type == "rune":
-            runes = caster.get_runes_known() if hasattr(caster, 'get_runes_known') else []
+            runes = caster.get_runes_known() if hasattr(caster, "get_runes_known") else []
             has_spell = spell.spell_id in runes
 
         if not has_spell:
@@ -337,14 +341,11 @@ class SpellResolver:
         # Check spell slot availability (for ranked spells: arcane, holy)
         if spell.level is not None and spell.magic_type in (MagicType.ARCANE, MagicType.DIVINE):
             # Use the new spell slot system
-            if hasattr(caster, 'has_spell_slot') and not caster.has_spell_slot(spell.level):
+            if hasattr(caster, "has_spell_slot") and not caster.has_spell_slot(spell.level):
                 return False, f"{caster.name} has no Rank {spell.level} spell slots remaining"
 
             # Legacy check: spell cast_today flag
-            caster_spell = next(
-                (s for s in caster.spells if s.spell_id == spell.spell_id),
-                None
-            )
+            caster_spell = next((s for s in caster.spells if s.spell_id == spell.spell_id), None)
             if caster_spell and caster_spell.cast_today:
                 return False, f"{spell.name} has already been cast today"
 
@@ -362,7 +363,7 @@ class SpellResolver:
 
         # Check kindred restrictions (only applies to Mossling Knacks)
         if spell.kindred_restricted:
-            caster_kindred = caster.kindred.lower() if hasattr(caster, 'kindred') else ""
+            caster_kindred = caster.kindred.lower() if hasattr(caster, "kindred") else ""
             allowed_kindreds = [k.lower() for k in spell.kindred_restricted]
             if caster_kindred not in allowed_kindreds:
                 return False, f"Only {', '.join(spell.kindred_restricted)} can cast {spell.name}"
@@ -375,7 +376,7 @@ class SpellResolver:
         spell: SpellData,
         target_id: Optional[str] = None,
         target_description: Optional[str] = None,
-        dice_roller: Optional["DiceRoller"] = None
+        dice_roller: Optional["DiceRoller"] = None,
     ) -> SpellCastResult:
         """
         Resolve casting a spell outside of combat.
@@ -398,7 +399,7 @@ class SpellResolver:
                 spell_id=spell.spell_id,
                 spell_name=spell.name,
                 reason=reason,
-                error=reason
+                error=reason,
             )
 
         # Break any existing concentration
@@ -411,7 +412,7 @@ class SpellResolver:
         slot_consumed = False
         if spell.level is not None and spell.magic_type in (MagicType.ARCANE, MagicType.DIVINE):
             # Use the new spell slot system if available
-            if hasattr(caster, 'use_spell_slot'):
+            if hasattr(caster, "use_spell_slot"):
                 slot_consumed = caster.use_spell_slot(spell.level)
 
             # Also mark the specific spell as cast (legacy support)
@@ -480,10 +481,7 @@ class SpellResolver:
         )
 
     def _calculate_duration(
-        self,
-        spell: SpellData,
-        caster: "CharacterState",
-        dice_roller: Optional["DiceRoller"] = None
+        self, spell: SpellData, caster: "CharacterState", dice_roller: Optional["DiceRoller"] = None
     ) -> Optional[int]:
         """Calculate the duration of a spell in appropriate units."""
         if spell.duration_type in (DurationType.INSTANT, DurationType.PERMANENT):
@@ -496,7 +494,7 @@ class SpellResolver:
         base_duration = 0
         if spell.duration_value.isdigit():
             base_duration = int(spell.duration_value)
-        elif dice_roller and 'd' in spell.duration_value.lower():
+        elif dice_roller and "d" in spell.duration_value.lower():
             # Roll dice for duration
             result = dice_roller.roll(spell.duration_value, f"{spell.name} duration")
             base_duration = result.total
@@ -515,16 +513,17 @@ class SpellResolver:
 
     def get_active_effects(self, entity_id: str) -> list[ActiveSpellEffect]:
         """Get all active effects on an entity."""
-        return [e for e in self._active_effects
-                if e.target_id == entity_id and e.is_active]
+        return [e for e in self._active_effects if e.target_id == entity_id and e.is_active]
 
     def get_concentration_effect(self, caster_id: str) -> Optional[ActiveSpellEffect]:
         """Get the active concentration effect for a caster."""
         for effect in self._active_effects:
-            if (effect.caster_id == caster_id and
-                effect.requires_concentration and
-                effect.is_active and
-                not effect.concentration_broken):
+            if (
+                effect.caster_id == caster_id
+                and effect.requires_concentration
+                and effect.is_active
+                and not effect.concentration_broken
+            ):
                 return effect
         return None
 
@@ -540,9 +539,7 @@ class SpellResolver:
         """
         broken = []
         for effect in self._active_effects:
-            if (effect.caster_id == caster_id and
-                effect.requires_concentration and
-                effect.is_active):
+            if effect.caster_id == caster_id and effect.requires_concentration and effect.is_active:
                 if effect.break_concentration():
                     broken.append(effect)
         return broken

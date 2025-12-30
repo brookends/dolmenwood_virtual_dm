@@ -19,37 +19,37 @@ from typing import Any, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from src.data_models import CharacterState
 
-from src.narrative.intent_parser import (
-    ParsedIntent, ActionType, ResolutionType, CheckType
-)
+from src.narrative.intent_parser import ParsedIntent, ActionType, ResolutionType, CheckType
 
 
 class CreativeSolutionCategory(str, Enum):
     """Categories of creative solutions."""
-    TRAP_BYPASS = "trap_bypass"         # Creative ways to avoid/disarm traps
-    OBSTACLE_BYPASS = "obstacle_bypass" # Creative ways around physical obstacles
+
+    TRAP_BYPASS = "trap_bypass"  # Creative ways to avoid/disarm traps
+    OBSTACLE_BYPASS = "obstacle_bypass"  # Creative ways around physical obstacles
     INFORMATION_GATHERING = "information_gathering"  # Clever ways to learn things
-    SOCIAL_MANIPULATION = "social_manipulation"     # Non-standard social approaches
-    ENVIRONMENTAL_USE = "environmental_use"         # Using environment cleverly
-    ITEM_IMPROVISATION = "item_improvisation"       # Using items in unusual ways
+    SOCIAL_MANIPULATION = "social_manipulation"  # Non-standard social approaches
+    ENVIRONMENTAL_USE = "environmental_use"  # Using environment cleverly
+    ITEM_IMPROVISATION = "item_improvisation"  # Using items in unusual ways
     UNKNOWN = "unknown"
 
 
 @dataclass
 class CreativeSolution:
     """A proposed creative solution from the LLM."""
+
     category: CreativeSolutionCategory
-    description: str                    # What the player is trying to do
-    proposed_resolution: ResolutionType # LLM's suggested resolution
+    description: str  # What the player is trying to do
+    proposed_resolution: ResolutionType  # LLM's suggested resolution
 
     # Context
-    target_hazard: Optional[str] = None # What hazard/obstacle this addresses
+    target_hazard: Optional[str] = None  # What hazard/obstacle this addresses
     required_items: list[str] = field(default_factory=list)
     required_conditions: list[str] = field(default_factory=list)
 
     # Resolution details
     check_type: Optional[CheckType] = None
-    check_modifier: int = 0             # Bonus/penalty to check
+    check_modifier: int = 0  # Bonus/penalty to check
     time_cost_turns: int = 0
 
     # Rule justification
@@ -63,7 +63,8 @@ class CreativeSolution:
 @dataclass
 class CreativeResolutionResult:
     """Result of resolving a creative solution."""
-    accepted: bool                      # Was the solution accepted?
+
+    accepted: bool  # Was the solution accepted?
     resolution_type: ResolutionType
     description: str
 
@@ -99,7 +100,7 @@ KNOWN_CREATIVE_PATTERNS = {
         "description": "Smashing the lock of a chest to destroy a delicate trap",
         "resolution": ResolutionType.AUTO_SUCCESS,
         "rule_reference": "p155 - Force",
-        "conditions": ["target is chest with trapped lock", "has hammer or similar"]
+        "conditions": ["target is chest with trapped lock", "has hammer or similar"],
     },
     "jam_trap_mechanism": {
         "category": CreativeSolutionCategory.TRAP_BYPASS,
@@ -119,7 +120,7 @@ KNOWN_CREATIVE_PATTERNS = {
         "description": "Tapping ahead with a pole to trigger tripwires",
         "resolution": ResolutionType.AUTO_SUCCESS,
         "rule_reference": "p155 - Probing",
-        "conditions": ["has 10' pole or similar"]
+        "conditions": ["has 10' pole or similar"],
     },
     "tap_walls_hollow": {
         "category": CreativeSolutionCategory.INFORMATION_GATHERING,
@@ -133,7 +134,7 @@ KNOWN_CREATIVE_PATTERNS = {
         "description": "Throwing heavy object to trigger pressure plate from safety",
         "resolution": ResolutionType.AUTO_SUCCESS,
         "rule_reference": "p155 - Weight",
-        "conditions": ["has heavy object to throw"]
+        "conditions": ["has heavy object to throw"],
     },
     # From p150 example - statue as bridge
     "improvise_bridge": {
@@ -148,7 +149,7 @@ KNOWN_CREATIVE_PATTERNS = {
         "description": "Using rope and grappling hook to swing across gap",
         "resolution": ResolutionType.CHECK_REQUIRED,
         "check_type": CheckType.DEXTERITY,
-        "conditions": ["has rope", "has grappling hook"]
+        "conditions": ["has rope", "has grappling hook"],
     },
 }
 
@@ -167,10 +168,7 @@ class CreativeSolutionResolver:
         self._pattern_cache = KNOWN_CREATIVE_PATTERNS.copy()
 
     def validate_proposed_solution(
-        self,
-        solution: CreativeSolution,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, solution: CreativeSolution, character: "CharacterState", context: dict[str, Any]
     ) -> CreativeResolutionResult:
         """
         Validate a solution proposed by the LLM.
@@ -187,9 +185,7 @@ class CreativeSolutionResolver:
         matched_pattern = self._match_known_pattern(solution)
 
         if matched_pattern:
-            return self._resolve_known_pattern(
-                matched_pattern, solution, character, context
-            )
+            return self._resolve_known_pattern(matched_pattern, solution, character, context)
 
         # Check if proposed resolution is reasonable
         if self._is_reasonable_resolution(solution, context):
@@ -204,13 +200,10 @@ class CreativeSolutionResolver:
             description="Proposed resolution not validated",
             rejection_reason=self._get_rejection_reason(solution, context),
             alternatives_offered=alternatives,
-            narrative_hints=["creative approach noted", "alternative methods available"]
+            narrative_hints=["creative approach noted", "alternative methods available"],
         )
 
-    def _match_known_pattern(
-        self,
-        solution: CreativeSolution
-    ) -> Optional[dict[str, Any]]:
+    def _match_known_pattern(self, solution: CreativeSolution) -> Optional[dict[str, Any]]:
         """Check if solution matches a known creative pattern."""
         description_lower = solution.description.lower()
 
@@ -231,7 +224,7 @@ class CreativeSolutionResolver:
         pattern: dict[str, Any],
         solution: CreativeSolution,
         character: "CharacterState",
-        context: dict[str, Any]
+        context: dict[str, Any],
     ) -> CreativeResolutionResult:
         """Resolve using a known pattern."""
         from src.data_models import DiceRoller
@@ -247,7 +240,7 @@ class CreativeSolutionResolver:
                     resolution_type=resolution,
                     description=f"Missing requirement: {condition}",
                     rejection_reason=f"Requires: {condition}",
-                    alternatives_offered=[ResolutionType.CHECK_REQUIRED]
+                    alternatives_offered=[ResolutionType.CHECK_REQUIRED],
                 )
 
         # Handle auto-success
@@ -260,8 +253,8 @@ class CreativeSolutionResolver:
                 turns_spent=pattern.get("time_cost", 0),
                 narrative_hints=[
                     "ingenuity pays off",
-                    pattern.get("rule_reference", "creative approach")
-                ]
+                    pattern.get("rule_reference", "creative approach"),
+                ],
             )
 
         # Handle check with advantage
@@ -290,8 +283,8 @@ class CreativeSolutionResolver:
                 turns_spent=pattern.get("time_cost", 0),
                 narrative_hints=[
                     "clever thinking" if success else "good idea, poor execution",
-                    f"rolled {roll.total} + {ability_mod + modifier} = {total} vs {target}"
-                ]
+                    f"rolled {roll.total} + {ability_mod + modifier} = {total} vs {target}",
+                ],
             )
 
         # Standard check required
@@ -319,7 +312,7 @@ class CreativeSolutionResolver:
                 turns_spent=pattern.get("time_cost", 0),
                 narrative_hints=[
                     "attempt made" if success else "didn't quite work",
-                ]
+                ],
             )
 
         # Narrative only
@@ -328,13 +321,11 @@ class CreativeSolutionResolver:
             resolution_type=ResolutionType.NARRATIVE_ONLY,
             description=solution.description,
             success=True,
-            narrative_hints=["purely narrative action"]
+            narrative_hints=["purely narrative action"],
         )
 
     def _is_reasonable_resolution(
-        self,
-        solution: CreativeSolution,
-        context: dict[str, Any]
+        self, solution: CreativeSolution, context: dict[str, Any]
     ) -> bool:
         """Check if a proposed resolution is reasonable given context."""
         # Auto-success should be reserved for truly trivial or well-established tricks
@@ -351,17 +342,14 @@ class CreativeSolutionResolver:
         return True
 
     def _accept_proposed_resolution(
-        self,
-        solution: CreativeSolution,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, solution: CreativeSolution, character: "CharacterState", context: dict[str, Any]
     ) -> CreativeResolutionResult:
         """Accept the LLM's proposed resolution and resolve it."""
         from src.data_models import DiceRoller
 
         if solution.proposed_resolution in (
             ResolutionType.NARRATIVE_ONLY,
-            ResolutionType.TIME_ONLY
+            ResolutionType.TIME_ONLY,
         ):
             return CreativeResolutionResult(
                 accepted=True,
@@ -369,7 +357,7 @@ class CreativeSolutionResolver:
                 description=solution.description,
                 success=True,
                 turns_spent=solution.time_cost_turns,
-                narrative_hints=["creative approach accepted"]
+                narrative_hints=["creative approach accepted"],
             )
 
         if solution.proposed_resolution == ResolutionType.AUTO_FAIL:
@@ -378,7 +366,7 @@ class CreativeSolutionResolver:
                 resolution_type=ResolutionType.AUTO_FAIL,
                 description=solution.description,
                 success=False,
-                narrative_hints=["impossible action", solution.reasoning]
+                narrative_hints=["impossible action", solution.reasoning],
             )
 
         # Check required
@@ -404,16 +392,11 @@ class CreativeSolutionResolver:
             check_modifier=ability_mod + modifier,
             success=success,
             turns_spent=solution.time_cost_turns,
-            narrative_hints=[
-                "creative solution attempted",
-                "success!" if success else "not quite"
-            ]
+            narrative_hints=["creative solution attempted", "success!" if success else "not quite"],
         )
 
     def _generate_alternatives(
-        self,
-        solution: CreativeSolution,
-        context: dict[str, Any]
+        self, solution: CreativeSolution, context: dict[str, Any]
     ) -> list[ResolutionType]:
         """Generate alternative resolution types for a rejected solution."""
         alternatives = []
@@ -424,7 +407,7 @@ class CreativeSolutionResolver:
         # If it seems clever, offer advantage
         if "clever" in solution.description.lower() or solution.category in (
             CreativeSolutionCategory.TRAP_BYPASS,
-            CreativeSolutionCategory.ENVIRONMENTAL_USE
+            CreativeSolutionCategory.ENVIRONMENTAL_USE,
         ):
             alternatives.append(ResolutionType.CHECK_ADVANTAGE)
 
@@ -433,11 +416,7 @@ class CreativeSolutionResolver:
 
         return alternatives
 
-    def _get_rejection_reason(
-        self,
-        solution: CreativeSolution,
-        context: dict[str, Any]
-    ) -> str:
+    def _get_rejection_reason(self, solution: CreativeSolution, context: dict[str, Any]) -> str:
         """Explain why a solution was not auto-validated."""
         if solution.proposed_resolution == ResolutionType.AUTO_SUCCESS:
             return (
@@ -448,10 +427,7 @@ class CreativeSolutionResolver:
         return "Resolution type requires validation for this context."
 
     def _check_condition(
-        self,
-        condition: str,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, condition: str, character: "CharacterState", context: dict[str, Any]
     ) -> bool:
         """Check if a required condition is met."""
         condition_lower = condition.lower()
@@ -474,11 +450,7 @@ class CreativeSolutionResolver:
         # Default to requiring LLM judgment
         return context.get(f"condition_{condition}", False)
 
-    def _get_ability_modifier(
-        self,
-        character: "CharacterState",
-        check_type: CheckType
-    ) -> int:
+    def _get_ability_modifier(self, character: "CharacterState", check_type: CheckType) -> int:
         """Get the ability modifier for a check type."""
         ability_map = {
             CheckType.STRENGTH: "STR",
@@ -495,27 +467,18 @@ class CreativeSolutionResolver:
 
         return 0
 
-    def register_pattern(
-        self,
-        pattern_key: str,
-        pattern: dict[str, Any]
-    ) -> None:
+    def register_pattern(self, pattern_key: str, pattern: dict[str, Any]) -> None:
         """Register a new creative solution pattern."""
         self._pattern_cache[pattern_key] = pattern
 
     def get_pattern_suggestions(
-        self,
-        hazard_type: str,
-        context: dict[str, Any]
+        self, hazard_type: str, context: dict[str, Any]
     ) -> list[dict[str, Any]]:
         """Get suggested creative patterns for a hazard type."""
         suggestions = []
 
         for pattern_key, pattern in self._pattern_cache.items():
             if hazard_type.lower() in pattern.get("description", "").lower():
-                suggestions.append({
-                    "key": pattern_key,
-                    **pattern
-                })
+                suggestions.append({"key": pattern_key, **pattern})
 
         return suggestions

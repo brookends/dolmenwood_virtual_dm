@@ -55,9 +55,11 @@ logger = logging.getLogger(__name__)
 # RESULT DATACLASSES
 # =============================================================================
 
+
 @dataclass
 class EverydayMortalResult:
     """Result of generating everyday mortal(s)."""
+
     mortal_id: str
     mortal_type: str
     name: str
@@ -72,6 +74,7 @@ class EverydayMortalResult:
 @dataclass
 class AdventurerResult:
     """Result of generating a single adventurer."""
+
     adventurer_id: str
     name: str
     class_id: str
@@ -96,6 +99,7 @@ class AdventurerResult:
 @dataclass
 class AdventuringPartyResult:
     """Result of generating an adventuring party."""
+
     party_id: str
     members: list[AdventurerResult]
     party_level_tier: int  # 1-3 for normal, 4-9 for high level
@@ -110,6 +114,7 @@ class AdventuringPartyResult:
 # =============================================================================
 # ENCOUNTER NPC GENERATOR
 # =============================================================================
+
 
 class EncounterNPCGenerator:
     """
@@ -178,8 +183,7 @@ class EncounterNPCGenerator:
                 kindred = basic_details["kindred"].lower()
             elif type_data.get("kindred_preference"):
                 kindred = DiceRoller.choice(
-                    type_data["kindred_preference"],
-                    f"{mortal_type} kindred"
+                    type_data["kindred_preference"], f"{mortal_type} kindred"
                 )
 
             # Roll type-specific tables
@@ -190,17 +194,19 @@ class EncounterNPCGenerator:
             # Generate a name
             name = self._generate_mortal_name(kindred, basic_details)
 
-            results.append(EverydayMortalResult(
-                mortal_id=mortal_id,
-                mortal_type=mortal_type,
-                name=name,
-                count=1,
-                stat_block=stat_block,
-                basic_details=basic_details,
-                type_details=type_details,
-                special_mechanics=type_data.get("special_mechanics", []),
-                kindred=kindred,
-            ))
+            results.append(
+                EverydayMortalResult(
+                    mortal_id=mortal_id,
+                    mortal_type=mortal_type,
+                    name=name,
+                    count=1,
+                    stat_block=stat_block,
+                    basic_details=basic_details,
+                    type_details=type_details,
+                    special_mechanics=type_data.get("special_mechanics", []),
+                    kindred=kindred,
+                )
+            )
 
         return results
 
@@ -222,11 +228,13 @@ class EncounterNPCGenerator:
             hp_current=hp,
             hp_max=hp,
             movement=stats["speed"],
-            attacks=[{
-                "name": weapon_name,
-                "damage": damage,
-                "bonus": stats["attack_bonus"],
-            }],
+            attacks=[
+                {
+                    "name": weapon_name,
+                    "damage": damage,
+                    "bonus": stats["attack_bonus"],
+                }
+            ],
             morale=stats["morale"],
             save_as="Normal Human",
             special_abilities=[],
@@ -257,11 +265,7 @@ class EncounterNPCGenerator:
 
         return results
 
-    def _generate_mortal_name(
-        self,
-        kindred: str,
-        basic_details: Optional[dict]
-    ) -> str:
+    def _generate_mortal_name(self, kindred: str, basic_details: Optional[dict]) -> str:
         """Generate a name for an everyday mortal."""
         # Simple name generation - could be expanded with kindred-specific tables
         sex = "male"
@@ -269,12 +273,28 @@ class EncounterNPCGenerator:
             sex = basic_details["sex"].lower()
 
         male_names = [
-            "Aldric", "Bertram", "Cedric", "Dunstan", "Edmund",
-            "Godwin", "Harold", "Ivor", "Kendrick", "Leofric",
+            "Aldric",
+            "Bertram",
+            "Cedric",
+            "Dunstan",
+            "Edmund",
+            "Godwin",
+            "Harold",
+            "Ivor",
+            "Kendrick",
+            "Leofric",
         ]
         female_names = [
-            "Aelfleda", "Beatrice", "Cyneburh", "Edith", "Frideswide",
-            "Godgifu", "Hild", "Isolde", "Leofrun", "Mildred",
+            "Aelfleda",
+            "Beatrice",
+            "Cyneburh",
+            "Edith",
+            "Frideswide",
+            "Godgifu",
+            "Hild",
+            "Isolde",
+            "Leofrun",
+            "Mildred",
         ]
 
         names = female_names if sex == "female" else male_names
@@ -318,10 +338,7 @@ class EncounterNPCGenerator:
         if kindred is None:
             # Check if template has kindred preference
             if "kindred_preference" in template:
-                kindred = DiceRoller.choice(
-                    template["kindred_preference"],
-                    f"{class_id} kindred"
-                )
+                kindred = DiceRoller.choice(template["kindred_preference"], f"{class_id} kindred")
             else:
                 # Roll on kindred table
                 kindred_roll = DiceRoller.roll("1d12", "Adventurer kindred").total
@@ -330,10 +347,7 @@ class EncounterNPCGenerator:
         # Determine alignment
         if alignment is None:
             if "alignment" in template:
-                alignment = DiceRoller.choice(
-                    template["alignment"],
-                    f"{class_id} alignment"
-                )
+                alignment = DiceRoller.choice(template["alignment"], f"{class_id} alignment")
             else:
                 alignment_roll = DiceRoller.roll("1d6", "Adventurer alignment").total
                 alignment = ALIGNMENT["entries"].get(alignment_roll, "Neutral")
@@ -349,8 +363,7 @@ class EncounterNPCGenerator:
         possessions_gp = 0
         if level > 0:
             gold_roll = DiceRoller.roll(
-                ADVENTURER_POSSESSIONS["gold_per_level"],
-                "Adventurer gold"
+                ADVENTURER_POSSESSIONS["gold_per_level"], "Adventurer gold"
             ).total
             possessions_gp = gold_roll * level
 
@@ -390,11 +403,7 @@ class EncounterNPCGenerator:
             kindred_traits=kindred_traits,
         )
 
-    def _create_adventurer_stat_block(
-        self,
-        template: dict,
-        kindred: str
-    ) -> StatBlock:
+    def _create_adventurer_stat_block(self, template: dict, kindred: str) -> StatBlock:
         """Create a stat block from an adventurer template."""
         # Roll HP
         hp_dice = template.get("hp_dice", "1d8")
@@ -427,12 +436,36 @@ class EncounterNPCGenerator:
         """Generate a name for an adventurer."""
         # Could be expanded with kindred-specific name tables
         names = [
-            "Aldric", "Bertram", "Cedric", "Dunstan", "Edmund",
-            "Godwin", "Harold", "Ivor", "Kendrick", "Leofric",
-            "Aelfleda", "Beatrice", "Cyneburh", "Edith", "Frideswide",
-            "Godgifu", "Hild", "Isolde", "Leofrun", "Mildred",
-            "Alaric", "Branwen", "Corvin", "Drystan", "Elowen",
-            "Fintan", "Gareth", "Heledd", "Idris", "Jennet",
+            "Aldric",
+            "Bertram",
+            "Cedric",
+            "Dunstan",
+            "Edmund",
+            "Godwin",
+            "Harold",
+            "Ivor",
+            "Kendrick",
+            "Leofric",
+            "Aelfleda",
+            "Beatrice",
+            "Cyneburh",
+            "Edith",
+            "Frideswide",
+            "Godgifu",
+            "Hild",
+            "Isolde",
+            "Leofrun",
+            "Mildred",
+            "Alaric",
+            "Branwen",
+            "Corvin",
+            "Drystan",
+            "Elowen",
+            "Fintan",
+            "Gareth",
+            "Heledd",
+            "Idris",
+            "Jennet",
         ]
         return DiceRoller.choice(names, "Adventurer name")
 
@@ -488,13 +521,11 @@ class EncounterNPCGenerator:
         # Determine party level tier
         if is_high_level:
             level_tier = DiceRoller.roll(
-                PARTY_LEVEL["high_level"]["dice"],
-                "Party level (high)"
+                PARTY_LEVEL["high_level"]["dice"], "Party level (high)"
             ).total
         else:
             level_tier = DiceRoller.roll(
-                PARTY_LEVEL["normal"]["dice"],
-                "Party level (normal)"
+                PARTY_LEVEL["normal"]["dice"], "Party level (normal)"
             ).total
 
         # Determine party alignment
@@ -537,10 +568,7 @@ class EncounterNPCGenerator:
         # Roll for mounts
         is_mounted = False
         if on_road:
-            is_mounted = DiceRoller.percent_check(
-                MOUNTED_CHANCE["on_road"],
-                "Party mounted"
-            )
+            is_mounted = DiceRoller.percent_check(MOUNTED_CHANCE["on_road"], "Party mounted")
 
         # Roll quest
         quest_table = get_quest_table(alignment)
@@ -576,24 +604,19 @@ class EncounterNPCGenerator:
         gems_chance = PARTY_TREASURE["gems"]["chance_percent"]
         if DiceRoller.percent_check(gems_chance, "Party gems"):
             treasure["gems"] = DiceRoller.roll(
-                PARTY_TREASURE["gems"]["count"],
-                "Party gem count"
+                PARTY_TREASURE["gems"]["count"], "Party gem count"
             ).total
 
         # Check for art objects
         art_chance = PARTY_TREASURE["art_objects"]["chance_percent"]
         if DiceRoller.percent_check(art_chance, "Party art"):
             treasure["art_objects"] = DiceRoller.roll(
-                PARTY_TREASURE["art_objects"]["count"],
-                "Party art count"
+                PARTY_TREASURE["art_objects"]["count"], "Party art count"
             ).total
 
         return treasure
 
-    def _determine_marching_order(
-        self,
-        members: list[AdventurerResult]
-    ) -> list[str]:
+    def _determine_marching_order(self, members: list[AdventurerResult]) -> list[str]:
         """Determine marching order for the party."""
         # Simple ordering: heavy fighters front, casters back
         front_classes = ["fighter", "knight", "cleric"]
@@ -625,10 +648,7 @@ class EncounterNPCGenerator:
         Returns:
             Activity description (may contain '?' indicating another creature)
         """
-        roll = DiceRoller.roll(
-            CREATURE_ACTIVITY["die"],
-            "Creature activity"
-        ).total
+        roll = DiceRoller.roll(CREATURE_ACTIVITY["die"], "Creature activity").total
         return CREATURE_ACTIVITY["entries"].get(roll, "Wandering")
 
 

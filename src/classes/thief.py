@@ -79,21 +79,156 @@ THIEF_SKILLS = ClassAbility(
         ],
         # Skill Targets by level (roll d6 >= target to succeed)
         "skill_targets": {
-            1:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 6, "legerdemain": 6, "pick_lock": 6, "listen": 5, "search": 6, "stealth": 5},
-            2:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 5, "legerdemain": 6, "pick_lock": 6, "listen": 5, "search": 5, "stealth": 5},
-            3:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 5, "search": 5, "stealth": 5},
-            4:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 5, "search": 5, "stealth": 5},
-            5:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 4, "search": 5, "stealth": 4},
-            6:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 4, "legerdemain": 5, "pick_lock": 5, "listen": 4, "search": 4, "stealth": 4},
-            7:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 4, "search": 4, "stealth": 4},
-            8:  {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 4, "search": 4, "stealth": 4},
-            9:  {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 3, "search": 4, "stealth": 3},
-            10: {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 3, "legerdemain": 4, "pick_lock": 4, "listen": 3, "search": 3, "stealth": 3},
-            11: {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 3, "search": 3, "stealth": 3},
-            12: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 2, "search": 3, "stealth": 3},
-            13: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 2, "search": 2, "stealth": 2},
-            14: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 2, "legerdemain": 3, "pick_lock": 2, "listen": 2, "search": 2, "stealth": 2},
-            15: {"climb_wall": 2, "decipher_document": 2, "disarm_mechanism": 2, "legerdemain": 2, "pick_lock": 2, "listen": 2, "search": 2, "stealth": 2},
+            1: {
+                "climb_wall": 4,
+                "decipher_document": 6,
+                "disarm_mechanism": 6,
+                "legerdemain": 6,
+                "pick_lock": 6,
+                "listen": 5,
+                "search": 6,
+                "stealth": 5,
+            },
+            2: {
+                "climb_wall": 4,
+                "decipher_document": 6,
+                "disarm_mechanism": 5,
+                "legerdemain": 6,
+                "pick_lock": 6,
+                "listen": 5,
+                "search": 5,
+                "stealth": 5,
+            },
+            3: {
+                "climb_wall": 4,
+                "decipher_document": 6,
+                "disarm_mechanism": 5,
+                "legerdemain": 5,
+                "pick_lock": 5,
+                "listen": 5,
+                "search": 5,
+                "stealth": 5,
+            },
+            4: {
+                "climb_wall": 3,
+                "decipher_document": 5,
+                "disarm_mechanism": 5,
+                "legerdemain": 5,
+                "pick_lock": 5,
+                "listen": 5,
+                "search": 5,
+                "stealth": 5,
+            },
+            5: {
+                "climb_wall": 3,
+                "decipher_document": 5,
+                "disarm_mechanism": 5,
+                "legerdemain": 5,
+                "pick_lock": 5,
+                "listen": 4,
+                "search": 5,
+                "stealth": 4,
+            },
+            6: {
+                "climb_wall": 3,
+                "decipher_document": 5,
+                "disarm_mechanism": 4,
+                "legerdemain": 5,
+                "pick_lock": 5,
+                "listen": 4,
+                "search": 4,
+                "stealth": 4,
+            },
+            7: {
+                "climb_wall": 3,
+                "decipher_document": 5,
+                "disarm_mechanism": 4,
+                "legerdemain": 4,
+                "pick_lock": 4,
+                "listen": 4,
+                "search": 4,
+                "stealth": 4,
+            },
+            8: {
+                "climb_wall": 2,
+                "decipher_document": 4,
+                "disarm_mechanism": 4,
+                "legerdemain": 4,
+                "pick_lock": 4,
+                "listen": 4,
+                "search": 4,
+                "stealth": 4,
+            },
+            9: {
+                "climb_wall": 2,
+                "decipher_document": 4,
+                "disarm_mechanism": 4,
+                "legerdemain": 4,
+                "pick_lock": 4,
+                "listen": 3,
+                "search": 4,
+                "stealth": 3,
+            },
+            10: {
+                "climb_wall": 2,
+                "decipher_document": 4,
+                "disarm_mechanism": 3,
+                "legerdemain": 4,
+                "pick_lock": 4,
+                "listen": 3,
+                "search": 3,
+                "stealth": 3,
+            },
+            11: {
+                "climb_wall": 2,
+                "decipher_document": 4,
+                "disarm_mechanism": 3,
+                "legerdemain": 3,
+                "pick_lock": 3,
+                "listen": 3,
+                "search": 3,
+                "stealth": 3,
+            },
+            12: {
+                "climb_wall": 2,
+                "decipher_document": 3,
+                "disarm_mechanism": 3,
+                "legerdemain": 3,
+                "pick_lock": 3,
+                "listen": 2,
+                "search": 3,
+                "stealth": 3,
+            },
+            13: {
+                "climb_wall": 2,
+                "decipher_document": 3,
+                "disarm_mechanism": 3,
+                "legerdemain": 3,
+                "pick_lock": 3,
+                "listen": 2,
+                "search": 2,
+                "stealth": 2,
+            },
+            14: {
+                "climb_wall": 2,
+                "decipher_document": 3,
+                "disarm_mechanism": 2,
+                "legerdemain": 3,
+                "pick_lock": 2,
+                "listen": 2,
+                "search": 2,
+                "stealth": 2,
+            },
+            15: {
+                "climb_wall": 2,
+                "decipher_document": 2,
+                "disarm_mechanism": 2,
+                "legerdemain": 2,
+                "pick_lock": 2,
+                "listen": 2,
+                "search": 2,
+                "stealth": 2,
+            },
         },
         "skill_details": {
             "climb_wall": {
@@ -352,32 +487,25 @@ THIEF_DEFINITION = ClassDefinition(
         "a life of adventure, relishing exploration, peril, and the promise "
         "of great wealth."
     ),
-
     hit_die=HitDie.D4,
     prime_ability="DEX",
-
     magic_type=MagicType.NONE,
-
     armor_proficiencies=[
         ArmorProficiency.LIGHT,
         # Note: No shields
     ],
     weapon_proficiencies=[
-        WeaponProficiency.SIMPLE,   # Small weapons
+        WeaponProficiency.SIMPLE,  # Small weapons
         WeaponProficiency.MARTIAL,  # Medium weapons
     ],
-
     level_progression=THIEF_LEVEL_PROGRESSION,
-
     abilities=[
         THIEF_BACKSTAB,
         THIEF_SKILLS,
         THIEF_THIEVES_CANT,
     ],
-
     # No kindred restrictions
     restricted_kindreds=[],
-
     starting_equipment=[
         # Armour (roll 1d6): 1-3. None. 4-6. Leather.
         "armor_roll_1d6",
@@ -387,13 +515,11 @@ THIEF_DEFINITION = ClassDefinition(
         # Class items
         "thieves_tools",
     ],
-
     extra_data={
         "combat_aptitude": "Semi-martial",
         "armor_restriction": "Light armour only, no shields",
         "weapon_restriction": "Small and Medium weapons",
     },
-
     source_book="Dolmenwood Player Book",
     source_page=74,
 )

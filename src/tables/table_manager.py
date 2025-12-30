@@ -35,9 +35,7 @@ class TableManager:
         self._tables: dict[str, DolmenwoodTable] = {}
 
         # Tables indexed by category
-        self._by_category: dict[TableCategory, list[str]] = {
-            cat: [] for cat in TableCategory
-        }
+        self._by_category: dict[TableCategory, list[str]] = {cat: [] for cat in TableCategory}
 
         # Hex-specific tables
         self._hex_tables: dict[str, dict[str, str]] = {}  # hex_id -> {name: table_id}
@@ -81,36 +79,41 @@ class TableManager:
             source_reference="OSE Core Rules",
             entries=[
                 TableEntry(
-                    roll_min=2, roll_max=2,
+                    roll_min=2,
+                    roll_max=2,
                     title="Hostile, attacks",
                     result="The creature attacks immediately.",
-                    mechanical_effect="immediate_attack"
+                    mechanical_effect="immediate_attack",
                 ),
                 TableEntry(
-                    roll_min=3, roll_max=5,
+                    roll_min=3,
+                    roll_max=5,
                     title="Hostile",
                     result="The creature is hostile and may attack.",
-                    mechanical_effect="hostile"
+                    mechanical_effect="hostile",
                 ),
                 TableEntry(
-                    roll_min=6, roll_max=8,
+                    roll_min=6,
+                    roll_max=8,
                     title="Uncertain",
                     result="The creature is confused or uncertain. It may be influenced by actions.",
-                    mechanical_effect="uncertain"
+                    mechanical_effect="uncertain",
                 ),
                 TableEntry(
-                    roll_min=9, roll_max=11,
+                    roll_min=9,
+                    roll_max=11,
                     title="Indifferent",
                     result="The creature is not interested in attacking. It may consider offers.",
-                    mechanical_effect="indifferent"
+                    mechanical_effect="indifferent",
                 ),
                 TableEntry(
-                    roll_min=12, roll_max=12,
+                    roll_min=12,
+                    roll_max=12,
                     title="Friendly",
                     result="The creature is friendly and helpful.",
-                    mechanical_effect="friendly"
+                    mechanical_effect="friendly",
                 ),
-            ]
+            ],
         )
 
     def _create_morale_situation_table(self) -> DolmenwoodTable:
@@ -123,13 +126,49 @@ class TableManager:
             num_dice=1,
             description="Modifiers to apply to morale checks based on situation",
             entries=[
-                TableEntry(roll_min=1, roll_max=1, title="First ally killed", result="-1 to morale", modifier=-1),
-                TableEntry(roll_min=2, roll_max=2, title="Half allies killed", result="-2 to morale", modifier=-2),
-                TableEntry(roll_min=3, roll_max=3, title="Leader killed", result="-2 to morale", modifier=-2),
-                TableEntry(roll_min=4, roll_max=4, title="Outnumbered 2:1", result="-1 to morale", modifier=-1),
-                TableEntry(roll_min=5, roll_max=5, title="Winning clearly", result="+1 to morale", modifier=+1),
-                TableEntry(roll_min=6, roll_max=6, title="Fighting for lair/treasure", result="+2 to morale", modifier=+2),
-            ]
+                TableEntry(
+                    roll_min=1,
+                    roll_max=1,
+                    title="First ally killed",
+                    result="-1 to morale",
+                    modifier=-1,
+                ),
+                TableEntry(
+                    roll_min=2,
+                    roll_max=2,
+                    title="Half allies killed",
+                    result="-2 to morale",
+                    modifier=-2,
+                ),
+                TableEntry(
+                    roll_min=3,
+                    roll_max=3,
+                    title="Leader killed",
+                    result="-2 to morale",
+                    modifier=-2,
+                ),
+                TableEntry(
+                    roll_min=4,
+                    roll_max=4,
+                    title="Outnumbered 2:1",
+                    result="-1 to morale",
+                    modifier=-1,
+                ),
+                TableEntry(
+                    roll_min=5,
+                    roll_max=5,
+                    title="Winning clearly",
+                    result="+1 to morale",
+                    modifier=+1,
+                ),
+                TableEntry(
+                    roll_min=6,
+                    roll_max=6,
+                    title="Fighting for lair/treasure",
+                    result="+2 to morale",
+                    modifier=+2,
+                ),
+            ],
         )
 
     def _create_surprise_table(self) -> DolmenwoodTable:
@@ -142,9 +181,16 @@ class TableManager:
             num_dice=1,
             description="Roll 1d6 for each side; 1-2 indicates surprise",
             entries=[
-                TableEntry(roll_min=1, roll_max=2, result="Surprised", mechanical_effect="surprised"),
-                TableEntry(roll_min=3, roll_max=6, result="Not surprised", mechanical_effect="not_surprised"),
-            ]
+                TableEntry(
+                    roll_min=1, roll_max=2, result="Surprised", mechanical_effect="surprised"
+                ),
+                TableEntry(
+                    roll_min=3,
+                    roll_max=6,
+                    result="Not surprised",
+                    mechanical_effect="not_surprised",
+                ),
+            ],
         )
 
     def _create_encounter_type_table(self) -> DolmenwoodTable:
@@ -157,17 +203,45 @@ class TableManager:
             num_dice=1,
             description="Determine the general type of wilderness encounter",
             entries=[
-                TableEntry(roll_min=1, roll_max=2, title="Monster", result="A monster encounter",
-                           mechanical_effect="monster", sub_table="encounter_monster"),
-                TableEntry(roll_min=3, roll_max=3, title="NPC", result="An NPC encounter",
-                           mechanical_effect="npc", sub_table="encounter_npc"),
-                TableEntry(roll_min=4, roll_max=4, title="Lair", result="Discovery of a monster lair",
-                           mechanical_effect="lair"),
-                TableEntry(roll_min=5, roll_max=5, title="Spoor/Sign", result="Signs of creature activity",
-                           mechanical_effect="spoor"),
-                TableEntry(roll_min=6, roll_max=6, title="Special", result="A special or environmental encounter",
-                           mechanical_effect="special", sub_table="encounter_special"),
-            ]
+                TableEntry(
+                    roll_min=1,
+                    roll_max=2,
+                    title="Monster",
+                    result="A monster encounter",
+                    mechanical_effect="monster",
+                    sub_table="encounter_monster",
+                ),
+                TableEntry(
+                    roll_min=3,
+                    roll_max=3,
+                    title="NPC",
+                    result="An NPC encounter",
+                    mechanical_effect="npc",
+                    sub_table="encounter_npc",
+                ),
+                TableEntry(
+                    roll_min=4,
+                    roll_max=4,
+                    title="Lair",
+                    result="Discovery of a monster lair",
+                    mechanical_effect="lair",
+                ),
+                TableEntry(
+                    roll_min=5,
+                    roll_max=5,
+                    title="Spoor/Sign",
+                    result="Signs of creature activity",
+                    mechanical_effect="spoor",
+                ),
+                TableEntry(
+                    roll_min=6,
+                    roll_max=6,
+                    title="Special",
+                    result="A special or environmental encounter",
+                    mechanical_effect="special",
+                    sub_table="encounter_special",
+                ),
+            ],
         )
 
     def _create_weather_table(self, season: str) -> DolmenwoodTable:
@@ -208,7 +282,7 @@ class TableManager:
             num_dice=1,
             description=f"Daily weather for {season}",
             context_required=season,
-            entries=season_entries.get(season, [])
+            entries=season_entries.get(season, []),
         )
 
     def register_table(self, table: DolmenwoodTable) -> None:
@@ -243,8 +317,9 @@ class TableManager:
 
     def get_tables_by_category(self, category: TableCategory) -> list[DolmenwoodTable]:
         """Get all tables in a category."""
-        return [self._tables[tid] for tid in self._by_category.get(category, [])
-                if tid in self._tables]
+        return [
+            self._tables[tid] for tid in self._by_category.get(category, []) if tid in self._tables
+        ]
 
     def get_hex_tables(self, hex_id: str) -> dict[str, DolmenwoodTable]:
         """Get all tables specific to a hex."""
@@ -259,7 +334,7 @@ class TableManager:
         table_id: str,
         context: Optional[TableContext] = None,
         modifier: int = 0,
-        resolve_nested: bool = True
+        resolve_nested: bool = True,
     ) -> TableResult:
         """
         Roll on a table and return the full result.
@@ -280,7 +355,7 @@ class TableManager:
                 table_name="Unknown",
                 category=TableCategory.FLAVOR,
                 roll_total=0,
-                result_text=f"Table '{table_id}' not found"
+                result_text=f"Table '{table_id}' not found",
             )
 
         # Calculate total modifier
@@ -311,7 +386,7 @@ class TableManager:
             dice_rolled=dice_rolled,
             modifier_applied=total_modifier,
             entry=entry,
-            result_text=entry.result if entry else "No matching entry"
+            result_text=entry.result if entry else "No matching entry",
         )
 
         # Resolve quantity if specified
@@ -336,16 +411,16 @@ class TableManager:
             Total result
         """
         modifier = 0
-        if '+' in notation:
-            dice_part, mod_part = notation.split('+')
+        if "+" in notation:
+            dice_part, mod_part = notation.split("+")
             modifier = int(mod_part)
-        elif '-' in notation:
-            dice_part, mod_part = notation.split('-')
+        elif "-" in notation:
+            dice_part, mod_part = notation.split("-")
             modifier = -int(mod_part)
         else:
             dice_part = notation
 
-        num_dice, die_size = dice_part.lower().split('d')
+        num_dice, die_size = dice_part.lower().split("d")
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
@@ -365,12 +440,7 @@ class TableManager:
         roll = DiceRoller.roll("1d6", "surprise check").total + modifier
         return roll, roll <= 2
 
-    def skill_check(
-        self,
-        skill_name: str,
-        base_chance: int,
-        modifier: int = 0
-    ) -> SkillCheck:
+    def skill_check(self, skill_name: str, base_chance: int, modifier: int = 0) -> SkillCheck:
         """
         Perform an X-in-6 skill check.
 
@@ -402,7 +472,7 @@ class TableManager:
         table_name: str,
         die_type: str,
         entries: list[dict],
-        category: TableCategory = TableCategory.ENCOUNTER_HEX
+        category: TableCategory = TableCategory.ENCOUNTER_HEX,
     ) -> str:
         """
         Register a hex-specific table from hex data.
@@ -430,17 +500,19 @@ class TableManager:
         table_entries = []
         for entry in entries:
             roll_val = entry.get("roll", 1)
-            table_entries.append(TableEntry(
-                roll_min=roll_val,
-                roll_max=roll_val,
-                title=entry.get("title"),
-                result=entry.get("description", ""),
-                monster_refs=entry.get("monsters", []),
-                npc_refs=entry.get("npcs", []),
-                item_refs=entry.get("items", []),
-                mechanical_effect=entry.get("mechanical_effect"),
-                sub_table=entry.get("sub_table"),
-            ))
+            table_entries.append(
+                TableEntry(
+                    roll_min=roll_val,
+                    roll_max=roll_val,
+                    title=entry.get("title"),
+                    result=entry.get("description", ""),
+                    monster_refs=entry.get("monsters", []),
+                    npc_refs=entry.get("npcs", []),
+                    item_refs=entry.get("items", []),
+                    mechanical_effect=entry.get("mechanical_effect"),
+                    sub_table=entry.get("sub_table"),
+                )
+            )
 
         table = DolmenwoodTable(
             table_id=table_id,
@@ -449,7 +521,7 @@ class TableManager:
             die_type=die_enum,
             num_dice=1,
             hex_id=hex_id,
-            entries=table_entries
+            entries=table_entries,
         )
 
         self.register_table(table)
@@ -465,7 +537,7 @@ class TableManager:
         Returns:
             Number of tables loaded
         """
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         count = 0
@@ -505,18 +577,20 @@ class TableManager:
                 roll_min = entry_data.get("roll_min", roll)
                 roll_max = entry_data.get("roll_max", roll)
 
-                entries.append(TableEntry(
-                    roll_min=roll_min,
-                    roll_max=roll_max,
-                    title=entry_data.get("title"),
-                    result=entry_data.get("result", entry_data.get("description", "")),
-                    monster_refs=entry_data.get("monsters", []),
-                    npc_refs=entry_data.get("npcs", []),
-                    item_refs=entry_data.get("items", []),
-                    mechanical_effect=entry_data.get("mechanical_effect"),
-                    sub_table=entry_data.get("sub_table"),
-                    quantity=entry_data.get("quantity"),
-                ))
+                entries.append(
+                    TableEntry(
+                        roll_min=roll_min,
+                        roll_max=roll_max,
+                        title=entry_data.get("title"),
+                        result=entry_data.get("result", entry_data.get("description", "")),
+                        monster_refs=entry_data.get("monsters", []),
+                        npc_refs=entry_data.get("npcs", []),
+                        item_refs=entry_data.get("items", []),
+                        mechanical_effect=entry_data.get("mechanical_effect"),
+                        sub_table=entry_data.get("sub_table"),
+                        quantity=entry_data.get("quantity"),
+                    )
+                )
 
             return DolmenwoodTable(
                 table_id=data.get("table_id", data.get("id", "")),

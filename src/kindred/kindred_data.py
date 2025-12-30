@@ -12,6 +12,7 @@ from typing import Any, Optional
 
 class KindredType(str, Enum):
     """Classification of kindred types."""
+
     MORTAL = "mortal"
     DEMI_FEY = "demi_fey"
     FAIRY = "fairy"
@@ -19,6 +20,7 @@ class KindredType(str, Enum):
 
 class AspectType(str, Enum):
     """Types of character aspects for generation."""
+
     BACKGROUND = "background"
     TRINKET = "trinket"
     HEAD = "head"
@@ -33,12 +35,13 @@ class AspectType(str, Enum):
 
 class NameColumn(str, Enum):
     """Name table column types."""
+
     MALE = "male"
     FEMALE = "female"
     UNISEX = "unisex"
     SURNAME = "surname"
-    RUSTIC = "rustic"      # For elves
-    COURTLY = "courtly"    # For elves
+    RUSTIC = "rustic"  # For elves
+    COURTLY = "courtly"  # For elves
 
 
 @dataclass
@@ -48,6 +51,7 @@ class DiceFormula:
 
     Used for rolling age, height, weight, etc.
     """
+
     num_dice: int
     die_size: int
     modifier: int = 0
@@ -63,6 +67,7 @@ class DiceFormula:
     def parse(cls, formula: str) -> "DiceFormula":
         """Parse a string like '2d6+10' into a DiceFormula."""
         import re
+
         match = re.match(r"(\d+)d(\d+)([+-]\d+)?", formula.replace(" ", ""))
         if not match:
             raise ValueError(f"Invalid dice formula: {formula}")
@@ -75,6 +80,7 @@ class DiceFormula:
 @dataclass
 class PhysicalRanges:
     """Physical characteristic ranges for a kindred."""
+
     # Age at level 1 (base + dice)
     age_base: int
     age_dice: DiceFormula
@@ -106,6 +112,7 @@ class KindredAbility:
     Abilities can be passive (always active) or active (require activation).
     Some abilities scale with level.
     """
+
     ability_id: str
     name: str
     description: str
@@ -138,6 +145,7 @@ class KindredAbility:
 @dataclass
 class AspectTableEntry:
     """A single entry in an aspect table."""
+
     roll_min: int
     roll_max: int
     result: str
@@ -152,6 +160,7 @@ class AspectTable:
 
     Contains entries that map die rolls to results.
     """
+
     aspect_type: AspectType
     die_size: int  # d12, d20, d100, etc.
     entries: list[AspectTableEntry] = field(default_factory=list)
@@ -171,6 +180,7 @@ class NameTable:
 
     Contains lists of names organized by column type.
     """
+
     columns: dict[NameColumn, list[str]] = field(default_factory=dict)
 
     def get_names(self, column: NameColumn) -> list[str]:
@@ -185,10 +195,11 @@ class LevelProgression:
 
     Tracks things like horn length, damage, ability uses, etc.
     """
+
     level: int
     horn_length: Optional[str] = None  # For breggles
     horn_damage: Optional[str] = None  # Damage dice
-    gaze_uses: Optional[int] = None    # Uses per day
+    gaze_uses: Optional[int] = None  # Uses per day
     # Add more progression fields as needed for other kindreds
 
 
@@ -200,6 +211,7 @@ class KindredDefinition:
     Contains all data needed to generate and play a character
     of this kindred.
     """
+
     # Identity
     kindred_id: str
     name: str
@@ -270,6 +282,7 @@ class GeneratedKindredAspects:
     Stores the results of rolling on all aspect tables
     during character generation.
     """
+
     kindred_id: str
 
     # Physical stats (rolled)

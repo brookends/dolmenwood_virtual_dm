@@ -186,10 +186,7 @@ class TestEnemyAI:
         result = combat_engine.execute_round([])
 
         # Enemy should have attacked
-        enemy_attacks = [
-            a for a in result.actions_resolved
-            if a.attacker_id.startswith("goblin")
-        ]
+        enemy_attacks = [a for a in result.actions_resolved if a.attacker_id.startswith("goblin")]
         assert len(enemy_attacks) >= 1
 
 

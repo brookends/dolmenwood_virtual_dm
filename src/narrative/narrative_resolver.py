@@ -21,18 +21,33 @@ if TYPE_CHECKING:
     from src.game_state.global_controller import GlobalController
 
 from src.narrative.intent_parser import (
-    ParsedIntent, ActionCategory, ActionType, ResolutionType,
-    CheckType, SaveType, ADVENTURER_COMPETENCIES, is_adventurer_competency
+    ParsedIntent,
+    ActionCategory,
+    ActionType,
+    ResolutionType,
+    CheckType,
+    SaveType,
+    ADVENTURER_COMPETENCIES,
+    is_adventurer_competency,
 )
 from src.narrative.spell_resolver import (
-    SpellResolver, SpellData, SpellCastResult, ActiveSpellEffect
+    SpellResolver,
+    SpellData,
+    SpellCastResult,
+    ActiveSpellEffect,
 )
 from src.narrative.hazard_resolver import (
-    HazardResolver, HazardType, HazardResult, DarknessLevel, DivingState
+    HazardResolver,
+    HazardType,
+    HazardResult,
+    DarknessLevel,
+    DivingState,
 )
 from src.narrative.creative_resolver import (
-    CreativeSolutionResolver, CreativeSolution, CreativeResolutionResult,
-    CreativeSolutionCategory
+    CreativeSolutionResolver,
+    CreativeSolution,
+    CreativeResolutionResult,
+    CreativeSolutionCategory,
 )
 
 
@@ -47,6 +62,7 @@ class NarrationContext:
     Contains all mechanical results in a format the LLM can use
     to generate appropriate narrative description.
     """
+
     # Action information
     action_category: ActionCategory
     action_type: ActionType
@@ -94,6 +110,7 @@ class NarrationContext:
 @dataclass
 class ResolutionResult:
     """Complete result of resolving a player action."""
+
     success: bool
     narration_context: NarrationContext
     parsed_intent: ParsedIntent
@@ -158,8 +175,7 @@ class NarrativeResolver:
         self._active_effects: list[ActiveSpellEffect] = []
 
     def set_narration_callback(
-        self,
-        callback: Callable[[NarrationContext, str], Optional[str]]
+        self, callback: Callable[[NarrationContext, str], Optional[str]]
     ) -> None:
         """
         Set the LLM narration callback for resolved actions.
@@ -172,10 +188,7 @@ class NarrativeResolver:
         """
         self._narration_callback = callback
 
-    def set_intent_parser(
-        self,
-        parser: Callable[[str, dict], ParsedIntent]
-    ) -> None:
+    def set_intent_parser(self, parser: Callable[[str, dict], ParsedIntent]) -> None:
         """
         Set the LLM-based intent parser function.
 
@@ -188,7 +201,7 @@ class NarrativeResolver:
         self,
         player_input: str,
         character: "CharacterState",
-        context: Optional[dict[str, Any]] = None
+        context: Optional[dict[str, Any]] = None,
     ) -> ResolutionResult:
         """
         Resolve player text input into mechanical outcomes.
@@ -214,7 +227,7 @@ class NarrativeResolver:
         # Step 3: Generate narration if callback is set
         if self._narration_callback:
             try:
-                character_name = getattr(character, 'name', str(character))
+                character_name = getattr(character, "name", str(character))
                 narration = self._narration_callback(result.narration_context, character_name)
                 result.narration = narration
             except Exception as e:
@@ -222,11 +235,7 @@ class NarrativeResolver:
 
         return result
 
-    def _parse_intent(
-        self,
-        player_input: str,
-        context: dict[str, Any]
-    ) -> ParsedIntent:
+    def _parse_intent(self, player_input: str, context: dict[str, Any]) -> ParsedIntent:
         """
         Parse player input into structured intent.
 
@@ -241,11 +250,7 @@ class NarrativeResolver:
         # Fallback: simple pattern matching
         return self._pattern_match_intent(player_input, context)
 
-    def _pattern_match_intent(
-        self,
-        player_input: str,
-        context: dict[str, Any]
-    ) -> ParsedIntent:
+    def _pattern_match_intent(self, player_input: str, context: dict[str, Any]) -> ParsedIntent:
         """Simple pattern matching for common actions."""
         input_lower = player_input.lower()
 
@@ -353,10 +358,7 @@ class NarrativeResolver:
         )
 
     def _route_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Route parsed intent to appropriate resolver."""
         # Check adventurer competency first
@@ -386,9 +388,7 @@ class NarrativeResolver:
         return self._resolve_narrative_action(parsed, character, context)
 
     def _resolve_competency(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState"
+        self, parsed: ParsedIntent, character: "CharacterState"
     ) -> ResolutionResult:
         """Resolve an action covered by adventurer competency (no roll needed)."""
         narration = NarrationContext(
@@ -398,10 +398,7 @@ class NarrativeResolver:
             success=True,
             resolution_type=ResolutionType.AUTO_SUCCESS,
             rule_reference="p150 - Adventurer Competency",
-            narrative_hints=[
-                "accomplished with practiced ease",
-                "basic adventuring skill"
-            ]
+            narrative_hints=["accomplished with practiced ease", "basic adventuring skill"],
         )
 
         return ResolutionResult(
@@ -411,10 +408,7 @@ class NarrativeResolver:
         )
 
     def _resolve_spell_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve spell casting."""
         # Look up spell
@@ -430,7 +424,7 @@ class NarrativeResolver:
                 action_type=ActionType.CAST_SPELL,
                 player_input=parsed.raw_input,
                 success=False,
-                errors=[f"Unknown spell: {parsed.spell_name or parsed.spell_id}"]
+                errors=[f"Unknown spell: {parsed.spell_name or parsed.spell_id}"],
             )
             return ResolutionResult(
                 success=False,
@@ -440,12 +434,13 @@ class NarrativeResolver:
 
         # Resolve the spell
         from src.data_models import DiceRoller
+
         result = self.spell_resolver.resolve_spell(
             caster=character,
             spell=spell,
             target_id=parsed.target_id,
             target_description=parsed.target_description,
-            dice_roller=DiceRoller()
+            dice_roller=DiceRoller(),
         )
 
         # Build narration context
@@ -454,13 +449,14 @@ class NarrativeResolver:
             action_type=ActionType.CAST_SPELL,
             player_input=parsed.raw_input,
             success=result.success,
-            resolution_type=ResolutionType.CHECK_REQUIRED if result.save_required else ResolutionType.AUTO_SUCCESS,
+            resolution_type=(
+                ResolutionType.CHECK_REQUIRED
+                if result.save_required
+                else ResolutionType.AUTO_SUCCESS
+            ),
             spell_info=result.narrative_context,
             effects_created=[result.spell_name] if result.effect_created else [],
-            narrative_hints=[
-                f"casting {result.spell_name}",
-                result.reason
-            ]
+            narrative_hints=[f"casting {result.spell_name}", result.reason],
         )
 
         if result.slot_consumed:
@@ -478,10 +474,7 @@ class NarrativeResolver:
         )
 
     def _resolve_hazard_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve physical hazard/challenge."""
         # Map action type to hazard type
@@ -498,9 +491,7 @@ class NarrativeResolver:
 
         # Resolve the hazard
         result = self.hazard_resolver.resolve_hazard(
-            hazard_type=hazard_type,
-            character=character,
-            **context
+            hazard_type=hazard_type, character=character, **context
         )
 
         # Build narration context
@@ -509,18 +500,22 @@ class NarrativeResolver:
             action_type=parsed.action_type,
             player_input=parsed.raw_input,
             success=result.success,
-            resolution_type=ResolutionType.CHECK_REQUIRED if result.check_made else ResolutionType.AUTO_SUCCESS,
+            resolution_type=(
+                ResolutionType.CHECK_REQUIRED if result.check_made else ResolutionType.AUTO_SUCCESS
+            ),
             turns_spent=result.turns_spent,
             narrative_hints=result.narrative_hints,
         )
 
         if result.check_made:
-            narration.dice_results.append({
-                "type": result.check_type.value if result.check_type else "unknown",
-                "result": result.check_result,
-                "target": result.check_target,
-                "modifier": result.check_modifier,
-            })
+            narration.dice_results.append(
+                {
+                    "type": result.check_type.value if result.check_type else "unknown",
+                    "result": result.check_result,
+                    "target": result.check_target,
+                    "modifier": result.check_modifier,
+                }
+            )
 
         apply_damage = []
         if result.damage_dealt > 0:
@@ -541,21 +536,17 @@ class NarrativeResolver:
         )
 
     def _resolve_exploration_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve exploration action (search, listen, etc.)."""
         if parsed.action_type == ActionType.LISTEN:
             result = self.hazard_resolver.resolve_hazard(
-                HazardType.DOOR_LISTEN,
-                character,
-                **context
+                HazardType.DOOR_LISTEN, character, **context
             )
         elif parsed.action_type == ActionType.SEARCH:
             # Search check - would integrate with dungeon state
             from src.data_models import DiceRoller
+
             dice = DiceRoller()
             roll = dice.roll_d6(1, "Search check")
             success = roll.total <= context.get("search_target", 2)
@@ -570,7 +561,7 @@ class NarrativeResolver:
                 dice_results=[{"type": "search", "result": roll.total}],
                 narrative_hints=[
                     "carefully examining the area",
-                    "found something!" if success else "nothing discovered"
+                    "found something!" if success else "nothing discovered",
                 ],
                 rule_reference="p152 - Hidden Features",
             )
@@ -600,10 +591,7 @@ class NarrativeResolver:
         )
 
     def _resolve_survival_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve survival action (forage, fish, hunt)."""
         method_map = {
@@ -618,7 +606,7 @@ class NarrativeResolver:
             method=method,
             season=context.get("season", "normal"),
             full_day=context.get("full_day", False),
-            **context
+            **context,
         )
 
         narration = NarrationContext(
@@ -634,7 +622,8 @@ class NarrativeResolver:
         if result.success and "rations" in result.description:
             # Extract ration count from description
             import re
-            match = re.search(r'(\d+) rations', result.description)
+
+            match = re.search(r"(\d+) rations", result.description)
             if match:
                 narration.resources_gained["rations"] = int(match.group(1))
 
@@ -646,10 +635,7 @@ class NarrativeResolver:
         )
 
     def _resolve_combat_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve combat-related action (should mostly go to combat engine)."""
         narration = NarrationContext(
@@ -657,7 +643,7 @@ class NarrativeResolver:
             action_type=parsed.action_type,
             player_input=parsed.raw_input,
             success=True,
-            narrative_hints=["combat action - defer to combat engine"]
+            narrative_hints=["combat action - defer to combat engine"],
         )
 
         return ResolutionResult(
@@ -668,10 +654,7 @@ class NarrativeResolver:
         )
 
     def _resolve_creative_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve creative/narrative solution."""
         # Build creative solution from parsed intent
@@ -687,9 +670,7 @@ class NarrativeResolver:
 
         # Validate and resolve
         result = self.creative_resolver.validate_proposed_solution(
-            solution=solution,
-            character=character,
-            context=context
+            solution=solution, character=character, context=context
         )
 
         narration = NarrationContext(
@@ -703,12 +684,14 @@ class NarrativeResolver:
         )
 
         if result.check_made:
-            narration.dice_results.append({
-                "type": result.check_type.value if result.check_type else "creative",
-                "result": result.check_result,
-                "target": result.check_target,
-                "modifier": result.check_modifier,
-            })
+            narration.dice_results.append(
+                {
+                    "type": result.check_type.value if result.check_type else "creative",
+                    "result": result.check_result,
+                    "target": result.check_target,
+                    "modifier": result.check_modifier,
+                }
+            )
 
         if not result.accepted:
             narration.warnings.append(result.rejection_reason or "Solution requires validation")
@@ -725,10 +708,7 @@ class NarrativeResolver:
         )
 
     def _resolve_narrative_action(
-        self,
-        parsed: ParsedIntent,
-        character: "CharacterState",
-        context: dict[str, Any]
+        self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
     ) -> ResolutionResult:
         """Resolve pure narrative action (no mechanics)."""
         narration = NarrationContext(
@@ -737,7 +717,7 @@ class NarrativeResolver:
             player_input=parsed.raw_input,
             success=True,
             resolution_type=ResolutionType.NARRATIVE_ONLY,
-            narrative_hints=["narrative action", "describe freely"]
+            narrative_hints=["narrative action", "describe freely"],
         )
 
         return ResolutionResult(

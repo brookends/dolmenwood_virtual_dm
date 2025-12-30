@@ -193,8 +193,8 @@ class TestCreateLoreSearch:
         # import RulesRetriever which may fail if chromadb not installed
         lore_search = create_lore_search(use_vector_db=True)
         # Should either work or return NullLoreSearch gracefully
-        assert hasattr(lore_search, 'search')
-        assert hasattr(lore_search, 'is_available')
+        assert hasattr(lore_search, "search")
+        assert hasattr(lore_search, "is_available")
         # Should not raise an exception
         status = lore_search.get_status()
         assert "available" in status
@@ -367,10 +367,10 @@ class TestGracefulDegradation:
 
         for impl in implementations:
             # Check required methods exist and are callable
-            assert callable(getattr(impl, 'search', None))
-            assert callable(getattr(impl, 'search_simple', None))
-            assert callable(getattr(impl, 'is_available', None))
-            assert callable(getattr(impl, 'get_status', None))
+            assert callable(getattr(impl, "search", None))
+            assert callable(getattr(impl, "search_simple", None))
+            assert callable(getattr(impl, "is_available", None))
+            assert callable(getattr(impl, "get_status", None))
 
             # Check runtime_checkable protocol
             assert isinstance(impl, LoreSearchInterface)

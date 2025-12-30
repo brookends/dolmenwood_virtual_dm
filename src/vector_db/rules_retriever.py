@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ContentCategory(str, Enum):
     """Categories for content indexing."""
+
     RULES = "rules"
     LORE = "lore"
     HEX = "hex"
@@ -47,6 +48,7 @@ class ContentCategory(str, Enum):
 @dataclass
 class SearchResult:
     """A search result with metadata."""
+
     content_id: str
     category: ContentCategory
     text: str
@@ -58,6 +60,7 @@ class SearchResult:
 @dataclass
 class SearchContext:
     """Context for search to enable context-aware retrieval."""
+
     game_state: GameState
     current_hex: Optional[str] = None
     current_npc: Optional[str] = None
@@ -70,6 +73,7 @@ class SearchContext:
 @dataclass
 class IndexedDocument:
     """A document indexed in the vector store."""
+
     doc_id: str
     category: ContentCategory
     text: str
@@ -133,7 +137,7 @@ class RulesRetriever:
         self,
         persist_directory: Optional[Path] = None,
         collection_name: str = "dolmenwood_content",
-        embedding_model: str = "all-MiniLM-L6-v2"
+        embedding_model: str = "all-MiniLM-L6-v2",
     ):
         """
         Initialize the rules retriever.
@@ -170,17 +174,15 @@ class RulesRetriever:
             if self.persist_directory:
                 self.persist_directory.mkdir(parents=True, exist_ok=True)
                 self._client = chromadb.PersistentClient(
-                    path=str(self.persist_directory),
-                    settings=Settings(anonymized_telemetry=False)
+                    path=str(self.persist_directory), settings=Settings(anonymized_telemetry=False)
                 )
             else:
-                self._client = chromadb.Client(
-                    Settings(anonymized_telemetry=False)
-                )
+                self._client = chromadb.Client(Settings(anonymized_telemetry=False))
 
             # Try to use sentence transformers for embeddings
             try:
                 from chromadb.utils import embedding_functions
+
                 self._embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
                     model_name=self.embedding_model
                 )
@@ -193,12 +195,11 @@ class RulesRetriever:
                 self._collection = self._client.get_or_create_collection(
                     name=self.collection_name,
                     embedding_function=self._embedding_function,
-                    metadata={"hnsw:space": "cosine"}
+                    metadata={"hnsw:space": "cosine"},
                 )
             else:
                 self._collection = self._client.get_or_create_collection(
-                    name=self.collection_name,
-                    metadata={"hnsw:space": "cosine"}
+                    name=self.collection_name, metadata={"hnsw:space": "cosine"}
                 )
 
             self._chroma_available = True
@@ -221,7 +222,7 @@ class RulesRetriever:
         doc_id: str,
         category: ContentCategory,
         text: str,
-        metadata: Optional[dict[str, Any]] = None
+        metadata: Optional[dict[str, Any]] = None,
     ) -> bool:
         """
         Index a document for retrieval.
@@ -236,16 +237,12 @@ class RulesRetriever:
             True if indexed successfully
         """
         metadata = metadata or {}
-        metadata['category'] = category.value
-        metadata['indexed_at'] = datetime.now().isoformat()
+        metadata["category"] = category.value
+        metadata["indexed_at"] = datetime.now().isoformat()
 
         if self._chroma_available and self._collection:
             try:
-                self._collection.upsert(
-                    ids=[doc_id],
-                    documents=[text],
-                    metadatas=[metadata]
-                )
+                self._collection.upsert(ids=[doc_id], documents=[text], metadatas=[metadata])
                 return True
             except Exception as e:
                 logger.error(f"Error indexing document: {e}")
@@ -264,29 +261,29 @@ class RulesRetriever:
         """Index hex location data."""
         text_parts = [
             f"Hex {hex_id}",
-            hex_data.get('name', ''),
+            hex_data.get("name", ""),
             f"Terrain: {hex_data.get('terrain', 'unknown')}",
-            hex_data.get('description', ''),
+            hex_data.get("description", ""),
         ]
 
         # Add features
-        for feature in hex_data.get('features', []):
-            text_parts.append(feature.get('name', ''))
-            text_parts.append(feature.get('description', ''))
+        for feature in hex_data.get("features", []):
+            text_parts.append(feature.get("name", ""))
+            text_parts.append(feature.get("description", ""))
 
         # Add landmarks
-        for landmark in hex_data.get('landmarks', []):
-            text_parts.append(landmark.get('name', ''))
-            text_parts.append(landmark.get('description', ''))
+        for landmark in hex_data.get("landmarks", []):
+            text_parts.append(landmark.get("name", ""))
+            text_parts.append(landmark.get("description", ""))
 
-        text = ' '.join(filter(None, text_parts))
+        text = " ".join(filter(None, text_parts))
 
         metadata = {
-            'hex_id': hex_id,
-            'terrain': hex_data.get('terrain', ''),
-            'name': hex_data.get('name', ''),
-            'has_fairy': bool(hex_data.get('fairy_influence')),
-            'has_drune': hex_data.get('drune_presence', False),
+            "hex_id": hex_id,
+            "terrain": hex_data.get("terrain", ""),
+            "name": hex_data.get("name", ""),
+            "has_fairy": bool(hex_data.get("fairy_influence")),
+            "has_drune": hex_data.get("drune_presence", False),
         }
 
         return self.index_document(f"hex_{hex_id}", ContentCategory.HEX, text, metadata)
@@ -294,28 +291,28 @@ class RulesRetriever:
     def index_npc(self, npc_id: str, npc_data: dict[str, Any]) -> bool:
         """Index NPC data."""
         text_parts = [
-            npc_data.get('name', ''),
-            npc_data.get('title', ''),
+            npc_data.get("name", ""),
+            npc_data.get("title", ""),
             f"Location: {npc_data.get('location', '')}",
             f"Faction: {npc_data.get('faction', '')}",
             f"Personality: {npc_data.get('personality', '')}",
         ]
 
         # Add goals
-        for goal in npc_data.get('goals', []):
+        for goal in npc_data.get("goals", []):
             text_parts.append(f"Goal: {goal}")
 
         # Add dialogue hooks
-        for hook in npc_data.get('dialogue_hooks', []):
+        for hook in npc_data.get("dialogue_hooks", []):
             text_parts.append(hook)
 
-        text = ' '.join(filter(None, text_parts))
+        text = " ".join(filter(None, text_parts))
 
         metadata = {
-            'npc_id': npc_id,
-            'name': npc_data.get('name', ''),
-            'location': npc_data.get('location', ''),
-            'faction': npc_data.get('faction', ''),
+            "npc_id": npc_id,
+            "name": npc_data.get("name", ""),
+            "location": npc_data.get("location", ""),
+            "faction": npc_data.get("faction", ""),
         }
 
         return self.index_document(f"npc_{npc_id}", ContentCategory.NPC, text, metadata)
@@ -323,26 +320,26 @@ class RulesRetriever:
     def index_monster(self, monster_id: str, monster_data: dict[str, Any]) -> bool:
         """Index monster data."""
         text_parts = [
-            monster_data.get('name', ''),
-            monster_data.get('description', ''),
+            monster_data.get("name", ""),
+            monster_data.get("description", ""),
         ]
 
         # Add habitat info
-        for habitat in monster_data.get('habitat', []):
+        for habitat in monster_data.get("habitat", []):
             text_parts.append(f"Found in: {habitat}")
 
         # Add stat summary
-        stat_block = monster_data.get('stat_block', {})
+        stat_block = monster_data.get("stat_block", {})
         if stat_block:
             text_parts.append(f"HD: {stat_block.get('hit_dice', '')}")
             text_parts.append(f"AC: {stat_block.get('armor_class', '')}")
 
-        text = ' '.join(filter(None, text_parts))
+        text = " ".join(filter(None, text_parts))
 
         metadata = {
-            'monster_id': monster_id,
-            'name': monster_data.get('name', ''),
-            'habitat': monster_data.get('habitat', []),
+            "monster_id": monster_id,
+            "name": monster_data.get("name", ""),
+            "habitat": monster_data.get("habitat", []),
         }
 
         return self.index_document(f"monster_{monster_id}", ContentCategory.MONSTER, text, metadata)
@@ -350,16 +347,16 @@ class RulesRetriever:
     def index_rule(self, rule_id: str, rule_text: str, rule_category: str = "general") -> bool:
         """Index a game rule."""
         metadata = {
-            'rule_id': rule_id,
-            'rule_category': rule_category,
+            "rule_id": rule_id,
+            "rule_category": rule_category,
         }
         return self.index_document(f"rule_{rule_id}", ContentCategory.RULES, rule_text, metadata)
 
     def index_lore(self, lore_id: str, lore_text: str, topic: str = "general") -> bool:
         """Index lore/background information."""
         metadata = {
-            'lore_id': lore_id,
-            'topic': topic,
+            "lore_id": lore_id,
+            "topic": topic,
         }
         return self.index_document(f"lore_{lore_id}", ContentCategory.LORE, lore_text, metadata)
 
@@ -372,7 +369,7 @@ class RulesRetriever:
         query: str,
         context: Optional[SearchContext] = None,
         n_results: int = 5,
-        categories: Optional[list[ContentCategory]] = None
+        categories: Optional[list[ContentCategory]] = None,
     ) -> list[SearchResult]:
         """
         Search for relevant content.
@@ -396,7 +393,7 @@ class RulesRetriever:
         query: str,
         context: Optional[SearchContext],
         n_results: int,
-        categories: Optional[list[ContentCategory]]
+        categories: Optional[list[ContentCategory]],
     ) -> list[SearchResult]:
         """Search using ChromaDB."""
         # Build where clause for category filtering
@@ -412,15 +409,15 @@ class RulesRetriever:
                 query_texts=[query],
                 n_results=n_results * 2,  # Get more results for re-ranking
                 where=where,
-                include=["documents", "metadatas", "distances"]
+                include=["documents", "metadatas", "distances"],
             )
 
             search_results = []
-            if results and results['ids'] and results['ids'][0]:
-                for i, doc_id in enumerate(results['ids'][0]):
-                    metadata = results['metadatas'][0][i] if results['metadatas'] else {}
-                    text = results['documents'][0][i] if results['documents'] else ""
-                    distance = results['distances'][0][i] if results['distances'] else 1.0
+            if results and results["ids"] and results["ids"][0]:
+                for i, doc_id in enumerate(results["ids"][0]):
+                    metadata = results["metadatas"][0][i] if results["metadatas"] else {}
+                    text = results["documents"][0][i] if results["documents"] else ""
+                    distance = results["distances"][0][i] if results["distances"] else 1.0
 
                     # Convert distance to similarity score (ChromaDB uses L2 distance)
                     score = 1.0 / (1.0 + distance)
@@ -429,15 +426,17 @@ class RulesRetriever:
                     if context:
                         score = self._rerank_by_context(score, metadata, context)
 
-                    category = ContentCategory(metadata.get('category', 'rules'))
+                    category = ContentCategory(metadata.get("category", "rules"))
 
-                    search_results.append(SearchResult(
-                        content_id=doc_id,
-                        category=category,
-                        text=text,
-                        metadata=metadata,
-                        score=score,
-                    ))
+                    search_results.append(
+                        SearchResult(
+                            content_id=doc_id,
+                            category=category,
+                            text=text,
+                            metadata=metadata,
+                            score=score,
+                        )
+                    )
 
             # Sort by score and limit results
             search_results.sort(key=lambda x: x.score, reverse=True)
@@ -452,7 +451,7 @@ class RulesRetriever:
         query: str,
         context: Optional[SearchContext],
         n_results: int,
-        categories: Optional[list[ContentCategory]]
+        categories: Optional[list[ContentCategory]],
     ) -> list[SearchResult]:
         """Simple keyword-based fallback search."""
         query_lower = query.lower()
@@ -480,29 +479,28 @@ class RulesRetriever:
                 if context:
                     score = self._rerank_by_context(score, doc.metadata, context)
 
-                results.append(SearchResult(
-                    content_id=doc_id,
-                    category=doc.category,
-                    text=doc.text,
-                    metadata=doc.metadata,
-                    score=score,
-                ))
+                results.append(
+                    SearchResult(
+                        content_id=doc_id,
+                        category=doc.category,
+                        text=doc.text,
+                        metadata=doc.metadata,
+                        score=score,
+                    )
+                )
 
         # Sort by score and limit results
         results.sort(key=lambda x: x.score, reverse=True)
         return results[:n_results]
 
     def _rerank_by_context(
-        self,
-        base_score: float,
-        metadata: dict[str, Any],
-        context: SearchContext
+        self, base_score: float, metadata: dict[str, Any], context: SearchContext
     ) -> float:
         """Adjust score based on game context."""
         score = base_score
 
         # Apply state-based category weights
-        category_str = metadata.get('category', '')
+        category_str = metadata.get("category", "")
         try:
             category = ContentCategory(category_str)
             weights = self.STATE_CATEGORY_WEIGHTS.get(context.game_state, {})
@@ -512,20 +510,20 @@ class RulesRetriever:
             pass
 
         # Boost if matching current context
-        if context.current_hex and metadata.get('hex_id') == context.current_hex:
+        if context.current_hex and metadata.get("hex_id") == context.current_hex:
             score *= 2.0
 
-        if context.current_npc and metadata.get('npc_id') == context.current_npc:
+        if context.current_npc and metadata.get("npc_id") == context.current_npc:
             score *= 2.0
 
-        if context.active_faction and metadata.get('faction') == context.active_faction:
+        if context.active_faction and metadata.get("faction") == context.active_faction:
             score *= 1.5
 
-        if context.current_dungeon and metadata.get('dungeon_id') == context.current_dungeon:
+        if context.current_dungeon and metadata.get("dungeon_id") == context.current_dungeon:
             score *= 1.8
 
         # Check tag matches
-        doc_tags = metadata.get('tags', [])
+        doc_tags = metadata.get("tags", [])
         if isinstance(doc_tags, str):
             doc_tags = [doc_tags]
         for tag in context.tags:
@@ -535,10 +533,7 @@ class RulesRetriever:
         return score
 
     def search_contextual(
-        self,
-        query: str,
-        game_state: GameState,
-        **context_kwargs
+        self, query: str, game_state: GameState, **context_kwargs
     ) -> list[SearchResult]:
         """
         Context-aware search based on game state.
@@ -561,10 +556,7 @@ class RulesRetriever:
         weights = self.STATE_CATEGORY_WEIGHTS.get(game_state, {})
         if weights:
             # Get categories with weight > 1.0
-            priority_categories = [
-                cat for cat, weight in weights.items()
-                if weight > 1.0
-            ]
+            priority_categories = [cat for cat, weight in weights.items() if weight > 1.0]
         else:
             priority_categories = None
 
@@ -581,31 +573,19 @@ class RulesRetriever:
 
     def get_hex_info(self, hex_id: str) -> list[SearchResult]:
         """Get information about a specific hex."""
-        return self.search(
-            f"hex {hex_id}",
-            categories=[ContentCategory.HEX]
-        )
+        return self.search(f"hex {hex_id}", categories=[ContentCategory.HEX])
 
     def get_npc_info(self, npc_name: str) -> list[SearchResult]:
         """Get information about an NPC."""
-        return self.search(
-            npc_name,
-            categories=[ContentCategory.NPC]
-        )
+        return self.search(npc_name, categories=[ContentCategory.NPC])
 
     def get_monster_info(self, monster_name: str) -> list[SearchResult]:
         """Get information about a monster."""
-        return self.search(
-            monster_name,
-            categories=[ContentCategory.MONSTER]
-        )
+        return self.search(monster_name, categories=[ContentCategory.MONSTER])
 
     def get_faction_info(self, faction_name: str) -> list[SearchResult]:
         """Get information about a faction."""
-        return self.search(
-            faction_name,
-            categories=[ContentCategory.FACTION, ContentCategory.LORE]
-        )
+        return self.search(faction_name, categories=[ContentCategory.FACTION, ContentCategory.LORE])
 
     # =========================================================================
     # MANAGEMENT
@@ -646,16 +626,16 @@ class RulesRetriever:
             try:
                 count = self._collection.count()
                 return {
-                    'backend': 'chromadb',
-                    'total_documents': count,
-                    'collection_name': self.collection_name,
+                    "backend": "chromadb",
+                    "total_documents": count,
+                    "collection_name": self.collection_name,
                 }
             except Exception:
                 pass
 
         return {
-            'backend': 'fallback',
-            'total_documents': len(self._fallback_documents),
+            "backend": "fallback",
+            "total_documents": len(self._fallback_documents),
         }
 
     def export_index(self, file_path: Path) -> None:
@@ -665,45 +645,44 @@ class RulesRetriever:
             try:
                 results = self._collection.get(include=["documents", "metadatas"])
                 documents = []
-                for i, doc_id in enumerate(results['ids']):
-                    documents.append({
-                        'doc_id': doc_id,
-                        'text': results['documents'][i] if results['documents'] else '',
-                        'metadata': results['metadatas'][i] if results['metadatas'] else {},
-                    })
+                for i, doc_id in enumerate(results["ids"]):
+                    documents.append(
+                        {
+                            "doc_id": doc_id,
+                            "text": results["documents"][i] if results["documents"] else "",
+                            "metadata": results["metadatas"][i] if results["metadatas"] else {},
+                        }
+                    )
             except Exception as e:
                 logger.error(f"Error exporting from ChromaDB: {e}")
                 documents = []
         else:
             documents = [
                 {
-                    'doc_id': doc.doc_id,
-                    'category': doc.category.value,
-                    'text': doc.text,
-                    'metadata': doc.metadata,
+                    "doc_id": doc.doc_id,
+                    "category": doc.category.value,
+                    "text": doc.text,
+                    "metadata": doc.metadata,
                 }
                 for doc in self._fallback_documents.values()
             ]
 
-        with open(file_path, 'w') as f:
-            json.dump({'documents': documents}, f, indent=2)
+        with open(file_path, "w") as f:
+            json.dump({"documents": documents}, f, indent=2)
 
         logger.info(f"Exported {len(documents)} documents to {file_path}")
 
     def import_index(self, file_path: Path) -> int:
         """Import index from JSON file."""
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
         count = 0
-        for doc in data.get('documents', []):
-            category = ContentCategory(doc.get('category', doc.get('metadata', {}).get('category', 'rules')))
-            if self.index_document(
-                doc['doc_id'],
-                category,
-                doc['text'],
-                doc.get('metadata', {})
-            ):
+        for doc in data.get("documents", []):
+            category = ContentCategory(
+                doc.get("category", doc.get("metadata", {}).get("category", "rules"))
+            )
+            if self.index_document(doc["doc_id"], category, doc["text"], doc.get("metadata", {})):
                 count += 1
 
         logger.info(f"Imported {count} documents from {file_path}")

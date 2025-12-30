@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class LoreCategory(str, Enum):
     """Categories of lore content for search filtering."""
+
     RULES = "rules"
     LORE = "lore"
     HEX = "hex"
@@ -40,6 +41,7 @@ class LoreCategory(str, Enum):
 @dataclass
 class LoreSearchResult:
     """A single lore search result with source citation."""
+
     content: str
     source: str  # e.g., "Campaign Book p.42" or "hex_0709.json"
     category: LoreCategory
@@ -58,6 +60,7 @@ class LoreSearchResult:
 @dataclass
 class LoreSearchQuery:
     """Query for lore search with optional filters."""
+
     query: str
     categories: list[LoreCategory] = field(default_factory=list)
     max_results: int = 3
@@ -262,13 +265,15 @@ class VectorLoreSearch:
                     source = f"{source} p.{result.metadata['page']}"
 
                 if result.score >= query.min_relevance:
-                    lore_results.append(LoreSearchResult(
-                        content=result.text,
-                        source=source,
-                        category=category,
-                        relevance=result.score,
-                        metadata=result.metadata,
-                    ))
+                    lore_results.append(
+                        LoreSearchResult(
+                            content=result.text,
+                            source=source,
+                            category=category,
+                            relevance=result.score,
+                            metadata=result.metadata,
+                        )
+                    )
 
             return lore_results
 
@@ -317,16 +322,14 @@ class VectorLoreSearch:
         try:
             # Get document count from retriever if available
             doc_count = 0
-            if hasattr(self._retriever, 'get_document_count'):
+            if hasattr(self._retriever, "get_document_count"):
                 doc_count = self._retriever.get_document_count()
 
             return {
                 "available": True,
                 "backend": "chromadb",
                 "document_count": doc_count,
-                "embedding_model": getattr(
-                    self._retriever, '_embedding_model', 'unknown'
-                ),
+                "embedding_model": getattr(self._retriever, "_embedding_model", "unknown"),
             }
         except Exception as e:
             return {
@@ -358,12 +361,14 @@ class MockLoreSearch:
         """Add a mock result for a query pattern."""
         if query_pattern not in self._mock_data:
             self._mock_data[query_pattern] = []
-        self._mock_data[query_pattern].append(LoreSearchResult(
-            content=content,
-            source=source,
-            category=category,
-            relevance=0.9,
-        ))
+        self._mock_data[query_pattern].append(
+            LoreSearchResult(
+                content=content,
+                source=source,
+                category=category,
+                relevance=0.9,
+            )
+        )
 
     def set_default_results(self, results: list[LoreSearchResult]) -> None:
         """Set default results when no pattern matches."""
@@ -376,9 +381,9 @@ class MockLoreSearch:
         # Check for pattern matches
         for pattern, results in self._mock_data.items():
             if pattern.lower() in query_lower:
-                return results[:query.max_results]
+                return results[: query.max_results]
 
-        return self._default_results[:query.max_results]
+        return self._default_results[: query.max_results]
 
     def search_simple(
         self,
@@ -451,6 +456,7 @@ def create_lore_search(
     # Try to create a retriever
     try:
         from src.vector_db.rules_retriever import RulesRetriever
+
         retriever = RulesRetriever()
         return VectorLoreSearch(retriever)
     except ImportError as e:

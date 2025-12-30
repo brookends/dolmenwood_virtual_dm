@@ -51,6 +51,7 @@ from src.data_models import (
     SecretStatus,
 )
 from src.content_loader.monster_registry import get_monster_registry
+
 # Import narrative components (optional, may not be initialized yet)
 try:
     from src.narrative.narrative_resolver import (
@@ -61,6 +62,7 @@ try:
     )
     from src.narrative.hazard_resolver import HazardResolver, HazardType, HazardResult
     from src.narrative.intent_parser import ActionType
+
     NARRATIVE_AVAILABLE = True
 except ImportError:
     NARRATIVE_AVAILABLE = False
@@ -84,6 +86,7 @@ logger = logging.getLogger(__name__)
 
 class POIExplorationState(str, Enum):
     """State of POI exploration within a hex."""
+
     DISTANT = "distant"  # Visible from afar
     APPROACHING = "approaching"  # Moving toward POI
     AT_ENTRANCE = "at_entrance"  # At the entrance
@@ -94,6 +97,7 @@ class POIExplorationState(str, Enum):
 @dataclass
 class POIVisit:
     """Tracks a visit to a point of interest."""
+
     poi_name: str
     state: POIExplorationState = POIExplorationState.DISTANT
     entered: bool = False
@@ -108,6 +112,7 @@ class POIVisit:
 @dataclass
 class SecretCheck:
     """Result of checking for a secret."""
+
     secret_name: str
     found: bool
     ability_used: str  # e.g., "INT", "WIS", "perception"
@@ -124,6 +129,7 @@ class HexMagicalEffects:
     Based on Dolmenwood lore - areas like the Falls of Naon
     may have anti-teleportation effects.
     """
+
     no_teleportation: bool = False
     no_scrying: bool = False
     no_divination: bool = False
@@ -143,6 +149,7 @@ class HexOverview:
     Contains only information the characters would perceive,
     without meta-information like hex IDs or location names.
     """
+
     # What the characters see
     terrain_description: str
     atmosphere: str  # Weather/time of day mood
@@ -165,6 +172,7 @@ class HexOverview:
 
 class RouteType(str, Enum):
     """Travel context."""
+
     ROAD = "road"
     TRACK = "track"
     WILD = "wild"
@@ -173,6 +181,7 @@ class RouteType(str, Enum):
 @dataclass
 class TerrainInfo:
     """Dolmenwood travel data per terrain category."""
+
     terrain_type: TerrainType
     travel_point_cost: int  # points to enter/search hex
     lost_chance: int  # X-in-6
@@ -185,49 +194,104 @@ class TerrainInfo:
 # Terrain definitions per Dolmenwood travel table
 TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
     TerrainType.FARMLAND: TerrainInfo(
-        TerrainType.FARMLAND, travel_point_cost=2, lost_chance=1, encounter_chance=1,
-        mount_allowed=True, vehicle_allowed=True, description="Tilled fields and lanes"
+        TerrainType.FARMLAND,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Tilled fields and lanes",
     ),
     TerrainType.MEADOW if hasattr(TerrainType, "MEADOW") else TerrainType.FARMLAND: TerrainInfo(  # type: ignore[attr-defined]
-        TerrainType.FARMLAND, travel_point_cost=2, lost_chance=1, encounter_chance=1,
-        mount_allowed=True, vehicle_allowed=True, description="Open meadow or grassland"
+        TerrainType.FARMLAND,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Open meadow or grassland",
     ),
     TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST, travel_point_cost=2, lost_chance=1, encounter_chance=1,
-        mount_allowed=True, vehicle_allowed=True, description="Open forest"
+        TerrainType.FOREST,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Open forest",
     ),
     # Moderate Terrain (p157) - 3 TP, 2-in-6
     TerrainType.MOOR: TerrainInfo(
-        TerrainType.MOOR, travel_point_cost=3, lost_chance=2, encounter_chance=2,
-        mount_allowed=True, vehicle_allowed=False, description="Boggy or hilly forest/moor"
+        TerrainType.MOOR,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,
+        vehicle_allowed=False,
+        description="Boggy or hilly forest/moor",
     ),
     TerrainType.HILLS: TerrainInfo(
-        TerrainType.HILLS, travel_point_cost=3, lost_chance=2, encounter_chance=2,
-        mount_allowed=True, vehicle_allowed=False, description="Hilly forest/terrain"
+        TerrainType.HILLS,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,
+        vehicle_allowed=False,
+        description="Hilly forest/terrain",
     ),
     TerrainType.DEEP_FOREST: TerrainInfo(
-        TerrainType.DEEP_FOREST, travel_point_cost=4, lost_chance=3, encounter_chance=3,
-        mount_allowed=False, vehicle_allowed=False, description="Tangled or thorny forest"
+        TerrainType.DEEP_FOREST,
+        travel_point_cost=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_allowed=False,
+        vehicle_allowed=False,
+        description="Tangled or thorny forest",
     ),
     TerrainType.SWAMP: TerrainInfo(
-        TerrainType.SWAMP, travel_point_cost=4, lost_chance=3, encounter_chance=3,
-        mount_allowed=False, vehicle_allowed=False, description="Wetland or bog"
+        TerrainType.SWAMP,
+        travel_point_cost=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_allowed=False,
+        vehicle_allowed=False,
+        description="Wetland or bog",
     ),
     TerrainType.MOUNTAINS: TerrainInfo(
-        TerrainType.MOUNTAINS, travel_point_cost=4, lost_chance=3, encounter_chance=3,
-        mount_allowed=False, vehicle_allowed=False, description="Craggy forest or steep slopes"
+        TerrainType.MOUNTAINS,
+        travel_point_cost=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_allowed=False,
+        vehicle_allowed=False,
+        description="Craggy forest or steep slopes",
     ),
     TerrainType.SETTLEMENT: TerrainInfo(
-        TerrainType.SETTLEMENT, travel_point_cost=2, lost_chance=0, encounter_chance=0,
-        mount_allowed=True, vehicle_allowed=True, description="Settled area"
+        TerrainType.SETTLEMENT,
+        travel_point_cost=2,
+        lost_chance=0,
+        encounter_chance=0,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Settled area",
     ),
     TerrainType.TRAIL: TerrainInfo(  # Treated as track context
-        TerrainType.TRAIL, travel_point_cost=2, lost_chance=1, encounter_chance=1,
-        mount_allowed=True, vehicle_allowed=True, description="Track"
+        TerrainType.TRAIL,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Track",
     ),
     TerrainType.ROAD: TerrainInfo(
-        TerrainType.ROAD, travel_point_cost=2, lost_chance=0, encounter_chance=0,
-        mount_allowed=True, vehicle_allowed=True, description="Road"
+        TerrainType.ROAD,
+        travel_point_cost=2,
+        lost_chance=0,
+        encounter_chance=0,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Road",
     ),
 }
 
@@ -235,6 +299,7 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
 @dataclass
 class TravelSegmentResult:
     """Result of processing one travel segment per Dolmenwood rules (p156-157)."""
+
     success: bool
     travel_points_spent: int
     remaining_travel_points: int
@@ -267,6 +332,7 @@ class TravelDayState:
 
     Forced march grants 50% more TP but requires exhaustion checks.
     """
+
     base_speed: int = 30  # Party base speed (slowest member per p146)
     travel_points_max: int = 6  # TP for the day (speed ÷ 5)
     travel_points_remaining: int = 6
@@ -433,7 +499,9 @@ class HexCrawlEngine:
                     travel_points_spent=0,
                     remaining_travel_points=0,
                     encounter_occurred=False,
-                    warnings=["Party is trapped in a maze and must wait for next day's navigation check"],
+                    warnings=[
+                        "Party is trapped in a maze and must wait for next day's navigation check"
+                    ],
                     destination_hex=destination_hex,
                     actual_hex=current_hex,
                 )
@@ -456,7 +524,9 @@ class HexCrawlEngine:
         terrain_info = self.get_terrain_info(terrain)
 
         # Determine cost based on route type
-        cost = 2 if route_type in {RouteType.ROAD, RouteType.TRACK} else terrain_info.travel_point_cost
+        cost = (
+            2 if route_type in {RouteType.ROAD, RouteType.TRACK} else terrain_info.travel_point_cost
+        )
 
         # Apply pending cost carry-over
         if self._pending_entry_cost > 0:
@@ -500,7 +570,7 @@ class HexCrawlEngine:
                         "terrain": terrain.value,
                         "encounter_type": result.encounter.encounter_type.value,
                         "source": "wilderness_travel",
-                    }
+                    },
                 )
                 result.messages.append("Encounter!")
 
@@ -558,7 +628,9 @@ class HexCrawlEngine:
 
         # Calculate Travel Points per day using MovementCalculator (p147)
         if forced_march:
-            self._travel_points_total = MovementCalculator.get_forced_march_travel_points(party_speed)
+            self._travel_points_total = MovementCalculator.get_forced_march_travel_points(
+                party_speed
+            )
         else:
             self._travel_points_total = MovementCalculator.get_travel_points(party_speed)
 
@@ -618,7 +690,7 @@ class HexCrawlEngine:
                     "hex_id": current_hex,
                     "message": lost_behavior.get(
                         "description",
-                        "The party becomes lost in the labyrinthine terrain, spending the day wandering in circles."
+                        "The party becomes lost in the labyrinthine terrain, spending the day wandering in circles.",
                     ),
                     "travel_points": 0,
                 }
@@ -644,11 +716,7 @@ class HexCrawlEngine:
         roll = self.dice.roll_d6(1, "wandering encounter")
         return roll.total <= chance
 
-    def _generate_encounter(
-        self,
-        hex_id: str,
-        terrain: TerrainType
-    ) -> EncounterState:
+    def _generate_encounter(self, hex_id: str, terrain: TerrainType) -> EncounterState:
         """
         Generate an encounter for the current hex per Dolmenwood rules (p157).
 
@@ -712,10 +780,7 @@ class HexCrawlEngine:
         self.controller.set_encounter(encounter)
         return encounter
 
-    def _apply_contextual_encounter_modifiers(
-        self,
-        hex_id: str
-    ) -> Optional[dict[str, Any]]:
+    def _apply_contextual_encounter_modifiers(self, hex_id: str) -> Optional[dict[str, Any]]:
         """
         Check hex-level and POI-level contextual encounter modifiers.
 
@@ -841,20 +906,23 @@ class HexCrawlEngine:
                     f"creating placeholder combatant"
                 )
                 from uuid import uuid4
+
                 fallback_name = modifier.get("result", monster_id)
                 if num_appearing > 1:
                     fallback_name = f"{fallback_name} #{i + 1}"
-                combatants.append(Combatant(
-                    combatant_id=f"{monster_id}_{uuid4().hex[:8]}",
-                    name=fallback_name,
-                    side="enemy",
-                    current_hp=1,
-                    max_hp=1,
-                    armor_class=10,
-                    attack_bonus=0,
-                    damage="1d4",
-                    is_active=True,
-                ))
+                combatants.append(
+                    Combatant(
+                        combatant_id=f"{monster_id}_{uuid4().hex[:8]}",
+                        name=fallback_name,
+                        side="enemy",
+                        current_hp=1,
+                        max_hp=1,
+                        armor_class=10,
+                        attack_bonus=0,
+                        damage="1d4",
+                        is_active=True,
+                    )
+                )
 
         return combatants
 
@@ -952,7 +1020,9 @@ class HexCrawlEngine:
         self._lost_today = False
         return summary
 
-    def search_hex(self, hex_id: str, terrain_override: Optional[TerrainType] = None) -> dict[str, Any]:
+    def search_hex(
+        self, hex_id: str, terrain_override: Optional[TerrainType] = None
+    ) -> dict[str, Any]:
         """
         Search a hex for hidden features. Costs Travel Points equal to terrain entry cost.
         """
@@ -979,7 +1049,9 @@ class HexCrawlEngine:
 
         # Check if enough Travel Points
         if self._travel_day.travel_points_remaining < tp_cost:
-            result["message"] = f"Not enough Travel Points to search. Need {tp_cost}, have {self._travel_day.travel_points_remaining}"
+            result["message"] = (
+                f"Not enough Travel Points to search. Need {tp_cost}, have {self._travel_day.travel_points_remaining}"
+            )
             return result
 
         # Spend Travel Points
@@ -1090,6 +1162,7 @@ class HexCrawlEngine:
         character = self.controller.get_character(character_id)
         if not character:
             from src.narrative.intent_parser import ActionCategory, ActionType, ParsedIntent
+
             return ResolutionResult(
                 success=False,
                 narration_context=NarrationContext(
@@ -1108,16 +1181,32 @@ class HexCrawlEngine:
 
         # Build context with wilderness-specific information
         action_context = context or {}
-        action_context.update({
-            "game_state": "wilderness_travel",
-            "current_hex": str(self.controller.party_state.location),
-            "terrain": self.get_terrain_for_hex(
-                str(self.controller.party_state.location)
-            ).value if self.controller.party_state else "unknown",
-            "weather": self.controller.world_state.weather.value if self.controller.world_state else "clear",
-            "season": self.controller.world_state.season.value if self.controller.world_state else "normal",
-            "time_of_day": self.controller.world_state.time_of_day.value if self.controller.world_state else "day",
-        })
+        action_context.update(
+            {
+                "game_state": "wilderness_travel",
+                "current_hex": str(self.controller.party_state.location),
+                "terrain": (
+                    self.get_terrain_for_hex(str(self.controller.party_state.location)).value
+                    if self.controller.party_state
+                    else "unknown"
+                ),
+                "weather": (
+                    self.controller.world_state.weather.value
+                    if self.controller.world_state
+                    else "clear"
+                ),
+                "season": (
+                    self.controller.world_state.season.value
+                    if self.controller.world_state
+                    else "normal"
+                ),
+                "time_of_day": (
+                    self.controller.world_state.time_of_day.value
+                    if self.controller.world_state
+                    else "day"
+                ),
+            }
+        )
 
         # Resolve through NarrativeResolver
         result = self.narrative_resolver.resolve_player_input(
@@ -1165,6 +1254,7 @@ class HexCrawlEngine:
             )
 
         from src.narrative.intent_parser import ActionType
+
         result = self.narrative_resolver.hazard_resolver.resolve_hazard(
             hazard_type=HazardType.CLIMBING,
             character=character,
@@ -1208,6 +1298,7 @@ class HexCrawlEngine:
             )
 
         from src.narrative.intent_parser import ActionType
+
         return self.narrative_resolver.hazard_resolver.resolve_hazard(
             hazard_type=HazardType.SWIMMING,
             character=character,
@@ -1247,6 +1338,7 @@ class HexCrawlEngine:
             )
 
         from src.narrative.intent_parser import ActionType
+
         return self.narrative_resolver.hazard_resolver.resolve_hazard(
             hazard_type=HazardType.JUMPING,
             character=character,
@@ -1302,6 +1394,7 @@ class HexCrawlEngine:
                 foraging_special = hex_data.procedural.foraging_special
 
         from src.narrative.intent_parser import ActionType
+
         return self.narrative_resolver.hazard_resolver.resolve_foraging(
             character=character,
             method=method,
@@ -1367,11 +1460,7 @@ class HexCrawlEngine:
 
         return ", ".join(parts) + "." if parts else "The area stretches before you."
 
-    def _get_time_specific_observations(
-        self,
-        hex_data: HexLocation,
-        is_night: bool
-    ) -> list[str]:
+    def _get_time_specific_observations(self, hex_data: HexLocation, is_night: bool) -> list[str]:
         """
         Get observations specific to the current time of day.
 
@@ -1429,9 +1518,11 @@ class HexCrawlEngine:
                 terrain_difficulty=self._get_terrain_difficulty_description(terrain),
                 travel_points_to_cross=terrain_info.travel_point_cost,
                 is_night=is_night,
-                weather_effects=self._apply_weather_effects(
-                    self.controller.world_state.weather
-                ) if self.controller.world_state else None,
+                weather_effects=(
+                    self._apply_weather_effects(self.controller.world_state.weather)
+                    if self.controller.world_state
+                    else None
+                ),
                 time_specific_observations=[],
             )
 
@@ -1463,16 +1554,15 @@ class HexCrawlEngine:
             terrain_difficulty=self._get_terrain_difficulty_description(terrain),
             travel_points_to_cross=terrain_info.travel_point_cost,
             is_night=is_night,
-            weather_effects=self._apply_weather_effects(
-                self.controller.world_state.weather
-            ) if self.controller.world_state else None,
+            weather_effects=(
+                self._apply_weather_effects(self.controller.world_state.weather)
+                if self.controller.world_state
+                else None
+            ),
             time_specific_observations=time_observations,
         )
 
-    def check_poi_availability(
-        self,
-        poi: "PointOfInterest"
-    ) -> dict[str, Any]:
+    def check_poi_availability(self, poi: "PointOfInterest") -> dict[str, Any]:
         """
         Check if a POI is currently available based on its availability conditions.
 
@@ -1495,8 +1585,7 @@ class HexCrawlEngine:
         avail_type = availability.get("type", "")
         required = availability.get("required", "")
         hidden_message = availability.get(
-            "hidden_message",
-            "This location is not currently accessible."
+            "hidden_message", "This location is not currently accessible."
         )
 
         # Check based on availability type
@@ -1616,7 +1705,8 @@ class HexCrawlEngine:
             # Add time-specific observations
             if is_night:
                 night_features = [
-                    f for f in poi.special_features
+                    f
+                    for f in poi.special_features
                     if any(
                         kw in f.lower()
                         for kw in ["at night", "nighttime", "darkness", "hours of darkness"]
@@ -1815,8 +1905,7 @@ class HexCrawlEngine:
         for feature in poi.special_features:
             feature_lower = feature.lower()
             if any(
-                kw in feature_lower
-                for kw in ["climbing", "thorns", "dangerous", "treacherous"]
+                kw in feature_lower for kw in ["climbing", "thorns", "dangerous", "treacherous"]
             ):
                 feature_hazards.append(feature)
 
@@ -1972,7 +2061,9 @@ class HexCrawlEngine:
             return {
                 "success": False,
                 "unavailable": True,
-                "message": availability_check.get("message", "This location is not currently accessible"),
+                "message": availability_check.get(
+                    "message", "This location is not currently accessible"
+                ),
                 "availability": availability_check,
             }
 
@@ -2256,8 +2347,7 @@ class HexCrawlEngine:
             "success": True,
             "description": feature,
             "is_time_specific": any(
-                kw in feature.lower()
-                for kw in ["night", "day", "darkness", "light"]
+                kw in feature.lower() for kw in ["night", "day", "darkness", "light"]
             ),
         }
 
@@ -2903,7 +2993,8 @@ class HexCrawlEngine:
             "success": True,
             "poi_name": parent.name,
             "poi_type": parent.poi_type,
-            "description": parent.get_interior_description(is_night) or parent.get_description(is_night),
+            "description": parent.get_interior_description(is_night)
+            or parent.get_description(is_night),
             "state": POIExplorationState.INSIDE.value,
         }
 
@@ -2946,11 +3037,7 @@ class HexCrawlEngine:
 
         return effects
 
-    def _apply_magical_effect_from_text(
-        self,
-        text: str,
-        effects: HexMagicalEffects
-    ) -> None:
+    def _apply_magical_effect_from_text(self, text: str, effects: HexMagicalEffects) -> None:
         """Parse text for magical effect keywords and apply them."""
         text_lower = text.lower()
 
@@ -3059,23 +3146,29 @@ class HexCrawlEngine:
                         if npc_data.title:
                             npc_info["title"] = npc_data.title
                         if npc_data.demeanor:
-                            npc_info["demeanor"] = npc_data.demeanor[0] if npc_data.demeanor else None
+                            npc_info["demeanor"] = (
+                                npc_data.demeanor[0] if npc_data.demeanor else None
+                            )
                         npcs.append(npc_info)
                     else:
                         # Minimal info from reference
-                        npcs.append({
-                            "name": npc_ref,
-                            "met_before": npc_ref in self._met_npcs,
-                        })
+                        npcs.append(
+                            {
+                                "name": npc_ref,
+                                "met_before": npc_ref in self._met_npcs,
+                            }
+                        )
 
                 # Check inhabitants field for additional NPCs
                 if poi.inhabitants:
                     # Parse inhabitants string for NPC info
                     # This might be a dice notation like "1d4 bandits"
-                    npcs.append({
-                        "inhabitants": poi.inhabitants,
-                        "is_group": True,
-                    })
+                    npcs.append(
+                        {
+                            "inhabitants": poi.inhabitants,
+                            "is_group": True,
+                        }
+                    )
 
                 break
 
@@ -3138,12 +3231,14 @@ class HexCrawlEngine:
         }
 
         if npc_data:
-            result.update({
-                "description": npc_data.description,
-                "demeanor": npc_data.demeanor,
-                "speech": npc_data.speech,
-                "desires": npc_data.desires,  # What they want
-            })
+            result.update(
+                {
+                    "description": npc_data.description,
+                    "demeanor": npc_data.demeanor,
+                    "speech": npc_data.speech,
+                    "desires": npc_data.desires,  # What they want
+                }
+            )
 
         # Trigger transition to SOCIAL_INTERACTION
         self.controller.transition(
@@ -3152,7 +3247,7 @@ class HexCrawlEngine:
                 "npc_id": npc_id,
                 "hex_id": hex_id,
                 "poi_name": self._current_poi,
-            }
+            },
         )
 
         return result
@@ -3196,6 +3291,7 @@ class HexCrawlEngine:
 
                 # Check for dice notation (e.g., "2d6 orcs", "1d4+1 guards")
                 import re
+
                 dice_match = re.match(r"(\d+d\d+(?:[+-]\d+)?)\s+(.+)", inhabitants)
                 if dice_match:
                     dice_notation = dice_match.group(1)
@@ -3228,7 +3324,7 @@ class HexCrawlEngine:
                         "poi_name": poi.name,
                         "creatures": creature_type,
                         "number": number_appearing,
-                    }
+                    },
                 )
 
                 return encounter
@@ -3277,10 +3373,7 @@ class HexCrawlEngine:
             # Check alignment_not condition (hostile to those NOT in list)
             alignment_not = hostile_if.get("alignment_not", [])
             if alignment_not:
-                non_matching = [
-                    align for align in party_alignments
-                    if align not in alignment_not
-                ]
+                non_matching = [align for align in party_alignments if align not in alignment_not]
                 if non_matching:
                     result["hostile"] = True
                     result["affected_alignments"] = non_matching
@@ -3291,10 +3384,7 @@ class HexCrawlEngine:
             # Check alignment condition (hostile to those IN list)
             alignment_match = hostile_if.get("alignment", [])
             if alignment_match:
-                matching = [
-                    align for align in party_alignments
-                    if align in alignment_match
-                ]
+                matching = [align for align in party_alignments if align in alignment_match]
                 if matching:
                     result["hostile"] = True
                     result["affected_alignments"] = matching
@@ -3307,10 +3397,7 @@ class HexCrawlEngine:
         if friendly_if:
             alignment_match = friendly_if.get("alignment", [])
             if alignment_match:
-                matching = [
-                    align for align in party_alignments
-                    if align in alignment_match
-                ]
+                matching = [align for align in party_alignments if align in alignment_match]
                 if matching:
                     result["friendly"] = True
                     if not result["hostile"]:
@@ -3321,11 +3408,7 @@ class HexCrawlEngine:
 
         return result
 
-    def get_poi_roll_tables(
-        self,
-        hex_id: str,
-        poi_name: Optional[str] = None
-    ) -> list["RollTable"]:
+    def get_poi_roll_tables(self, hex_id: str, poi_name: Optional[str] = None) -> list["RollTable"]:
         """
         Get roll tables from a POI for use in ENCOUNTERS or DUNGEON states.
 
@@ -3354,9 +3437,7 @@ class HexCrawlEngine:
         return []
 
     def get_poi_dungeon_config(
-        self,
-        hex_id: str,
-        poi_name: Optional[str] = None
+        self, hex_id: str, poi_name: Optional[str] = None
     ) -> Optional[dict[str, Any]]:
         """
         Get dungeon configuration for a POI with dynamic layout.
@@ -3399,11 +3480,7 @@ class HexCrawlEngine:
 
         return None
 
-    def _find_table_by_name(
-        self,
-        tables: list["RollTable"],
-        name: str
-    ) -> Optional["RollTable"]:
+    def _find_table_by_name(self, tables: list["RollTable"], name: str) -> Optional["RollTable"]:
         """Find a roll table by name (case-insensitive)."""
         for table in tables:
             if table.name.lower() == name.lower():
@@ -3445,7 +3522,7 @@ class HexCrawlEngine:
                     taken_items.update(self._poi_visits[visit_key].items_taken)
 
                 # Check persistent session delta
-                if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                if hasattr(self.controller, "session_manager") and self.controller.session_manager:
                     session_taken = self.controller.session_manager.get_items_taken_from_poi(
                         hex_id, self._current_poi
                     )
@@ -3455,12 +3532,14 @@ class HexCrawlEngine:
                 for item in poi.items:
                     item_name = item.get("name", "unknown")
                     if item_name not in taken_items and not item.get("taken", False):
-                        available_items.append({
-                            "name": item_name,
-                            "description": item.get("description", ""),
-                            "value": item.get("value"),
-                            "is_unique": item.get("is_unique", False),
-                        })
+                        available_items.append(
+                            {
+                                "name": item_name,
+                                "description": item.get("description", ""),
+                                "value": item.get("value"),
+                                "is_unique": item.get("is_unique", False),
+                            }
+                        )
 
                 return available_items
 
@@ -3521,7 +3600,10 @@ class HexCrawlEngine:
                                 self._poi_visits[visit_key].items_found.append(item.get("name"))
 
                         # Persist to session manager (for cross-session tracking)
-                        if hasattr(self.controller, 'session_manager') and self.controller.session_manager:
+                        if (
+                            hasattr(self.controller, "session_manager")
+                            and self.controller.session_manager
+                        ):
                             self.controller.session_manager.add_item_taken(
                                 hex_id=hex_id,
                                 poi_name=self._current_poi,
@@ -3554,7 +3636,9 @@ class HexCrawlEngine:
                         weight = item.get("weight") or item.get("weight_coins", 0)
 
                         new_item = Item(
-                            item_id=item.get("item_id", item.get("name", "").lower().replace(" ", "_")),
+                            item_id=item.get(
+                                "item_id", item.get("name", "").lower().replace(" ", "_")
+                            ),
                             name=item.get("name"),
                             weight=weight,
                             quantity=item.get("quantity", 1),
@@ -3684,7 +3768,7 @@ class HexCrawlEngine:
                         self.controller.apply_damage(
                             character_id,
                             result.damage_dealt,
-                            hazard.get("hazard_type", "environmental")
+                            hazard.get("hazard_type", "environmental"),
                         )
 
                 break
@@ -3725,7 +3809,9 @@ class HexCrawlEngine:
 
         # Use the narrative resolver's hazard resolver
         if hazard_type == HazardType.SWIMMING:
-            armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+            armor_weight = (
+                character.armor_weight.value if hasattr(character, "armor_weight") else "unarmoured"
+            )
             return self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.SWIMMING,
                 character=character,
@@ -3762,6 +3848,7 @@ class HexCrawlEngine:
                 damage_dealt = damage_roll.total
 
             from src.narrative.intent_parser import ActionType
+
             return HazardResult(
                 success=success,
                 hazard_type=hazard_type,
@@ -3882,12 +3969,14 @@ class HexCrawlEngine:
                 for i, lock in enumerate(active_locks):
                     can_bypass = poi.check_lock_requirement(lock, spells, items, keys)
                     if not can_bypass:
-                        blocking_locks.append({
-                            "index": i,
-                            "type": lock.get("type"),
-                            "description": lock.get("description", "A barrier blocks your way"),
-                            "requirement_hint": self._get_lock_hint(lock),
-                        })
+                        blocking_locks.append(
+                            {
+                                "index": i,
+                                "type": lock.get("type"),
+                                "description": lock.get("description", "A barrier blocks your way"),
+                                "requirement_hint": self._get_lock_hint(lock),
+                            }
+                        )
 
                 return {
                     "can_access": len(blocking_locks) == 0,
@@ -4114,7 +4203,7 @@ class HexCrawlEngine:
                         "from_poi": target_poi,
                         "dungeon_id": dungeon_id,
                         "entrance_room": entrance_room,
-                    }
+                    },
                 )
 
                 return {
@@ -4154,14 +4243,10 @@ class HexCrawlEngine:
                 }
 
                 if poi.has_active_locks():
-                    poi_info["locks"] = [
-                        lock.get("type") for lock in poi.get_active_locks()
-                    ]
+                    poi_info["locks"] = [lock.get("type") for lock in poi.get_active_locks()]
 
                 if poi.hazards:
-                    poi_info["hazards"] = [
-                        h.get("hazard_type") for h in poi.hazards
-                    ]
+                    poi_info["hazards"] = [h.get("hazard_type") for h in poi.hazards]
 
                 dungeon_pois.append(poi_info)
 
@@ -4216,7 +4301,9 @@ class HexCrawlEngine:
             before_state=before_state or {},
             after_state=after_state or {},
             narrative_description=narrative_description,
-            occurred_at=self.controller.world_state.current_date if self.controller.world_state else None,
+            occurred_at=(
+                self.controller.world_state.current_date if self.controller.world_state else None
+            ),
             reversible=reversible,
             reverse_condition=reverse_condition,
         )
@@ -4284,7 +4371,8 @@ class HexCrawlEngine:
             poi_name=poi_name,
             before_state={"curse_active": True, "curse_name": curse_name},
             after_state={"curse_active": False, "curse_name": curse_name},
-            narrative_description=narrative_description or f"The {curse_name.replace('_', ' ')} has been lifted.",
+            narrative_description=narrative_description
+            or f"The {curse_name.replace('_', ' ')} has been lifted.",
             reversible=False,
         )
 
@@ -4400,9 +4488,7 @@ class HexCrawlEngine:
         current_date = self._get_current_date()
 
         if character_id:
-            return self._event_scheduler.get_active_events_for_character(
-                character_id, current_date
-            )
+            return self._event_scheduler.get_active_events_for_character(character_id, current_date)
         else:
             return self._event_scheduler.get_pending_invitations(current_date)
 
@@ -4601,9 +4687,7 @@ class HexCrawlEngine:
             List of GrantedAbility objects
         """
         current_date = self._get_current_date()
-        abilities = self._ability_tracker.get_character_abilities(
-            character_id, current_date
-        )
+        abilities = self._ability_tracker.get_character_abilities(character_id, current_date)
 
         if ability_type:
             try:
@@ -4630,9 +4714,7 @@ class HexCrawlEngine:
             Dict with success status and remaining uses
         """
         current_date = self._get_current_date()
-        abilities = self._ability_tracker.get_character_abilities(
-            character_id, current_date
-        )
+        abilities = self._ability_tracker.get_character_abilities(character_id, current_date)
 
         for ability in abilities:
             if ability.ability_name.lower() == ability_name.lower():
@@ -4763,10 +4845,12 @@ class HexCrawlEngine:
                 # Get items at this sub-location
                 for item in sub_loc.get("items", []):
                     if not item.get("taken", False):
-                        result["items"].append({
-                            "name": item.get("name"),
-                            "description": item.get("description", ""),
-                        })
+                        result["items"].append(
+                            {
+                                "name": item.get("name"),
+                                "description": item.get("description", ""),
+                            }
+                        )
 
                 # Track visit
                 visit_key = f"{hex_id}:{self._current_poi}"
@@ -4913,7 +4997,9 @@ class HexCrawlEngine:
         self._exploration_context = "diving"
 
         # Resolve the initial dive
-        armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+        armor_weight = (
+            character.armor_weight.value if hasattr(character, "armor_weight") else "unarmoured"
+        )
         result = self.narrative_resolver.hazard_resolver.resolve_hazard(
             hazard_type=HazardType.DIVING,
             character=character,
@@ -4960,7 +5046,9 @@ class HexCrawlEngine:
                 description="Character is not diving",
             )
 
-        armor_weight = character.armor_weight.value if hasattr(character, 'armor_weight') else "unarmoured"
+        armor_weight = (
+            character.armor_weight.value if hasattr(character, "armor_weight") else "unarmoured"
+        )
         result = self.narrative_resolver.hazard_resolver.resolve_hazard(
             hazard_type=HazardType.DIVING,
             character=character,
@@ -5047,10 +5135,7 @@ class HexCrawlEngine:
 
     def get_all_diving_characters(self) -> list[str]:
         """Get IDs of all characters currently diving."""
-        return [
-            char_id for char_id, state in self._diving_states.items()
-            if state.is_diving
-        ]
+        return [char_id for char_id, state in self._diving_states.items() if state.is_diving]
 
     # =========================================================================
     # HEX-LEVEL TO POI-LEVEL ITEM MIGRATION
@@ -5165,25 +5250,31 @@ class HexCrawlEngine:
             sub_location_name = location.get("sub_location")
 
             if not poi_name:
-                results["failed"].append({
-                    "item": item_name,
-                    "error": "No POI specified",
-                })
+                results["failed"].append(
+                    {
+                        "item": item_name,
+                        "error": "No POI specified",
+                    }
+                )
                 continue
 
             success = hex_data.migrate_item_to_poi(item_name, poi_name, sub_location_name)
 
             if success:
-                results["migrated"].append({
-                    "item": item_name,
-                    "poi": poi_name,
-                    "sub_location": sub_location_name,
-                })
+                results["migrated"].append(
+                    {
+                        "item": item_name,
+                        "poi": poi_name,
+                        "sub_location": sub_location_name,
+                    }
+                )
             else:
-                results["failed"].append({
-                    "item": item_name,
-                    "error": "Item or POI not found",
-                })
+                results["failed"].append(
+                    {
+                        "item": item_name,
+                        "error": "Item or POI not found",
+                    }
+                )
 
         return {
             "success": len(results["failed"]) == 0,

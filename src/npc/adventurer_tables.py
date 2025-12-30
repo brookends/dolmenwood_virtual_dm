@@ -237,7 +237,7 @@ MAGIC_ITEM_CATEGORIES = [
     "magic_weapon",
     "potion",
     "rod_staff_wand",  # Spell-casters only
-    "scroll_book",     # Spell-casters only
+    "scroll_book",  # Spell-casters only
     "wondrous_item",
 ]
 
@@ -285,6 +285,7 @@ MOUNTED_CHANCE = {
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
 
 def get_available_classes_for_kindred(kindred: str) -> list[str]:
     """

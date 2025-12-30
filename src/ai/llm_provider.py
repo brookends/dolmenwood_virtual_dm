@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class LLMProvider(str, Enum):
     """Supported LLM providers."""
+
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
     MOCK = "mock"  # For testing
@@ -34,6 +35,7 @@ class LLMProvider(str, Enum):
 
 class LLMRole(str, Enum):
     """Roles for messages in conversation."""
+
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
@@ -42,6 +44,7 @@ class LLMRole(str, Enum):
 @dataclass
 class LLMMessage:
     """A message in an LLM conversation."""
+
     role: LLMRole
     content: str
 
@@ -49,6 +52,7 @@ class LLMMessage:
 @dataclass
 class LLMResponse:
     """Response from an LLM provider."""
+
     content: str
     model: str
     provider: LLMProvider
@@ -63,6 +67,7 @@ class LLMResponse:
 @dataclass
 class LLMConfig:
     """Configuration for LLM provider."""
+
     provider: LLMProvider = LLMProvider.ANTHROPIC
     model: str = "claude-sonnet-4-20250514"
     max_tokens: int = 1024
@@ -110,6 +115,7 @@ class AnthropicClient(BaseLLMClient):
         """Initialize the Anthropic client."""
         try:
             import anthropic
+
             api_key = self.config.api_key or os.getenv("ANTHROPIC_API_KEY")
             if api_key:
                 self._client = anthropic.Anthropic(api_key=api_key)
@@ -196,6 +202,7 @@ class OpenAIClient(BaseLLMClient):
         """Initialize the OpenAI client."""
         try:
             import openai
+
             api_key = self.config.api_key or os.getenv("OPENAI_API_KEY")
             if api_key:
                 self._client = openai.OpenAI(api_key=api_key)
@@ -235,10 +242,12 @@ class OpenAIClient(BaseLLMClient):
             openai_messages.append({"role": "system", "content": system_prompt})
 
         for msg in messages:
-            openai_messages.append({
-                "role": msg.role.value,
-                "content": msg.content,
-            })
+            openai_messages.append(
+                {
+                    "role": msg.role.value,
+                    "content": msg.content,
+                }
+            )
 
         for attempt in range(self.config.max_retries):
             try:
@@ -345,7 +354,7 @@ class LLMManager:
         | \bsave\s+vs\b             # "save vs poison"
         | \bsaving\s+throw\b        # "saving throw"
         """,
-        _re.VERBOSE | _re.IGNORECASE
+        _re.VERBOSE | _re.IGNORECASE,
     )
 
     # Patterns for outcome determination (LLM shouldn't decide these)
@@ -359,7 +368,7 @@ class LLMManager:
         | \bdeals?\s+\d+\s+damage\b # "deals 5 damage" (deciding damage)
         | \binflicts?\s+\d+\s+damage\b  # "inflicts 8 damage"
         """,
-        _re.VERBOSE | _re.IGNORECASE
+        _re.VERBOSE | _re.IGNORECASE,
     )
 
     # Patterns allowed when narrating already-resolved actions
@@ -472,7 +481,7 @@ class LLMManager:
 
         # Truncate if too long
         if len(response.content) > self.config.max_response_length:
-            response.content = response.content[:self.config.max_response_length] + "..."
+            response.content = response.content[: self.config.max_response_length] + "..."
             response.sanitized = True
 
         return response

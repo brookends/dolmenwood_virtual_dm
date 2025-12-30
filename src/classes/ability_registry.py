@@ -20,39 +20,40 @@ if TYPE_CHECKING:
 
 class AbilityEffectType(str, Enum):
     """Categories of ability effects for system integration."""
+
     # Combat effects
-    COMBAT_ATTACK = "combat_attack"       # Modifies attack rolls
-    COMBAT_DAMAGE = "combat_damage"       # Modifies damage
-    COMBAT_AC = "combat_ac"               # Modifies armor class
-    COMBAT_SPECIAL = "combat_special"     # Special combat action (backstab)
-    COMBAT_TRIGGERED = "combat_triggered" # Triggered by combat event (cleave)
+    COMBAT_ATTACK = "combat_attack"  # Modifies attack rolls
+    COMBAT_DAMAGE = "combat_damage"  # Modifies damage
+    COMBAT_AC = "combat_ac"  # Modifies armor class
+    COMBAT_SPECIAL = "combat_special"  # Special combat action (backstab)
+    COMBAT_TRIGGERED = "combat_triggered"  # Triggered by combat event (cleave)
 
     # Skill effects
-    SKILL_CHECK = "skill_check"           # d6 skill check
-    SKILL_BONUS = "skill_bonus"           # Bonus to existing skill
+    SKILL_CHECK = "skill_check"  # d6 skill check
+    SKILL_BONUS = "skill_bonus"  # Bonus to existing skill
 
     # Encounter effects
-    ENCOUNTER_ACTION = "encounter_action" # Special encounter action
+    ENCOUNTER_ACTION = "encounter_action"  # Special encounter action
     ENCOUNTER_MODIFIER = "encounter_modifier"  # Modifies encounter rolls
 
     # Save effects
-    SAVE_BONUS = "save_bonus"             # Bonus to saving throws
+    SAVE_BONUS = "save_bonus"  # Bonus to saving throws
     SAVE_PENALTY_INFLICT = "save_penalty_inflict"  # Penalty to enemy saves
 
     # Magic effects
-    MAGIC_CASTING = "magic_casting"       # Enables spellcasting
-    MAGIC_DETECTION = "magic_detection"   # Detects magic
+    MAGIC_CASTING = "magic_casting"  # Enables spellcasting
+    MAGIC_DETECTION = "magic_detection"  # Detects magic
 
     # Healing effects
-    HEALING_ACTIVE = "healing_active"     # Active healing ability
+    HEALING_ACTIVE = "healing_active"  # Active healing ability
 
     # Passive effects
-    PASSIVE_LANGUAGE = "passive_language" # Language ability
-    PASSIVE_MOVEMENT = "passive_movement" # Movement modifier
+    PASSIVE_LANGUAGE = "passive_language"  # Language ability
+    PASSIVE_MOVEMENT = "passive_movement"  # Movement modifier
     PASSIVE_RESISTANCE = "passive_resistance"  # Damage resistance
 
     # Companion/summon effects
-    COMPANION = "companion"               # Animal companion or summon
+    COMPANION = "companion"  # Animal companion or summon
 
 
 @dataclass
@@ -63,6 +64,7 @@ class AbilityIntegration:
     This structure allows game engines to query for applicable abilities
     and apply their effects.
     """
+
     ability_id: str
     class_id: str
     effect_types: list[AbilityEffectType]
@@ -75,10 +77,10 @@ class AbilityIntegration:
 
     # Conditions for the ability to apply
     requires_position: Optional[str] = None  # "behind", "flanking"
-    requires_awareness: bool = False         # Target must be unaware
-    requires_weapon: Optional[str] = None    # "dagger", "two-handed"
+    requires_awareness: bool = False  # Target must be unaware
+    requires_weapon: Optional[str] = None  # "dagger", "two-handed"
     requires_enemy_type: Optional[str] = None  # "undead", "arcane_caster"
-    requires_activation: bool = False        # Must be explicitly activated
+    requires_activation: bool = False  # Must be explicitly activated
 
     # Skill integration
     skill_names: list[str] = field(default_factory=list)
@@ -118,6 +120,7 @@ class AbilityRegistry:
     Provides lookup methods for game systems to find and apply
     relevant class abilities.
     """
+
     _instance: Optional["AbilityRegistry"] = None
     _initialized: bool = False
 
@@ -142,436 +145,641 @@ class AbilityRegistry:
         # =================================================================
         # FIGHTER ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="fighter_combat_talents",
-            class_id="fighter",
-            effect_types=[
-                AbilityEffectType.COMBAT_ATTACK,
-                AbilityEffectType.COMBAT_DAMAGE,
-                AbilityEffectType.COMBAT_AC,
-                AbilityEffectType.COMBAT_TRIGGERED,
-            ],
-            requires_activation=True,  # Talents must be selected/activated
-            extra_data={
-                "talent_levels": [2, 6, 10, 14],
-                "available_talents": [
-                    "battle_rage", "cleave", "defender", "last_stand",
-                    "leader", "main_gauche", "slayer", "weapon_specialist"
+        self._register(
+            AbilityIntegration(
+                ability_id="fighter_combat_talents",
+                class_id="fighter",
+                effect_types=[
+                    AbilityEffectType.COMBAT_ATTACK,
+                    AbilityEffectType.COMBAT_DAMAGE,
+                    AbilityEffectType.COMBAT_AC,
+                    AbilityEffectType.COMBAT_TRIGGERED,
                 ],
-            },
-        ))
+                requires_activation=True,  # Talents must be selected/activated
+                extra_data={
+                    "talent_levels": [2, 6, 10, 14],
+                    "available_talents": [
+                        "battle_rage",
+                        "cleave",
+                        "defender",
+                        "last_stand",
+                        "leader",
+                        "main_gauche",
+                        "slayer",
+                        "weapon_specialist",
+                    ],
+                },
+            )
+        )
 
         # =================================================================
         # THIEF ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="thief_backstab",
-            class_id="thief",
-            effect_types=[
-                AbilityEffectType.COMBAT_SPECIAL,
-                AbilityEffectType.COMBAT_ATTACK,
-                AbilityEffectType.COMBAT_DAMAGE,
-            ],
-            attack_bonus=4,
-            damage_dice="3d4",
-            requires_position="behind",
-            requires_awareness=True,
-            requires_weapon="dagger",
-            extra_data={
-                "valid_targets": "Mortals, fairies, or demi-fey of Small or Medium size",
-                "natural_1_effect": "Save vs Doom or be noticed",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="thief_backstab",
+                class_id="thief",
+                effect_types=[
+                    AbilityEffectType.COMBAT_SPECIAL,
+                    AbilityEffectType.COMBAT_ATTACK,
+                    AbilityEffectType.COMBAT_DAMAGE,
+                ],
+                attack_bonus=4,
+                damage_dice="3d4",
+                requires_position="behind",
+                requires_awareness=True,
+                requires_weapon="dagger",
+                extra_data={
+                    "valid_targets": "Mortals, fairies, or demi-fey of Small or Medium size",
+                    "natural_1_effect": "Save vs Doom or be noticed",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="thief_skills",
-            class_id="thief",
-            effect_types=[AbilityEffectType.SKILL_CHECK],
-            skill_names=[
-                "climb_wall", "decipher_document", "disarm_mechanism",
-                "legerdemain", "pick_lock", "listen", "search", "stealth"
-            ],
-            skill_targets_by_level={
-                1:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 6, "legerdemain": 6, "pick_lock": 6, "listen": 5, "search": 6, "stealth": 5},
-                2:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 5, "legerdemain": 6, "pick_lock": 6, "listen": 5, "search": 5, "stealth": 5},
-                3:  {"climb_wall": 4, "decipher_document": 6, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 5, "search": 5, "stealth": 5},
-                4:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 5, "search": 5, "stealth": 5},
-                5:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 5, "legerdemain": 5, "pick_lock": 5, "listen": 4, "search": 5, "stealth": 4},
-                6:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 4, "legerdemain": 5, "pick_lock": 5, "listen": 4, "search": 4, "stealth": 4},
-                7:  {"climb_wall": 3, "decipher_document": 5, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 4, "search": 4, "stealth": 4},
-                8:  {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 4, "search": 4, "stealth": 4},
-                9:  {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 4, "legerdemain": 4, "pick_lock": 4, "listen": 3, "search": 4, "stealth": 3},
-                10: {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 3, "legerdemain": 4, "pick_lock": 4, "listen": 3, "search": 3, "stealth": 3},
-                11: {"climb_wall": 2, "decipher_document": 4, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 3, "search": 3, "stealth": 3},
-                12: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 2, "search": 3, "stealth": 3},
-                13: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 3, "legerdemain": 3, "pick_lock": 3, "listen": 2, "search": 2, "stealth": 2},
-                14: {"climb_wall": 2, "decipher_document": 3, "disarm_mechanism": 2, "legerdemain": 3, "pick_lock": 2, "listen": 2, "search": 2, "stealth": 2},
-                15: {"climb_wall": 2, "decipher_document": 2, "disarm_mechanism": 2, "legerdemain": 2, "pick_lock": 2, "listen": 2, "search": 2, "stealth": 2},
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="thief_skills",
+                class_id="thief",
+                effect_types=[AbilityEffectType.SKILL_CHECK],
+                skill_names=[
+                    "climb_wall",
+                    "decipher_document",
+                    "disarm_mechanism",
+                    "legerdemain",
+                    "pick_lock",
+                    "listen",
+                    "search",
+                    "stealth",
+                ],
+                skill_targets_by_level={
+                    1: {
+                        "climb_wall": 4,
+                        "decipher_document": 6,
+                        "disarm_mechanism": 6,
+                        "legerdemain": 6,
+                        "pick_lock": 6,
+                        "listen": 5,
+                        "search": 6,
+                        "stealth": 5,
+                    },
+                    2: {
+                        "climb_wall": 4,
+                        "decipher_document": 6,
+                        "disarm_mechanism": 5,
+                        "legerdemain": 6,
+                        "pick_lock": 6,
+                        "listen": 5,
+                        "search": 5,
+                        "stealth": 5,
+                    },
+                    3: {
+                        "climb_wall": 4,
+                        "decipher_document": 6,
+                        "disarm_mechanism": 5,
+                        "legerdemain": 5,
+                        "pick_lock": 5,
+                        "listen": 5,
+                        "search": 5,
+                        "stealth": 5,
+                    },
+                    4: {
+                        "climb_wall": 3,
+                        "decipher_document": 5,
+                        "disarm_mechanism": 5,
+                        "legerdemain": 5,
+                        "pick_lock": 5,
+                        "listen": 5,
+                        "search": 5,
+                        "stealth": 5,
+                    },
+                    5: {
+                        "climb_wall": 3,
+                        "decipher_document": 5,
+                        "disarm_mechanism": 5,
+                        "legerdemain": 5,
+                        "pick_lock": 5,
+                        "listen": 4,
+                        "search": 5,
+                        "stealth": 4,
+                    },
+                    6: {
+                        "climb_wall": 3,
+                        "decipher_document": 5,
+                        "disarm_mechanism": 4,
+                        "legerdemain": 5,
+                        "pick_lock": 5,
+                        "listen": 4,
+                        "search": 4,
+                        "stealth": 4,
+                    },
+                    7: {
+                        "climb_wall": 3,
+                        "decipher_document": 5,
+                        "disarm_mechanism": 4,
+                        "legerdemain": 4,
+                        "pick_lock": 4,
+                        "listen": 4,
+                        "search": 4,
+                        "stealth": 4,
+                    },
+                    8: {
+                        "climb_wall": 2,
+                        "decipher_document": 4,
+                        "disarm_mechanism": 4,
+                        "legerdemain": 4,
+                        "pick_lock": 4,
+                        "listen": 4,
+                        "search": 4,
+                        "stealth": 4,
+                    },
+                    9: {
+                        "climb_wall": 2,
+                        "decipher_document": 4,
+                        "disarm_mechanism": 4,
+                        "legerdemain": 4,
+                        "pick_lock": 4,
+                        "listen": 3,
+                        "search": 4,
+                        "stealth": 3,
+                    },
+                    10: {
+                        "climb_wall": 2,
+                        "decipher_document": 4,
+                        "disarm_mechanism": 3,
+                        "legerdemain": 4,
+                        "pick_lock": 4,
+                        "listen": 3,
+                        "search": 3,
+                        "stealth": 3,
+                    },
+                    11: {
+                        "climb_wall": 2,
+                        "decipher_document": 4,
+                        "disarm_mechanism": 3,
+                        "legerdemain": 3,
+                        "pick_lock": 3,
+                        "listen": 3,
+                        "search": 3,
+                        "stealth": 3,
+                    },
+                    12: {
+                        "climb_wall": 2,
+                        "decipher_document": 3,
+                        "disarm_mechanism": 3,
+                        "legerdemain": 3,
+                        "pick_lock": 3,
+                        "listen": 2,
+                        "search": 3,
+                        "stealth": 3,
+                    },
+                    13: {
+                        "climb_wall": 2,
+                        "decipher_document": 3,
+                        "disarm_mechanism": 3,
+                        "legerdemain": 3,
+                        "pick_lock": 3,
+                        "listen": 2,
+                        "search": 2,
+                        "stealth": 2,
+                    },
+                    14: {
+                        "climb_wall": 2,
+                        "decipher_document": 3,
+                        "disarm_mechanism": 2,
+                        "legerdemain": 3,
+                        "pick_lock": 2,
+                        "listen": 2,
+                        "search": 2,
+                        "stealth": 2,
+                    },
+                    15: {
+                        "climb_wall": 2,
+                        "decipher_document": 2,
+                        "disarm_mechanism": 2,
+                        "legerdemain": 2,
+                        "pick_lock": 2,
+                        "listen": 2,
+                        "search": 2,
+                        "stealth": 2,
+                    },
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="thief_thieves_cant",
-            class_id="thief",
-            effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
-            extra_data={
-                "language_type": "secret",
-                "components": ["gestures", "code words"],
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="thief_thieves_cant",
+                class_id="thief",
+                effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
+                extra_data={
+                    "language_type": "secret",
+                    "components": ["gestures", "code words"],
+                },
+            )
+        )
 
         # =================================================================
         # CLERIC ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="cleric_turn_undead",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
-            encounter_action_name="Turn Undead",
-            encounter_action_roll="2d6",
-            encounter_action_range=30,
-            requires_enemy_type="undead",
-            extra_data={
-                "results": {
-                    "4_or_lower": "unaffected",
-                    "5_to_6": "2d4 stunned for 1 Round",
-                    "7_to_12": "2d4 flee for 1 Turn",
-                    "13_or_higher": "2d4 destroyed",
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_turn_undead",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
+                encounter_action_name="Turn Undead",
+                encounter_action_roll="2d6",
+                encounter_action_range=30,
+                requires_enemy_type="undead",
+                extra_data={
+                    "results": {
+                        "4_or_lower": "unaffected",
+                        "5_to_6": "2d4 stunned for 1 Round",
+                        "7_to_12": "2d4 flee for 1 Turn",
+                        "13_or_higher": "2d4 destroyed",
+                    },
+                    "level_modifiers": {
+                        "lower_level_undead": "+2 per Level difference (max +6)",
+                        "higher_level_undead": "-2 per Level difference (max -6)",
+                    },
                 },
-                "level_modifiers": {
-                    "lower_level_undead": "+2 per Level difference (max +6)",
-                    "higher_level_undead": "-2 per Level difference (max -6)",
+            )
+        )
+
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_holy_magic",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.MAGIC_CASTING],
+                extra_data={
+                    "spell_type": "holy",
+                    "max_spell_rank": 5,
+                    "min_level": 2,
                 },
-            },
-        ))
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="cleric_holy_magic",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.MAGIC_CASTING],
-            extra_data={
-                "spell_type": "holy",
-                "max_spell_rank": 5,
-                "min_level": 2,
-            },
-        ))
-
-        self._register(AbilityIntegration(
-            ability_id="cleric_detect_holy_magic",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.MAGIC_DETECTION],
-            extra_data={
-                "requires": "touch object, concentrate",
-                "time": "1 Turn",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_detect_holy_magic",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.MAGIC_DETECTION],
+                extra_data={
+                    "requires": "touch object, concentrate",
+                    "time": "1 Turn",
+                },
+            )
+        )
 
         # Holy Order abilities (Order of St Faxis)
-        self._register(AbilityIntegration(
-            ability_id="cleric_order_st_faxis",
-            class_id="cleric",
-            effect_types=[
-                AbilityEffectType.SAVE_BONUS,
-                AbilityEffectType.SAVE_PENALTY_INFLICT,
-            ],
-            save_bonus=2,
-            save_type="arcane",
-            inflicts_save_penalty=-2,
-            inflicts_penalty_to="arcane_casters",
-            extra_data={
-                "order_name": "Order of St Faxis",
-                "min_level": 2,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_order_st_faxis",
+                class_id="cleric",
+                effect_types=[
+                    AbilityEffectType.SAVE_BONUS,
+                    AbilityEffectType.SAVE_PENALTY_INFLICT,
+                ],
+                save_bonus=2,
+                save_type="arcane",
+                inflicts_save_penalty=-2,
+                inflicts_penalty_to="arcane_casters",
+                extra_data={
+                    "order_name": "Order of St Faxis",
+                    "min_level": 2,
+                },
+            )
+        )
 
         # Holy Order abilities (Order of St Sedge)
-        self._register(AbilityIntegration(
-            ability_id="cleric_order_st_sedge",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.HEALING_ACTIVE],
-            healing_amount="1 HP per Level",
-            healing_uses_per_day=1,
-            extra_data={
-                "order_name": "Order of St Sedge",
-                "min_level": 2,
-                "ability_name": "Laying on Hands",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_order_st_sedge",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.HEALING_ACTIVE],
+                healing_amount="1 HP per Level",
+                healing_uses_per_day=1,
+                extra_data={
+                    "order_name": "Order of St Sedge",
+                    "min_level": 2,
+                    "ability_name": "Laying on Hands",
+                },
+            )
+        )
 
         # Holy Order abilities (Order of St Signis)
-        self._register(AbilityIntegration(
-            ability_id="cleric_order_st_signis",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.COMBAT_ATTACK],
-            attack_bonus=1,
-            requires_enemy_type="undead",
-            extra_data={
-                "order_name": "Order of St Signis",
-                "min_level": 2,
-                "ability_name": "Undead Slayer",
-                "bypasses_resistance": True,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_order_st_signis",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.COMBAT_ATTACK],
+                attack_bonus=1,
+                requires_enemy_type="undead",
+                extra_data={
+                    "order_name": "Order of St Signis",
+                    "min_level": 2,
+                    "ability_name": "Undead Slayer",
+                    "bypasses_resistance": True,
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="cleric_languages",
-            class_id="cleric",
-            effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
-            extra_data={"bonus_languages": ["Liturgic"]},
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="cleric_languages",
+                class_id="cleric",
+                effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
+                extra_data={"bonus_languages": ["Liturgic"]},
+            )
+        )
 
         # =================================================================
         # FRIAR ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="friar_turn_undead",
-            class_id="friar",
-            effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
-            encounter_action_name="Turn Undead",
-            encounter_action_roll="2d6",
-            encounter_action_range=30,
-            requires_enemy_type="undead",
-            extra_data={
-                "results": {
-                    "4_or_lower": "unaffected",
-                    "5_to_6": "2d4 stunned for 1 Round",
-                    "7_to_12": "2d4 flee for 1 Turn",
-                    "13_or_higher": "2d4 destroyed",
+        self._register(
+            AbilityIntegration(
+                ability_id="friar_turn_undead",
+                class_id="friar",
+                effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
+                encounter_action_name="Turn Undead",
+                encounter_action_roll="2d6",
+                encounter_action_range=30,
+                requires_enemy_type="undead",
+                extra_data={
+                    "results": {
+                        "4_or_lower": "unaffected",
+                        "5_to_6": "2d4 stunned for 1 Round",
+                        "7_to_12": "2d4 flee for 1 Turn",
+                        "13_or_higher": "2d4 destroyed",
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="friar_unarmoured_defence",
-            class_id="friar",
-            effect_types=[AbilityEffectType.COMBAT_AC],
-            ac_modifier=3,  # Base AC 13 unarmoured
-            extra_data={
-                "base_ac": 13,
-                "condition": "not wearing armour",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="friar_unarmoured_defence",
+                class_id="friar",
+                effect_types=[AbilityEffectType.COMBAT_AC],
+                ac_modifier=3,  # Base AC 13 unarmoured
+                extra_data={
+                    "base_ac": 13,
+                    "condition": "not wearing armour",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="friar_holy_magic",
-            class_id="friar",
-            effect_types=[AbilityEffectType.MAGIC_CASTING],
-            extra_data={
-                "spell_type": "holy",
-                "max_spell_rank": 5,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="friar_holy_magic",
+                class_id="friar",
+                effect_types=[AbilityEffectType.MAGIC_CASTING],
+                extra_data={
+                    "spell_type": "holy",
+                    "max_spell_rank": 5,
+                },
+            )
+        )
 
         # =================================================================
         # KNIGHT ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="knight_combat_prowess",
-            class_id="knight",
-            effect_types=[
-                AbilityEffectType.COMBAT_ATTACK,
-                AbilityEffectType.COMBAT_DAMAGE,
-            ],
-            attack_bonus=1,
-            damage_bonus=1,
-            extra_data={
-                "condition": "mounted or on foot",
-                "applies_always": True,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="knight_combat_prowess",
+                class_id="knight",
+                effect_types=[
+                    AbilityEffectType.COMBAT_ATTACK,
+                    AbilityEffectType.COMBAT_DAMAGE,
+                ],
+                attack_bonus=1,
+                damage_bonus=1,
+                extra_data={
+                    "condition": "mounted or on foot",
+                    "applies_always": True,
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="knight_horsemanship",
-            class_id="knight",
-            effect_types=[AbilityEffectType.SKILL_CHECK],
-            skill_names=["riding"],
-            extra_data={
-                "riding_checks": "automatic success",
-                "mounted_combat": "no penalties",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="knight_horsemanship",
+                class_id="knight",
+                effect_types=[AbilityEffectType.SKILL_CHECK],
+                skill_names=["riding"],
+                extra_data={
+                    "riding_checks": "automatic success",
+                    "mounted_combat": "no penalties",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="knight_mounted_charge",
-            class_id="knight",
-            effect_types=[
-                AbilityEffectType.COMBAT_ATTACK,
-                AbilityEffectType.COMBAT_DAMAGE,
-            ],
-            attack_bonus=2,  # +2 in addition to normal charge +2
-            damage_dice="2x",  # Double damage on mounted charge
-            extra_data={
-                "condition": "mounted charge with lance",
-                "total_charge_bonus": "+4 Attack, double damage",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="knight_mounted_charge",
+                class_id="knight",
+                effect_types=[
+                    AbilityEffectType.COMBAT_ATTACK,
+                    AbilityEffectType.COMBAT_DAMAGE,
+                ],
+                attack_bonus=2,  # +2 in addition to normal charge +2
+                damage_dice="2x",  # Double damage on mounted charge
+                extra_data={
+                    "condition": "mounted charge with lance",
+                    "total_charge_bonus": "+4 Attack, double damage",
+                },
+            )
+        )
 
         # =================================================================
         # HUNTER ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="hunter_skills",
-            class_id="hunter",
-            effect_types=[AbilityEffectType.SKILL_CHECK],
-            skill_names=["listen", "search", "stealth", "track"],
-            skill_targets_by_level={
-                1:  {"listen": 5, "search": 5, "stealth": 5, "track": 5},
-                2:  {"listen": 5, "search": 5, "stealth": 5, "track": 5},
-                3:  {"listen": 4, "search": 5, "stealth": 5, "track": 5},
-                4:  {"listen": 4, "search": 4, "stealth": 4, "track": 5},
-                5:  {"listen": 4, "search": 4, "stealth": 4, "track": 4},
-                6:  {"listen": 4, "search": 4, "stealth": 4, "track": 4},
-                7:  {"listen": 3, "search": 3, "stealth": 3, "track": 4},
-                8:  {"listen": 3, "search": 3, "stealth": 3, "track": 3},
-                9:  {"listen": 3, "search": 3, "stealth": 3, "track": 3},
-                10: {"listen": 2, "search": 2, "stealth": 2, "track": 3},
-                11: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
-                12: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
-                13: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
-                14: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
-                15: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="hunter_skills",
+                class_id="hunter",
+                effect_types=[AbilityEffectType.SKILL_CHECK],
+                skill_names=["listen", "search", "stealth", "track"],
+                skill_targets_by_level={
+                    1: {"listen": 5, "search": 5, "stealth": 5, "track": 5},
+                    2: {"listen": 5, "search": 5, "stealth": 5, "track": 5},
+                    3: {"listen": 4, "search": 5, "stealth": 5, "track": 5},
+                    4: {"listen": 4, "search": 4, "stealth": 4, "track": 5},
+                    5: {"listen": 4, "search": 4, "stealth": 4, "track": 4},
+                    6: {"listen": 4, "search": 4, "stealth": 4, "track": 4},
+                    7: {"listen": 3, "search": 3, "stealth": 3, "track": 4},
+                    8: {"listen": 3, "search": 3, "stealth": 3, "track": 3},
+                    9: {"listen": 3, "search": 3, "stealth": 3, "track": 3},
+                    10: {"listen": 2, "search": 2, "stealth": 2, "track": 3},
+                    11: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
+                    12: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
+                    13: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
+                    14: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
+                    15: {"listen": 2, "search": 2, "stealth": 2, "track": 2},
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="hunter_animal_companion",
-            class_id="hunter",
-            effect_types=[AbilityEffectType.COMPANION],
-            extra_data={
-                "companion_types": ["dog", "hawk", "ferret"],
-                "levels_together": "companion levels with hunter",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="hunter_animal_companion",
+                class_id="hunter",
+                effect_types=[AbilityEffectType.COMPANION],
+                extra_data={
+                    "companion_types": ["dog", "hawk", "ferret"],
+                    "levels_together": "companion levels with hunter",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="hunter_wayfinding",
-            class_id="hunter",
-            effect_types=[AbilityEffectType.ENCOUNTER_MODIFIER],
-            extra_data={
-                "effect": "Party cannot become lost in wilderness",
-                "condition": "hunter conscious and guiding",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="hunter_wayfinding",
+                class_id="hunter",
+                effect_types=[AbilityEffectType.ENCOUNTER_MODIFIER],
+                extra_data={
+                    "effect": "Party cannot become lost in wilderness",
+                    "condition": "hunter conscious and guiding",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="hunter_trophy_bonus",
-            class_id="hunter",
-            effect_types=[
-                AbilityEffectType.COMBAT_ATTACK,
-                AbilityEffectType.SAVE_BONUS,
-            ],
-            extra_data={
-                "attack_bonus_per_trophy": 1,
-                "save_bonus_per_trophy": 1,
-                "condition": "fighting creature type matching trophy",
-                "max_trophies": 3,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="hunter_trophy_bonus",
+                class_id="hunter",
+                effect_types=[
+                    AbilityEffectType.COMBAT_ATTACK,
+                    AbilityEffectType.SAVE_BONUS,
+                ],
+                extra_data={
+                    "attack_bonus_per_trophy": 1,
+                    "save_bonus_per_trophy": 1,
+                    "condition": "fighting creature type matching trophy",
+                    "max_trophies": 3,
+                },
+            )
+        )
 
         # =================================================================
         # BARD ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="bard_enchantment",
-            class_id="bard",
-            effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
-            encounter_action_name="Enchantment",
-            encounter_action_roll="2d6",
-            encounter_action_range=60,
-            extra_data={
-                "effect": "charm_like",
-                "targets": "mortals, fairies, demi-fey, beasts",
-                "save": "Spell",
-                "uses_per_day_by_level": {1: 1, 4: 2, 8: 3, 12: 4},
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="bard_enchantment",
+                class_id="bard",
+                effect_types=[AbilityEffectType.ENCOUNTER_ACTION],
+                encounter_action_name="Enchantment",
+                encounter_action_roll="2d6",
+                encounter_action_range=60,
+                extra_data={
+                    "effect": "charm_like",
+                    "targets": "mortals, fairies, demi-fey, beasts",
+                    "save": "Spell",
+                    "uses_per_day_by_level": {1: 1, 4: 2, 8: 3, 12: 4},
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="bard_lore",
-            class_id="bard",
-            effect_types=[AbilityEffectType.SKILL_CHECK],
-            skill_names=["lore"],
-            extra_data={
-                "base_chance": "2-in-6",
-                "scaling": "+1 per 3 levels",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="bard_lore",
+                class_id="bard",
+                effect_types=[AbilityEffectType.SKILL_CHECK],
+                skill_names=["lore"],
+                extra_data={
+                    "base_chance": "2-in-6",
+                    "scaling": "+1 per 3 levels",
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="bard_performance",
-            class_id="bard",
-            effect_types=[AbilityEffectType.ENCOUNTER_MODIFIER],
-            extra_data={
-                "effect": "+1 reaction roll when performing",
-                "uses": "unlimited during social encounters",
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="bard_performance",
+                class_id="bard",
+                effect_types=[AbilityEffectType.ENCOUNTER_MODIFIER],
+                extra_data={
+                    "effect": "+1 reaction roll when performing",
+                    "uses": "unlimited during social encounters",
+                },
+            )
+        )
 
         # =================================================================
         # MAGICIAN ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="magician_arcane_magic",
-            class_id="magician",
-            effect_types=[AbilityEffectType.MAGIC_CASTING],
-            extra_data={
-                "spell_type": "arcane",
-                "max_spell_rank": 6,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="magician_arcane_magic",
+                class_id="magician",
+                effect_types=[AbilityEffectType.MAGIC_CASTING],
+                extra_data={
+                    "spell_type": "arcane",
+                    "max_spell_rank": 6,
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="magician_detect_magic",
-            class_id="magician",
-            effect_types=[
-                AbilityEffectType.MAGIC_DETECTION,
-                AbilityEffectType.SKILL_CHECK,
-            ],
-            skill_names=["detect_magic"],
-            skill_targets_by_level={
-                1: {"detect_magic": 6},
-                3: {"detect_magic": 5},
-                5: {"detect_magic": 5},
-                7: {"detect_magic": 4},
-                9: {"detect_magic": 4},
-                11: {"detect_magic": 3},
-                13: {"detect_magic": 3},
-                15: {"detect_magic": 3},
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="magician_detect_magic",
+                class_id="magician",
+                effect_types=[
+                    AbilityEffectType.MAGIC_DETECTION,
+                    AbilityEffectType.SKILL_CHECK,
+                ],
+                skill_names=["detect_magic"],
+                skill_targets_by_level={
+                    1: {"detect_magic": 6},
+                    3: {"detect_magic": 5},
+                    5: {"detect_magic": 5},
+                    7: {"detect_magic": 4},
+                    9: {"detect_magic": 4},
+                    11: {"detect_magic": 3},
+                    13: {"detect_magic": 3},
+                    15: {"detect_magic": 3},
+                },
+            )
+        )
 
         # =================================================================
         # ENCHANTER ABILITIES
         # =================================================================
-        self._register(AbilityIntegration(
-            ability_id="enchanter_glamour_magic",
-            class_id="enchanter",
-            effect_types=[AbilityEffectType.MAGIC_CASTING],
-            extra_data={
-                "spell_type": "glamour",
-                "max_spell_rank": 5,
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="enchanter_glamour_magic",
+                class_id="enchanter",
+                effect_types=[AbilityEffectType.MAGIC_CASTING],
+                extra_data={
+                    "spell_type": "glamour",
+                    "max_spell_rank": 5,
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="enchanter_rune_magic",
-            class_id="enchanter",
-            effect_types=[AbilityEffectType.MAGIC_CASTING],
-            extra_data={
-                "spell_type": "rune",
-                "rune_types": ["lesser", "greater", "mighty"],
-                "runes_per_day_by_level": {1: 1, 3: 2, 5: 3, 7: 4},
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="enchanter_rune_magic",
+                class_id="enchanter",
+                effect_types=[AbilityEffectType.MAGIC_CASTING],
+                extra_data={
+                    "spell_type": "rune",
+                    "rune_types": ["lesser", "greater", "mighty"],
+                    "runes_per_day_by_level": {1: 1, 3: 2, 5: 3, 7: 4},
+                },
+            )
+        )
 
-        self._register(AbilityIntegration(
-            ability_id="enchanter_fairy_tongue",
-            class_id="enchanter",
-            effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
-            extra_data={
-                "bonus_languages": ["Sylvan"],
-            },
-        ))
+        self._register(
+            AbilityIntegration(
+                ability_id="enchanter_fairy_tongue",
+                class_id="enchanter",
+                effect_types=[AbilityEffectType.PASSIVE_LANGUAGE],
+                extra_data={
+                    "bonus_languages": ["Sylvan"],
+                },
+            )
+        )
 
     def _register(self, integration: AbilityIntegration) -> None:
         """Register an ability integration."""
@@ -601,10 +809,7 @@ class AbilityRegistry:
         ability_ids = self._by_class.get(class_id.lower(), [])
         return [self._abilities[aid] for aid in ability_ids]
 
-    def get_by_effect_type(
-        self,
-        effect_type: AbilityEffectType
-    ) -> list[AbilityIntegration]:
+    def get_by_effect_type(self, effect_type: AbilityEffectType) -> list[AbilityIntegration]:
         """Get all abilities with a specific effect type."""
         ability_ids = self._by_effect_type.get(effect_type, [])
         return [self._abilities[aid] for aid in ability_ids]
@@ -684,18 +889,17 @@ class AbilityRegistry:
 
             # Record special effects
             if ability.ability_id:
-                result["special_effects"].append({
-                    "ability_id": ability.ability_id,
-                    "attack_bonus": ability.attack_bonus,
-                    "damage_bonus": ability.damage_bonus,
-                })
+                result["special_effects"].append(
+                    {
+                        "ability_id": ability.ability_id,
+                        "attack_bonus": ability.attack_bonus,
+                        "damage_bonus": ability.damage_bonus,
+                    }
+                )
 
         return result
 
-    def get_backstab_data(
-        self,
-        character: "CharacterState"
-    ) -> Optional[dict[str, Any]]:
+    def get_backstab_data(self, character: "CharacterState") -> Optional[dict[str, Any]]:
         """
         Get backstab ability data for a character.
 

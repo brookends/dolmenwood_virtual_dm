@@ -156,8 +156,7 @@ class EncounterTableManager:
     # =========================================================================
 
     def load_hex_tables_from_hex_data(
-        self,
-        hex_data: dict[str, Any]
+        self, hex_data: dict[str, Any]
     ) -> tuple[list[RollTable], list[RollTable]]:
         """
         Load and register roll tables embedded in hex data.
@@ -237,9 +236,7 @@ class EncounterTableManager:
         # Check if already loaded
         if hex_id in self._by_hex:
             return [
-                self._roll_tables[tid]
-                for tid in self._by_hex[hex_id]
-                if tid in self._roll_tables
+                self._roll_tables[tid] for tid in self._by_hex[hex_id] if tid in self._roll_tables
             ]
 
         # Load from database
@@ -280,7 +277,8 @@ class EncounterTableManager:
 
         # Return all tables for this hex from cache
         return [
-            table for table in self._roll_tables.values()
+            table
+            for table in self._roll_tables.values()
             if table.metadata.conditions.get("hex_id") == hex_id
         ]
 
@@ -299,9 +297,12 @@ class EncounterTableManager:
 
         # Return dungeon tables from cache
         return [
-            table for table in self._roll_tables.values()
-            if (table.metadata.conditions.get("hex_id") == hex_id and
-                table.metadata.category in ("dungeon_room", "dungeon_encounter"))
+            table
+            for table in self._roll_tables.values()
+            if (
+                table.metadata.conditions.get("hex_id") == hex_id
+                and table.metadata.category in ("dungeon_room", "dungeon_encounter")
+            )
         ]
 
     # =========================================================================
@@ -378,20 +379,20 @@ class EncounterTableManager:
             return 0
 
         # Handle plain numbers (e.g., "1" or "5")
-        if 'd' not in notation.lower():
+        if "d" not in notation.lower():
             return int(notation)
 
         modifier = 0
-        if '+' in notation:
-            dice_part, mod_part = notation.split('+')
+        if "+" in notation:
+            dice_part, mod_part = notation.split("+")
             modifier = int(mod_part)
-        elif '-' in notation:
-            dice_part, mod_part = notation.split('-')
+        elif "-" in notation:
+            dice_part, mod_part = notation.split("-")
             modifier = -int(mod_part)
         else:
             dice_part = notation
 
-        num_dice, die_size = dice_part.lower().split('d')
+        num_dice, die_size = dice_part.lower().split("d")
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
@@ -403,9 +404,7 @@ class EncounterTableManager:
     # =========================================================================
 
     def roll_encounter(
-        self,
-        context: EncounterTableContext,
-        hex_tables: Optional[dict[str, EncounterTable]] = None
+        self, context: EncounterTableContext, hex_tables: Optional[dict[str, EncounterTable]] = None
     ) -> Optional[EncounterResult]:
         """
         Roll for an encounter based on context.
@@ -454,9 +453,7 @@ class EncounterTableManager:
         return result
 
     def _select_table(
-        self,
-        context: EncounterTableContext,
-        hex_tables: Optional[dict[str, EncounterTable]] = None
+        self, context: EncounterTableContext, hex_tables: Optional[dict[str, EncounterTable]] = None
     ) -> Optional[EncounterTable]:
         """
         Select the appropriate encounter table based on context.
@@ -498,9 +495,7 @@ class EncounterTableManager:
         return self._tables.get(selected_id)
 
     def _get_eligible_wilderness_tables(
-        self,
-        context: EncounterTableContext,
-        hex_tables: Optional[dict[str, EncounterTable]] = None
+        self, context: EncounterTableContext, hex_tables: Optional[dict[str, EncounterTable]] = None
     ) -> list[str]:
         """
         Get all wilderness tables eligible for the given context.
@@ -543,10 +538,7 @@ class EncounterTableManager:
     # CONVENIENCE METHODS
     # =========================================================================
 
-    def list_tables_by_category(
-        self,
-        category: EncounterTableCategory
-    ) -> list[str]:
+    def list_tables_by_category(self, category: EncounterTableCategory) -> list[str]:
         """List all table IDs in a category."""
         return self._by_category.get(category, [])
 
@@ -555,23 +547,16 @@ class EncounterTableManager:
         return [cat for cat in EncounterTableCategory if self._by_category.get(cat)]
 
     def get_settlement_tables(
-        self,
-        settlement: DolmenwoodSettlement
+        self, settlement: DolmenwoodSettlement
     ) -> dict[EncounterTimeOfDay, str]:
         """Get all table IDs for a settlement."""
         return self._by_settlement.get(settlement, {})
 
-    def get_regional_table(
-        self,
-        region: DolmenwoodRegion
-    ) -> Optional[str]:
+    def get_regional_table(self, region: DolmenwoodRegion) -> Optional[str]:
         """Get the table ID for a region."""
         return self._by_region.get(region)
 
-    def get_seasonal_table(
-        self,
-        season: EncounterSeason
-    ) -> Optional[str]:
+    def get_seasonal_table(self, season: EncounterSeason) -> Optional[str]:
         """Get the table ID for a season."""
         return self._by_season.get(season)
 

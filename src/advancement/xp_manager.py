@@ -35,17 +35,18 @@ logger = logging.getLogger(__name__)
 
 class XPAwardType(str, Enum):
     """Types of XP awards per Dolmenwood rules (p106-107)."""
+
     # Standard awards (always enabled)
-    TREASURE = "treasure"           # 1 XP per 1 GP recovered
-    FOES_DEFEATED = "foes_defeated" # From creature stat blocks
+    TREASURE = "treasure"  # 1 XP per 1 GP recovered
+    FOES_DEFEATED = "foes_defeated"  # From creature stat blocks
     # Optional awards (configurable)
-    MAGIC_ITEMS = "magic_items"     # 1/5 of GP value (optional)
+    MAGIC_ITEMS = "magic_items"  # 1/5 of GP value (optional)
     MILESTONE_MAJOR = "milestone_major"  # Major story milestone
     MILESTONE_MINOR = "milestone_minor"  # Minor story milestone
-    DEED = "deed"                   # Individual great deed
-    EXPLORATION = "exploration"     # Exploration goals
-    SPENDING = "spending"           # 1 XP per 1 GP spent (optional)
-    CAROUSING = "carousing"         # Spending on parties/celebrations
+    DEED = "deed"  # Individual great deed
+    EXPLORATION = "exploration"  # Exploration goals
+    SPENDING = "spending"  # 1 XP per 1 GP spent (optional)
+    CAROUSING = "carousing"  # Spending on parties/celebrations
 
 
 # Standard XP award types that are always enabled
@@ -72,13 +73,15 @@ DISABLED_BY_DEFAULT_XP_AWARDS: set[XPAwardType] = {
 
 class MilestoneType(str, Enum):
     """Types of milestones for XP awards."""
-    MAJOR = "major"     # Major story milestone
-    MINOR = "minor"     # Minor story milestone
-    DEED = "deed"       # Individual great deed
+
+    MAJOR = "major"  # Major story milestone
+    MINOR = "minor"  # Minor story milestone
+    DEED = "deed"  # Individual great deed
 
 
 class ExplorationGoal(str, Enum):
     """Types of exploration goals that grant XP (p107)."""
+
     SETTLEMENT_FIRST_VISIT = "settlement_first_visit"
     HEX_FIRST_ENTRY = "hex_first_entry"
     FOUND_LOST_SHRINE = "found_lost_shrine"
@@ -161,13 +164,14 @@ def get_milestone_award(average_level: int, milestone_type: MilestoneType) -> in
 @dataclass
 class XPAwardResult:
     """Result of an XP award operation."""
+
     award_type: XPAwardType
-    base_xp: int                    # XP before multiplier
-    multiplier: float = 1.0         # XP rate multiplier
-    final_xp: int = 0               # XP after multiplier
+    base_xp: int  # XP before multiplier
+    multiplier: float = 1.0  # XP rate multiplier
+    final_xp: int = 0  # XP after multiplier
     recipients: list[str] = field(default_factory=list)  # Character IDs
-    xp_per_character: int = 0       # XP each character receives
-    level_ups: list[str] = field(default_factory=list)   # Characters who leveled
+    xp_per_character: int = 0  # XP each character receives
+    level_ups: list[str] = field(default_factory=list)  # Characters who leveled
     details: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
@@ -178,6 +182,7 @@ class XPAwardResult:
 @dataclass
 class LevelUpResult:
     """Result of a level-up operation."""
+
     character_id: str
     character_name: str
     old_level: int
@@ -219,6 +224,7 @@ class XPManager:
 
         # Import DiceRoller lazily to avoid circular imports
         from src.data_models import DiceRoller
+
         self.dice = DiceRoller()
 
         # Enabled XP award types (standard + default optional)
@@ -289,9 +295,7 @@ class XPManager:
             True if disabled, False if it's a standard type that cannot be disabled
         """
         if award_type in STANDARD_XP_AWARDS:
-            logger.warning(
-                f"Cannot disable standard XP award type: {award_type.value}"
-            )
+            logger.warning(f"Cannot disable standard XP award type: {award_type.value}")
             return False
 
         self._enabled_award_types.discard(award_type)
@@ -310,8 +314,7 @@ class XPManager:
         # Always include standard awards
         self._enabled_award_types = STANDARD_XP_AWARDS | award_types
         logger.info(
-            f"Set enabled XP award types: "
-            f"{[t.value for t in self._enabled_award_types]}"
+            f"Set enabled XP award types: " f"{[t.value for t in self._enabled_award_types]}"
         )
 
     def get_award_type_status(self) -> dict[str, dict[str, Any]]:
@@ -389,6 +392,7 @@ class XPManager:
 
         # Get current level threshold
         from src.classes import ClassManager
+
         manager = ClassManager()
         class_def = manager.get(character.character_class)
         current_level_xp = 0
@@ -458,7 +462,7 @@ class XPManager:
         self,
         gold_value: int,
         character_ids: Optional[list[str]] = None,
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for treasure recovered (p106).
@@ -490,7 +494,7 @@ class XPManager:
         creature_xp_values: list[int],
         character_ids: Optional[list[str]] = None,
         apply_multiplier: bool = True,
-        creature_names: Optional[list[str]] = None
+        creature_names: Optional[list[str]] = None,
     ) -> XPAwardResult:
         """
         Award XP for defeating foes (p106).
@@ -532,7 +536,7 @@ class XPManager:
         gold_value: int,
         character_ids: Optional[list[str]] = None,
         sold_without_use: bool = False,
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for magic items (optional rule, p106).
@@ -581,7 +585,7 @@ class XPManager:
         milestone_type: MilestoneType,
         character_ids: Optional[list[str]] = None,
         description: str = "",
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for achieving a milestone (p107).
@@ -599,9 +603,13 @@ class XPManager:
         """
         # Determine award type based on milestone type
         award_type = (
-            XPAwardType.MILESTONE_MAJOR if milestone_type == MilestoneType.MAJOR
-            else XPAwardType.MILESTONE_MINOR if milestone_type == MilestoneType.MINOR
-            else XPAwardType.DEED
+            XPAwardType.MILESTONE_MAJOR
+            if milestone_type == MilestoneType.MAJOR
+            else (
+                XPAwardType.MILESTONE_MINOR
+                if milestone_type == MilestoneType.MINOR
+                else XPAwardType.DEED
+            )
         )
 
         # Check if this award type is enabled
@@ -635,7 +643,7 @@ class XPManager:
         goal: ExplorationGoal,
         goal_id: str,
         character_ids: Optional[list[str]] = None,
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for exploration goals (p107).
@@ -703,10 +711,7 @@ class XPManager:
         return result
 
     def award_deed_xp(
-        self,
-        character_id: str,
-        description: str = "",
-        apply_multiplier: bool = True
+        self, character_id: str, description: str = "", apply_multiplier: bool = True
     ) -> XPAwardResult:
         """
         Award XP to individual character for a great deed (p107).
@@ -759,7 +764,7 @@ class XPManager:
         character_id: str,
         gold_spent: int,
         expenditure_type: str = "non-trivial",
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for spending treasure (optional rule, p107).
@@ -805,7 +810,7 @@ class XPManager:
         character_id: str,
         gold_spent: int,
         mishap_modifier: float = 1.0,
-        apply_multiplier: bool = True
+        apply_multiplier: bool = True,
     ) -> XPAwardResult:
         """
         Award XP for carousing (p107).
@@ -851,9 +856,7 @@ class XPManager:
     # =========================================================================
 
     def _distribute_xp(
-        self,
-        result: XPAwardResult,
-        character_ids: Optional[list[str]] = None
+        self, result: XPAwardResult, character_ids: Optional[list[str]] = None
     ) -> None:
         """
         Distribute XP to characters and check for level-ups.
@@ -903,11 +906,7 @@ class XPManager:
     # LEVELING UP
     # =========================================================================
 
-    def level_up(
-        self,
-        character_id: str,
-        hp_roll: Optional[int] = None
-    ) -> Optional[LevelUpResult]:
+    def level_up(self, character_id: str, hp_roll: Optional[int] = None) -> Optional[LevelUpResult]:
         """
         Level up a character if they have sufficient XP.
 
@@ -984,8 +983,7 @@ class XPManager:
             prev_abilities = class_def.get_abilities_at_level(old_level)
             prev_ability_ids = {a.ability_id for a in prev_abilities}
             new_abilities = [
-                a.name for a in abilities_at_level
-                if a.ability_id not in prev_ability_ids
+                a.name for a in abilities_at_level if a.ability_id not in prev_ability_ids
             ]
 
         # Get new spell slots
@@ -1051,10 +1049,7 @@ class XPManager:
     # NEW CHARACTER XP
     # =========================================================================
 
-    def get_starting_xp_for_new_character(
-        self,
-        use_half_average: bool = True
-    ) -> int:
+    def get_starting_xp_for_new_character(self, use_half_average: bool = True) -> int:
         """
         Calculate starting XP for a new character joining the party (p106).
 
@@ -1108,8 +1103,7 @@ class XPManager:
         enabled_types = state.get("enabled_award_types")
         if enabled_types:
             self._enabled_award_types = STANDARD_XP_AWARDS | {
-                XPAwardType(t) for t in enabled_types
-                if t in [e.value for e in XPAwardType]
+                XPAwardType(t) for t in enabled_types if t in [e.value for e in XPAwardType]
             }
         else:
             self._enabled_award_types = STANDARD_XP_AWARDS | DEFAULT_OPTIONAL_XP_AWARDS

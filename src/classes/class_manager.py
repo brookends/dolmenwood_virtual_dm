@@ -25,6 +25,7 @@ class ClassManager:
 
     Provides centralized access to all class definitions with lazy loading.
     """
+
     _instance: Optional["ClassManager"] = None
     _initialized: bool = False
 
@@ -45,6 +46,7 @@ class ClassManager:
         # Import and register each class definition
         try:
             from src.classes.fighter import FIGHTER_DEFINITION
+
             self.register(FIGHTER_DEFINITION)
             logger.info(f"Loaded class: {FIGHTER_DEFINITION.name}")
         except ImportError as e:
@@ -52,6 +54,7 @@ class ClassManager:
 
         try:
             from src.classes.thief import THIEF_DEFINITION
+
             self.register(THIEF_DEFINITION)
             logger.info(f"Loaded class: {THIEF_DEFINITION.name}")
         except ImportError as e:
@@ -59,6 +62,7 @@ class ClassManager:
 
         try:
             from src.classes.magician import MAGICIAN_DEFINITION
+
             self.register(MAGICIAN_DEFINITION)
             logger.info(f"Loaded class: {MAGICIAN_DEFINITION.name}")
         except ImportError as e:
@@ -66,6 +70,7 @@ class ClassManager:
 
         try:
             from src.classes.cleric import CLERIC_DEFINITION
+
             self.register(CLERIC_DEFINITION)
             logger.info(f"Loaded class: {CLERIC_DEFINITION.name}")
         except ImportError as e:
@@ -73,6 +78,7 @@ class ClassManager:
 
         try:
             from src.classes.friar import FRIAR_DEFINITION
+
             self.register(FRIAR_DEFINITION)
             logger.info(f"Loaded class: {FRIAR_DEFINITION.name}")
         except ImportError as e:
@@ -80,6 +86,7 @@ class ClassManager:
 
         try:
             from src.classes.knight import KNIGHT_DEFINITION
+
             self.register(KNIGHT_DEFINITION)
             logger.info(f"Loaded class: {KNIGHT_DEFINITION.name}")
         except ImportError as e:
@@ -87,6 +94,7 @@ class ClassManager:
 
         try:
             from src.classes.hunter import HUNTER_DEFINITION
+
             self.register(HUNTER_DEFINITION)
             logger.info(f"Loaded class: {HUNTER_DEFINITION.name}")
         except ImportError as e:
@@ -94,6 +102,7 @@ class ClassManager:
 
         try:
             from src.classes.bard import BARD_DEFINITION
+
             self.register(BARD_DEFINITION)
             logger.info(f"Loaded class: {BARD_DEFINITION.name}")
         except ImportError as e:
@@ -101,6 +110,7 @@ class ClassManager:
 
         try:
             from src.classes.enchanter import ENCHANTER_DEFINITION
+
             self.register(ENCHANTER_DEFINITION)
             logger.info(f"Loaded class: {ENCHANTER_DEFINITION.name}")
         except ImportError as e:
@@ -126,18 +136,13 @@ class ClassManager:
 
     def get_classes_for_kindred(self, kindred_id: str) -> list[ClassDefinition]:
         """Get all classes available to a specific kindred."""
-        return [
-            c for c in self._classes.values()
-            if c.can_be_kindred(kindred_id)
-        ]
+        return [c for c in self._classes.values() if c.can_be_kindred(kindred_id)]
 
     def get_spellcasting_classes(self) -> list[ClassDefinition]:
         """Get all classes that can cast spells."""
         from src.classes.class_data import MagicType
-        return [
-            c for c in self._classes.values()
-            if c.magic_type != MagicType.NONE
-        ]
+
+        return [c for c in self._classes.values() if c.magic_type != MagicType.NONE]
 
     def can_kindred_be_class(self, kindred_id: str, class_id: str) -> bool:
         """Check if a kindred can be a specific class."""
@@ -151,10 +156,7 @@ class ClassManager:
     # =========================================================================
 
     def initialize_character_class_data(
-        self,
-        character: "CharacterState",
-        class_id: str,
-        level: int = 1
+        self, character: "CharacterState", class_id: str, level: int = 1
     ) -> bool:
         """
         Initialize a character's class-specific data.
@@ -195,8 +197,7 @@ class ClassManager:
 
         # Set class abilities
         character.class_abilities = [
-            ability.ability_id
-            for ability in class_def.get_abilities_at_level(level)
+            ability.ability_id for ability in class_def.get_abilities_at_level(level)
         ]
 
         # Initialize spell slots for spellcasters
@@ -204,8 +205,7 @@ class ClassManager:
             spell_slots = class_def.get_spell_slots(level)
             if spell_slots:
                 character.spell_slots = SpellSlotState(
-                    max_slots=spell_slots.copy(),
-                    current_slots=spell_slots.copy()
+                    max_slots=spell_slots.copy(), current_slots=spell_slots.copy()
                 )
 
         # Initialize class-specific data
@@ -214,11 +214,7 @@ class ClassManager:
 
         return True
 
-    def update_character_for_level(
-        self,
-        character: "CharacterState",
-        new_level: int
-    ) -> bool:
+    def update_character_for_level(self, character: "CharacterState", new_level: int) -> bool:
         """
         Update a character's class data for a new level.
 
@@ -250,8 +246,7 @@ class ClassManager:
 
         # Update class abilities
         character.class_abilities = [
-            ability.ability_id
-            for ability in class_def.get_abilities_at_level(new_level)
+            ability.ability_id for ability in class_def.get_abilities_at_level(new_level)
         ]
 
         # Update spell slots for spellcasters
@@ -267,9 +262,7 @@ class ClassManager:
         return True
 
     def get_skill_target_for_character(
-        self,
-        character: "CharacterState",
-        skill_name: str
+        self, character: "CharacterState", skill_name: str
     ) -> Optional[int]:
         """
         Get a skill target for a character based on class and level.
@@ -298,11 +291,7 @@ class ClassManager:
 
         return None
 
-    def can_character_cast_spell_type(
-        self,
-        character: "CharacterState",
-        spell_type: str
-    ) -> bool:
+    def can_character_cast_spell_type(self, character: "CharacterState", spell_type: str) -> bool:
         """
         Check if a character can cast a specific spell type.
 
@@ -318,10 +307,7 @@ class ClassManager:
             return False
         return class_def.can_cast_spell_type(spell_type)
 
-    def get_character_magic_type(
-        self,
-        character: "CharacterState"
-    ) -> Optional[MagicType]:
+    def get_character_magic_type(self, character: "CharacterState") -> Optional[MagicType]:
         """
         Get the magic type for a character's class.
 

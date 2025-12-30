@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 class BookType(str, Enum):
     """Types of Dolmenwood books."""
+
     PLAYERS_BOOK = "players_book"
     CAMPAIGN_BOOK = "campaign_book"
     MONSTER_BOOK = "monster_book"
@@ -44,6 +45,7 @@ class BookType(str, Enum):
 @dataclass
 class ParsedPage:
     """A parsed page from a PDF."""
+
     page_number: int
     text: str
     sections: list[dict[str, Any]] = field(default_factory=list)
@@ -53,6 +55,7 @@ class ParsedPage:
 @dataclass
 class ParsedSection:
     """A parsed section from a book."""
+
     title: str
     content: str
     page_start: int
@@ -64,6 +67,7 @@ class ParsedSection:
 @dataclass
 class ParseResult:
     """Result of parsing a PDF."""
+
     success: bool
     source: ContentSource
     pages: list[ParsedPage] = field(default_factory=list)
@@ -92,37 +96,33 @@ class PDFParser:
     # Regex patterns for content extraction
     PATTERNS = {
         # Hex header: e.g., "0709 The Witch's Knoll"
-        'hex_header': re.compile(r'^(\d{4})\s+(.+)$', re.MULTILINE),
-
+        "hex_header": re.compile(r"^(\d{4})\s+(.+)$", re.MULTILINE),
         # NPC name with title: e.g., "Lady Harrowmoor, Baroness of..."
-        'npc_header': re.compile(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s*(.+)?$', re.MULTILINE),
-
+        "npc_header": re.compile(r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s*(.+)?$", re.MULTILINE),
         # Monster header: e.g., "Woodgrue" or "WOODGRUE"
-        'monster_header': re.compile(r'^([A-Z][A-Z\s]+)$', re.MULTILINE),
-
+        "monster_header": re.compile(r"^([A-Z][A-Z\s]+)$", re.MULTILINE),
         # Stat block patterns
-        'armor_class': re.compile(r'AC[:\s]+(\d+)', re.IGNORECASE),
-        'hit_dice': re.compile(r'HD[:\s]+(\d+d\d+(?:[+-]\d+)?|\d+)', re.IGNORECASE),
-        'hit_points': re.compile(r'HP[:\s]+(\d+)', re.IGNORECASE),
-        'movement': re.compile(r'MV[:\s]+(\d+)', re.IGNORECASE),
-        'morale': re.compile(r'ML[:\s]+(\d+)', re.IGNORECASE),
-        'attacks': re.compile(r'Att?[:\s]+(.+?)(?=\n|$)', re.IGNORECASE),
-        'damage': re.compile(r'Dmg?[:\s]+(.+?)(?=\n|$)', re.IGNORECASE),
-        'save': re.compile(r'Save[:\s]+(.+?)(?=\n|$)', re.IGNORECASE),
-
+        "armor_class": re.compile(r"AC[:\s]+(\d+)", re.IGNORECASE),
+        "hit_dice": re.compile(r"HD[:\s]+(\d+d\d+(?:[+-]\d+)?|\d+)", re.IGNORECASE),
+        "hit_points": re.compile(r"HP[:\s]+(\d+)", re.IGNORECASE),
+        "movement": re.compile(r"MV[:\s]+(\d+)", re.IGNORECASE),
+        "morale": re.compile(r"ML[:\s]+(\d+)", re.IGNORECASE),
+        "attacks": re.compile(r"Att?[:\s]+(.+?)(?=\n|$)", re.IGNORECASE),
+        "damage": re.compile(r"Dmg?[:\s]+(.+?)(?=\n|$)", re.IGNORECASE),
+        "save": re.compile(r"Save[:\s]+(.+?)(?=\n|$)", re.IGNORECASE),
         # Section headers
-        'chapter': re.compile(r'^Chapter\s+(\d+)[:\s]+(.+)$', re.MULTILINE | re.IGNORECASE),
-        'section': re.compile(r'^#{1,3}\s+(.+)$', re.MULTILINE),
-
+        "chapter": re.compile(r"^Chapter\s+(\d+)[:\s]+(.+)$", re.MULTILINE | re.IGNORECASE),
+        "section": re.compile(r"^#{1,3}\s+(.+)$", re.MULTILINE),
         # Table patterns
-        'table_header': re.compile(r'^Table\s+(\d+)[:\s]+(.+)$', re.MULTILINE | re.IGNORECASE),
-
+        "table_header": re.compile(r"^Table\s+(\d+)[:\s]+(.+)$", re.MULTILINE | re.IGNORECASE),
         # Terrain types
-        'terrain': re.compile(r'\b(forest|deep forest|moor|swamp|hills?|mountains?|river|lake|road|trail|farmland)\b', re.IGNORECASE),
-
+        "terrain": re.compile(
+            r"\b(forest|deep forest|moor|swamp|hills?|mountains?|river|lake|road|trail|farmland)\b",
+            re.IGNORECASE,
+        ),
         # Fairy/Drune markers
-        'fairy': re.compile(r'\b(fairy|fae|faerie|enchanted|glamour)\b', re.IGNORECASE),
-        'drune': re.compile(r'\b(drune|stone|standing stone|dolmen|menhir)\b', re.IGNORECASE),
+        "fairy": re.compile(r"\b(fairy|fae|faerie|enchanted|glamour)\b", re.IGNORECASE),
+        "drune": re.compile(r"\b(drune|stone|standing stone|dolmen|menhir)\b", re.IGNORECASE),
     }
 
     def __init__(self):
@@ -133,12 +133,14 @@ class PDFParser:
         """Check if PDF parsing libraries are available."""
         try:
             import fitz  # PyMuPDF
+
             return True
         except ImportError:
             pass
 
         try:
             import pdfplumber
+
             return True
         except ImportError:
             pass
@@ -146,12 +148,7 @@ class PDFParser:
         logger.warning("No PDF parsing library available (install PyMuPDF or pdfplumber)")
         return False
 
-    def parse_pdf(
-        self,
-        file_path: Path,
-        book_type: BookType,
-        version: str = "1.0"
-    ) -> ParseResult:
+    def parse_pdf(self, file_path: Path, book_type: BookType, version: str = "1.0") -> ParseResult:
         """
         Parse a Dolmenwood PDF rulebook.
 
@@ -167,7 +164,7 @@ class PDFParser:
             return ParseResult(
                 success=False,
                 source=self._create_source(file_path, book_type, version),
-                errors=[f"File not found: {file_path}"]
+                errors=[f"File not found: {file_path}"],
             )
 
         source = self._create_source(file_path, book_type, version)
@@ -178,7 +175,7 @@ class PDFParser:
             return ParseResult(
                 success=False,
                 source=source,
-                errors=["PDF parsing libraries not available. Install PyMuPDF or pdfplumber."]
+                errors=["PDF parsing libraries not available. Install PyMuPDF or pdfplumber."],
             )
 
         try:
@@ -208,18 +205,9 @@ class PDFParser:
 
         except Exception as e:
             logger.error(f"Error parsing PDF: {e}")
-            return ParseResult(
-                success=False,
-                source=source,
-                errors=[str(e)]
-            )
+            return ParseResult(success=False, source=source, errors=[str(e)])
 
-    def _create_source(
-        self,
-        file_path: Path,
-        book_type: BookType,
-        version: str
-    ) -> ContentSource:
+    def _create_source(self, file_path: Path, book_type: BookType, version: str) -> ContentSource:
         """Create a ContentSource for the parsed book."""
         book_names = {
             BookType.PLAYERS_BOOK: "Dolmenwood Player's Book",
@@ -232,6 +220,7 @@ class PDFParser:
         page_count = None
         if file_path.exists():
             import hashlib
+
             sha256_hash = hashlib.sha256()
             with open(file_path, "rb") as f:
                 for byte_block in iter(lambda: f.read(4096), b""):
@@ -260,10 +249,12 @@ class PDFParser:
             doc = fitz.open(str(file_path))
             for page_num, page in enumerate(doc, start=1):
                 text = page.get_text()
-                pages.append(ParsedPage(
-                    page_number=page_num,
-                    text=text,
-                ))
+                pages.append(
+                    ParsedPage(
+                        page_number=page_num,
+                        text=text,
+                    )
+                )
             doc.close()
 
         except ImportError:
@@ -273,10 +264,12 @@ class PDFParser:
                 with pdfplumber.open(file_path) as pdf:
                     for page_num, page in enumerate(pdf.pages, start=1):
                         text = page.extract_text() or ""
-                        pages.append(ParsedPage(
-                            page_number=page_num,
-                            text=text,
-                        ))
+                        pages.append(
+                            ParsedPage(
+                                page_number=page_num,
+                                text=text,
+                            )
+                        )
 
             except ImportError:
                 logger.error("No PDF library available")
@@ -289,13 +282,13 @@ class PDFParser:
         full_text = "\n".join(page.text for page in pages)
 
         # Find all hex headers
-        for match in self.PATTERNS['hex_header'].finditer(full_text):
+        for match in self.PATTERNS["hex_header"].finditer(full_text):
             hex_id = match.group(1)
             name = match.group(2).strip()
 
             # Get the content following this hex until the next hex
             start_pos = match.end()
-            next_match = self.PATTERNS['hex_header'].search(full_text, start_pos)
+            next_match = self.PATTERNS["hex_header"].search(full_text, start_pos)
             end_pos = next_match.start() if next_match else len(full_text)
 
             content = full_text[start_pos:end_pos].strip()
@@ -307,26 +300,21 @@ class PDFParser:
 
         return hexes
 
-    def _parse_hex_content(
-        self,
-        hex_id: str,
-        name: str,
-        content: str
-    ) -> Optional[HexLocation]:
+    def _parse_hex_content(self, hex_id: str, name: str, content: str) -> Optional[HexLocation]:
         """Parse the content of a hex description."""
         # Determine terrain
         terrain = "forest"  # Default
-        terrain_match = self.PATTERNS['terrain'].search(content)
+        terrain_match = self.PATTERNS["terrain"].search(content)
         if terrain_match:
             terrain = terrain_match.group(1).lower()
 
         # Check for fairy influence
         fairy_influence = None
-        if self.PATTERNS['fairy'].search(content):
+        if self.PATTERNS["fairy"].search(content):
             fairy_influence = "Present"
 
         # Check for Drune presence
-        drune_presence = bool(self.PATTERNS['drune'].search(content))
+        drune_presence = bool(self.PATTERNS["drune"].search(content))
 
         # Extract features (simplified - would need more sophisticated parsing)
         features = []
@@ -334,13 +322,15 @@ class PDFParser:
         lairs = []
 
         # Look for numbered or bulleted items as features
-        feature_pattern = re.compile(r'(?:^|\n)[\d•\-\*]+\.?\s*([A-Z][^.]+\.)', re.MULTILINE)
+        feature_pattern = re.compile(r"(?:^|\n)[\d•\-\*]+\.?\s*([A-Z][^.]+\.)", re.MULTILINE)
         for i, match in enumerate(feature_pattern.finditer(content)):
-            features.append(Feature(
-                feature_id=f"{hex_id}_feature_{i+1}",
-                name=f"Feature {i+1}",
-                description=match.group(1).strip(),
-            ))
+            features.append(
+                Feature(
+                    feature_id=f"{hex_id}_feature_{i+1}",
+                    name=f"Feature {i+1}",
+                    description=match.group(1).strip(),
+                )
+            )
 
         return HexLocation(
             hex_id=hex_id,
@@ -367,12 +357,12 @@ class PDFParser:
         full_text = "\n".join(page.text for page in pages)
 
         # Find monster headers (all caps names)
-        for match in self.PATTERNS['monster_header'].finditer(full_text):
+        for match in self.PATTERNS["monster_header"].finditer(full_text):
             monster_name = match.group(1).strip().title()
 
             # Get content following this monster
             start_pos = match.end()
-            next_match = self.PATTERNS['monster_header'].search(full_text, start_pos)
+            next_match = self.PATTERNS["monster_header"].search(full_text, start_pos)
             end_pos = next_match.start() if next_match else min(start_pos + 2000, len(full_text))
 
             content = full_text[start_pos:end_pos].strip()
@@ -387,44 +377,46 @@ class PDFParser:
     def _parse_monster_stats(self, name: str, content: str) -> Optional[dict[str, Any]]:
         """Parse monster statistics from content block."""
         monster = {
-            'monster_id': name.lower().replace(' ', '_'),
-            'name': name,
-            'description': '',
-            'stat_block': {},
+            "monster_id": name.lower().replace(" ", "_"),
+            "name": name,
+            "description": "",
+            "stat_block": {},
         }
 
         # Extract stat block values
-        ac_match = self.PATTERNS['armor_class'].search(content)
+        ac_match = self.PATTERNS["armor_class"].search(content)
         if ac_match:
-            monster['stat_block']['armor_class'] = int(ac_match.group(1))
+            monster["stat_block"]["armor_class"] = int(ac_match.group(1))
 
-        hd_match = self.PATTERNS['hit_dice'].search(content)
+        hd_match = self.PATTERNS["hit_dice"].search(content)
         if hd_match:
-            monster['stat_block']['hit_dice'] = hd_match.group(1)
+            monster["stat_block"]["hit_dice"] = hd_match.group(1)
 
-        hp_match = self.PATTERNS['hit_points'].search(content)
+        hp_match = self.PATTERNS["hit_points"].search(content)
         if hp_match:
-            monster['stat_block']['hp_max'] = int(hp_match.group(1))
-            monster['stat_block']['hp_current'] = int(hp_match.group(1))
+            monster["stat_block"]["hp_max"] = int(hp_match.group(1))
+            monster["stat_block"]["hp_current"] = int(hp_match.group(1))
 
-        mv_match = self.PATTERNS['movement'].search(content)
+        mv_match = self.PATTERNS["movement"].search(content)
         if mv_match:
-            monster['stat_block']['movement'] = int(mv_match.group(1))
+            monster["stat_block"]["movement"] = int(mv_match.group(1))
 
-        ml_match = self.PATTERNS['morale'].search(content)
+        ml_match = self.PATTERNS["morale"].search(content)
         if ml_match:
-            monster['stat_block']['morale'] = int(ml_match.group(1))
+            monster["stat_block"]["morale"] = int(ml_match.group(1))
 
-        att_match = self.PATTERNS['attacks'].search(content)
+        att_match = self.PATTERNS["attacks"].search(content)
         if att_match:
-            monster['stat_block']['attacks'] = [{'name': 'Attack', 'description': att_match.group(1).strip()}]
+            monster["stat_block"]["attacks"] = [
+                {"name": "Attack", "description": att_match.group(1).strip()}
+            ]
 
-        save_match = self.PATTERNS['save'].search(content)
+        save_match = self.PATTERNS["save"].search(content)
         if save_match:
-            monster['stat_block']['save_as'] = save_match.group(1).strip()
+            monster["stat_block"]["save_as"] = save_match.group(1).strip()
 
         # Get description (first paragraph after stats)
-        lines = content.split('\n')
+        lines = content.split("\n")
         desc_lines = []
         in_stats = True
         for line in lines:
@@ -433,13 +425,13 @@ class PDFParser:
                 continue
             if not in_stats and line.strip():
                 desc_lines.append(line.strip())
-                if len(' '.join(desc_lines)) > 200:
+                if len(" ".join(desc_lines)) > 200:
                     break
 
-        monster['description'] = ' '.join(desc_lines)
+        monster["description"] = " ".join(desc_lines)
 
         # Only return if we found at least some stats
-        if monster['stat_block']:
+        if monster["stat_block"]:
             return monster
         return None
 
@@ -454,15 +446,17 @@ class PDFParser:
         tables = []
         full_text = "\n".join(page.text for page in pages)
 
-        for match in self.PATTERNS['table_header'].finditer(full_text):
+        for match in self.PATTERNS["table_header"].finditer(full_text):
             table_num = match.group(1)
             table_name = match.group(2).strip()
 
-            tables.append({
-                'table_id': f"table_{table_num}",
-                'name': table_name,
-                'entries': [],  # Would need to parse table contents
-            })
+            tables.append(
+                {
+                    "table_id": f"table_{table_num}",
+                    "name": table_name,
+                    "entries": [],  # Would need to parse table contents
+                }
+            )
 
         return tables
 
@@ -471,17 +465,19 @@ class PDFParser:
         sections = []
         full_text = "\n".join(page.text for page in pages)
 
-        for match in self.PATTERNS['chapter'].finditer(full_text):
+        for match in self.PATTERNS["chapter"].finditer(full_text):
             chapter_num = match.group(1)
             chapter_name = match.group(2).strip()
 
-            sections.append(ParsedSection(
-                title=f"Chapter {chapter_num}: {chapter_name}",
-                content="",  # Would extract chapter content
-                page_start=0,
-                page_end=0,
-                section_type="chapter",
-            ))
+            sections.append(
+                ParsedSection(
+                    title=f"Chapter {chapter_num}: {chapter_name}",
+                    content="",  # Would extract chapter content
+                    page_start=0,
+                    page_end=0,
+                    section_type="chapter",
+                )
+            )
 
         return sections
 
@@ -521,53 +517,52 @@ class TextParser:
 
         hexes = []
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
-        for hex_data in data.get('hexes', []):
+        for hex_data in data.get("hexes", []):
             hex_loc = HexLocation(
-                hex_id=hex_data['hex_id'],
-                terrain=hex_data.get('terrain', 'forest'),
-                name=hex_data.get('name'),
-                description=hex_data.get('description', ''),
+                hex_id=hex_data["hex_id"],
+                terrain=hex_data.get("terrain", "forest"),
+                name=hex_data.get("name"),
+                description=hex_data.get("description", ""),
                 features=[
                     Feature(
-                        feature_id=f.get('feature_id', f"{hex_data['hex_id']}_f_{i}"),
-                        name=f.get('name', f"Feature {i+1}"),
-                        description=f.get('description', ''),
-                        searchable=f.get('searchable', False),
-                        hidden=f.get('hidden', False),
+                        feature_id=f.get("feature_id", f"{hex_data['hex_id']}_f_{i}"),
+                        name=f.get("name", f"Feature {i+1}"),
+                        description=f.get("description", ""),
+                        searchable=f.get("searchable", False),
+                        hidden=f.get("hidden", False),
                     )
-                    for i, f in enumerate(hex_data.get('features', []))
+                    for i, f in enumerate(hex_data.get("features", []))
                 ],
                 lairs=[
                     Lair(
-                        lair_id=l.get('lair_id', f"{hex_data['hex_id']}_l_{i}"),
-                        monster_type=l.get('monster_type', 'Unknown'),
-                        monster_count=l.get('monster_count', '1d6'),
-                        treasure_type=l.get('treasure_type'),
+                        lair_id=l.get("lair_id", f"{hex_data['hex_id']}_l_{i}"),
+                        monster_type=l.get("monster_type", "Unknown"),
+                        monster_count=l.get("monster_count", "1d6"),
+                        treasure_type=l.get("treasure_type"),
                     )
-                    for i, l in enumerate(hex_data.get('lairs', []))
+                    for i, l in enumerate(hex_data.get("lairs", []))
                 ],
                 landmarks=[
                     Landmark(
-                        landmark_id=lm.get('landmark_id', f"{hex_data['hex_id']}_lm_{i}"),
-                        name=lm.get('name', f"Landmark {i+1}"),
-                        description=lm.get('description', ''),
-                        visible_from_adjacent=lm.get('visible_from_adjacent', True),
+                        landmark_id=lm.get("landmark_id", f"{hex_data['hex_id']}_lm_{i}"),
+                        name=lm.get("name", f"Landmark {i+1}"),
+                        description=lm.get("description", ""),
+                        visible_from_adjacent=lm.get("visible_from_adjacent", True),
                     )
-                    for i, lm in enumerate(hex_data.get('landmarks', []))
+                    for i, lm in enumerate(hex_data.get("landmarks", []))
                 ],
-                fairy_influence=hex_data.get('fairy_influence'),
-                drune_presence=hex_data.get('drune_presence', False),
+                fairy_influence=hex_data.get("fairy_influence"),
+                drune_presence=hex_data.get("drune_presence", False),
                 seasonal_variations={
-                    Season(k): v
-                    for k, v in hex_data.get('seasonal_variations', {}).items()
+                    Season(k): v for k, v in hex_data.get("seasonal_variations", {}).items()
                 },
-                encounter_table=hex_data.get('encounter_table'),
-                adjacent_hexes=hex_data.get('adjacent_hexes', {}),
-                roads=hex_data.get('roads', []),
-                rivers=hex_data.get('rivers', []),
+                encounter_table=hex_data.get("encounter_table"),
+                adjacent_hexes=hex_data.get("adjacent_hexes", {}),
+                roads=hex_data.get("roads", []),
+                rivers=hex_data.get("rivers", []),
             )
             hexes.append(hex_loc)
 
@@ -599,38 +594,38 @@ class TextParser:
 
         npcs = []
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
-        for npc_data in data.get('npcs', []):
+        for npc_data in data.get("npcs", []):
             stat_block = None
-            if npc_data.get('stat_block'):
-                sb = npc_data['stat_block']
+            if npc_data.get("stat_block"):
+                sb = npc_data["stat_block"]
                 stat_block = StatBlock(
-                    armor_class=sb.get('armor_class', 9),
-                    hit_dice=sb.get('hit_dice', '1d8'),
-                    hp_current=sb.get('hp_current', 4),
-                    hp_max=sb.get('hp_max', 4),
-                    movement=sb.get('movement', 120),
-                    attacks=sb.get('attacks', []),
-                    morale=sb.get('morale', 7),
-                    save_as=sb.get('save_as', ''),
-                    special_abilities=sb.get('special_abilities', []),
+                    armor_class=sb.get("armor_class", 9),
+                    hit_dice=sb.get("hit_dice", "1d8"),
+                    hp_current=sb.get("hp_current", 4),
+                    hp_max=sb.get("hp_max", 4),
+                    movement=sb.get("movement", 120),
+                    attacks=sb.get("attacks", []),
+                    morale=sb.get("morale", 7),
+                    save_as=sb.get("save_as", ""),
+                    special_abilities=sb.get("special_abilities", []),
                 )
 
             npc = NPC(
-                npc_id=npc_data['npc_id'],
-                name=npc_data['name'],
-                title=npc_data.get('title'),
-                location=npc_data.get('location', ''),
-                faction=npc_data.get('faction'),
-                personality=npc_data.get('personality', ''),
-                goals=npc_data.get('goals', []),
-                secrets=npc_data.get('secrets', []),
+                npc_id=npc_data["npc_id"],
+                name=npc_data["name"],
+                title=npc_data.get("title"),
+                location=npc_data.get("location", ""),
+                faction=npc_data.get("faction"),
+                personality=npc_data.get("personality", ""),
+                goals=npc_data.get("goals", []),
+                secrets=npc_data.get("secrets", []),
                 stat_block=stat_block,
-                dialogue_hooks=npc_data.get('dialogue_hooks', []),
-                relationships=npc_data.get('relationships', {}),
-                disposition=npc_data.get('disposition', 0),
+                dialogue_hooks=npc_data.get("dialogue_hooks", []),
+                relationships=npc_data.get("relationships", {}),
+                disposition=npc_data.get("disposition", 0),
             )
             npcs.append(npc)
 
@@ -640,7 +635,7 @@ class TextParser:
         """Parse monster data from a JSON file."""
         import json
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
-        return data.get('monsters', [])
+        return data.get("monsters", [])

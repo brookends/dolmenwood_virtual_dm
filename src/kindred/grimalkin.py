@@ -177,16 +177,52 @@ GRIMALKIN_COLD_IRON_VULNERABILITY_ABILITY = KindredAbility(
 GRIMALKIN_NAME_TABLE = NameTable(
     columns={
         NameColumn.UNISEX: [
-            "Boots", "Fripple", "Ginger", "Jack", "Jill", "Jaspy",
-            "Jasqueline", "Kitty", "Little", "Lord", "Lady", "Mogget",
-            "Moggle", "Monsieur", "Madame", "Nibbles", "Penny", "Poppet",
-            "Prince", "Princess", "Prissy", "Tippsy", "Tomkin", "Toppsy",
+            "Boots",
+            "Fripple",
+            "Ginger",
+            "Jack",
+            "Jill",
+            "Jaspy",
+            "Jasqueline",
+            "Kitty",
+            "Little",
+            "Lord",
+            "Lady",
+            "Mogget",
+            "Moggle",
+            "Monsieur",
+            "Madame",
+            "Nibbles",
+            "Penny",
+            "Poppet",
+            "Prince",
+            "Princess",
+            "Prissy",
+            "Tippsy",
+            "Tomkin",
+            "Toppsy",
         ],
         NameColumn.SURNAME: [
-            "Bobblewhisk", "Cottonsocks", "Flip-a-tail", "Flippancy", "Fluff-a-kin",
-            "Grimalgrime", "Grinser", "Lickling", "Milktongue", "Mogglin",
-            "Poppletail", "Pouncemouse", "Pusskin", "Ratbane", "Snuffle",
-            "Tailwhisk", "Tippler", "Whippletongue", "Whipsy", "Whiskers",
+            "Bobblewhisk",
+            "Cottonsocks",
+            "Flip-a-tail",
+            "Flippancy",
+            "Fluff-a-kin",
+            "Grimalgrime",
+            "Grinser",
+            "Lickling",
+            "Milktongue",
+            "Mogglin",
+            "Poppletail",
+            "Pouncemouse",
+            "Pusskin",
+            "Ratbane",
+            "Snuffle",
+            "Tailwhisk",
+            "Tippler",
+            "Whippletongue",
+            "Whipsy",
+            "Whiskers",
         ],
     }
 )
@@ -220,7 +256,7 @@ GRIMALKIN_BACKGROUND_TABLE = AspectTable(
         AspectTableEntry(18, 18, "Trapper / furrier"),
         AspectTableEntry(19, 19, "Vole farmer"),
         AspectTableEntry(20, 20, "Weasel tamer"),
-    ]
+    ],
 )
 
 GRIMALKIN_HEAD_TABLE = AspectTable(
@@ -239,7 +275,7 @@ GRIMALKIN_HEAD_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Spotted headscarf"),
         AspectTableEntry(11, 11, "Torn ear"),
         AspectTableEntry(12, 12, "Unrealistically large"),
-    ]
+    ],
 )
 
 GRIMALKIN_DEMEANOUR_TABLE = AspectTable(
@@ -258,7 +294,7 @@ GRIMALKIN_DEMEANOUR_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Sneaky and larcenous"),
         AspectTableEntry(11, 11, "Snobbish gourmet"),
         AspectTableEntry(12, 12, "Tipsy and frolicsome"),
-    ]
+    ],
 )
 
 GRIMALKIN_DESIRES_TABLE = AspectTable(
@@ -277,7 +313,7 @@ GRIMALKIN_DESIRES_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Live in exorbitant luxury"),
         AspectTableEntry(11, 11, "Marry into human nobility"),
         AspectTableEntry(12, 12, "Steal the duke's jewels"),
-    ]
+    ],
 )
 
 GRIMALKIN_FACE_TABLE = AspectTable(
@@ -296,7 +332,7 @@ GRIMALKIN_FACE_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Snaggle-toothed"),
         AspectTableEntry(11, 11, "Snub nose"),
         AspectTableEntry(12, 12, "Tongue pokes out"),
-    ]
+    ],
 )
 
 GRIMALKIN_DRESS_TABLE = AspectTable(
@@ -315,7 +351,7 @@ GRIMALKIN_DRESS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Shiny red boots"),
         AspectTableEntry(11, 11, "Smart tweed"),
         AspectTableEntry(12, 12, "Tassels and fringes"),
-    ]
+    ],
 )
 
 GRIMALKIN_BELIEFS_TABLE = AspectTable(
@@ -334,7 +370,7 @@ GRIMALKIN_BELIEFS_TABLE = AspectTable(
         AspectTableEntry(10, 10, "The Nag-Lord adores cats"),
         AspectTableEntry(11, 11, "Vegetables harm the health"),
         AspectTableEntry(12, 12, "War is brewing in Fairy"),
-    ]
+    ],
 )
 
 GRIMALKIN_FUR_TABLE = AspectTable(
@@ -353,7 +389,7 @@ GRIMALKIN_FUR_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Violet"),
         AspectTableEntry(11, 11, "White, spiky"),
         AspectTableEntry(12, 12, "White, fluffy"),
-    ]
+    ],
 )
 
 GRIMALKIN_SPEECH_TABLE = AspectTable(
@@ -372,7 +408,7 @@ GRIMALKIN_SPEECH_TABLE = AspectTable(
         AspectTableEntry(10, 10, "Purring"),
         AspectTableEntry(11, 11, "Sycophantic"),
         AspectTableEntry(12, 12, "Wilfully abstruse"),
-    ]
+    ],
 )
 
 # Trinket table - references item IDs in adventuring_gear_grimalkin_trinkets.json
@@ -380,57 +416,244 @@ GRIMALKIN_TRINKET_TABLE = AspectTable(
     aspect_type=AspectType.TRINKET,
     die_size=100,
     entries=[
-        AspectTableEntry(1, 2, "A bicorne hat that is a foot deeper on the inside than it appears", item_id="bicorne_hat"),
-        AspectTableEntry(3, 4, "A book of long-forgotten laws, written in Old Woldish", item_id="book_old_woldish_laws"),
-        AspectTableEntry(5, 6, "A brass thimble that turns water into milk", item_id="brass_thimble_water_to_milk"),
+        AspectTableEntry(
+            1,
+            2,
+            "A bicorne hat that is a foot deeper on the inside than it appears",
+            item_id="bicorne_hat",
+        ),
+        AspectTableEntry(
+            3,
+            4,
+            "A book of long-forgotten laws, written in Old Woldish",
+            item_id="book_old_woldish_laws",
+        ),
+        AspectTableEntry(
+            5,
+            6,
+            "A brass thimble that turns water into milk",
+            item_id="brass_thimble_water_to_milk",
+        ),
         AspectTableEntry(7, 8, "A breggle tongue, still moist", item_id="breggle_tongue"),
-        AspectTableEntry(9, 10, "A cherry tart pilfered from the kitchen of a fairy noble", item_id="cherry_tart_fairy_noble"),
-        AspectTableEntry(11, 12, "A cloak fashioned from a hundred voles", item_id="cloak_hundred_voles"),
-        AspectTableEntry(13, 14, "A copper coin that always lands on the same side when deliberately flipped", item_id="copper_coin_same_side"),
-        AspectTableEntry(15, 16, "A crimson feather from an enormous bird", item_id="crimson_feather_enormous_bird"),
+        AspectTableEntry(
+            9,
+            10,
+            "A cherry tart pilfered from the kitchen of a fairy noble",
+            item_id="cherry_tart_fairy_noble",
+        ),
+        AspectTableEntry(
+            11, 12, "A cloak fashioned from a hundred voles", item_id="cloak_hundred_voles"
+        ),
+        AspectTableEntry(
+            13,
+            14,
+            "A copper coin that always lands on the same side when deliberately flipped",
+            item_id="copper_coin_same_side",
+        ),
+        AspectTableEntry(
+            15,
+            16,
+            "A crimson feather from an enormous bird",
+            item_id="crimson_feather_enormous_bird",
+        ),
         AspectTableEntry(17, 18, "A dead crow that never rots", item_id="dead_crow_never_rots"),
-        AspectTableEntry(19, 20, "A deck of playing cards that shuffles itself when left unattended", item_id="self_shuffling_cards"),
-        AspectTableEntry(21, 22, "A dried heart the size of an acorn", item_id="dried_heart_acorn_size"),
-        AspectTableEntry(23, 24, "A hairball coughed up by a famous grimalkin", item_id="famous_grimalkin_hairball"),
-        AspectTableEntry(25, 26, "A handkerchief stained with the kiss of Queen Abyssinia", item_id="handkerchief_queen_abyssinia_kiss"),
-        AspectTableEntry(27, 28, "A heart-shaped locket that contains a portrait of a different cat each time it's opened", item_id="heart_shaped_locket_cat_portraits"),
-        AspectTableEntry(29, 30, "A human eye that dilates just before it rains", item_id="human_eye_rain_predictor"),
-        AspectTableEntry(31, 32, "A hundred-year-old note offering a favour from a witch, her descendants might be obligated to fulfil it", item_id="witch_favor_note"),
-        AspectTableEntry(33, 34, "A leaf from the tallest tree in Dolmenwood", item_id="leaf_tallest_tree_dolmenwood"),
-        AspectTableEntry(35, 36, "A letter begging you to aid a miller's youngest child", item_id="letter_miller_child_aid"),
-        AspectTableEntry(37, 38, "A live cockroach tied to a thin gold string, if removed or killed a new one appears at sunrise", item_id="cockroach_gold_string"),
+        AspectTableEntry(
+            19,
+            20,
+            "A deck of playing cards that shuffles itself when left unattended",
+            item_id="self_shuffling_cards",
+        ),
+        AspectTableEntry(
+            21, 22, "A dried heart the size of an acorn", item_id="dried_heart_acorn_size"
+        ),
+        AspectTableEntry(
+            23,
+            24,
+            "A hairball coughed up by a famous grimalkin",
+            item_id="famous_grimalkin_hairball",
+        ),
+        AspectTableEntry(
+            25,
+            26,
+            "A handkerchief stained with the kiss of Queen Abyssinia",
+            item_id="handkerchief_queen_abyssinia_kiss",
+        ),
+        AspectTableEntry(
+            27,
+            28,
+            "A heart-shaped locket that contains a portrait of a different cat each time it's opened",
+            item_id="heart_shaped_locket_cat_portraits",
+        ),
+        AspectTableEntry(
+            29,
+            30,
+            "A human eye that dilates just before it rains",
+            item_id="human_eye_rain_predictor",
+        ),
+        AspectTableEntry(
+            31,
+            32,
+            "A hundred-year-old note offering a favour from a witch, her descendants might be obligated to fulfil it",
+            item_id="witch_favor_note",
+        ),
+        AspectTableEntry(
+            33,
+            34,
+            "A leaf from the tallest tree in Dolmenwood",
+            item_id="leaf_tallest_tree_dolmenwood",
+        ),
+        AspectTableEntry(
+            35,
+            36,
+            "A letter begging you to aid a miller's youngest child",
+            item_id="letter_miller_child_aid",
+        ),
+        AspectTableEntry(
+            37,
+            38,
+            "A live cockroach tied to a thin gold string, if removed or killed a new one appears at sunrise",
+            item_id="cockroach_gold_string",
+        ),
         AspectTableEntry(39, 40, "A lucky tortoise shell", item_id="lucky_tortoise_shell"),
-        AspectTableEntry(41, 42, "A lute that is always out of tune in the morning and in tune in the evening", item_id="lute_tune_cycle"),
-        AspectTableEntry(43, 44, "A luxurious, gold-embroidered cushion", item_id="gold_embroidered_cushion"),
-        AspectTableEntry(45, 46, "A mouse skull on a string, allegedly a mouse from the moon", item_id="mouse_skull_moon"),
-        AspectTableEntry(47, 48, "A mushroom stolen from the head of a mossling", item_id="mushroom_mossling_head"),
-        AspectTableEntry(49, 50, "A nightingale's song, trapped in a locket", item_id="nightingale_song_locket"),
-        AspectTableEntry(51, 52, "A pair of boots that will never go out of fashion", item_id="fashionable_boots"),
-        AspectTableEntry(53, 54, "A pair of dice that, when rolled together, always total to nine", item_id="dice_always_nine"),
-        AspectTableEntry(55, 56, "A pink bow that cannot turn invisible under any circumstances", item_id="pink_bow_never_invisible"),
-        AspectTableEntry(57, 58, "A pocket watch that always tells you the correct time an hour ago", item_id="pocket_watch_hour_ago"),
-        AspectTableEntry(59, 60, "A porcelain teacup with a salamander painted on the side, warm liquids it holds never cool down", item_id="porcelain_teacup_salamander"),
-        AspectTableEntry(61, 62, "A rabbit's foot that sporadically twitches", item_id="twitching_rabbit_foot"),
-        AspectTableEntry(63, 64, "A rat king in a sack, each rat inside claims to be the 'King of All Rats'", item_id="rat_king_sack"),
+        AspectTableEntry(
+            41,
+            42,
+            "A lute that is always out of tune in the morning and in tune in the evening",
+            item_id="lute_tune_cycle",
+        ),
+        AspectTableEntry(
+            43, 44, "A luxurious, gold-embroidered cushion", item_id="gold_embroidered_cushion"
+        ),
+        AspectTableEntry(
+            45,
+            46,
+            "A mouse skull on a string, allegedly a mouse from the moon",
+            item_id="mouse_skull_moon",
+        ),
+        AspectTableEntry(
+            47,
+            48,
+            "A mushroom stolen from the head of a mossling",
+            item_id="mushroom_mossling_head",
+        ),
+        AspectTableEntry(
+            49, 50, "A nightingale's song, trapped in a locket", item_id="nightingale_song_locket"
+        ),
+        AspectTableEntry(
+            51, 52, "A pair of boots that will never go out of fashion", item_id="fashionable_boots"
+        ),
+        AspectTableEntry(
+            53,
+            54,
+            "A pair of dice that, when rolled together, always total to nine",
+            item_id="dice_always_nine",
+        ),
+        AspectTableEntry(
+            55,
+            56,
+            "A pink bow that cannot turn invisible under any circumstances",
+            item_id="pink_bow_never_invisible",
+        ),
+        AspectTableEntry(
+            57,
+            58,
+            "A pocket watch that always tells you the correct time an hour ago",
+            item_id="pocket_watch_hour_ago",
+        ),
+        AspectTableEntry(
+            59,
+            60,
+            "A porcelain teacup with a salamander painted on the side, warm liquids it holds never cool down",
+            item_id="porcelain_teacup_salamander",
+        ),
+        AspectTableEntry(
+            61, 62, "A rabbit's foot that sporadically twitches", item_id="twitching_rabbit_foot"
+        ),
+        AspectTableEntry(
+            63,
+            64,
+            "A rat king in a sack, each rat inside claims to be the 'King of All Rats'",
+            item_id="rat_king_sack",
+        ),
         AspectTableEntry(65, 66, "A realistic mask of a human child", item_id="human_child_mask"),
-        AspectTableEntry(67, 68, "A scroll depicting your royal lineage, of dubious authenticity", item_id="royal_lineage_scroll"),
-        AspectTableEntry(69, 70, "A set of keys on a golden ring, purloined from a noble", item_id="noble_keys_golden_ring"),
-        AspectTableEntry(71, 72, "A severed head of a sprite, dried and preserved", item_id="severed_sprite_head"),
-        AspectTableEntry(73, 74, "A sewing needle, sized for a giant (treat as a dagger)", item_id="giant_sewing_needle"),
-        AspectTableEntry(75, 76, "A shard of cold iron, trapped in a glass sphere", item_id="cold_iron_shard_sphere"),
-        AspectTableEntry(77, 78, "A single cat whisker, given to you as a sign of commitment", item_id="cat_whisker_commitment"),
-        AspectTableEntry(79, 80, "A singular pipe, taken from a woodgrue's pan flute", item_id="woodgrue_pipe"),
-        AspectTableEntry(81, 82, "A small vial containing a legendarily potent strain of catnip", item_id="potent_catnip_vial"),
+        AspectTableEntry(
+            67,
+            68,
+            "A scroll depicting your royal lineage, of dubious authenticity",
+            item_id="royal_lineage_scroll",
+        ),
+        AspectTableEntry(
+            69,
+            70,
+            "A set of keys on a golden ring, purloined from a noble",
+            item_id="noble_keys_golden_ring",
+        ),
+        AspectTableEntry(
+            71, 72, "A severed head of a sprite, dried and preserved", item_id="severed_sprite_head"
+        ),
+        AspectTableEntry(
+            73,
+            74,
+            "A sewing needle, sized for a giant (treat as a dagger)",
+            item_id="giant_sewing_needle",
+        ),
+        AspectTableEntry(
+            75,
+            76,
+            "A shard of cold iron, trapped in a glass sphere",
+            item_id="cold_iron_shard_sphere",
+        ),
+        AspectTableEntry(
+            77,
+            78,
+            "A single cat whisker, given to you as a sign of commitment",
+            item_id="cat_whisker_commitment",
+        ),
+        AspectTableEntry(
+            79, 80, "A singular pipe, taken from a woodgrue's pan flute", item_id="woodgrue_pipe"
+        ),
+        AspectTableEntry(
+            81,
+            82,
+            "A small vial containing a legendarily potent strain of catnip",
+            item_id="potent_catnip_vial",
+        ),
         AspectTableEntry(83, 84, "A tiny bell that makes no sound", item_id="silent_bell"),
-        AspectTableEntry(85, 86, "A trained, but not particularly smart, weasel", item_id="trained_weasel"),
-        AspectTableEntry(87, 88, "A whistle that only dogs can't hear", item_id="whistle_dogs_cant_hear"),
-        AspectTableEntry(89, 90, "A wolf's paw that bleeds when the wolf is thinking of you", item_id="wolf_paw_bleeding"),
-        AspectTableEntry(91, 92, "A wooden door the shape and size of a mouse", item_id="wooden_mouse_door"),
+        AspectTableEntry(
+            85, 86, "A trained, but not particularly smart, weasel", item_id="trained_weasel"
+        ),
+        AspectTableEntry(
+            87, 88, "A whistle that only dogs can't hear", item_id="whistle_dogs_cant_hear"
+        ),
+        AspectTableEntry(
+            89,
+            90,
+            "A wolf's paw that bleeds when the wolf is thinking of you",
+            item_id="wolf_paw_bleeding",
+        ),
+        AspectTableEntry(
+            91, 92, "A wooden door the shape and size of a mouse", item_id="wooden_mouse_door"
+        ),
         AspectTableEntry(93, 94, "An eyepatch, stained with old blood", item_id="bloody_eyepatch"),
-        AspectTableEntry(95, 96, "An ogre's toenail, tough as steel, its owner still lives", item_id="ogre_toenail"),
-        AspectTableEntry(97, 98, "Eyeglasses haunted by benign ghosts, wearing them allows you to see the ghosts", item_id="ghost_eyeglasses"),
-        AspectTableEntry(99, 100, "One of a pair of bracelets made from braided mouse tails", item_id="mouse_tail_bracelet"),
-    ]
+        AspectTableEntry(
+            95,
+            96,
+            "An ogre's toenail, tough as steel, its owner still lives",
+            item_id="ogre_toenail",
+        ),
+        AspectTableEntry(
+            97,
+            98,
+            "Eyeglasses haunted by benign ghosts, wearing them allows you to see the ghosts",
+            item_id="ghost_eyeglasses",
+        ),
+        AspectTableEntry(
+            99,
+            100,
+            "One of a pair of bracelets made from braided mouse tails",
+            item_id="mouse_tail_bracelet",
+        ),
+    ],
 )
 
 
@@ -450,7 +673,6 @@ GRIMALKIN_DEFINITION = KindredDefinition(
         "grimalkins who enter Dolmenwood live as wanderers and adventurers."
     ),
     kindred_type=KindredType.FAIRY,
-
     physical=PhysicalRanges(
         # Age at Level 1: 1d100 × 10 years (like elves)
         age_base=0,
@@ -466,9 +688,7 @@ GRIMALKIN_DEFINITION = KindredDefinition(
         weight_dice=DiceFormula(3, 10),
         size="Small",
     ),
-
     native_languages=["Woldish", "Mewl"],
-
     abilities=[
         GRIMALKIN_SKILLS_ABILITY,
         GRIMALKIN_GLAMOURS_ABILITY,
@@ -479,14 +699,10 @@ GRIMALKIN_DEFINITION = KindredDefinition(
         GRIMALKIN_EATING_RODENTS_ABILITY,
         GRIMALKIN_COLD_IRON_VULNERABILITY_ABILITY,
     ],
-
     level_progression=[],  # Grimalkins don't have level-based progression
-
     preferred_classes=["Bard", "Enchanter", "Hunter", "Thief"],
     restricted_classes=["Cleric", "Friar"],  # No spiritual connection with mortal deities
-
     name_table=GRIMALKIN_NAME_TABLE,
-
     aspect_tables={
         AspectType.BACKGROUND: GRIMALKIN_BACKGROUND_TABLE,
         AspectType.HEAD: GRIMALKIN_HEAD_TABLE,
@@ -499,27 +715,58 @@ GRIMALKIN_DEFINITION = KindredDefinition(
         AspectType.SPEECH: GRIMALKIN_SPEECH_TABLE,
         AspectType.TRINKET: GRIMALKIN_TRINKET_TABLE,
     },
-
     trinket_item_ids=[
-        "bicorne_hat", "book_old_woldish_laws", "brass_thimble_water_to_milk",
-        "breggle_tongue", "cherry_tart_fairy_noble", "cloak_hundred_voles",
-        "copper_coin_same_side", "crimson_feather_enormous_bird", "dead_crow_never_rots",
-        "self_shuffling_cards", "dried_heart_acorn_size", "famous_grimalkin_hairball",
-        "handkerchief_queen_abyssinia_kiss", "heart_shaped_locket_cat_portraits", "human_eye_rain_predictor",
-        "witch_favor_note", "leaf_tallest_tree_dolmenwood", "letter_miller_child_aid",
-        "cockroach_gold_string", "lucky_tortoise_shell", "lute_tune_cycle",
-        "gold_embroidered_cushion", "mouse_skull_moon", "mushroom_mossling_head",
-        "nightingale_song_locket", "fashionable_boots", "dice_always_nine",
-        "pink_bow_never_invisible", "pocket_watch_hour_ago", "porcelain_teacup_salamander",
-        "twitching_rabbit_foot", "rat_king_sack", "human_child_mask",
-        "royal_lineage_scroll", "noble_keys_golden_ring", "severed_sprite_head",
-        "giant_sewing_needle", "cold_iron_shard_sphere", "cat_whisker_commitment",
-        "woodgrue_pipe", "potent_catnip_vial", "silent_bell",
-        "trained_weasel", "whistle_dogs_cant_hear", "wolf_paw_bleeding",
-        "wooden_mouse_door", "bloody_eyepatch", "ogre_toenail",
-        "ghost_eyeglasses", "mouse_tail_bracelet",
+        "bicorne_hat",
+        "book_old_woldish_laws",
+        "brass_thimble_water_to_milk",
+        "breggle_tongue",
+        "cherry_tart_fairy_noble",
+        "cloak_hundred_voles",
+        "copper_coin_same_side",
+        "crimson_feather_enormous_bird",
+        "dead_crow_never_rots",
+        "self_shuffling_cards",
+        "dried_heart_acorn_size",
+        "famous_grimalkin_hairball",
+        "handkerchief_queen_abyssinia_kiss",
+        "heart_shaped_locket_cat_portraits",
+        "human_eye_rain_predictor",
+        "witch_favor_note",
+        "leaf_tallest_tree_dolmenwood",
+        "letter_miller_child_aid",
+        "cockroach_gold_string",
+        "lucky_tortoise_shell",
+        "lute_tune_cycle",
+        "gold_embroidered_cushion",
+        "mouse_skull_moon",
+        "mushroom_mossling_head",
+        "nightingale_song_locket",
+        "fashionable_boots",
+        "dice_always_nine",
+        "pink_bow_never_invisible",
+        "pocket_watch_hour_ago",
+        "porcelain_teacup_salamander",
+        "twitching_rabbit_foot",
+        "rat_king_sack",
+        "human_child_mask",
+        "royal_lineage_scroll",
+        "noble_keys_golden_ring",
+        "severed_sprite_head",
+        "giant_sewing_needle",
+        "cold_iron_shard_sphere",
+        "cat_whisker_commitment",
+        "woodgrue_pipe",
+        "potent_catnip_vial",
+        "silent_bell",
+        "trained_weasel",
+        "whistle_dogs_cant_hear",
+        "wolf_paw_bleeding",
+        "wooden_mouse_door",
+        "bloody_eyepatch",
+        "ogre_toenail",
+        "ghost_eyeglasses",
+        "mouse_tail_bracelet",
     ],
-
     kindred_relations=(
         "The adventuresome grimalkins who wander in the mortal world tend to become "
         "jealous and furtive among their own kind, so they prefer the company of other "
@@ -529,12 +776,10 @@ GRIMALKIN_DEFINITION = KindredDefinition(
         "Grimalkins are greeted with curiosity and wonder in human settlements in "
         "Dolmenwood, perhaps due to humans' affection for domestic cats."
     ),
-
     religion_notes=(
         "Grimalkins cannot be clerics or friars as they have no spiritual connection "
         "with the deities of mortals."
     ),
-
     source_book="Dolmenwood Player Book",
     source_page=40,
 )

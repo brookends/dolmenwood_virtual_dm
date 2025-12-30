@@ -42,9 +42,7 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["Roll 1d20 to hit the goblin."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the attack")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe the attack")])
 
         assert len(response.authority_violations) > 0
         assert any("d20" in v or "roll" in v for v in response.authority_violations)
@@ -55,9 +53,9 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["You succeed in picking the lock!"])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the thief's attempt")
-        ])
+        response = mock_llm_manager.complete(
+            [LLMMessage(LLMRole.USER, "Describe the thief's attempt")]
+        )
 
         assert len(response.authority_violations) > 0
         assert any("succeed" in v for v in response.authority_violations)
@@ -68,9 +66,7 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["You fail to notice the trap."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the search")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe the search")])
 
         assert len(response.authority_violations) > 0
         assert any("fail" in v for v in response.authority_violations)
@@ -81,9 +77,7 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["You take 5 damage from the attack."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the scene")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe the scene")])
 
         assert len(response.authority_violations) > 0
 
@@ -107,9 +101,7 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["The monster attacks with 2d6+3 damage."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the monster")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe the monster")])
 
         assert len(response.authority_violations) > 0
         assert any("dice_mechanic" in v and "2d6" in v for v in response.authority_violations)
@@ -120,25 +112,23 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["You rolled 15 on the attack."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "What happened?")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "What happened?")])
 
         assert len(response.authority_violations) > 0
 
     def test_no_false_positive_troll(self, mock_llm_manager):
         """Test that 'troll' doesn't trigger 'roll' violation."""
         mock_client = MockLLMClient(mock_llm_manager.config)
-        mock_client.set_responses([
-            "The troll moss grows thickly on the ancient stones. "
-            "A bridge troll lurks beneath, its stroll through the forest "
-            "having led it here. Scrolls of forgotten lore lie scattered about."
-        ])
+        mock_client.set_responses(
+            [
+                "The troll moss grows thickly on the ancient stones. "
+                "A bridge troll lurks beneath, its stroll through the forest "
+                "having led it here. Scrolls of forgotten lore lie scattered about."
+            ]
+        )
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe the scene")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe the scene")])
 
         # Should have NO violations - troll, stroll, scroll shouldn't trigger
         assert len(response.authority_violations) == 0
@@ -146,15 +136,15 @@ class TestLLMAuthorityViolationDetection:
     def test_no_false_positive_patrol(self, mock_llm_manager):
         """Test that words containing 'roll' don't trigger violation."""
         mock_client = MockLLMClient(mock_llm_manager.config)
-        mock_client.set_responses([
-            "The patrol marches by, their controlled movements precise. "
-            "They enrolled in the Duke's service years ago."
-        ])
+        mock_client.set_responses(
+            [
+                "The patrol marches by, their controlled movements precise. "
+                "They enrolled in the Duke's service years ago."
+            ]
+        )
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "Describe what I see")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "Describe what I see")])
 
         # patrol, controlled, enrolled should not trigger
         assert len(response.authority_violations) == 0
@@ -165,14 +155,11 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["Roll a d20 to see if you hit."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "What do I do?")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "What do I do?")])
 
         # Should detect both "Roll" and "d20"
         assert len(response.authority_violations) > 0
-        assert any("roll" in v.lower() or "d20" in v.lower()
-                   for v in response.authority_violations)
+        assert any("roll" in v.lower() or "d20" in v.lower() for v in response.authority_violations)
 
     def test_detects_make_a_check(self, mock_llm_manager):
         """Test that 'make a check' IS correctly flagged."""
@@ -180,9 +167,7 @@ class TestLLMAuthorityViolationDetection:
         mock_client.set_responses(["Make a saving throw against poison."])
         mock_llm_manager._client = mock_client
 
-        response = mock_llm_manager.complete([
-            LLMMessage(LLMRole.USER, "What happens?")
-        ])
+        response = mock_llm_manager.complete([LLMMessage(LLMRole.USER, "What happens?")])
 
         assert len(response.authority_violations) > 0
 
@@ -332,11 +317,13 @@ class TestMockLLMClient:
     def test_mock_client_returns_set_responses(self, mock_llm_config):
         """Test that mock client returns configured responses."""
         client = MockLLMClient(mock_llm_config)
-        client.set_responses([
-            "First response",
-            "Second response",
-            "Third response",
-        ])
+        client.set_responses(
+            [
+                "First response",
+                "Second response",
+                "Third response",
+            ]
+        )
 
         r1 = client.complete([LLMMessage(LLMRole.USER, "test")])
         r2 = client.complete([LLMMessage(LLMRole.USER, "test")])

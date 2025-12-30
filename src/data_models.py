@@ -23,6 +23,7 @@ import uuid
 
 class Season(str, Enum):
     """Dolmenwood seasons affecting encounters and environment."""
+
     SPRING = "spring"
     SUMMER = "summer"
     AUTUMN = "autumn"
@@ -31,6 +32,7 @@ class Season(str, Enum):
 
 class Weather(str, Enum):
     """Weather conditions affecting travel and encounters."""
+
     CLEAR = "clear"
     OVERCAST = "overcast"
     FOG = "fog"
@@ -42,6 +44,7 @@ class Weather(str, Enum):
 
 class LocationType(str, Enum):
     """Types of locations in the game world."""
+
     HEX = "hex"
     DUNGEON_ROOM = "dungeon_room"
     SETTLEMENT = "settlement"
@@ -51,6 +54,7 @@ class LocationType(str, Enum):
 
 class TerrainType(str, Enum):
     """Terrain types affecting travel speed and encounters."""
+
     FOREST = "forest"
     DEEP_FOREST = "deep_forest"
     MOOR = "moor"
@@ -67,6 +71,7 @@ class TerrainType(str, Enum):
 
 class EncounterType(str, Enum):
     """Types of encounters that can occur."""
+
     MONSTER = "monster"
     NPC = "npc"
     LAIR = "lair"
@@ -77,6 +82,7 @@ class EncounterType(str, Enum):
 
 class SurpriseStatus(str, Enum):
     """Surprise status during encounter."""
+
     PARTY_SURPRISED = "party_surprised"
     ENEMIES_SURPRISED = "enemies_surprised"
     MUTUAL_SURPRISE = "mutual_surprise"
@@ -94,11 +100,12 @@ class ReactionResult(str, Enum):
     - 9-11: Indifferent, may negotiate
     - 12 or more: Eager, friendly
     """
-    ATTACKS = "attacks"           # 2 or less - Attacks immediately
-    HOSTILE = "hostile"           # 3-5 - Hostile, may attack
-    UNCERTAIN = "uncertain"       # 6-8 - Uncertain, wary
-    INDIFFERENT = "indifferent"   # 9-11 - Indifferent, may negotiate
-    FRIENDLY = "friendly"         # 12+ - Eager, friendly
+
+    ATTACKS = "attacks"  # 2 or less - Attacks immediately
+    HOSTILE = "hostile"  # 3-5 - Hostile, may attack
+    UNCERTAIN = "uncertain"  # 6-8 - Uncertain, wary
+    INDIFFERENT = "indifferent"  # 9-11 - Indifferent, may negotiate
+    FRIENDLY = "friendly"  # 12+ - Eager, friendly
 
 
 def interpret_reaction(roll: int) -> ReactionResult:
@@ -125,6 +132,7 @@ def interpret_reaction(roll: int) -> ReactionResult:
 
 class ConditionType(str, Enum):
     """Character conditions and status effects."""
+
     POISONED = "poisoned"
     DISEASED = "diseased"
     CURSED = "cursed"
@@ -142,13 +150,13 @@ class ConditionType(str, Enum):
     STARVING = "starving"
     DEHYDRATED = "dehydrated"
     # Physical conditions from hazards
-    DROWNING = "drowning"          # Underwater and out of breath
+    DROWNING = "drowning"  # Underwater and out of breath
     HOLDING_BREATH = "holding_breath"  # Underwater but still has breath
-    HUNGRY = "hungry"              # Missing food but not yet starving
-    STUNNED = "stunned"            # Cannot act
-    PRONE = "prone"                # Knocked down
-    RESTRAINED = "restrained"      # Movement restricted
-    INVISIBLE = "invisible"        # Cannot be seen normally
+    HUNGRY = "hungry"  # Missing food but not yet starving
+    STUNNED = "stunned"  # Cannot act
+    PRONE = "prone"  # Knocked down
+    RESTRAINED = "restrained"  # Movement restricted
+    INVISIBLE = "invisible"  # Cannot be seen normally
     INCAPACITATED = "incapacitated"  # Cannot take actions
     # Environmental/magical conditions
     DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
@@ -156,6 +164,7 @@ class ConditionType(str, Enum):
 
 class LightSourceType(str, Enum):
     """Types of light sources with different durations."""
+
     TORCH = "torch"  # 6 turns (1 hour)
     LANTERN = "lantern"  # 24 turns (4 hours) per flask
     CANDLE = "candle"  # 12 turns (2 hours)
@@ -165,6 +174,7 @@ class LightSourceType(str, Enum):
 
 class TimeOfDay(str, Enum):
     """Time periods affecting encounters and activities."""
+
     DAWN = "dawn"
     MORNING = "morning"
     MIDDAY = "midday"
@@ -177,33 +187,37 @@ class TimeOfDay(str, Enum):
 
 class WatchPeriod(str, Enum):
     """4-hour watch periods for rest and travel."""
-    FIRST_WATCH = "first_watch"     # Midnight to 4am
-    SECOND_WATCH = "second_watch"   # 4am to 8am
-    THIRD_WATCH = "third_watch"     # 8am to Noon
-    FOURTH_WATCH = "fourth_watch"   # Noon to 4pm
-    FIFTH_WATCH = "fifth_watch"     # 4pm to 8pm
-    SIXTH_WATCH = "sixth_watch"     # 8pm to Midnight
+
+    FIRST_WATCH = "first_watch"  # Midnight to 4am
+    SECOND_WATCH = "second_watch"  # 4am to 8am
+    THIRD_WATCH = "third_watch"  # 8am to Noon
+    FOURTH_WATCH = "fourth_watch"  # Noon to 4pm
+    FIFTH_WATCH = "fifth_watch"  # 4pm to 8pm
+    SIXTH_WATCH = "sixth_watch"  # 8pm to Midnight
 
 
 class MovementMode(str, Enum):
     """Movement modes per Dolmenwood rules (p146-147)."""
-    ENCOUNTER = "encounter"       # Combat/encounter: Speed per round
-    EXPLORATION = "exploration"   # Dungeon exploration: Speed × 3 per turn
-    FAMILIAR = "familiar"         # Known areas: Speed × 10 per turn
-    RUNNING = "running"           # Running: Speed × 3 per round (max 30 rounds)
-    OVERLAND = "overland"         # Wilderness travel: Speed ÷ 5 = TP/day
+
+    ENCOUNTER = "encounter"  # Combat/encounter: Speed per round
+    EXPLORATION = "exploration"  # Dungeon exploration: Speed × 3 per turn
+    FAMILIAR = "familiar"  # Known areas: Speed × 10 per turn
+    RUNNING = "running"  # Running: Speed × 3 per round (max 30 rounds)
+    OVERLAND = "overland"  # Wilderness travel: Speed ÷ 5 = TP/day
 
 
 class SourceType(str, Enum):
     """Content source types with priority."""
-    CORE_RULEBOOK = "core_rulebook"        # Priority 1 (Highest)
+
+    CORE_RULEBOOK = "core_rulebook"  # Priority 1 (Highest)
     CAMPAIGN_SETTING = "campaign_setting"  # Priority 2
     ADVENTURE_MODULE = "adventure_module"  # Priority 3
-    HOMEBREW = "homebrew"                  # Priority 4 (Lowest)
+    HOMEBREW = "homebrew"  # Priority 4 (Lowest)
 
 
 class CombatPhase(str, Enum):
     """Phases within a combat round."""
+
     INITIATIVE = "initiative"
     DECLARATION = "declaration"
     MOVEMENT = "movement"
@@ -216,6 +230,7 @@ class CombatPhase(str, Enum):
 
 class ActionType(str, Enum):
     """Types of actions a character can take."""
+
     MOVE = "move"
     ATTACK = "attack"
     CAST_SPELL = "cast_spell"
@@ -272,16 +287,16 @@ class DiceRoller:
         """
         # Parse dice notation
         modifier = 0
-        if '+' in dice:
-            dice_part, mod_part = dice.split('+')
+        if "+" in dice:
+            dice_part, mod_part = dice.split("+")
             modifier = int(mod_part)
-        elif '-' in dice:
-            dice_part, mod_part = dice.split('-')
+        elif "-" in dice:
+            dice_part, mod_part = dice.split("-")
             modifier = -int(mod_part)
         else:
             dice_part = dice
 
-        num_dice, die_size = dice_part.lower().split('d')
+        num_dice, die_size = dice_part.lower().split("d")
         num_dice = int(num_dice) if num_dice else 1
         die_size = int(die_size)
 
@@ -290,11 +305,7 @@ class DiceRoller:
         total = sum(rolls) + modifier
 
         result = DiceResult(
-            notation=dice,
-            rolls=rolls,
-            modifier=modifier,
-            total=total,
-            reason=reason
+            notation=dice, rolls=rolls, modifier=modifier, total=total, reason=reason
         )
 
         cls._roll_log.append(result)
@@ -342,7 +353,7 @@ class DiceRoller:
             rolls=[result],
             modifier=0,
             total=result,
-            reason=reason
+            reason=reason,
         )
         cls._roll_log.append(log_entry)
         return result
@@ -371,7 +382,7 @@ class DiceRoller:
             rolls=[index + 1],  # 1-indexed for readability
             modifier=0,
             total=index + 1,
-            reason=f"{reason}: selected '{result}'" if reason else f"selected '{result}'"
+            reason=f"{reason}: selected '{result}'" if reason else f"selected '{result}'",
         )
         cls._roll_log.append(log_entry)
         return result
@@ -407,6 +418,7 @@ class DiceRoller:
 @dataclass
 class DiceResult:
     """Result of a dice roll with full information."""
+
     notation: str
     rolls: list[int]
     modifier: int
@@ -426,83 +438,134 @@ class DiceResult:
 # DOLMENWOOD CALENDAR SYSTEM
 # =============================================================================
 
+
 # Moon phases in Dolmenwood - each month has its own named moon
 class MoonPhase(str, Enum):
     """Moon phases in the Dolmenwood calendar."""
+
     GRINNING_MOON = "grinning_moon"  # Grimvold (month 1)
-    DEAD_MOON = "dead_moon"          # Lymewald (month 2)
-    BEAST_MOON = "beast_moon"        # Haggryme (month 3)
-    WAXING_MOON = "waxing_moon"      # Brewmont (month 4)
-    BLOSSOM_MOON = "blossom_moon"    # Plothmont (month 5)
-    FIRST_MOON = "first_moon"        # Greenmont (month 6)
-    RED_MOON = "red_moon"            # Moltmont (month 7)
-    WYRM_MOON = "wyrm_moon"          # Midsummer (month 8)
-    WANE_MOON = "wane_moon"          # Hautmont (month 9)
-    FAT_MOON = "fat_moon"            # Harvestmont (month 10)
-    WITHER_MOON = "wither_moon"      # Fogmont (month 11)
-    BLACK_MOON = "black_moon"        # Braghold (month 12)
+    DEAD_MOON = "dead_moon"  # Lymewald (month 2)
+    BEAST_MOON = "beast_moon"  # Haggryme (month 3)
+    WAXING_MOON = "waxing_moon"  # Brewmont (month 4)
+    BLOSSOM_MOON = "blossom_moon"  # Plothmont (month 5)
+    FIRST_MOON = "first_moon"  # Greenmont (month 6)
+    RED_MOON = "red_moon"  # Moltmont (month 7)
+    WYRM_MOON = "wyrm_moon"  # Midsummer (month 8)
+    WANE_MOON = "wane_moon"  # Hautmont (month 9)
+    FAT_MOON = "fat_moon"  # Harvestmont (month 10)
+    WITHER_MOON = "wither_moon"  # Fogmont (month 11)
+    BLACK_MOON = "black_moon"  # Braghold (month 12)
 
 
 @dataclass
 class DolmenwoodMonth:
     """A month in the Dolmenwood calendar."""
-    number: int           # 1-12
-    name: str            # Month name (e.g., "Grimvold")
-    season_desc: str     # Season description (e.g., "The onset of winter")
-    days: int            # Number of days (28 or 30)
+
+    number: int  # 1-12
+    name: str  # Month name (e.g., "Grimvold")
+    season_desc: str  # Season description (e.g., "The onset of winter")
+    days: int  # Number of days (28 or 30)
     wysendays: list[str]  # Holy days/festivals in this month
-    moon: MoonPhase      # Associated moon phase
+    moon: MoonPhase  # Associated moon phase
 
 
 # The Dolmenwood Calendar - 12 months with varying lengths and festivals
 DOLMENWOOD_CALENDAR: dict[int, DolmenwoodMonth] = {
     1: DolmenwoodMonth(
-        number=1, name="Grimvold", season_desc="The onset of winter",
-        days=30, wysendays=["Hanglemas", "Dyboll's Day"], moon=MoonPhase.GRINNING_MOON
+        number=1,
+        name="Grimvold",
+        season_desc="The onset of winter",
+        days=30,
+        wysendays=["Hanglemas", "Dyboll's Day"],
+        moon=MoonPhase.GRINNING_MOON,
     ),
     2: DolmenwoodMonth(
-        number=2, name="Lymewald", season_desc="Deep winter",
-        days=28, wysendays=[], moon=MoonPhase.DEAD_MOON
+        number=2,
+        name="Lymewald",
+        season_desc="Deep winter",
+        days=28,
+        wysendays=[],
+        moon=MoonPhase.DEAD_MOON,
     ),
     3: DolmenwoodMonth(
-        number=3, name="Haggryme", season_desc="The fading of winter",
-        days=30, wysendays=["Yarl's Day", "The Day of Virgins"], moon=MoonPhase.BEAST_MOON
+        number=3,
+        name="Haggryme",
+        season_desc="The fading of winter",
+        days=30,
+        wysendays=["Yarl's Day", "The Day of Virgins"],
+        moon=MoonPhase.BEAST_MOON,
     ),
     4: DolmenwoodMonth(
-        number=4, name="Brewmont", season_desc="The onset of spring",
-        days=30, wysendays=["Shunning Day", "Hob's Day", "The Day of Doors"], moon=MoonPhase.WAXING_MOON
+        number=4,
+        name="Brewmont",
+        season_desc="The onset of spring",
+        days=30,
+        wysendays=["Shunning Day", "Hob's Day", "The Day of Doors"],
+        moon=MoonPhase.WAXING_MOON,
     ),
     5: DolmenwoodMonth(
-        number=5, name="Plothmont", season_desc="Springtide",
-        days=30, wysendays=[], moon=MoonPhase.BLOSSOM_MOON
+        number=5,
+        name="Plothmont",
+        season_desc="Springtide",
+        days=30,
+        wysendays=[],
+        moon=MoonPhase.BLOSSOM_MOON,
     ),
     6: DolmenwoodMonth(
-        number=6, name="Greenmont", season_desc="The fading of spring",
-        days=28, wysendays=[], moon=MoonPhase.FIRST_MOON
+        number=6,
+        name="Greenmont",
+        season_desc="The fading of spring",
+        days=28,
+        wysendays=[],
+        moon=MoonPhase.FIRST_MOON,
     ),
     7: DolmenwoodMonth(
-        number=7, name="Moltmont", season_desc="The onset of summer",
-        days=30, wysendays=[], moon=MoonPhase.RED_MOON
+        number=7,
+        name="Moltmont",
+        season_desc="The onset of summer",
+        days=30,
+        wysendays=[],
+        moon=MoonPhase.RED_MOON,
     ),
     8: DolmenwoodMonth(
-        number=8, name="Midsummer", season_desc="High summer",
-        days=30, wysendays=["The Day of the Falling Stars", "Frith's Day"], moon=MoonPhase.WYRM_MOON
+        number=8,
+        name="Midsummer",
+        season_desc="High summer",
+        days=30,
+        wysendays=["The Day of the Falling Stars", "Frith's Day"],
+        moon=MoonPhase.WYRM_MOON,
     ),
     9: DolmenwoodMonth(
-        number=9, name="Hautmont", season_desc="The fading of summer",
-        days=30, wysendays=[], moon=MoonPhase.WANE_MOON
+        number=9,
+        name="Hautmont",
+        season_desc="The fading of summer",
+        days=30,
+        wysendays=[],
+        moon=MoonPhase.WANE_MOON,
     ),
     10: DolmenwoodMonth(
-        number=10, name="Harvestmont", season_desc="The onset of autumn",
-        days=28, wysendays=[], moon=MoonPhase.FAT_MOON
+        number=10,
+        name="Harvestmont",
+        season_desc="The onset of autumn",
+        days=28,
+        wysendays=[],
+        moon=MoonPhase.FAT_MOON,
     ),
     11: DolmenwoodMonth(
-        number=11, name="Fogmont", season_desc="Deep autumn",
-        days=30, wysendays=["All Souls' Eve", "All Souls' Day"], moon=MoonPhase.WITHER_MOON
+        number=11,
+        name="Fogmont",
+        season_desc="Deep autumn",
+        days=30,
+        wysendays=["All Souls' Eve", "All Souls' Day"],
+        moon=MoonPhase.WITHER_MOON,
     ),
     12: DolmenwoodMonth(
-        number=12, name="Braghold", season_desc="The fading of autumn",
-        days=30, wysendays=["The Day of Doors", "Dolmenday"], moon=MoonPhase.BLACK_MOON
+        number=12,
+        name="Braghold",
+        season_desc="The fading of autumn",
+        days=30,
+        wysendays=["The Day of Doors", "Dolmenday"],
+        moon=MoonPhase.BLACK_MOON,
     ),
 }
 
@@ -520,9 +583,10 @@ def get_dolmenwood_year_length() -> int:
 @dataclass
 class GameDate:
     """Dolmenwood calendar date with proper month lengths and moon phases."""
+
     year: int
     month: int  # 1-12
-    day: int    # 1-28 or 1-30 depending on month
+    day: int  # 1-28 or 1-30 depending on month
 
     def get_month_info(self) -> DolmenwoodMonth:
         """Get the DolmenwoodMonth info for the current month."""
@@ -651,8 +715,9 @@ class GameDate:
 @dataclass
 class GameTime:
     """Time within a day, tracked in 10-minute turns."""
-    hour: int = 8      # 0-23
-    minute: int = 0    # 0-59
+
+    hour: int = 8  # 0-23
+    minute: int = 0  # 0-59
 
     def advance_turns(self, turns: int) -> tuple["GameTime", int]:
         """
@@ -725,18 +790,18 @@ class GameTime:
 # =============================================================================
 
 # Time unit conversions per Dolmenwood rules (p146)
-MINUTES_PER_TURN = 10       # 1 Turn = 10 minutes
-SECONDS_PER_ROUND = 10      # 1 Round = 10 seconds
-TURNS_PER_HOUR = 6          # 6 Turns per hour (60 min ÷ 10 min)
-ROUNDS_PER_TURN = 60        # 60 Rounds per Turn (600 sec ÷ 10 sec)
-ROUNDS_PER_MINUTE = 6       # 6 Rounds per minute (60 sec ÷ 10 sec)
+MINUTES_PER_TURN = 10  # 1 Turn = 10 minutes
+SECONDS_PER_ROUND = 10  # 1 Round = 10 seconds
+TURNS_PER_HOUR = 6  # 6 Turns per hour (60 min ÷ 10 min)
+ROUNDS_PER_TURN = 60  # 60 Rounds per Turn (600 sec ÷ 10 sec)
+ROUNDS_PER_MINUTE = 6  # 6 Rounds per minute (60 sec ÷ 10 sec)
 
 # Running exhaustion rules (p147)
-MAX_RUNNING_ROUNDS = 30     # Can run for 30 rounds before exhaustion
-RUNNING_REST_TURNS = 3      # Must rest 3 turns after running to exhaustion
+MAX_RUNNING_ROUNDS = 30  # Can run for 30 rounds before exhaustion
+RUNNING_REST_TURNS = 3  # Must rest 3 turns after running to exhaustion
 
 # Weight system (p147)
-COINS_PER_POUND = 10        # 10 coins = 1 pound
+COINS_PER_POUND = 10  # 10 coins = 1 pound
 
 
 # =============================================================================
@@ -746,38 +811,41 @@ COINS_PER_POUND = 10        # 10 coins = 1 pound
 
 class EncumbranceSystem(str, Enum):
     """Encumbrance tracking system per Dolmenwood rules (p148-149)."""
-    WEIGHT = "weight"           # Detailed weight tracking in coins
+
+    WEIGHT = "weight"  # Detailed weight tracking in coins
     BASIC_WEIGHT = "basic_weight"  # Simplified weight tracking (treasure only)
-    SLOT = "slot"               # Abstract slot-based system
+    SLOT = "slot"  # Abstract slot-based system
 
 
 class ArmorWeight(str, Enum):
     """Armor weight categories for encumbrance (p148)."""
-    UNARMOURED = "unarmoured"   # No armor
-    LIGHT = "light"             # Light armor (leather, etc.)
-    MEDIUM = "medium"           # Medium armor (chain, etc.)
-    HEAVY = "heavy"             # Heavy armor (plate, etc.)
+
+    UNARMOURED = "unarmoured"  # No armor
+    LIGHT = "light"  # Light armor (leather, etc.)
+    MEDIUM = "medium"  # Medium armor (chain, etc.)
+    HEAVY = "heavy"  # Heavy armor (plate, etc.)
 
 
 class GearSlotType(str, Enum):
     """Gear slot types for slot encumbrance system (p149)."""
-    EQUIPPED = "equipped"       # Worn/held items (max 10 slots)
-    STOWED = "stowed"           # Items in containers (max 16 slots)
+
+    EQUIPPED = "equipped"  # Worn/held items (max 10 slots)
+    STOWED = "stowed"  # Items in containers (max 16 slots)
 
 
 # Encumbrance constants (p148)
-MAX_WEIGHT_CAPACITY = 1600      # Maximum weight in coins a character can carry
-MAX_EQUIPPED_SLOTS = 10         # Maximum equipped gear slots
-MAX_STOWED_SLOTS = 16           # Maximum stowed gear slots total
-STOWED_SLOTS_PER_CONTAINER = 10 # Each container holds 10 stowed items
+MAX_WEIGHT_CAPACITY = 1600  # Maximum weight in coins a character can carry
+MAX_EQUIPPED_SLOTS = 10  # Maximum equipped gear slots
+MAX_STOWED_SLOTS = 16  # Maximum stowed gear slots total
+STOWED_SLOTS_PER_CONTAINER = 10  # Each container holds 10 stowed items
 
 
 # Weight thresholds for speed calculation (p148)
 # Format: (max_weight, speed)
 WEIGHT_ENCUMBRANCE_THRESHOLDS = [
-    (400, 40),   # ≤400 coins: Speed 40
-    (600, 30),   # ≤600 coins: Speed 30
-    (800, 20),   # ≤800 coins: Speed 20
+    (400, 40),  # ≤400 coins: Speed 40
+    (600, 30),  # ≤600 coins: Speed 30
+    (800, 20),  # ≤800 coins: Speed 20
     (1600, 10),  # ≤1600 coins: Speed 10
 ]
 
@@ -785,9 +853,9 @@ WEIGHT_ENCUMBRANCE_THRESHOLDS = [
 # Slot encumbrance thresholds for speed calculation (p149)
 # Format: (max_equipped, max_stowed, speed)
 SLOT_ENCUMBRANCE_THRESHOLDS = [
-    (3, 10, 40),   # 0-3 equipped / 0-10 stowed: Speed 40
-    (5, 12, 30),   # 4-5 equipped / 11-12 stowed: Speed 30
-    (7, 14, 20),   # 6-7 equipped / 13-14 stowed: Speed 20
+    (3, 10, 40),  # 0-3 equipped / 0-10 stowed: Speed 40
+    (5, 12, 30),  # 4-5 equipped / 11-12 stowed: Speed 30
+    (7, 14, 20),  # 6-7 equipped / 13-14 stowed: Speed 20
     (10, 16, 10),  # 8-10 equipped / 15-16 stowed: Speed 10
 ]
 
@@ -810,9 +878,9 @@ TREASURE_WEIGHTS: dict[str, int] = {
 # Format: armor_weight -> coins
 ARMOR_WEIGHTS: dict[str, int] = {
     ArmorWeight.UNARMOURED.value: 0,
-    ArmorWeight.LIGHT.value: 200,   # ~20 lbs
+    ArmorWeight.LIGHT.value: 200,  # ~20 lbs
     ArmorWeight.MEDIUM.value: 400,  # ~40 lbs
-    ArmorWeight.HEAVY.value: 600,   # ~60 lbs
+    ArmorWeight.HEAVY.value: 600,  # ~60 lbs
 }
 
 
@@ -874,6 +942,7 @@ GEAR_SLOTS: dict[str, int] = {
 @dataclass
 class RunningState:
     """Tracks running exhaustion per Dolmenwood rules (p147)."""
+
     rounds_run: int = 0
     is_exhausted: bool = False
     rest_turns_remaining: int = 0
@@ -921,10 +990,10 @@ class MovementCalculator:
     """
 
     # Movement multipliers per mode (p146-147)
-    ENCOUNTER_MULTIPLIER = 1        # Speed per round
-    EXPLORATION_MULTIPLIER = 3      # Speed × 3 per turn
-    FAMILIAR_MULTIPLIER = 10        # Speed × 10 per turn
-    RUNNING_MULTIPLIER = 3          # Speed × 3 per round
+    ENCOUNTER_MULTIPLIER = 1  # Speed per round
+    EXPLORATION_MULTIPLIER = 3  # Speed × 3 per turn
+    FAMILIAR_MULTIPLIER = 10  # Speed × 10 per turn
+    RUNNING_MULTIPLIER = 3  # Speed × 3 per round
 
     @classmethod
     def get_encounter_movement(cls, speed: int) -> int:
@@ -1032,10 +1101,7 @@ class MovementCalculator:
 
     @classmethod
     def calculate_turns_for_distance(
-        cls,
-        distance_feet: int,
-        speed: int,
-        mode: MovementMode
+        cls, distance_feet: int, speed: int, mode: MovementMode
     ) -> int:
         """
         Calculate turns needed to travel a distance.
@@ -1055,10 +1121,7 @@ class MovementCalculator:
 
     @classmethod
     def calculate_rounds_for_distance(
-        cls,
-        distance_feet: int,
-        speed: int,
-        running: bool = False
+        cls, distance_feet: int, speed: int, running: bool = False
     ) -> int:
         """
         Calculate rounds needed to travel a distance (combat/encounter).
@@ -1199,11 +1262,7 @@ class EncumbranceCalculator:
         return total_weight > MAX_WEIGHT_CAPACITY
 
     @classmethod
-    def is_over_slot_capacity(
-        cls,
-        equipped_slots: int,
-        stowed_slots: int
-    ) -> bool:
+    def is_over_slot_capacity(cls, equipped_slots: int, stowed_slots: int) -> bool:
         """
         Check if slot usage exceeds maximum capacity (p149).
 
@@ -1214,8 +1273,7 @@ class EncumbranceCalculator:
         Returns:
             True if over capacity
         """
-        return (equipped_slots > MAX_EQUIPPED_SLOTS or
-                stowed_slots > MAX_STOWED_SLOTS)
+        return equipped_slots > MAX_EQUIPPED_SLOTS or stowed_slots > MAX_STOWED_SLOTS
 
     @classmethod
     def calculate_encumbrance_level(
@@ -1223,7 +1281,7 @@ class EncumbranceCalculator:
         total_weight: int = 0,
         equipped_slots: int = 0,
         stowed_slots: int = 0,
-        system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+        system: EncumbranceSystem = EncumbranceSystem.WEIGHT,
     ) -> tuple[int, bool]:
         """
         Calculate encumbrance level and over-capacity status.
@@ -1256,7 +1314,7 @@ class EncumbranceCalculator:
         total_weight: int = 0,
         equipped_slots: int = 0,
         stowed_slots: int = 0,
-        system: EncumbranceSystem = EncumbranceSystem.WEIGHT
+        system: EncumbranceSystem = EncumbranceSystem.WEIGHT,
     ) -> dict[str, int]:
         """
         Get remaining capacity before reaching limits.
@@ -1288,6 +1346,7 @@ class EncumbranceState:
 
     Supports both weight-based and slot-based encumbrance systems.
     """
+
     # Weight-based tracking
     total_weight: int = 0  # In coins
 
@@ -1355,6 +1414,7 @@ class Condition:
     - Recovery conditions (how the condition ends)
     - Spell effects (penalties to certain spell types)
     """
+
     condition_type: ConditionType
     duration_turns: Optional[int] = None  # None = permanent until cured
     source: str = ""
@@ -1535,6 +1595,7 @@ class Item:
     When picked up, they are registered in the UniqueItemRegistry to prevent
     duplicates from being acquired.
     """
+
     item_id: str
     name: str
     weight: float  # In coins (10 coins = 1 lb)
@@ -1545,7 +1606,7 @@ class Item:
     light_remaining_turns: Optional[int] = None
     # Encumbrance system fields (p148-149)
     item_type: str = ""  # Used to look up slot size in GEAR_SLOTS
-    slot_size: int = 1   # Number of gear slots required (for slot encumbrance)
+    slot_size: int = 1  # Number of gear slots required (for slot encumbrance)
     is_container: bool = False  # True for backpacks, sacks, etc.
 
     # Unique item tracking
@@ -1755,6 +1816,7 @@ class Item:
 @dataclass
 class Spell:
     """A memorized spell."""
+
     spell_id: str
     name: str
     level: int
@@ -1765,6 +1827,7 @@ class Spell:
 @dataclass
 class StatBlock:
     """Combat statistics for a creature or character."""
+
     armor_class: int
     hit_dice: str  # e.g., "2d8" or "4d8+4"
     hp_current: int
@@ -1783,11 +1846,12 @@ class StatBlock:
 @dataclass
 class MonsterSaves:
     """Saving throw values for a monster."""
+
     doom: int = 14  # Save vs Death/Doom
-    ray: int = 15   # Save vs Wands/Rays
+    ray: int = 15  # Save vs Wands/Rays
     hold: int = 16  # Save vs Paralysis/Hold
-    blast: int = 17 # Save vs Breath/Blast
-    spell: int = 18 # Save vs Spells
+    blast: int = 17  # Save vs Breath/Blast
+    spell: int = 18  # Save vs Spells
 
 
 @dataclass
@@ -1798,6 +1862,7 @@ class Monster:
     Contains all information needed to run encounters with this creature,
     including stats, abilities, behavior, and encounter seeds.
     """
+
     # Core identification
     name: str
     monster_id: str
@@ -1811,14 +1876,14 @@ class Monster:
 
     # Movement (in feet)
     movement: str = "40'"  # Display string
-    speed: int = 40        # Base speed in feet
+    speed: int = 40  # Base speed in feet
     burrow_speed: Optional[int] = None
     fly_speed: Optional[int] = None
     swim_speed: Optional[int] = None
 
     # Combat
     attacks: list[str] = field(default_factory=list)  # ["Claw (+2, 1d6)", "Bite (+2, 1d8)"]
-    damage: list[str] = field(default_factory=list)   # ["1d6", "1d8"]
+    damage: list[str] = field(default_factory=list)  # ["1d6", "1d8"]
 
     # Saving throws
     save_doom: int = 14
@@ -1854,7 +1919,7 @@ class Monster:
 
     # Encounter information
     number_appearing: Optional[str] = None  # Dice notation, e.g., "2d6"
-    lair_percentage: Optional[int] = None   # Percentage chance to find in lair
+    lair_percentage: Optional[int] = None  # Percentage chance to find in lair
     encounter_scenarios: list[str] = field(default_factory=list)
     lair_descriptions: list[str] = field(default_factory=list)
 
@@ -1886,11 +1951,13 @@ class Monster:
         attack_list = []
         for i, atk in enumerate(self.attacks):
             dmg = self.damage[i] if i < len(self.damage) else "1d6"
-            attack_list.append({
-                'name': atk,
-                'damage': dmg,
-                'bonus': self.level,
-            })
+            attack_list.append(
+                {
+                    "name": atk,
+                    "damage": dmg,
+                    "bonus": self.level,
+                }
+            )
 
         return StatBlock(
             armor_class=self.armor_class,
@@ -1913,6 +1980,7 @@ class HexFeature:
     Features can be locations, structures, or points of interest
     that characters can explore or interact with.
     """
+
     name: str
     description: str
     feature_type: str = "general"  # manor, ruin, grove, cave, etc.
@@ -1943,6 +2011,7 @@ class HexProcedural:
 
     Contains chances for getting lost, encounters, and foraging results.
     """
+
     lost_chance: str = "1-in-6"  # e.g., "2-in-6"
     encounter_chance: str = "1-in-6"  # e.g., "2-in-6"
     encounter_notes: str = ""  # Special notes about encounters
@@ -1971,6 +2040,7 @@ class RollTableEntry:
 
     Contains the roll value, optional title, description, and associated content.
     """
+
     roll: int  # The die roll value for this entry
     description: str  # What happens on this roll
     title: Optional[str] = None  # Optional title for the entry
@@ -2009,6 +2079,7 @@ class RollTable:
 
     Contains a die type and list of entries to roll on.
     """
+
     name: str
     die_type: str  # e.g., "d6", "d8", "d20"
     description: str = ""  # When to use this table
@@ -2023,6 +2094,7 @@ class PointOfInterest:
     More detailed than HexFeature, supports dungeon-like locations
     with rooms, roll tables, and NPCs.
     """
+
     name: str
     poi_type: str  # manse, ruin, grove, cave, settlement, etc.
     description: str
@@ -2059,7 +2131,9 @@ class PointOfInterest:
     child_pois: list[str] = field(default_factory=list)  # Names of child POIs within this one
 
     # Hex-level magical effects that apply at this POI
-    magical_effects: list[str] = field(default_factory=list)  # e.g., ["no_teleportation", "no_scrying"]
+    magical_effects: list[str] = field(
+        default_factory=list
+    )  # e.g., ["no_teleportation", "no_scrying"]
 
     # Items and treasures at this location
     items: list[dict[str, Any]] = field(default_factory=list)  # [{name, description, value, taken}]
@@ -2072,7 +2146,7 @@ class PointOfInterest:
 
     # Locks/barriers preventing access
     # Format: [{type, requirement, description, bypassed, hidden, detected, magic_school}]
-    # type: "magical", "physical", "puzzle", "key"
+    # values: "magical", "physical", "puzzle", "key"
     # requirement: spell name, item name, key ID, or puzzle solution
     # hidden: if True, lock is not obvious - requires magic detection to find
     # detected: if True, hidden lock has been revealed by detection
@@ -2127,7 +2201,7 @@ class PointOfInterest:
 
     # Entry conditions - requirements or encounters when entering
     # Format: {type, description, check_type, npc_id, outcomes}
-    # type: "permission_required", "interrogation", "toll", "challenge"
+    # values: "permission_required", "interrogation", "toll", "challenge"
     # check_type: "social", "payment", "password", "none"
     # npc_id: NPC who handles the entry check
     # outcomes: {success: ..., failure: ..., hostile: ...}
@@ -2216,7 +2290,9 @@ class PointOfInterest:
         Returns:
             List of hazard definitions that trigger at this point
         """
-        return [h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"]
+        return [
+            h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"
+        ]
 
     def get_active_locks(self, include_hidden: bool = False) -> list[dict[str, Any]]:
         """
@@ -2247,7 +2323,8 @@ class PointOfInterest:
     def get_hidden_locks(self) -> list[dict[str, Any]]:
         """Get hidden locks that haven't been detected yet."""
         return [
-            lock for lock in self.locks
+            lock
+            for lock in self.locks
             if not lock.get("bypassed", False)
             and lock.get("hidden", False)
             and not lock.get("detected", False)
@@ -2267,30 +2344,36 @@ class PointOfInterest:
         # Magical locks
         for i, lock in enumerate(self.locks):
             if lock.get("type") == "magical" and not lock.get("bypassed", False):
-                magical.append({
-                    "category": "lock",
-                    "index": i,
-                    "hidden": lock.get("hidden", False),
-                    "detected": lock.get("detected", False),
-                    "school": lock.get("magic_school"),
-                    "description": lock.get("description", "A magical barrier"),
-                })
+                magical.append(
+                    {
+                        "category": "lock",
+                        "index": i,
+                        "hidden": lock.get("hidden", False),
+                        "detected": lock.get("detected", False),
+                        "school": lock.get("magic_school"),
+                        "description": lock.get("description", "A magical barrier"),
+                    }
+                )
 
         # Magical effects at the POI
         for effect in self.magical_effects:
-            magical.append({
-                "category": "effect",
-                "description": effect,
-            })
+            magical.append(
+                {
+                    "category": "effect",
+                    "description": effect,
+                }
+            )
 
         # Magic items (if any are present and not taken)
         for item in self.items:
             if item.get("magical", False) and not item.get("taken", False):
-                magical.append({
-                    "category": "item",
-                    "name": item.get("name"),
-                    "hidden": item.get("hidden", False),
-                })
+                magical.append(
+                    {
+                        "category": "item",
+                        "name": item.get("name"),
+                        "hidden": item.get("hidden", False),
+                    }
+                )
 
         return magical
 
@@ -2581,13 +2664,15 @@ class PointOfInterest:
                 if not condition_met:
                     continue
 
-            active_hints.append({
-                "sense_type": sense_type,
-                "description": hint_data.get("description", ""),
-                "range": hint_range,
-                "poi_name": self.name,
-                "hidden": self.hidden,
-            })
+            active_hints.append(
+                {
+                    "sense_type": sense_type,
+                    "description": hint_data.get("description", ""),
+                    "range": hint_range,
+                    "poi_name": self.name,
+                    "hidden": self.hidden,
+                }
+            )
 
         return active_hints
 
@@ -2614,7 +2699,8 @@ class PointOfInterest:
             List of alert definitions that match this trigger
         """
         return [
-            alert for alert in self.alerts
+            alert
+            for alert in self.alerts
             if alert.get("trigger") == trigger and not alert.get("triggered", False)
         ]
 
@@ -2758,11 +2844,13 @@ class PointOfInterest:
                 # e.g., "1d6" -> 3
                 count = 3
 
-            result["variable_inhabitants"].append({
-                "count": count,
-                "description": description,
-                "roll_expression": roll_expr,
-            })
+            result["variable_inhabitants"].append(
+                {
+                    "count": count,
+                    "description": description,
+                    "roll_expression": roll_expr,
+                }
+            )
             result["variable_count"] += count
 
         return result
@@ -2913,7 +3001,9 @@ class PointOfInterest:
             required_disposition = conditions.get("disposition")
             if required_disposition:
                 disposition_order = ["hostile", "neutral", "friendly"]
-                if disposition_order.index(party_disposition) < disposition_order.index(required_disposition):
+                if disposition_order.index(party_disposition) < disposition_order.index(
+                    required_disposition
+                ):
                     continue
 
             # Check level requirement
@@ -2941,16 +3031,21 @@ class HexStateChange:
     - Killing the lord of a manor changes its description
     - Solving a puzzle opens a secret passage permanently
     """
+
     change_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     hex_id: str = ""
     poi_name: Optional[str] = None  # If change is to a specific POI
 
     # What triggered this change
     trigger_action: str = ""  # e.g., "item_removed", "npc_killed", "puzzle_solved", "spell_cast"
-    trigger_details: dict[str, Any] = field(default_factory=dict)  # e.g., {"item": "Hand of St Howarth"}
+    trigger_details: dict[str, Any] = field(
+        default_factory=dict
+    )  # e.g., {"item": "Hand of St Howarth"}
 
     # What changed
-    change_type: str = ""  # e.g., "curse_lifted", "description_changed", "npc_removed", "access_granted"
+    change_type: str = (
+        ""  # e.g., "curse_lifted", "description_changed", "npc_removed", "access_granted"
+    )
     before_state: dict[str, Any] = field(default_factory=dict)  # State before change
     after_state: dict[str, Any] = field(default_factory=dict)  # State after change
 
@@ -2972,6 +3067,7 @@ class WorldStateChanges:
 
     Tracks permanent mutations to hexes, POIs, NPCs, etc. caused by player actions.
     """
+
     changes: list[HexStateChange] = field(default_factory=list)
 
     # Index for quick lookup
@@ -3009,7 +3105,11 @@ class WorldStateChanges:
         poi_name: Optional[str] = None,
     ) -> bool:
         """Check if a specific type of change has occurred."""
-        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+        changes = (
+            self.get_changes_for_poi(hex_id, poi_name)
+            if poi_name
+            else self.get_changes_for_hex(hex_id)
+        )
         return any(c.change_type == change_type for c in changes)
 
     def get_current_state(
@@ -3024,7 +3124,11 @@ class WorldStateChanges:
         Returns the 'after_state' value of the most recent change
         that affects this state key, or None if no changes.
         """
-        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+        changes = (
+            self.get_changes_for_poi(hex_id, poi_name)
+            if poi_name
+            else self.get_changes_for_hex(hex_id)
+        )
 
         # Find the most recent change affecting this key
         for change in reversed(changes):
@@ -3045,7 +3149,11 @@ class WorldStateChanges:
         Conditions start as active and become inactive when a change
         of type "{condition}_lifted" or "{condition}_removed" is recorded.
         """
-        changes = self.get_changes_for_poi(hex_id, poi_name) if poi_name else self.get_changes_for_hex(hex_id)
+        changes = (
+            self.get_changes_for_poi(hex_id, poi_name)
+            if poi_name
+            else self.get_changes_for_hex(hex_id)
+        )
 
         # Check for lifting/removal of condition
         lifted_types = [f"{condition}_lifted", f"{condition}_removed", f"remove_{condition}"]
@@ -3059,11 +3167,12 @@ class WorldStateChanges:
 
 class EventType(str, Enum):
     """Types of scheduled events."""
-    INVITATION = "invitation"        # Invitation to return to a location
-    BLESSING = "blessing"            # Temporary blessing expires
-    CURSE = "curse"                  # Curse takes effect or expires
-    MEETING = "meeting"              # Scheduled meeting with NPC
-    FESTIVAL = "festival"            # Seasonal or Wysenday festival
+
+    INVITATION = "invitation"  # Invitation to return to a location
+    BLESSING = "blessing"  # Temporary blessing expires
+    CURSE = "curse"  # Curse takes effect or expires
+    MEETING = "meeting"  # Scheduled meeting with NPC
+    FESTIVAL = "festival"  # Seasonal or Wysenday festival
     TRANSFORMATION = "transformation"  # Time-triggered transformation
     QUEST_DEADLINE = "quest_deadline"  # Quest timer expires
 
@@ -3076,6 +3185,7 @@ class ScheduledEvent:
     Used for invitations, delayed rewards, timed curses, and other
     future-triggered game events.
     """
+
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     event_type: EventType = EventType.INVITATION
 
@@ -3207,6 +3317,7 @@ class EventScheduler:
 
     Tracks invitations, delayed rewards, and timed effects.
     """
+
     events: list[ScheduledEvent] = field(default_factory=list)
 
     # Indices for quick lookup
@@ -3289,10 +3400,7 @@ class EventScheduler:
         current_date: "GameDate",
     ) -> list[ScheduledEvent]:
         """Get active (non-triggered, non-expired) events for a character."""
-        return [
-            e for e in self.get_events_for_character(character_id)
-            if e.is_active(current_date)
-        ]
+        return [e for e in self.get_events_for_character(character_id) if e.is_active(current_date)]
 
     def get_events_at_location(
         self,
@@ -3340,7 +3448,8 @@ class EventScheduler:
     def get_pending_invitations(self, current_date: "GameDate") -> list[ScheduledEvent]:
         """Get all pending (active) invitations."""
         return [
-            e for e in self.events
+            e
+            for e in self.events
             if e.event_type == EventType.INVITATION and e.is_active(current_date)
         ]
 
@@ -3352,12 +3461,13 @@ class EventScheduler:
 
 class AbilityType(str, Enum):
     """Types of grantable abilities."""
-    SPELL = "spell"              # Magic spell added to character's repertoire
-    SKILL = "skill"              # Skill or proficiency
-    BLESSING = "blessing"        # Divine or nature blessing (temporary bonus)
-    CURSE = "curse"              # Curse or negative effect
+
+    SPELL = "spell"  # Magic spell added to character's repertoire
+    SKILL = "skill"  # Skill or proficiency
+    BLESSING = "blessing"  # Divine or nature blessing (temporary bonus)
+    CURSE = "curse"  # Curse or negative effect
     TRANSFORMATION = "transformation"  # Physical or magical transformation
-    SPECIAL = "special"          # Unique ability specific to the source
+    SPECIAL = "special"  # Unique ability specific to the source
 
 
 @dataclass
@@ -3368,6 +3478,7 @@ class GrantedAbility:
     Tracks spells, blessings, curses, and other abilities that can
     be granted to characters through exploration and interaction.
     """
+
     grant_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     character_id: str = ""
 
@@ -3446,6 +3557,7 @@ class AbilityGrantTracker:
     Manages spell grants, blessings, curses, and other abilities
     given to characters by hex features, POIs, and NPCs.
     """
+
     granted_abilities: list[GrantedAbility] = field(default_factory=list)
 
     # Track which abilities have been granted to prevent double-grants
@@ -3533,10 +3645,7 @@ class AbilityGrantTracker:
         include_expired: bool = False,
     ) -> list[GrantedAbility]:
         """Get all granted abilities for a character."""
-        abilities = [
-            a for a in self.granted_abilities
-            if a.character_id == character_id
-        ]
+        abilities = [a for a in self.granted_abilities if a.character_id == character_id]
 
         if not include_expired and current_date:
             abilities = [a for a in abilities if not a.is_expired(current_date)]
@@ -3550,7 +3659,8 @@ class AbilityGrantTracker:
     ) -> list[GrantedAbility]:
         """Get granted spells for a character."""
         return [
-            a for a in self.get_character_abilities(character_id, current_date)
+            a
+            for a in self.get_character_abilities(character_id, current_date)
             if a.ability_type == AbilityType.SPELL
         ]
 
@@ -3601,6 +3711,7 @@ class HexNPC:
     Contains full NPC details for roleplay and encounters.
     NPCs can be pre-defined (with detailed descriptions) or randomly generated.
     """
+
     npc_id: str
     name: str
     description: str
@@ -3711,6 +3822,7 @@ class HexNPC:
 @dataclass
 class Feature:
     """A notable feature in a location (legacy format)."""
+
     feature_id: str
     name: str
     description: str
@@ -3722,6 +3834,7 @@ class Feature:
 @dataclass
 class Hazard:
     """A hazard or trap in a location."""
+
     hazard_id: str
     name: str
     trigger: str
@@ -3735,6 +3848,7 @@ class Hazard:
 @dataclass
 class Lair:
     """A monster lair within a hex."""
+
     lair_id: str
     monster_type: str
     monster_count: str  # Dice notation, e.g., "2d6"
@@ -3746,6 +3860,7 @@ class Lair:
 @dataclass
 class Landmark:
     """A visible landmark in a hex."""
+
     landmark_id: str
     name: str
     description: str
@@ -3755,6 +3870,7 @@ class Landmark:
 @dataclass
 class Threat:
     """An active threat in the world."""
+
     threat_id: str
     name: str
     threat_type: str
@@ -3775,6 +3891,7 @@ class WorldState:
     Global world state that persists across all game states.
     This is the authoritative source for world-level information.
     """
+
     current_date: GameDate
     current_time: GameTime
     season: Season
@@ -3797,6 +3914,7 @@ class WorldState:
 @dataclass
 class PartyResources:
     """Tracked party resources."""
+
     food_days: float = 0.0
     water_days: float = 0.0
     torches: int = 0
@@ -3824,6 +3942,7 @@ class PartyResources:
 @dataclass
 class Location:
     """Current party location."""
+
     location_type: LocationType
     location_id: str  # hex_id, room_id, or settlement_id
     sub_location: Optional[str] = None  # Building within settlement, etc.
@@ -3841,6 +3960,7 @@ class PartyState:
 
     Per Dolmenwood rules (p146): Party speed = slowest member's speed.
     """
+
     location: Location
     marching_order: list[str] = field(default_factory=list)  # character_ids
     resources: PartyResources = field(default_factory=PartyResources)
@@ -3918,6 +4038,7 @@ class SpellSlotState:
     Used by Cleric, Friar, and Magician (ranked spells).
     Enchanters use glamours (at-will) and runes (different system).
     """
+
     # Maximum slots per spell rank (from class progression)
     max_slots: dict[int, int] = field(default_factory=dict)  # {rank: max}
     # Currently available slots per rank
@@ -3950,6 +4071,7 @@ class AnimalCompanion:
 
     Hunters may bond with one animal at a time (Charisma Check).
     """
+
     companion_id: str = ""
     name: str = ""
     species: str = ""  # e.g., "wolf", "hawk", "bear"
@@ -3970,6 +4092,7 @@ class HunterTrophy:
 
     Provides +1 attack/save bonus against creatures of the same type.
     """
+
     trophy_id: str = ""
     creature_type: str = ""  # e.g., "wyrm", "undead", "bear"
     description: str = ""  # e.g., "wyrm's tooth", "stag's antlers"
@@ -3983,6 +4106,7 @@ class ClassSpecificData:
 
     Different classes use different fields - unused fields remain empty/default.
     """
+
     # Fighter: Combat talents selected (at levels 2, 6, 10, 14)
     combat_talents: list[str] = field(default_factory=list)  # ["cleave", "defender"]
     slayer_targets: list[str] = field(default_factory=list)  # For Slayer talent
@@ -4004,7 +4128,9 @@ class ClassSpecificData:
     # Enchanter: Glamours and Runes known
     glamours_known: list[str] = field(default_factory=list)  # Spell IDs
     runes_known: list[str] = field(default_factory=list)  # Rune spell IDs
-    rune_magnitudes: dict[str, str] = field(default_factory=dict)  # {rune_id: "lesser"/"greater"/"mighty"}
+    rune_magnitudes: dict[str, str] = field(
+        default_factory=dict
+    )  # {rune_id: "lesser"/"greater"/"mighty"}
 
     # Hunter: Animal companion and trophies
     animal_companion: Optional[AnimalCompanion] = None
@@ -4030,6 +4156,7 @@ class CharacterState:
 
     Supports Dolmenwood encumbrance rules (p148-149).
     """
+
     character_id: str
     name: str
     character_class: str
@@ -4163,8 +4290,7 @@ class CharacterState:
 
     def is_polymorphed(self) -> bool:
         """Check if character currently has an active polymorph effect."""
-        return (self.polymorph_overlay is not None and
-                self.polymorph_overlay.is_active)
+        return self.polymorph_overlay is not None and self.polymorph_overlay.is_active
 
     def is_alive(self) -> bool:
         """Check if character is alive."""
@@ -4219,7 +4345,7 @@ class CharacterState:
             total_weight=total_weight,
             equipped_slots=equipped_slots,
             stowed_slots=stowed_slots,
-            system=self.encumbrance_system
+            system=self.encumbrance_system,
         )
 
     def get_encumbered_speed(self) -> int:
@@ -4233,10 +4359,7 @@ class CharacterState:
             Base Speed after encumbrance penalties
         """
         # Get raw encumbrance speed (assumes standard base of 40)
-        if self.encumbrance_system in (
-            EncumbranceSystem.WEIGHT,
-            EncumbranceSystem.BASIC_WEIGHT
-        ):
+        if self.encumbrance_system in (EncumbranceSystem.WEIGHT, EncumbranceSystem.BASIC_WEIGHT):
             total_weight = self.calculate_encumbrance()
             raw_speed = EncumbranceCalculator.get_speed_from_weight(total_weight)
         else:  # SLOT system
@@ -4258,10 +4381,7 @@ class CharacterState:
 
         Over capacity means the character cannot move.
         """
-        if self.encumbrance_system in (
-            EncumbranceSystem.WEIGHT,
-            EncumbranceSystem.BASIC_WEIGHT
-        ):
+        if self.encumbrance_system in (EncumbranceSystem.WEIGHT, EncumbranceSystem.BASIC_WEIGHT):
             total_weight = self.calculate_encumbrance()
             return EncumbranceCalculator.is_over_weight_capacity(total_weight)
         else:  # SLOT system
@@ -4285,9 +4405,11 @@ class CharacterState:
         # For stackable items (quantity > 1 and not unique), try to merge
         if not item.is_unique and item.quantity > 0:
             for existing in self.inventory:
-                if (existing.item_id == item.item_id and
-                    not existing.is_unique and
-                    existing.name == item.name):
+                if (
+                    existing.item_id == item.item_id
+                    and not existing.is_unique
+                    and existing.name == item.name
+                ):
                     existing.quantity += item.quantity
                     return True
 
@@ -4412,8 +4534,7 @@ class CharacterState:
             True if character has the unique item
         """
         return any(
-            item.is_unique and item.unique_item_id == unique_item_id
-            for item in self.inventory
+            item.is_unique and item.unique_item_id == unique_item_id for item in self.inventory
         )
 
     def get_unique_items(self) -> list[Item]:
@@ -4619,16 +4740,17 @@ class CharacterState:
 
 class AreaEffectType(str, Enum):
     """Types of area effects that can exist in locations."""
-    WEB = "web"                     # Restricts movement
-    FOG = "fog"                     # Obscures vision
-    DARKNESS = "darkness"           # Magical darkness
-    LIGHT = "light"                 # Magical light
-    SILENCE = "silence"             # Blocks sound/spells with verbal components
+
+    WEB = "web"  # Restricts movement
+    FOG = "fog"  # Obscures vision
+    DARKNESS = "darkness"  # Magical darkness
+    LIGHT = "light"  # Magical light
+    SILENCE = "silence"  # Blocks sound/spells with verbal components
     STINKING_CLOUD = "stinking_cloud"  # Nauseating gas
-    GREASE = "grease"               # Slippery surface
-    ENTANGLE = "entangle"           # Plants restrain creatures
-    ILLUSION = "illusion"           # Illusory terrain/objects
-    CUSTOM = "custom"               # Custom effect
+    GREASE = "grease"  # Slippery surface
+    ENTANGLE = "entangle"  # Plants restrain creatures
+    ILLUSION = "illusion"  # Illusory terrain/objects
+    CUSTOM = "custom"  # Custom effect
 
 
 @dataclass
@@ -4639,6 +4761,7 @@ class AreaEffect:
     Used for spells like Web, Fog Cloud, Silence, etc. that create
     persistent effects in a specific location.
     """
+
     effect_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     effect_type: AreaEffectType = AreaEffectType.CUSTOM
     name: str = ""
@@ -4671,7 +4794,7 @@ class AreaEffect:
 
     # For entering/exiting the area
     enter_effect: Optional[str] = None  # Description of effect on entry
-    exit_effect: Optional[str] = None   # Description of effect on exit
+    exit_effect: Optional[str] = None  # Description of effect on exit
 
     # State
     is_active: bool = True
@@ -4724,6 +4847,7 @@ class PolymorphOverlay:
     The overlay is applied on top of the character's base stats and
     is removed when the polymorph effect ends.
     """
+
     overlay_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     # What triggered this transformation
@@ -4748,7 +4872,9 @@ class PolymorphOverlay:
     hp_max: Optional[int] = None  # Some polymorphs change HP
 
     # New attack options (replaces character's normal attacks)
-    attacks: list[dict] = field(default_factory=list)  # [{"name": "Claw", "damage": "1d6", "bonus": 2}]
+    attacks: list[dict] = field(
+        default_factory=list
+    )  # [{"name": "Claw", "damage": "1d6", "bonus": 2}]
 
     # Special abilities gained in this form
     special_abilities: list[str] = field(default_factory=list)
@@ -4836,6 +4962,7 @@ class LocationState:
     """
     State of a specific location (hex, dungeon room, settlement).
     """
+
     location_type: LocationType
     location_id: str
     terrain: str
@@ -4854,7 +4981,9 @@ class LocationState:
     landmarks: list[Landmark] = field(default_factory=list)
 
     # Dungeon-specific
-    doors: list[dict] = field(default_factory=list)  # [{"direction": "N", "locked": True, "secret": False}]
+    doors: list[dict] = field(
+        default_factory=list
+    )  # [{"direction": "N", "locked": True, "secret": False}]
     light_level: str = "dark"  # "bright", "dim", "dark"
 
     # Settlement-specific
@@ -4928,6 +5057,7 @@ class LocationState:
 @dataclass
 class Combatant:
     """A participant in combat or encounter."""
+
     combatant_id: str
     name: str
     side: str  # "party" or "enemy"
@@ -4942,6 +5072,7 @@ class EncounterState:
     """
     State of an active encounter.
     """
+
     encounter_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     encounter_type: EncounterType = EncounterType.MONSTER
     distance: int = 60  # feet
@@ -4973,8 +5104,9 @@ class EncounterState:
 
     def get_active_enemies(self) -> list[Combatant]:
         """Get enemies still in the fight."""
-        return [c for c in self.get_enemy_combatants()
-                if c.stat_block and c.stat_block.hp_current > 0]
+        return [
+            c for c in self.get_enemy_combatants() if c.stat_block and c.stat_block.hp_current > 0
+        ]
 
 
 # =============================================================================
@@ -4984,33 +5116,37 @@ class EncounterState:
 
 class SocialOrigin(str, Enum):
     """Origin of a social interaction."""
-    SETTLEMENT = "settlement"       # Initiated in a settlement
+
+    SETTLEMENT = "settlement"  # Initiated in a settlement
     ENCOUNTER_PARLEY = "encounter_parley"  # From encounter reaction roll
     COMBAT_PARLEY = "combat_parley"  # From combat negotiation/surrender
-    HEX_NPC = "hex_npc"            # Fixed NPC in a hex location
-    POI_NPC = "poi_npc"            # NPC at a point of interest
+    HEX_NPC = "hex_npc"  # Fixed NPC in a hex location
+    POI_NPC = "poi_npc"  # NPC at a point of interest
 
 
 class SocialParticipantType(str, Enum):
     """Type of participant in a social interaction."""
-    NPC = "npc"                    # Named NPC with full profile
-    MONSTER = "monster"            # Monster from encounter
+
+    NPC = "npc"  # Named NPC with full profile
+    MONSTER = "monster"  # Monster from encounter
     ADVENTURING_PARTY = "adventuring_party"  # Random adventurers
 
 
 class TopicRelevance(str, Enum):
     """How relevant a topic is to a player's question."""
-    EXACT = "exact"          # Direct match to what player asked
-    RELATED = "related"      # Related topic that might help
+
+    EXACT = "exact"  # Direct match to what player asked
+    RELATED = "related"  # Related topic that might help
     TANGENTIAL = "tangential"  # Loosely connected
     IRRELEVANT = "irrelevant"  # No connection
 
 
 class SecretStatus(str, Enum):
     """Status of a secret in the conversation."""
-    UNKNOWN = "unknown"      # Player doesn't know it exists
-    HINTED = "hinted"        # NPC has hinted at it
-    REVEALED = "revealed"    # Fully disclosed
+
+    UNKNOWN = "unknown"  # Player doesn't know it exists
+    HINTED = "hinted"  # NPC has hinted at it
+    REVEALED = "revealed"  # Fully disclosed
 
 
 @dataclass
@@ -5020,6 +5156,7 @@ class KnownTopic:
 
     Includes metadata about when/how the topic can be shared.
     """
+
     topic_id: str
     content: str  # The actual information
     keywords: list[str] = field(default_factory=list)  # Keywords for matching
@@ -5059,9 +5196,31 @@ class KnownTopic:
         content_words = set(content_lower.split())
 
         # Remove common words
-        stop_words = {"the", "a", "an", "is", "are", "do", "does", "what", "where",
-                      "who", "why", "how", "can", "you", "i", "me", "your", "about",
-                      "tell", "know", "any", "have", "has"}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "do",
+            "does",
+            "what",
+            "where",
+            "who",
+            "why",
+            "how",
+            "can",
+            "you",
+            "i",
+            "me",
+            "your",
+            "about",
+            "tell",
+            "know",
+            "any",
+            "have",
+            "has",
+        }
         query_words -= stop_words
         content_words -= stop_words
 
@@ -5085,6 +5244,7 @@ class SecretInfo:
 
     Tracks the status of the secret in the conversation.
     """
+
     secret_id: str
     content: str  # The actual secret
     hint: str = ""  # A vague hint about this secret
@@ -5111,10 +5271,7 @@ class SecretInfo:
         return False
 
     def can_reveal(
-        self,
-        current_disposition: int,
-        trust_level: int,
-        bribe_offered: int = 0
+        self, current_disposition: int, trust_level: int, bribe_offered: int = 0
     ) -> bool:
         """Check if conditions are met to reveal this secret."""
         # Check bribery first
@@ -5122,8 +5279,9 @@ class SecretInfo:
             return True
 
         # Check disposition and trust
-        return (current_disposition >= self.required_disposition and
-                trust_level >= self.required_trust)
+        return (
+            current_disposition >= self.required_disposition and trust_level >= self.required_trust
+        )
 
     def get_hint(self) -> str:
         """Get the hint text for this secret."""
@@ -5137,6 +5295,7 @@ class ConversationTracker:
 
     This is mutable state that changes during the conversation.
     """
+
     # Patience/frustration (-5 to +5, starts at disposition-based value)
     patience: int = 3  # Positive = patient, negative = frustrated
 
@@ -5210,12 +5369,13 @@ class SocialParticipant:
     Can represent NPCs, monsters, or adventuring party members.
     Captures the information needed for narrative context.
     """
+
     participant_id: str
     name: str
     participant_type: SocialParticipantType
 
     # Core social attributes
-    sentience: str = "Sentient"      # Non-Sentient, Semi-Intelligent, Sentient
+    sentience: str = "Sentient"  # Non-Sentient, Semi-Intelligent, Sentient
     intelligence: Optional[str] = None
     alignment: str = "Neutral"
     languages: list[str] = field(default_factory=list)
@@ -5282,52 +5442,135 @@ class SocialParticipant:
             for i, hook in enumerate(self.dialogue_hooks):
                 # Extract keywords from the hook text
                 keywords = self._extract_keywords(hook)
-                self.known_topics.append(KnownTopic(
-                    topic_id=f"hook_{i}",
-                    content=hook,
-                    keywords=keywords,
-                    category="dialogue",
-                ))
+                self.known_topics.append(
+                    KnownTopic(
+                        topic_id=f"hook_{i}",
+                        content=hook,
+                        keywords=keywords,
+                        category="dialogue",
+                    )
+                )
 
         # Convert legacy secrets to SecretInfo if secret_info is empty
         if not self.secret_info and self.secrets:
             for i, secret in enumerate(self.secrets):
                 keywords = self._extract_keywords(secret)
-                self.secret_info.append(SecretInfo(
-                    secret_id=f"secret_{i}",
-                    content=secret,
-                    keywords=keywords,
-                    hint=self._generate_hint(secret),
-                ))
+                self.secret_info.append(
+                    SecretInfo(
+                        secret_id=f"secret_{i}",
+                        content=secret,
+                        keywords=keywords,
+                        hint=self._generate_hint(secret),
+                    )
+                )
 
         # Convert goals to known topics
         for i, goal in enumerate(self.goals):
             if not any(t.content == f"Goal: {goal}" for t in self.known_topics):
-                self.known_topics.append(KnownTopic(
-                    topic_id=f"goal_{i}",
-                    content=f"Goal: {goal}",
-                    keywords=self._extract_keywords(goal),
-                    category="personal",
-                    required_disposition=0,  # Neutral+ to discuss goals
-                ))
+                self.known_topics.append(
+                    KnownTopic(
+                        topic_id=f"goal_{i}",
+                        content=f"Goal: {goal}",
+                        keywords=self._extract_keywords(goal),
+                        category="personal",
+                        required_disposition=0,  # Neutral+ to discuss goals
+                    )
+                )
 
     def _extract_keywords(self, text: str) -> list[str]:
         """Extract meaningful keywords from text."""
-        stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
-                      "being", "have", "has", "had", "do", "does", "did", "will",
-                      "would", "could", "should", "may", "might", "must", "shall",
-                      "can", "to", "of", "in", "for", "on", "with", "at", "by",
-                      "from", "as", "into", "through", "during", "before", "after",
-                      "above", "below", "between", "under", "again", "further",
-                      "then", "once", "here", "there", "when", "where", "why",
-                      "how", "all", "each", "few", "more", "most", "other", "some",
-                      "such", "no", "nor", "not", "only", "own", "same", "so",
-                      "than", "too", "very", "just", "and", "but", "if", "or",
-                      "because", "until", "while", "about", "against", "between"}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "must",
+            "shall",
+            "can",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "into",
+            "through",
+            "during",
+            "before",
+            "after",
+            "above",
+            "below",
+            "between",
+            "under",
+            "again",
+            "further",
+            "then",
+            "once",
+            "here",
+            "there",
+            "when",
+            "where",
+            "why",
+            "how",
+            "all",
+            "each",
+            "few",
+            "more",
+            "most",
+            "other",
+            "some",
+            "such",
+            "no",
+            "nor",
+            "not",
+            "only",
+            "own",
+            "same",
+            "so",
+            "than",
+            "too",
+            "very",
+            "just",
+            "and",
+            "but",
+            "if",
+            "or",
+            "because",
+            "until",
+            "while",
+            "about",
+            "against",
+            "between",
+        }
 
         words = text.lower().split()
-        keywords = [w.strip(".,!?:;\"'()[]") for w in words
-                   if w.strip(".,!?:;\"'()[]") not in stop_words and len(w) > 2]
+        keywords = [
+            w.strip(".,!?:;\"'()[]")
+            for w in words
+            if w.strip(".,!?:;\"'()[]") not in stop_words and len(w) > 2
+        ]
         return keywords[:5]  # Limit to 5 keywords
 
     def _generate_hint(self, secret: str) -> str:
@@ -5347,9 +5590,7 @@ class SocialParticipant:
         return max(-5, min(5, base))
 
     def find_relevant_topics(
-        self,
-        query: str,
-        include_locked: bool = False
+        self, query: str, include_locked: bool = False
     ) -> list[tuple[KnownTopic, TopicRelevance]]:
         """
         Find topics relevant to a player's query.
@@ -5439,18 +5680,22 @@ class SocialParticipant:
 
         for topic, relevance in all_relevant:
             if topic.can_share(current_disp):
-                result["relevant_topics"].append({
-                    "topic": topic,
-                    "relevance": relevance,
-                    "content": topic.content,
-                })
+                result["relevant_topics"].append(
+                    {
+                        "topic": topic,
+                        "relevance": relevance,
+                        "content": topic.content,
+                    }
+                )
                 result["is_relevant"] = True
             else:
-                result["locked_topics"].append({
-                    "topic": topic,
-                    "required_disposition": topic.required_disposition,
-                    "current_disposition": current_disp,
-                })
+                result["locked_topics"].append(
+                    {
+                        "topic": topic,
+                        "required_disposition": topic.required_disposition,
+                        "current_disposition": current_disp,
+                    }
+                )
 
         # Find relevant secrets
         relevant_secrets = self.find_relevant_secrets(query)
@@ -5460,16 +5705,20 @@ class SocialParticipant:
                 continue  # Already revealed
 
             if secret.can_reveal(current_disp, trust):
-                result["secrets_to_reveal"].append({
-                    "secret": secret,
-                    "content": secret.content,
-                })
+                result["secrets_to_reveal"].append(
+                    {
+                        "secret": secret,
+                        "content": secret.content,
+                    }
+                )
                 result["is_relevant"] = True
             elif secret.should_hint(current_disp, times_asked):
-                result["hints_to_give"].append({
-                    "secret": secret,
-                    "hint": secret.get_hint(),
-                })
+                result["hints_to_give"].append(
+                    {
+                        "secret": secret,
+                        "hint": secret.get_hint(),
+                    }
+                )
                 result["is_relevant"] = True
 
         # Record the question and update patience
@@ -5488,9 +5737,11 @@ class SocialParticipant:
     def get_topics_for_disposition(self, min_disposition: int = -5) -> list[KnownTopic]:
         """Get all topics available at or above a disposition level."""
         current_disp = self.get_current_disposition()
-        return [t for t in self.known_topics
-                if t.required_disposition <= current_disp
-                and t.required_disposition >= min_disposition]
+        return [
+            t
+            for t in self.known_topics
+            if t.required_disposition <= current_disp and t.required_disposition >= min_disposition
+        ]
 
     @classmethod
     def from_npc(cls, npc: "NPC", hex_id: Optional[str] = None) -> "SocialParticipant":
@@ -5534,12 +5785,14 @@ class SocialParticipant:
         # Convert relationships to standard format
         relationships = []
         for rel in hex_npc.relationships:
-            relationships.append({
-                "npc_id": rel.get("npc_id", ""),
-                "type": rel.get("relationship_type", ""),
-                "description": rel.get("description", ""),
-                "hex_id": rel.get("hex_id"),
-            })
+            relationships.append(
+                {
+                    "npc_id": rel.get("npc_id", ""),
+                    "type": rel.get("relationship_type", ""),
+                    "description": rel.get("description", ""),
+                    "hex_id": rel.get("hex_id"),
+                }
+            )
 
         # Use known_topics directly if present, otherwise convert desires to dialogue hooks
         # The __post_init__ will convert dialogue_hooks to KnownTopic if needed
@@ -5601,7 +5854,9 @@ class SocialParticipant:
             reaction_result=reaction,
             can_communicate=can_communicate,
             monster_type=monster.monster_type,
-            stat_reference=f"{monster.name} ({monster.page_reference})" if monster.page_reference else None,
+            stat_reference=(
+                f"{monster.name} ({monster.page_reference})" if monster.page_reference else None
+            ),
             possessions=[monster.possessions] if monster.possessions else [],
         )
 
@@ -5694,9 +5949,7 @@ class SocialParticipant:
 
             # Note locked topics (NPC knows but won't share)
             if query_result.get("locked_topics"):
-                known_topics.append(
-                    "[NPC knows more but won't share until disposition improves]"
-                )
+                known_topics.append("[NPC knows more but won't share until disposition improves]")
         else:
             # Fallback to legacy system
             known_topics.extend(self.dialogue_hooks)
@@ -5794,6 +6047,7 @@ class SocialContext:
     with the information needed to generate appropriate dialogue and
     track conversation state.
     """
+
     context_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     origin: SocialOrigin = SocialOrigin.ENCOUNTER_PARLEY
 
@@ -5877,6 +6131,7 @@ class SocialContext:
 @dataclass
 class SourceReference:
     """Reference to source material."""
+
     source_id: str
     book_code: str
     page_reference: Optional[str] = None
@@ -5886,6 +6141,7 @@ class SourceReference:
 @dataclass
 class ContentSource:
     """A content source (book, module, etc.)."""
+
     source_id: str
     source_type: SourceType
     book_name: str
@@ -5905,6 +6161,7 @@ class ContentSource:
 @dataclass
 class NPC:
     """Non-player character with full profile."""
+
     npc_id: str
     name: str
     title: Optional[str] = None
@@ -5937,6 +6194,7 @@ class HexLocation:
     Contains all information needed to run exploration, encounters,
     and activities within a single hex on the campaign map.
     """
+
     # Core identification
     hex_id: str  # e.g., "0101"
     coordinates: tuple[int, int] = (0, 0)  # Grid coordinates
@@ -6117,8 +6375,11 @@ class HexLocation:
             target_poi.items.append(item_to_migrate)
 
         # Remove from hex-level items
-        self.items = [i for i in self.items if i != item_to_migrate and
-                      (not isinstance(i, str) or i.lower() != item_name.lower())]
+        self.items = [
+            i
+            for i in self.items
+            if i != item_to_migrate and (not isinstance(i, str) or i.lower() != item_name.lower())
+        ]
 
         # Track the migration
         self.set_item_location(item_name, poi_name, sub_location_name)
@@ -6189,6 +6450,7 @@ class HexLocation:
 @dataclass
 class ActionResult:
     """Result of attempting an action."""
+
     success: bool
     reason: str = ""
     cost: dict[str, Any] = field(default_factory=dict)  # time, resources consumed
@@ -6204,6 +6466,7 @@ class ActionResult:
 @dataclass
 class TransitionLog:
     """Log entry for a state transition."""
+
     timestamp: datetime
     from_state: str
     to_state: str

@@ -49,24 +49,26 @@ logger = logging.getLogger(__name__)
 
 class DowntimeActivity(str, Enum):
     """Types of downtime activities."""
-    REST = "rest"                       # Natural healing
-    RECUPERATE = "recuperate"           # Extended recovery
-    TRAIN = "train"                     # Skill/ability training
-    RESEARCH = "research"               # Library/sage research
-    CRAFT = "craft"                     # Create items
-    CAROUSE = "carouse"                 # Carousing (spend gold, make contacts)
-    WORK = "work"                       # Earn money
-    PRAY = "pray"                       # Religious devotion
-    FACTION_WORK = "faction_work"       # Work for a faction
-    SPELL_RESEARCH = "spell_research"   # Research new spells
-    ITEM_CREATION = "item_creation"     # Create magic items
+
+    REST = "rest"  # Natural healing
+    RECUPERATE = "recuperate"  # Extended recovery
+    TRAIN = "train"  # Skill/ability training
+    RESEARCH = "research"  # Library/sage research
+    CRAFT = "craft"  # Create items
+    CAROUSE = "carouse"  # Carousing (spend gold, make contacts)
+    WORK = "work"  # Earn money
+    PRAY = "pray"  # Religious devotion
+    FACTION_WORK = "faction_work"  # Work for a faction
+    SPELL_RESEARCH = "spell_research"  # Research new spells
+    ITEM_CREATION = "item_creation"  # Create magic items
 
 
 class RestType(str, Enum):
     """Types of rest."""
-    SHORT_REST = "short_rest"   # 1 turn (10 minutes)
-    LONG_REST = "long_rest"     # 8 hours
-    FULL_REST = "full_rest"     # 24 hours complete bed rest
+
+    SHORT_REST = "short_rest"  # 1 turn (10 minutes)
+    LONG_REST = "long_rest"  # 8 hours
+    FULL_REST = "full_rest"  # 24 hours complete bed rest
 
 
 class SleepDifficulty(str, Enum):
@@ -75,16 +77,18 @@ class SleepDifficulty(str, Enum):
 
     Based on fire, bedding, and season combination.
     """
-    EASY = "easy"              # Good night's rest automatically
-    MODERATE = "moderate"      # Constitution check required
-    DIFFICULT = "difficult"    # Constitution check with -2 penalty
+
+    EASY = "easy"  # Good night's rest automatically
+    MODERATE = "moderate"  # Constitution check required
+    DIFFICULT = "difficult"  # Constitution check with -2 penalty
     IMPOSSIBLE = "impossible"  # Fail to get good night's rest
 
 
 class BeddingType(str, Enum):
     """Types of camping bedding per Dolmenwood rules (p159)."""
-    NONE = "none"                   # No bedding
-    BEDROLL_ONLY = "bedroll_only"   # Bedroll or tent
+
+    NONE = "none"  # No bedding
+    BEDROLL_ONLY = "bedroll_only"  # Bedroll or tent
     BEDROLL_AND_TENT = "bedroll_and_tent"  # Bedroll and tent
 
 
@@ -131,6 +135,7 @@ class CampState:
 
     Tracks all camping conditions that affect rest quality.
     """
+
     has_fire: bool = False
     fire_hours_remaining: int = 0
     bedding: BeddingType = BeddingType.NONE
@@ -147,6 +152,7 @@ class CampState:
 
 class FactionStanding(str, Enum):
     """Standing with a faction."""
+
     HOSTILE = "hostile"
     UNFRIENDLY = "unfriendly"
     NEUTRAL = "neutral"
@@ -158,6 +164,7 @@ class FactionStanding(str, Enum):
 @dataclass
 class FactionRelation:
     """Relationship with a faction."""
+
     faction_id: str
     faction_name: str
     standing: FactionStanding
@@ -169,6 +176,7 @@ class FactionRelation:
 @dataclass
 class DowntimeResult:
     """Result of a downtime activity."""
+
     activity: DowntimeActivity
     days_spent: int
     success: bool
@@ -181,6 +189,7 @@ class DowntimeResult:
 @dataclass
 class TrainingProgress:
     """Progress on training activities."""
+
     skill_name: str
     target_level: int
     days_trained: int
@@ -239,9 +248,7 @@ class DowntimeEngine:
     # =========================================================================
 
     def begin_downtime(
-        self,
-        location_type: str = "settlement",
-        is_safe: bool = True
+        self, location_type: str = "settlement", is_safe: bool = True
     ) -> dict[str, Any]:
         """
         Begin a downtime period.
@@ -271,10 +278,13 @@ class DowntimeEngine:
         else:
             trigger = "begin_rest"
 
-        self.controller.transition(trigger, context={
-            "location_type": location_type,
-            "is_safe": is_safe,
-        })
+        self.controller.transition(
+            trigger,
+            context={
+                "location_type": location_type,
+                "is_safe": is_safe,
+            },
+        )
 
         return {
             "downtime_started": True,
@@ -318,18 +328,22 @@ class DowntimeEngine:
         activities = [DowntimeActivity.REST.value]
 
         if self._in_safe_location:
-            activities.extend([
-                DowntimeActivity.RECUPERATE.value,
-            ])
+            activities.extend(
+                [
+                    DowntimeActivity.RECUPERATE.value,
+                ]
+            )
 
         if self._location_type == "settlement":
-            activities.extend([
-                DowntimeActivity.TRAIN.value,
-                DowntimeActivity.RESEARCH.value,
-                DowntimeActivity.CAROUSE.value,
-                DowntimeActivity.WORK.value,
-                DowntimeActivity.PRAY.value,
-            ])
+            activities.extend(
+                [
+                    DowntimeActivity.TRAIN.value,
+                    DowntimeActivity.RESEARCH.value,
+                    DowntimeActivity.CAROUSE.value,
+                    DowntimeActivity.WORK.value,
+                    DowntimeActivity.PRAY.value,
+                ]
+            )
 
         return activities
 
@@ -338,9 +352,7 @@ class DowntimeEngine:
     # =========================================================================
 
     def rest(
-        self,
-        rest_type: RestType,
-        character_ids: Optional[list[str]] = None
+        self, rest_type: RestType, character_ids: Optional[list[str]] = None
     ) -> DowntimeResult:
         """
         Rest to recover HP and spells.
@@ -396,16 +408,15 @@ class DowntimeEngine:
 
             healing = self._calculate_healing(character, rest_type)
             if healing > 0:
-                heal_result = self.controller.heal_character(
-                    character.character_id,
-                    healing
+                heal_result = self.controller.heal_character(character.character_id, healing)
+                healing_results.append(
+                    {
+                        "character_id": character.character_id,
+                        "name": character.name,
+                        "healing": heal_result.get("healing_received", 0),
+                        "new_hp": heal_result.get("hp_current", 0),
+                    }
                 )
-                healing_results.append({
-                    "character_id": character.character_id,
-                    "name": character.name,
-                    "healing": heal_result.get("healing_received", 0),
-                    "new_hp": heal_result.get("hp_current", 0),
-                })
 
         result.results["healing"] = healing_results
 
@@ -423,11 +434,7 @@ class DowntimeEngine:
 
         return result
 
-    def _calculate_healing(
-        self,
-        character: CharacterState,
-        rest_type: RestType
-    ) -> int:
+    def _calculate_healing(self, character: CharacterState, rest_type: RestType) -> int:
         """Calculate HP healed for a character."""
         if rest_type == RestType.SHORT_REST:
             return 0  # No natural healing on short rest
@@ -456,11 +463,13 @@ class DowntimeEngine:
                     spells_recovered += 1
 
             if spells_recovered > 0:
-                recovery.append({
-                    "character_id": character.character_id,
-                    "name": character.name,
-                    "spells_recovered": spells_recovered,
-                })
+                recovery.append(
+                    {
+                        "character_id": character.character_id,
+                        "name": character.name,
+                        "spells_recovered": spells_recovered,
+                    }
+                )
 
         return recovery
 
@@ -477,7 +486,7 @@ class DowntimeEngine:
         self,
         bedding: BeddingType = BeddingType.NONE,
         has_tent: bool = False,
-        has_bedroll: bool = False
+        has_bedroll: bool = False,
     ) -> dict[str, Any]:
         """
         Set up a wilderness camp per Dolmenwood rules (p158).
@@ -515,11 +524,7 @@ class DowntimeEngine:
             "water_available": True,
         }
 
-    def fetch_firewood(
-        self,
-        character_id: str,
-        weather_modifier: int = 0
-    ) -> dict[str, Any]:
+    def fetch_firewood(self, character_id: str, weather_modifier: int = 0) -> dict[str, Any]:
         """
         Fetch firewood for the campfire per Dolmenwood rules (p158).
 
@@ -544,7 +549,9 @@ class DowntimeEngine:
             "hours_collected": hours,
             "roll": roll.total,
             "weather_modifier": weather_modifier,
-            "total_fire_hours": self._camp_state.fire_hours_remaining if self._camp_state else hours,
+            "total_fire_hours": (
+                self._camp_state.fire_hours_remaining if self._camp_state else hours
+            ),
         }
 
     def build_fire(self, bad_conditions: bool = False) -> dict[str, Any]:
@@ -749,7 +756,8 @@ class DowntimeEngine:
             watch_counts[char_id] = watch_counts.get(char_id, 0) + 1
 
         insufficient_sleep = [
-            char_id for char_id, count in watch_counts.items()
+            char_id
+            for char_id, count in watch_counts.items()
             if count >= 2  # 2+ watches = 4+ hours watching = less than 6 hours sleep
         ]
 
@@ -760,11 +768,7 @@ class DowntimeEngine:
             "insufficient_sleep": insufficient_sleep,
         }
 
-    def check_falling_asleep_on_watch(
-        self,
-        character_id: str,
-        constitution: int
-    ) -> dict[str, Any]:
+    def check_falling_asleep_on_watch(self, character_id: str, constitution: int) -> dict[str, Any]:
         """
         Check if character falls asleep on watch per Dolmenwood optional rule (p159).
 
@@ -803,10 +807,7 @@ class DowntimeEngine:
             "constitution": constitution,
         }
 
-    def check_nighttime_encounter(
-        self,
-        terrain_encounter_chance: int = 1
-    ) -> dict[str, Any]:
+    def check_nighttime_encounter(self, terrain_encounter_chance: int = 1) -> dict[str, Any]:
         """
         Check for nighttime wandering monster per Dolmenwood rules (p159).
 
@@ -854,19 +855,12 @@ class DowntimeEngine:
         if season is None:
             season = self.controller.world_state.season
 
-        key = (
-            self._camp_state.has_fire,
-            self._camp_state.bedding,
-            season
-        )
+        key = (self._camp_state.has_fire, self._camp_state.bedding, season)
 
         return SLEEP_DIFFICULTY_TABLE.get(key, SleepDifficulty.MODERATE)
 
     def resolve_sleep(
-        self,
-        character_id: str,
-        constitution: int,
-        season: Optional[Season] = None
+        self, character_id: str, constitution: int, season: Optional[Season] = None
     ) -> dict[str, Any]:
         """
         Resolve sleep for a character per Dolmenwood rules (p159).
@@ -948,7 +942,7 @@ class DowntimeEngine:
         character_id: str,
         good_rest: bool,
         is_spellcaster: bool = False,
-        on_watch: bool = False
+        on_watch: bool = False,
     ) -> dict[str, Any]:
         """
         Apply effects of rest per Dolmenwood rules (p159).
@@ -994,6 +988,7 @@ class DowntimeEngine:
             character = self.controller.get_character(character_id)
             if character:
                 from src.data_models import Condition
+
                 exhaustion = Condition(
                     condition_type=ConditionType.EXHAUSTED,
                     description="Failed to get good night's rest (p159)",
@@ -1009,10 +1004,7 @@ class DowntimeEngine:
         return result
 
     def check_spell_preparation(
-        self,
-        character_id: str,
-        spells_to_prepare: int,
-        poor_rest: bool = False
+        self, character_id: str, spells_to_prepare: int, poor_rest: bool = False
     ) -> dict[str, Any]:
         """
         Check spell preparation after rest per Dolmenwood rules (p159).
@@ -1089,7 +1081,9 @@ class DowntimeEngine:
 
             # Make saving throw
             save_type = hazard.get("save_type", "doom")
-            save_roll = self.dice.roll("1d20", f"save vs {save_type} ({hazard.get('description', 'night hazard')})")
+            save_roll = self.dice.roll(
+                "1d20", f"save vs {save_type} ({hazard.get('description', 'night hazard')})"
+            )
 
             # For now, assume standard B/X save thresholds (could be enhanced)
             # Using a baseline of 12 as a moderate save DC
@@ -1123,6 +1117,7 @@ class DowntimeEngine:
                 # Create the condition if it's dreamlessness
                 if condition_type == "dreamless":
                     from src.data_models import Condition
+
                     dreamless = Condition.create_dreamlessness(
                         duration_days=duration,
                         source=hazard.get("description", "hex night hazard"),
@@ -1137,7 +1132,7 @@ class DowntimeEngine:
         self,
         season: Optional[Season] = None,
         terrain_encounter_chance: int = 1,
-        use_quick_camping: bool = False
+        use_quick_camping: bool = False,
     ) -> dict[str, Any]:
         """
         Process a full wilderness night per Dolmenwood camping procedure (p158).
@@ -1220,11 +1215,7 @@ class DowntimeEngine:
     # RECUPERATION
     # =========================================================================
 
-    def recuperate(
-        self,
-        days: int,
-        character_ids: Optional[list[str]] = None
-    ) -> DowntimeResult:
+    def recuperate(self, days: int, character_ids: Optional[list[str]] = None) -> DowntimeResult:
         """
         Extended rest for enhanced healing.
 
@@ -1287,16 +1278,15 @@ class DowntimeEngine:
                 roll = self.dice.roll("1d3", f"recuperation healing for {character.name}")
                 total_healing += roll.total
 
-            heal_result = self.controller.heal_character(
-                character.character_id,
-                total_healing
+            heal_result = self.controller.heal_character(character.character_id, total_healing)
+            healing_results.append(
+                {
+                    "character_id": character.character_id,
+                    "name": character.name,
+                    "total_healing": total_healing,
+                    "new_hp": heal_result.get("hp_current", 0),
+                }
             )
-            healing_results.append({
-                "character_id": character.character_id,
-                "name": character.name,
-                "total_healing": total_healing,
-                "new_hp": heal_result.get("hp_current", 0),
-            })
 
         result.results["healing"] = healing_results
 
@@ -1307,11 +1297,7 @@ class DowntimeEngine:
 
         return result
 
-    def _heal_conditions(
-        self,
-        characters: list[CharacterState],
-        days: int
-    ) -> list[dict]:
+    def _heal_conditions(self, characters: list[CharacterState], days: int) -> list[dict]:
         """Attempt to heal conditions during recuperation."""
         healed = []
 
@@ -1329,10 +1315,12 @@ class DowntimeEngine:
                     # Recover after 1 day of rest
                     if days >= 1:
                         character.conditions.remove(condition)
-                        healed.append({
-                            "character_id": character.character_id,
-                            "condition": condition.condition_type.value,
-                        })
+                        healed.append(
+                            {
+                                "character_id": character.character_id,
+                                "condition": condition.condition_type.value,
+                            }
+                        )
 
                 elif condition.condition_type == ConditionType.DISEASED:
                     # Save vs disease each day
@@ -1340,10 +1328,12 @@ class DowntimeEngine:
                         roll = self.dice.roll_d20("disease recovery")
                         if roll.total >= 15:  # Base save
                             character.conditions.remove(condition)
-                            healed.append({
-                                "character_id": character.character_id,
-                                "condition": condition.condition_type.value,
-                            })
+                            healed.append(
+                                {
+                                    "character_id": character.character_id,
+                                    "condition": condition.condition_type.value,
+                                }
+                            )
                             break
 
         return healed
@@ -1353,11 +1343,7 @@ class DowntimeEngine:
     # =========================================================================
 
     def train(
-        self,
-        character_id: str,
-        skill_or_ability: str,
-        days: int,
-        gold_spent: int
+        self, character_id: str, skill_or_ability: str, days: int, gold_spent: int
     ) -> DowntimeResult:
         """
         Train a skill or ability.
@@ -1413,8 +1399,8 @@ class DowntimeEngine:
             "days_required": progress.days_required,
             "gold_spent": progress.gold_spent,
             "gold_required": progress.gold_required,
-            "complete": progress.days_trained >= progress.days_required and
-                       progress.gold_spent >= progress.gold_required,
+            "complete": progress.days_trained >= progress.days_required
+            and progress.gold_spent >= progress.gold_required,
         }
 
         if result.results["progress"]["complete"]:
@@ -1429,11 +1415,7 @@ class DowntimeEngine:
     # CAROUSING
     # =========================================================================
 
-    def carouse(
-        self,
-        character_id: str,
-        gold_spent: int
-    ) -> DowntimeResult:
+    def carouse(self, character_id: str, gold_spent: int) -> DowntimeResult:
         """
         Carouse in a settlement - spend gold, potentially gain XP, contacts, or trouble.
 
@@ -1560,12 +1542,7 @@ class DowntimeEngine:
     # FACTION WORK
     # =========================================================================
 
-    def faction_work(
-        self,
-        faction_id: str,
-        task_type: str,
-        days: int
-    ) -> DowntimeResult:
+    def faction_work(self, faction_id: str, task_type: str, days: int) -> DowntimeResult:
         """
         Perform work for a faction.
 
@@ -1661,12 +1638,7 @@ class DowntimeEngine:
     # WORK FOR MONEY
     # =========================================================================
 
-    def work(
-        self,
-        character_id: str,
-        job_type: str,
-        days: int
-    ) -> DowntimeResult:
+    def work(self, character_id: str, job_type: str, days: int) -> DowntimeResult:
         """
         Work for money during downtime.
 
@@ -1689,9 +1661,9 @@ class DowntimeEngine:
 
         # Calculate earnings based on job type and character skills
         daily_wages = {
-            "unskilled": 1,     # 1gp per day
-            "skilled": 3,       # 3gp per day
-            "specialist": 10,   # 10gp per day
+            "unskilled": 1,  # 1gp per day
+            "skilled": 3,  # 3gp per day
+            "specialist": 10,  # 10gp per day
         }
 
         wage = daily_wages.get(job_type, 1)
@@ -1707,12 +1679,7 @@ class DowntimeEngine:
     # RESEARCH
     # =========================================================================
 
-    def research(
-        self,
-        topic: str,
-        days: int,
-        gold_spent: int = 0
-    ) -> DowntimeResult:
+    def research(self, topic: str, days: int, gold_spent: int = 0) -> DowntimeResult:
         """
         Research a topic at a library or with a sage.
 

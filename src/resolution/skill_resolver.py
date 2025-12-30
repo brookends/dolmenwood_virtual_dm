@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 class SkillOutcome(str, Enum):
     """Possible outcomes of a skill check."""
+
     SUCCESS = "success"
     FAILURE = "failure"
     CRITICAL_FAILURE = "critical_failure"  # Natural 1 with save failure
@@ -36,6 +37,7 @@ class SkillCheckResult:
 
     Contains the roll, target, modifiers, and outcome.
     """
+
     skill_name: str
     character_name: str
     character_level: int
@@ -79,6 +81,7 @@ class SkillDefinition:
 
     Includes failure consequences, time costs, and special rules.
     """
+
     skill_id: str
     name: str
     description: str
@@ -464,8 +467,7 @@ class SkillResolver:
                 result.time_cost_turns = skill_def.time_per_attempt_turns
             else:
                 result.time_cost_turns = max(
-                    skill_def.time_per_attempt_turns,
-                    skill_def.time_on_failure_turns
+                    skill_def.time_per_attempt_turns, skill_def.time_on_failure_turns
                 )
 
         return result
@@ -490,12 +492,14 @@ class SkillResolver:
             target = self.get_skill_target(character, skill_name)
             skill_def = self.get_skill_definition(skill_name)
 
-            skills.append({
-                "name": skill_name,
-                "target": target,
-                "description": skill_def.description if skill_def else "",
-                "chance": f"{7 - target}-in-6",
-            })
+            skills.append(
+                {
+                    "name": skill_name,
+                    "target": target,
+                    "description": skill_def.description if skill_def else "",
+                    "chance": f"{7 - target}-in-6",
+                }
+            )
 
         # Add standard skills if character has bonuses
         for standard_skill in ["listen", "search"]:
@@ -503,12 +507,14 @@ class SkillResolver:
                 target = self.get_skill_target(character, standard_skill)
                 if target < 6:  # Character has bonus to this skill
                     skill_def = self.get_skill_definition(standard_skill)
-                    skills.append({
-                        "name": standard_skill,
-                        "target": target,
-                        "description": skill_def.description if skill_def else "",
-                        "chance": f"{7 - target}-in-6",
-                    })
+                    skills.append(
+                        {
+                            "name": standard_skill,
+                            "target": target,
+                            "description": skill_def.description if skill_def else "",
+                            "chance": f"{7 - target}-in-6",
+                        }
+                    )
 
         return skills
 

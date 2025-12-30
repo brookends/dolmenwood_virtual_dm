@@ -87,9 +87,7 @@ class CharacterTableManager:
         return None
 
     def load_aspect_table(
-        self,
-        kindred: Kindred,
-        aspect_type: CharacterAspectType
+        self, kindred: Kindred, aspect_type: CharacterAspectType
     ) -> Optional[CharacterAspectTable]:
         """
         Load an aspect table from the database.
@@ -129,9 +127,7 @@ class CharacterTableManager:
         return None
 
     def _load_aspect_table_from_db(
-        self,
-        kindred: Kindred,
-        aspect_type: CharacterAspectType
+        self, kindred: Kindred, aspect_type: CharacterAspectType
     ) -> Optional[CharacterAspectTable]:
         """
         Load an aspect table from the SQLite database.
@@ -184,19 +180,14 @@ class CharacterTableManager:
         self._aspect_tables[key] = table
 
     def get_aspect_table(
-        self,
-        kindred: Kindred,
-        aspect_type: CharacterAspectType
+        self, kindred: Kindred, aspect_type: CharacterAspectType
     ) -> Optional[CharacterAspectTable]:
         """Get an aspect table for a kindred, loading from database if necessary."""
         return self.load_aspect_table(kindred, aspect_type)
 
     def get_all_aspect_tables(self, kindred: Kindred) -> list[CharacterAspectTable]:
         """Get all aspect tables for a kindred."""
-        return [
-            table for (k, _), table in self._aspect_tables.items()
-            if k == kindred
-        ]
+        return [table for (k, _), table in self._aspect_tables.items() if k == kindred]
 
     # =========================================================================
     # CACHE MANAGEMENT
@@ -212,10 +203,7 @@ class CharacterTableManager:
     # =========================================================================
 
     def roll_name(
-        self,
-        kindred: Kindred,
-        gender: Optional[str] = None,
-        style: Optional[str] = None
+        self, kindred: Kindred, gender: Optional[str] = None, style: Optional[str] = None
     ) -> str:
         """
         Roll a name for a character of the given kindred.
@@ -234,9 +222,7 @@ class CharacterTableManager:
         return ""
 
     def roll_aspect(
-        self,
-        kindred: Kindred,
-        aspect_type: CharacterAspectType
+        self, kindred: Kindred, aspect_type: CharacterAspectType
     ) -> Optional[CharacterAspectResult]:
         """Roll on a specific aspect table."""
         table = self.get_aspect_table(kindred, aspect_type)
@@ -245,11 +231,7 @@ class CharacterTableManager:
 
         roll, entry = table.roll()
         return CharacterAspectResult(
-            kindred=kindred,
-            aspect_type=aspect_type,
-            roll=roll,
-            result=entry.result,
-            entry=entry
+            kindred=kindred, aspect_type=aspect_type, roll=roll, result=entry.result, entry=entry
         )
 
     def generate_character(
@@ -257,7 +239,7 @@ class CharacterTableManager:
         kindred: Kindred,
         gender: Optional[str] = None,
         style: Optional[str] = None,
-        aspects_to_roll: Optional[list[CharacterAspectType]] = None
+        aspects_to_roll: Optional[list[CharacterAspectType]] = None,
     ) -> GeneratedCharacterAspects:
         """
         Generate a complete set of character aspects.
@@ -313,10 +295,7 @@ class CharacterTableManager:
 
     def list_aspect_types_for_kindred(self, kindred: Kindred) -> list[CharacterAspectType]:
         """List all aspect types available for a kindred."""
-        return [
-            aspect_type for (k, aspect_type) in self._aspect_tables.keys()
-            if k == kindred
-        ]
+        return [aspect_type for (k, aspect_type) in self._aspect_tables.keys() if k == kindred]
 
     def get_table_ids(self) -> list[str]:
         """Get all registered table IDs."""

@@ -40,7 +40,14 @@ from src.data_models import (
     DiceRoller,
     LightSourceType,
 )
-from src.game_state import GameState, StateMachine, GlobalController, TimeTracker, SessionManager, GameSession
+from src.game_state import (
+    GameState,
+    StateMachine,
+    GlobalController,
+    TimeTracker,
+    SessionManager,
+    GameSession,
+)
 from src.hex_crawl import HexCrawlEngine
 from src.dungeon import DungeonEngine
 from src.combat import CombatEngine
@@ -61,10 +68,7 @@ from src.narrative import NarrationContext
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging based on verbosity level."""
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 logger = logging.getLogger(__name__)
@@ -73,6 +77,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
+
 
 @dataclass
 class GameConfig:
@@ -120,6 +125,7 @@ class GameConfig:
 # =============================================================================
 # VIRTUAL DM CLASS
 # =============================================================================
+
 
 class VirtualDM:
     """
@@ -437,26 +443,32 @@ class VirtualDM:
                 try:
                     with open(filepath, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                    saves.append({
-                        "slot": slot,
-                        "session_name": data.get("session_name", "Unknown"),
-                        "last_saved": data.get("last_saved_at", "Unknown"),
-                        "filepath": str(filepath),
-                    })
+                    saves.append(
+                        {
+                            "slot": slot,
+                            "session_name": data.get("session_name", "Unknown"),
+                            "last_saved": data.get("last_saved_at", "Unknown"),
+                            "filepath": str(filepath),
+                        }
+                    )
                 except Exception:
-                    saves.append({
-                        "slot": slot,
-                        "session_name": "(corrupted)",
-                        "last_saved": "Unknown",
-                        "filepath": str(filepath),
-                    })
+                    saves.append(
+                        {
+                            "slot": slot,
+                            "session_name": "(corrupted)",
+                            "last_saved": "Unknown",
+                            "filepath": str(filepath),
+                        }
+                    )
             else:
-                saves.append({
-                    "slot": slot,
-                    "session_name": "(empty)",
-                    "last_saved": None,
-                    "filepath": None,
-                })
+                saves.append(
+                    {
+                        "slot": slot,
+                        "session_name": "(empty)",
+                        "last_saved": None,
+                        "filepath": None,
+                    }
+                )
         return saves
 
     def _serialize_combat_state(self) -> dict[str, Any]:
@@ -483,17 +495,21 @@ class VirtualDM:
                         "initiative": c.initiative,
                         "has_acted": c.has_acted,
                         "character_ref": c.character_ref,
-                        "stat_block": {
-                            "armor_class": c.stat_block.armor_class,
-                            "hit_dice": c.stat_block.hit_dice,
-                            "hp_current": c.stat_block.hp_current,
-                            "hp_max": c.stat_block.hp_max,
-                            "movement": c.stat_block.movement,
-                            "attacks": c.stat_block.attacks,
-                            "morale": c.stat_block.morale,
-                            "save_as": c.stat_block.save_as,
-                            "special_abilities": c.stat_block.special_abilities,
-                        } if c.stat_block else None,
+                        "stat_block": (
+                            {
+                                "armor_class": c.stat_block.armor_class,
+                                "hit_dice": c.stat_block.hit_dice,
+                                "hp_current": c.stat_block.hp_current,
+                                "hp_max": c.stat_block.hp_max,
+                                "movement": c.stat_block.movement,
+                                "attacks": c.stat_block.attacks,
+                                "morale": c.stat_block.morale,
+                                "save_as": c.stat_block.save_as,
+                                "special_abilities": c.stat_block.special_abilities,
+                            }
+                            if c.stat_block
+                            else None
+                        ),
                     }
                     for c in cs.encounter.combatants
                 ],
@@ -540,15 +556,17 @@ class VirtualDM:
                     special_abilities=sb.get("special_abilities", []),
                 )
 
-            combatants.append(Combatant(
-                combatant_id=c_data["combatant_id"],
-                name=c_data["name"],
-                side=c_data.get("side", "enemy"),
-                initiative=c_data.get("initiative", 0),
-                has_acted=c_data.get("has_acted", False),
-                stat_block=stat_block,
-                character_ref=c_data.get("character_ref"),
-            ))
+            combatants.append(
+                Combatant(
+                    combatant_id=c_data["combatant_id"],
+                    name=c_data["name"],
+                    side=c_data.get("side", "enemy"),
+                    initiative=c_data.get("initiative", 0),
+                    has_acted=c_data.get("has_acted", False),
+                    stat_block=stat_block,
+                    character_ref=c_data.get("character_ref"),
+                )
+            )
 
         encounter = EncounterState(
             encounter_id=data["encounter"]["encounter_id"],
@@ -599,8 +617,16 @@ class VirtualDM:
                 "distance": state.encounter.distance,
                 "party_initiative": state.encounter.party_initiative,
                 "enemy_initiative": state.encounter.enemy_initiative,
-                "surprise_status": state.encounter.surprise_status.value if state.encounter.surprise_status else None,
-                "reaction_result": state.encounter.reaction_result.value if state.encounter.reaction_result else None,
+                "surprise_status": (
+                    state.encounter.surprise_status.value
+                    if state.encounter.surprise_status
+                    else None
+                ),
+                "reaction_result": (
+                    state.encounter.reaction_result.value
+                    if state.encounter.reaction_result
+                    else None
+                ),
                 "combatants": [
                     {
                         "combatant_id": c.combatant_id,
@@ -609,17 +635,21 @@ class VirtualDM:
                         "initiative": c.initiative,
                         "has_acted": c.has_acted,
                         "character_ref": c.character_ref,
-                        "stat_block": {
-                            "armor_class": c.stat_block.armor_class,
-                            "hit_dice": c.stat_block.hit_dice,
-                            "hp_current": c.stat_block.hp_current,
-                            "hp_max": c.stat_block.hp_max,
-                            "movement": c.stat_block.movement,
-                            "attacks": c.stat_block.attacks,
-                            "morale": c.stat_block.morale,
-                            "save_as": c.stat_block.save_as,
-                            "special_abilities": c.stat_block.special_abilities,
-                        } if c.stat_block else None,
+                        "stat_block": (
+                            {
+                                "armor_class": c.stat_block.armor_class,
+                                "hit_dice": c.stat_block.hit_dice,
+                                "hp_current": c.stat_block.hp_current,
+                                "hp_max": c.stat_block.hp_max,
+                                "movement": c.stat_block.movement,
+                                "attacks": c.stat_block.attacks,
+                                "morale": c.stat_block.morale,
+                                "save_as": c.stat_block.save_as,
+                                "special_abilities": c.stat_block.special_abilities,
+                            }
+                            if c.stat_block
+                            else None
+                        ),
                     }
                     for c in state.encounter.combatants
                 ],
@@ -632,7 +662,14 @@ class VirtualDM:
             return
 
         from src.encounter.encounter_engine import EncounterEngineState, EncounterPhase
-        from src.data_models import EncounterState, EncounterType, SurpriseStatus, Combatant, StatBlock, ReactionResult
+        from src.data_models import (
+            EncounterState,
+            EncounterType,
+            SurpriseStatus,
+            Combatant,
+            StatBlock,
+            ReactionResult,
+        )
 
         # Rebuild combatants
         combatants = []
@@ -652,15 +689,17 @@ class VirtualDM:
                     special_abilities=sb.get("special_abilities", []),
                 )
 
-            combatants.append(Combatant(
-                combatant_id=c_data["combatant_id"],
-                name=c_data["name"],
-                side=c_data.get("side", "enemy"),
-                initiative=c_data.get("initiative", 0),
-                has_acted=c_data.get("has_acted", False),
-                stat_block=stat_block,
-                character_ref=c_data.get("character_ref"),
-            ))
+            combatants.append(
+                Combatant(
+                    combatant_id=c_data["combatant_id"],
+                    name=c_data["name"],
+                    side=c_data.get("side", "enemy"),
+                    initiative=c_data.get("initiative", 0),
+                    has_acted=c_data.get("has_acted", False),
+                    stat_block=stat_block,
+                    character_ref=c_data.get("character_ref"),
+                )
+            )
 
         surprise_status = None
         if data["encounter"].get("surprise_status"):
@@ -1057,8 +1096,10 @@ class VirtualDM:
 
         try:
             # Derive victor_side from combat_outcome
-            victor_side = "party" if combat_outcome in ("victory", "rout") else (
-                "enemies" if combat_outcome == "defeat" else "none"
+            victor_side = (
+                "party"
+                if combat_outcome in ("victory", "rout")
+                else ("enemies" if combat_outcome == "defeat" else "none")
             )
 
             result = self._dm_agent.narrate_combat_end(
@@ -1120,7 +1161,9 @@ class VirtualDM:
             total_damage = sum(damage_dict.values()) if damage_dict else 0
 
             # Determine success from mechanical_outcome
-            success = "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+            success = (
+                "succeeded" in mechanical_outcome.lower() or "saved" in mechanical_outcome.lower()
+            )
 
             result = self._dm_agent.narrate_dungeon_event(
                 event_type=event_type,
@@ -1502,7 +1545,9 @@ class VirtualDM:
         ]
 
         if party["light_source"]:
-            lines.append(f"  Active Light: {party['light_source']} ({party['light_remaining']} turns)")
+            lines.append(
+                f"  Active Light: {party['light_source']} ({party['light_remaining']} turns)"
+            )
 
         lines.append("")
         lines.append("Party Members:")
@@ -1521,6 +1566,7 @@ class VirtualDM:
 # =============================================================================
 # DEMO SESSION CREATION
 # =============================================================================
+
 
 def create_demo_session(config: Optional[GameConfig] = None) -> VirtualDM:
     """
@@ -1595,6 +1641,7 @@ def create_demo_session(config: Optional[GameConfig] = None) -> VirtualDM:
 # CLI INTERFACE
 # =============================================================================
 
+
 class DolmenwoodCLI:
     """Interactive command-line interface for the game."""
 
@@ -1656,7 +1703,8 @@ class DolmenwoodCLI:
 
     def cmd_help(self, args: str) -> None:
         """Show help information."""
-        print("""
+        print(
+            """
 Available Commands:
   status      - Show current game status
   actions     - Show valid actions from current state
@@ -1673,7 +1721,8 @@ Available Commands:
   saves       - List all save slots
   help        - Show this help
   quit/exit   - Exit the game
-""")
+"""
+        )
 
     def cmd_status(self, args: str) -> None:
         """Show game status."""
@@ -1837,6 +1886,7 @@ Available Commands:
 # =============================================================================
 # INDIVIDUAL LOOP TESTERS
 # =============================================================================
+
 
 def test_hex_exploration_loop(dm: VirtualDM) -> None:
     """Test the hex exploration/wilderness travel loop."""
@@ -2120,9 +2170,11 @@ def test_combat_loop(dm: VirtualDM) -> None:
     print(f"   Actions resolved: {len(round_result.actions_resolved)}")
 
     for action in round_result.actions_resolved[:3]:
-        print(f"     - {action.attacker_id} attacked {action.defender_id}: "
-              f"{'HIT' if action.hit else 'MISS'} "
-              f"(roll: {action.attack_roll}, damage: {action.damage_dealt})")
+        print(
+            f"     - {action.attacker_id} attacked {action.defender_id}: "
+            f"{'HIT' if action.hit else 'MISS'} "
+            f"(roll: {action.attack_roll}, damage: {action.damage_dealt})"
+        )
 
     print("\n4. Combat summary:")
     summary = dm.combat.get_combat_summary()
@@ -2241,6 +2293,7 @@ def test_social_interaction_loop(dm: VirtualDM) -> None:
 # ARGUMENT PARSING
 # =============================================================================
 
+
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -2253,7 +2306,7 @@ Examples:
   python -m src.main --test-combat            # Test combat loop
   python -m src.main --campaign my_campaign   # Load specific campaign
   python -m src.main --llm-provider anthropic # Use Anthropic for descriptions
-        """
+        """,
     )
 
     # General options
@@ -2277,7 +2330,8 @@ Examples:
         help="DM narration style (default: standard)",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose logging",
     )
@@ -2408,6 +2462,7 @@ def create_config_from_args(args: argparse.Namespace) -> GameConfig:
 # MAIN ENTRY POINT
 # =============================================================================
 
+
 def main():
     """Main entry point for CLI usage."""
     args = parse_arguments()
@@ -2432,9 +2487,13 @@ def main():
 
     # Check for test loop modes
     test_any = (
-        args.test_hex or args.test_encounter or args.test_dungeon or
-        args.test_combat or args.test_settlement or args.test_social or
-        args.test_all
+        args.test_hex
+        or args.test_encounter
+        or args.test_dungeon
+        or args.test_combat
+        or args.test_settlement
+        or args.test_social
+        or args.test_all
     )
 
     if test_any:

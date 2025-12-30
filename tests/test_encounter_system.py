@@ -76,6 +76,7 @@ from src.tables.encounter_roller import (
 # EVERYDAY MORTAL DATA TESTS
 # =============================================================================
 
+
 class TestEverydayMortalData:
     """Tests for everyday mortal data definitions."""
 
@@ -93,8 +94,15 @@ class TestEverydayMortalData:
     def test_all_mortal_types_defined(self):
         """Test that all expected mortal types are defined."""
         expected_types = [
-            "angler", "crier", "fortune_teller", "lost_soul",
-            "merchant", "pedlar", "pilgrim", "priest", "villager"
+            "angler",
+            "crier",
+            "fortune_teller",
+            "lost_soul",
+            "merchant",
+            "pedlar",
+            "pilgrim",
+            "priest",
+            "villager",
         ]
         for type_id in expected_types:
             assert type_id in EVERYDAY_MORTAL_TYPES
@@ -130,14 +138,22 @@ class TestEverydayMortalData:
 # ADVENTURER DATA TESTS
 # =============================================================================
 
+
 class TestAdventurerData:
     """Tests for adventurer data definitions."""
 
     def test_all_classes_defined(self):
         """Test that all 9 classes are defined."""
         expected_classes = [
-            "bard", "cleric", "enchanter", "fighter", "friar",
-            "hunter", "knight", "magician", "thief"
+            "bard",
+            "cleric",
+            "enchanter",
+            "fighter",
+            "friar",
+            "hunter",
+            "knight",
+            "magician",
+            "thief",
         ]
         for class_id in expected_classes:
             assert class_id in ADVENTURER_TEMPLATES
@@ -171,9 +187,19 @@ class TestAdventurerData:
         """Test that templates have all required fields."""
         template = get_adventurer_template("fighter", 1)
         required_fields = [
-            "title", "level", "armor_class", "hp_dice", "hp_average",
-            "saves", "attack_bonus", "speed", "morale", "xp",
-            "number_appearing", "gear", "attacks"
+            "title",
+            "level",
+            "armor_class",
+            "hp_dice",
+            "hp_average",
+            "saves",
+            "attack_bonus",
+            "speed",
+            "morale",
+            "xp",
+            "number_appearing",
+            "gear",
+            "attacks",
         ]
         for field_name in required_fields:
             assert field_name in template, f"Missing field: {field_name}"
@@ -188,6 +214,7 @@ class TestAdventurerData:
 # =============================================================================
 # ADVENTURER TABLES TESTS
 # =============================================================================
+
 
 class TestAdventurerTables:
     """Tests for adventurer generation tables."""
@@ -232,6 +259,7 @@ class TestAdventurerTables:
 # ENCOUNTER NPC GENERATOR TESTS
 # =============================================================================
 
+
 class TestEncounterNPCGenerator:
     """Tests for the EncounterNPCGenerator class."""
 
@@ -252,9 +280,7 @@ class TestEncounterNPCGenerator:
     def test_everyday_mortal_has_basic_details(self, generator):
         """Test that everyday mortals have basic details when requested."""
         results = generator.generate_everyday_mortals(
-            "pilgrim",
-            count=1,
-            include_basic_details=True
+            "pilgrim", count=1, include_basic_details=True
         )
         assert len(results) == 1
         assert results[0].basic_details is not None
@@ -262,21 +288,13 @@ class TestEncounterNPCGenerator:
 
     def test_everyday_mortal_type_details(self, generator):
         """Test that type-specific details are rolled."""
-        results = generator.generate_everyday_mortals(
-            "crier",
-            count=1,
-            roll_type_tables=True
-        )
+        results = generator.generate_everyday_mortals("crier", count=1, roll_type_tables=True)
         assert len(results) == 1
         assert "news" in results[0].type_details
 
     def test_generate_adventurer(self, generator):
         """Test generating a single adventurer."""
-        result = generator.generate_adventurer(
-            class_id="fighter",
-            level=3,
-            kindred="human"
-        )
+        result = generator.generate_adventurer(class_id="fighter", level=3, kindred="human")
         assert result is not None
         assert isinstance(result, AdventurerResult)
         assert result.class_id == "fighter"
@@ -321,6 +339,7 @@ class TestEncounterNPCGenerator:
 # ENCOUNTER TABLES TESTS
 # =============================================================================
 
+
 class TestEncounterTables:
     """Tests for encounter table definitions."""
 
@@ -357,9 +376,18 @@ class TestEncounterTables:
     def test_all_regions_defined(self):
         """Test that all 12 regions are defined."""
         expected_regions = [
-            "aldweald", "aquatic", "dwelmfurgh", "fever_marsh",
-            "hags_addle", "high_wold", "mulchgrove", "nagwood",
-            "northern_scratch", "table_downs", "tithelands", "valley_of_wise_beasts"
+            "aldweald",
+            "aquatic",
+            "dwelmfurgh",
+            "fever_marsh",
+            "hags_addle",
+            "high_wold",
+            "mulchgrove",
+            "nagwood",
+            "northern_scratch",
+            "table_downs",
+            "tithelands",
+            "valley_of_wise_beasts",
         ]
         for region in expected_regions:
             assert region in REGIONAL_TABLES
@@ -398,6 +426,7 @@ class TestEncounterTables:
 # ENCOUNTER ROLLER TESTS
 # =============================================================================
 
+
 class TestEncounterRoller:
     """Tests for the EncounterRoller class."""
 
@@ -427,11 +456,7 @@ class TestEncounterRoller:
 
     def test_roll_encounter_simple(self, roller):
         """Test simplified encounter roll."""
-        result = roller.roll_encounter_simple(
-            region="high_wold",
-            is_day=True,
-            on_road=True
-        )
+        result = roller.roll_encounter_simple(region="high_wold", is_day=True, on_road=True)
         assert result is not None
         assert result.time_of_day == TimeOfDay.DAYTIME
         assert result.location_type == LocationType.ROAD
@@ -471,6 +496,7 @@ class TestEncounterRoller:
 # LAIR FUNCTIONALITY TESTS
 # =============================================================================
 
+
 class TestLairFunctionality:
     """Tests for lair encounter functionality."""
 
@@ -492,15 +518,16 @@ class TestLairFunctionality:
         result = roller.roll_encounter(context)
 
         # These fields should exist (may be None or have values)
-        assert hasattr(result, 'in_lair')
-        assert hasattr(result, 'lair_chance')
-        assert hasattr(result, 'lair_description')
-        assert hasattr(result, 'hoard')
+        assert hasattr(result, "in_lair")
+        assert hasattr(result, "lair_chance")
+        assert hasattr(result, "lair_description")
+        assert hasattr(result, "hoard")
 
     def test_lair_check_only_for_monsters_and_animals(self, roller):
         """Test that lair checks only apply to monster/animal entries."""
         # Create a mock entry that's an everyday mortal
         from src.tables.wilderness_encounter_tables import EncounterEntry
+
         entry = EncounterEntry(name="Pilgrim‡", number_appearing="4d8")
 
         # Everyday mortals shouldn't have lair checks
@@ -533,14 +560,15 @@ class TestLairFunctionality:
         result = roller.roll_encounter(context)
 
         # Should have lair fields
-        assert hasattr(result, 'in_lair')
-        assert hasattr(result, 'lair_chance')
-        assert hasattr(result, 'hoard')
+        assert hasattr(result, "in_lair")
+        assert hasattr(result, "lair_chance")
+        assert hasattr(result, "hoard")
 
 
 # =============================================================================
 # INTEGRATION TESTS
 # =============================================================================
+
 
 class TestEncounterSystemIntegration:
     """Integration tests for the encounter system."""
@@ -566,10 +594,7 @@ class TestEncounterSystemIntegration:
             generator = get_encounter_npc_generator()
             # Parse mortal type from entry name
             name = result.entry.name.rstrip("‡").lower().replace("-", "_").replace(" ", "_")
-            mortals = generator.generate_everyday_mortals(
-                name,
-                count=result.number_appearing
-            )
+            mortals = generator.generate_everyday_mortals(name, count=result.number_appearing)
             assert len(mortals) == result.number_appearing
 
         # 4. If it's an adventurer, generate them
@@ -581,10 +606,7 @@ class TestEncounterSystemIntegration:
                 name = name.split("(")[0].strip()
             # Generate adventurers
             for _ in range(result.number_appearing):
-                adventurer = generator.generate_adventurer(
-                    class_id=name,
-                    level=1
-                )
+                adventurer = generator.generate_adventurer(class_id=name, level=1)
                 if adventurer:
                     assert adventurer.stat_block is not None
 

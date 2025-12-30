@@ -42,6 +42,7 @@ from src.game_state.state_machine import GameState
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def factory():
     """Create a fresh EncounterFactory."""
@@ -156,6 +157,7 @@ def lair_encounter():
 # FACTORY INITIALIZATION TESTS
 # =============================================================================
 
+
 class TestEncounterFactoryInit:
     """Tests for EncounterFactory initialization."""
 
@@ -185,6 +187,7 @@ class TestEncounterFactoryInit:
 # =============================================================================
 # ENCOUNTER CREATION TESTS
 # =============================================================================
+
 
 class TestEncounterCreation:
     """Tests for creating encounters from RolledEncounter."""
@@ -221,6 +224,7 @@ class TestEncounterCreation:
 # MONSTER/ANIMAL COMBATANT TESTS
 # =============================================================================
 
+
 class TestMonsterCombatants:
     """Tests for creating monster combatants."""
 
@@ -253,6 +257,7 @@ class TestMonsterCombatants:
 # ADVENTURER COMBATANT TESTS
 # =============================================================================
 
+
 class TestAdventurerCombatants:
     """Tests for creating adventurer combatants."""
 
@@ -278,6 +283,7 @@ class TestAdventurerCombatants:
 # EVERYDAY MORTAL COMBATANT TESTS
 # =============================================================================
 
+
 class TestMortalCombatants:
     """Tests for creating everyday mortal combatants."""
 
@@ -302,6 +308,7 @@ class TestMortalCombatants:
 # ADVENTURING PARTY COMBATANT TESTS
 # =============================================================================
 
+
 class TestPartyCombatants:
     """Tests for creating adventuring party combatants."""
 
@@ -322,6 +329,7 @@ class TestPartyCombatants:
 # LAIR ENCOUNTER TESTS
 # =============================================================================
 
+
 class TestLairEncounters:
     """Tests for lair encounter handling."""
 
@@ -341,6 +349,7 @@ class TestLairEncounters:
 # =============================================================================
 # SURPRISE STATUS TESTS
 # =============================================================================
+
 
 class TestSurpriseStatus:
     """Tests for surprise status determination."""
@@ -364,6 +373,7 @@ class TestSurpriseStatus:
 # =============================================================================
 # ENCOUNTER TYPE DETERMINATION TESTS
 # =============================================================================
+
 
 class TestEncounterType:
     """Tests for encounter type determination."""
@@ -393,6 +403,7 @@ class TestEncounterType:
 # =============================================================================
 # MODULE-LEVEL FUNCTION TESTS
 # =============================================================================
+
 
 class TestModuleFunctions:
     """Tests for module-level convenience functions."""
@@ -431,6 +442,7 @@ class TestModuleFunctions:
 # DISTANCE TESTS
 # =============================================================================
 
+
 class TestEncounterDistance:
     """Tests for encounter distance calculation."""
 
@@ -450,6 +462,7 @@ class TestEncounterDistance:
 # =============================================================================
 # INTEGRATION TESTS
 # =============================================================================
+
 
 class TestEncounterFactoryIntegration:
     """Integration tests for the EncounterFactory."""
@@ -490,6 +503,7 @@ class TestEncounterFactoryIntegration:
 # =============================================================================
 # INTEGRATED ENCOUNTER TESTS (Factory + Engine + State Machine)
 # =============================================================================
+
 
 class TestStartWildernessEncounter:
     """Tests for the integrated start_wilderness_encounter function."""

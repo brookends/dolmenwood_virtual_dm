@@ -412,7 +412,11 @@ class TestEncounterStatePreservation:
 
     def test_ongoing_encounter_preserved(self, dm_with_state, temp_save_dir):
         """Ongoing encounter is preserved."""
-        from src.encounter.encounter_engine import EncounterEngineState, EncounterPhase, EncounterOrigin
+        from src.encounter.encounter_engine import (
+            EncounterEngineState,
+            EncounterPhase,
+            EncounterOrigin,
+        )
 
         # Set up a mock encounter state with correct Combatant structure
         enemy = Combatant(
@@ -496,13 +500,17 @@ class TestMultipleSlots:
         dm2.save_game(slot=2)
 
         # Load slot 1 - should have 2 characters from year 1
-        dm_load1 = VirtualDM(config=GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False))
+        dm_load1 = VirtualDM(
+            config=GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        )
         dm_load1.load_game(slot=1)
         assert len(dm_load1.get_party()) == 2
         assert dm_load1.controller.world_state.current_date.year == 1
 
         # Load slot 2 - should have 1 character from year 5
-        dm_load2 = VirtualDM(config=GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False))
+        dm_load2 = VirtualDM(
+            config=GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        )
         dm_load2.load_game(slot=2)
         assert len(dm_load2.get_party()) == 1
         assert dm_load2.get_character("char_b1").name == "Charlie"
