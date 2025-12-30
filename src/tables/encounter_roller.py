@@ -10,7 +10,6 @@ This is the main entry point for generating wilderness encounters.
 """
 
 import logging
-import random
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
@@ -221,7 +220,7 @@ class EncounterRoller:
         # Monster is in lair - select a random lair description
         lair_description = None
         if monster.lair_descriptions:
-            lair_description = random.choice(monster.lair_descriptions)
+            lair_description = DiceRoller.choice(monster.lair_descriptions, "lair description")
 
         return LairCheckResult(
             in_lair=True,

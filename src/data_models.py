@@ -5067,7 +5067,7 @@ class SecretInfo:
             return True
         # Friendly NPCs might hint unprompted
         if current_disposition >= 2 and self.status == SecretStatus.UNKNOWN:
-            return random.random() < 0.3  # 30% chance
+            return DiceRoller.percent_check(30, "friendly NPC hint chance")
         return False
 
     def can_reveal(
