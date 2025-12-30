@@ -191,8 +191,11 @@ class TerrainInfo:
     description: str = ""
 
 
-# Terrain definitions per Dolmenwood travel table
+# Terrain definitions per Dolmenwood Campaign Book p156-157
 TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
+    # ==========================================================================
+    # LIGHT TERRAIN - 2 TP, 1-in-6 lost/encounter, mounts and vehicles allowed
+    # ==========================================================================
     TerrainType.FARMLAND: TerrainInfo(
         TerrainType.FARMLAND,
         travel_point_cost=2,
@@ -202,51 +205,92 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         vehicle_allowed=True,
         description="Tilled fields and lanes",
     ),
-    TerrainType.MEADOW if hasattr(TerrainType, "MEADOW") else TerrainType.FARMLAND: TerrainInfo(  # type: ignore[attr-defined]
-        TerrainType.FARMLAND,
+    TerrainType.FUNGAL_FOREST: TerrainInfo(
+        TerrainType.FUNGAL_FOREST,
         travel_point_cost=2,
         lost_chance=1,
         encounter_chance=1,
         mount_allowed=True,
         vehicle_allowed=True,
-        description="Open meadow or grassland",
-    ),
-    TerrainType.FOREST: TerrainInfo(
-        TerrainType.FOREST,
-        travel_point_cost=2,
-        lost_chance=1,
-        encounter_chance=1,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Open forest",
-    ),
-    # Moderate Terrain (p157) - 3 TP, 2-in-6
-    TerrainType.MOOR: TerrainInfo(
-        TerrainType.MOOR,
-        travel_point_cost=3,
-        lost_chance=2,
-        encounter_chance=2,
-        mount_allowed=True,
-        vehicle_allowed=False,
-        description="Boggy or hilly forest/moor",
+        description="Giant fungi, few trees",
     ),
     TerrainType.HILLS: TerrainInfo(
         TerrainType.HILLS,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Undulating grassland",
+    ),
+    TerrainType.MEADOW: TerrainInfo(
+        TerrainType.MEADOW,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Flat grassland",
+    ),
+    TerrainType.OPEN_FOREST: TerrainInfo(
+        TerrainType.OPEN_FOREST,
+        travel_point_cost=2,
+        lost_chance=1,
+        encounter_chance=1,
+        mount_allowed=True,
+        vehicle_allowed=True,
+        description="Light, airy woods",
+    ),
+    # ==========================================================================
+    # MODERATE TERRAIN - 3 TP, 2-in-6 lost/encounter, mounts led, no vehicles
+    # ==========================================================================
+    TerrainType.BOG: TerrainInfo(
+        TerrainType.BOG,
         travel_point_cost=3,
         lost_chance=2,
         encounter_chance=2,
-        mount_allowed=True,
+        mount_allowed=True,  # Must be led, not ridden
         vehicle_allowed=False,
-        description="Hilly forest/terrain",
+        description="Treeless mire",
     ),
-    TerrainType.DEEP_FOREST: TerrainInfo(
-        TerrainType.DEEP_FOREST,
+    TerrainType.HILLY_FOREST: TerrainInfo(
+        TerrainType.HILLY_FOREST,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,  # Must be led, not ridden
+        vehicle_allowed=False,
+        description="Undulating woods",
+    ),
+    TerrainType.TANGLED_FOREST: TerrainInfo(
+        TerrainType.TANGLED_FOREST,
+        travel_point_cost=3,
+        lost_chance=2,
+        encounter_chance=2,
+        mount_allowed=True,  # Must be led, not ridden
+        vehicle_allowed=False,
+        description="Dense, gloomy woods",
+    ),
+    # ==========================================================================
+    # DIFFICULT TERRAIN - 4 TP, 3-in-6 lost/encounter, no mounts or vehicles
+    # ==========================================================================
+    TerrainType.BOGGY_FOREST: TerrainInfo(
+        TerrainType.BOGGY_FOREST,
         travel_point_cost=4,
         lost_chance=3,
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Tangled or thorny forest",
+        description="Wet, muddy woods",
+    ),
+    TerrainType.CRAGGY_FOREST: TerrainInfo(
+        TerrainType.CRAGGY_FOREST,
+        travel_point_cost=4,
+        lost_chance=3,
+        encounter_chance=3,
+        mount_allowed=False,
+        vehicle_allowed=False,
+        description="Broken terrain, cliffs",
     ),
     TerrainType.SWAMP: TerrainInfo(
         TerrainType.SWAMP,
@@ -255,17 +299,20 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Wetland or bog",
+        description="Wetland, sparse trees",
     ),
-    TerrainType.MOUNTAINS: TerrainInfo(
-        TerrainType.MOUNTAINS,
+    TerrainType.THORNY_FOREST: TerrainInfo(
+        TerrainType.THORNY_FOREST,
         travel_point_cost=4,
         lost_chance=3,
         encounter_chance=3,
         mount_allowed=False,
         vehicle_allowed=False,
-        description="Craggy forest or steep slopes",
+        description="Dense thorn thickets",
     ),
+    # ==========================================================================
+    # SPECIAL - Settlements don't use standard terrain rules
+    # ==========================================================================
     TerrainType.SETTLEMENT: TerrainInfo(
         TerrainType.SETTLEMENT,
         travel_point_cost=2,
@@ -274,24 +321,6 @@ TERRAIN_DATA: dict[TerrainType, TerrainInfo] = {
         mount_allowed=True,
         vehicle_allowed=True,
         description="Settled area",
-    ),
-    TerrainType.TRAIL: TerrainInfo(  # Treated as track context
-        TerrainType.TRAIL,
-        travel_point_cost=2,
-        lost_chance=1,
-        encounter_chance=1,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Track",
-    ),
-    TerrainType.ROAD: TerrainInfo(
-        TerrainType.ROAD,
-        travel_point_cost=2,
-        lost_chance=0,
-        encounter_chance=0,
-        mount_allowed=True,
-        vehicle_allowed=True,
-        description="Road",
     ),
 }
 
@@ -563,11 +592,11 @@ class HexCrawlEngine:
         hex_data = self._hex_data.get(hex_id)
         if hex_data:
             return TerrainType(hex_data.terrain)
-        return TerrainType.FOREST  # Default
+        return TerrainType.OPEN_FOREST  # Default
 
     def get_terrain_info(self, terrain: TerrainType) -> TerrainInfo:
         """Get terrain information."""
-        return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.FOREST])
+        return TERRAIN_DATA.get(terrain, TERRAIN_DATA[TerrainType.OPEN_FOREST])
 
     # =========================================================================
     # MAIN TRAVEL LOOP (p156-157)
@@ -1576,7 +1605,7 @@ class HexCrawlEngine:
                 current_hex = self._state.current_hex
                 if current_hex:
                     hex_data = self._get_hex_data(current_hex)
-                    terrain = hex_data.terrain_type if hex_data else TerrainType.FOREST
+                    terrain = hex_data.terrain_type if hex_data else TerrainType.OPEN_FOREST
 
                     # Generate and trigger the encounter
                     encounter = self._generate_encounter(current_hex, terrain)

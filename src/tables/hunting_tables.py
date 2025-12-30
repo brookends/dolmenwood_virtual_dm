@@ -562,42 +562,29 @@ def calculate_rations_yield(animal: GameAnimal, total_hp_killed: int) -> int:
 # TERRAIN TYPE MAPPING
 # =============================================================================
 
-# Map hex terrain types to hunting terrain types
-# This maps from data_models.TerrainType values to hunting TerrainType
+# Map hex terrain types (from data_models.TerrainType) to hunting table terrain types
+# Per Campaign Book p120-121, the 12 hunting tables match the 12 terrain types
 TERRAIN_TO_HUNTING: dict[str, TerrainType] = {
-    # Direct mappings from Campaign Book terrain types
-    "bog": TerrainType.BOG,
+    # Light Terrain (2 TP)
     "farmland": TerrainType.FARMLAND,
-    "forest_boggy": TerrainType.FOREST_BOGGY,
-    "forest_craggy": TerrainType.FOREST_CRAGGY,
-    "forest_hilly": TerrainType.FOREST_HILLY,
-    "forest_open": TerrainType.FOREST_OPEN,
-    "forest_tangled": TerrainType.FOREST_TANGLED,
-    "forest_thorny": TerrainType.FOREST_THORNY,
     "fungal_forest": TerrainType.FUNGAL_FOREST,
     "hills": TerrainType.HILLS,
     "meadow": TerrainType.MEADOW,
+    "open_forest": TerrainType.FOREST_OPEN,
+
+    # Moderate Terrain (3 TP)
+    "bog": TerrainType.BOG,
+    "hilly_forest": TerrainType.FOREST_HILLY,
+    "tangled_forest": TerrainType.FOREST_TANGLED,
+
+    # Difficult Terrain (4 TP)
+    "boggy_forest": TerrainType.FOREST_BOGGY,
+    "craggy_forest": TerrainType.FOREST_CRAGGY,
     "swamp": TerrainType.SWAMP,
-    # Generic forest defaults to open forest
-    "forest": TerrainType.FOREST_OPEN,
-    # Deep forest uses tangled forest (dense undergrowth)
-    "deep_forest": TerrainType.FOREST_TANGLED,
-    # Moor uses bog table (similar boggy terrain)
-    "moor": TerrainType.BOG,
-    # Settlement surroundings default to farmland
+    "thorny_forest": TerrainType.FOREST_THORNY,
+
+    # Settlement (no hunting, but default to farmland if attempted)
     "settlement": TerrainType.FARMLAND,
-    "village": TerrainType.FARMLAND,
-    "town": TerrainType.FARMLAND,
-    # Roads/trails use farmland (cleared paths near civilization)
-    "road": TerrainType.FARMLAND,
-    "trail": TerrainType.FARMLAND,
-    # Water areas default to swamp (river banks, lake shores)
-    "river": TerrainType.SWAMP,
-    "lake": TerrainType.SWAMP,
-    # Mountain areas default to hills
-    "mountain": TerrainType.HILLS,
-    "mountains": TerrainType.HILLS,
-    "crag": TerrainType.HILLS,
 }
 
 

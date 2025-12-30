@@ -240,22 +240,23 @@ class TestTerrainMapping:
         assert get_hunting_terrain("meadow") == TerrainType.MEADOW
 
     def test_forest_subtype_mappings(self):
-        """Test forest subtype mappings."""
-        assert get_hunting_terrain("forest_boggy") == TerrainType.FOREST_BOGGY
-        assert get_hunting_terrain("forest_craggy") == TerrainType.FOREST_CRAGGY
-        assert get_hunting_terrain("forest_hilly") == TerrainType.FOREST_HILLY
-        assert get_hunting_terrain("forest_open") == TerrainType.FOREST_OPEN
-        assert get_hunting_terrain("forest_tangled") == TerrainType.FOREST_TANGLED
-        assert get_hunting_terrain("forest_thorny") == TerrainType.FOREST_THORNY
+        """Test forest subtype mappings using official Dolmenwood terrain names."""
+        # data_models.TerrainType uses: boggy_forest, craggy_forest, hilly_forest, etc.
+        # These map to hunting TerrainType: FOREST_BOGGY, FOREST_CRAGGY, FOREST_HILLY, etc.
+        assert get_hunting_terrain("boggy_forest") == TerrainType.FOREST_BOGGY
+        assert get_hunting_terrain("craggy_forest") == TerrainType.FOREST_CRAGGY
+        assert get_hunting_terrain("hilly_forest") == TerrainType.FOREST_HILLY
+        assert get_hunting_terrain("open_forest") == TerrainType.FOREST_OPEN
+        assert get_hunting_terrain("tangled_forest") == TerrainType.FOREST_TANGLED
+        assert get_hunting_terrain("thorny_forest") == TerrainType.FOREST_THORNY
 
-    def test_generic_forest_defaults_to_open(self):
-        """Generic 'forest' should default to forest_open."""
-        assert get_hunting_terrain("forest") == TerrainType.FOREST_OPEN
+    def test_fungal_forest_mapping(self):
+        """Fungal forest should map correctly."""
+        assert get_hunting_terrain("fungal_forest") == TerrainType.FUNGAL_FOREST
 
     def test_settlement_defaults_to_farmland(self):
-        """Settlements should use farmland tables."""
+        """Settlements should use farmland tables (though hunting in settlements is unlikely)."""
         assert get_hunting_terrain("settlement") == TerrainType.FARMLAND
-        assert get_hunting_terrain("village") == TerrainType.FARMLAND
 
     def test_unknown_terrain_defaults_to_forest_open(self):
         """Unknown terrain should default to forest_open."""

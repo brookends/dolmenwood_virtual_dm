@@ -53,19 +53,49 @@ class LocationType(str, Enum):
 
 
 class TerrainType(str, Enum):
-    """Terrain types affecting travel speed and encounters."""
+    """
+    Official Dolmenwood terrain types affecting travel and encounters.
 
-    FOREST = "forest"
-    DEEP_FOREST = "deep_forest"
-    MOOR = "moor"
-    RIVER = "river"
-    LAKE = "lake"
-    HILLS = "hills"
-    MOUNTAINS = "mountains"
-    ROAD = "road"
-    TRAIL = "trail"
-    SWAMP = "swamp"
+    Per Campaign Book p156-157:
+
+    Light Terrain (2 TP, 1-in-6 lost/encounter, mounts/vehicles OK):
+    - FARMLAND: Tilled fields and lanes
+    - FUNGAL_FOREST: Giant fungi, few trees
+    - HILLS: Undulating grassland
+    - MEADOW: Flat grassland
+    - OPEN_FOREST: Light, airy woods
+
+    Moderate Terrain (3 TP, 2-in-6 lost/encounter, mounts led, no vehicles):
+    - BOG: Treeless mire
+    - HILLY_FOREST: Undulating woods
+    - TANGLED_FOREST: Dense, gloomy woods
+
+    Difficult Terrain (4 TP, 3-in-6 lost/encounter, no mounts/vehicles):
+    - BOGGY_FOREST: Wet, muddy woods
+    - CRAGGY_FOREST: Broken terrain, cliffs
+    - SWAMP: Wetland, sparse trees
+    - THORNY_FOREST: Dense thorn thickets
+    """
+
+    # Light Terrain (2 TP, 1-in-6)
     FARMLAND = "farmland"
+    FUNGAL_FOREST = "fungal_forest"
+    HILLS = "hills"
+    MEADOW = "meadow"
+    OPEN_FOREST = "open_forest"
+
+    # Moderate Terrain (3 TP, 2-in-6)
+    BOG = "bog"
+    HILLY_FOREST = "hilly_forest"
+    TANGLED_FOREST = "tangled_forest"
+
+    # Difficult Terrain (4 TP, 3-in-6)
+    BOGGY_FOREST = "boggy_forest"
+    CRAGGY_FOREST = "craggy_forest"
+    SWAMP = "swamp"
+    THORNY_FOREST = "thorny_forest"
+
+    # Special (used for route context, not terrain)
     SETTLEMENT = "settlement"
 
 
