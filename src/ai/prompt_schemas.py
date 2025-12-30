@@ -35,6 +35,7 @@ class PromptSchemaType(str, Enum):
     RESOLVED_ACTION = "resolved_action"
     SPELL_CAST = "spell_cast"
     SPELL_REVELATION = "spell_revelation"
+    MYTHIC_INTERPRETATION = "mythic_interpretation"
 
 
 # =============================================================================
@@ -1784,6 +1785,263 @@ Write a vivid narration (2-4 sentences) that:
 
 
 # =============================================================================
+# SCHEMA 16: MYTHIC INTERPRETATION
+# =============================================================================
+
+
+@dataclass
+class MythicInterpretationInputs:
+    """
+    Inputs for LLM interpretation of Mythic GME oracle results.
+
+    The LLM's task is to translate abstract meaning pairs into
+    concrete game effects that can be validated and executed.
+    """
+
+    # Core adjudication info
+    adjudication_type: str  # wish, curse_break, divination, etc.
+    success_level: str  # exceptional_success, success, partial_success, failure, catastrophic_failure
+    summary: str  # Human-readable summary from adjudicator
+
+    # The meaning pair to interpret
+    meaning_pair: str  # "Waste + Energy"
+    action_word: str  # "Waste"
+    subject_word: str  # "Energy"
+
+    # Context about the spell and situation
+    spell_name: str
+    caster_name: str
+    caster_level: int = 1
+    target: str = ""
+    intention: str = ""  # What the caster was trying to do
+
+    # Additional context
+    complication_pair: str = ""  # If a complication occurred
+    curse_source: str = ""  # For curse-breaking
+    creature_type: str = ""  # For summoning
+
+    # Constraints on valid effects
+    valid_effect_types: list[str] = field(default_factory=list)
+    forbidden_effects: list[str] = field(default_factory=list)
+
+    # For partial success or costs
+    requires_cost: bool = False
+
+
+@dataclass
+class MythicInterpretationOutput:
+    """
+    Structured output from LLM interpretation.
+
+    This maps directly to EffectCommands that can be validated
+    and executed by the game engine.
+    """
+
+    # Primary effects (what the spell does)
+    primary_effects: list[dict[str, Any]] = field(default_factory=list)
+    # Format: {"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}
+    #         {"type": "modify_stat", "target": "lord_malbrook", "stat": "CON", "value": -2}
+
+    # Side effects or costs
+    side_effects: list[dict[str, Any]] = field(default_factory=list)
+
+    # Narrative description
+    narration: str = ""
+
+    # Reasoning (for debugging/review)
+    reasoning: str = ""
+
+
+class MythicInterpretationSchema(PromptSchema):
+    """
+    Schema for LLM interpretation of Mythic GME oracle results.
+
+    This is the bridge between:
+    - Abstract Mythic meaning pairs ("Waste + Energy")
+    - Concrete EffectCommands that modify game state
+
+    The LLM interprets the oracle's symbolic output in context,
+    translating it into specific mechanical effects that respect
+    the game's rules and the caster's intention.
+
+    CRITICAL CONSTRAINTS:
+    1. Effects must be from the valid_effect_types list
+    2. Effects must not violate forbidden_effects
+    3. Effects must be proportionate to spell power and caster level
+    4. Interpretations must respect the success_level (failures don't succeed)
+    5. Output must be structured JSON for parsing
+
+    Example:
+        Input:
+            - success_level: "success"
+            - meaning_pair: "Waste + Energy"
+            - intention: "remove the curse from Lord Malbrook"
+            - target: "Lord Malbrook"
+
+        Output:
+            primary_effects: [
+                {"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}
+            ]
+            side_effects: [
+                {"type": "modify_stat", "target": "lord_malbrook", "stat": "CON", "value": "-1d3"}
+            ]
+            narration: "The curse shatters, but drains vitality from Malbrook's frame..."
+            reasoning: "'Waste + Energy' suggests the spell succeeds but at a cost - the
+                        curse is removed but energy is wasted/drained in the process."
+    """
+
+    def __init__(self, inputs: MythicInterpretationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.MYTHIC_INTERPRETATION,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "adjudication_type": str,
+            "success_level": str,
+            "meaning_pair": str,
+            "spell_name": str,
+            "caster_name": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        # Valid effect types guidance
+        effect_types_text = ""
+        if inputs.valid_effect_types:
+            effect_types_text = f"""
+VALID EFFECT TYPES (use only these):
+{chr(10).join('- ' + t for t in inputs.valid_effect_types)}"""
+        else:
+            effect_types_text = """
+VALID EFFECT TYPES:
+- add_condition: Add a condition (cursed, charmed, paralyzed, etc.)
+- remove_condition: Remove a condition
+- modify_stat: Permanently change a stat (STR, DEX, CON, INT, WIS, CHA, HP, MAX_HP)
+- damage: Deal damage (specify type and amount, can use dice like "2d6")
+- heal: Restore hit points
+- exhaustion: Apply exhaustion for a duration
+- age: Age a character by years
+- custom: Describe an effect that doesn't fit other categories"""
+
+        forbidden_text = ""
+        if inputs.forbidden_effects:
+            forbidden_text = f"""
+FORBIDDEN EFFECTS (never use these):
+{chr(10).join('- ' + f for f in inputs.forbidden_effects)}"""
+
+        success_guidance = {
+            "exceptional_success": "The spell succeeds better than hoped. Effects should be enhanced or additional benefits granted.",
+            "success": "The spell works as intended. Effects should match the caster's intention.",
+            "partial_success": "The spell works but with complications or reduced effect. Something goes partially wrong.",
+            "failure": "The spell fails. No positive effects occur. At worst, minor backlash.",
+            "catastrophic_failure": "The spell backfires badly. Negative effects on caster or unintended targets.",
+        }
+
+        return f"""{base}
+
+MYTHIC INTERPRETATION TASK:
+You are interpreting an oracle result (a Mythic GME meaning pair) to determine
+the concrete effects of a spell. The oracle has already determined success/failure -
+you must translate the abstract meaning into specific game effects.
+
+SUCCESS LEVEL: {inputs.success_level.upper()}
+{success_guidance.get(inputs.success_level, "Unknown success level.")}
+{effect_types_text}
+{forbidden_text}
+
+CRITICAL RULES:
+1. Your interpretation must RESPECT the success level - failures don't succeed
+2. Effects must be PROPORTIONATE to caster level {inputs.caster_level} and spell power
+3. Interpret the meaning pair creatively but within reasonable bounds
+4. Output must be valid JSON that can be parsed into EffectCommands
+5. Include brief reasoning explaining your interpretation
+6. The narration should be 2-3 sentences in Dolmenwood's fairy-tale horror style
+
+OUTPUT FORMAT (use exactly this JSON structure):
+{{
+  "primary_effects": [
+    {{"type": "effect_type", "target": "target_id", ...parameters}}
+  ],
+  "side_effects": [
+    {{"type": "effect_type", "target": "target_id", ...parameters}}
+  ],
+  "narration": "Atmospheric description of what happens...",
+  "reasoning": "Brief explanation of how you interpreted the meaning pair..."
+}}
+
+EFFECT PARAMETER EXAMPLES:
+- remove_condition: {{"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}}
+- modify_stat: {{"type": "modify_stat", "target": "wizard_001", "stat": "CON", "value": -2}}
+- damage: {{"type": "damage", "target": "goblin_chief", "amount": "3d6", "damage_type": "fire"}}
+- heal: {{"type": "heal", "target": "fighter_001", "amount": 15}}
+- exhaustion: {{"type": "exhaustion", "target": "mage_001", "duration_days": 3, "effect": "cannot cast spells"}}
+- age: {{"type": "age", "target": "knight_001", "years": "1d10"}}
+- custom: {{"type": "custom", "target": "area", "description": "Flowers bloom unnaturally..."}}"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Interpret this Mythic oracle result:
+
+ORACLE RESULT:
+  Meaning Pair: {inputs.meaning_pair}
+  Action Word: {inputs.action_word}
+  Subject Word: {inputs.subject_word}
+
+ADJUDICATION:
+  Type: {inputs.adjudication_type}
+  Success Level: {inputs.success_level}
+  Summary: {inputs.summary}
+
+SPELL CONTEXT:
+  Spell: {inputs.spell_name}
+  Caster: {inputs.caster_name} (Level {inputs.caster_level})
+  Target: {inputs.target or "Not specified"}
+  Intention: {inputs.intention or "Not specified"}"""
+
+        if inputs.complication_pair:
+            prompt += f"""
+
+COMPLICATION:
+  Meaning Pair: {inputs.complication_pair}
+  (A complication occurred - interpret this as a side effect or twist)"""
+
+        if inputs.curse_source:
+            prompt += f"""
+
+CURSE DETAILS:
+  Source: {inputs.curse_source}"""
+
+        if inputs.creature_type:
+            prompt += f"""
+
+SUMMONING DETAILS:
+  Creature: {inputs.creature_type}"""
+
+        if inputs.requires_cost:
+            prompt += """
+
+COST REQUIRED:
+  The spell's success comes at a price - include a side effect as the cost."""
+
+        prompt += """
+
+Based on the meaning pair and context, determine:
+1. What concrete effects occur (respecting the success level)
+2. Any side effects or costs
+3. A brief atmospheric narration
+
+Provide your response as valid JSON matching the format specified in the system prompt."""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -1849,6 +2107,10 @@ def create_schema(
     elif schema_type == PromptSchemaType.SPELL_REVELATION:
         typed_inputs = SpellRevelationInputs(**inputs)
         return SpellRevelationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.MYTHIC_INTERPRETATION:
+        typed_inputs = MythicInterpretationInputs(**inputs)
+        return MythicInterpretationSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")
