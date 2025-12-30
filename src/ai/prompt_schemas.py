@@ -1521,6 +1521,10 @@ shimmering illusions, silvery mist, the scent of flowers, and otherworldly beaut
             "rune": """Fairy runes are ancient marks of power carved or traced.
 The runes glow with inner light when invoked. Describe luminous symbols,
 crackling energy, and the weight of ancient fairy pacts.""",
+            "knack": """Mossling knacks are quasi-magical crafts passed down through
+generations of these gnarled, woody folk. Knacks manifest through song, whistle,
+touch, or communion with nature. Describe earthy, organic effects - the rustle
+of roots, the fermentation of yeasts, the whispered secrets of wood and birds.""",
         }
 
         magic_flavor = magic_flavors.get(

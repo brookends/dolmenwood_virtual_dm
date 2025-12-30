@@ -67,6 +67,7 @@ class MagicType(str, Enum):
     DIVINE = "divine"  # Cleric spells
     FAIRY_GLAMOUR = "fairy_glamour"  # Elf/Grimalkin/Woodgrue glamours
     RUNE = "rune"  # Fairy runes (Enchanter)
+    KNACK = "knack"  # Mossling quasi-magical crafts
 
 
 class RuneMagnitude(str, Enum):
@@ -2399,6 +2400,7 @@ class SpellNarrator:
             "divine": "offers a prayer and channels divine radiance",
             "fairy_glamour": "weaves silvery glamour with a lilting song",
             "rune": "traces a luminous rune in the air",
+            "knack": "hums an earthy tune and communes with nature",
         }
 
         magic_type = spell.magic_type.value if hasattr(spell.magic_type, 'value') else str(spell.magic_type)
