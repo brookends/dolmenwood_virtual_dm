@@ -33,6 +33,7 @@ class PromptSchemaType(str, Enum):
     POI_ENTRY = "poi_entry"
     POI_FEATURE = "poi_feature"
     RESOLVED_ACTION = "resolved_action"
+    SPELL_CAST = "spell_cast"
 
 
 # =============================================================================
@@ -1410,6 +1411,240 @@ Write a brief narration (2-3 sentences) that:
 
 
 # =============================================================================
+# SCHEMA 14: SPELL CAST NARRATION
+# =============================================================================
+
+
+@dataclass
+class SpellCastNarrationInputs:
+    """Inputs for spell cast narration schema."""
+
+    # Core spell info
+    spell_name: str
+    spell_description: str
+    magic_type: str  # arcane, divine, fairy_glamour, druidic, rune
+    effect_type: str  # mechanical, narrative, hybrid
+
+    # Caster and targets
+    caster_name: str
+    caster_level: int = 1
+    target_description: str = ""
+    targets: list[str] = field(default_factory=list)
+
+    # Spell parameters
+    range_text: str = ""
+    duration_text: str = ""
+    requires_concentration: bool = False
+
+    # Mechanical outcomes (for HYBRID and MECHANICAL spells)
+    damage_dealt: dict[str, int] = field(default_factory=dict)
+    healing_applied: dict[str, int] = field(default_factory=dict)
+    conditions_applied: list[str] = field(default_factory=list)
+    stat_modifiers_applied: list[str] = field(default_factory=list)
+
+    # Save results
+    targets_saved: list[str] = field(default_factory=list)
+    targets_affected: list[str] = field(default_factory=list)
+    save_type: str = ""  # "spell", "ray", "breath", etc.
+
+    # Context
+    location_context: str = ""
+    time_of_day: str = ""
+    weather: str = ""
+    narrative_hints: list[str] = field(default_factory=list)
+
+    # Enchantment type for magic items/flavor
+    enchantment_type: str = ""  # arcane, fairy, holy
+
+
+@dataclass
+class SpellCastNarrationOutput:
+    """Output structure for spell cast narration."""
+
+    incantation_description: str  # How the spell is cast
+    effect_manifestation: str  # What happens visually/sensorily
+    target_response: str  # How targets react (if applicable)
+
+
+class SpellCastNarrationSchema(PromptSchema):
+    """
+    Schema for narrating spell casting.
+
+    Used when:
+    - A spell is cast successfully
+    - The mechanical effects have already been resolved
+    - Narrative description is needed for immersion
+
+    This schema handles three effect types:
+    - MECHANICAL: All effects already resolved, narrate the outcome
+    - NARRATIVE: LLM provides rich description, minimal mechanics
+    - HYBRID: Mechanical effects resolved, LLM enriches the narration
+
+    Constraints:
+    - NEVER determine spell success (already determined)
+    - NEVER invent additional effects not provided
+    - Use damage/healing values EXACTLY as provided
+    - Match the magic type's aesthetic (arcane=scholarly, fairy=whimsical, etc.)
+    """
+
+    def __init__(self, inputs: SpellCastNarrationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.SPELL_CAST,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "spell_name": str,
+            "spell_description": str,
+            "magic_type": str,
+            "effect_type": str,
+            "caster_name": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        # Magic type specific flavor
+        magic_flavors = {
+            "arcane": """Arcane magic in Dolmenwood is scholarly and deliberate.
+Spellcasters speak ancient formulae, trace sigils in the air, and call upon
+cosmic forces. Describe mystical energies, glowing runes, and eldritch power.""",
+            "divine": """Divine magic channels holy power through prayer and faith.
+Clergy invoke their deity's blessing with sacred words and gestures. Describe
+radiant light, heavenly presence, and spiritual manifestation.""",
+            "fairy_glamour": """Fairy glamours are capricious and whimsical magic.
+The fey work their enchantments through song, laughter, and dreams. Describe
+shimmering illusions, silvery mist, the scent of flowers, and otherworldly beauty.""",
+            "druidic": """Druidic magic draws from the primal forces of nature.
+Druids commune with spirits of wood and stone. Describe rustling leaves,
+growing vines, the call of animals, and the pulse of the living forest.""",
+            "rune": """Fairy runes are ancient marks of power carved or traced.
+The runes glow with inner light when invoked. Describe luminous symbols,
+crackling energy, and the weight of ancient fairy pacts.""",
+        }
+
+        magic_flavor = magic_flavors.get(
+            inputs.magic_type.lower(),
+            "Magic manifests with mystical energy and supernatural effect.",
+        )
+
+        effect_guidance = ""
+        if inputs.effect_type == "narrative":
+            effect_guidance = """
+NARRATIVE SPELL GUIDANCE:
+This spell's effects are primarily descriptive and referee-adjudicated.
+Focus on rich sensory details and atmospheric description.
+The spell creates a situation or condition that the referee will interpret.
+You may describe what the spell DOES but not its mechanical consequences."""
+        elif inputs.effect_type == "mechanical":
+            effect_guidance = """
+MECHANICAL SPELL GUIDANCE:
+This spell's effects have been fully resolved by the game system.
+Narrate the provided outcomes (damage, healing, conditions) dramatically.
+Use the EXACT values provided - do not change damage numbers or invent effects."""
+        else:  # hybrid
+            effect_guidance = """
+HYBRID SPELL GUIDANCE:
+This spell has both mechanical effects (already resolved) and narrative elements.
+Incorporate the mechanical outcomes naturally into your description.
+Enhance with atmospheric details appropriate to the magic type."""
+
+        return f"""{base}
+
+SPELL CAST NARRATION TASK:
+You are narrating a spell being cast in Dolmenwood.
+The spell has already been successfully cast and any mechanical effects resolved.
+
+MAGIC TYPE: {inputs.magic_type.upper()}
+{magic_flavor}
+{effect_guidance}
+
+SPECIFIC CONSTRAINTS:
+- The spell SUCCEEDED - do not question or narrate failure
+- Describe the casting (verbal, somatic, material components implied)
+- Describe the spell's manifestation (visual, auditory, olfactory)
+- If targets saved, describe partial effects or resistance
+- If damage/healing values provided, incorporate EXACTLY those numbers
+- Match Dolmenwood's fairy-tale horror aesthetic
+- Keep descriptions evocative but concise (3-5 sentences total)"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Narrate this spell cast in Dolmenwood:
+
+SPELL: {inputs.spell_name}
+DESCRIPTION: {inputs.spell_description}
+MAGIC TYPE: {inputs.magic_type}
+CASTER: {inputs.caster_name} (Level {inputs.caster_level})"""
+
+        if inputs.range_text:
+            prompt += f"\nRANGE: {inputs.range_text}"
+        if inputs.duration_text:
+            prompt += f"\nDURATION: {inputs.duration_text}"
+        if inputs.requires_concentration:
+            prompt += "\nCONCENTRATION: Required"
+
+        # Targets
+        if inputs.target_description:
+            prompt += f"\nTARGET: {inputs.target_description}"
+        elif inputs.targets:
+            prompt += f"\nTARGETS: {', '.join(inputs.targets)}"
+
+        # Mechanical outcomes
+        outcomes = []
+        if inputs.damage_dealt:
+            for target, damage in inputs.damage_dealt.items():
+                outcomes.append(f"{target} took {damage} damage")
+        if inputs.healing_applied:
+            for target, healing in inputs.healing_applied.items():
+                outcomes.append(f"{target} healed {healing} HP")
+        if inputs.conditions_applied:
+            outcomes.append(f"Applied conditions: {', '.join(inputs.conditions_applied)}")
+        if inputs.stat_modifiers_applied:
+            outcomes.append(f"Applied modifiers: {', '.join(inputs.stat_modifiers_applied)}")
+
+        if outcomes:
+            prompt += f"""
+
+RESOLVED EFFECTS (narrate these):
+{chr(10).join('- ' + o for o in outcomes)}"""
+
+        # Save results
+        if inputs.targets_saved:
+            prompt += f"\nTARGETS WHO SAVED: {', '.join(inputs.targets_saved)}"
+        if inputs.targets_affected and inputs.save_type:
+            prompt += f"\nTARGETS AFFECTED (failed {inputs.save_type} save): {', '.join(inputs.targets_affected)}"
+
+        # Context
+        if inputs.location_context:
+            prompt += f"\nLOCATION: {inputs.location_context}"
+        if inputs.time_of_day:
+            prompt += f"\nTIME: {inputs.time_of_day}"
+        if inputs.weather:
+            prompt += f"\nWEATHER: {inputs.weather}"
+
+        if inputs.narrative_hints:
+            prompt += f"""
+
+NARRATIVE HINTS:
+{chr(10).join('- ' + h for h in inputs.narrative_hints)}"""
+
+        prompt += """
+
+Write a vivid narration (3-5 sentences) that:
+1. Describes how the caster invokes the spell (words, gestures, energy gathering)
+2. Depicts the spell's manifestation (what observers see, hear, smell, feel)
+3. Shows the effect on targets (if any) using the EXACT outcomes provided
+4. Captures the atmosphere appropriate to the magic type"""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -1467,6 +1702,10 @@ def create_schema(
     elif schema_type == PromptSchemaType.RESOLVED_ACTION:
         typed_inputs = ResolvedActionInputs(**inputs)
         return ResolvedActionSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.SPELL_CAST:
+        typed_inputs = SpellCastNarrationInputs(**inputs)
+        return SpellCastNarrationSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")

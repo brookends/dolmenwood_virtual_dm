@@ -2214,3 +2214,276 @@ class SpellResolver:
             "glamour_records_reset": glamour_count,
             "rune_records_reset": rune_count,
         }
+
+
+# =============================================================================
+# SPELL NARRATOR - LLM INTEGRATION
+# =============================================================================
+
+
+class SpellNarrator:
+    """
+    Generates immersive spell narration using LLM integration.
+
+    This class bridges the spell resolver's mechanical outputs with
+    the LLM-powered narrative system, producing rich descriptions
+    of spell casting appropriate to Dolmenwood's aesthetic.
+
+    Usage:
+        narrator = SpellNarrator(llm_manager)
+        narration = narrator.narrate_spell_cast(spell_result, spell_data, context)
+    """
+
+    def __init__(self, llm_manager: Optional[Any] = None):
+        """
+        Initialize the spell narrator.
+
+        Args:
+            llm_manager: Optional LLMManager instance. If None, returns
+                        fallback narration based on spell description.
+        """
+        self._llm_manager = llm_manager
+
+    def narrate_spell_cast(
+        self,
+        result: SpellCastResult,
+        spell: SpellData,
+        caster_name: str,
+        caster_level: int = 1,
+        location_context: str = "",
+        time_of_day: str = "",
+        weather: str = "",
+        narrative_hints: Optional[list[str]] = None,
+    ) -> str:
+        """
+        Generate narrative description of a spell being cast.
+
+        Uses the SpellCastNarrationSchema to guide LLM output,
+        incorporating resolved mechanical effects into the description.
+
+        Args:
+            result: The SpellCastResult from the resolver
+            spell: The SpellData for the cast spell
+            caster_name: Display name of the caster
+            caster_level: Level of the caster (for scaling narration)
+            location_context: Description of current location
+            time_of_day: Time of day (affects atmosphere)
+            weather: Current weather (affects atmosphere)
+            narrative_hints: Additional narrative guidance
+
+        Returns:
+            Immersive narrative description of the spell cast
+        """
+        if not result.success:
+            return self._narrate_failed_cast(result, spell, caster_name)
+
+        # Build inputs for the schema
+        from src.ai.prompt_schemas import (
+            SpellCastNarrationInputs,
+            SpellCastNarrationSchema,
+        )
+        from src.ai.llm_provider import LLMMessage, LLMRole
+
+        # Convert damage dict to simple format (target -> damage int)
+        damage_dealt = {}
+        if result.damage_dealt:
+            for target, value in result.damage_dealt.items():
+                if isinstance(value, dict):
+                    damage_dealt[target] = value.get("total", 0)
+                else:
+                    damage_dealt[target] = value
+
+        # Convert healing dict similarly
+        healing_applied = {}
+        if result.healing_applied:
+            for target, value in result.healing_applied.items():
+                if isinstance(value, dict):
+                    healing_applied[target] = value.get("total", 0)
+                else:
+                    healing_applied[target] = value
+
+        # Convert stat modifiers to strings
+        stat_modifiers = []
+        if result.stat_modifiers_applied:
+            for mod in result.stat_modifiers_applied:
+                if isinstance(mod, dict):
+                    stat = mod.get("stat", "")
+                    value = mod.get("modifier", 0)
+                    stat_modifiers.append(f"{stat} {value:+d}")
+
+        inputs = SpellCastNarrationInputs(
+            spell_name=spell.name,
+            spell_description=spell.description,
+            magic_type=spell.magic_type.value if hasattr(spell.magic_type, 'value') else str(spell.magic_type),
+            effect_type=spell.effect_type.value if hasattr(spell.effect_type, 'value') else str(spell.effect_type),
+            caster_name=caster_name,
+            caster_level=caster_level,
+            target_description=result.narrative_context.get("target", ""),
+            targets=result.targets_affected or [],
+            range_text=spell.range or "",
+            duration_text=spell.duration or "",
+            requires_concentration=spell.requires_concentration,
+            damage_dealt=damage_dealt,
+            healing_applied=healing_applied,
+            conditions_applied=result.conditions_applied or [],
+            stat_modifiers_applied=stat_modifiers,
+            targets_saved=result.targets_saved or [],
+            targets_affected=result.targets_affected or [],
+            save_type=spell.save_type.value if spell.save_type and hasattr(spell.save_type, 'value') else (spell.save_type or ""),
+            location_context=location_context,
+            time_of_day=time_of_day,
+            weather=weather,
+            narrative_hints=narrative_hints or [],
+        )
+
+        schema = SpellCastNarrationSchema(inputs)
+
+        # If no LLM available, return fallback
+        if not self._llm_manager or not self._llm_manager.is_available():
+            return self._generate_fallback_narration(spell, result, caster_name)
+
+        # Build LLM request
+        system_prompt = schema.get_system_prompt()
+        user_prompt = schema.build_prompt()
+
+        messages = [LLMMessage(role=LLMRole.USER, content=user_prompt)]
+
+        try:
+            response = self._llm_manager.complete(
+                messages=messages,
+                system_prompt=system_prompt,
+                allow_narration_context=True,
+            )
+
+            if response.authority_violations:
+                # Log violations but still return content
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Spell narration violations: {response.authority_violations}")
+
+            return response.content if response.content else self._generate_fallback_narration(
+                spell, result, caster_name
+            )
+
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"LLM narration failed: {e}")
+            return self._generate_fallback_narration(spell, result, caster_name)
+
+    def _narrate_failed_cast(
+        self,
+        result: SpellCastResult,
+        spell: SpellData,
+        caster_name: str,
+    ) -> str:
+        """Generate narration for a failed spell cast."""
+        reason = result.reason or "unknown reason"
+        return (
+            f"{caster_name} attempts to cast {spell.name}, but the magic "
+            f"falters and dissipates. ({reason})"
+        )
+
+    def _generate_fallback_narration(
+        self,
+        spell: SpellData,
+        result: SpellCastResult,
+        caster_name: str,
+    ) -> str:
+        """
+        Generate fallback narration when LLM is unavailable.
+
+        Provides a serviceable description based on spell data.
+        """
+        magic_verbs = {
+            "arcane": "intones arcane syllables and traces glowing sigils",
+            "divine": "offers a prayer and channels divine radiance",
+            "fairy_glamour": "weaves silvery glamour with a lilting song",
+            "druidic": "calls upon the spirits of nature",
+            "rune": "traces a luminous rune in the air",
+        }
+
+        magic_type = spell.magic_type.value if hasattr(spell.magic_type, 'value') else str(spell.magic_type)
+        verb = magic_verbs.get(magic_type, "channels mystical energy")
+
+        parts = [f"{caster_name} {verb}, casting {spell.name}."]
+
+        # Add effect descriptions
+        if result.damage_dealt:
+            total = sum(
+                (v.get("total", 0) if isinstance(v, dict) else v)
+                for v in result.damage_dealt.values()
+            )
+            parts.append(f"The spell strikes for {total} damage.")
+
+        if result.healing_applied:
+            total = sum(
+                (v.get("total", 0) if isinstance(v, dict) else v)
+                for v in result.healing_applied.values()
+            )
+            parts.append(f"Healing energy restores {total} hit points.")
+
+        if result.conditions_applied:
+            conditions = ", ".join(result.conditions_applied)
+            parts.append(f"The magic induces {conditions}.")
+
+        if result.targets_saved:
+            saved_count = len(result.targets_saved)
+            parts.append(f"{saved_count} target(s) resist part of the effect.")
+
+        return " ".join(parts)
+
+    def classify_spell_effect_type(self, spell: SpellData) -> SpellEffectType:
+        """
+        Classify a spell's effect type based on its description.
+
+        This helps determine how the spell should be resolved:
+        - MECHANICAL: Has clear damage, healing, or condition effects
+        - NARRATIVE: Primarily descriptive, referee-adjudicated effects
+        - HYBRID: Has both mechanical and narrative components
+
+        Args:
+            spell: The spell to classify
+
+        Returns:
+            The appropriate SpellEffectType
+        """
+        # Only return early if explicitly set to MECHANICAL or NARRATIVE
+        # HYBRID is the default and triggers classification
+        if spell.effect_type and spell.effect_type != SpellEffectType.HYBRID:
+            return spell.effect_type
+
+        description = spell.description.lower()
+
+        # Strong mechanical indicators
+        mechanical_patterns = [
+            r"\d+d\d+",  # Dice notation
+            r"inflicts?\s+\d+\s+damage",
+            r"heals?\s+\d+",
+            r"save\s+(?:versus|vs)",
+            r"ac\s+\d+",
+            r"attack\s+roll",
+        ]
+
+        # Strong narrative indicators
+        narrative_patterns = [
+            r"referee\s+(?:determines|decides|adjudicates)",
+            r"at\s+the\s+(?:dm|referee)'s\s+discretion",
+            r"creates?\s+(?:an?\s+)?(?:illusion|image|sound)",
+            r"allows?\s+(?:the\s+caster\s+to|you\s+to)\s+(?:sense|detect|perceive)",
+            r"provides?\s+(?:information|insight|knowledge)",
+        ]
+
+        has_mechanical = any(
+            re.search(pattern, description) for pattern in mechanical_patterns
+        )
+        has_narrative = any(
+            re.search(pattern, description) for pattern in narrative_patterns
+        )
+
+        if has_mechanical and has_narrative:
+            return SpellEffectType.HYBRID
+        elif has_mechanical:
+            return SpellEffectType.MECHANICAL
+        else:
+            return SpellEffectType.NARRATIVE

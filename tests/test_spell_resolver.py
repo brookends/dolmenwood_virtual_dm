@@ -1354,3 +1354,267 @@ class TestStatModifiers:
         # Check base AC (no context)
         ac_base = char.get_effective_ac()
         assert ac_base == 14  # No modifiers apply without context
+
+
+# =============================================================================
+# SPELL NARRATOR TESTS
+# =============================================================================
+
+
+class TestSpellNarrator:
+    """Tests for the SpellNarrator LLM integration."""
+
+    def test_classify_spell_effect_type_mechanical(self):
+        """Classify spells with dice notation as MECHANICAL."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()
+        spell = SpellData(
+            spell_id="ioun_shard",
+            name="Ioun Shard",
+            level=1,
+            magic_type=MagicType.ARCANE,
+            duration="2 Turns",
+            range="120'",
+            description="The shard inflicts 1d6+1 damage.",
+        )
+        result = narrator.classify_spell_effect_type(spell)
+        assert result == SpellEffectType.MECHANICAL
+
+    def test_classify_spell_effect_type_narrative(self):
+        """Classify spells without mechanics as NARRATIVE."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()
+        spell = SpellData(
+            spell_id="crystal_resonance",
+            name="Crystal Resonance",
+            level=1,
+            magic_type=MagicType.ARCANE,
+            duration="1 Turn",
+            range="Touch",
+            description="The caster attunes to the energy resonance of a crystal, perceiving its magical properties. The referee determines what information is revealed.",
+        )
+        result = narrator.classify_spell_effect_type(spell)
+        assert result == SpellEffectType.NARRATIVE
+
+    def test_classify_spell_effect_type_hybrid(self):
+        """Classify spells with both mechanics and referee discretion as HYBRID."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()
+        spell = SpellData(
+            spell_id="detect_magic",
+            name="Detect Magic",
+            level=1,
+            magic_type=MagicType.ARCANE,
+            duration="2 Turns",
+            range="60'",
+            description="Target must Save Versus Spell or the caster perceives magical auras. The referee determines what details are revealed.",
+        )
+        result = narrator.classify_spell_effect_type(spell)
+        assert result == SpellEffectType.HYBRID
+
+    def test_fallback_narration_arcane(self):
+        """Test fallback narration for arcane spells."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()  # No LLM manager
+        spell = SpellData(
+            spell_id="magic_missile",
+            name="Magic Missile",
+            level=1,
+            magic_type=MagicType.ARCANE,
+            duration="Instant",
+            range="120'",
+            description="Creates bolts of magical force.",
+        )
+        result = SpellCastResult(
+            success=True,
+            spell_id="magic_missile",
+            spell_name="Magic Missile",
+            reason="Cast successfully",
+            damage_dealt={"goblin_1": 5},
+        )
+        narration = narrator._generate_fallback_narration(spell, result, "Merlin")
+        assert "Merlin" in narration
+        assert "arcane" in narration.lower()
+        assert "Magic Missile" in narration
+        assert "5 damage" in narration
+
+    def test_fallback_narration_fairy_glamour(self):
+        """Test fallback narration for fairy glamours."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()
+        spell = SpellData(
+            spell_id="glamour_of_invisibility",
+            name="Glamour of Invisibility",
+            level=1,
+            magic_type=MagicType.FAIRY_GLAMOUR,
+            duration="1 Turn",
+            range="Self",
+            description="Caster becomes invisible.",
+        )
+        result = SpellCastResult(
+            success=True,
+            spell_id="glamour_of_invisibility",
+            spell_name="Glamour of Invisibility",
+            reason="Cast successfully",
+            conditions_applied=["invisible"],
+        )
+        narration = narrator._generate_fallback_narration(spell, result, "Elindra")
+        assert "Elindra" in narration
+        assert "glamour" in narration.lower() or "silvery" in narration.lower()
+        assert "invisible" in narration.lower()
+
+    def test_narrate_failed_cast(self):
+        """Test narration for failed spell cast."""
+        from src.narrative.spell_resolver import SpellNarrator
+
+        narrator = SpellNarrator()
+        spell = SpellData(
+            spell_id="fireball",
+            name="Fireball",
+            level=3,
+            magic_type=MagicType.ARCANE,
+            duration="Instant",
+            range="150'",
+            description="Explosion of fire.",
+        )
+        result = SpellCastResult(
+            success=False,
+            spell_id="fireball",
+            spell_name="Fireball",
+            reason="No spell slots remaining",
+        )
+        narration = narrator._narrate_failed_cast(result, spell, "Wizard Bob")
+        assert "Wizard Bob" in narration
+        assert "Fireball" in narration
+        assert "No spell slots remaining" in narration
+
+
+class TestSpellCastNarrationSchema:
+    """Tests for the SpellCastNarrationSchema prompt builder."""
+
+    def test_schema_creation(self):
+        """Test schema can be created with required inputs."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Magic Missile",
+            spell_description="Bolts of force strike unerringly.",
+            magic_type="arcane",
+            effect_type="mechanical",
+            caster_name="Merlin",
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        assert schema.typed_inputs.spell_name == "Magic Missile"
+        assert schema.typed_inputs.caster_name == "Merlin"
+
+    def test_schema_validates_required_inputs(self):
+        """Test schema validation for required fields."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Magic Missile",
+            spell_description="Bolts of force.",
+            magic_type="arcane",
+            effect_type="mechanical",
+            caster_name="Merlin",
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        errors = schema.validate_inputs()
+        assert len(errors) == 0
+
+    def test_schema_builds_prompt(self):
+        """Test prompt building includes all relevant info."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Ioun Shard",
+            spell_description="Fires a shard of crystal that deals 1d6+1 damage.",
+            magic_type="arcane",
+            effect_type="mechanical",
+            caster_name="Theodric",
+            caster_level=3,
+            targets=["goblin_warrior"],
+            damage_dealt={"goblin_warrior": 5},
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        prompt = schema.build_prompt()
+
+        assert "Ioun Shard" in prompt
+        assert "Theodric" in prompt
+        assert "Level 3" in prompt
+        assert "goblin_warrior" in prompt
+        assert "5 damage" in prompt
+
+    def test_schema_system_prompt_arcane(self):
+        """Test system prompt includes arcane magic flavor."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Shield of Force",
+            spell_description="Creates an invisible barrier.",
+            magic_type="arcane",
+            effect_type="mechanical",
+            caster_name="Wizard",
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        system_prompt = schema.get_system_prompt()
+
+        assert "ARCANE" in system_prompt
+        assert "scholarly" in system_prompt.lower() or "sigils" in system_prompt.lower()
+
+    def test_schema_system_prompt_fairy_glamour(self):
+        """Test system prompt includes fairy glamour flavor."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Moonlit Path",
+            spell_description="Creates an ethereal pathway.",
+            magic_type="fairy_glamour",
+            effect_type="narrative",
+            caster_name="Elara",
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        system_prompt = schema.get_system_prompt()
+
+        assert "FAIRY_GLAMOUR" in system_prompt
+        assert "whimsical" in system_prompt.lower() or "fey" in system_prompt.lower()
+
+    def test_schema_includes_save_results(self):
+        """Test prompt includes save information."""
+        from src.ai.prompt_schemas import SpellCastNarrationInputs, SpellCastNarrationSchema
+
+        inputs = SpellCastNarrationInputs(
+            spell_name="Sleep",
+            spell_description="Creatures fall asleep.",
+            magic_type="arcane",
+            effect_type="mechanical",
+            caster_name="Wizard",
+            targets=["goblin_1", "goblin_2", "goblin_3"],
+            targets_saved=["goblin_3"],
+            targets_affected=["goblin_1", "goblin_2"],
+            save_type="spell",
+        )
+        schema = SpellCastNarrationSchema(inputs)
+        prompt = schema.build_prompt()
+
+        assert "goblin_3" in prompt
+        assert "SAVED" in prompt.upper() or "saved" in prompt.lower()
+
+    def test_factory_creates_spell_cast_schema(self):
+        """Test factory function creates correct schema type."""
+        from src.ai.prompt_schemas import create_schema, PromptSchemaType, SpellCastNarrationSchema
+
+        inputs = {
+            "spell_name": "Fireball",
+            "spell_description": "A ball of fire explodes.",
+            "magic_type": "arcane",
+            "effect_type": "mechanical",
+            "caster_name": "Pyromancer",
+        }
+        schema = create_schema(PromptSchemaType.SPELL_CAST, inputs)
+        assert isinstance(schema, SpellCastNarrationSchema)
