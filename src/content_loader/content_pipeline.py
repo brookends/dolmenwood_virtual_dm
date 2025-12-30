@@ -1148,7 +1148,36 @@ class ContentPipeline:
         npcs_list = []
         for npc in hex_data.npcs:
             if isinstance(npc, HexNPC):
-                npcs_list.append({
+                # Serialize known_topics
+                known_topics_list = []
+                for topic in npc.known_topics:
+                    known_topics_list.append({
+                        'topic_id': topic.topic_id,
+                        'content': topic.content,
+                        'keywords': topic.keywords,
+                        'required_disposition': topic.required_disposition,
+                        'category': topic.category,
+                        'shared': topic.shared,
+                        'priority': topic.priority,
+                    })
+
+                # Serialize secret_info
+                secret_info_list = []
+                for secret in npc.secret_info:
+                    secret_info_list.append({
+                        'secret_id': secret.secret_id,
+                        'content': secret.content,
+                        'hint': secret.hint,
+                        'keywords': secret.keywords,
+                        'required_disposition': secret.required_disposition,
+                        'required_trust': secret.required_trust,
+                        'can_be_bribed': secret.can_be_bribed,
+                        'bribe_amount': secret.bribe_amount,
+                        'status': secret.status.value,
+                        'hint_count': secret.hint_count,
+                    })
+
+                npc_dict = {
                     'npc_id': npc.npc_id,
                     'name': npc.name,
                     'description': npc.description,
@@ -1164,7 +1193,18 @@ class ContentPipeline:
                     'location': npc.location,
                     'stat_reference': npc.stat_reference,
                     'is_combatant': npc.is_combatant,
-                })
+                    'relationships': npc.relationships,
+                    'faction': npc.faction,
+                    'loyalty': npc.loyalty,
+                    'personal_feelings': npc.personal_feelings,
+                    'binding': npc.binding,
+                }
+                # Only include enhanced fields if they have data
+                if known_topics_list:
+                    npc_dict['known_topics'] = known_topics_list
+                if secret_info_list:
+                    npc_dict['secret_info'] = secret_info_list
+                npcs_list.append(npc_dict)
             else:
                 # Legacy format - just a string
                 npcs_list.append(npc)

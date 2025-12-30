@@ -281,7 +281,89 @@
         "captor": "Prince Mallowheart",
         "can_leave": false,
         "description": "Imprisoned in the Spectral Manse by Prince Mallowheart for the crime of falling in love with Ygraine Mordlin"
-      }
+      },
+      "known_topics": [
+        {
+          "topic_id": "quest_deliver_letter",
+          "content": "Beseeches adventurers to deliver a letter to Ygraine Mordlin, declaring his love and pleading for her aid in escaping. Offers his magical violin as payment.",
+          "keywords": ["letter", "deliver", "message", "help", "escape", "quest", "task", "favor", "errand"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 10
+        },
+        {
+          "topic_id": "violin_offer",
+          "content": "Offers his magical violin - a priceless instrument that can cast Dominate once per week when played skilfully - as payment for delivering the letter.",
+          "keywords": ["violin", "music", "instrument", "payment", "reward", "treasure", "magic", "magical", "dominate"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 9
+        },
+        {
+          "topic_id": "ygraine_love",
+          "content": "Speaks wistfully of Ygraine Mordlin, a mortal woman of surpassing beauty. His eyes grow distant and his music turns tender when her name is mentioned.",
+          "keywords": ["ygraine", "mordlin", "love", "woman", "mortal", "beautiful", "beauty", "beloved"],
+          "required_disposition": -2,
+          "category": "personal",
+          "shared": false,
+          "priority": 5
+        },
+        {
+          "topic_id": "the_manse",
+          "content": "Explains that the Spectral Manse exists between Fairy and the mortal world. It appears only at certain times, and he is bound here, unable to leave.",
+          "keywords": ["manse", "manor", "house", "prison", "trapped", "bound", "fairy", "spectral", "dimension"],
+          "required_disposition": -3,
+          "category": "location",
+          "shared": false,
+          "priority": 3
+        },
+        {
+          "topic_id": "his_music",
+          "content": "He is a virtuoso musician, and his violin playing fills the manse with haunting melodies. Music is his solace in imprisonment.",
+          "keywords": ["music", "play", "playing", "musician", "virtuoso", "melodies", "songs"],
+          "required_disposition": -5,
+          "category": "personal",
+          "shared": false,
+          "priority": 2
+        },
+        {
+          "topic_id": "frost_elves",
+          "content": "Discusses frost elf customs and the fairy courts, though he becomes evasive about his specific situation there.",
+          "keywords": ["frost", "elf", "elves", "fairy", "fae", "court", "customs", "nobility"],
+          "required_disposition": -1,
+          "category": "lore",
+          "shared": false,
+          "priority": 1
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "court_musician_past",
+          "content": "He was once a court musician to Prince Mallowheart, one of the most powerful frost elf lords.",
+          "hint": "His fingers move with the practiced grace of one who has performed for the highest courts.",
+          "keywords": ["prince", "mallowheart", "court", "musician", "past", "served", "employer"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        },
+        {
+          "secret_id": "forbidden_love_imprisonment",
+          "content": "He was imprisoned in this manse by Prince Mallowheart as punishment for falling in love with Ygraine Mordlin - the Prince's mortal fosterling daughter. Their love was forbidden, and this is his eternal sentence.",
+          "hint": "When Ygraine's name is mentioned, a flash of both joy and deep sorrow crosses his features, and he glances nervously at the shadows as if afraid of being overheard.",
+          "keywords": ["imprisoned", "punishment", "forbidden", "crime", "sentence", "why", "reason", "fosterling", "daughter"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        }
+      ]
     }
   ],
   "items": [

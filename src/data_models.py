@@ -3590,7 +3590,13 @@ class HexNPC:
     # Knowledge and goals
     languages: list[str] = field(default_factory=list)
     desires: list[str] = field(default_factory=list)  # What they want
-    secrets: list[str] = field(default_factory=list)  # Hidden information
+    secrets: list[str] = field(default_factory=list)  # Hidden information (legacy format)
+
+    # Enhanced topic intelligence (for social interactions)
+    # known_topics: Structured conversation topics with keywords and disposition gating
+    # secret_info: Structured secrets with hints and reveal conditions
+    known_topics: list["KnownTopic"] = field(default_factory=list)
+    secret_info: list["SecretInfo"] = field(default_factory=list)
 
     # Equipment and location
     possessions: list[str] = field(default_factory=list)
@@ -5458,6 +5464,63 @@ class SocialParticipant:
             location=npc.location,
             hex_id=hex_id,
             disposition=npc.disposition,
+        )
+
+    @classmethod
+    def from_hex_npc(
+        cls,
+        hex_npc: "HexNPC",
+        hex_id: Optional[str] = None,
+        initial_disposition: int = 0,
+    ) -> "SocialParticipant":
+        """
+        Create a SocialParticipant from a HexNPC.
+
+        This factory method properly handles the enhanced topic intelligence
+        fields (known_topics, secret_info) that HexNPCs can have.
+        """
+        # Build personality from demeanor and speech
+        personality_parts = []
+        if hex_npc.demeanor:
+            personality_parts.append(", ".join(hex_npc.demeanor))
+        if hex_npc.speech:
+            personality_parts.append(f"Speech: {hex_npc.speech}")
+        personality = ". ".join(personality_parts) if personality_parts else ""
+
+        # Convert relationships to standard format
+        relationships = []
+        for rel in hex_npc.relationships:
+            relationships.append({
+                "npc_id": rel.get("npc_id", ""),
+                "type": rel.get("relationship_type", ""),
+                "description": rel.get("description", ""),
+                "hex_id": rel.get("hex_id"),
+            })
+
+        # Use known_topics directly if present, otherwise convert desires to dialogue hooks
+        # The __post_init__ will convert dialogue_hooks to KnownTopic if needed
+        dialogue_hooks = list(hex_npc.desires) if not hex_npc.known_topics else []
+
+        return cls(
+            participant_id=hex_npc.npc_id,
+            name=hex_npc.name,
+            participant_type=SocialParticipantType.NPC,
+            personality=personality,
+            goals=list(hex_npc.desires),
+            secrets=list(hex_npc.secrets),
+            dialogue_hooks=dialogue_hooks,
+            known_topics=list(hex_npc.known_topics),
+            secret_info=list(hex_npc.secret_info),
+            relationships=relationships,
+            faction=hex_npc.faction,
+            location=hex_npc.location,
+            hex_id=hex_id or "",
+            disposition=initial_disposition,
+            languages=list(hex_npc.languages),
+            speech=hex_npc.speech,
+            can_communicate=True,
+            stat_reference=hex_npc.stat_reference,
+            possessions=list(hex_npc.possessions),
         )
 
     @classmethod
