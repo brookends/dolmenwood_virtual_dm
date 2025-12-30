@@ -1243,6 +1243,161 @@ class GlobalController:
         self._log_event("healing_applied", result)
         return result
 
+    def apply_condition(
+        self,
+        character_id: str,
+        condition: str,
+        source: str = "hazard"
+    ) -> dict[str, Any]:
+        """
+        Apply a condition to a character.
+
+        Args:
+            character_id: The character to affect
+            condition: Condition name (e.g., "exhausted", "drowning", "poisoned")
+            source: What caused the condition
+
+        Returns:
+            Dictionary with condition application results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Map string conditions to ConditionType enum
+        condition_map = {
+            "exhausted": ConditionType.EXHAUSTED,
+            "frightened": ConditionType.FRIGHTENED,
+            "poisoned": ConditionType.POISONED,
+            "paralyzed": ConditionType.PARALYZED,
+            "unconscious": ConditionType.UNCONSCIOUS,
+            "dead": ConditionType.DEAD,
+            "drowning": ConditionType.DROWNING,
+            "holding_breath": ConditionType.HOLDING_BREATH,
+            "hungry": ConditionType.HUNGRY,
+            "starving": ConditionType.STARVING,
+            "dehydrated": ConditionType.DEHYDRATED,
+            "blinded": ConditionType.BLINDED,
+            "deafened": ConditionType.DEAFENED,
+            "stunned": ConditionType.STUNNED,
+            "prone": ConditionType.PRONE,
+            "restrained": ConditionType.RESTRAINED,
+            "charmed": ConditionType.CHARMED,
+            "invisible": ConditionType.INVISIBLE,
+            "incapacitated": ConditionType.INCAPACITATED,
+        }
+
+        condition_lower = condition.lower()
+        condition_type = condition_map.get(condition_lower)
+
+        if not condition_type:
+            # Create a generic condition if type not recognized
+            logger.warning(f"Unknown condition type: {condition}")
+            # Use a fallback for unknown conditions
+            return {
+                "character_id": character_id,
+                "condition": condition,
+                "applied": False,
+                "reason": f"Unknown condition type: {condition}",
+            }
+
+        # Check if character already has this condition
+        existing = any(
+            c.condition_type == condition_type for c in character.conditions
+        )
+        if existing:
+            return {
+                "character_id": character_id,
+                "condition": condition,
+                "applied": False,
+                "reason": "Character already has this condition",
+            }
+
+        # Apply the condition
+        new_condition = Condition(condition_type, source=source)
+        character.conditions.append(new_condition)
+
+        result = {
+            "character_id": character_id,
+            "condition": condition,
+            "condition_type": condition_type.value,
+            "source": source,
+            "applied": True,
+        }
+
+        self._log_event("condition_applied", result)
+        return result
+
+    def remove_condition(
+        self,
+        character_id: str,
+        condition: str
+    ) -> dict[str, Any]:
+        """
+        Remove a condition from a character.
+
+        Args:
+            character_id: The character to affect
+            condition: Condition name to remove
+
+        Returns:
+            Dictionary with condition removal results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Map string conditions to ConditionType enum
+        condition_map = {
+            "exhausted": ConditionType.EXHAUSTED,
+            "frightened": ConditionType.FRIGHTENED,
+            "poisoned": ConditionType.POISONED,
+            "paralyzed": ConditionType.PARALYZED,
+            "unconscious": ConditionType.UNCONSCIOUS,
+            "drowning": ConditionType.DROWNING,
+            "holding_breath": ConditionType.HOLDING_BREATH,
+            "hungry": ConditionType.HUNGRY,
+            "starving": ConditionType.STARVING,
+            "dehydrated": ConditionType.DEHYDRATED,
+            "blinded": ConditionType.BLINDED,
+            "deafened": ConditionType.DEAFENED,
+            "stunned": ConditionType.STUNNED,
+            "prone": ConditionType.PRONE,
+            "restrained": ConditionType.RESTRAINED,
+            "charmed": ConditionType.CHARMED,
+            "invisible": ConditionType.INVISIBLE,
+            "incapacitated": ConditionType.INCAPACITATED,
+        }
+
+        condition_lower = condition.lower()
+        condition_type = condition_map.get(condition_lower)
+
+        if not condition_type:
+            return {
+                "character_id": character_id,
+                "condition": condition,
+                "removed": False,
+                "reason": f"Unknown condition type: {condition}",
+            }
+
+        # Remove the condition
+        original_count = len(character.conditions)
+        character.conditions = [
+            c for c in character.conditions if c.condition_type != condition_type
+        ]
+        removed = len(character.conditions) < original_count
+
+        result = {
+            "character_id": character_id,
+            "condition": condition,
+            "removed": removed,
+        }
+
+        if removed:
+            self._log_event("condition_removed", result)
+
+        return result
+
     # =========================================================================
     # LOCATION MANAGEMENT
     # =========================================================================

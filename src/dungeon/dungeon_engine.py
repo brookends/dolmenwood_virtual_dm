@@ -1576,6 +1576,10 @@ class DungeonEngine:
         for target_id, damage in result.apply_damage:
             self.controller.apply_damage(target_id, damage, "environmental")
 
+        # Apply any conditions
+        for target_id, condition in result.apply_conditions:
+            self.controller.apply_condition(target_id, condition, "narrative_action")
+
         return result
 
     def attempt_climb(

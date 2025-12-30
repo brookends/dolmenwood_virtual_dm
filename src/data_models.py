@@ -141,6 +141,15 @@ class ConditionType(str, Enum):
     LOST = "lost"
     STARVING = "starving"
     DEHYDRATED = "dehydrated"
+    # Physical conditions from hazards
+    DROWNING = "drowning"          # Underwater and out of breath
+    HOLDING_BREATH = "holding_breath"  # Underwater but still has breath
+    HUNGRY = "hungry"              # Missing food but not yet starving
+    STUNNED = "stunned"            # Cannot act
+    PRONE = "prone"                # Knocked down
+    RESTRAINED = "restrained"      # Movement restricted
+    INVISIBLE = "invisible"        # Cannot be seen normally
+    INCAPACITATED = "incapacitated"  # Cannot take actions
     # Environmental/magical conditions
     DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
 

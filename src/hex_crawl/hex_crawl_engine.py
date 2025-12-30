@@ -1132,8 +1132,7 @@ class HexCrawlEngine:
 
         # Apply any conditions
         for target_id, condition in result.apply_conditions:
-            # Apply condition through controller if available
-            pass  # Condition handling would go through controller
+            self.controller.apply_condition(target_id, condition, "narrative_action")
 
         return result
 
