@@ -4009,6 +4009,10 @@ class SpellResolver:
             "levitate": self._handle_levitate,
             "fly": self._handle_fly,
             "telekinesis": self._handle_telekinesis,
+            # Phase 5 utility and transformation spell handlers
+            "passwall": self._handle_passwall,
+            "fools_gold": self._handle_fools_gold,
+            "ginger_snap": self._handle_ginger_snap,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -5502,6 +5506,325 @@ class SpellResolver:
                     "movement at 20' per round in any direction",
                     "concentration breaks if caster is harmed or acts",
                 ],
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # PHASE 5 SPELL HANDLERS - Utility and Transformation
+    # -------------------------------------------------------------------------
+
+    def _handle_passwall(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Passwall spell - creates temporary passage through stone/rock.
+
+        Effects:
+        - Creates a 5' diameter, 10' deep hole in solid rock or stone
+        - Duration: 3 Turns
+        - Passage is temporary and closes when spell ends
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: Not used (location-based effect)
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with passage effect details
+        """
+        import uuid
+
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"passwall_{uuid.uuid4().hex[:8]}"
+
+        # Passwall has fixed dimensions per spell description
+        diameter = 5  # 5' diameter
+        depth = 10  # Up to 10' deep
+        duration_turns = 3  # 3 Turns duration
+
+        # Create the temporary passage effect
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="passwall",
+            spell_name="Passwall",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id="area:passwall",  # Location effect
+            target_type="area",
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "passage_type": "temporary_hole",
+                "diameter_feet": diameter,
+                "depth_feet": depth,
+                "material_affected": ["rock", "stone"],
+                "blocks_passage_when_ends": True,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "passage_created": True,
+            "diameter_feet": diameter,
+            "depth_feet": depth,
+            "duration_turns": duration_turns,
+            "material_affected": ["rock", "stone"],
+            "blocks_when_ends": True,
+            "narrative_context": {
+                "passage_open": True,
+                "hints": [
+                    "a 5' diameter hole opens in solid stone",
+                    "the passage extends up to 10' deep",
+                    "the stone seems to shimmer at the edges",
+                    "the passage will close after 3 Turns",
+                ],
+            },
+        }
+
+    def _handle_fools_gold(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Fool's Gold glamour - makes copper coins appear as gold.
+
+        Effects:
+        - Up to 20 coins per caster level per day can be glamoured
+        - Duration: 1d6 minutes
+        - Each viewer may Save Versus Spell to see through the illusion
+        - Fairy glamour (not a leveled spell)
+
+        Args:
+            caster: The character casting the glamour
+            targets_affected: List of viewer IDs who observe the coins
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glamour effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"fools_gold_{uuid.uuid4().hex[:8]}"
+
+        # Maximum coins that can be glamoured
+        max_coins_per_day = 20 * caster_level
+
+        # Roll duration: 1d6 minutes
+        duration_minutes = dice.roll("1d6")
+
+        # Track which viewers see through the illusion
+        viewers_deceived: list[str] = []
+        viewers_saw_through: list[str] = []
+
+        for viewer_id in targets_affected:
+            # Each viewer gets a Save Versus Spell
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for spell saves as default
+            if save_roll >= 14:
+                viewers_saw_through.append(viewer_id)
+            else:
+                viewers_deceived.append(viewer_id)
+
+        # Create the glamour effect
+        # Using SPECIAL duration type since Fool's Gold uses minutes (not a standard duration type)
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="fools_gold",
+            spell_name="Fool's Gold",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id="object:coins",  # Item effect
+            target_type="object",
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.SPECIAL,
+            duration_remaining=duration_minutes,
+            duration_unit="minutes",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "glamour_type": "visual_illusion",
+                "appears_as": "gold_coins",
+                "actual_material": "copper_coins",
+                "max_coins": max_coins_per_day,
+                "viewers_deceived": viewers_deceived,
+                "viewers_saw_through": viewers_saw_through,
+                "save_type": "spell",
+                "duration_minutes": duration_minutes,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "glamour_active": True,
+            "max_coins_per_day": max_coins_per_day,
+            "duration_minutes": duration_minutes,
+            "viewers_deceived": viewers_deceived,
+            "viewers_saw_through": viewers_saw_through,
+            "save_type": "spell",
+            "narrative_context": {
+                "illusion_active": True,
+                "hints": [
+                    "the copper coins gleam with an unmistakable golden luster",
+                    "fairy glamour shimmers over the coins",
+                    f"the glamour will last for {duration_minutes} minutes",
+                    f"up to {max_coins_per_day} coins can be glamoured today",
+                ],
+            },
+        }
+
+    def _handle_ginger_snap(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Ginger Snap spell - transforms limbs into gingerbread.
+
+        Effects:
+        - Target transforms partially into gingerbread
+        - 1 limb per 3 caster levels affected
+        - At level 14+, head can also be transformed
+        - Transformed parts are brittle and can be smashed
+        - Save Versus Hold to resist
+        - Duration: 1d6 Rounds
+        - Smashed parts are permanently destroyed
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: List of target IDs
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with transformation effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"ginger_snap_{uuid.uuid4().hex[:8]}"
+
+        # Calculate limbs affected: 1 per 3 levels
+        limbs_affected = caster_level // 3
+        if limbs_affected < 1:
+            limbs_affected = 1
+
+        # At level 14+, head can also be transformed
+        head_vulnerable = caster_level >= 14
+
+        # Roll duration: 1d6 Rounds
+        duration_rounds = dice.roll("1d6")
+
+        # Determine which body parts are affected
+        body_parts = ["left_arm", "right_arm", "left_leg", "right_leg"]
+        affected_parts: list[str] = []
+
+        # Select limbs to transform
+        for i in range(min(limbs_affected, len(body_parts))):
+            affected_parts.append(body_parts[i])
+
+        if head_vulnerable:
+            affected_parts.append("head")
+
+        # Process saving throws for each target
+        targets_transformed: list[str] = []
+        targets_resisted: list[str] = []
+        target_details: dict[str, dict[str, Any]] = {}
+
+        for target_id in targets_affected:
+            # Save Versus Hold to resist
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for hold saves as default
+            if save_roll >= 14:
+                targets_resisted.append(target_id)
+            else:
+                targets_transformed.append(target_id)
+                target_details[target_id] = {
+                    "parts_transformed": affected_parts.copy(),
+                    "parts_smashed": [],
+                    "head_vulnerable": head_vulnerable,
+                }
+
+        # Create the transformation effect for each transformed target
+        for target_id in targets_transformed:
+            effect = ActiveSpellEffect(
+                effect_id=f"{effect_id}_{target_id}",
+                spell_id="ginger_snap",
+                spell_name="Ginger Snap",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.MECHANICAL,
+                duration_type=DurationType.ROUNDS,
+                duration_remaining=duration_rounds,
+                duration_unit="rounds",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "transformation_type": "gingerbread",
+                    "limbs_affected_count": limbs_affected,
+                    "head_vulnerable": head_vulnerable,
+                    "parts_transformed": target_details.get(target_id, {}).get(
+                        "parts_transformed", []
+                    ),
+                    "parts_smashed": [],
+                    "smashable": True,
+                    "permanent_loss_on_smash": True,
+                    "save_type": "hold",
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "transformation_active": True,
+            "limbs_affected_count": limbs_affected,
+            "head_vulnerable": head_vulnerable,
+            "affected_parts": affected_parts,
+            "duration_rounds": duration_rounds,
+            "targets_transformed": targets_transformed,
+            "targets_resisted": targets_resisted,
+            "target_details": target_details,
+            "save_type": "hold",
+            "smashable": True,
+            "permanent_loss_on_smash": True,
+            "narrative_context": {
+                "transformation_active": True,
+                "hints": [
+                    f"{limbs_affected} limb(s) transform into crunchy gingerbread",
+                    "transformed parts are brittle and can be snapped",
+                    "smashed parts are permanently destroyed when spell ends",
+                    f"the transformation lasts for {duration_rounds} rounds",
+                ]
+                + (
+                    ["at this power level, even the head is vulnerable!"]
+                    if head_vulnerable
+                    else []
+                ),
             },
         }
 
