@@ -122,6 +122,7 @@ class MechanicalEffect:
     damage_type: Optional[str] = None  # e.g., "fire", "cold", "holy"
     healing_dice: Optional[str] = None  # e.g., "1d6+1"
     flat_healing: Optional[int] = None  # Fixed healing amount (no dice)
+    bonus_hp_dice: Optional[str] = None  # Temporary/bonus HP (Aid spell)
 
     # Conditions
     condition_applied: Optional[str] = None  # e.g., "charmed", "frightened"
@@ -1986,9 +1987,12 @@ class SpellResolver:
         # Patterns: "dies instantly", "killed outright", "slain", "disintegrate"
         # =================================================================
         death_patterns = [
-            r"(?:die|dies|death)\s+(?:instantly|immediately|outright)",
-            r"(?:killed|slain)\s+(?:instantly|outright|immediately)?",
+            r"(?:die|dies|death),?\s*(?:instantly|immediately|outright)",
+            r"or\s+die\b",  # "must save or die"
+            r"(?:killed|slain)\s*(?:instantly|outright|immediately)?",
             r"disintegrate[sd]?",
+            r"disintegration",  # "resist disintegration"
+            r"destroys?\s+(?:the\s+)?(?:material\s+)?(?:form|body)",  # "destroys the material form"
             r"turns?\s+to\s+(?:dust|stone|ash)",
             r"(?:slay|slays|slaying)\s+",
             r"creature[s]?\s+with\s+(\d+)\s+(?:or\s+fewer\s+)?(?:hd|hit\s+dice).*(?:die|killed|slain)",
@@ -2057,6 +2061,28 @@ class SpellResolver:
                 break  # Only add one flat healing effect
 
         # =================================================================
+        # FIX 3.6: Bonus/temporary HP patterns (Aid spell)
+        # Patterns: "gains 1d6 bonus Hit Points", "temporary hit points"
+        # =================================================================
+        bonus_hp_patterns = [
+            r"gains?\s+(\d+d\d+(?:\s*\+\s*\d+)?)\s+(?:bonus|temporary|extra)\s+hit\s+points?",
+            r"(\d+d\d+(?:\s*\+\s*\d+)?)\s+(?:bonus|temporary|extra)\s+hit\s+points?",
+            r"temporary\s+hit\s+points?\s+(?:equal\s+to\s+)?(\d+d\d+)",
+        ]
+        for pattern in bonus_hp_patterns:
+            bonus_matches = re.findall(pattern, description, re.IGNORECASE)
+            for bonus_dice in bonus_matches:
+                dice_clean = bonus_dice.replace(" ", "")
+                parsed_dice.add(dice_clean)
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    bonus_hp_dice=dice_clean,
+                    description=f"Grants {dice_clean} temporary HP",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
         # FIX 4: Condition patterns with better context checking
         # =================================================================
         # Note: "charmed/charming/charm" are NOT included here because
@@ -2065,6 +2091,10 @@ class SpellResolver:
         condition_keywords = {
             "frightened": "frightened",
             "fear": "frightened",
+            "terror": "frightened",  # "struck with terror", "terrifies"
+            "terrifies": "frightened",
+            "terrified": "frightened",
+            "fleeing": "frightened",  # Fear spell causes fleeing
             "paralyzed": "paralyzed",
             "paralysis": "paralyzed",
             "paralysed": "paralyzed",
@@ -2079,6 +2109,10 @@ class SpellResolver:
             "unconscious": "unconscious",
             "stunned": "stunned",
             "stun": "stunned",
+            "confused": "confused",  # Confusion spell
+            "confusion": "confused",
+            "delusions": "confused",  # "stricken with delusions"
+            "uncontrollably": "confused",  # "become uncontrollably..."
         }
         # Note: Removed "stone" -> petrified (too many false positives)
         # Note: Removed "invisible" (often describes objects, not conditions)
@@ -2219,6 +2253,11 @@ class SpellResolver:
                     rf"(?:immune|immunity)\s+(?:to\s+)?{keyword}",
                     rf"{keyword}\s+(?:damage\s+)?(?:is\s+)?(?:reduced|halved)",
                     rf"protect(?:s|ion)?\s+(?:from|against)\s+{keyword}",
+                    rf"reduce\s+{keyword}\s+damage",  # "Reduce cold damage by..."
+                    rf"{keyword}-based",  # "cold-based effects"
+                    rf"untroubled\s+by\s+[^.]*{keyword}",  # "untroubled by...cold"
+                    rf"rebuking\s+[^.]*{keyword}",  # "rebuking...cold and frost"
+                    rf"ward\s+[^.]*{keyword}",  # ward spells often protect against element
                 ]
                 for pattern in resist_patterns:
                     if re.search(pattern, description, re.IGNORECASE):
@@ -2247,6 +2286,29 @@ class SpellResolver:
                     stat_modified="morale",
                     modifier_value=1,  # Default morale bonus
                     description="Grants morale bonus",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Immunity patterns (for Missile Ward, Proof Against Deadly Harm)
+        # =================================================================
+        immunity_patterns = [
+            (r"(?:complete\s+)?protection\s+(?:from|against)\s+(?:normal\s+)?missiles?", "missiles"),
+            (r"immune\s+to\s+(?:normal\s+)?missiles?", "missiles"),
+            (r"immune\s+to\s+damage\s+from\s+(?:one\s+)?(?:specific\s+)?(?:type\s+of\s+)?weapons?", "weapon_type"),
+            (r"completely\s+immune\s+to\s+damage", "damage_type"),
+            (r"protection\s+from\s+(?:normal\s+)?(?:attacks?|weapons?)", "normal_attacks"),
+            (r"hinders?\s+attacks?\s+against", "attacks_hindered"),  # Sanctuary
+            (r"cannot\s+(?:be\s+)?(?:hit|struck)\s+by", "immunity"),
+        ]
+        for pattern, immunity_type in immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    stat_modified="immunity",
+                    condition_context=immunity_type,
+                    description=f"Immunity/protection ({immunity_type})",
                 )
                 parsed.add_effect(effect)
                 break
