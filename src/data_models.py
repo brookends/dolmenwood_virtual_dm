@@ -190,6 +190,7 @@ class ConditionType(str, Enum):
     INCAPACITATED = "incapacitated"  # Cannot take actions
     # Environmental/magical conditions
     DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
+    FOOD_POISONING = "food_poisoning"  # From eating spoiled food, penalties until cured
 
 
 class LightSourceType(str, Enum):
@@ -1887,6 +1888,12 @@ class Item:
     smell: Optional[str] = None  # Sensory description
     taste: Optional[str] = None  # Sensory description
 
+    # Ration freshness tracking (for perishable food items)
+    acquired_day: Optional[int] = None  # Game day when ration was acquired
+    freshness_days: Optional[int] = None  # Base days until spoilage (rolled 1d6 on acquisition)
+    freshness_bonus_days: int = 0  # Additional days from preservation (e.g., temperature crystal)
+    is_perishable: bool = False  # True for rations and other food that can spoil
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
@@ -1897,6 +1904,41 @@ class Item:
         if self.slot_size == 0:
             return 0
         return self.slot_size * self.quantity
+
+    def is_spoiled(self, current_day: int) -> bool:
+        """
+        Check if this perishable item has spoiled.
+
+        Args:
+            current_day: The current game day
+
+        Returns:
+            True if the item is spoiled, False otherwise
+        """
+        if not self.is_perishable:
+            return False
+        if self.acquired_day is None or self.freshness_days is None:
+            return False
+        total_fresh_days = self.freshness_days + self.freshness_bonus_days
+        return current_day > self.acquired_day + total_fresh_days
+
+    def days_until_spoiled(self, current_day: int) -> Optional[int]:
+        """
+        Get the number of days until this item spoils.
+
+        Args:
+            current_day: The current game day
+
+        Returns:
+            Days remaining until spoilage, 0 if already spoiled, None if not perishable
+        """
+        if not self.is_perishable:
+            return None
+        if self.acquired_day is None or self.freshness_days is None:
+            return None
+        total_fresh_days = self.freshness_days + self.freshness_bonus_days
+        spoil_day = self.acquired_day + total_fresh_days
+        return max(0, spoil_day - current_day)
 
     def get_unique_key(self) -> Optional[str]:
         """
@@ -1950,6 +1992,11 @@ class Item:
             "forage_type": self.forage_type,
             "smell": self.smell,
             "taste": self.taste,
+            # Freshness tracking
+            "acquired_day": self.acquired_day,
+            "freshness_days": self.freshness_days,
+            "freshness_bonus_days": self.freshness_bonus_days,
+            "is_perishable": self.is_perishable,
         }
 
     @classmethod
@@ -1994,6 +2041,11 @@ class Item:
             forage_type=data.get("forage_type"),
             smell=data.get("smell"),
             taste=data.get("taste"),
+            # Freshness tracking
+            acquired_day=data.get("acquired_day"),
+            freshness_days=data.get("freshness_days"),
+            freshness_bonus_days=data.get("freshness_bonus_days", 0),
+            is_perishable=data.get("is_perishable", False),
         )
 
     @classmethod
@@ -4920,16 +4972,40 @@ class CharacterState:
     # INVENTORY MANAGEMENT
     # =========================================================================
 
-    def add_item(self, item: Item) -> bool:
+    def add_item(self, item: Item, current_day: Optional[int] = None) -> bool:
         """
         Add an item to the character's inventory.
 
+        For perishable items (rations, fresh food), this will:
+        - Roll 1d6 for freshness_days if not already set
+        - Set acquired_day to current_day if provided
+        - NOT stack with other perishable items (each tracked individually)
+
         Args:
             item: The Item to add
+            current_day: The current game day (required for perishable items)
 
         Returns:
             True if item was added successfully
         """
+        # Check if item is perishable (rations, fresh food)
+        # Detect by is_perishable flag or by item_id containing "rations_fresh" or "fresh"
+        is_ration = "ration" in item.item_id.lower() and "preserved" not in item.item_id.lower()
+        should_be_perishable = item.is_perishable or is_ration
+
+        if should_be_perishable:
+            item.is_perishable = True
+            # Initialize freshness if not already set
+            if item.freshness_days is None:
+                dice = DiceRoller()
+                roll = dice.roll("1d6", "Ration freshness")
+                item.freshness_days = roll.total
+            if item.acquired_day is None and current_day is not None:
+                item.acquired_day = current_day
+            # Perishable items are never stacked - each tracked individually
+            self.inventory.append(item)
+            return True
+
         # For stackable items (quantity > 1 and not unique), try to merge
         if not item.is_unique and item.quantity > 0:
             for existing in self.inventory:
@@ -4937,6 +5013,7 @@ class CharacterState:
                     existing.item_id == item.item_id
                     and not existing.is_unique
                     and existing.name == item.name
+                    and not existing.is_perishable
                 ):
                     existing.quantity += item.quantity
                     return True
