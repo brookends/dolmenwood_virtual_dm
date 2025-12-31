@@ -623,6 +623,13 @@ class CombatEngine:
         result.damage_bonus += class_mods.get("damage_bonus", 0)
         result.details.extend(class_mods.get("details", []))
 
+        # Condition modifiers (blinded, poisoned, etc.)
+        attacker_id = attacker.character_ref or attacker.combatant_id
+        condition_attack_mod = self.controller.get_condition_attack_modifier(attacker_id)
+        if condition_attack_mod != 0:
+            result.attack_bonus += condition_attack_mod
+            result.details.append(f"Conditions {condition_attack_mod:+d}")
+
         return result
 
     def _get_class_ability_combat_modifiers(
@@ -746,6 +753,13 @@ class CombatEngine:
         # Class ability AC modifiers (for party members and classed NPCs)
         class_ac_mod = self._get_class_ability_ac_modifier(defender)
         base_ac += class_ac_mod
+
+        # Condition defense modifiers (blinded defenders are easier to hit, etc.)
+        defender_char_id = defender.character_ref or defender.combatant_id
+        condition_def_mod = self.controller.get_condition_defense_modifier(defender_char_id)
+        if condition_def_mod != 0:
+            # Positive modifier means easier to hit (worse AC)
+            base_ac -= condition_def_mod
 
         return int(base_ac)
 

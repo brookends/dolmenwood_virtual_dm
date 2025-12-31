@@ -585,6 +585,24 @@ class EncounterEngine:
             success=True,
         )
 
+        # Check if any party member can act (for party actions)
+        if actor == "party":
+            party_can_act = False
+            party_blocked_reasons = []
+            for char in self.controller.get_active_characters():
+                can_act, reason = self.controller.can_character_act(char.character_id)
+                if can_act:
+                    party_can_act = True
+                    break
+                else:
+                    party_blocked_reasons.append(f"{char.name}: {reason}")
+
+            if not party_can_act and party_blocked_reasons:
+                result.success = False
+                result.messages.append("Party cannot act:")
+                result.messages.extend(party_blocked_reasons[:3])  # Cap at 3
+                return result
+
         declaration = ActionDeclaration(
             side=actor,
             action=action,
@@ -604,6 +622,24 @@ class EncounterEngine:
             result = self._handle_wait(actor, result)
         elif action == EncounterAction.ENCHANTMENT:
             result = self._handle_enchantment(actor, target, parameters, result)
+
+        # Invoke narration callback if registered
+        if self._narration_callback:
+            try:
+                self._narration_callback(
+                    action=action.value,
+                    actor=actor,
+                    result={
+                        "success": result.success,
+                        "messages": result.messages,
+                        "encounter_ended": result.encounter_ended,
+                        "end_reason": result.end_reason,
+                        "reaction_result": result.reaction_result.value if result.reaction_result else None,
+                    },
+                )
+            except Exception as e:
+                # Narration is advisory - don't block on failures
+                pass
 
         return result
 
@@ -714,12 +750,19 @@ class EncounterEngine:
             return result
 
         # Get movement rates (p146-147)
-        # Default party speed of 30, running = 90'/round
-        party_speed = 30  # TODO: Get from party state
+        party_speed = self.controller.get_party_movement_rate()
         party_running_speed = MovementCalculator.get_running_movement(party_speed)
 
-        # Assume enemy speed similar for now
-        enemy_speed = 30  # TODO: Get from encounter actors
+        # Get enemy speed from encounter combatants (use fastest enemy)
+        enemy_speed = 30  # Default fallback
+        if self._state and self._state.encounter and self._state.encounter.combatants:
+            enemy_speeds = [
+                c.stat_block.movement
+                for c in self._state.encounter.combatants
+                if c.stat_block and c.stat_block.movement and c.stat_block.hp_current > 0
+            ]
+            if enemy_speeds:
+                enemy_speed = max(enemy_speeds)
         enemy_running_speed = MovementCalculator.get_running_movement(enemy_speed)
 
         # Calculate evasion chance based on:

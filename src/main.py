@@ -194,6 +194,11 @@ class VirtualDM:
         self.session_manager = SessionManager(save_directory=self.config.save_dir)
         self.session_manager.new_session(session_name=self.config.campaign_name)
 
+        # Load base content if requested
+        self._content_loaded = False
+        if self.config.load_content:
+            self._load_base_content()
+
         # Initialize the DM Agent for narrative descriptions
         self._dm_agent: Optional[DMAgent] = None
         if self.config.enable_narration:
@@ -232,6 +237,59 @@ class VirtualDM:
             narrative_resolver.set_narration_callback(self._narrate_from_context)
             # Set up LLM intent parser (Upgrade A Extension)
             narrative_resolver.set_intent_parser(self._parse_narrative_intent_callback)
+
+        # Wire up combat narration callback
+        self.combat.register_narration_callback(self._narrate_combat_round)
+
+        # Wire up encounter narration callback
+        self.encounter.register_narration_callback(self._narrate_encounter_action)
+
+    def _load_base_content(self) -> None:
+        """
+        Load base content into runtime engines.
+
+        Called during initialization when config.load_content is True.
+        Populates hex data in HexCrawlEngine, spells in SpellResolver, etc.
+        """
+        from src.content_loader.runtime_bootstrap import (
+            load_runtime_content,
+            register_spells_with_combat,
+        )
+
+        content_dir = self.config.content_dir or (self.config.data_dir / "content")
+        logger.info(f"Loading base content from: {content_dir}")
+
+        try:
+            content = load_runtime_content(
+                content_root=content_dir,
+                enable_vector_db=self.config.use_vector_db,
+            )
+
+            # Load hex data into HexCrawlEngine
+            for hex_id, hex_loc in content.hexes.items():
+                self.hex_crawl.load_hex_data(hex_id, hex_loc)
+
+            logger.info(f"Loaded {len(content.hexes)} hexes into HexCrawlEngine")
+
+            # Register spells with CombatEngine's SpellResolver
+            if content.spells:
+                spell_count = register_spells_with_combat(content.spells, self.combat)
+                logger.info(f"Registered {spell_count} spells with CombatEngine")
+
+            # Log any warnings
+            for warning in content.warnings[:5]:  # Cap logged warnings
+                logger.warning(f"Content load warning: {warning}")
+
+            self._content_loaded = True
+            logger.info(
+                f"Base content loaded: {content.stats.hexes_loaded} hexes, "
+                f"{content.stats.spells_loaded} spells, "
+                f"{content.stats.monsters_loaded} monsters"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to load base content: {e}", exc_info=True)
+            self._content_loaded = False
 
     def _narrate_from_context(
         self,
@@ -279,6 +337,93 @@ class VirtualDM:
             narrative_hints=context.narrative_hints,
             rule_reference=context.rule_reference or "",
         )
+
+    def _narrate_combat_round(
+        self,
+        round_number: int,
+        actions: list,
+        casualties: list[str],
+    ) -> None:
+        """
+        Narration callback for CombatEngine.
+
+        Called after each combat round is resolved to generate LLM narration.
+
+        Args:
+            round_number: Current round number
+            actions: List of AttackResult objects from the round
+            casualties: List of combatant IDs that were defeated
+        """
+        if not self._dm_agent or not self._dm_agent.is_available():
+            return
+
+        # Convert AttackResult objects to dicts for DMAgent
+        resolved_actions = []
+        damage_results = {}
+        deaths = []
+
+        for action in actions:
+            action_dict = {
+                "actor": action.attacker_id,
+                "action": action.action_type.value if hasattr(action.action_type, "value") else str(action.action_type),
+                "target": action.defender_id,
+                "result": "hit" if action.hit else "miss",
+                "damage": action.damage_dealt,
+                "special_effects": action.special_effects if hasattr(action, "special_effects") else [],
+            }
+            resolved_actions.append(action_dict)
+
+            if action.hit and action.damage_dealt > 0:
+                damage_results[action.defender_id] = damage_results.get(action.defender_id, 0) + action.damage_dealt
+
+        # Convert casualties to death list
+        deaths = list(casualties) if casualties else []
+
+        try:
+            result = self._dm_agent.narrate_combat_round(
+                round_number=round_number,
+                resolved_actions=resolved_actions,
+                damage_results=damage_results,
+                deaths=deaths,
+            )
+            # Result is advisory - we log it but don't block on it
+            if result and result.text:
+                logger.debug(f"Combat narration: {result.text[:100]}...")
+        except Exception as e:
+            logger.warning(f"Combat narration failed: {e}")
+
+    def _narrate_encounter_action(
+        self,
+        action: str,
+        actor: str,
+        result: dict,
+    ) -> None:
+        """
+        Narration callback for EncounterEngine.
+
+        Called after encounter actions are resolved to generate LLM narration.
+
+        Args:
+            action: The action taken (e.g., "parley", "evasion")
+            actor: Who took the action ("party" or "enemy")
+            result: Result dict from the encounter action
+        """
+        if not self._dm_agent or not self._dm_agent.is_available():
+            return
+
+        try:
+            # Build context for narration
+            context = {
+                "action": action,
+                "actor": actor,
+                "success": result.get("success", False),
+                "messages": result.get("messages", []),
+            }
+
+            # For now, log encounter narration context (can be enhanced later)
+            logger.debug(f"Encounter narration context: {context}")
+        except Exception as e:
+            logger.warning(f"Encounter narration failed: {e}")
 
     def _parse_narrative_intent_callback(
         self,
@@ -525,6 +670,18 @@ class VirtualDM:
             return False
 
         try:
+            # Ensure base content is loaded before applying session deltas.
+            # Session saves store POI discoveries, NPC state changes, etc. which
+            # require base hex/NPC data to be present first.
+            if not self._content_loaded:
+                logger.info("Auto-loading base content before restoring save...")
+                self._load_base_content()
+                if not self._content_loaded:
+                    logger.warning(
+                        "Base content not loaded - session deltas may not apply correctly. "
+                        "Consider running with --load-content flag."
+                    )
+
             # Load session
             session = self.session_manager.load_session(filepath)
 
@@ -2680,6 +2837,14 @@ def main():
 
     # Create configuration
     config = create_config_from_args(args)
+
+    # Warn if content is not being loaded
+    if not config.load_content:
+        print("\n" + "-" * 60)
+        print("NOTE: Running without base content (--load-content not set).")
+        print("Many procedures will use placeholder data. For full gameplay,")
+        print("ensure content files exist in data/content/ and use --load-content.")
+        print("-" * 60 + "\n")
 
     # Check for PDF ingestion
     if args.ingest_pdf:

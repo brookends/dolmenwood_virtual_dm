@@ -587,6 +587,10 @@ class HexCrawlEngine:
         """Get hex data if available."""
         return self._hex_data.get(hex_id)
 
+    def _get_hex_data(self, hex_id: str) -> Optional[HexLocation]:
+        """Internal alias for get_hex_data (used by internal methods)."""
+        return self.get_hex_data(hex_id)
+
     def get_terrain_for_hex(self, hex_id: str) -> TerrainType:
         """Get terrain type for a hex."""
         hex_data = self._hex_data.get(hex_id)
@@ -910,14 +914,37 @@ class HexCrawlEngine:
                     "speech": modifier.get("speech", ""),
                 }
         else:
-            # Standard encounter
-            encounter = EncounterState(
-                encounter_type=EncounterType.MONSTER,
-                distance=distance,
-                surprise_status=surprise,
-                terrain=terrain.value,
-                context=self._determine_encounter_context(),
-            )
+            # Standard encounter - use encounter tables via factory
+            from src.encounter.encounter_factory import start_wilderness_encounter
+
+            # Get hex data for region
+            hex_data = self._get_hex_data(hex_id)
+            region = hex_data.region.lower().replace(" ", "_") if hex_data and hex_data.region else "tithelands"
+
+            # Determine context for encounter
+            is_night = self._is_night()
+            on_road = self._route_type in (RouteType.ROAD, RouteType.TRACK)
+
+            try:
+                result = start_wilderness_encounter(
+                    controller=self.controller,
+                    region=region,
+                    terrain=terrain.value,
+                    is_day=not is_night,
+                    on_road=on_road,
+                    hex_id=hex_id,
+                )
+                encounter = result["encounter_state"]
+            except Exception as e:
+                # Fallback to basic encounter if factory fails
+                logger.warning(f"Encounter factory failed, using fallback: {e}")
+                encounter = EncounterState(
+                    encounter_type=EncounterType.MONSTER,
+                    distance=distance,
+                    surprise_status=surprise,
+                    terrain=terrain.value,
+                    context=self._determine_encounter_context(),
+                )
 
         self.controller.set_encounter(encounter)
         return encounter
