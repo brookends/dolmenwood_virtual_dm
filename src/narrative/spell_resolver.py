@@ -229,6 +229,36 @@ class MechanicalEffect:
     curse_is_permanent: bool = False  # Curse is permanent until removed
     requires_remove_curse: bool = False  # Requires Remove Curse to remove
 
+    # Teleportation effects (Teleport, Dimension Door, etc.)
+    is_teleport_effect: bool = False  # This spell teleports targets
+    teleport_type: Optional[str] = None  # "short", "long", "planar"
+    teleport_range: Optional[int] = None  # Max distance in feet
+    teleport_accuracy: Optional[str] = None  # "exact", "approximate", "random"
+    allows_passengers: bool = False  # Can bring other creatures
+    max_passengers: Optional[int] = None  # How many can travel with caster
+
+    # Divination effects (Detect Magic, Locate Object, etc.)
+    is_divination_effect: bool = False  # This spell provides information
+    divination_type: Optional[str] = None  # "detect", "locate", "scry", "communicate"
+    detects_what: Optional[str] = None  # What is detected: "magic", "evil", "traps", etc.
+    divination_range: Optional[int] = None  # Detection range in feet
+
+    # Movement enhancement effects (Fly, Levitate, etc.)
+    grants_movement: bool = False  # This spell grants a movement type
+    movement_type: Optional[str] = None  # "fly", "levitate", "swim", "climb", "phase"
+    movement_speed: Optional[int] = None  # Speed in feet per turn
+
+    # Invisibility/Illusion effects
+    is_invisibility_effect: bool = False  # This spell grants invisibility
+    invisibility_type: Optional[str] = None  # "normal", "improved", "greater"
+    is_illusion_effect: bool = False  # This spell creates an illusion
+    illusion_type: Optional[str] = None  # "visual", "auditory", "phantasm"
+
+    # Protection effects (Protection from Evil, etc.)
+    is_protection_effect: bool = False  # This spell provides protection
+    protection_type: Optional[str] = None  # "evil", "good", "elements", "magic"
+    protection_bonus: Optional[int] = None  # AC/save bonus granted
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2985,6 +3015,159 @@ class SpellResolver:
                     save_type="spell" if has_save else None,
                     save_negates=has_save,
                     description=f"Applies {curse_type} curse",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Teleportation patterns (ordered from specific to generic)
+        teleport_patterns = [
+            (r"plane\s+shift", "planar", None),
+            (r"(?:gate|portal)\s+(?:to|between)", "planar", None),
+            (r"dimension\s+door", "short", 360),
+            (r"(?:blink|phase)\s+(?:to|through|away)", "short", 30),
+            (r"teleport", "long", None),
+            (r"transport(?:s|ed)?\s+(?:to|instantly)", "long", None),
+        ]
+
+        for pattern, teleport_type, range_val in teleport_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for passengers
+                passenger_match = re.search(r"(?:with\s+)?(?:up\s+to\s+)?(\d+)\s+(?:other\s+)?(?:creatures?|passengers?|beings?)", description, re.IGNORECASE)
+                max_passengers = int(passenger_match.group(1)) if passenger_match else None
+                allows_passengers = max_passengers is not None or bool(re.search(r"(?:others?|companions?|passengers?)", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_teleport_effect=True,
+                    teleport_type=teleport_type,
+                    teleport_range=range_val,
+                    allows_passengers=allows_passengers,
+                    max_passengers=max_passengers,
+                    description=f"Teleportation ({teleport_type})",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Divination/Detection patterns
+        divination_patterns = [
+            (r"detect\s+magic", "detect", "magic"),
+            (r"detect\s+evil", "detect", "evil"),
+            (r"detect\s+(?:good|law|chaos)", "detect", "alignment"),
+            (r"detect\s+(?:traps?|snares?)", "detect", "traps"),
+            (r"detect\s+(?:invisib(?:le|ility)|hidden)", "detect", "invisible"),
+            (r"locate\s+object", "locate", "object"),
+            (r"locate\s+(?:creature|person|being)", "locate", "creature"),
+            (r"clairvoyance|scry(?:ing)?", "scry", "remote_viewing"),
+            (r"esp|read\s+(?:mind|thought)", "detect", "thoughts"),
+            (r"tongues?|comprehend\s+languages?", "communicate", "languages"),
+        ]
+
+        for pattern, div_type, what in divination_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract range
+                range_match = re.search(r"(\d+)['\"]?\s*(?:feet|ft|radius)?", description)
+                div_range = int(range_match.group(1)) if range_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_divination_effect=True,
+                    divination_type=div_type,
+                    detects_what=what,
+                    divination_range=div_range,
+                    description=f"Divination: {what}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Movement enhancement patterns
+        movement_patterns = [
+            (r"\bfly\b|flight|airborne", "fly", 120),
+            (r"levitat(?:e|ion)", "levitate", 20),
+            (r"water\s+walk(?:ing)?", "water_walk", None),
+            (r"spider\s+climb|wall\s+crawl", "climb", 60),
+            (r"swim(?:ming)?.*(?:speed|fast)", "swim", 120),
+            (r"phase|ethereal|incorporeal", "phase", 60),
+            (r"haste|speed|swiftness", "haste", None),
+        ]
+
+        for pattern, move_type, speed in movement_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract speed if mentioned
+                speed_match = re.search(r"(\d+)['\"]?\s*(?:per\s+)?(?:turn|round|movement)", description)
+                if speed_match:
+                    speed = int(speed_match.group(1))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_movement=True,
+                    movement_type=move_type,
+                    movement_speed=speed,
+                    description=f"Grants {move_type} movement",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Invisibility patterns
+        invisibility_patterns = [
+            (r"improved\s+invisib(?:le|ility)", "improved"),
+            (r"greater\s+invisib(?:le|ility)", "greater"),
+            (r"invisib(?:le|ility)", "normal"),
+        ]
+
+        for pattern, inv_type in invisibility_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_invisibility_effect=True,
+                    invisibility_type=inv_type,
+                    description=f"Grants {inv_type} invisibility",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Illusion patterns
+        illusion_patterns = [
+            (r"phantasm(?:al)?", "phantasm"),
+            (r"illusion(?:ary)?", "visual"),
+            (r"(?:creates?\s+)?(?:illusory|fake|false)\s+(?:image|sound|appearance)", "visual"),
+            (r"silent\s+image|visual\s+illusion", "visual"),
+            (r"(?:ghost|phantom)\s+sound|auditory\s+illusion", "auditory"),
+        ]
+
+        for pattern, ill_type in illusion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_illusion_effect=True,
+                    illusion_type=ill_type,
+                    description=f"Creates {ill_type} illusion",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Protection patterns
+        protection_patterns = [
+            (r"protection\s+(?:from\s+)?evil", "evil", 1),
+            (r"protection\s+(?:from\s+)?good", "good", 1),
+            (r"protection\s+(?:from\s+)?(?:elements?|fire|cold|lightning)", "elements", 2),
+            (r"magic\s+circle", "evil", 2),
+            (r"(?:ward|shield)\s+(?:against|from)\s+magic", "magic", None),
+            (r"anti-?magic", "magic", None),
+        ]
+
+        for pattern, prot_type, bonus in protection_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract bonus
+                bonus_match = re.search(r"\+(\d+)\s*(?:to\s+)?(?:AC|saves?|armor)", description)
+                if bonus_match:
+                    bonus = int(bonus_match.group(1))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_protection_effect=True,
+                    protection_type=prot_type,
+                    protection_bonus=bonus,
+                    description=f"Protection from {prot_type}",
                 )
                 parsed.add_effect(effect)
                 break

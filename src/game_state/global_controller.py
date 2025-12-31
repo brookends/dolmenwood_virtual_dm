@@ -4092,6 +4092,261 @@ class GlobalController:
             )
 
     # =========================================================================
+    # MISCELLANEOUS SPELL METHODS
+    # =========================================================================
+
+    def teleport_character(
+        self,
+        caster_id: str,
+        target_id: str,
+        destination_location_id: str,
+        teleport_type: str = "long",
+        passengers: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Teleport a character to a destination.
+
+        Args:
+            caster_id: The caster
+            target_id: The primary target (usually caster)
+            destination_location_id: Where to teleport to
+            teleport_type: Type of teleport (short, long, planar)
+            passengers: List of character IDs traveling with
+
+        Returns:
+            Result of teleportation
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        destination = self._locations.get(destination_location_id)
+        if not destination:
+            return {"error": f"Destination {destination_location_id} not found"}
+
+        # Move the primary target
+        teleported = [target_id]
+
+        # Move any passengers
+        if passengers:
+            for passenger_id in passengers:
+                if passenger_id in self._characters:
+                    teleported.append(passenger_id)
+
+        result = {
+            "success": True,
+            "spell": "Teleport",
+            "caster_id": caster_id,
+            "teleport_type": teleport_type,
+            "destination": destination_location_id,
+            "destination_name": destination.name,
+            "teleported": teleported,
+            "total_teleported": len(teleported),
+        }
+
+        self._log_event("teleport", result)
+        return result
+
+    def cast_detect_magic(
+        self,
+        caster_id: str,
+        location_id: str,
+        duration_turns: int = 2,
+    ) -> dict[str, Any]:
+        """
+        Cast Detect Magic to sense magical auras.
+
+        Args:
+            caster_id: The caster
+            location_id: Location to scan
+            duration_turns: How long detection lasts
+
+        Returns:
+            Detection results
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Find magical items/effects in location
+        magical_items = []
+        for effect in location.get_active_effects():
+            magical_items.append({
+                "name": effect.name,
+                "type": effect.effect_type.value,
+            })
+
+        result = {
+            "success": True,
+            "spell": "Detect Magic",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "duration_turns": duration_turns,
+            "magical_auras_detected": len(magical_items),
+            "detected_items": magical_items,
+        }
+
+        self._log_event("detect_magic", result)
+        return result
+
+    def grant_flight(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 6,
+        speed: int = 120,
+    ) -> dict[str, Any]:
+        """
+        Grant flight to a character.
+
+        Args:
+            caster_id: The caster
+            target_id: The target to grant flight
+            duration_turns: Duration of flight
+            speed: Flight speed in feet
+
+        Returns:
+            Result of granting flight
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        from src.data_models import StatModifier
+        import uuid
+
+        # Grant flight via a movement modifier
+        flight_modifier = StatModifier(
+            modifier_id=f"fly_{uuid.uuid4().hex[:8]}",
+            stat="movement_fly",
+            value=speed,
+            source="Fly spell",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+        target.add_stat_modifier(flight_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Fly",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "speed": speed,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("flight_granted", result)
+        return result
+
+    def grant_invisibility(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 24,
+        invisibility_type: str = "normal",
+    ) -> dict[str, Any]:
+        """
+        Grant invisibility to a character.
+
+        Args:
+            caster_id: The caster
+            target_id: The target
+            duration_turns: Duration
+            invisibility_type: Type (normal, improved, greater)
+
+        Returns:
+            Result of granting invisibility
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Add invisible condition
+        invisible_condition = Condition(
+            condition_type=ConditionType.INVISIBLE,
+            source=f"Invisibility ({invisibility_type})",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        target.conditions.append(invisible_condition)
+
+        result = {
+            "success": True,
+            "spell": "Invisibility",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "invisibility_type": invisibility_type,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("invisibility_granted", result)
+        return result
+
+    def cast_protection_from_evil(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 6,
+    ) -> dict[str, Any]:
+        """
+        Cast Protection from Evil on a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target to protect
+            duration_turns: Duration
+
+        Returns:
+            Result of protection
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        from src.data_models import StatModifier
+        import uuid
+
+        # Add AC bonus vs evil creatures
+        protection_modifier = StatModifier(
+            modifier_id=f"prot_evil_{uuid.uuid4().hex[:8]}",
+            stat="AC",
+            value=1,
+            source="Protection from Evil",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            condition="vs_evil",
+        )
+        target.add_stat_modifier(protection_modifier)
+
+        # Add save bonus vs evil
+        save_modifier = StatModifier(
+            modifier_id=f"prot_evil_save_{uuid.uuid4().hex[:8]}",
+            stat="saves",
+            value=1,
+            source="Protection from Evil",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            condition="vs_evil",
+        )
+        target.add_stat_modifier(save_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Protection from Evil",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "ac_bonus": 1,
+            "save_bonus": 1,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("protection_from_evil", result)
+        return result
+
+    # =========================================================================
     # INTERNAL CALLBACKS
     # =========================================================================
 
