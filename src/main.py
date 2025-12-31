@@ -238,6 +238,12 @@ class VirtualDM:
             # Set up LLM intent parser (Upgrade A Extension)
             narrative_resolver.set_intent_parser(self._parse_narrative_intent_callback)
 
+        # Wire up combat narration callback
+        self.combat.register_narration_callback(self._narrate_combat_round)
+
+        # Wire up encounter narration callback
+        self.encounter.register_narration_callback(self._narrate_encounter_action)
+
     def _load_base_content(self) -> None:
         """
         Load base content into runtime engines.
@@ -331,6 +337,93 @@ class VirtualDM:
             narrative_hints=context.narrative_hints,
             rule_reference=context.rule_reference or "",
         )
+
+    def _narrate_combat_round(
+        self,
+        round_number: int,
+        actions: list,
+        casualties: list[str],
+    ) -> None:
+        """
+        Narration callback for CombatEngine.
+
+        Called after each combat round is resolved to generate LLM narration.
+
+        Args:
+            round_number: Current round number
+            actions: List of AttackResult objects from the round
+            casualties: List of combatant IDs that were defeated
+        """
+        if not self._dm_agent or not self._dm_agent.is_available():
+            return
+
+        # Convert AttackResult objects to dicts for DMAgent
+        resolved_actions = []
+        damage_results = {}
+        deaths = []
+
+        for action in actions:
+            action_dict = {
+                "actor": action.attacker_id,
+                "action": action.action_type.value if hasattr(action.action_type, "value") else str(action.action_type),
+                "target": action.defender_id,
+                "result": "hit" if action.hit else "miss",
+                "damage": action.damage_dealt,
+                "special_effects": action.special_effects if hasattr(action, "special_effects") else [],
+            }
+            resolved_actions.append(action_dict)
+
+            if action.hit and action.damage_dealt > 0:
+                damage_results[action.defender_id] = damage_results.get(action.defender_id, 0) + action.damage_dealt
+
+        # Convert casualties to death list
+        deaths = list(casualties) if casualties else []
+
+        try:
+            result = self._dm_agent.narrate_combat_round(
+                round_number=round_number,
+                resolved_actions=resolved_actions,
+                damage_results=damage_results,
+                deaths=deaths,
+            )
+            # Result is advisory - we log it but don't block on it
+            if result and result.text:
+                logger.debug(f"Combat narration: {result.text[:100]}...")
+        except Exception as e:
+            logger.warning(f"Combat narration failed: {e}")
+
+    def _narrate_encounter_action(
+        self,
+        action: str,
+        actor: str,
+        result: dict,
+    ) -> None:
+        """
+        Narration callback for EncounterEngine.
+
+        Called after encounter actions are resolved to generate LLM narration.
+
+        Args:
+            action: The action taken (e.g., "parley", "evasion")
+            actor: Who took the action ("party" or "enemy")
+            result: Result dict from the encounter action
+        """
+        if not self._dm_agent or not self._dm_agent.is_available():
+            return
+
+        try:
+            # Build context for narration
+            context = {
+                "action": action,
+                "actor": actor,
+                "success": result.get("success", False),
+                "messages": result.get("messages", []),
+            }
+
+            # For now, log encounter narration context (can be enhanced later)
+            logger.debug(f"Encounter narration context: {context}")
+        except Exception as e:
+            logger.warning(f"Encounter narration failed: {e}")
 
     def _parse_narrative_intent_callback(
         self,

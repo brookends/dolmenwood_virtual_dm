@@ -623,6 +623,24 @@ class EncounterEngine:
         elif action == EncounterAction.ENCHANTMENT:
             result = self._handle_enchantment(actor, target, parameters, result)
 
+        # Invoke narration callback if registered
+        if self._narration_callback:
+            try:
+                self._narration_callback(
+                    action=action.value,
+                    actor=actor,
+                    result={
+                        "success": result.success,
+                        "messages": result.messages,
+                        "encounter_ended": result.encounter_ended,
+                        "end_reason": result.end_reason,
+                        "reaction_result": result.reaction_result.value if result.reaction_result else None,
+                    },
+                )
+            except Exception as e:
+                # Narration is advisory - don't block on failures
+                pass
+
         return result
 
     def _handle_attack(self, actor: str, result: EncounterRoundResult) -> EncounterRoundResult:
