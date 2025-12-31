@@ -3996,6 +3996,11 @@ class SpellResolver:
             "create_water": self._handle_create_water,
             "air_sphere": self._handle_air_sphere,
             "detect_disguise": self._handle_detect_disguise,
+            # Phase 2 condition-based spell handlers
+            "deathly_blossom": self._handle_deathly_blossom,
+            "en_croute": self._handle_en_croute,
+            "awe": self._handle_awe,
+            "animal_growth": self._handle_animal_growth,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -4581,6 +4586,514 @@ class SpellResolver:
                     f'St Dougan whispers: "{saint_response}"',
                     "aged wisdom reveals the truth",
                     "mundane deception cannot hide from divine sight" if is_disguised else "no false face here",
+                ],
+            },
+        }
+
+    # =========================================================================
+    # PHASE 2: CONDITION-BASED SPELL HANDLERS
+    # =========================================================================
+
+    def _handle_deathly_blossom(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Deathly Blossom rune (Lesser Rune).
+
+        Conjures a rose that causes those who smell it to fall into a
+        death-like faint (unconscious) for 1d6 Turns. Target may Save vs Doom.
+
+        Per Dolmenwood Campaign Book: "Conjures a rose of sublime beauty.
+        Creatures who inhale its scent must Save Versus Doom or fall into
+        a deep faint, appearing dead, for 1d6 Turns."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        # First, create the rose item
+        rose_id = f"deathly_rose_{uuid.uuid4().hex[:8]}"
+        rose_created = {
+            "item_id": rose_id,
+            "name": "Rose of Sublime Beauty",
+            "description": "A hauntingly beautiful rose conjured by fairy magic. Those who smell it risk falling into a death-like faint.",
+            "magical": True,
+            "duration_turns": 1,  # Rose lasts 1 turn or until used
+            "single_use": True,
+        }
+
+        # If no targets, just create the rose
+        if not targets_affected:
+            return {
+                "success": True,
+                "rose_created": rose_created,
+                "effect_type": "item_creation",
+                "targets_affected": [],
+                "narrative_context": {
+                    "rose_conjured": True,
+                    "hints": [
+                        "a rose of unearthly beauty manifests",
+                        "its petals shimmer with an otherworldly gleam",
+                        "the scent promises sweet oblivion",
+                    ],
+                },
+            }
+
+        # Process each target that smells the rose
+        results = []
+        targets_saved = []
+        targets_affected_list = []
+
+        for target_id in targets_affected:
+            # Get target's save bonus if available
+            save_bonus = 0
+            target_char = None
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    save_bonus = target_char.get_saving_throw("doom") if hasattr(target_char, "get_saving_throw") else 0
+
+            # Roll save vs doom
+            save_roll = dice.roll_d20()
+            save_total = save_roll.total + save_bonus
+            save_target = 15  # Default save target
+
+            if save_total >= save_target:
+                # Save succeeded - resisted the rose's effect
+                targets_saved.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "save_succeeded": True,
+                    "save_roll": save_roll.total,
+                    "save_total": save_total,
+                })
+            else:
+                # Save failed - fall into death-like faint
+                duration_roll = dice.roll("1d6")
+                duration_turns = duration_roll.total
+
+                targets_affected_list.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "save_succeeded": False,
+                    "save_roll": save_roll.total,
+                    "save_total": save_total,
+                    "condition_applied": "unconscious",
+                    "duration_turns": duration_turns,
+                    "appears_dead": True,  # Special variant of unconscious
+                })
+
+                # Apply the condition via controller if available
+                if self._controller and target_char:
+                    self._controller.apply_condition(
+                        target_id, "unconscious", f"Deathly Blossom ({duration_turns} turns)"
+                    )
+
+                # Register as active spell effect
+                effect = ActiveSpellEffect(
+                    spell_id="deathly_blossom",
+                    spell_name="Deathly Blossom",
+                    caster_id=caster.character_id,
+                    target_id=target_id,
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.TURNS,
+                    duration_remaining=duration_turns,
+                    duration_unit="turns",
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "unconscious",
+                        "appears_dead": True,
+                        "can_be_awakened": False,  # Only ends when duration expires
+                    },
+                )
+                self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "rose_created": rose_created,
+            "effect_type": "condition",
+            "conditions_applied": ["unconscious"],
+            "results": results,
+            "targets_saved": targets_saved,
+            "targets_affected": targets_affected_list,
+            "save_type": "doom",
+            "narrative_context": {
+                "rose_conjured": True,
+                "victims_collapsed": len(targets_affected_list),
+                "resisted": len(targets_saved),
+                "hints": [
+                    "the rose's scent wafts through the air",
+                    "victims collapse as if struck dead",
+                    "only the faintest rise and fall of breath reveals life",
+                ],
+            },
+        }
+
+    def _handle_en_croute(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle En Croute spell (Arcane, Level 2).
+
+        Encases target in pastry crust, immobilizing them. Escape time based
+        on Strength score. Save vs Spell negates.
+
+        Per Dolmenwood Campaign Book: "Encases target in a thick shell of
+        crispy pastry crust. The target is immobilised and can only break
+        free based on their Strength."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No target specified for En Croute",
+                "narrative_context": {
+                    "no_target": True,
+                },
+            }
+
+        target_id = targets_affected[0]  # Single target spell
+
+        # Get target's save bonus if available
+        save_bonus = 0
+        target_char = None
+        strength = 10  # Default strength
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+            if target_char:
+                save_bonus = target_char.get_saving_throw("spell") if hasattr(target_char, "get_saving_throw") else 0
+                if hasattr(target_char, "strength"):
+                    strength = target_char.strength or 10
+
+        # Roll save vs spell
+        save_roll = dice.roll_d20()
+        save_total = save_roll.total + save_bonus
+        save_target = 15  # Default save target
+
+        if save_total >= save_target:
+            # Save succeeded - resisted encasement
+            return {
+                "success": True,
+                "target_id": target_id,
+                "save_succeeded": True,
+                "save_roll": save_roll.total,
+                "save_total": save_total,
+                "narrative_context": {
+                    "spell_resisted": True,
+                    "hints": [
+                        "the pastry barely forms before crumbling",
+                        "target shrugs off the magical encasement",
+                    ],
+                },
+            }
+
+        # Save failed - calculate escape time based on Strength
+        # Strength-based escape time (invented mechanic matching B/X feel)
+        # STR 3-5: 6 rounds, STR 6-8: 5 rounds, STR 9-12: 4 rounds,
+        # STR 13-15: 3 rounds, STR 16-17: 2 rounds, STR 18: 1 round
+        if strength <= 5:
+            escape_rounds = 6
+        elif strength <= 8:
+            escape_rounds = 5
+        elif strength <= 12:
+            escape_rounds = 4
+        elif strength <= 15:
+            escape_rounds = 3
+        elif strength <= 17:
+            escape_rounds = 2
+        else:
+            escape_rounds = 1
+
+        # Apply the condition via controller if available
+        if self._controller and target_char:
+            self._controller.apply_condition(
+                target_id, "restrained", f"En Croute ({escape_rounds} rounds)"
+            )
+
+        # Register as active spell effect
+        effect = ActiveSpellEffect(
+            spell_id="en_croute",
+            spell_name="En Croute",
+            caster_id=caster.character_id,
+            target_id=target_id,
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.ROUNDS,
+            duration_remaining=escape_rounds,
+            duration_unit="rounds",
+            created_at=datetime.now(),
+            mechanical_effects={
+                "condition": "restrained",
+                "escape_rounds_remaining": escape_rounds,
+                "original_escape_time": escape_rounds,
+                "target_strength": strength,
+                "edible": True,  # Allies can eat to free!
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "target_id": target_id,
+            "save_succeeded": False,
+            "save_roll": save_roll.total,
+            "save_total": save_total,
+            "conditions_applied": ["restrained"],
+            "escape_rounds": escape_rounds,
+            "target_strength": strength,
+            "narrative_context": {
+                "encased": True,
+                "escape_time": escape_rounds,
+                "edible": True,
+                "hints": [
+                    "golden pastry rapidly encases the target",
+                    "a delicious aroma fills the air",
+                    f"with STR {strength}, escape will take {escape_rounds} rounds",
+                    "allies could help by... eating the crust",
+                ],
+            },
+        }
+
+    def _handle_awe(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Awe glamour (Fairy Glamour).
+
+        Triggers a Morale Check for affected creatures; those who fail flee
+        for 1d4 Rounds. HD budget: creatures whose Levels total up to caster's Level.
+
+        Per Dolmenwood Campaign Book: "Triggers a Morale Check. Creatures who
+        fail flee in terror for 1d4 Rounds."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No targets specified for Awe",
+                "narrative_context": {
+                    "no_targets": True,
+                },
+            }
+
+        # HD budget based on caster level
+        hd_budget = caster.level if hasattr(caster, "level") else 1
+        hd_spent = 0
+
+        results = []
+        targets_fled = []
+        targets_resisted = []
+        targets_immune = []
+
+        for target_id in targets_affected:
+            target_hd = 1  # Default HD
+            morale = 7  # Default morale
+
+            # Get target info if available
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    target_hd = target_char.level if hasattr(target_char, "level") else 1
+                    if hasattr(target_char, "morale"):
+                        morale = target_char.morale
+
+            # Check HD budget
+            if hd_spent + target_hd > hd_budget:
+                targets_immune.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "immune": True,
+                    "reason": "Exceeds HD budget",
+                    "target_hd": target_hd,
+                })
+                continue
+
+            hd_spent += target_hd
+
+            # Roll morale check (2d6 vs morale score)
+            morale_roll = dice.roll("2d6")
+            morale_passed = morale_roll.total <= morale
+
+            if morale_passed:
+                # Morale passed - not affected
+                targets_resisted.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "morale_passed": True,
+                    "morale_roll": morale_roll.total,
+                    "morale_target": morale,
+                })
+            else:
+                # Morale failed - flee for 1d4 rounds
+                flee_duration = dice.roll("1d4").total
+
+                targets_fled.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "morale_passed": False,
+                    "morale_roll": morale_roll.total,
+                    "morale_target": morale,
+                    "flee_rounds": flee_duration,
+                    "condition_applied": "frightened",
+                })
+
+                # Apply frightened condition via controller
+                if self._controller:
+                    self._controller.apply_condition(
+                        target_id, "frightened", f"Awe ({flee_duration} rounds)"
+                    )
+
+                # Register as active spell effect
+                effect = ActiveSpellEffect(
+                    spell_id="awe",
+                    spell_name="Awe",
+                    caster_id=caster.character_id,
+                    target_id=target_id,
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.ROUNDS,
+                    duration_remaining=flee_duration,
+                    duration_unit="rounds",
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "frightened",
+                        "fleeing": True,
+                        "flee_direction": "away_from_caster",
+                    },
+                )
+                self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "hd_budget": hd_budget,
+            "hd_spent": hd_spent,
+            "targets_fled": targets_fled,
+            "targets_resisted": targets_resisted,
+            "targets_immune": targets_immune,
+            "results": results,
+            "conditions_applied": ["frightened"] if targets_fled else [],
+            "narrative_context": {
+                "fairy_majesty": True,
+                "fled_count": len(targets_fled),
+                "resisted_count": len(targets_resisted),
+                "hints": [
+                    "an overwhelming presence radiates from the caster",
+                    "lesser creatures cower before fairy majesty",
+                    "those who fail their nerve flee in terror",
+                ],
+            },
+        }
+
+    def _handle_animal_growth(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Animal Growth spell (Divine, Level 3).
+
+        Doubles an animal's size, damage, and carrying capacity.
+        Only affects normal or giant animals. Duration: 12 Turns.
+
+        Per Dolmenwood Campaign Book: "Causes 1d4 normal animals or 1 giant
+        animal to double in size. Animals' damage is doubled and they can
+        carry twice the normal load."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            # Determine how many animals can be affected
+            # 1d4 normal animals OR 1 giant animal
+            normal_count = dice.roll("1d4").total
+            return {
+                "success": True,
+                "effect_type": "buff",
+                "max_normal_animals": normal_count,
+                "max_giant_animals": 1,
+                "narrative_context": {
+                    "spell_ready": True,
+                    "hints": [
+                        f"the spell can affect {normal_count} normal animals",
+                        "or 1 giant animal",
+                        "targets must be normal or giant animals",
+                    ],
+                },
+            }
+
+        # Process affected animals
+        results = []
+        affected_animals = []
+        duration_turns = 12
+
+        for target_id in targets_affected:
+            # Apply doubling effect
+            affected_animals.append(target_id)
+            results.append({
+                "target_id": target_id,
+                "size_multiplier": 2,
+                "damage_multiplier": 2,
+                "carry_capacity_multiplier": 2,
+                "duration_turns": duration_turns,
+            })
+
+            # Register as active spell effect
+            effect = ActiveSpellEffect(
+                spell_id="animal_growth",
+                spell_name="Animal Growth",
+                caster_id=caster.character_id,
+                target_id=target_id,
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.TURNS,
+                duration_remaining=duration_turns,
+                duration_unit="turns",
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "size_multiplier": 2,
+                    "damage_multiplier": 2,
+                    "carry_capacity_multiplier": 2,
+                    "stat_modifiers": [
+                        {"stat": "damage", "modifier_type": "multiplier", "value": 2},
+                        {"stat": "carry_capacity", "modifier_type": "multiplier", "value": 2},
+                    ],
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_type": "buff",
+            "targets_affected": affected_animals,
+            "results": results,
+            "duration_turns": duration_turns,
+            "stat_modifiers_applied": [
+                {"modifier_type": "multiplier", "stat": "size", "value": 2},
+                {"modifier_type": "multiplier", "stat": "damage", "value": 2},
+                {"modifier_type": "multiplier", "stat": "carry_capacity", "value": 2},
+            ],
+            "narrative_context": {
+                "growth_applied": True,
+                "animals_affected": len(affected_animals),
+                "hints": [
+                    "the animals swell to twice their normal size",
+                    "muscles bulge with divine-enhanced strength",
+                    "their attacks now deal double damage",
+                    "they can carry twice as much",
                 ],
             },
         }
