@@ -13,6 +13,12 @@ from typing import Any, Callable, Optional
 import logging
 
 from src.game_state.state_machine import GameState, StateMachine
+from src.oracle.spell_adjudicator import (
+    MythicSpellAdjudicator,
+    AdjudicationContext,
+    AdjudicationResult,
+    SpellAdjudicationType,
+)
 from src.data_models import (
     WorldState,
     PartyState,
@@ -31,7 +37,10 @@ from src.data_models import (
     ConditionType,
     LightSourceType,
     AreaEffect,
+    AreaEffectType,
     PolymorphOverlay,
+    Glyph,
+    GlyphType,
     SocialContext,
     SocialOrigin,
     SocialParticipant,
@@ -333,8 +342,14 @@ class GlobalController:
         if XP_MANAGER_AVAILABLE:
             self._xp_manager = XPManager(controller=self)
 
+        # Spell adjudicator for oracle-based spell resolution (lazy init)
+        self._spell_adjudicator: Optional[MythicSpellAdjudicator] = None
+
         # Session log
         self._session_log: list[dict[str, Any]] = []
+
+        # Glyph tracking (glyphs on doors/objects)
+        self._glyphs: dict[str, Glyph] = {}  # glyph_id -> Glyph
 
         # Transition hooks: (from_state, to_state) -> list of callbacks
         # Callbacks receive (from_state, to_state, trigger, context)
@@ -1374,6 +1389,717 @@ class GlobalController:
 
         return result
 
+    def apply_charm(
+        self,
+        character_id: str,
+        caster_id: str,
+        source_spell_id: str,
+        source: str = "",
+        recurring_save: Optional[dict[str, Any]] = None,
+        duration_days: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply a charm effect to a character.
+
+        This method properly sets up the charm condition with all the
+        tracking needed for recurring saves, caster relationships, etc.
+
+        Args:
+            character_id: The character being charmed
+            caster_id: The character doing the charming
+            source_spell_id: ID of the charm spell
+            source: Description (spell name)
+            recurring_save: Config for recurring saves:
+                           {"save_type": "spell", "frequency": "daily",
+                            "modifier": 0, "ends_on_success": True}
+            duration_days: Duration in days (None for indefinite until save)
+
+        Returns:
+            Dictionary with charm application results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Check if already charmed (by anyone)
+        if character.is_charmed():
+            return {
+                "character_id": character_id,
+                "charmed": False,
+                "reason": "Already charmed",
+                "existing_charmer": character.get_charm_caster(),
+            }
+
+        # Apply the charm using CharacterState's method
+        charm_condition = character.apply_charm(
+            caster_id=caster_id,
+            source_spell_id=source_spell_id,
+            source=source,
+            recurring_save=recurring_save,
+            duration_days=duration_days,
+        )
+
+        result = {
+            "character_id": character_id,
+            "charmed": True,
+            "caster_id": caster_id,
+            "source": source,
+            "spell_id": source_spell_id,
+            "has_recurring_save": recurring_save is not None,
+            "recurring_save_frequency": recurring_save.get("frequency") if recurring_save else None,
+        }
+
+        self._log_event("charm_applied", result)
+        return result
+
+    def break_charm(
+        self,
+        character_id: str,
+        caster_id: Optional[str] = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Break a charm effect on a character.
+
+        Args:
+            character_id: The charmed character
+            caster_id: Optional specific caster's charm to break
+            reason: Why the charm is breaking (save, spell dispel, etc.)
+
+        Returns:
+            Dictionary with charm removal results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        removed_charm = character.break_charm(caster_id)
+
+        if removed_charm:
+            result = {
+                "character_id": character_id,
+                "charm_broken": True,
+                "former_charmer": removed_charm.caster_id,
+                "reason": reason,
+            }
+            self._log_event("charm_broken", result)
+            return result
+        else:
+            return {
+                "character_id": character_id,
+                "charm_broken": False,
+                "reason": "Character was not charmed",
+            }
+
+    # =========================================================================
+    # GLYPH MANAGEMENT (Magical seals on doors/portals)
+    # =========================================================================
+
+    def place_glyph(
+        self,
+        caster_id: str,
+        target_id: str,
+        glyph_type: GlyphType,
+        source_spell_id: str,
+        name: str = "",
+        target_type: str = "door",
+        duration_turns: Optional[int] = None,
+        password: Optional[str] = None,
+        can_be_bypassed_by_level: Optional[int] = None,
+        trigger_condition: Optional[str] = None,
+        trap_effect: Optional[str] = None,
+        trap_damage: Optional[str] = None,
+        trap_save_type: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Place a magical glyph on a door or object.
+
+        Args:
+            caster_id: ID of the character placing the glyph
+            target_id: ID of the door/object
+            glyph_type: Type of glyph (SEALING, LOCKING, TRAP)
+            source_spell_id: ID of the spell creating the glyph
+            name: Name of the glyph (e.g., "Glyph of Sealing")
+            target_type: Type of target ("door", "chest", "portal")
+            duration_turns: Duration in turns (None = permanent)
+            password: Password for locking glyphs
+            can_be_bypassed_by_level: Higher-level casters can bypass
+            trigger_condition: For trap glyphs
+            trap_effect: Effect when triggered
+            trap_damage: Damage when triggered
+            trap_save_type: Save type for traps
+
+        Returns:
+            Dictionary with glyph placement results
+        """
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Create the glyph
+        glyph = Glyph(
+            glyph_type=glyph_type,
+            name=name or f"Glyph of {glyph_type.value.title()}",
+            source_spell_id=source_spell_id,
+            caster_id=caster_id,
+            caster_level=caster.level,
+            target_type=target_type,
+            target_id=target_id,
+            duration_turns=duration_turns,
+            turns_remaining=duration_turns,
+            password=password,
+            can_be_bypassed_by_level=can_be_bypassed_by_level,
+            trigger_condition=trigger_condition,
+            trap_effect=trap_effect,
+            trap_damage=trap_damage,
+            trap_save_type=trap_save_type,
+            placed_at_turn=self.time_tracker.exploration_turns,
+        )
+
+        self._glyphs[glyph.glyph_id] = glyph
+
+        result = {
+            "glyph_id": glyph.glyph_id,
+            "glyph_type": glyph_type.value,
+            "target_id": target_id,
+            "target_type": target_type,
+            "caster_id": caster_id,
+            "caster_level": caster.level,
+            "placed": True,
+            "has_password": password is not None,
+        }
+
+        self._log_event("glyph_placed", result)
+        return result
+
+    def get_glyphs_on_target(
+        self,
+        target_id: str,
+        active_only: bool = True,
+    ) -> list[Glyph]:
+        """
+        Get all glyphs on a specific target.
+
+        Args:
+            target_id: ID of the door/object
+            active_only: Only return active glyphs
+
+        Returns:
+            List of Glyph objects
+        """
+        current_turn = self.time_tracker.exploration_turns
+        return [
+            g for g in self._glyphs.values()
+            if g.target_id == target_id
+            and (not active_only or g.is_active(current_turn))
+        ]
+
+    def dispel_glyph(
+        self,
+        glyph_id: str,
+        dispeller_id: Optional[str] = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Dispel (permanently remove) a glyph.
+
+        Args:
+            glyph_id: ID of the glyph to dispel
+            dispeller_id: Who is dispelling (optional)
+            reason: Why it's being dispelled
+
+        Returns:
+            Dictionary with dispel results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        glyph.dispel()
+
+        result = {
+            "glyph_id": glyph_id,
+            "glyph_type": glyph.glyph_type.value,
+            "target_id": glyph.target_id,
+            "dispelled": True,
+            "dispeller_id": dispeller_id,
+            "reason": reason,
+        }
+
+        self._log_event("glyph_dispelled", result)
+        return result
+
+    def disable_glyph_temporarily(
+        self,
+        glyph_id: str,
+        duration_turns: int,
+        disabler_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Temporarily disable a glyph (e.g., by Knock spell).
+
+        Args:
+            glyph_id: ID of the glyph to disable
+            duration_turns: How many turns to disable
+            disabler_id: Who is disabling (optional)
+
+        Returns:
+            Dictionary with disable results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        current_turn = self.time_tracker.exploration_turns
+        glyph.disable_temporarily(duration_turns, current_turn)
+
+        result = {
+            "glyph_id": glyph_id,
+            "glyph_type": glyph.glyph_type.value,
+            "target_id": glyph.target_id,
+            "disabled": True,
+            "disabled_until_turn": glyph.disabled_until_turn,
+            "disabler_id": disabler_id,
+        }
+
+        self._log_event("glyph_disabled", result)
+        return result
+
+    def check_glyph_bypass(
+        self,
+        target_id: str,
+        character_id: str,
+        password: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Check if a character can bypass glyphs on a target.
+
+        Args:
+            target_id: ID of the door/object
+            character_id: ID of the character trying to pass
+            password: Password to try (for locking glyphs)
+
+        Returns:
+            Dictionary with bypass check results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        glyphs = self.get_glyphs_on_target(target_id, active_only=True)
+
+        if not glyphs:
+            return {
+                "can_bypass": True,
+                "blocking_glyphs": [],
+                "bypassed_glyphs": [],
+            }
+
+        blocking = []
+        bypassed = []
+
+        for glyph in glyphs:
+            can_bypass, reason = glyph.check_bypass(
+                character_id=character_id,
+                character_level=character.level,
+                password_given=password,
+            )
+
+            if can_bypass:
+                bypassed.append({
+                    "glyph_id": glyph.glyph_id,
+                    "glyph_type": glyph.glyph_type.value,
+                    "reason": reason,
+                })
+            else:
+                blocking.append({
+                    "glyph_id": glyph.glyph_id,
+                    "glyph_type": glyph.glyph_type.value,
+                    "name": glyph.name,
+                    "caster_level": glyph.caster_level,
+                })
+
+        return {
+            "can_bypass": len(blocking) == 0,
+            "blocking_glyphs": blocking,
+            "bypassed_glyphs": bypassed,
+        }
+
+    def trigger_trap_glyph(
+        self,
+        glyph_id: str,
+        triggerer_id: str,
+    ) -> dict[str, Any]:
+        """
+        Trigger a trap glyph.
+
+        Args:
+            glyph_id: ID of the glyph
+            triggerer_id: ID of the character who triggered it
+
+        Returns:
+            Dictionary with trap trigger results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        if glyph.glyph_type != GlyphType.TRAP:
+            return {"error": "Glyph is not a trap"}
+
+        trigger_result = glyph.trigger_trap()
+        trigger_result["triggerer_id"] = triggerer_id
+
+        if trigger_result["triggered"]:
+            self._log_event("trap_glyph_triggered", trigger_result)
+
+        return trigger_result
+
+    def cast_knock(
+        self,
+        caster_id: str,
+        target_id: str,
+    ) -> dict[str, Any]:
+        """
+        Cast Knock on a door/portal.
+
+        Unlocks mundane locks, dispels Glyphs of Sealing,
+        and temporarily disables other glyphs.
+
+        Args:
+            caster_id: ID of the caster
+            target_id: ID of the door/portal
+
+        Returns:
+            Dictionary with Knock results
+        """
+        glyphs = self.get_glyphs_on_target(target_id, active_only=True)
+
+        dispelled = []
+        disabled = []
+
+        for glyph in glyphs:
+            if glyph.glyph_type == GlyphType.SEALING:
+                # Glyph of Sealing is dispelled
+                self.dispel_glyph(glyph.glyph_id, caster_id, "Knock spell")
+                dispelled.append({
+                    "glyph_id": glyph.glyph_id,
+                    "name": glyph.name,
+                })
+            else:
+                # Other glyphs are disabled for 1 turn
+                self.disable_glyph_temporarily(glyph.glyph_id, 1, caster_id)
+                disabled.append({
+                    "glyph_id": glyph.glyph_id,
+                    "name": glyph.name,
+                    "disabled_for_turns": 1,
+                })
+
+        result = {
+            "target_id": target_id,
+            "caster_id": caster_id,
+            "glyphs_dispelled": dispelled,
+            "glyphs_disabled": disabled,
+            "mundane_locks_opened": True,  # Knock also opens mundane locks
+        }
+
+        self._log_event("knock_cast", result)
+        return result
+
+    def tick_glyphs(self) -> list[dict[str, Any]]:
+        """
+        Process turn advancement for all glyphs.
+
+        Called automatically on turn advance.
+
+        Returns:
+            List of expired glyph info
+        """
+        expired = []
+
+        for glyph_id, glyph in list(self._glyphs.items()):
+            if not glyph.tick_turn():
+                # Glyph expired
+                expired.append({
+                    "glyph_id": glyph_id,
+                    "name": glyph.name,
+                    "target_id": glyph.target_id,
+                })
+                del self._glyphs[glyph_id]
+
+        return expired
+
+    # =========================================================================
+    # COMBAT MODIFIER MANAGEMENT (Mirror Image, Haste, Confusion, Fear)
+    # =========================================================================
+
+    def apply_mirror_images(
+        self,
+        character_id: str,
+        dice: str = "1d4",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Mirror Image spell to a character.
+
+        Args:
+            character_id: Target character ID
+            dice: Dice expression for number of images (default "1d4")
+            caster_id: ID of the caster (for dispel tracking)
+
+        Returns:
+            Result with image count
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Roll for number of images
+        from src.data_models import DiceRoller
+        dice_roller = DiceRoller()
+        roll = dice_roller.roll(dice, "Mirror images")
+
+        character.mirror_image_count = roll.total
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "images_created": roll.total,
+            "dice_rolled": dice,
+            "roll_details": str(roll),
+        }
+
+    def remove_mirror_images(self, character_id: str) -> dict[str, Any]:
+        """
+        Remove all mirror images from a character.
+
+        Args:
+            character_id: Target character ID
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        previous_count = character.mirror_image_count
+        character.mirror_image_count = 0
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "images_removed": previous_count,
+        }
+
+    def apply_haste(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Haste spell to a character.
+
+        Haste grants: +2 AC, +2 initiative, extra action per round.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Apply hasted condition
+        condition = Condition(
+            condition_type=ConditionType.HASTED,
+            source="Haste spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        # Apply AC buff
+        self.apply_buff(
+            character_id=character_id,
+            stat="AC",
+            value=2,
+            source="Haste",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "bonuses": {"ac": 2, "initiative": 2, "extra_action": True},
+        }
+
+    def apply_confusion(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Confusion spell to a character.
+
+        Confused creatures must roll for behavior each round.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        condition = Condition(
+            condition_type=ConditionType.CONFUSED,
+            source="Confusion spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "behavior_table": "2d6: 2-5=attack party, 6-8=stand confused, 9-11=attack nearest, 12=act normally",
+        }
+
+    def roll_confusion_behavior(self, character_id: str) -> dict[str, Any]:
+        """
+        Roll confusion behavior for a confused character.
+
+        Args:
+            character_id: Target character ID
+
+        Returns:
+            Behavior result
+        """
+        from src.data_models import ConfusionBehavior
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        if not character.is_confused():
+            return {"success": False, "error": f"{character.name} is not confused"}
+
+        behavior = character.roll_confusion_behavior()
+
+        behavior_descriptions = {
+            ConfusionBehavior.ATTACK_PARTY: "Attack nearest ally",
+            ConfusionBehavior.STAND_CONFUSED: "Stand confused (no action)",
+            ConfusionBehavior.ATTACK_NEAREST: "Attack nearest creature",
+            ConfusionBehavior.ACT_NORMALLY: "Act normally this round",
+        }
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "behavior": behavior.value,
+            "description": behavior_descriptions.get(behavior, "Unknown behavior"),
+        }
+
+    def apply_fear(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Fear effect to a character.
+
+        Frightened creatures must flee or cower if cornered.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        condition = Condition(
+            condition_type=ConditionType.FRIGHTENED,
+            source="Fear spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "effect": "Must flee; if cornered, cower (-2 attacks and saves)",
+        }
+
+    def apply_attack_modifier(
+        self,
+        character_id: str,
+        modifier: int,
+        duration_turns: int,
+        source: str = "Spell",
+        source_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply an attack roll modifier to a character.
+
+        Args:
+            character_id: Target character ID
+            modifier: Attack bonus/penalty
+            duration_turns: Duration in turns
+            source: Source name (e.g., "Ginger Snap")
+            source_id: Source ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        self.apply_buff(
+            character_id=character_id,
+            stat="attack",
+            value=modifier,
+            source=source,
+            source_id=source_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "attack_modifier": modifier,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
     # =========================================================================
     # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)
     # =========================================================================
@@ -1390,6 +2116,7 @@ class GlobalController:
         condition: Optional[str] = None,
         stacks: bool = False,
         stack_group: Optional[str] = None,
+        is_override: bool = False,
     ) -> dict[str, Any]:
         """
         Apply a stat modifier (buff or debuff) to a character.
@@ -1398,6 +2125,7 @@ class GlobalController:
             character_id: The character to buff/debuff
             stat: Stat to modify (e.g., "AC", "attack", "damage", "STR")
             value: Modifier value (positive = buff, negative = debuff)
+                   For is_override=True, this is the target value to set
             source: What caused this modifier (spell name, item, ability)
             source_id: Optional ID for removal (spell effect ID, item ID)
             duration_turns: Duration in exploration turns (10 min each)
@@ -1405,6 +2133,8 @@ class GlobalController:
             condition: When this applies (e.g., "vs_missiles", "vs_melee")
             stacks: Whether multiple instances stack
             stack_group: Group name for non-stacking (highest wins)
+            is_override: If True, set stat to value instead of adding to it
+                        (e.g., "AC becomes 17" instead of "AC +2")
 
         Returns:
             Dictionary with buff application results
@@ -1425,6 +2155,7 @@ class GlobalController:
             value=value,
             source=source,
             source_id=source_id,
+            mode="set" if is_override else "add",
             duration_turns=duration_turns,
             duration_rounds=duration_rounds,
             condition=condition,
@@ -1444,6 +2175,7 @@ class GlobalController:
             "condition": condition,
             "duration_turns": duration_turns,
             "duration_rounds": duration_rounds,
+            "is_override": is_override,
             "applied": True,
         }
 
@@ -1523,6 +2255,122 @@ class GlobalController:
         if expired:
             self._log_event("modifiers_expired", result)
 
+        return result
+
+    # =========================================================================
+    # VISIBILITY MANAGEMENT
+    # =========================================================================
+
+    def make_invisible(
+        self,
+        character_id: str,
+        source: str,
+    ) -> dict[str, Any]:
+        """
+        Make a character invisible.
+
+        Args:
+            character_id: The character to make invisible
+            source: Source of invisibility (spell ID, item ID)
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.make_invisible(source)
+
+        result = {
+            "character_id": character_id,
+            "visibility_state": "invisible",
+            "source": source,
+        }
+        self._log_event("visibility_changed", result)
+        return result
+
+    def break_invisibility(
+        self,
+        character_id: str,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Break a character's invisibility (e.g., on hostile action).
+
+        Args:
+            character_id: The character whose invisibility to break
+            reason: Why invisibility was broken
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        was_invisible = character.break_invisibility(reason)
+
+        result = {
+            "character_id": character_id,
+            "was_invisible": was_invisible,
+            "reason": reason,
+            "visibility_state": str(character.visibility_state.value),
+        }
+        if was_invisible:
+            self._log_event("invisibility_broken", result)
+        return result
+
+    def grant_see_invisible(
+        self,
+        character_id: str,
+        source: str,
+    ) -> dict[str, Any]:
+        """
+        Grant a character the ability to see invisible creatures.
+
+        Args:
+            character_id: The character to grant the ability to
+            source: Source of the ability (spell ID, item ID)
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.grant_see_invisible(source)
+
+        result = {
+            "character_id": character_id,
+            "can_see_invisible": True,
+            "source": source,
+        }
+        self._log_event("see_invisible_granted", result)
+        return result
+
+    def remove_see_invisible(self, character_id: str) -> dict[str, Any]:
+        """
+        Remove a character's ability to see invisible creatures.
+
+        Args:
+            character_id: The character to remove the ability from
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.remove_see_invisible()
+
+        result = {
+            "character_id": character_id,
+            "can_see_invisible": False,
+        }
+        self._log_event("see_invisible_removed", result)
         return result
 
     # =========================================================================
@@ -2072,6 +2920,731 @@ class GlobalController:
         self._log_event("area_effect_removed", result)
         return result
 
+    def get_area_effect(self, location_id: str, effect_id: str) -> dict[str, Any]:
+        """
+        Get details of a specific area effect.
+
+        Args:
+            location_id: The location containing the effect
+            effect_id: The effect ID to retrieve
+
+        Returns:
+            Effect details or error
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        for effect in location.area_effects:
+            if effect.effect_id == effect_id:
+                return {
+                    "effect_id": effect.effect_id,
+                    "name": effect.name,
+                    "effect_type": effect.effect_type.value,
+                    "is_active": effect.is_active,
+                    "duration_turns": effect.duration_turns,
+                    "blocks": effect.get_all_blocks(),
+                    "damage_info": effect.get_damage_info(),
+                    "can_be_escaped": effect.can_be_escaped,
+                    "escape_method": effect.get_escape_method(),
+                    "escape_dc": effect.get_escape_dc(),
+                    "trapped_characters": effect.trapped_characters.copy(),
+                }
+
+        return {"error": f"Effect {effect_id} not found"}
+
+    def process_area_entry(
+        self,
+        character_id: str,
+        location_id: str,
+        effect_id: str,
+    ) -> dict[str, Any]:
+        """
+        Process a character entering an area effect.
+
+        Handles trapping, entry damage, and other entry effects.
+
+        Args:
+            character_id: The character entering the effect
+            location_id: The location containing the effect
+            effect_id: The effect being entered
+
+        Returns:
+            Result of entry processing
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        effect = None
+        for e in location.area_effects:
+            if e.effect_id == effect_id:
+                effect = e
+                break
+
+        if not effect:
+            return {"error": f"Effect {effect_id} not found"}
+
+        if not effect.is_active:
+            return {"error": "Effect is not active"}
+
+        result: dict[str, Any] = {
+            "character_id": character_id,
+            "effect_id": effect_id,
+            "effect_name": effect.name,
+            "trapped": False,
+            "entry_damage": None,
+            "effects_applied": [],
+        }
+
+        # Handle trapping (Web, Entangle, etc.)
+        if effect.blocks_movement and effect.can_be_escaped:
+            effect.trap_character(character_id)
+            result["trapped"] = True
+            result["effects_applied"].append("trapped")
+
+        # Handle entry damage
+        if effect.has_entry_damage():
+            result["entry_damage"] = {
+                "damage_dice": effect.entry_damage,
+                "damage_type": effect.entry_damage_type,
+                "save_type": effect.save_type,
+                "save_avoids": effect.entry_save_avoids,
+            }
+            result["effects_applied"].append("entry_damage")
+
+        self._log_event("area_effect_entry", result)
+        return result
+
+    def attempt_escape(
+        self,
+        character_id: str,
+        location_id: str,
+        effect_id: str,
+        roll_result: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to escape from a trapping area effect.
+
+        Args:
+            character_id: The character attempting escape
+            location_id: The location containing the effect
+            effect_id: The effect to escape from
+            roll_result: The result of the escape roll (if applicable)
+
+        Returns:
+            Result of escape attempt
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        effect = None
+        for e in location.area_effects:
+            if e.effect_id == effect_id:
+                effect = e
+                break
+
+        if not effect:
+            return {"error": f"Effect {effect_id} not found"}
+
+        if not effect.is_character_trapped(character_id):
+            return {"error": "Character is not trapped in this effect"}
+
+        if not effect.can_be_escaped:
+            return {"error": "This effect cannot be escaped"}
+
+        result: dict[str, Any] = {
+            "character_id": character_id,
+            "effect_id": effect_id,
+            "escape_method": effect.get_escape_method(),
+            "escape_dc": effect.get_escape_dc(),
+            "roll_result": roll_result,
+            "escaped": False,
+        }
+
+        # Determine success if roll provided
+        dc = effect.get_escape_dc()
+        if roll_result is not None and dc is not None:
+            if roll_result >= dc:
+                effect.free_character(character_id)
+                result["escaped"] = True
+
+        self._log_event("escape_attempt", result)
+        return result
+
+    def get_trapped_in_effect(
+        self,
+        character_id: str,
+        location_id: str,
+    ) -> dict[str, Any]:
+        """
+        Check if a character is trapped in any effect at a location.
+
+        Args:
+            character_id: The character to check
+            location_id: The location to check
+
+        Returns:
+            Information about trapping effects
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        trapping_effects = []
+        for effect in location.area_effects:
+            if effect.is_active and effect.is_character_trapped(character_id):
+                trapping_effects.append({
+                    "effect_id": effect.effect_id,
+                    "name": effect.name,
+                    "effect_type": effect.effect_type.value,
+                    "escape_method": effect.get_escape_method(),
+                    "escape_dc": effect.get_escape_dc(),
+                })
+
+        return {
+            "character_id": character_id,
+            "location_id": location_id,
+            "is_trapped": len(trapping_effects) > 0,
+            "trapping_effects": trapping_effects,
+        }
+
+    # =========================================================================
+    # SPELL-SPECIFIC AREA EFFECT METHODS
+    # =========================================================================
+
+    def cast_web(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 48,  # 8 hours default per OSE
+        area_radius_feet: int = 10,
+    ) -> dict[str, Any]:
+        """
+        Cast Web spell, creating entangling webs in an area.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns (default 48 = 8 hours)
+            area_radius_feet: Radius of the web area
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.WEB,
+            name="Web",
+            description="Sticky magical webs fill the area, trapping creatures",
+            source_spell_id="web",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_movement=True,
+            escape_mechanism={
+                "method": "strength_check",
+                "dc": 0,  # Simple check, no DC in OSE
+                "requires_action": True,
+                "description": "Struggle free with Strength check",
+            },
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Web"
+        result["effect_type"] = "web"
+        return result
+
+    def cast_silence(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 12,  # 2 hours default
+        area_radius_feet: int = 15,
+    ) -> dict[str, Any]:
+        """
+        Cast Silence spell, creating a zone where no sound can be made.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the silence zone
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.SILENCE,
+            name="Silence",
+            description="A zone of complete silence; no sound can be made or heard",
+            source_spell_id="silence",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_sound=True,
+            blocks_magic=True,  # Blocks verbal spellcasting
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Silence"
+        result["effect_type"] = "silence"
+        result["blocks_verbal_spells"] = True
+        return result
+
+    def cast_darkness(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,  # 1 hour default
+        area_radius_feet: int = 15,
+    ) -> dict[str, Any]:
+        """
+        Cast Darkness spell, creating magical darkness.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the darkness zone
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.DARKNESS,
+            name="Darkness",
+            description="Impenetrable magical darkness; even magical light cannot penetrate",
+            source_spell_id="darkness",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Darkness"
+        result["effect_type"] = "darkness"
+        return result
+
+    def cast_fog_cloud(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Fog Cloud, creating an obscuring mist.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the fog
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.FOG,
+            name="Fog Cloud",
+            description="Thick fog obscures vision in the area",
+            source_spell_id="fog_cloud",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Fog Cloud"
+        result["effect_type"] = "fog"
+        return result
+
+    def cast_stinking_cloud(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 1,  # Short duration
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Stinking Cloud, creating nauseating gas.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the cloud
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.STINKING_CLOUD,
+            name="Stinking Cloud",
+            description="Nauseating gas fills the area; creatures must save or be incapacitated",
+            source_spell_id="stinking_cloud",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+            save_type="spell",
+            save_negates=True,
+            enter_effect="Must save vs Poison or be helpless with nausea",
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Stinking Cloud"
+        result["effect_type"] = "stinking_cloud"
+        result["save_required"] = "poison"
+        return result
+
+    def cast_entangle(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Entangle, causing plants to grasp creatures.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the entangle area
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.ENTANGLE,
+            name="Entangle",
+            description="Plants wrap around creatures, restraining them",
+            source_spell_id="entangle",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_movement=True,
+            save_type="spell",
+            save_negates=True,
+            escape_mechanism={
+                "method": "strength_check",
+                "dc": 0,
+                "requires_action": True,
+                "description": "Break free from vines",
+            },
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Entangle"
+        result["effect_type"] = "entangle"
+        return result
+
+    # =========================================================================
+    # BUFF ENHANCEMENT SPELL METHODS
+    # =========================================================================
+
+    def grant_immunity(
+        self,
+        character_id: str,
+        immunity_type: str,
+        duration_turns: int,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Grant immunity to a damage type or effect.
+
+        Args:
+            character_id: Target character
+            immunity_type: Type of immunity ("missiles", "drowning", "gas", "fire", etc.)
+            duration_turns: Duration in turns
+            source: Source name (spell name)
+            caster_id: Caster ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Apply as a special buff
+        self.apply_buff(
+            character_id=character_id,
+            stat=f"immunity_{immunity_type}",
+            value=1,  # 1 = has immunity
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "immunity_type": immunity_type,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def grant_vision_enhancement(
+        self,
+        character_id: str,
+        vision_type: str,
+        duration_turns: int,
+        range_feet: int = 60,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Grant enhanced vision (darkvision, see invisible, etc.).
+
+        Args:
+            character_id: Target character
+            vision_type: Type of vision ("darkvision", "infravision", "see_invisible", "truesight")
+            duration_turns: Duration in turns
+            range_feet: Range of the vision in feet
+            source: Source name
+            caster_id: Caster ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Special handling for see_invisible
+        if vision_type == "see_invisible":
+            character.can_see_invisible = True
+            character.see_invisible_source = source
+
+        # Apply as a buff for tracking
+        self.apply_buff(
+            character_id=character_id,
+            stat=f"vision_{vision_type}",
+            value=range_feet,
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "vision_type": vision_type,
+            "range_feet": range_feet,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def apply_stat_override(
+        self,
+        character_id: str,
+        stat: str,
+        value: int,
+        duration_turns: int,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Override a stat to a fixed value (Feeblemind, etc.).
+
+        Args:
+            character_id: Target character
+            stat: Stat to override (STR, INT, WIS, etc.)
+            value: Value to set the stat to
+            duration_turns: Duration in turns
+            source: Source name
+            caster_id: Caster ID
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        original_value = character.ability_scores.get(stat, 10)
+
+        # Apply as an override buff
+        self.apply_buff(
+            character_id=character_id,
+            stat=stat,
+            value=value,
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            is_override=True,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "stat": stat,
+            "original_value": original_value,
+            "new_value": value,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def dispel_magic(
+        self,
+        target_id: str,
+        caster_level: int,
+        target_type: str = "character",
+    ) -> dict[str, Any]:
+        """
+        Dispel magical effects on a target.
+
+        Per OSE rules, there's a chance to dispel based on caster level comparison.
+
+        Args:
+            target_id: Target character or location ID
+            caster_level: Level of the dispelling caster
+            target_type: "character" or "location"
+
+        Returns:
+            Result with list of dispelled effects
+        """
+        from src.data_models import DiceRoller
+
+        dispelled = []
+        failed = []
+
+        if target_type == "character":
+            character = self.get_character(target_id)
+            if not character:
+                return {"success": False, "error": f"Character {target_id} not found"}
+
+            # Remove magical conditions
+            for condition in list(character.conditions):
+                if condition.source_spell_id:
+                    # Calculate dispel chance based on relative caster levels
+                    # Base 50% + 5% per level difference
+                    spell_level = condition.severity if condition.severity else caster_level
+                    base_chance = 50 + (caster_level - spell_level) * 5
+                    base_chance = max(5, min(95, base_chance))  # Clamp 5-95%
+
+                    dice = DiceRoller()
+                    roll = dice.roll("1d100", "Dispel check")
+
+                    if roll.total <= base_chance:
+                        character.conditions.remove(condition)
+                        dispelled.append({
+                            "type": "condition",
+                            "name": condition.condition_type.value,
+                            "source": condition.source_spell_id,
+                        })
+                    else:
+                        failed.append({
+                            "type": "condition",
+                            "name": condition.condition_type.value,
+                            "roll": roll.total,
+                            "needed": base_chance,
+                        })
+
+            # Remove stat modifiers from spells
+            for modifier in list(character.stat_modifiers):
+                if modifier.source and "spell" in modifier.source.lower():
+                    character.stat_modifiers.remove(modifier)
+                    dispelled.append({
+                        "type": "buff",
+                        "stat": modifier.stat,
+                        "source": modifier.source,
+                    })
+
+            # Reset special states
+            if character.mirror_image_count > 0:
+                dispelled.append({"type": "mirror_images", "count": character.mirror_image_count})
+                character.mirror_image_count = 0
+
+            if character.can_see_invisible and character.see_invisible_source:
+                dispelled.append({"type": "see_invisible", "source": character.see_invisible_source})
+                character.can_see_invisible = False
+                character.see_invisible_source = None
+
+        elif target_type == "location":
+            location = self._locations.get(target_id)
+            if not location:
+                return {"success": False, "error": f"Location {target_id} not found"}
+
+            # Remove area effects
+            for effect in list(location.area_effects):
+                if effect.source_spell_id:
+                    location.area_effects.remove(effect)
+                    dispelled.append({
+                        "type": "area_effect",
+                        "name": effect.name,
+                        "effect_type": effect.effect_type.value,
+                    })
+
+        return {
+            "success": True,
+            "target_id": target_id,
+            "target_type": target_type,
+            "caster_level": caster_level,
+            "dispelled": dispelled,
+            "failed": failed,
+            "total_dispelled": len(dispelled),
+        }
+
+    def remove_condition(
+        self,
+        character_id: str,
+        condition_type: str,
+    ) -> dict[str, Any]:
+        """
+        Remove a specific condition from a character.
+
+        Used by Remove Curse, Remove Poison, Cure Affliction, etc.
+
+        Args:
+            character_id: Target character
+            condition_type: Type of condition to remove ("cursed", "poisoned", "diseased")
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        removed = []
+        for condition in list(character.conditions):
+            if condition.condition_type.value == condition_type:
+                character.conditions.remove(condition)
+                removed.append({
+                    "condition_type": condition.condition_type.value,
+                    "source": condition.source,
+                })
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "condition_type": condition_type,
+            "removed_count": len(removed),
+            "removed": removed,
+        }
+
     def apply_polymorph(self, character_id: str, overlay: PolymorphOverlay) -> dict[str, Any]:
         """
         Apply a polymorph transformation to a character.
@@ -2216,6 +3789,1079 @@ class GlobalController:
             "has_blocking_movement": location.has_blocking_effect("movement"),
             "has_blocking_vision": location.has_blocking_effect("vision"),
             "has_blocking_sound": location.has_blocking_effect("sound"),
+        }
+
+    # =========================================================================
+    # SUMMON/CONTROL METHODS
+    # =========================================================================
+
+    def summon_creatures(
+        self,
+        caster_id: str,
+        location_id: str,
+        creature_type: str,
+        count: int,
+        hd_max: Optional[int] = None,
+        duration_turns: int = 6,
+        caster_controls: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Summon creatures at a location under caster's control.
+
+        Args:
+            caster_id: The summoner
+            location_id: Where to summon
+            creature_type: Type of creature (undead, animal, elemental, etc.)
+            count: Number of creatures to summon
+            hd_max: Maximum HD of creatures
+            duration_turns: How long the summon lasts
+            caster_controls: Whether caster controls the creatures
+
+        Returns:
+            Result of the summoning
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Create summoned creatures (placeholder IDs)
+        summoned_ids = []
+        for i in range(count):
+            creature_id = f"summoned_{creature_type}_{caster_id}_{i}"
+            summoned_ids.append(creature_id)
+
+        result = {
+            "success": True,
+            "spell": "Summon Creatures",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "creature_type": creature_type,
+            "count": count,
+            "hd_max": hd_max,
+            "duration_turns": duration_turns,
+            "caster_controls": caster_controls,
+            "summoned_creature_ids": summoned_ids,
+        }
+
+        self._log_event("creatures_summoned", result)
+        return result
+
+    def animate_dead(
+        self,
+        caster_id: str,
+        location_id: str,
+        corpse_count: int,
+        hd_per_level: int = 1,
+    ) -> dict[str, Any]:
+        """
+        Animate dead corpses as undead.
+
+        Args:
+            caster_id: The necromancer
+            location_id: Where the corpses are
+            corpse_count: Number of corpses to animate
+            hd_per_level: HD of undead per caster level
+
+        Returns:
+            Result of the animation
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Calculate total HD that can be animated based on caster level
+        max_hd = caster.level * hd_per_level
+
+        # Create undead (placeholder IDs)
+        undead_ids = []
+        for i in range(corpse_count):
+            undead_id = f"undead_{caster_id}_{i}"
+            undead_ids.append(undead_id)
+
+        result = {
+            "success": True,
+            "spell": "Animate Dead",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "corpses_animated": corpse_count,
+            "max_hd_controlled": max_hd,
+            "undead_ids": undead_ids,
+            "caster_controls": True,
+            "permanent": True,
+        }
+
+        self._log_event("animate_dead", result)
+        return result
+
+    def dismiss_summoned(
+        self,
+        caster_id: str,
+        creature_ids: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Dismiss summoned creatures.
+
+        Args:
+            caster_id: The summoner
+            creature_ids: Specific creatures to dismiss (None = all)
+
+        Returns:
+            Result of the dismissal
+        """
+        dismissed = creature_ids or []
+
+        result = {
+            "success": True,
+            "caster_id": caster_id,
+            "dismissed_count": len(dismissed),
+            "dismissed_ids": dismissed,
+        }
+
+        self._log_event("creatures_dismissed", result)
+        return result
+
+    # =========================================================================
+    # CURSE METHODS
+    # =========================================================================
+
+    def apply_curse(
+        self,
+        caster_id: str,
+        target_id: str,
+        curse_type: str = "major",
+        stat_affected: Optional[str] = None,
+        modifier: Optional[int] = None,
+        is_permanent: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Apply a curse to a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target of the curse
+            curse_type: Type of curse (minor, major, ability_drain, wasting)
+            stat_affected: Which stat is affected (if any)
+            modifier: Modifier to apply to the stat
+            is_permanent: Whether the curse is permanent
+
+        Returns:
+            Result of applying the curse
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Add cursed condition
+        curse_condition = Condition(
+            condition_type=ConditionType.CURSED,
+            source=f"Curse ({curse_type})",
+            duration_turns=None if is_permanent else 6,
+            caster_id=caster_id,
+        )
+        target.conditions.append(curse_condition)
+
+        # Apply stat modifier if specified
+        if stat_affected and modifier:
+            from src.data_models import StatModifier
+            import uuid
+            curse_modifier = StatModifier(
+                modifier_id=f"curse_{uuid.uuid4().hex[:8]}",
+                stat=stat_affected,
+                value=modifier,
+                source=f"Curse ({curse_type})",
+                source_id=caster_id,
+                duration_turns=None if is_permanent else 6,
+            )
+            target.add_stat_modifier(curse_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Curse",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "curse_type": curse_type,
+            "stat_affected": stat_affected,
+            "modifier": modifier,
+            "is_permanent": is_permanent,
+            "requires_remove_curse": is_permanent,
+        }
+
+        self._log_event("curse_applied", result)
+        return result
+
+    def remove_curse_from_target(
+        self,
+        caster_id: str,
+        target_id: str,
+    ) -> dict[str, Any]:
+        """
+        Remove a curse from a target.
+
+        Args:
+            caster_id: The caster attempting removal
+            target_id: The cursed target
+
+        Returns:
+            Result of the removal attempt
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Find and remove cursed conditions
+        removed_curses = []
+        remaining_conditions = []
+        for condition in target.conditions:
+            if condition.condition_type == ConditionType.CURSED:
+                removed_curses.append({
+                    "source": condition.source,
+                    "caster_id": condition.caster_id,
+                })
+            else:
+                remaining_conditions.append(condition)
+
+        target.conditions = remaining_conditions
+
+        # Clear any curse-related stat modifiers
+        # (In a full implementation, we'd track which modifiers came from curses)
+
+        result = {
+            "success": len(removed_curses) > 0,
+            "spell": "Remove Curse",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "curses_removed": len(removed_curses),
+            "removed_details": removed_curses,
+        }
+
+        self._log_event("curse_removed", result)
+        return result
+
+    def bestow_curse(
+        self,
+        caster_id: str,
+        target_id: str,
+        effect_choice: str = "stat_penalty",
+        stat: str = "STR",
+    ) -> dict[str, Any]:
+        """
+        Bestow a curse with specific effect choice.
+
+        Args:
+            caster_id: The caster
+            target_id: The target
+            effect_choice: Type of curse effect
+            stat: Which stat for stat_penalty
+
+        Returns:
+            Result of the curse
+        """
+        # Map effect_choice to specific curse parameters
+        if effect_choice == "stat_penalty":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="ability_drain",
+                stat_affected=stat,
+                modifier=-4,
+                is_permanent=True,
+            )
+        elif effect_choice == "attack_penalty":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="minor",
+                stat_affected="attack",
+                modifier=-4,
+                is_permanent=True,
+            )
+        elif effect_choice == "action_loss":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="major",
+                is_permanent=True,
+            )
+        else:
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="major",
+                is_permanent=True,
+            )
+
+    # =========================================================================
+    # MISCELLANEOUS SPELL METHODS
+    # =========================================================================
+
+    def teleport_character(
+        self,
+        caster_id: str,
+        target_id: str,
+        destination_location_id: str,
+        teleport_type: str = "long",
+        passengers: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Teleport a character to a destination.
+
+        Args:
+            caster_id: The caster
+            target_id: The primary target (usually caster)
+            destination_location_id: Where to teleport to
+            teleport_type: Type of teleport (short, long, planar)
+            passengers: List of character IDs traveling with
+
+        Returns:
+            Result of teleportation
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        destination = self._locations.get(destination_location_id)
+        if not destination:
+            return {"error": f"Destination {destination_location_id} not found"}
+
+        # Move the primary target
+        teleported = [target_id]
+
+        # Move any passengers
+        if passengers:
+            for passenger_id in passengers:
+                if passenger_id in self._characters:
+                    teleported.append(passenger_id)
+
+        result = {
+            "success": True,
+            "spell": "Teleport",
+            "caster_id": caster_id,
+            "teleport_type": teleport_type,
+            "destination": destination_location_id,
+            "destination_name": destination.name,
+            "teleported": teleported,
+            "total_teleported": len(teleported),
+        }
+
+        self._log_event("teleport", result)
+        return result
+
+    def cast_detect_magic(
+        self,
+        caster_id: str,
+        location_id: str,
+        duration_turns: int = 2,
+    ) -> dict[str, Any]:
+        """
+        Cast Detect Magic to sense magical auras.
+
+        Args:
+            caster_id: The caster
+            location_id: Location to scan
+            duration_turns: How long detection lasts
+
+        Returns:
+            Detection results
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Find magical items/effects in location
+        magical_items = []
+        for effect in location.get_active_effects():
+            magical_items.append({
+                "name": effect.name,
+                "type": effect.effect_type.value,
+            })
+
+        result = {
+            "success": True,
+            "spell": "Detect Magic",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "duration_turns": duration_turns,
+            "magical_auras_detected": len(magical_items),
+            "detected_items": magical_items,
+        }
+
+        self._log_event("detect_magic", result)
+        return result
+
+    def grant_flight(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 6,
+        speed: int = 120,
+    ) -> dict[str, Any]:
+        """
+        Grant flight to a character.
+
+        Args:
+            caster_id: The caster
+            target_id: The target to grant flight
+            duration_turns: Duration of flight
+            speed: Flight speed in feet
+
+        Returns:
+            Result of granting flight
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        from src.data_models import StatModifier
+        import uuid
+
+        # Grant flight via a movement modifier
+        flight_modifier = StatModifier(
+            modifier_id=f"fly_{uuid.uuid4().hex[:8]}",
+            stat="movement_fly",
+            value=speed,
+            source="Fly spell",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+        target.add_stat_modifier(flight_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Fly",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "speed": speed,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("flight_granted", result)
+        return result
+
+    def grant_invisibility(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 24,
+        invisibility_type: str = "normal",
+    ) -> dict[str, Any]:
+        """
+        Grant invisibility to a character.
+
+        Args:
+            caster_id: The caster
+            target_id: The target
+            duration_turns: Duration
+            invisibility_type: Type (normal, improved, greater)
+
+        Returns:
+            Result of granting invisibility
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Add invisible condition
+        invisible_condition = Condition(
+            condition_type=ConditionType.INVISIBLE,
+            source=f"Invisibility ({invisibility_type})",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        target.conditions.append(invisible_condition)
+
+        result = {
+            "success": True,
+            "spell": "Invisibility",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "invisibility_type": invisibility_type,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("invisibility_granted", result)
+        return result
+
+    def cast_protection_from_evil(
+        self,
+        caster_id: str,
+        target_id: str,
+        duration_turns: int = 6,
+    ) -> dict[str, Any]:
+        """
+        Cast Protection from Evil on a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target to protect
+            duration_turns: Duration
+
+        Returns:
+            Result of protection
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        from src.data_models import StatModifier
+        import uuid
+
+        # Add AC bonus vs evil creatures
+        protection_modifier = StatModifier(
+            modifier_id=f"prot_evil_{uuid.uuid4().hex[:8]}",
+            stat="AC",
+            value=1,
+            source="Protection from Evil",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            condition="vs_evil",
+        )
+        target.add_stat_modifier(protection_modifier)
+
+        # Add save bonus vs evil
+        save_modifier = StatModifier(
+            modifier_id=f"prot_evil_save_{uuid.uuid4().hex[:8]}",
+            stat="saves",
+            value=1,
+            source="Protection from Evil",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            condition="vs_evil",
+        )
+        target.add_stat_modifier(save_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Protection from Evil",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "ac_bonus": 1,
+            "save_bonus": 1,
+            "duration_turns": duration_turns,
+        }
+
+        self._log_event("protection_from_evil", result)
+        return result
+
+    # =========================================================================
+    # BARRIER/WALL SPELL METHODS
+    # =========================================================================
+
+    def create_barrier(
+        self,
+        caster_id: str,
+        location_id: str,
+        barrier_type: str,
+        duration_turns: int = 12,
+        length_feet: int = 20,
+        height_feet: int = 10,
+        contact_damage: Optional[str] = None,
+        damage_type: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Create a magical barrier/wall at a location.
+
+        Args:
+            caster_id: The caster
+            location_id: Where to create the barrier
+            barrier_type: Type of barrier (fire, ice, stone, force)
+            duration_turns: How long the barrier lasts
+            length_feet: Length of the barrier
+            height_feet: Height of the barrier
+            contact_damage: Damage dice on contact
+            damage_type: Type of damage
+
+        Returns:
+            Result of barrier creation
+        """
+        from src.data_models import BarrierEffect, BarrierType
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Map string to enum
+        barrier_type_enum = BarrierType.FORCE
+        try:
+            barrier_type_enum = BarrierType(barrier_type.lower())
+        except ValueError:
+            pass
+
+        barrier = BarrierEffect(
+            barrier_type=barrier_type_enum,
+            name=f"Wall of {barrier_type.title()}",
+            caster_id=caster_id,
+            spell_name=f"Wall of {barrier_type.title()}",
+            location_id=location_id,
+            length_feet=length_feet,
+            height_feet=height_feet,
+            duration_turns=duration_turns,
+            contact_damage=contact_damage,
+            damage_type=damage_type,
+            blocks_movement=True,
+            blocks_vision=barrier_type in ("stone", "ice", "iron"),
+        )
+
+        # Store barrier in location (if location supports it)
+        if hasattr(location, 'barriers'):
+            location.barriers.append(barrier)
+
+        result = {
+            "success": True,
+            "spell": f"Wall of {barrier_type.title()}",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "barrier_id": barrier.barrier_id,
+            "barrier_type": barrier_type,
+            "dimensions": f"{length_feet}' x {height_feet}'",
+            "duration_turns": duration_turns,
+            "contact_damage": contact_damage,
+            "blocks_movement": barrier.blocks_movement,
+            "blocks_vision": barrier.blocks_vision,
+        }
+
+        self._log_event("barrier_created", result)
+        return result
+
+    def destroy_barrier(
+        self,
+        barrier_id: str,
+        location_id: str,
+    ) -> dict[str, Any]:
+        """
+        Destroy or dispel a barrier.
+
+        Args:
+            barrier_id: The barrier to destroy
+            location_id: Location containing the barrier
+
+        Returns:
+            Result of barrier destruction
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Remove barrier if location supports it
+        if hasattr(location, 'barriers'):
+            for barrier in location.barriers:
+                if barrier.barrier_id == barrier_id:
+                    barrier.is_active = False
+                    location.barriers.remove(barrier)
+                    return {
+                        "success": True,
+                        "barrier_id": barrier_id,
+                        "destroyed": True,
+                    }
+
+        return {"success": False, "error": "Barrier not found"}
+
+    # =========================================================================
+    # GEAS/COMPULSION METHODS
+    # =========================================================================
+
+    def apply_geas(
+        self,
+        caster_id: str,
+        target_id: str,
+        goal: str,
+        forbidden_actions: Optional[list[str]] = None,
+        duration_days: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply a Geas or Holy Quest to a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target of the geas
+            goal: What the target must accomplish
+            forbidden_actions: Actions that violate the geas
+            duration_days: Duration in days (None = until completed)
+
+        Returns:
+            Result of applying the geas
+        """
+        from src.data_models import CompulsionState
+
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        compulsion = CompulsionState(
+            target_id=target_id,
+            caster_id=caster_id,
+            spell_name="Geas",
+            goal=goal,
+            forbidden_actions=forbidden_actions or [],
+            duration_days=duration_days,
+        )
+
+        target.add_compulsion(compulsion)
+
+        result = {
+            "success": True,
+            "spell": "Geas",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "compulsion_id": compulsion.compulsion_id,
+            "goal": goal,
+            "forbidden_actions": forbidden_actions or [],
+            "duration_days": duration_days,
+        }
+
+        self._log_event("geas_applied", result)
+        return result
+
+    def check_geas_violation(
+        self,
+        character_id: str,
+        action: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an action violates any active geas.
+
+        Args:
+            character_id: The character taking the action
+            action: Description of the action
+
+        Returns:
+            Violation results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        violations = character.check_compulsion_violation(action)
+
+        result = {
+            "character_id": character_id,
+            "action": action,
+            "violations": violations,
+            "violated": len(violations) > 0,
+            "penalty": character.get_compulsion_penalty(),
+        }
+
+        if violations:
+            self._log_event("geas_violation", result)
+
+        return result
+
+    def complete_geas(
+        self,
+        character_id: str,
+        compulsion_id: str,
+    ) -> dict[str, Any]:
+        """
+        Mark a geas as completed.
+
+        Args:
+            character_id: The character who completed the geas
+            compulsion_id: The specific geas to complete
+
+        Returns:
+            Completion result
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        for compulsion in character.compulsions:
+            if compulsion.compulsion_id == compulsion_id:
+                result = compulsion.complete()
+                result["character_id"] = character_id
+                result["compulsion_id"] = compulsion_id
+                self._log_event("geas_completed", result)
+                return result
+
+        return {"error": f"Compulsion {compulsion_id} not found"}
+
+    # =========================================================================
+    # TELEPORTATION METHODS (with mishap system)
+    # =========================================================================
+
+    def teleport_with_familiarity(
+        self,
+        caster_id: str,
+        target_ids: list[str],
+        destination_id: str,
+        familiarity: str = "visited",
+    ) -> dict[str, Any]:
+        """
+        Teleport characters with familiarity-based accuracy.
+
+        Args:
+            caster_id: The caster
+            target_ids: Characters to teleport
+            destination_id: Destination location
+            familiarity: Familiarity level with destination
+
+        Returns:
+            Teleportation result including mishap check
+        """
+        from src.data_models import LocationFamiliarity, DiceRoller
+
+        destination = self._locations.get(destination_id)
+        if not destination:
+            return {"error": f"Destination {destination_id} not found"}
+
+        # Get familiarity enum
+        try:
+            fam_level = LocationFamiliarity(familiarity)
+        except ValueError:
+            fam_level = LocationFamiliarity.VISITED
+
+        # Roll for success/mishap
+        roll_result = DiceRoller.roll("1d100")
+        roll = roll_result.total
+        success_threshold = fam_level.success_chance
+        mishap_threshold = 100 - fam_level.mishap_chance
+
+        teleported = []
+        mishap = False
+        mishap_type = None
+
+        if roll <= success_threshold:
+            # Success - teleport all targets
+            for target_id in target_ids:
+                if target_id in self._characters:
+                    teleported.append(target_id)
+        elif roll >= mishap_threshold:
+            # Mishap!
+            mishap = True
+            mishap_roll = DiceRoller.roll("1d6").total
+            if mishap_roll <= 2:
+                mishap_type = "scattered"  # Targets arrive in different locations
+            elif mishap_roll <= 4:
+                mishap_type = "off_target"  # Arrive at wrong location
+            else:
+                mishap_type = "damage"  # Take 1d10 damage per teleporter level
+        else:
+            # Off target - arrive nearby
+            mishap_type = "off_target"
+            for target_id in target_ids:
+                if target_id in self._characters:
+                    teleported.append(target_id)
+
+        result = {
+            "success": not mishap,
+            "spell": "Teleport",
+            "caster_id": caster_id,
+            "destination_id": destination_id,
+            "familiarity": familiarity,
+            "roll": roll,
+            "success_threshold": success_threshold,
+            "teleported": teleported,
+            "mishap": mishap,
+            "mishap_type": mishap_type,
+        }
+
+        self._log_event("teleport_attempt", result)
+        return result
+
+    # =========================================================================
+    # ORACLE SPELL ADJUDICATION (Phase 4)
+    # =========================================================================
+
+    def get_spell_adjudicator(self) -> MythicSpellAdjudicator:
+        """
+        Get or create the spell adjudicator for oracle-based resolution.
+
+        Returns:
+            MythicSpellAdjudicator instance
+        """
+        if self._spell_adjudicator is None:
+            self._spell_adjudicator = MythicSpellAdjudicator()
+        return self._spell_adjudicator
+
+    def adjudicate_oracle_spell(
+        self,
+        spell_name: str,
+        caster_id: str,
+        adjudication_type: str,
+        oracle_question: Optional[str] = None,
+        target_id: Optional[str] = None,
+        intention: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AdjudicationResult:
+        """
+        Adjudicate a spell that requires oracle resolution.
+
+        This is the main entry point for Phase 4 oracle-based spell resolution.
+        It routes to the appropriate MythicSpellAdjudicator method based on
+        the adjudication type identified during spell parsing.
+
+        Args:
+            spell_name: Name of the spell being cast
+            caster_id: ID of the caster
+            adjudication_type: Type of adjudication (from SpellAdjudicationType)
+            oracle_question: Optional specific question for the oracle
+            target_id: Optional target character/entity
+            intention: What the caster is trying to achieve
+            **kwargs: Additional context for specific adjudication types
+
+        Returns:
+            AdjudicationResult with success level and interpretation context
+        """
+        caster = self._characters.get(caster_id)
+        if not caster:
+            caster = self._npcs.get(caster_id)
+
+        caster_name = caster.name if caster else "Unknown Caster"
+        caster_level = caster.level if caster else 1
+
+        # Build target description
+        target_description = ""
+        if target_id:
+            target = self._characters.get(target_id) or self._npcs.get(target_id)
+            if target:
+                target_description = target.name
+
+        # Create adjudication context
+        context = AdjudicationContext(
+            spell_name=spell_name,
+            caster_name=caster_name,
+            caster_level=caster_level,
+            target_description=target_description,
+            intention=intention or oracle_question or f"Cast {spell_name}",
+            target_power_level=kwargs.get("target_power_level", "normal"),
+            magical_resistance=kwargs.get("magical_resistance", False),
+            curse_source=kwargs.get("curse_source", ""),
+            previous_attempts=kwargs.get("previous_attempts", 0),
+        )
+
+        adjudicator = self.get_spell_adjudicator()
+
+        # Route to appropriate adjudicator method
+        try:
+            adj_type = SpellAdjudicationType(adjudication_type)
+        except ValueError:
+            adj_type = SpellAdjudicationType.GENERIC
+
+        if adj_type == SpellAdjudicationType.WISH:
+            wish_text = kwargs.get("wish_text", intention or oracle_question or "")
+            wish_power = kwargs.get("wish_power", "standard")
+            result = adjudicator.adjudicate_wish(wish_text, context, wish_power)
+
+        elif adj_type == SpellAdjudicationType.DIVINATION:
+            question = oracle_question or intention or f"What does {spell_name} reveal?"
+            divination_type = kwargs.get("divination_type", "general")
+            protected = kwargs.get("target_is_protected", False)
+            result = adjudicator.adjudicate_divination(
+                question, context, divination_type, protected
+            )
+
+        elif adj_type == SpellAdjudicationType.ILLUSION_BELIEF:
+            quality = kwargs.get("illusion_quality", "standard")
+            intelligence = kwargs.get("viewer_intelligence", "average")
+            has_doubt = kwargs.get("viewer_has_reason_to_doubt", False)
+            result = adjudicator.adjudicate_illusion_belief(
+                context, quality, intelligence, has_doubt
+            )
+
+        elif adj_type == SpellAdjudicationType.SUMMONING_CONTROL:
+            creature_type = kwargs.get("creature_type", "creature")
+            creature_power = kwargs.get("creature_power", "normal")
+            binding = kwargs.get("binding_strength", "standard")
+            result = adjudicator.adjudicate_summoning_control(
+                context, creature_type, creature_power, binding
+            )
+
+        elif adj_type == SpellAdjudicationType.CURSE_BREAK:
+            curse_power = kwargs.get("curse_power", "normal")
+            specifically_counters = kwargs.get("spell_specifically_counters", True)
+            result = adjudicator.adjudicate_curse_break(
+                context, curse_power, specifically_counters
+            )
+
+        else:
+            # Generic adjudication
+            from src.oracle.mythic_gme import Likelihood
+            question = oracle_question or f"Does {spell_name} succeed as intended?"
+            base_likelihood = Likelihood.FIFTY_FIFTY
+            result = adjudicator.adjudicate_generic(question, context, base_likelihood)
+
+        # Log the adjudication
+        self._log_event(
+            "oracle_spell_adjudication",
+            {
+                "spell": spell_name,
+                "caster_id": caster_id,
+                "adjudication_type": adj_type.value,
+                "success_level": result.success_level.value,
+                "summary": result.summary,
+                "has_complication": result.has_complication,
+            },
+        )
+
+        return result
+
+    def resolve_oracle_spell_effects(
+        self,
+        result: AdjudicationResult,
+        caster_id: str,
+        target_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply effects from an oracle spell adjudication.
+
+        Takes the AdjudicationResult and applies any predetermined effects
+        while returning context for LLM interpretation of narrative results.
+
+        Args:
+            result: The adjudication result from adjudicate_oracle_spell
+            caster_id: ID of the caster
+            target_id: Optional target ID
+
+        Returns:
+            Dictionary with applied effects and LLM interpretation context
+        """
+        applied_effects = []
+
+        # Apply predetermined effects (like curse removal on success)
+        for effect_cmd in result.predetermined_effects:
+            parts = effect_cmd.split(":")
+            if parts[0] == "remove_condition" and len(parts) >= 2:
+                condition_name = parts[1]
+                effect_target = parts[2] if len(parts) > 2 else target_id
+
+                # Find and remove the condition
+                if effect_target:
+                    target = self._characters.get(effect_target) or self._npcs.get(effect_target)
+                    if target:
+                        try:
+                            cond_type = ConditionType(condition_name)
+                            target.conditions = [
+                                c for c in target.conditions
+                                if c.condition_type != cond_type
+                            ]
+                            applied_effects.append({
+                                "type": "condition_removed",
+                                "condition": condition_name,
+                                "target": effect_target,
+                            })
+                        except ValueError:
+                            pass
+
+        return {
+            "success_level": result.success_level.value,
+            "summary": result.summary,
+            "applied_effects": applied_effects,
+            "requires_interpretation": result.requires_interpretation(),
+            "llm_context": result.to_llm_context() if result.requires_interpretation() else {},
+            "has_complication": result.has_complication,
         }
 
     # =========================================================================

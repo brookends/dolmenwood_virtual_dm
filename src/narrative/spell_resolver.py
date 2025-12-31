@@ -121,6 +121,8 @@ class MechanicalEffect:
     damage_dice: Optional[str] = None  # e.g., "2d6", "1d8+2"
     damage_type: Optional[str] = None  # e.g., "fire", "cold", "holy"
     healing_dice: Optional[str] = None  # e.g., "1d6+1"
+    flat_healing: Optional[int] = None  # Fixed healing amount (no dice)
+    bonus_hp_dice: Optional[str] = None  # Temporary/bonus HP (Aid spell)
 
     # Conditions
     condition_applied: Optional[str] = None  # e.g., "charmed", "frightened"
@@ -141,10 +143,144 @@ class MechanicalEffect:
     save_negates: bool = False  # Save completely negates effect
     save_halves: bool = False  # Save reduces effect by half
 
+    # Death effects (Cloudkill, Disintegrate, Word of Doom, etc.)
+    is_death_effect: bool = False  # This is a death/destruction effect
+    death_on_failed_save: bool = False  # Failed save = instant death/destruction
+    death_hd_threshold: Optional[int] = None  # Only affects creatures below this HD
+
+    # Flat damage (for spells like Ignite that deal fixed damage)
+    flat_damage: Optional[int] = None  # Fixed damage amount (no dice)
+
     # Targeting
     max_targets: Optional[int] = None  # Number of targets affected
     max_hd_affected: Optional[int] = None  # Max HD of creatures affected
     area_radius: Optional[int] = None  # Radius in feet for area effects
+
+    # Charm/Control effects (Ingratiate, Dominate, Command, etc.)
+    is_charm_effect: bool = False  # This is a charm/mind-control spell
+    recurring_save_frequency: Optional[str] = None  # "daily", "hourly", "per_turn"
+    charm_obeys_commands: bool = False  # Subject obeys verbal commands
+    command_word_only: bool = False  # Single-word command (Command spell)
+    multi_target_dice: Optional[str] = None  # For multi-target charms (e.g., "3d6")
+    target_level_limit: Optional[int] = None  # Max level of affected creatures
+
+    # Glyph/Lock effects (Glyph of Sealing, Glyph of Locking, Knock, etc.)
+    is_glyph_effect: bool = False  # This spell creates/affects a glyph
+    glyph_type: Optional[str] = None  # "sealing", "locking", "trap"
+    has_password: bool = False  # Glyph can be bypassed with password
+    can_bypass_level_diff: Optional[int] = None  # Higher-level casters can bypass
+    is_unlock_effect: bool = False  # This spell unlocks/dispels (Knock)
+    dispels_sealing: bool = False  # Dispels Glyph of Sealing
+    disables_locking: bool = False  # Temporarily disables Glyph of Locking
+    is_trap_glyph: bool = False  # This creates a trap glyph
+    trap_trigger: Optional[str] = None  # "touch", "open", "read"
+
+    # Combat modifier effects (Mirror Image, Haste, Confusion, Fear)
+    is_combat_modifier: bool = False  # This spell modifies combat behavior
+    creates_mirror_images: bool = False  # Mirror Image spell
+    mirror_image_dice: Optional[str] = None  # Dice for images (e.g., "1d4")
+    is_haste_effect: bool = False  # Haste spell (extra action, +AC, +initiative)
+    is_confusion_effect: bool = False  # Confusion spell (random behavior)
+    is_fear_effect: bool = False  # Fear spell (targets must flee/cower)
+    attack_bonus: Optional[int] = None  # Attack bonus from spells like Ginger Snap
+    initiative_bonus: Optional[int] = None  # Initiative modifier
+
+    # Area/Zone effects (Web, Silence, Darkness, Fog Cloud, etc.)
+    is_area_effect: bool = False  # This spell creates a persistent area effect
+    area_effect_type: Optional[str] = None  # "web", "silence", "darkness", "fog", etc.
+    blocks_movement: bool = False  # Area blocks/restricts movement
+    blocks_vision: bool = False  # Area blocks vision (darkness, fog)
+    blocks_sound: bool = False  # Area blocks sound (silence)
+    blocks_spellcasting: bool = False  # Area prevents verbal spellcasting
+    creates_hazard: bool = False  # Area deals damage or applies effects
+    entangles: bool = False  # Area restrains creatures (web, entangle)
+
+    # Buff/Immunity effects (Missile Ward, Water Breathing, etc.)
+    grants_immunity: bool = False  # This spell grants immunity to something
+    immunity_type: Optional[str] = None  # "missiles", "drowning", "gas", "fire", etc.
+    enhances_vision: bool = False  # Dark Sight, Infravision, etc.
+    vision_type: Optional[str] = None  # "darkvision", "infravision", "see_invisible"
+
+    # Stat override effects (Feeblemind, etc.)
+    is_stat_override: bool = False  # This spell overrides a stat to a fixed value
+    override_stat: Optional[str] = None  # Which stat is overridden
+    override_value: Optional[int] = None  # The value it's set to
+
+    # Dispel/Removal effects
+    is_dispel_effect: bool = False  # This spell removes other spell effects
+    dispel_target: Optional[str] = None  # "all", "specific", "curse", "poison", etc.
+    removes_condition: bool = False  # This spell removes a condition
+    condition_removed: Optional[str] = None  # Which condition is removed
+
+    # Summon/Control effects (Animate Dead, Conjure Animals, etc.)
+    is_summon_effect: bool = False  # This spell summons/animates creatures
+    summon_type: Optional[str] = None  # "undead", "animal", "elemental", "construct"
+    summon_hd_max: Optional[int] = None  # Max HD of creatures summoned
+    summon_count_dice: Optional[str] = None  # Dice for number of creatures
+    summon_count_fixed: Optional[int] = None  # Fixed number of creatures
+    summon_duration: Optional[str] = None  # Duration of summoning
+    summoner_controls: bool = False  # If summoner controls the creatures
+    summon_level_scaling: bool = False  # If HD/count scales with caster level
+
+    # Curse effects (Curse, Bane, Bestow Curse, etc.)
+    is_curse_effect: bool = False  # This is a curse spell
+    curse_type: Optional[str] = None  # "minor", "major", "ability_drain", "wasting"
+    curse_stat_affected: Optional[str] = None  # Which stat is cursed
+    curse_modifier: Optional[int] = None  # How much the stat is reduced
+    curse_is_permanent: bool = False  # Curse is permanent until removed
+    requires_remove_curse: bool = False  # Requires Remove Curse to remove
+
+    # Teleportation effects (Teleport, Dimension Door, etc.)
+    is_teleport_effect: bool = False  # This spell teleports targets
+    teleport_type: Optional[str] = None  # "short", "long", "planar"
+    teleport_range: Optional[int] = None  # Max distance in feet
+    teleport_accuracy: Optional[str] = None  # "exact", "approximate", "random"
+    allows_passengers: bool = False  # Can bring other creatures
+    max_passengers: Optional[int] = None  # How many can travel with caster
+
+    # Divination effects (Detect Magic, Locate Object, etc.)
+    is_divination_effect: bool = False  # This spell provides information
+    divination_type: Optional[str] = None  # "detect", "locate", "scry", "communicate"
+    detects_what: Optional[str] = None  # What is detected: "magic", "evil", "traps", etc.
+    divination_range: Optional[int] = None  # Detection range in feet
+
+    # Movement enhancement effects (Fly, Levitate, etc.)
+    grants_movement: bool = False  # This spell grants a movement type
+    movement_type: Optional[str] = None  # "fly", "levitate", "swim", "climb", "phase"
+    movement_speed: Optional[int] = None  # Speed in feet per turn
+
+    # Invisibility/Illusion effects
+    is_invisibility_effect: bool = False  # This spell grants invisibility
+    invisibility_type: Optional[str] = None  # "normal", "improved", "greater"
+    is_illusion_effect: bool = False  # This spell creates an illusion
+    illusion_type: Optional[str] = None  # "visual", "auditory", "phantasm"
+
+    # Protection effects (Protection from Evil, etc.)
+    is_protection_effect: bool = False  # This spell provides protection
+    protection_type: Optional[str] = None  # "evil", "good", "elements", "magic"
+    protection_bonus: Optional[int] = None  # AC/save bonus granted
+
+    # Barrier/Wall effects (Wall of Fire, Wall of Ice, etc.)
+    is_barrier_effect: bool = False  # This spell creates a barrier
+    barrier_type: Optional[str] = None  # "fire", "ice", "stone", "force"
+    barrier_damage: Optional[str] = None  # Damage on contact/passage
+    barrier_blocks_movement: bool = True
+    barrier_blocks_vision: bool = False
+
+    # Compulsion/Geas effects
+    is_compulsion_effect: bool = False  # This spell creates a geas/quest
+    compulsion_type: Optional[str] = None  # "geas", "quest", "command"
+    compulsion_penalty: Optional[str] = None  # Penalty for violation
+
+    # Anti-magic effects
+    is_antimagic_effect: bool = False  # This spell blocks/dispels magic
+    antimagic_type: Optional[str] = None  # "dispel", "suppress", "nullify"
+    antimagic_radius: Optional[int] = None  # Radius of effect
+
+    # Oracle adjudication (Phase 4 - spells that defer to Mythic GME)
+    requires_oracle: bool = False  # This spell requires oracle adjudication
+    oracle_adjudication_type: Optional[str] = None  # "wish", "divination", "illusion", etc.
+    oracle_question: Optional[str] = None  # Question for oracle if applicable
 
 
 @dataclass
@@ -160,11 +296,21 @@ class ParsedMechanicalEffects:
     requires_save: bool = False
     affects_multiple: bool = False
 
+    # Oracle adjudication flag
+    requires_oracle_adjudication: bool = False
+    oracle_adjudication_type: Optional[str] = None
+
     def add_effect(self, effect: MechanicalEffect) -> None:
         """Add an effect and update flags."""
         self.effects.append(effect)
         if self.primary_effect is None:
             self.primary_effect = effect
+
+        # Track oracle requirement
+        if effect.requires_oracle:
+            self.requires_oracle_adjudication = True
+            if effect.oracle_adjudication_type:
+                self.oracle_adjudication_type = effect.oracle_adjudication_type
 
         if effect.category == MechanicalEffectCategory.DAMAGE:
             self.deals_damage = True
@@ -1809,6 +1955,76 @@ class SpellResolver:
             parsed.add_effect(effect)
 
         # =================================================================
+        # FIX 2.5: Flat damage patterns (no dice)
+        # Patterns: "1 damage per round", "2 points of damage", "takes 1 damage"
+        # =================================================================
+        flat_damage_patterns = [
+            r"(?:deals?|takes?|causes?|inflicts?)\s+(\d+)\s+(?:points?\s+of\s+)?damage",
+            r"(\d+)\s+(?:points?\s+of\s+)?damage\s+per\s+(?:round|turn)",
+            r"suffer(?:s|ing)?\s+(\d+)\s+(?:points?\s+of\s+)?damage",
+        ]
+        for pattern in flat_damage_patterns:
+            flat_matches = re.findall(pattern, description, re.IGNORECASE)
+            for flat_dmg in flat_matches:
+                damage_val = int(flat_dmg)
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DAMAGE,
+                    flat_damage=damage_val,
+                    description=f"Deals {damage_val} flat damage",
+                )
+
+                # Try to identify damage type
+                for dtype in ["fire", "cold", "lightning", "acid", "poison", "holy", "necrotic"]:
+                    if dtype in description:
+                        effect.damage_type = dtype
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one flat damage effect
+
+        # =================================================================
+        # FIX 2.6: Death effects (instant death on failed save)
+        # Patterns: "dies instantly", "killed outright", "slain", "disintegrate"
+        # =================================================================
+        death_patterns = [
+            r"(?:die|dies|death),?\s*(?:instantly|immediately|outright)",
+            r"or\s+die\b",  # "must save or die"
+            r"(?:killed|slain)\s*(?:instantly|outright|immediately)?",
+            r"disintegrate[sd]?",
+            r"disintegration",  # "resist disintegration"
+            r"destroys?\s+(?:the\s+)?(?:material\s+)?(?:form|body)",  # "destroys the material form"
+            r"turns?\s+to\s+(?:dust|stone|ash)",
+            r"(?:slay|slays|slaying)\s+",
+            r"creature[s]?\s+with\s+(\d+)\s+(?:or\s+fewer\s+)?(?:hd|hit\s+dice).*(?:die|killed|slain)",
+        ]
+        for pattern in death_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for HD threshold in death effects
+                hd_match = re.search(
+                    r"(\d+)\s+(?:or\s+fewer\s+)?(?:hd|hit\s+dice)",
+                    description, re.IGNORECASE
+                )
+                hd_threshold = int(hd_match.group(1)) if hd_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DAMAGE,
+                    is_death_effect=True,
+                    death_on_failed_save=True,
+                    death_hd_threshold=hd_threshold,
+                    description="Death effect on failed save",
+                )
+
+                # Check for save type
+                for save in ["doom", "ray", "hold", "blast", "spell"]:
+                    if f"save versus {save}" in description or f"save vs {save}" in description:
+                        effect.save_type = save
+                        effect.save_negates = True
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one death effect
+
+        # =================================================================
         # FIX 3: Healing patterns (exclude from damage parsing)
         # Only match "restores/heals Xd6", NOT "Xd6 Hit Points" alone
         # =================================================================
@@ -1826,14 +2042,59 @@ class SpellResolver:
             parsed.add_effect(effect)
 
         # =================================================================
+        # FIX 3.5: Flat healing patterns (no dice)
+        # Patterns: "heals 5 Hit Points", "restores 10 HP"
+        # =================================================================
+        flat_heal_patterns = [
+            r"(?:heals?|restores?|regains?)\s+(\d+)\s+(?:hit\s+points?|hp)",
+            r"(?:heals?|restores?|regains?)\s+(\d+)\s+(?:points?\s+of\s+)?(?:health|vitality)",
+        ]
+        for pattern in flat_heal_patterns:
+            flat_heal_matches = re.findall(pattern, description, re.IGNORECASE)
+            for heal_val in flat_heal_matches:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.HEALING,
+                    flat_healing=int(heal_val),
+                    description=f"Heals {heal_val} HP",
+                )
+                parsed.add_effect(effect)
+                break  # Only add one flat healing effect
+
+        # =================================================================
+        # FIX 3.6: Bonus/temporary HP patterns (Aid spell)
+        # Patterns: "gains 1d6 bonus Hit Points", "temporary hit points"
+        # =================================================================
+        bonus_hp_patterns = [
+            r"gains?\s+(\d+d\d+(?:\s*\+\s*\d+)?)\s+(?:bonus|temporary|extra)\s+hit\s+points?",
+            r"(\d+d\d+(?:\s*\+\s*\d+)?)\s+(?:bonus|temporary|extra)\s+hit\s+points?",
+            r"temporary\s+hit\s+points?\s+(?:equal\s+to\s+)?(\d+d\d+)",
+        ]
+        for pattern in bonus_hp_patterns:
+            bonus_matches = re.findall(pattern, description, re.IGNORECASE)
+            for bonus_dice in bonus_matches:
+                dice_clean = bonus_dice.replace(" ", "")
+                parsed_dice.add(dice_clean)
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    bonus_hp_dice=dice_clean,
+                    description=f"Grants {dice_clean} temporary HP",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
         # FIX 4: Condition patterns with better context checking
         # =================================================================
+        # Note: "charmed/charming/charm" are NOT included here because
+        # charm effects are handled by the specialized charm patterns section
+        # to ensure proper recurring save and caster tracking.
         condition_keywords = {
-            "charmed": "charmed",
-            "charming": "charmed",
-            "charm": "charmed",
             "frightened": "frightened",
             "fear": "frightened",
+            "terror": "frightened",  # "struck with terror", "terrifies"
+            "terrifies": "frightened",
+            "terrified": "frightened",
+            "fleeing": "frightened",  # Fear spell causes fleeing
             "paralyzed": "paralyzed",
             "paralysis": "paralyzed",
             "paralysed": "paralyzed",
@@ -1848,10 +2109,15 @@ class SpellResolver:
             "unconscious": "unconscious",
             "stunned": "stunned",
             "stun": "stunned",
+            "confused": "confused",  # Confusion spell
+            "confusion": "confused",
+            "delusions": "confused",  # "stricken with delusions"
+            "uncontrollably": "confused",  # "become uncontrollably..."
         }
         # Note: Removed "stone" -> petrified (too many false positives)
         # Note: Removed "invisible" (often describes objects, not conditions)
         # Note: Removed "poison" (conflicts with poisoned, use poisoned only)
+        # Note: Removed "charmed/charm" -> handled by charm patterns section
 
         for keyword, condition in condition_keywords.items():
             if keyword in description:
@@ -1947,6 +2213,1241 @@ class SpellResolver:
                     description=f"Grants {modifier} modifier",
                 )
                 parsed.add_effect(effect)
+
+        # =================================================================
+        # Light source patterns (for Light spell)
+        # =================================================================
+        light_patterns = [
+            r"(?:creates?|produces?|emits?|sheds?)\s+(?:bright\s+)?light",
+            r"illuminat(?:es?|ing)\s+(?:a\s+)?(\d+)['\s]?\s*(?:foot|ft)?",
+            r"light\s+(?:within|in)\s+a\s+(\d+)['\s]?\s*(?:foot|ft)?",
+        ]
+        for pattern in light_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Extract radius if present
+                radius_match = re.search(r"(\d+)['\s]?\s*(?:foot|ft|radius)", description, re.IGNORECASE)
+                radius = int(radius_match.group(1)) if radius_match else 30
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    description=f"Creates light ({radius}' radius)",
+                    area_radius=radius,
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Resistance/immunity patterns (for Ward spells)
+        # =================================================================
+        resistance_keywords = {
+            "fire": ["fire", "flame", "heat", "burn"],
+            "cold": ["cold", "ice", "frost", "freeze"],
+            "lightning": ["lightning", "electric", "shock"],
+            "poison": ["poison", "venom", "toxin"],
+            "acid": ["acid", "corrosive"],
+        }
+        for damage_type, keywords in resistance_keywords.items():
+            for keyword in keywords:
+                resist_patterns = [
+                    rf"resist(?:ance|s)?\s+(?:to\s+)?{keyword}",
+                    rf"(?:immune|immunity)\s+(?:to\s+)?{keyword}",
+                    rf"{keyword}\s+(?:damage\s+)?(?:is\s+)?(?:reduced|halved)",
+                    rf"protect(?:s|ion)?\s+(?:from|against)\s+{keyword}",
+                    rf"reduce\s+{keyword}\s+damage",  # "Reduce cold damage by..."
+                    rf"{keyword}-based",  # "cold-based effects"
+                    rf"untroubled\s+by\s+[^.]*{keyword}",  # "untroubled by...cold"
+                    rf"rebuking\s+[^.]*{keyword}",  # "rebuking...cold and frost"
+                    rf"ward\s+[^.]*{keyword}",  # ward spells often protect against element
+                ]
+                for pattern in resist_patterns:
+                    if re.search(pattern, description, re.IGNORECASE):
+                        effect = MechanicalEffect(
+                            category=MechanicalEffectCategory.BUFF,
+                            stat_modified="resistance",
+                            damage_type=damage_type,
+                            description=f"Resistance to {damage_type} damage",
+                        )
+                        parsed.add_effect(effect)
+                        break
+
+        # =================================================================
+        # Morale bonus patterns (for Rally spell)
+        # =================================================================
+        morale_patterns = [
+            r"(?:grants?|provides?|gives?)\s+(?:a\s+)?(?:bonus\s+(?:to\s+)?)?morale",
+            r"morale\s+(?:bonus|boost|increase)",
+            r"(?:bolsters?|improves?|strengthens?)\s+morale",
+            r"(?:allies?|companions?)\s+(?:are\s+)?(?:immune|resist)\s+(?:to\s+)?fear",
+        ]
+        for pattern in morale_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    stat_modified="morale",
+                    modifier_value=1,  # Default morale bonus
+                    description="Grants morale bonus",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Immunity patterns (for Missile Ward, Proof Against Deadly Harm)
+        # =================================================================
+        immunity_patterns = [
+            (r"(?:complete\s+)?protection\s+(?:from|against)\s+(?:normal\s+)?missiles?", "missiles"),
+            (r"immune\s+to\s+(?:normal\s+)?missiles?", "missiles"),
+            (r"immune\s+to\s+damage\s+from\s+(?:one\s+)?(?:specific\s+)?(?:type\s+of\s+)?weapons?", "weapon_type"),
+            (r"completely\s+immune\s+to\s+damage", "damage_type"),
+            (r"protection\s+from\s+(?:normal\s+)?(?:attacks?|weapons?)", "normal_attacks"),
+            (r"hinders?\s+attacks?\s+against", "attacks_hindered"),  # Sanctuary
+            (r"cannot\s+(?:be\s+)?(?:hit|struck)\s+by", "immunity"),
+        ]
+        for pattern, immunity_type in immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    stat_modified="immunity",
+                    condition_context=immunity_type,
+                    description=f"Immunity/protection ({immunity_type})",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Charm/Control spell patterns
+        # Detects: Ingratiate, Dominate, Command, Charm Serpents, etc.
+        # =================================================================
+        charm_patterns = [
+            # "be charmed" / "or be charmed" / "is charmed"
+            r"(?:must|or)\s+(?:be\s+)?charmed",
+            # "is charmed" / "are charmed"
+            r"(?:is|are)\s+charmed",
+            # "charm a person" / "charms a creature"
+            r"charm(?:s)?\s+(?:a\s+)?(?:person|creature|humanoid|subject)",
+            # "places a powerful charm" / "enchants...charm"
+            r"(?:places?|enchants?)\s+(?:a\s+)?(?:\w+\s+)?charm",
+            # "hypnotises" (for Charm Serpents)
+            r"hypnotis(?:es?|ed)",
+        ]
+
+        for pattern in charm_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="charmed",
+                    is_charm_effect=True,
+                    description="Applies charm effect",
+                )
+
+                # Check for daily save pattern
+                if re.search(r"save\s+(?:versus\s+spell\s+)?once\s+per\s+day", description, re.IGNORECASE):
+                    effect.recurring_save_frequency = "daily"
+
+                # Check for command obedience
+                if re.search(r"(?:obey|commands?|orders?)\s+(?:they\s+)?(?:are\s+)?(?:obeyed|follow)", description, re.IGNORECASE) or \
+                   re.search(r"(?:give|gives?)\s+(?:the\s+)?(?:charmed\s+)?(?:subject|creature)s?\s+commands", description, re.IGNORECASE) or \
+                   re.search(r"caster\s+may\s+give.*commands", description, re.IGNORECASE):
+                    effect.charm_obeys_commands = True
+
+                # Check for multi-target dice (Dominate: "3d6 creatures")
+                multi_match = re.search(r"(\d+d\d+)\s+creatures?\s+of", description, re.IGNORECASE)
+                if multi_match:
+                    effect.multi_target_dice = multi_match.group(1)
+
+                # Check for level limit (Dominate: "up to Level 3")
+                level_match = re.search(r"(?:of\s+)?(?:up\s+to\s+)?level\s+(\d+)\s+(?:or\s+(?:lower|less|fewer))?", description, re.IGNORECASE)
+                if level_match:
+                    effect.target_level_limit = int(level_match.group(1))
+
+                # Check for save type (use regex to handle whitespace variations)
+                for save in ["doom", "ray", "hold", "blast", "spell"]:
+                    save_pattern = rf"save\s+(?:versus|vs\.?)\s+{save}"
+                    if re.search(save_pattern, description, re.IGNORECASE):
+                        effect.save_type = save
+                        effect.save_negates = True
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one charm effect
+
+        # =================================================================
+        # Command spell patterns (single-word command)
+        # =================================================================
+        command_patterns = [
+            r"(?:utters?\s+)?(?:a\s+)?command\s+(?:word|charged\s+with)",
+            r"compelled\s+to\s+obey\s+for\s+\d+\s+round",
+            r"command\s+is\s+limited\s+to\s+a\s+single\s+word",
+        ]
+
+        for pattern in command_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Don't add if we already parsed a charm effect
+                if not any(e.is_charm_effect for e in parsed.effects):
+                    effect = MechanicalEffect(
+                        category=MechanicalEffectCategory.CONDITION,
+                        condition_applied="commanded",
+                        is_charm_effect=True,
+                        command_word_only=True,
+                        description="One-word command effect",
+                    )
+
+                    # Check for save type (use regex to handle whitespace variations)
+                    for save in ["doom", "ray", "hold", "blast", "spell"]:
+                        save_pattern = rf"save\s+(?:versus|vs\.?)\s+{save}"
+                        if re.search(save_pattern, description, re.IGNORECASE):
+                            effect.save_type = save
+                            effect.save_negates = True
+                            break
+
+                    parsed.add_effect(effect)
+                    break
+
+        # =================================================================
+        # Glyph spell patterns (Glyph of Sealing, Glyph of Locking, etc.)
+        # =================================================================
+        glyph_patterns = [
+            # "glyph of sealing" / "glowing rune...preventing"
+            (r"glyph\s+of\s+sealing", "sealing"),
+            # "glowing rune...preventing" (sealing without name)
+            (r"glowing\s+rune.*(?:preventing|sealed)", "sealing"),
+            # "glyph of locking"
+            (r"glyph\s+of\s+locking", "locking"),
+            # "glowing rune...locking" (locking without name)
+            (r"glowing\s+rune.*magically\s+locking", "locking"),
+            # "serpent glyph" / trap glyphs
+            (r"serpent\s+glyph", "trap"),
+        ]
+
+        for pattern, glyph_t in glyph_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_glyph_effect=True,
+                    glyph_type=glyph_t,
+                    description=f"Places a {glyph_t} glyph",
+                )
+
+                # Check for password feature
+                if re.search(r"password", description, re.IGNORECASE):
+                    effect.has_password = True
+
+                # Check for level bypass (e.g., "3 Levels higher", "3 or more Levels higher")
+                level_diff_match = re.search(
+                    r"(\d+)\s+(?:or\s+more\s+)?levels?\s+(?:or\s+more\s+)?(?:higher|above)",
+                    description, re.IGNORECASE
+                )
+                if level_diff_match:
+                    effect.can_bypass_level_diff = int(level_diff_match.group(1))
+
+                # Check for trap features
+                if glyph_t == "trap":
+                    effect.is_trap_glyph = True
+                    # Look for trigger condition
+                    if "touch" in description:
+                        effect.trap_trigger = "touch"
+                    elif "open" in description:
+                        effect.trap_trigger = "open"
+                    elif "step" in description:
+                        effect.trap_trigger = "step"
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Knock spell patterns (unlock/dispel)
+        # =================================================================
+        knock_patterns = [
+            r"knocks?\s+on.*portal",
+            r"portal.*magically\s+opens",
+            r"(?:locks?|bars?)\s+(?:are\s+)?(?:unlocked|removed)",
+            r"glyphs?\s+of\s+sealing\s+(?:are\s+)?dispelled",
+        ]
+
+        for pattern in knock_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_unlock_effect=True,
+                    description="Unlocks and dispels magical seals",
+                )
+
+                # Check specific dispel/disable behaviors
+                if re.search(r"sealing.*dispelled", description, re.IGNORECASE):
+                    effect.dispels_sealing = True
+
+                if re.search(r"(?:locking|magical\s+seals?).*disabled", description, re.IGNORECASE):
+                    effect.disables_locking = True
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Combat Modifier Spells (Mirror Image, Haste, Confusion, Fear)
+        # =================================================================
+
+        # Mirror Image patterns
+        mirror_image_patterns = [
+            r"mirror\s+image",
+            r"illusory\s+(?:duplicates?|copies|images?)",
+            r"(\d+d\d+)\s+(?:illusory\s+)?(?:images?|duplicates?)",
+        ]
+
+        for pattern in mirror_image_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_combat_modifier=True,
+                    creates_mirror_images=True,
+                    description="Creates illusory duplicates",
+                )
+
+                # Try to find dice for number of images
+                dice_match = re.search(r"(\d+d\d+)\s+(?:illusory\s+)?(?:images?|duplicates?|copies)", description, re.IGNORECASE)
+                if dice_match:
+                    effect.mirror_image_dice = dice_match.group(1)
+                else:
+                    # Default per OSE
+                    effect.mirror_image_dice = "1d4"
+
+                parsed.add_effect(effect)
+                break
+
+        # Haste spell patterns
+        haste_patterns = [
+            r"\bhaste\b",
+            r"(?:double|extra)\s+(?:movement|actions?)",
+            r"(?:act|move)\s+twice",
+            r"accelerat(?:e|ed|ion)",
+        ]
+
+        for pattern in haste_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    condition_applied="hasted",
+                    is_combat_modifier=True,
+                    is_haste_effect=True,
+                    description="Grants extra actions and speed",
+                )
+
+                # Look for specific bonuses
+                ac_bonus_match = re.search(r"\+(\d+)\s+(?:to\s+)?(?:ac|armou?r)", description, re.IGNORECASE)
+                if ac_bonus_match:
+                    effect.modifier_value = int(ac_bonus_match.group(1))
+                    effect.stat_modified = "AC"
+                else:
+                    # Default per OSE Haste
+                    effect.modifier_value = 2
+                    effect.stat_modified = "AC"
+
+                init_match = re.search(r"\+(\d+)\s+(?:to\s+)?initiative", description, re.IGNORECASE)
+                if init_match:
+                    effect.initiative_bonus = int(init_match.group(1))
+                else:
+                    effect.initiative_bonus = 2  # Default
+
+                parsed.add_effect(effect)
+                break
+
+        # Confusion spell patterns
+        confusion_patterns = [
+            r"\bconfusion\b",
+            r"(?:become|are|is)\s+confused",
+            r"confused?\s+(?:targets?|creatures?|subjects?)",
+            r"(?:random|erratic)\s+behavior",
+            r"behave\s+(?:erratically|randomly)",
+        ]
+
+        for pattern in confusion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="confused",
+                    is_combat_modifier=True,
+                    is_confusion_effect=True,
+                    description="Causes random behavior",
+                )
+
+                # Check for save type
+                if re.search(r"save\s+vs\.?\s*spell", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                # Check for multi-target (e.g., "3d6 creatures")
+                hd_match = re.search(r"(\d+d\d+)\s+(?:HD|hit\s+dice|creatures?)", description, re.IGNORECASE)
+                if hd_match:
+                    effect.multi_target_dice = hd_match.group(1)
+
+                parsed.add_effect(effect)
+                break
+
+        # Fear spell patterns
+        fear_patterns = [
+            r"\bfear\b",
+            r"\bfrightened?\b",
+            r"flee\s+in\s+(?:terror|fear|panic)",
+            r"must\s+flee",
+            r"overcome\s+with\s+fear",
+        ]
+
+        for pattern in fear_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="frightened",
+                    is_combat_modifier=True,
+                    is_fear_effect=True,
+                    description="Causes targets to flee in fear",
+                )
+
+                # Check for save type
+                if re.search(r"save\s+vs\.?\s*spell", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Attack modifier spells (Ginger Snap, Bless, etc.)
+        attack_bonus_patterns = [
+            (r"\+(\d+)\s+(?:to\s+)?(?:attack|hit)\s+(?:rolls?|bonus)", "attack"),
+            (r"attack\s+(?:rolls?\s+)?(?:gain|have|get)\s+\+(\d+)", "attack"),
+            (r"ginger\s+snap", "ginger_snap"),
+        ]
+
+        for pattern, effect_type in attack_bonus_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_combat_modifier=True,
+                    stat_modified="attack",
+                    description="Modifies attack rolls",
+                )
+
+                if effect_type == "ginger_snap":
+                    # Ginger Snap gives +2 to attack per OSE
+                    effect.attack_bonus = 2
+                    effect.modifier_value = 2
+                else:
+                    effect.attack_bonus = int(match.group(1))
+                    effect.modifier_value = int(match.group(1))
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Area/Zone Effect Spells (Web, Silence, Darkness, Fog Cloud, etc.)
+        # =================================================================
+
+        # Web spell patterns
+        web_patterns = [
+            r"\bweb\b",
+            r"sticky\s+(?:webs?|strands?)",
+            r"(?:magical|giant)\s+spider\s*web",
+            r"webs?\s+(?:fill|cover|block)",
+        ]
+
+        for pattern in web_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="web",
+                    blocks_movement=True,
+                    entangles=True,
+                    description="Creates entangling webs",
+                )
+
+                # Check for save to avoid
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Silence spell patterns
+        silence_patterns = [
+            r"\bsilence\b",
+            r"zone\s+of\s+silence",
+            r"no\s+sound",
+            r"sound.*cannot.*pass",
+            r"prevents?\s+(?:sound|speech|verbal)",
+        ]
+
+        for pattern in silence_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="silence",
+                    blocks_sound=True,
+                    blocks_spellcasting=True,
+                    description="Creates a zone of silence",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Darkness spell patterns
+        darkness_patterns = [
+            r"\bdarkness\b",
+            r"magical\s+darkness",
+            r"impenetrable\s+dark",
+            r"blocks?\s+(?:all\s+)?light",
+            r"(?:light|torches?|lanterns?)\s+(?:cannot|won't|don't)\s+(?:penetrate|work|illuminate)",
+        ]
+
+        for pattern in darkness_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="darkness",
+                    blocks_vision=True,
+                    description="Creates magical darkness",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Fog/Obscurement spell patterns
+        fog_patterns = [
+            r"\bfog\b",
+            r"fog\s*cloud",
+            r"mist",
+            r"obscur(?:es?|ing|ement)",
+            r"thick\s+(?:cloud|vapor|haze)",
+        ]
+
+        for pattern in fog_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="fog",
+                    blocks_vision=True,
+                    description="Creates obscuring fog/mist",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Push/Wind spell patterns (Gust of Wind)
+        wind_patterns = [
+            r"gust\s+of\s+wind",
+            r"powerful\s+wind",
+            r"push(?:es)?\s+(?:back|away)",
+            r"blow(?:s|n)?\s+(?:back|away)",
+        ]
+
+        for pattern in wind_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="wind",
+                    description="Creates a pushing wind effect",
+                )
+
+                # Check for save to resist
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Hazard zone patterns (Stinking Cloud, Deathly Blossom, etc.)
+        hazard_patterns = [
+            r"stinking\s+cloud",
+            r"nauseat(?:ing|es?)",
+            r"poison(?:ous)?\s+(?:gas|cloud|vapor)",
+            r"deathly\s+blossom",
+            r"thorns?\s+(?:grow|spring|burst)",
+            r"(?:fire|flame|ice|acid)\s+(?:fills?|covers?|spreads?)",
+        ]
+
+        for pattern in hazard_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="hazard",
+                    creates_hazard=True,
+                    description="Creates a hazardous zone",
+                )
+
+                # Check for damage
+                damage_match = re.search(r"(\d+d\d+)\s*(?:points?\s+of\s+)?damage", description, re.IGNORECASE)
+                if damage_match:
+                    effect.damage_dice = damage_match.group(1)
+
+                # Check for save
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    if re.search(r"half\s+damage|halves", description, re.IGNORECASE):
+                        effect.save_halves = True
+                    else:
+                        effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Entangle spell patterns
+        entangle_patterns = [
+            r"\bentangle\b",
+            r"vines?\s+(?:and\s+roots?\s+)?(?:grow|wrap|grasp)",
+            r"(?:vines?\s+and\s+)?roots?\s+wrap",
+            r"plants?\s+(?:grab|restrain|hold)",
+            r"roots?\s+(?:burst|spring|grab)",
+        ]
+
+        for pattern in entangle_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="entangle",
+                    blocks_movement=True,
+                    entangles=True,
+                    description="Creates entangling vegetation",
+                )
+
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Buff/Immunity Spells (Missile Ward, Water Breathing, etc.)
+        # =================================================================
+
+        # Missile immunity patterns
+        missile_immunity_patterns = [
+            r"(?:immune|immunity)\s+(?:to\s+)?(?:normal\s+)?missiles?",
+            r"missiles?\s+(?:cannot|can't|do\s+not)\s+(?:harm|hurt|affect)",
+            r"missile\s+ward",
+            r"(?:arrows?|bolts?|projectiles?)\s+pass\s+(?:through|harmlessly)",
+        ]
+
+        for pattern in missile_immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="missiles",
+                    description="Grants immunity to normal missiles",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Drowning/breathing immunity patterns
+        breathing_patterns = [
+            r"water\s+breathing",
+            r"breathe?\s+(?:under\s*)?water",
+            r"(?:immune|immunity)\s+(?:to\s+)?drowning",
+            r"cannot\s+drown",
+            r"gills?",
+        ]
+
+        for pattern in breathing_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="drowning",
+                    description="Grants ability to breathe underwater",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Gas/poison gas immunity patterns
+        gas_immunity_patterns = [
+            r"air\s+sphere",
+            r"(?:immune|immunity)\s+(?:to\s+)?(?:gas|gaseous|poison\s+gas)",
+            r"gas(?:es)?\s+(?:cannot|can't)\s+(?:harm|affect)",
+            r"(?:protected|safe)\s+from\s+gas",
+        ]
+
+        for pattern in gas_immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="gas",
+                    description="Grants immunity to gaseous effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Vision enhancement patterns
+        vision_patterns = [
+            (r"dark\s*sight", "darkvision"),
+            (r"infravision", "infravision"),
+            (r"see\s+(?:in\s+)?(?:the\s+)?dark", "darkvision"),
+            (r"(?:see|perceive)\s+(?:the\s+)?invisible", "see_invisible"),
+            (r"true\s*(?:sight|seeing)", "truesight"),
+        ]
+
+        for pattern, vision_type in vision_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    enhances_vision=True,
+                    vision_type=vision_type,
+                    description=f"Grants {vision_type} vision",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Stat override patterns (Feeblemind)
+        stat_override_patterns = [
+            (r"feeblemind", "INT", 3),
+            (r"intelligence\s+(?:is\s+)?reduced\s+to\s+(?:that\s+of\s+)?(?:an?\s+)?animal", "INT", 3),
+            (r"intelligence\s+(?:becomes?|reduced\s+to|set\s+to)\s+(\d+)", "INT", None),
+            (r"wisdom\s+(?:becomes?|reduced\s+to|set\s+to)\s+(\d+)", "WIS", None),
+        ]
+
+        for pattern, stat, fixed_value in stat_override_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                value = fixed_value
+                if value is None and match.lastindex:
+                    value = int(match.group(1))
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DEBUFF,
+                    is_stat_override=True,
+                    override_stat=stat,
+                    override_value=value,
+                    description=f"Sets {stat} to {value}",
+                )
+
+                # Feeblemind typically requires save
+                if "feeblemind" in pattern or "feeblemind" in spell.name.lower():
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Dispel Magic patterns
+        dispel_patterns = [
+            r"dispel\s+magic",
+            r"(?:removes?|ends?|cancels?)\s+(?:all\s+)?(?:magical?\s+)?effects?",
+            r"(?:negates?|suppresses?)\s+(?:magical?\s+)?(?:effects?|enchantments?)",
+        ]
+
+        for pattern in dispel_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_dispel_effect=True,
+                    dispel_target="all",
+                    description="Dispels magical effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Remove Curse patterns
+        remove_curse_patterns = [
+            r"remove\s+curse",
+            r"(?:lifts?|breaks?|ends?)\s+(?:a\s+)?curse",
+            r"curse.*(?:removed|lifted|broken)",
+        ]
+
+        for pattern in remove_curse_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_dispel_effect=True,
+                    dispel_target="curse",
+                    removes_condition=True,
+                    condition_removed="cursed",
+                    description="Removes curses",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Remove Poison patterns
+        remove_poison_patterns = [
+            r"remove\s+poison",
+            r"neutralize\s+poison",
+            r"cure(?:s)?\s+poison",
+            r"poison.*(?:removed|neutralized|cured)",
+        ]
+
+        for pattern in remove_poison_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    removes_condition=True,
+                    condition_removed="poisoned",
+                    description="Removes poison effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Cure Affliction / Disease patterns
+        cure_affliction_patterns = [
+            r"cure\s+(?:affliction|disease)",
+            r"(?:removes?|cures?)\s+(?:all\s+)?(?:afflictions?|diseases?)",
+            r"(?:disease|affliction).*(?:removed|cured)",
+        ]
+
+        for pattern in cure_affliction_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    removes_condition=True,
+                    condition_removed="diseased",
+                    description="Removes diseases and afflictions",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Summon/Animate patterns (ordered from specific to generic)
+        summon_patterns = [
+            # Animate Dead patterns
+            (r"animate\s+(?:the\s+)?dead", "undead", True),
+            (r"(?:raises?|creates?)\s+(?:\d+(?:d\d+)?\s+)?(?:undead|skeletons?|zombies?)", "undead", True),
+            (r"corpses?\s+(?:rise|animate|become)", "undead", True),
+            # Elemental patterns (before generic to ensure priority)
+            (r"(?:summons?|conjures?|calls?)\s+(?:an?\s+)?elementals?", "elemental", True),
+            # Construct patterns
+            (r"(?:animates?|brings?\s+to\s+life)\s+(?:an?\s+)?(?:statues?|constructs?|objects?)", "construct", True),
+            # Animal patterns (with dice notation support)
+            (r"(?:conjures?|summons?)\s+(?:\d+(?:d\d+)?\s+)?(?:animals?|beasts?)", "animal", True),
+            (r"(?:call|summon)\s+(?:forth\s+)?(?:animals?|beasts?)", "animal", True),
+            # Generic summon (last - catches everything else)
+            (r"(?:summons?|conjures?|calls?\s+forth)\s+", None, True),
+        ]
+
+        for pattern, summon_type, controls in summon_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract HD limit
+                hd_match = re.search(r"up\s+to\s+(\d+)\s*(?:HD|hit\s+dice)", description, re.IGNORECASE)
+                max_hd = int(hd_match.group(1)) if hd_match else None
+
+                # Try to extract count (dice or fixed)
+                count_dice_match = re.search(r"(\d+d\d+)\s+(?:creatures?|undead|skeletons?|zombies?|animals?|beasts?)", description, re.IGNORECASE)
+                count_fixed_match = re.search(r"(?:summons?|raises?|animates?|conjures?|creates?)\s+(\d+)\s+", description, re.IGNORECASE)
+
+                count_dice = count_dice_match.group(1) if count_dice_match else None
+                count_fixed = int(count_fixed_match.group(1)) if count_fixed_match else None
+
+                # Check for level scaling
+                level_scaling = bool(re.search(r"per\s+(?:caster\s+)?level", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_summon_effect=True,
+                    summon_type=summon_type,
+                    summon_hd_max=max_hd,
+                    summon_count_dice=count_dice,
+                    summon_count_fixed=count_fixed,
+                    summoner_controls=controls,
+                    summon_level_scaling=level_scaling,
+                    description=f"Summons {summon_type or 'creature'}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Curse patterns (ordered from specific to generic)
+        curse_patterns = [
+            # Wasting/decay curses (check first since they contain "curse" often)
+            (r"(?:wasting|withering|decay)\s+(?:curse)?", "wasting", True),
+            (r"drains?\s+(?:the\s+)?(?:target's?\s+)?(?:vitality|life|essence)", "wasting", True),
+            # Ability drain curses
+            (r"(?:reduces?|drains?|lowers?)\s+(?:target's?\s+)?(?:strength|dexterity|constitution|intelligence|wisdom|charisma)", "ability_drain", True),
+            # Bane/minor curses
+            (r"\bbane\b", "minor", True),
+            (r"(?:ill\s+luck|bad\s+fortune|misfortune)", "minor", True),
+            # Standard curse (last - catches generic curses)
+            (r"bestow\s+curse", "major", True),
+            (r"\bcurse\b", "major", True),
+        ]
+
+        for pattern, curse_type, requires_remove in curse_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for stat affected
+                stat_match = re.search(r"(?:strength|str|dexterity|dex|constitution|con|intelligence|int|wisdom|wis|charisma|cha)", description, re.IGNORECASE)
+                stat_affected = None
+                if stat_match:
+                    stat_map = {
+                        "strength": "STR", "str": "STR",
+                        "dexterity": "DEX", "dex": "DEX",
+                        "constitution": "CON", "con": "CON",
+                        "intelligence": "INT", "int": "INT",
+                        "wisdom": "WIS", "wis": "WIS",
+                        "charisma": "CHA", "cha": "CHA",
+                    }
+                    stat_affected = stat_map.get(stat_match.group(0).lower())
+
+                # Check for modifier
+                modifier_match = re.search(r"[-−](\d+)", description)
+                modifier = -int(modifier_match.group(1)) if modifier_match else None
+
+                # Check for permanent
+                is_permanent = bool(re.search(r"permanent|until\s+removed", description, re.IGNORECASE))
+
+                # Check for save
+                has_save = bool(re.search(r"save|saving\s+throw", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DEBUFF,
+                    is_curse_effect=True,
+                    curse_type=curse_type,
+                    curse_stat_affected=stat_affected,
+                    curse_modifier=modifier,
+                    curse_is_permanent=is_permanent,
+                    requires_remove_curse=requires_remove,
+                    save_type="spell" if has_save else None,
+                    save_negates=has_save,
+                    description=f"Applies {curse_type} curse",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Teleportation patterns (ordered from specific to generic)
+        teleport_patterns = [
+            (r"plane\s+shift", "planar", None),
+            (r"(?:gate|portal)\s+(?:to|between)", "planar", None),
+            (r"dimension\s+door", "short", 360),
+            (r"(?:blink|phase)\s+(?:to|through|away)", "short", 30),
+            (r"teleport", "long", None),
+            (r"transport(?:s|ed)?\s+(?:to|instantly)", "long", None),
+        ]
+
+        for pattern, teleport_type, range_val in teleport_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for passengers
+                passenger_match = re.search(r"(?:with\s+)?(?:up\s+to\s+)?(\d+)\s+(?:other\s+)?(?:creatures?|passengers?|beings?)", description, re.IGNORECASE)
+                max_passengers = int(passenger_match.group(1)) if passenger_match else None
+                allows_passengers = max_passengers is not None or bool(re.search(r"(?:others?|companions?|passengers?)", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_teleport_effect=True,
+                    teleport_type=teleport_type,
+                    teleport_range=range_val,
+                    allows_passengers=allows_passengers,
+                    max_passengers=max_passengers,
+                    description=f"Teleportation ({teleport_type})",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Divination/Detection patterns
+        divination_patterns = [
+            (r"detect\s+magic", "detect", "magic"),
+            (r"detect\s+evil", "detect", "evil"),
+            (r"detect\s+(?:good|law|chaos)", "detect", "alignment"),
+            (r"detect\s+(?:traps?|snares?)", "detect", "traps"),
+            (r"detect\s+(?:invisib(?:le|ility)|hidden)", "detect", "invisible"),
+            (r"locate\s+object", "locate", "object"),
+            (r"locate\s+(?:creature|person|being)", "locate", "creature"),
+            (r"clairvoyance|scry(?:ing)?", "scry", "remote_viewing"),
+            (r"esp|read\s+(?:mind|thought)", "detect", "thoughts"),
+            (r"tongues?|comprehend\s+languages?", "communicate", "languages"),
+        ]
+
+        for pattern, div_type, what in divination_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract range
+                range_match = re.search(r"(\d+)['\"]?\s*(?:feet|ft|radius)?", description)
+                div_range = int(range_match.group(1)) if range_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_divination_effect=True,
+                    divination_type=div_type,
+                    detects_what=what,
+                    divination_range=div_range,
+                    description=f"Divination: {what}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Movement enhancement patterns
+        movement_patterns = [
+            (r"\bfly\b|flight|airborne", "fly", 120),
+            (r"levitat(?:e|ion)", "levitate", 20),
+            (r"water\s+walk(?:ing)?", "water_walk", None),
+            (r"spider\s+climb|wall\s+crawl", "climb", 60),
+            (r"swim(?:ming)?.*(?:speed|fast)", "swim", 120),
+            (r"phase|ethereal|incorporeal", "phase", 60),
+            (r"haste|speed|swiftness", "haste", None),
+        ]
+
+        for pattern, move_type, speed in movement_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract speed if mentioned
+                speed_match = re.search(r"(\d+)['\"]?\s*(?:per\s+)?(?:turn|round|movement)", description)
+                if speed_match:
+                    speed = int(speed_match.group(1))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_movement=True,
+                    movement_type=move_type,
+                    movement_speed=speed,
+                    description=f"Grants {move_type} movement",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Invisibility patterns
+        invisibility_patterns = [
+            (r"improved\s+invisib(?:le|ility)", "improved"),
+            (r"greater\s+invisib(?:le|ility)", "greater"),
+            (r"invisib(?:le|ility)", "normal"),
+        ]
+
+        for pattern, inv_type in invisibility_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_invisibility_effect=True,
+                    invisibility_type=inv_type,
+                    description=f"Grants {inv_type} invisibility",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Illusion patterns
+        illusion_patterns = [
+            (r"phantasm(?:al)?", "phantasm"),
+            (r"illusion(?:ary)?", "visual"),
+            (r"(?:creates?\s+)?(?:illusory|fake|false)\s+(?:image|sound|appearance)", "visual"),
+            (r"silent\s+image|visual\s+illusion", "visual"),
+            (r"(?:ghost|phantom)\s+sound|auditory\s+illusion", "auditory"),
+        ]
+
+        for pattern, ill_type in illusion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_illusion_effect=True,
+                    illusion_type=ill_type,
+                    description=f"Creates {ill_type} illusion",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Protection patterns
+        protection_patterns = [
+            (r"protection\s+(?:from\s+)?evil", "evil", 1),
+            (r"protection\s+(?:from\s+)?good", "good", 1),
+            (r"protection\s+(?:from\s+)?(?:elements?|fire|cold|lightning)", "elements", 2),
+            (r"magic\s+circle", "evil", 2),
+            (r"(?:ward|shield)\s+(?:against|from)\s+magic", "magic", None),
+            (r"anti-?magic", "magic", None),
+        ]
+
+        for pattern, prot_type, bonus in protection_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract bonus
+                bonus_match = re.search(r"\+(\d+)\s*(?:to\s+)?(?:AC|saves?|armor)", description)
+                if bonus_match:
+                    bonus = int(bonus_match.group(1))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_protection_effect=True,
+                    protection_type=prot_type,
+                    protection_bonus=bonus,
+                    description=f"Protection from {prot_type}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Barrier/Wall patterns
+        barrier_patterns = [
+            (r"wall\s+of\s+fire", "fire", "2d6", False),
+            (r"wall\s+of\s+ice", "ice", None, True),
+            (r"wall\s+of\s+stone", "stone", None, True),
+            (r"wall\s+of\s+iron", "iron", None, True),
+            (r"wall\s+of\s+force", "force", None, False),
+            (r"wall\s+of\s+thorns?", "thorns", "1d6", False),
+            (r"blade\s+barrier", "blades", "8d8", False),
+        ]
+
+        for pattern, barrier_type, damage, blocks_vision in barrier_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_barrier_effect=True,
+                    barrier_type=barrier_type,
+                    barrier_damage=damage,
+                    barrier_blocks_movement=True,
+                    barrier_blocks_vision=blocks_vision,
+                    description=f"Creates wall of {barrier_type}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Geas/Compulsion patterns
+        compulsion_patterns = [
+            (r"\bgeas\b", "geas"),
+            (r"holy\s+quest", "quest"),
+            (r"(?:compel|compulsion)\s+(?:to|toward)", "compulsion"),
+            (r"(?:must|shall)\s+(?:obey|serve|complete)", "command"),
+        ]
+
+        for pattern, comp_type in compulsion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    is_compulsion_effect=True,
+                    compulsion_type=comp_type,
+                    description=f"Applies {comp_type}",
+                )
+
+                # Check for save
+                if re.search(r"save|saving\s+throw", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Anti-magic patterns
+        antimagic_patterns = [
+            (r"anti-?magic\s+(?:shell|field|zone)", "nullify"),
+            (r"dispel\s+(?:all\s+)?magic", "dispel"),
+            (r"suppress(?:es?)?\s+(?:all\s+)?magic", "suppress"),
+            (r"(?:negates?|cancels?)\s+(?:all\s+)?magic", "nullify"),
+        ]
+
+        for pattern, am_type in antimagic_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract radius
+                radius_match = re.search(r"(\d+)['\"]?\s*(?:foot|feet|ft)?\s*radius", description, re.IGNORECASE)
+                radius = int(radius_match.group(1)) if radius_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_antimagic_effect=True,
+                    antimagic_type=am_type,
+                    antimagic_radius=radius,
+                    description=f"Anti-magic ({am_type})",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =====================================================================
+        # ORACLE ADJUDICATION PATTERNS (Phase 4)
+        # These spells defer to MythicSpellAdjudicator for resolution
+        # =====================================================================
+
+        # Wish/Reality-altering spells
+        wish_patterns = [
+            r"\bwish\b",
+            r"alter\s+reality",
+            r"miracle",
+            r"limited\s+wish",
+        ]
+
+        for pattern in wish_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="wish",
+                    description="Wish - requires oracle adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Divination spells that need oracle interpretation
+        divination_oracle_patterns = [
+            (r"commune|communion", "divination"),
+            (r"contact\s+(?:other\s+)?plane", "divination"),
+            (r"augury|omen", "divination"),
+            (r"legend\s+lore", "divination"),
+            (r"speak\s+with\s+(?:dead|spirits?)", "divination"),
+            (r"divination", "divination"),
+        ]
+
+        for pattern, adj_type in divination_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type=adj_type,
+                    description=f"Divination - requires oracle adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Illusion spells that need belief adjudication
+        illusion_oracle_patterns = [
+            r"phantasmal\s+(?:force|killer)",
+            r"programmed\s+illusion",
+            r"project\s+image",
+            r"simulacrum",
+            r"veil",
+        ]
+
+        for pattern in illusion_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="illusion_belief",
+                    description="Illusion - requires belief adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Summoning control spells
+        summoning_oracle_patterns = [
+            r"conjure\s+elemental",
+            r"summon\s+(?:demon|devil|fiend)",
+            r"planar\s+(?:binding|ally)",
+            r"gate",
+        ]
+
+        for pattern in summoning_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="summoning_control",
+                    description="Summoning - requires control adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Communication spells
+        communication_oracle_patterns = [
+            r"speak\s+with\s+(?:animals|plants|monsters)",
+            r"tongues",
+            r"sending",
+            r"message",
+            r"telepathy",
+        ]
+
+        for pattern in communication_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="communication",
+                    description="Communication - requires narrative adjudication",
+                )
+                parsed.add_effect(effect)
+                break
 
         return parsed
 
@@ -2232,11 +3733,16 @@ class SpellResolver:
                     damage_dice=effect_data.get("damage_dice"),
                     damage_type=effect_data.get("damage_type"),
                     healing_dice=effect_data.get("healing_dice"),
+                    flat_damage=effect_data.get("flat_damage"),
+                    flat_healing=effect_data.get("flat_healing"),
                     condition_applied=effect_data.get("condition_applied"),
                     modifier_value=effect_data.get("modifier_value"),
                     save_type=effect_data.get("save_type"),
                     save_negates=effect_data.get("save_negates", False),
                     save_halves=effect_data.get("save_halves", False),
+                    is_death_effect=effect_data.get("is_death_effect", False),
+                    death_on_failed_save=effect_data.get("death_on_failed_save", False),
+                    death_hd_threshold=effect_data.get("death_hd_threshold"),
                 )
                 parsed.add_effect(effect)
         else:
@@ -2251,7 +3757,35 @@ class SpellResolver:
                 if target_saved and effect.save_negates:
                     continue
 
-                # Apply damage
+                # Apply death effects first (instant death on failed save)
+                if effect.category == MechanicalEffectCategory.DAMAGE and effect.is_death_effect:
+                    if not target_saved and effect.death_on_failed_save:
+                        # Check HD threshold if applicable
+                        apply_death = True
+                        if effect.death_hd_threshold and self._controller:
+                            target = self._controller.get_character(target_id)
+                            if target and target.level > effect.death_hd_threshold:
+                                apply_death = False  # Too many HD, effect doesn't work
+
+                        if apply_death:
+                            # Track as death effect in result
+                            if "death_effects" not in result:
+                                result["death_effects"] = []
+                            result["death_effects"].append({
+                                "target_id": target_id,
+                                "effect": "instant_death",
+                                "hd_threshold": effect.death_hd_threshold,
+                            })
+
+                            # Set HP to 0 in game state
+                            if self._controller:
+                                target = self._controller.get_character(target_id)
+                                if target:
+                                    target.hp_current = 0
+
+                    continue  # Death effects don't also deal regular damage
+
+                # Apply damage (dice-based)
                 if effect.category == MechanicalEffectCategory.DAMAGE and effect.damage_dice:
                     if dice_roller:
                         # Handle level-scaled damage (e.g., Fireball: 1d6 per level)
@@ -2278,7 +3812,23 @@ class SpellResolver:
                                 target_id, damage, effect.damage_type or "magic"
                             )
 
-                # Apply healing
+                # Apply flat damage (no dice)
+                if effect.category == MechanicalEffectCategory.DAMAGE and effect.flat_damage:
+                    damage = effect.flat_damage
+
+                    # Half damage on save (if applicable)
+                    if target_saved and effect.save_halves:
+                        damage = max(1, damage // 2)
+
+                    result["damage_dealt"][target_id] = damage
+
+                    # Apply to game state if controller available
+                    if self._controller:
+                        self._controller.apply_damage(
+                            target_id, damage, effect.damage_type or "magic"
+                        )
+
+                # Apply healing (dice-based)
                 if effect.category == MechanicalEffectCategory.HEALING and effect.healing_dice:
                     if dice_roller:
                         roll = dice_roller.roll(effect.healing_dice, f"{spell.name} healing")
@@ -2289,15 +3839,56 @@ class SpellResolver:
                         if self._controller:
                             self._controller.heal_character(target_id, healing)
 
+                # Apply flat healing (no dice)
+                if effect.category == MechanicalEffectCategory.HEALING and effect.flat_healing:
+                    healing = effect.flat_healing
+                    result["healing_applied"][target_id] = healing
+
+                    # Apply to game state if controller available
+                    if self._controller:
+                        self._controller.heal_character(target_id, healing)
+
                 # Apply conditions
                 if effect.category == MechanicalEffectCategory.CONDITION and effect.condition_applied:
                     result["conditions_applied"].append(effect.condition_applied)
 
                     # Apply to game state if controller available
                     if self._controller:
-                        self._controller.apply_condition(
-                            target_id, effect.condition_applied, source=spell.name
-                        )
+                        # Special handling for charm effects
+                        if effect.is_charm_effect and effect.condition_applied == "charmed":
+                            # Use apply_charm which sets up recurring saves
+                            recurring_save = None
+                            if effect.recurring_save_frequency:
+                                recurring_save = {
+                                    "save_type": effect.save_type or "spell",
+                                    "frequency": effect.recurring_save_frequency,
+                                    "modifier": 0,
+                                    "ends_on_success": True,
+                                }
+
+                            self._controller.apply_charm(
+                                character_id=target_id,
+                                caster_id=caster.character_id,
+                                source_spell_id=spell.spell_id,
+                                source=spell.name,
+                                recurring_save=recurring_save,
+                            )
+
+                            # Track charm-specific info in result
+                            if "charm_effects" not in result:
+                                result["charm_effects"] = []
+                            result["charm_effects"].append({
+                                "target_id": target_id,
+                                "caster_id": caster.character_id,
+                                "spell_name": spell.name,
+                                "obeys_commands": effect.charm_obeys_commands,
+                                "recurring_save": effect.recurring_save_frequency,
+                            })
+                        else:
+                            # Standard condition application
+                            self._controller.apply_condition(
+                                target_id, effect.condition_applied, source=spell.name
+                            )
 
                 # Apply stat modifiers (buffs/debuffs)
                 if effect.category in (MechanicalEffectCategory.BUFF, MechanicalEffectCategory.DEBUFF):

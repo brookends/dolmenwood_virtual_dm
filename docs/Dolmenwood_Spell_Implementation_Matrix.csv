@@ -1,0 +1,167 @@
+spell_id,name,level,magic_type,recommended_implementation_level,classification_basis,required_subsystems,good_enough_80_strategy,source_file
+crystal_resonance,Crystal Resonance,1,arcane,minor,analysis_doc,,,arcane_level_1_1.json
+decipher,Decipher,1,arcane,minor,analysis_doc,,,arcane_level_1_1.json
+fairy_servant,Fairy Servant,1,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_1_1.json
+firelight,Firelight,1,arcane,moderate,heuristic_name,,,arcane_level_1_1.json
+floating_disc,Floating Disc,1,arcane,moderate,heuristic_name,,,arcane_level_1_1.json
+glyph_of_sealing,Glyph of Sealing,1,arcane,moderate,analysis_doc,world:doors_locks;world:glyphs,,arcane_level_1_2.json
+ignite_/_extinguish,Ignite / Extinguish,1,arcane,minor,analysis_doc,spell_parser:flat_damage,,arcane_level_1_2.json
+ingratiate,Ingratiate,1,arcane,moderate,analysis_doc,ai:command_interface;control:charm;saves:daily,,arcane_level_1_2.json
+ioun_shard,Ioun Shard,1,arcane,minor,analysis_doc,,,arcane_level_1_2.json
+shield_of_force,Shield of Force,1,arcane,minor,analysis_doc,,,arcane_level_1_2.json
+vapours_of_dream,Vapours of Dream,1,arcane,minor,analysis_doc,,,arcane_level_1_2.json
+ventriloquism,Ventriloquism,1,arcane,moderate,heuristic_name,,,arcane_level_1_2.json
+arcane_cypher,Arcane Cypher,2,arcane,moderate,heuristic_name,,,arcane_level_2_1.json
+dweomerlight,Dweomerlight,2,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_2_1.json
+flaming_spirit,Flaming Spirit,2,arcane,minor,analysis_doc,,,arcane_level_2_1.json
+glyph_of_locking,Glyph of Locking,2,arcane,moderate,analysis_doc,world:doors_locks;world:glyphs,,arcane_level_2_1.json
+invisibility,Invisibility,2,arcane,significant,analysis_doc,visibility:states;zones:mobile_radius,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,arcane_level_2_1.json
+knock,Knock,2,arcane,moderate,analysis_doc,conditions:stasis;traps:glyphs;world:doors_locks;world:glyphs,,arcane_level_2_1.json
+levitate,Levitate,2,arcane,significant,heuristic_name,movement:flight_state;movement:verticality,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_2_2.json
+mind_crystal,Mind Crystal,2,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_2_2.json
+mirror_image,Mirror Image,2,arcane,moderate,analysis_doc,combat:mirror_images,,arcane_level_2_2.json
+perceive_the_invisible,Perceive the Invisible,2,arcane,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,arcane_level_2_2.json
+phantasm,Phantasm,2,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_2_2.json
+web,Web,2,arcane,moderate,analysis_doc,conditions:entangle;escape:strength_check;world:barriers;zones:terrain_web,,arcane_level_2_2.json
+circle_of_invisibility,Circle of Invisibility,3,arcane,significant,analysis_doc,visibility:states;zones:mobile_radius,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,arcane_level_3_1.json
+crystal_vision,Crystal Vision,3,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_3_1.json
+dark_sight,Dark Sight,3,arcane,moderate,heuristic_name,,,arcane_level_3_1.json
+dispel_magic,Dispel Magic,3,arcane,moderate,heuristic_name,,,arcane_level_3_1.json
+fireball,Fireball,3,arcane,minor,analysis_doc,,,arcane_level_3_1.json
+fly,Fly,3,arcane,significant,heuristic_name,movement:flight_state;movement:verticality,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_3_1.json
+haste,Haste,3,arcane,moderate,analysis_doc,buffs:multi_target;combat:extra_actions,,arcane_level_3_2.json
+lightning_bolt,Lightning Bolt,3,arcane,minor,analysis_doc,,,arcane_level_3_2.json
+missile_ward,Missile Ward,3,arcane,moderate,analysis_doc,buffs:immunity,,arcane_level_3_2.json
+paralysation,Paralysation,3,arcane,minor,analysis_doc,,,arcane_level_3_2.json
+serpent_glyph,Serpent Glyph,3,arcane,moderate,analysis_doc,conditions:stasis;traps:glyphs;world:doors_locks;world:glyphs,,arcane_level_3_2.json
+water_breathing,Water Breathing,3,arcane,moderate,heuristic_name,,,arcane_level_3_2.json
+acid_globe,Acid Globe,4,arcane,minor,analysis_doc,,,arcane_level_4_1.json
+arcane_eye,Arcane Eye,4,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_4_1.json
+confusion,Confusion,4,arcane,moderate,analysis_doc,combat:behavior_table;conditions:confusion,,arcane_level_4_1.json
+dimension_door,Dimension Door,4,arcane,significant,heuristic_name,travel:familiarity;travel:mishap_table,Restrict teleport/dimension effects to known nodes (current hex/known landmark/dungeon level). Use mishap table + oracle to determine off-target/complication instead of precise coordinates.,arcane_level_4_1.json
+dominate,Dominate,4,arcane,moderate,analysis_doc,ai:command_interface;control:charm;saves:daily,,arcane_level_4_1.json
+hallucinatory_terrain,Hallucinatory Terrain,4,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_4_1.json
+hex_weaving,Hex Weaving,4,arcane,moderate,analysis_doc,curses:tracking,,arcane_level_4_2.json
+plant_growth,Plant Growth,4,arcane,significant,heuristic_name,world:terrain_tags,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_4_2.json
+polymorph,Polymorph,4,arcane,significant,analysis_doc,transformation:form_templates,Use curated form templates with fixed movement/attacks/senses; swap combat stats only; keep identity/inventory; end effect restores prior sheet snapshot.,arcane_level_4_2.json
+wall_of_fire,Wall of Fire,4,arcane,significant,parser_inference,world:barriers;zones:hazards,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_4_2.json
+wall_of_ice,Wall of Ice,4,arcane,significant,parser_inference,world:barriers;zones:hazards,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_4_2.json
+woodland_veil,Woodland Veil,4,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_4_2.json
+air_sphere,Air Sphere,5,arcane,moderate,heuristic_name,,,arcane_level_5_1.json
+animate_dead,Animate Dead,5,arcane,significant,analysis_doc,ai:command_interface;summoning:control_rules;summoning:creatures;summoning:undead_control,"Spawn generic statblocks (undead/elemental) with limited command menu; treat control as a tracked condition; if control breaks, flip allegiance and use oracle for behavior.",arcane_level_5_1.json
+cloudkill,Cloudkill,5,arcane,moderate,analysis_doc,spell_parser:flat_damage;spell_resolution:death_effects,,arcane_level_5_1.json
+conjure_elemental,Conjure Elemental,5,arcane,significant,analysis_doc,concentration:loss_rules;summoning:elemental,"Spawn generic statblocks (undead/elemental) with limited command menu; treat control as a tracked condition; if control breaks, flip allegiance and use oracle for behavior.",arcane_level_5_1.json
+fabricate,Fabricate,5,arcane,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",arcane_level_5_1.json
+feeblemind,Feeblemind,5,arcane,moderate,analysis_doc,buffs:stat_override,,arcane_level_5_2.json
+mire,Mire,5,arcane,significant,heuristic_name,world:terrain_tags,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_5_2.json
+passwall,Passwall,5,arcane,significant,heuristic_name,world:temporary_passage,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_5_2.json
+sending,Sending,5,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_5_2.json
+telekinesis,Telekinesis,5,arcane,significant,heuristic_name,interaction:telekinesis,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_5_2.json
+teleport,Teleport,5,arcane,significant,analysis_doc,travel:familiarity;travel:mishap_table,Restrict teleport/dimension effects to known nodes (current hex/known landmark/dungeon level). Use mishap table + oracle to determine off-target/complication instead of precise coordinates.,arcane_level_5_2.json
+wall_of_stone,Wall of Stone,5,arcane,significant,heuristic_name,world:barriers;zones:hazards,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,arcane_level_5_2.json
+anti_magic_ward,Anti-Magic Ward,6,arcane,significant,analysis_doc,spellcasting:interception,Implement ward as a status on a target/area that causes low-rank spells to fizzle (or require an extra save/check) before resolution; log interception and narrate the ward flare.,arcane_level_6_1.json
+control_weather,Control Weather,6,arcane,moderate,heuristic_name,,,arcane_level_6_1.json
+disintegrate,Disintegrate,6,arcane,moderate,analysis_doc,spell_resolution:death_effects,,arcane_level_6_1.json
+dweomerfire,Dweomerfire,6,arcane,minor,parser_inference,,,arcane_level_6_1.json
+geas,Geas,6,arcane,significant,analysis_doc,compulsion:oath_clock;penalties:escalation,"Track a compulsion object (goal + violation triggers + escalation clock). On violation apply bounded penalties (attack/save penalty, HP loss, exhaustion) at intervals; oracle handles nuanced edge cases.",arcane_level_6_1.json
+invisible_stalker,Invisible Stalker,6,arcane,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",arcane_level_6_2.json
+move_terrain,Move Terrain,6,arcane,skip,analysis_doc,world:terrain_tags,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",arcane_level_6_2.json
+oracle,Oracle,6,arcane,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",arcane_level_6_2.json
+petrification,Petrification,6,arcane,minor,parser_inference,,,arcane_level_6_2.json
+project_image,Project Image,6,arcane,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,arcane_level_6_2.json
+wave_of_force,Wave of Force,6,arcane,moderate,heuristic_name,,,arcane_level_6_2.json
+word_of_doom,Word of Doom,6,arcane,significant,analysis_doc,spell_resolution:death_effects;targeting:hd_budget,"Implement HD-budget targeting as 'select lowest-HD eligible targets until budget consumed'; if exact roster unknown, approximate by choosing weakest visible enemies first; use oracle if ambiguous.",arcane_level_6_2.json
+awe,Awe,,fairy_glamour,moderate,analysis_doc,morale:checks,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,glamours.json
+beguilement,Beguilement,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+breath_of_the_wind,Breath of the Wind,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+cloak_of_darkness,Cloak of Darkness,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+conjure_treats,Conjure Treats,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+dancing_flame,Dancing Flame,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+disguise_object,Disguise Object,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+fairy_dust,Fairy Dust,,fairy_glamour,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,glamours.json
+flame_charm,Flame Charm,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+fools_gold,Fool's Gold,,fairy_glamour,moderate,analysis_doc,deception:illusions;saves:spell,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,glamours.json
+forgetting,Forgetting,,fairy_glamour,moderate,analysis_doc,memory:last_round_state;saves:spell,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,glamours.json
+masquerade,Masquerade,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+mirth_and_malice,Mirth and Malice,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+moon_sight,Moon Sight,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+seeming,Seeming,,fairy_glamour,skip,heuristic_name,,"Narrate effect; optionally apply a small mechanical tag/bonus (advantage/disadvantage, reaction modifier) for 1 scene/turn; use oracle for edge cases.",glamours.json
+silver_tongue,Silver Tongue,,fairy_glamour,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,glamours.json
+subtle_sight,Subtle Sight,,fairy_glamour,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,glamours.json
+through_the_keyhole,Through the Keyhole,,fairy_glamour,moderate,analysis_doc,world:doors_locks,Model doors/locks/glyphs as stateful objects on exits/POI gates (LOCKED/BARRED/SEALED). Avoid geometry; treat barriers as blocking a connection with optional save/damage on passing.,glamours.json
+vanishing,Vanishing,,fairy_glamour,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,glamours.json
+walk_in_shadows,Walk in Shadows,,fairy_glamour,moderate,analysis_doc,random:2in6_checks;travel:shadow_doors,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,glamours.json
+arcane_unbinding,Arcane Unbinding,greater,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,greater_runes.json
+fairy_gold,Fairy Gold,greater,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,greater_runes.json
+fairy_steed,Fairy Steed,greater,rune,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,greater_runes.json
+ice_storm,Ice Storm,greater,rune,minor,analysis_doc,,,greater_runes.json
+rune_of_invisibility,Rune of Invisibility,greater,rune,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,greater_runes.json
+sway_the_mind,Sway the Mind,greater,rune,moderate,analysis_doc,ai:command_interface;control:charm;saves:daily;summoning:control_rules;summoning:creatures,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,greater_runes.json
+aid,Aid,2,divine,moderate,heuristic_name,,,hidden_spells.json
+cannibalise,Cannibalise,3,arcane,minor,parser_inference,,,hidden_spells.json
+command,Command,1,divine,moderate,heuristic_name,,,hidden_spells.json
+decay,Decay,1,arcane,minor,parser_inference,,,hidden_spells.json
+detect_disguise,Detect Disguise,1,divine,moderate,heuristic_name,,,hidden_spells.json
+drouges_arcane_unravelling,Drouge's Arcane Unravelling,4,arcane,moderate,heuristic_name,,,hidden_spells.json
+en_croute,En Croute,2,arcane,moderate,heuristic_name,,,hidden_spells.json
+fear,Fear,3,arcane,moderate,heuristic_name,,,hidden_spells.json
+gingerbread_charm,Gingerbread Charm,1,arcane,minor,parser_inference,,,hidden_spells.json
+ginger_snap,Ginger Snap,3,arcane,moderate,heuristic_name,,,hidden_spells.json
+sanctuary,Sanctuary,1,divine,moderate,heuristic_name,,,hidden_spells.json
+speak_with_dead,Speak with Dead,3,arcane,moderate,heuristic_name,,,hidden_spells.json
+summon_shadow,Summon Shadow,5,arcane,moderate,heuristic_name,,,hidden_spells.json
+transparency,Transparency,2,arcane,moderate,heuristic_name,,,hidden_spells.json
+trap_the_soul,Trap the Soul,6,arcane,moderate,heuristic_name,,,hidden_spells.json
+yeast_growth,Yeast Growth,1,arcane,moderate,heuristic_name,,,hidden_spells.json
+detect_evil,Detect Evil,1,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_1.json
+detect_magic,Detect Magic,1,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_1.json
+frost_ward,Frost Ward,1,divine,minor,analysis_doc,,,holy_level_1.json
+lesser_healing,Lesser Healing,1,divine,minor,analysis_doc,,,holy_level_1.json
+light,Light,1,divine,minor,parser_inference,,,holy_level_1.json
+mantle_of_protection,Mantle of Protection,1,divine,minor,analysis_doc,,,holy_level_1.json
+purify_food_and_drink,Purify Food and Drink,1,divine,minor,analysis_doc,,,holy_level_1.json
+rally,Rally,1,divine,minor,parser_inference,,,holy_level_1.json
+bless,Bless,2,divine,minor,analysis_doc,,,holy_level_2.json
+charm_serpents,Charm Serpents,2,divine,minor,parser_inference,,,holy_level_2.json
+find_traps,Find Traps,2,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_2.json
+flame_ward,Flame Ward,2,divine,minor,analysis_doc,,,holy_level_2.json
+hold_person,Hold Person,2,divine,minor,analysis_doc,targeting:filters,,holy_level_2.json
+reveal_alignment,Reveal Alignment,2,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_2.json
+silence,Silence,2,divine,moderate,analysis_doc,spellcasting:verbal_lockout;zones:silence,,holy_level_2.json
+speak_with_animals,Speak with Animals,2,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_2.json
+animal_growth,Animal Growth,3,divine,moderate,heuristic_name,,,holy_level_3.json
+bless_weapon,Bless Weapon,3,divine,minor,parser_inference,,,holy_level_3.json
+cure_affliction,Cure Affliction,3,divine,moderate,heuristic_name,,,holy_level_3.json
+holy_light,Holy Light,3,divine,moderate,heuristic_name,,,holy_level_3.json
+locate_object,Locate Object,3,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_3.json
+remove_curse,Remove Curse,3,divine,moderate,analysis_doc,curses:tracking,,holy_level_3.json
+circle_of_protection,Circle of Protection,4,divine,minor,analysis_doc,,,holy_level_4.json
+create_water,Create Water,4,divine,moderate,heuristic_name,,,holy_level_4.json
+greater_healing,Greater Healing,4,divine,minor,analysis_doc,,,holy_level_4.json
+remove_poison,Remove Poison,4,divine,moderate,heuristic_name,,,holy_level_4.json
+speak_with_plants,Speak with Plants,4,divine,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,holy_level_4.json
+serpent_transformation,Serpent Transformation,4,divine,moderate,analysis_doc,summoning:control_rules;summoning:creatures,,holy_level_4.json
+communion,Communion,5,divine,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",holy_level_5.json
+create_food,Create Food,5,divine,moderate,heuristic_name,,,holy_level_5.json
+holy_fire,Holy Fire,5,divine,moderate,heuristic_name,,,holy_level_5.json
+holy_quest,Holy Quest,5,divine,significant,analysis_doc,compulsion:oath_clock;penalties:escalation,"Track a compulsion object (goal + violation triggers + escalation clock). On violation apply bounded penalties (attack/save penalty, HP loss, exhaustion) at intervals; oracle handles nuanced edge cases.",holy_level_5.json
+insect_plague,Insect Plague,5,divine,moderate,heuristic_name,,,holy_level_5.json
+raise_dead,Raise Dead,5,divine,moderate,heuristic_name,,,holy_level_5.json
+bird_friend,Bird Friend,,knack,skip,heuristic_name,,"Treat as narrative ability; expose a limited menu of mechanical tags when relevant (e.g., morale modifier, fainted condition) and otherwise narrate.",knacks.json
+lock_singer,Lock Singer,,knack,moderate,parser_inference,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,knacks.json
+root_friend,Root Friend,,knack,skip,heuristic_name,,"Treat as narrative ability; expose a limited menu of mechanical tags when relevant (e.g., morale modifier, fainted condition) and otherwise narrate.",knacks.json
+thread_whistling,Thread Whistling,,knack,skip,heuristic_name,,"Treat as narrative ability; expose a limited menu of mechanical tags when relevant (e.g., morale modifier, fainted condition) and otherwise narrate.",knacks.json
+wood_kenning,Wood Kenning,,knack,skip,analysis_doc,,Use existing providers (if any) to supply factual context to the narrator; resolve uncertainty with Mythic fate checks; avoid committing new world facts without explicit player confirmation.,knacks.json
+yeast_master,Yeast Master,,knack,skip,heuristic_name,,"Treat as narrative ability; expose a limited menu of mechanical tags when relevant (e.g., morale modifier, fainted condition) and otherwise narrate.",knacks.json
+deathly_blossom,Deathly Blossom,lesser,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,lesser_runes.json
+fog_cloud,Fog Cloud,lesser,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,lesser_runes.json
+gust_of_wind,Gust of Wind,lesser,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,lesser_runes.json
+proof_against_deadly_harm,Proof Against Deadly Harm,lesser,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,lesser_runes.json
+rune_of_vanishing,Rune of Vanishing,lesser,rune,significant,analysis_doc,visibility:states,Implement simple visibility tags (VISIBLE/HIDDEN/INVISIBLE/REVEALED) and combat targeting penalties; break invisibility on hostile action; 'see invisible' bypasses penalties. No full LoS geometry.,lesser_runes.json
+sway_the_mortal_mind,Sway the Mortal Mind,lesser,rune,moderate,analysis_doc,ai:command_interface;control:charm;saves:daily,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,lesser_runes.json
+dream_ship,Dream Ship,mighty,rune,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",mighty_runes.json
+eternal_slumber,Eternal Slumber,mighty,rune,minor,analysis_doc,,,mighty_runes.json
+rune_of_death,Rune of Death,mighty,rune,significant,analysis_doc,spell_resolution:death_effects;targeting:hd_budget,"Implement HD-budget targeting as 'select lowest-HD eligible targets until budget consumed'; if exact roster unknown, approximate by choosing weakest visible enemies first; use oracle if ambiguous.",mighty_runes.json
+rune_of_wishing,Rune of Wishing,mighty,rune,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",mighty_runes.json
+summon_wild_hunt,Summon Wild Hunt,mighty,rune,skip,analysis_doc,,"Handle via oracle/LLM adjudication + bounded EffectCommands (add/remove condition, damage/heal, spawn generic NPC/creature, item create/remove). Require player to state intent + limits.",mighty_runes.json
+unravel_death,Unravel Death,mighty,rune,moderate,analysis_doc,,Implement as bounded tags + time costs; narrate with oracle checks for ambiguous outcomes; avoid full spatial simulation.,mighty_runes.json
