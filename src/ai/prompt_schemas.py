@@ -33,6 +33,9 @@ class PromptSchemaType(str, Enum):
     POI_ENTRY = "poi_entry"
     POI_FEATURE = "poi_feature"
     RESOLVED_ACTION = "resolved_action"
+    SPELL_CAST = "spell_cast"
+    SPELL_REVELATION = "spell_revelation"
+    MYTHIC_INTERPRETATION = "mythic_interpretation"
 
 
 # =============================================================================
@@ -1410,6 +1413,635 @@ Write a brief narration (2-3 sentences) that:
 
 
 # =============================================================================
+# SCHEMA 14: SPELL CAST NARRATION
+# =============================================================================
+
+
+@dataclass
+class SpellCastNarrationInputs:
+    """Inputs for spell cast narration schema."""
+
+    # Core spell info
+    spell_name: str
+    spell_description: str
+    magic_type: str  # arcane, divine, fairy_glamour, druidic, rune
+    effect_type: str  # mechanical, narrative, hybrid
+
+    # Caster and targets
+    caster_name: str
+    caster_level: int = 1
+    target_description: str = ""
+    targets: list[str] = field(default_factory=list)
+
+    # Spell parameters
+    range_text: str = ""
+    duration_text: str = ""
+    requires_concentration: bool = False
+
+    # Mechanical outcomes (for HYBRID and MECHANICAL spells)
+    damage_dealt: dict[str, int] = field(default_factory=dict)
+    healing_applied: dict[str, int] = field(default_factory=dict)
+    conditions_applied: list[str] = field(default_factory=list)
+    stat_modifiers_applied: list[str] = field(default_factory=list)
+
+    # Save results
+    targets_saved: list[str] = field(default_factory=list)
+    targets_affected: list[str] = field(default_factory=list)
+    save_type: str = ""  # "spell", "ray", "breath", etc.
+
+    # Context
+    location_context: str = ""
+    time_of_day: str = ""
+    weather: str = ""
+    narrative_hints: list[str] = field(default_factory=list)
+
+    # Enchantment type for magic items/flavor
+    enchantment_type: str = ""  # arcane, fairy, holy
+
+
+@dataclass
+class SpellCastNarrationOutput:
+    """Output structure for spell cast narration."""
+
+    incantation_description: str  # How the spell is cast
+    effect_manifestation: str  # What happens visually/sensorily
+    target_response: str  # How targets react (if applicable)
+
+
+class SpellCastNarrationSchema(PromptSchema):
+    """
+    Schema for narrating spell casting.
+
+    Used when:
+    - A spell is cast successfully
+    - The mechanical effects have already been resolved
+    - Narrative description is needed for immersion
+
+    This schema handles three effect types:
+    - MECHANICAL: All effects already resolved, narrate the outcome
+    - NARRATIVE: LLM provides rich description, minimal mechanics
+    - HYBRID: Mechanical effects resolved, LLM enriches the narration
+
+    Constraints:
+    - NEVER determine spell success (already determined)
+    - NEVER invent additional effects not provided
+    - Use damage/healing values EXACTLY as provided
+    - Match the magic type's aesthetic (arcane=scholarly, fairy=whimsical, etc.)
+    """
+
+    def __init__(self, inputs: SpellCastNarrationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.SPELL_CAST,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "spell_name": str,
+            "spell_description": str,
+            "magic_type": str,
+            "effect_type": str,
+            "caster_name": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        # Magic type specific flavor
+        magic_flavors = {
+            "arcane": """Arcane magic in Dolmenwood is scholarly and deliberate.
+Spellcasters speak ancient formulae, trace sigils in the air, and call upon
+cosmic forces. Describe mystical energies, glowing runes, and eldritch power.""",
+            "divine": """Divine magic channels holy power through prayer and faith.
+Clergy invoke their deity's blessing with sacred words and gestures. Describe
+radiant light, heavenly presence, and spiritual manifestation.""",
+            "fairy_glamour": """Fairy glamours are capricious and whimsical magic.
+The fey work their enchantments through song, laughter, and dreams. Describe
+shimmering illusions, silvery mist, the scent of flowers, and otherworldly beauty.""",
+            "rune": """Fairy runes are ancient marks of power carved or traced.
+The runes glow with inner light when invoked. Describe luminous symbols,
+crackling energy, and the weight of ancient fairy pacts.""",
+            "knack": """Mossling knacks are quasi-magical crafts passed down through
+generations of these gnarled, woody folk. Knacks manifest through song, whistle,
+touch, or communion with nature. Describe earthy, organic effects - the rustle
+of roots, the fermentation of yeasts, the whispered secrets of wood and birds.""",
+        }
+
+        magic_flavor = magic_flavors.get(
+            inputs.magic_type.lower(),
+            "Magic manifests with mystical energy and supernatural effect.",
+        )
+
+        effect_guidance = ""
+        if inputs.effect_type == "narrative":
+            effect_guidance = """
+NARRATIVE SPELL GUIDANCE:
+This spell's effects are primarily descriptive and referee-adjudicated.
+Focus on rich sensory details and atmospheric description.
+The spell creates a situation or condition that the referee will interpret.
+You may describe what the spell DOES but not its mechanical consequences."""
+        elif inputs.effect_type == "mechanical":
+            effect_guidance = """
+MECHANICAL SPELL GUIDANCE:
+This spell's effects have been fully resolved by the game system.
+Narrate the provided outcomes (damage, healing, conditions) dramatically.
+Use the EXACT values provided - do not change damage numbers or invent effects."""
+        else:  # hybrid
+            effect_guidance = """
+HYBRID SPELL GUIDANCE:
+This spell has both mechanical effects (already resolved) and narrative elements.
+Incorporate the mechanical outcomes naturally into your description.
+Enhance with atmospheric details appropriate to the magic type."""
+
+        return f"""{base}
+
+SPELL CAST NARRATION TASK:
+You are narrating a spell being cast in Dolmenwood.
+The spell has already been successfully cast and any mechanical effects resolved.
+
+MAGIC TYPE: {inputs.magic_type.upper()}
+{magic_flavor}
+{effect_guidance}
+
+SPECIFIC CONSTRAINTS:
+- The spell SUCCEEDED - do not question or narrate failure
+- Describe the casting (verbal, somatic, material components implied)
+- Describe the spell's manifestation (visual, auditory, olfactory)
+- If targets saved, describe partial effects or resistance
+- If damage/healing values provided, incorporate EXACTLY those numbers
+- Match Dolmenwood's fairy-tale horror aesthetic
+- Keep descriptions evocative but concise (3-5 sentences total)"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Narrate this spell cast in Dolmenwood:
+
+SPELL: {inputs.spell_name}
+DESCRIPTION: {inputs.spell_description}
+MAGIC TYPE: {inputs.magic_type}
+CASTER: {inputs.caster_name} (Level {inputs.caster_level})"""
+
+        if inputs.range_text:
+            prompt += f"\nRANGE: {inputs.range_text}"
+        if inputs.duration_text:
+            prompt += f"\nDURATION: {inputs.duration_text}"
+        if inputs.requires_concentration:
+            prompt += "\nCONCENTRATION: Required"
+
+        # Targets
+        if inputs.target_description:
+            prompt += f"\nTARGET: {inputs.target_description}"
+        elif inputs.targets:
+            prompt += f"\nTARGETS: {', '.join(inputs.targets)}"
+
+        # Mechanical outcomes
+        outcomes = []
+        if inputs.damage_dealt:
+            for target, damage in inputs.damage_dealt.items():
+                outcomes.append(f"{target} took {damage} damage")
+        if inputs.healing_applied:
+            for target, healing in inputs.healing_applied.items():
+                outcomes.append(f"{target} healed {healing} HP")
+        if inputs.conditions_applied:
+            outcomes.append(f"Applied conditions: {', '.join(inputs.conditions_applied)}")
+        if inputs.stat_modifiers_applied:
+            outcomes.append(f"Applied modifiers: {', '.join(inputs.stat_modifiers_applied)}")
+
+        if outcomes:
+            prompt += f"""
+
+RESOLVED EFFECTS (narrate these):
+{chr(10).join('- ' + o for o in outcomes)}"""
+
+        # Save results
+        if inputs.targets_saved:
+            prompt += f"\nTARGETS WHO SAVED: {', '.join(inputs.targets_saved)}"
+        if inputs.targets_affected and inputs.save_type:
+            prompt += f"\nTARGETS AFFECTED (failed {inputs.save_type} save): {', '.join(inputs.targets_affected)}"
+
+        # Context
+        if inputs.location_context:
+            prompt += f"\nLOCATION: {inputs.location_context}"
+        if inputs.time_of_day:
+            prompt += f"\nTIME: {inputs.time_of_day}"
+        if inputs.weather:
+            prompt += f"\nWEATHER: {inputs.weather}"
+
+        if inputs.narrative_hints:
+            prompt += f"""
+
+NARRATIVE HINTS:
+{chr(10).join('- ' + h for h in inputs.narrative_hints)}"""
+
+        prompt += """
+
+Write a vivid narration (3-5 sentences) that:
+1. Describes how the caster invokes the spell (words, gestures, energy gathering)
+2. Depicts the spell's manifestation (what observers see, hear, smell, feel)
+3. Shows the effect on targets (if any) using the EXACT outcomes provided
+4. Captures the atmosphere appropriate to the magic type"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 15: SPELL REVELATION (Divination/Detection)
+# =============================================================================
+
+
+@dataclass
+class SpellRevelationInputs:
+    """Inputs for spell revelation narration schema."""
+
+    # Core spell info
+    spell_name: str
+    caster_name: str
+    sensory_mode: str  # sight, sound, touch, smell, intuition
+
+    # What was revealed (from SpellContextProvider)
+    revelations: list[str]  # Pre-formatted revelation strings
+    nothing_detected: bool = False
+
+    # Context
+    detection_range: str = "60 feet"
+    location_context: str = ""
+    aesthetic_notes: list[str] = field(default_factory=list)
+
+    # Magic type for flavor
+    magic_type: str = "arcane"
+
+
+class SpellRevelationSchema(PromptSchema):
+    """
+    Schema for narrating divination/detection spell results.
+
+    CRITICAL CONSTRAINT: The LLM may ONLY describe the revelations
+    provided. It cannot invent additional information, creatures,
+    items, or effects not explicitly listed.
+
+    Used for:
+    - Detect Magic, Detect Evil, Detect Invisible
+    - Crystal Resonance, Wood Kenning
+    - Any spell that reveals information about the environment
+
+    The Python system determines WHAT exists.
+    The LLM describes the EXPERIENCE of perceiving it.
+    """
+
+    def __init__(self, inputs: SpellRevelationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.SPELL_REVELATION,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "spell_name": str,
+            "caster_name": str,
+            "sensory_mode": str,
+            "revelations": list,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        sensory_descriptions = {
+            "sight": "The caster perceives magical knowledge through mystical vision - auras, halos, glowing outlines, or spectral images.",
+            "sound": "Knowledge comes as whispers, echoes, or harmonics that only the caster can hear.",
+            "touch": "Secrets flow through physical contact - vibrations, warmth, or tingling sensations carry meaning.",
+            "smell": "Magical perception manifests as scents - the smell of decay for evil, flowers for enchantment.",
+            "intuition": "The caster simply KNOWS, with certainty that bypasses normal senses.",
+        }
+
+        sensory_desc = sensory_descriptions.get(
+            inputs.sensory_mode,
+            "Magical perception reveals hidden truths."
+        )
+
+        return f"""{base}
+
+SPELL REVELATION NARRATION TASK:
+You are narrating what a divination or detection spell reveals to the caster.
+
+SENSORY MODE: {inputs.sensory_mode.upper()}
+{sensory_desc}
+
+CRITICAL CONSTRAINTS - YOU MUST FOLLOW THESE:
+1. ONLY describe the revelations listed below - do NOT invent additional discoveries
+2. If "nothing_detected" is true, describe the absence of the thing being sought
+3. Describe the EXPERIENCE of perceiving each revelation atmospherically
+4. Do NOT add creatures, items, dangers, or information not in the revelations list
+5. The caster is actively perceiving - use present tense
+6. Match Dolmenwood's fairy-tale horror aesthetic
+
+The Python game system has already determined what exists in range.
+Your job is ONLY to describe how the caster experiences perceiving these specific things."""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Narrate this spell's revelations in Dolmenwood:
+
+SPELL: {inputs.spell_name}
+CASTER: {inputs.caster_name}
+SENSORY MODE: {inputs.sensory_mode}
+DETECTION RANGE: {inputs.detection_range}"""
+
+        if inputs.location_context:
+            prompt += f"\nLOCATION: {inputs.location_context}"
+
+        if inputs.nothing_detected:
+            prompt += """
+
+RESULT: Nothing detected within range.
+Describe the caster's perception confirming the absence of what they sought."""
+
+        elif inputs.revelations:
+            prompt += f"""
+
+REVELATIONS (describe ONLY these, do not add others):
+{chr(10).join('- ' + r for r in inputs.revelations)}"""
+
+        if inputs.aesthetic_notes:
+            prompt += f"""
+
+AESTHETIC GUIDANCE:
+{chr(10).join('- ' + note for note in inputs.aesthetic_notes)}"""
+
+        prompt += """
+
+Write a vivid narration (2-4 sentences) that:
+1. Describes how the magical perception activates (the sensory mode engaging)
+2. Conveys EACH listed revelation through atmospheric description
+3. Uses ONLY the information provided - invent nothing additional
+4. Captures the wonder or dread of magical sight"""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 16: MYTHIC INTERPRETATION
+# =============================================================================
+
+
+@dataclass
+class MythicInterpretationInputs:
+    """
+    Inputs for LLM interpretation of Mythic GME oracle results.
+
+    The LLM's task is to translate abstract meaning pairs into
+    concrete game effects that can be validated and executed.
+    """
+
+    # Core adjudication info
+    adjudication_type: str  # wish, curse_break, divination, etc.
+    success_level: str  # exceptional_success, success, partial_success, failure, catastrophic_failure
+    summary: str  # Human-readable summary from adjudicator
+
+    # The meaning pair to interpret
+    meaning_pair: str  # "Waste + Energy"
+    action_word: str  # "Waste"
+    subject_word: str  # "Energy"
+
+    # Context about the spell and situation
+    spell_name: str
+    caster_name: str
+    caster_level: int = 1
+    target: str = ""
+    intention: str = ""  # What the caster was trying to do
+
+    # Additional context
+    complication_pair: str = ""  # If a complication occurred
+    curse_source: str = ""  # For curse-breaking
+    creature_type: str = ""  # For summoning
+
+    # Constraints on valid effects
+    valid_effect_types: list[str] = field(default_factory=list)
+    forbidden_effects: list[str] = field(default_factory=list)
+
+    # For partial success or costs
+    requires_cost: bool = False
+
+
+@dataclass
+class MythicInterpretationOutput:
+    """
+    Structured output from LLM interpretation.
+
+    This maps directly to EffectCommands that can be validated
+    and executed by the game engine.
+    """
+
+    # Primary effects (what the spell does)
+    primary_effects: list[dict[str, Any]] = field(default_factory=list)
+    # Format: {"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}
+    #         {"type": "modify_stat", "target": "lord_malbrook", "stat": "CON", "value": -2}
+
+    # Side effects or costs
+    side_effects: list[dict[str, Any]] = field(default_factory=list)
+
+    # Narrative description
+    narration: str = ""
+
+    # Reasoning (for debugging/review)
+    reasoning: str = ""
+
+
+class MythicInterpretationSchema(PromptSchema):
+    """
+    Schema for LLM interpretation of Mythic GME oracle results.
+
+    This is the bridge between:
+    - Abstract Mythic meaning pairs ("Waste + Energy")
+    - Concrete EffectCommands that modify game state
+
+    The LLM interprets the oracle's symbolic output in context,
+    translating it into specific mechanical effects that respect
+    the game's rules and the caster's intention.
+
+    CRITICAL CONSTRAINTS:
+    1. Effects must be from the valid_effect_types list
+    2. Effects must not violate forbidden_effects
+    3. Effects must be proportionate to spell power and caster level
+    4. Interpretations must respect the success_level (failures don't succeed)
+    5. Output must be structured JSON for parsing
+
+    Example:
+        Input:
+            - success_level: "success"
+            - meaning_pair: "Waste + Energy"
+            - intention: "remove the curse from Lord Malbrook"
+            - target: "Lord Malbrook"
+
+        Output:
+            primary_effects: [
+                {"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}
+            ]
+            side_effects: [
+                {"type": "modify_stat", "target": "lord_malbrook", "stat": "CON", "value": "-1d3"}
+            ]
+            narration: "The curse shatters, but drains vitality from Malbrook's frame..."
+            reasoning: "'Waste + Energy' suggests the spell succeeds but at a cost - the
+                        curse is removed but energy is wasted/drained in the process."
+    """
+
+    def __init__(self, inputs: MythicInterpretationInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.MYTHIC_INTERPRETATION,
+            inputs=vars(inputs),
+        )
+        self.typed_inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "adjudication_type": str,
+            "success_level": str,
+            "meaning_pair": str,
+            "spell_name": str,
+            "caster_name": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        base = self._get_base_system_prompt()
+        inputs = self.typed_inputs
+
+        # Valid effect types guidance
+        effect_types_text = ""
+        if inputs.valid_effect_types:
+            effect_types_text = f"""
+VALID EFFECT TYPES (use only these):
+{chr(10).join('- ' + t for t in inputs.valid_effect_types)}"""
+        else:
+            effect_types_text = """
+VALID EFFECT TYPES:
+- add_condition: Add a condition (cursed, charmed, paralyzed, etc.)
+- remove_condition: Remove a condition
+- modify_stat: Permanently change a stat (STR, DEX, CON, INT, WIS, CHA, HP, MAX_HP)
+- damage: Deal damage (specify type and amount, can use dice like "2d6")
+- heal: Restore hit points
+- exhaustion: Apply exhaustion for a duration
+- age: Age a character by years
+- custom: Describe an effect that doesn't fit other categories"""
+
+        forbidden_text = ""
+        if inputs.forbidden_effects:
+            forbidden_text = f"""
+FORBIDDEN EFFECTS (never use these):
+{chr(10).join('- ' + f for f in inputs.forbidden_effects)}"""
+
+        success_guidance = {
+            "exceptional_success": "The spell succeeds better than hoped. Effects should be enhanced or additional benefits granted.",
+            "success": "The spell works as intended. Effects should match the caster's intention.",
+            "partial_success": "The spell works but with complications or reduced effect. Something goes partially wrong.",
+            "failure": "The spell fails. No positive effects occur. At worst, minor backlash.",
+            "catastrophic_failure": "The spell backfires badly. Negative effects on caster or unintended targets.",
+        }
+
+        return f"""{base}
+
+MYTHIC INTERPRETATION TASK:
+You are interpreting an oracle result (a Mythic GME meaning pair) to determine
+the concrete effects of a spell. The oracle has already determined success/failure -
+you must translate the abstract meaning into specific game effects.
+
+SUCCESS LEVEL: {inputs.success_level.upper()}
+{success_guidance.get(inputs.success_level, "Unknown success level.")}
+{effect_types_text}
+{forbidden_text}
+
+CRITICAL RULES:
+1. Your interpretation must RESPECT the success level - failures don't succeed
+2. Effects must be PROPORTIONATE to caster level {inputs.caster_level} and spell power
+3. Interpret the meaning pair creatively but within reasonable bounds
+4. Output must be valid JSON that can be parsed into EffectCommands
+5. Include brief reasoning explaining your interpretation
+6. The narration should be 2-3 sentences in Dolmenwood's fairy-tale horror style
+
+OUTPUT FORMAT (use exactly this JSON structure):
+{{
+  "primary_effects": [
+    {{"type": "effect_type", "target": "target_id", ...parameters}}
+  ],
+  "side_effects": [
+    {{"type": "effect_type", "target": "target_id", ...parameters}}
+  ],
+  "narration": "Atmospheric description of what happens...",
+  "reasoning": "Brief explanation of how you interpreted the meaning pair..."
+}}
+
+EFFECT PARAMETER EXAMPLES:
+- remove_condition: {{"type": "remove_condition", "target": "lord_malbrook", "condition": "cursed"}}
+- modify_stat: {{"type": "modify_stat", "target": "wizard_001", "stat": "CON", "value": -2}}
+- damage: {{"type": "damage", "target": "goblin_chief", "amount": "3d6", "damage_type": "fire"}}
+- heal: {{"type": "heal", "target": "fighter_001", "amount": 15}}
+- exhaustion: {{"type": "exhaustion", "target": "mage_001", "duration_days": 3, "effect": "cannot cast spells"}}
+- age: {{"type": "age", "target": "knight_001", "years": "1d10"}}
+- custom: {{"type": "custom", "target": "area", "description": "Flowers bloom unnaturally..."}}"""
+
+    def build_prompt(self) -> str:
+        inputs = self.typed_inputs
+
+        prompt = f"""Interpret this Mythic oracle result:
+
+ORACLE RESULT:
+  Meaning Pair: {inputs.meaning_pair}
+  Action Word: {inputs.action_word}
+  Subject Word: {inputs.subject_word}
+
+ADJUDICATION:
+  Type: {inputs.adjudication_type}
+  Success Level: {inputs.success_level}
+  Summary: {inputs.summary}
+
+SPELL CONTEXT:
+  Spell: {inputs.spell_name}
+  Caster: {inputs.caster_name} (Level {inputs.caster_level})
+  Target: {inputs.target or "Not specified"}
+  Intention: {inputs.intention or "Not specified"}"""
+
+        if inputs.complication_pair:
+            prompt += f"""
+
+COMPLICATION:
+  Meaning Pair: {inputs.complication_pair}
+  (A complication occurred - interpret this as a side effect or twist)"""
+
+        if inputs.curse_source:
+            prompt += f"""
+
+CURSE DETAILS:
+  Source: {inputs.curse_source}"""
+
+        if inputs.creature_type:
+            prompt += f"""
+
+SUMMONING DETAILS:
+  Creature: {inputs.creature_type}"""
+
+        if inputs.requires_cost:
+            prompt += """
+
+COST REQUIRED:
+  The spell's success comes at a price - include a side effect as the cost."""
+
+        prompt += """
+
+Based on the meaning pair and context, determine:
+1. What concrete effects occur (respecting the success level)
+2. Any side effects or costs
+3. A brief atmospheric narration
+
+Provide your response as valid JSON matching the format specified in the system prompt."""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -1467,6 +2099,18 @@ def create_schema(
     elif schema_type == PromptSchemaType.RESOLVED_ACTION:
         typed_inputs = ResolvedActionInputs(**inputs)
         return ResolvedActionSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.SPELL_CAST:
+        typed_inputs = SpellCastNarrationInputs(**inputs)
+        return SpellCastNarrationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.SPELL_REVELATION:
+        typed_inputs = SpellRevelationInputs(**inputs)
+        return SpellRevelationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.MYTHIC_INTERPRETATION:
+        typed_inputs = MythicInterpretationInputs(**inputs)
+        return MythicInterpretationSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")

@@ -1750,6 +1750,88 @@ class Condition:
 
 
 @dataclass
+class StatModifier:
+    """
+    A temporary stat modifier (buff or debuff) applied to a character.
+
+    Used for spell effects like Shield of Force (+AC), Bless (+attack), etc.
+    Supports both flat modifiers and conditional modifiers (e.g., AC vs missiles only).
+    """
+
+    modifier_id: str  # Unique identifier for this modifier instance
+    stat: str  # Stat being modified: "AC", "attack", "damage", "STR", "save_doom", etc.
+    value: int  # Modifier value (positive = buff, negative = debuff)
+    source: str  # What caused this modifier (spell name, item, ability)
+    source_id: Optional[str] = None  # ID of source spell/effect for removal
+
+    # Duration tracking
+    duration_turns: Optional[int] = None  # Turns remaining (None = until dispelled)
+    duration_rounds: Optional[int] = None  # Combat rounds remaining
+
+    # Conditional modifiers (e.g., "AC 17 vs missiles, AC 15 vs other")
+    condition: Optional[str] = None  # When this applies: "vs_missiles", "vs_melee", etc.
+
+    # Stacking rules
+    stacks: bool = False  # Whether multiple instances stack
+    stack_group: Optional[str] = None  # Group name for non-stacking (highest wins)
+
+    def tick_turn(self) -> bool:
+        """
+        Reduce turn-based duration by 1.
+
+        Returns:
+            True if modifier has expired, False otherwise
+        """
+        if self.duration_turns is not None:
+            self.duration_turns -= 1
+            return self.duration_turns <= 0
+        return False
+
+    def tick_round(self) -> bool:
+        """
+        Reduce round-based duration by 1.
+
+        Returns:
+            True if modifier has expired, False otherwise
+        """
+        if self.duration_rounds is not None:
+            self.duration_rounds -= 1
+            return self.duration_rounds <= 0
+        return False
+
+    def applies_to(self, context: Optional[str] = None) -> bool:
+        """
+        Check if this modifier applies in the given context.
+
+        Args:
+            context: The attack/situation context (e.g., "missiles", "melee")
+
+        Returns:
+            True if modifier applies, False otherwise
+        """
+        if self.condition is None:
+            return True  # Unconditional modifier always applies
+
+        if context is None:
+            return False  # Conditional modifier needs context
+
+        # Match condition to context
+        condition_lower = self.condition.lower()
+        context_lower = context.lower()
+
+        # Handle common conditions
+        if condition_lower == "vs_missiles" and context_lower in ("missiles", "missile", "ranged"):
+            return True
+        if condition_lower == "vs_melee" and context_lower in ("melee", "hand-to-hand"):
+            return True
+        if condition_lower == "vs_magic" and context_lower in ("magic", "spell", "magical"):
+            return True
+
+        # Direct match
+        return condition_lower == f"vs_{context_lower}" or condition_lower == context_lower
+
+
+@dataclass
 class Item:
     """
     An item in inventory.
@@ -4439,6 +4521,10 @@ class CharacterState:
     # Format: {"deadly": {"bonus": 4, "source": "Queen's salmon", "one_time": True}}
     temporary_save_bonuses: dict[str, dict[str, Any]] = field(default_factory=dict)
 
+    # Active stat modifiers from spells, items, and abilities
+    # These are temporary buffs/debuffs with duration tracking
+    stat_modifiers: list["StatModifier"] = field(default_factory=list)
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -4471,13 +4557,6 @@ class CharacterState:
             return 2
         else:
             return 3
-
-    def get_effective_ac(self) -> int:
-        """Get effective armor class, applying polymorph overlay if active."""
-        if self.polymorph_overlay and self.polymorph_overlay.is_active:
-            if self.polymorph_overlay.armor_class is not None:
-                return self.polymorph_overlay.armor_class
-        return self.armor_class
 
     def get_effective_speed(self) -> int:
         """
@@ -4688,6 +4767,154 @@ class CharacterState:
 
         for key in to_remove:
             del self.temporary_save_bonuses[key]
+
+    # =========================================================================
+    # STAT MODIFIER MANAGEMENT (buffs/debuffs from spells, items, abilities)
+    # =========================================================================
+
+    def add_stat_modifier(self, modifier: "StatModifier") -> None:
+        """
+        Add a stat modifier to this character.
+
+        Handles stacking rules: non-stacking modifiers in same group
+        use highest value only.
+
+        Args:
+            modifier: The StatModifier to add
+        """
+        # If modifier stacks, just add it
+        if modifier.stacks:
+            self.stat_modifiers.append(modifier)
+            return
+
+        # For non-stacking modifiers, check for existing in same group
+        if modifier.stack_group:
+            for existing in self.stat_modifiers:
+                if (
+                    existing.stack_group == modifier.stack_group
+                    and existing.stat == modifier.stat
+                    and existing.condition == modifier.condition
+                ):
+                    # Keep the higher value
+                    if abs(modifier.value) > abs(existing.value):
+                        self.stat_modifiers.remove(existing)
+                        self.stat_modifiers.append(modifier)
+                    return
+
+        self.stat_modifiers.append(modifier)
+
+    def remove_stat_modifier(self, modifier_id: str) -> Optional["StatModifier"]:
+        """
+        Remove a stat modifier by ID.
+
+        Args:
+            modifier_id: The unique identifier of the modifier to remove
+
+        Returns:
+            The removed modifier, or None if not found
+        """
+        for modifier in self.stat_modifiers:
+            if modifier.modifier_id == modifier_id:
+                self.stat_modifiers.remove(modifier)
+                return modifier
+        return None
+
+    def remove_modifiers_by_source(self, source_id: str) -> list["StatModifier"]:
+        """
+        Remove all modifiers from a specific source (e.g., when a spell ends).
+
+        Args:
+            source_id: The source ID (spell effect ID, item ID, etc.)
+
+        Returns:
+            List of removed modifiers
+        """
+        removed = []
+        remaining = []
+        for modifier in self.stat_modifiers:
+            if modifier.source_id == source_id:
+                removed.append(modifier)
+            else:
+                remaining.append(modifier)
+        self.stat_modifiers = remaining
+        return removed
+
+    def get_stat_modifier_total(
+        self, stat: str, context: Optional[str] = None
+    ) -> int:
+        """
+        Get total modifier for a stat, optionally in a specific context.
+
+        Args:
+            stat: The stat to get modifiers for (e.g., "AC", "attack", "STR")
+            context: Optional context for conditional modifiers (e.g., "missiles")
+
+        Returns:
+            Total modifier value
+        """
+        total = 0
+        for modifier in self.stat_modifiers:
+            if modifier.stat.lower() == stat.lower():
+                if modifier.applies_to(context):
+                    total += modifier.value
+        return total
+
+    def get_effective_ac(self, attack_type: Optional[str] = None) -> int:
+        """
+        Get effective armor class, applying polymorph overlay and modifiers.
+
+        Args:
+            attack_type: Type of incoming attack for conditional AC bonuses
+                        (e.g., "missiles", "melee", "magic")
+
+        Returns:
+            Effective AC including all modifiers
+        """
+        if self.polymorph_overlay and self.polymorph_overlay.is_active:
+            if self.polymorph_overlay.armor_class is not None:
+                base_ac = self.polymorph_overlay.armor_class
+            else:
+                base_ac = self.armor_class
+        else:
+            base_ac = self.armor_class
+
+        # Apply stat modifiers
+        ac_bonus = self.get_stat_modifier_total("AC", attack_type)
+        return base_ac + ac_bonus
+
+    def tick_stat_modifiers_turn(self) -> list["StatModifier"]:
+        """
+        Advance all turn-based stat modifiers by one turn.
+
+        Returns:
+            List of expired modifiers that were removed
+        """
+        expired = []
+        remaining = []
+        for modifier in self.stat_modifiers:
+            if modifier.tick_turn():
+                expired.append(modifier)
+            else:
+                remaining.append(modifier)
+        self.stat_modifiers = remaining
+        return expired
+
+    def tick_stat_modifiers_round(self) -> list["StatModifier"]:
+        """
+        Advance all round-based stat modifiers by one round.
+
+        Returns:
+            List of expired modifiers that were removed
+        """
+        expired = []
+        remaining = []
+        for modifier in self.stat_modifiers:
+            if modifier.tick_round():
+                expired.append(modifier)
+            else:
+                remaining.append(modifier)
+        self.stat_modifiers = remaining
+        return expired
 
     # =========================================================================
     # INVENTORY MANAGEMENT
