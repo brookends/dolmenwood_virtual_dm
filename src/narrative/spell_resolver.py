@@ -668,6 +668,7 @@ class ActiveSpellEffect:
 
     # Caster and target
     caster_id: str = ""
+    caster_level: int = 0  # Caster's level when the spell was cast (for dispel calculations)
     target_id: str = ""  # Character, NPC, Monster, or "area:location_id"
     target_type: str = "creature"  # "creature", "object", "area"
 
@@ -1127,6 +1128,7 @@ class SpellResolver:
                 spell_id=spell.spell_id,
                 spell_name=spell.name,
                 caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
                 target_id=target_id or caster.character_id,
                 target_type="creature",
                 duration_type=spell.duration_type,
@@ -4001,6 +4003,8 @@ class SpellResolver:
             "en_croute": self._handle_en_croute,
             "awe": self._handle_awe,
             "animal_growth": self._handle_animal_growth,
+            # Phase 3 utility spell handlers
+            "dispel_magic": self._handle_dispel_magic,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -4449,6 +4453,7 @@ class SpellResolver:
                 spell_id="air_sphere",
                 spell_name="Air Sphere",
                 caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
                 target_id=caster.character_id,
                 effect_type=SpellEffectType.HYBRID,
                 duration_type=DurationType.DAYS,
@@ -4697,6 +4702,7 @@ class SpellResolver:
                     spell_id="deathly_blossom",
                     spell_name="Deathly Blossom",
                     caster_id=caster.character_id,
+                    caster_level=caster.level if hasattr(caster, "level") else 1,
                     target_id=target_id,
                     effect_type=SpellEffectType.MECHANICAL,
                     duration_type=DurationType.TURNS,
@@ -4832,6 +4838,7 @@ class SpellResolver:
             spell_id="en_croute",
             spell_name="En Croute",
             caster_id=caster.character_id,
+            caster_level=caster.level if hasattr(caster, "level") else 1,
             target_id=target_id,
             effect_type=SpellEffectType.MECHANICAL,
             duration_type=duration_type,
@@ -4973,6 +4980,7 @@ class SpellResolver:
                     spell_id="awe",
                     spell_name="Awe",
                     caster_id=caster.character_id,
+                    caster_level=caster.level if hasattr(caster, "level") else 1,
                     target_id=target_id,
                     effect_type=SpellEffectType.MECHANICAL,
                     duration_type=DurationType.ROUNDS,
@@ -5068,6 +5076,7 @@ class SpellResolver:
                 spell_id="animal_growth",
                 spell_name="Animal Growth",
                 caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
                 target_id=target_id,
                 effect_type=SpellEffectType.HYBRID,
                 duration_type=DurationType.TURNS,
@@ -5106,6 +5115,115 @@ class SpellResolver:
                     "their attacks now deal double damage",
                     "they can carry twice as much",
                 ],
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # Phase 3: Dispel Magic Handler
+    # -------------------------------------------------------------------------
+
+    def _handle_dispel_magic(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Dispel Magic spell.
+
+        Per Dolmenwood source:
+        - All spell effects in a 20' cube within range are unravelled
+        - Effects created by lower Level casters are automatically dispelled
+        - 5% chance per Level difference that higher-Level magic resists
+        - Magic items are unaffected
+        - Curses from spells (e.g. Hex Weaving) are affected
+        - Curses from magic items are unaffected
+        """
+        from src.data_models import DiceRoller as DR
+
+        caster_level = caster.level if hasattr(caster, "level") else 1
+        dice = dice_roller or DR()
+
+        effects_dispelled: list[dict[str, Any]] = []
+        effects_resisted: list[dict[str, Any]] = []
+        effects_checked: list[str] = []
+
+        # Gather all active effects on all targets in the area
+        for target_id in targets_affected:
+            target_effects = self.get_active_effects(target_id)
+            for effect in target_effects:
+                if effect.effect_id in effects_checked:
+                    continue
+                effects_checked.append(effect.effect_id)
+
+                # Skip if this is a magic item effect (not a spell effect)
+                if effect.mechanical_effects.get("from_magic_item", False):
+                    continue
+
+                # Calculate dispel chance based on level difference
+                effect_caster_level = effect.caster_level or 1
+                level_diff = effect_caster_level - caster_level
+
+                if level_diff <= 0:
+                    # Lower or equal level: auto-dispel
+                    dispelled = True
+                    resist_roll = None
+                else:
+                    # Higher level: 5% per level difference chance to resist
+                    resist_chance = level_diff * 5
+                    resist_roll = dice.roll("1d100", "Dispel Magic resistance")
+                    dispelled = resist_roll.total > resist_chance
+
+                effect_info = {
+                    "effect_id": effect.effect_id,
+                    "spell_name": effect.spell_name,
+                    "spell_id": effect.spell_id,
+                    "target_id": effect.target_id,
+                    "effect_caster_level": effect_caster_level,
+                    "caster_level": caster_level,
+                    "level_difference": level_diff,
+                }
+
+                if dispelled:
+                    # Dispel the effect
+                    self.dismiss_effect(effect.effect_id)
+
+                    # Remove associated conditions if controller available
+                    if self._controller and effect.mechanical_effects.get("condition"):
+                        condition = effect.mechanical_effects["condition"]
+                        self._controller.remove_condition(effect.target_id, condition)
+
+                    effect_info["dispelled"] = True
+                    effects_dispelled.append(effect_info)
+                else:
+                    effect_info["dispelled"] = False
+                    effect_info["resist_roll"] = resist_roll.total if resist_roll else None
+                    effect_info["resist_chance"] = level_diff * 5
+                    effects_resisted.append(effect_info)
+
+        return {
+            "success": True,
+            "caster_level": caster_level,
+            "area_size": "20' cube",
+            "effects_dispelled": effects_dispelled,
+            "effects_resisted": effects_resisted,
+            "total_dispelled": len(effects_dispelled),
+            "total_resisted": len(effects_resisted),
+            "targets_checked": targets_affected,
+            "narrative_context": {
+                "dispel_cast": True,
+                "magic_unravelled": len(effects_dispelled) > 0,
+                "some_resisted": len(effects_resisted) > 0,
+                "hints": [
+                    "coils of coloured energy disintegrate",
+                    "spell weaves unravel and fade",
+                    "magical effects dissolve into sparkling motes",
+                ]
+                + (
+                    ["some powerful magics resist the dispelling"]
+                    if effects_resisted
+                    else []
+                ),
             },
         }
 
