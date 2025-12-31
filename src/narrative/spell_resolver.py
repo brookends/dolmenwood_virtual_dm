@@ -4021,6 +4021,10 @@ class SpellResolver:
             "dimension_door": self._handle_dimension_door,
             "confusion": self._handle_confusion,
             "greater_healing": self._handle_greater_healing,
+            # Phase 8 summoning and area effect spell handlers
+            "animate_dead": self._handle_animate_dead,
+            "cloudkill": self._handle_cloudkill,
+            "insect_plague": self._handle_insect_plague,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -6576,6 +6580,356 @@ class SpellResolver:
         # No active effect needed - this is an instant spell
         # But we track it for narration purposes
         result_data["duration_type"] = "instant"
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 8 HANDLERS: Summoning and Area Effects
+    # =========================================================================
+
+    def _handle_animate_dead(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Animate Dead spell.
+
+        Raises corpses or skeletons as undead under caster's command.
+
+        Effects:
+        - Animates 1 corpse/skeleton per caster Level
+        - Created undead use standard stats (not original creature stats)
+        - Permanent duration until dispelled or slain
+        - Undead obey caster's commands
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"animate_dead_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Number of undead equals caster level
+        max_undead = caster_level
+        corpses_available = len(targets_affected) if targets_affected else max_undead
+
+        # Animate as many as possible up to limit
+        undead_created = min(max_undead, corpses_available)
+
+        # Standard undead stats (as per spell description)
+        undead_stats = {
+            "hit_dice": 1,
+            "armor_class": 7,
+            "attack_bonus": 0,
+            "damage": "1d6",
+            "movement": 60,
+            "morale": 12,  # Undead don't flee
+            "special_abilities": [],  # Cannot use abilities from life
+        }
+
+        result_data: dict[str, Any] = {
+            "spell_id": "animate_dead",
+            "spell_name": "Animate Dead",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "max_undead": max_undead,
+            "corpses_available": corpses_available,
+            "undead_created": undead_created,
+            "undead_stats": undead_stats,
+            "animated_corpses": [],
+            "success": True,
+        }
+
+        # Track each animated corpse
+        for i in range(undead_created):
+            corpse_id = targets_affected[i] if i < len(targets_affected) else f"corpse_{i+1}"
+            undead_id = f"undead_{corpse_id}"
+
+            result_data["animated_corpses"].append({
+                "corpse_id": corpse_id,
+                "undead_id": undead_id,
+                "undead_type": "skeleton" if "skeleton" in str(corpse_id).lower() else "zombie",
+            })
+
+        # Create permanent effect for the undead minions
+        animate_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="animate_dead",
+            spell_name="Animate Dead",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"undead_group_{effect_id}",
+            target_type="creature_group",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.PERMANENT,
+            duration_remaining=None,
+            duration_unit="permanent",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "summoned_creatures": True,
+                "creature_type": "undead",
+                "count": undead_created,
+                "stats": undead_stats,
+                "obeys_caster": True,
+                "dispellable": True,
+                "ends_when_slain": True,
+            },
+        )
+        self._active_effects.append(animate_effect)
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                f"dark energy flows from the caster's hands into {undead_created} corpse{'s' if undead_created > 1 else ''}",
+                "bones rattle and flesh stirs as the dead rise",
+                "hollow eyes glow with unholy light",
+                "the undead await their master's commands",
+            ],
+        }
+
+        return result_data
+
+    def _handle_cloudkill(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Cloudkill spell.
+
+        Creates a deadly poison fog that moves and sinks.
+
+        Effects:
+        - 30' diameter poison cloud
+        - Moves at Speed 10, sinks to lowest point
+        - 1 damage per Round to all in contact
+        - Creatures Level 4 or lower: Save Versus Doom or die
+        - Duration: 6 Turns
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"cloudkill_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        cloud_diameter = 30  # feet
+        duration_turns = 6
+        cloud_speed = 10  # movement rate
+        damage_per_round = 1
+        instant_death_level_threshold = 4
+
+        result_data: dict[str, Any] = {
+            "spell_id": "cloudkill",
+            "spell_name": "Cloudkill",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "cloud_diameter": cloud_diameter,
+            "duration_turns": duration_turns,
+            "cloud_speed": cloud_speed,
+            "damage_per_round": damage_per_round,
+            "instant_death_level_threshold": instant_death_level_threshold,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each target in the cloud
+        for target_id in targets_affected:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "damage_taken": damage_per_round,
+                "must_save_vs_death": False,
+                "save_roll": None,
+                "died": False,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Low level creatures must save or die
+            if creature_data["level"] <= instant_death_level_threshold:
+                creature_data["must_save_vs_death"] = True
+                save_roll = dice.roll("1d20")
+                save_target = 12  # Default doom save
+
+                # Get actual save target if available
+                if hasattr(self, "_controller") and self._controller:
+                    target_char = self._controller.get_character(target_id)
+                    if target_char and hasattr(target_char, "saving_throws"):
+                        save_target = getattr(target_char.saving_throws, "doom", 12)
+
+                creature_data["save_roll"] = save_roll
+                creature_data["save_target"] = save_target
+                creature_data["died"] = save_roll < save_target
+
+            result_data["affected_creatures"].append(creature_data)
+
+        # Create the cloud effect
+        cloud_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="cloudkill",
+            spell_name="Cloudkill",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"cloud_area_{effect_id}",
+            target_type="area",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "area_effect": True,
+                "cloud_diameter": cloud_diameter,
+                "cloud_speed": cloud_speed,
+                "sinks_to_lowest": True,
+                "damage_per_round": damage_per_round,
+                "instant_death_level_threshold": instant_death_level_threshold,
+                "save_type": "doom",
+            },
+        )
+        self._active_effects.append(cloud_effect)
+
+        # Count deaths for narrative
+        deaths = sum(1 for c in result_data["affected_creatures"] if c.get("died"))
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "a sickly green fog streams from the caster's fingertips",
+                f"the poisonous cloud fills a {cloud_diameter}' diameter area",
+                "the deadly fog sinks toward the ground, flowing into low places",
+            ]
+            + (
+                [f"{deaths} creature{'s' if deaths > 1 else ''} collapse{'s' if deaths == 1 else ''}, overcome by the poison"]
+                if deaths > 0
+                else ["creatures caught in the cloud choke and gasp"]
+            ),
+        }
+
+        return result_data
+
+    def _handle_insect_plague(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Insect Plague spell.
+
+        Summons a swarm of biting insects in a fixed location.
+
+        Effects:
+        - 60' diameter swarm, does not move
+        - Vision limited to 30' inside swarm
+        - 1 damage per Round to all creatures
+        - Creatures Level 1-2: Flee in horror (must go 240' away)
+        - Duration: 1 Turn per Level
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"insect_plague_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        swarm_diameter = 60  # feet
+        duration_turns = caster_level
+        damage_per_round = 1
+        vision_limit = 30  # feet inside swarm
+        flee_level_threshold = 2
+        flee_distance = 240  # feet
+
+        result_data: dict[str, Any] = {
+            "spell_id": "insect_plague",
+            "spell_name": "Insect Plague",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "swarm_diameter": swarm_diameter,
+            "duration_turns": duration_turns,
+            "damage_per_round": damage_per_round,
+            "vision_limit": vision_limit,
+            "flee_level_threshold": flee_level_threshold,
+            "flee_distance": flee_distance,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each target in the swarm
+        for target_id in targets_affected:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "damage_taken": damage_per_round,
+                "must_flee": False,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Low level creatures flee in horror
+            if creature_data["level"] <= flee_level_threshold:
+                creature_data["must_flee"] = True
+                creature_data["flee_distance"] = flee_distance
+
+            result_data["affected_creatures"].append(creature_data)
+
+        # Create the swarm effect
+        swarm_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="insect_plague",
+            spell_name="Insect Plague",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"swarm_area_{effect_id}",
+            target_type="area",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "area_effect": True,
+                "swarm_diameter": swarm_diameter,
+                "stationary": True,
+                "damage_per_round": damage_per_round,
+                "vision_limit": vision_limit,
+                "flee_level_threshold": flee_level_threshold,
+                "flee_distance": flee_distance,
+            },
+        )
+        self._active_effects.append(swarm_effect)
+
+        # Count fleeing creatures for narrative
+        fleeing = sum(1 for c in result_data["affected_creatures"] if c.get("must_flee"))
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "a writhing mass of biting insects materializes",
+                f"the swarm fills a {swarm_diameter}' diameter area",
+                "the drone of thousands of wings fills the air",
+                f"vision is limited to {vision_limit}' within the swarm",
+            ]
+            + (
+                [f"{fleeing} low-level creature{'s' if fleeing > 1 else ''} flee{'s' if fleeing == 1 else ''} in horror"]
+                if fleeing > 0
+                else []
+            ),
+        }
 
         return result_data
 
