@@ -256,6 +256,82 @@ class VisibilityState(str, Enum):
         return 0  # No penalty for visible
 
 
+class FlightState(str, Enum):
+    """
+    Flight states for characters with magical flight or levitation.
+
+    Used for tracking vertical movement and combat positioning.
+    """
+
+    GROUNDED = "grounded"  # On the ground, normal movement
+    HOVERING = "hovering"  # Stationary in air (levitation)
+    FLYING = "flying"  # Active flight, full 3D movement
+    FALLING = "falling"  # Lost flight, plummeting
+
+    @property
+    def can_be_melee_attacked(self) -> bool:
+        """Check if ground-based melee can reach this state."""
+        return self == FlightState.GROUNDED
+
+    @property
+    def requires_concentration(self) -> bool:
+        """Check if this flight state typically requires concentration."""
+        return self in (FlightState.HOVERING, FlightState.FLYING)
+
+
+class LocationFamiliarity(str, Enum):
+    """
+    Familiarity levels for teleportation accuracy.
+
+    Determines success/mishap chances for teleportation spells.
+    """
+
+    INTIMATELY_KNOWN = "intimately_known"  # Home, frequent location
+    WELL_KNOWN = "well_known"  # Visited many times
+    VISITED = "visited"  # Been there once or twice
+    DESCRIBED = "described"  # Only heard about it
+    UNKNOWN = "unknown"  # No knowledge at all
+
+    @property
+    def success_chance(self) -> int:
+        """Get base success percentage for teleportation."""
+        chances = {
+            LocationFamiliarity.INTIMATELY_KNOWN: 95,
+            LocationFamiliarity.WELL_KNOWN: 85,
+            LocationFamiliarity.VISITED: 70,
+            LocationFamiliarity.DESCRIBED: 50,
+            LocationFamiliarity.UNKNOWN: 25,
+        }
+        return chances.get(self, 25)
+
+    @property
+    def mishap_chance(self) -> int:
+        """Get mishap chance percentage for teleportation."""
+        mishaps = {
+            LocationFamiliarity.INTIMATELY_KNOWN: 1,
+            LocationFamiliarity.WELL_KNOWN: 3,
+            LocationFamiliarity.VISITED: 8,
+            LocationFamiliarity.DESCRIBED: 15,
+            LocationFamiliarity.UNKNOWN: 30,
+        }
+        return mishaps.get(self, 30)
+
+
+class BarrierType(str, Enum):
+    """
+    Types of magical barriers/walls.
+
+    Used for Wall of Fire, Wall of Ice, Wall of Stone, etc.
+    """
+
+    FIRE = "fire"  # Deals fire damage on crossing
+    ICE = "ice"  # Blocks movement, can be broken
+    STONE = "stone"  # Solid barrier, blocks all
+    FORCE = "force"  # Invisible barrier, blocks movement
+    THORNS = "thorns"  # Deals piercing damage
+    FOG = "fog"  # Blocks vision only
+
+
 class LightSourceType(str, Enum):
     """Types of light sources with different durations."""
 
@@ -4756,6 +4832,29 @@ class CharacterState:
     # Confusion behavior tracking - last rolled behavior (for continuity)
     confusion_behavior: Optional[str] = None  # "attack_party", "attack_enemy", "wander", "stand"
 
+    # =========================================================================
+    # FLIGHT/MOVEMENT STATE
+    # =========================================================================
+
+    # Current flight state (for Fly, Levitate spells)
+    flight_state: "FlightState" = field(default=FlightState.GROUNDED)
+
+    # Altitude in feet (relative to ground level)
+    altitude: int = 0
+
+    # Source of flight ability (spell ID, item ID)
+    flight_source: Optional[str] = None
+
+    # Flight speed (if flying)
+    flight_speed: Optional[int] = None
+
+    # =========================================================================
+    # COMPULSION STATE
+    # =========================================================================
+
+    # Active compulsions (Geas, Holy Quest)
+    compulsions: list["CompulsionState"] = field(default_factory=list)
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -5326,6 +5425,141 @@ class CharacterState:
         """Remove the ability to see invisible creatures."""
         self.can_see_invisible = False
         self.see_invisible_source = None
+
+    # =========================================================================
+    # FLIGHT/MOVEMENT METHODS
+    # =========================================================================
+
+    def grant_flight(
+        self,
+        speed: int,
+        source: str,
+        flight_state: "FlightState" = FlightState.FLYING
+    ) -> None:
+        """
+        Grant flight to the character.
+
+        Args:
+            speed: Flight speed in feet per turn
+            source: Source of flight (spell ID, item ID)
+            flight_state: Initial flight state
+        """
+        self.flight_state = flight_state
+        self.flight_speed = speed
+        self.flight_source = source
+
+    def remove_flight(self) -> bool:
+        """
+        Remove flight from the character.
+
+        Returns:
+            True if character was flying and is now falling
+        """
+        was_airborne = self.flight_state in (FlightState.FLYING, FlightState.HOVERING)
+
+        if was_airborne:
+            self.flight_state = FlightState.FALLING
+        else:
+            self.flight_state = FlightState.GROUNDED
+
+        self.flight_speed = None
+        self.flight_source = None
+
+        return was_airborne
+
+    def land(self) -> None:
+        """Land the character (voluntary descent)."""
+        self.flight_state = FlightState.GROUNDED
+        self.altitude = 0
+
+    def set_altitude(self, altitude: int) -> None:
+        """
+        Set the character's altitude.
+
+        Args:
+            altitude: New altitude in feet
+        """
+        self.altitude = max(0, altitude)
+        if self.altitude == 0:
+            self.flight_state = FlightState.GROUNDED
+
+    @property
+    def is_flying(self) -> bool:
+        """Check if character is flying."""
+        return self.flight_state == FlightState.FLYING
+
+    @property
+    def is_airborne(self) -> bool:
+        """Check if character is in the air (flying, hovering, or falling)."""
+        return self.flight_state in (
+            FlightState.FLYING,
+            FlightState.HOVERING,
+            FlightState.FALLING
+        )
+
+    @property
+    def is_falling(self) -> bool:
+        """Check if character is falling."""
+        return self.flight_state == FlightState.FALLING
+
+    def calculate_fall_damage(self) -> tuple[int, str]:
+        """
+        Calculate fall damage based on current altitude.
+
+        Returns:
+            Tuple of (damage, dice expression)
+        """
+        if self.altitude <= 0:
+            return 0, "0"
+
+        # 1d6 per 10 feet fallen
+        dice_count = (self.altitude + 9) // 10  # Round up
+        dice_count = min(dice_count, 20)  # Cap at 20d6
+        return dice_count, f"{dice_count}d6"
+
+    # =========================================================================
+    # COMPULSION METHODS
+    # =========================================================================
+
+    def add_compulsion(self, compulsion: "CompulsionState") -> None:
+        """Add a compulsion (Geas, Holy Quest) to the character."""
+        self.compulsions.append(compulsion)
+
+    def get_active_compulsions(self) -> list["CompulsionState"]:
+        """Get all active compulsions."""
+        return [c for c in self.compulsions if c.is_active]
+
+    def check_compulsion_violation(self, action: str) -> list[dict[str, Any]]:
+        """
+        Check if an action violates any active compulsions.
+
+        Args:
+            action: Description of the action taken
+
+        Returns:
+            List of violation results (empty if no violations)
+        """
+        violations = []
+        for compulsion in self.get_active_compulsions():
+            if compulsion.check_violation(action):
+                result = compulsion.register_violation()
+                result["compulsion_id"] = compulsion.compulsion_id
+                result["goal"] = compulsion.goal
+                violations.append(result)
+        return violations
+
+    def get_compulsion_penalty(self) -> int:
+        """
+        Get the total penalty from all active compulsions.
+
+        Returns:
+            Total penalty modifier (negative number)
+        """
+        max_penalty = 0
+        for compulsion in self.get_active_compulsions():
+            if compulsion.current_penalty_level > max_penalty:
+                max_penalty = compulsion.current_penalty_level
+        return -max_penalty
 
     # =========================================================================
     # CHARM/CONTROL CONDITION MANAGEMENT
@@ -6154,6 +6388,228 @@ class AreaEffect:
         if self.blocks_magic:
             blocks.append("magic")
         return blocks
+
+
+# =============================================================================
+# BARRIER SYSTEM (Wall of Fire, Wall of Ice, etc.)
+# =============================================================================
+
+
+@dataclass
+class BarrierEffect:
+    """
+    A magical barrier or wall effect.
+
+    Used for Wall of Fire, Wall of Ice, Wall of Stone, etc.
+    Barriers block movement and may deal damage on contact/passage.
+    """
+
+    barrier_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    barrier_type: BarrierType = BarrierType.FORCE
+    name: str = ""
+
+    # Source tracking
+    caster_id: Optional[str] = None
+    spell_name: Optional[str] = None
+
+    # Location and dimensions
+    location_id: str = ""
+    length_feet: int = 20
+    height_feet: int = 10
+    thickness_feet: int = 1  # For solid barriers like stone
+
+    # Duration
+    duration_turns: Optional[int] = None  # None = permanent
+    is_permanent: bool = False
+    created_at: datetime = field(default_factory=datetime.now)
+
+    # Blocking properties
+    blocks_movement: bool = True
+    blocks_vision: bool = False
+    blocks_projectiles: bool = True
+    blocks_magic: bool = False
+
+    # Damage properties
+    contact_damage: Optional[str] = None  # Dice notation for touching
+    passage_damage: Optional[str] = None  # Dice notation for passing through
+    damage_type: Optional[str] = None  # fire, cold, etc.
+    save_type: Optional[str] = None
+    save_halves: bool = True
+
+    # Durability (for breakable barriers)
+    hp: Optional[int] = None  # None = indestructible
+    hp_max: Optional[int] = None
+    can_be_broken: bool = False
+
+    # State
+    is_active: bool = True
+
+    def tick(self) -> bool:
+        """
+        Advance time by one turn.
+
+        Returns:
+            True if barrier has expired
+        """
+        if not self.is_active:
+            return True
+
+        if self.is_permanent:
+            return False
+
+        if self.duration_turns is not None:
+            self.duration_turns -= 1
+            if self.duration_turns <= 0:
+                self.is_active = False
+                return True
+
+        return False
+
+    def take_damage(self, damage: int) -> bool:
+        """
+        Apply damage to the barrier.
+
+        Returns:
+            True if barrier is destroyed
+        """
+        if not self.can_be_broken or self.hp is None:
+            return False
+
+        self.hp -= damage
+        if self.hp <= 0:
+            self.is_active = False
+            return True
+        return False
+
+
+# =============================================================================
+# COMPULSION/GEAS SYSTEM
+# =============================================================================
+
+
+@dataclass
+class CompulsionState:
+    """
+    Tracks magical compulsions like Geas or Holy Quest.
+
+    Compulsions impose a goal that the target must work toward,
+    with escalating penalties for violation.
+    """
+
+    compulsion_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    target_id: str = ""
+    caster_id: str = ""
+    spell_name: str = "Geas"
+
+    # The compulsion
+    goal: str = ""  # What the target must accomplish
+    forbidden_actions: list[str] = field(default_factory=list)  # What breaks the geas
+
+    # Time tracking
+    created_at: datetime = field(default_factory=datetime.now)
+    duration_days: Optional[int] = None  # None = until completed
+    days_elapsed: int = 0
+
+    # Penalty system (escalates on violation)
+    current_penalty_level: int = 0  # 0 = no penalty yet
+    max_penalty_level: int = 5  # Death at this level
+
+    # Penalty effects per level
+    # Level 1: -1 to all rolls
+    # Level 2: -2 and sickened
+    # Level 3: -3 and weakened
+    # Level 4: -4 and bedridden
+    # Level 5: Death
+
+    # State
+    is_active: bool = True
+    completed: bool = False
+    violated: bool = False
+
+    def check_violation(self, action: str) -> bool:
+        """
+        Check if an action violates the compulsion.
+
+        Args:
+            action: Description of the action taken
+
+        Returns:
+            True if this violates the geas
+        """
+        action_lower = action.lower()
+        for forbidden in self.forbidden_actions:
+            if forbidden.lower() in action_lower:
+                return True
+        return False
+
+    def register_violation(self) -> dict[str, Any]:
+        """
+        Register a violation and escalate penalties.
+
+        Returns:
+            Dict with violation result and new penalty level
+        """
+        self.violated = True
+        self.current_penalty_level = min(
+            self.current_penalty_level + 1,
+            self.max_penalty_level
+        )
+
+        is_lethal = self.current_penalty_level >= self.max_penalty_level
+
+        return {
+            "violation": True,
+            "penalty_level": self.current_penalty_level,
+            "penalty_modifier": -self.current_penalty_level,
+            "is_lethal": is_lethal,
+            "description": self._get_penalty_description(),
+        }
+
+    def _get_penalty_description(self) -> str:
+        """Get description of current penalty level."""
+        descriptions = {
+            0: "No penalty",
+            1: "Mild discomfort, -1 to all rolls",
+            2: "Sickened and weakened, -2 to all rolls",
+            3: "Severely weakened, -3 to all rolls, half movement",
+            4: "Bedridden, -4 to all rolls, cannot adventure",
+            5: "Death from geas violation",
+        }
+        return descriptions.get(self.current_penalty_level, "Unknown penalty")
+
+    def complete(self) -> dict[str, Any]:
+        """
+        Mark the compulsion as completed.
+
+        Returns:
+            Completion result
+        """
+        self.completed = True
+        self.is_active = False
+        return {
+            "completed": True,
+            "penalties_cleared": self.current_penalty_level > 0,
+            "goal": self.goal,
+        }
+
+    def tick_day(self) -> bool:
+        """
+        Advance time by one day.
+
+        Returns:
+            True if compulsion has expired
+        """
+        if not self.is_active:
+            return True
+
+        self.days_elapsed += 1
+
+        if self.duration_days is not None:
+            if self.days_elapsed >= self.duration_days:
+                self.is_active = False
+                return True
+
+        return False
 
 
 # =============================================================================

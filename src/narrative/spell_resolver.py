@@ -259,6 +259,23 @@ class MechanicalEffect:
     protection_type: Optional[str] = None  # "evil", "good", "elements", "magic"
     protection_bonus: Optional[int] = None  # AC/save bonus granted
 
+    # Barrier/Wall effects (Wall of Fire, Wall of Ice, etc.)
+    is_barrier_effect: bool = False  # This spell creates a barrier
+    barrier_type: Optional[str] = None  # "fire", "ice", "stone", "force"
+    barrier_damage: Optional[str] = None  # Damage on contact/passage
+    barrier_blocks_movement: bool = True
+    barrier_blocks_vision: bool = False
+
+    # Compulsion/Geas effects
+    is_compulsion_effect: bool = False  # This spell creates a geas/quest
+    compulsion_type: Optional[str] = None  # "geas", "quest", "command"
+    compulsion_penalty: Optional[str] = None  # Penalty for violation
+
+    # Anti-magic effects
+    is_antimagic_effect: bool = False  # This spell blocks/dispels magic
+    antimagic_type: Optional[str] = None  # "dispel", "suppress", "nullify"
+    antimagic_radius: Optional[int] = None  # Radius of effect
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -3168,6 +3185,80 @@ class SpellResolver:
                     protection_type=prot_type,
                     protection_bonus=bonus,
                     description=f"Protection from {prot_type}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Barrier/Wall patterns
+        barrier_patterns = [
+            (r"wall\s+of\s+fire", "fire", "2d6", False),
+            (r"wall\s+of\s+ice", "ice", None, True),
+            (r"wall\s+of\s+stone", "stone", None, True),
+            (r"wall\s+of\s+iron", "iron", None, True),
+            (r"wall\s+of\s+force", "force", None, False),
+            (r"wall\s+of\s+thorns?", "thorns", "1d6", False),
+            (r"blade\s+barrier", "blades", "8d8", False),
+        ]
+
+        for pattern, barrier_type, damage, blocks_vision in barrier_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_barrier_effect=True,
+                    barrier_type=barrier_type,
+                    barrier_damage=damage,
+                    barrier_blocks_movement=True,
+                    barrier_blocks_vision=blocks_vision,
+                    description=f"Creates wall of {barrier_type}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Geas/Compulsion patterns
+        compulsion_patterns = [
+            (r"\bgeas\b", "geas"),
+            (r"holy\s+quest", "quest"),
+            (r"(?:compel|compulsion)\s+(?:to|toward)", "compulsion"),
+            (r"(?:must|shall)\s+(?:obey|serve|complete)", "command"),
+        ]
+
+        for pattern, comp_type in compulsion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    is_compulsion_effect=True,
+                    compulsion_type=comp_type,
+                    description=f"Applies {comp_type}",
+                )
+
+                # Check for save
+                if re.search(r"save|saving\s+throw", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Anti-magic patterns
+        antimagic_patterns = [
+            (r"anti-?magic\s+(?:shell|field|zone)", "nullify"),
+            (r"dispel\s+(?:all\s+)?magic", "dispel"),
+            (r"suppress(?:es?)?\s+(?:all\s+)?magic", "suppress"),
+            (r"(?:negates?|cancels?)\s+(?:all\s+)?magic", "nullify"),
+        ]
+
+        for pattern, am_type in antimagic_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract radius
+                radius_match = re.search(r"(\d+)['\"]?\s*(?:foot|feet|ft)?\s*radius", description, re.IGNORECASE)
+                radius = int(radius_match.group(1)) if radius_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_antimagic_effect=True,
+                    antimagic_type=am_type,
+                    antimagic_radius=radius,
+                    description=f"Anti-magic ({am_type})",
                 )
                 parsed.add_effect(effect)
                 break

@@ -4347,6 +4347,322 @@ class GlobalController:
         return result
 
     # =========================================================================
+    # BARRIER/WALL SPELL METHODS
+    # =========================================================================
+
+    def create_barrier(
+        self,
+        caster_id: str,
+        location_id: str,
+        barrier_type: str,
+        duration_turns: int = 12,
+        length_feet: int = 20,
+        height_feet: int = 10,
+        contact_damage: Optional[str] = None,
+        damage_type: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Create a magical barrier/wall at a location.
+
+        Args:
+            caster_id: The caster
+            location_id: Where to create the barrier
+            barrier_type: Type of barrier (fire, ice, stone, force)
+            duration_turns: How long the barrier lasts
+            length_feet: Length of the barrier
+            height_feet: Height of the barrier
+            contact_damage: Damage dice on contact
+            damage_type: Type of damage
+
+        Returns:
+            Result of barrier creation
+        """
+        from src.data_models import BarrierEffect, BarrierType
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Map string to enum
+        barrier_type_enum = BarrierType.FORCE
+        try:
+            barrier_type_enum = BarrierType(barrier_type.lower())
+        except ValueError:
+            pass
+
+        barrier = BarrierEffect(
+            barrier_type=barrier_type_enum,
+            name=f"Wall of {barrier_type.title()}",
+            caster_id=caster_id,
+            spell_name=f"Wall of {barrier_type.title()}",
+            location_id=location_id,
+            length_feet=length_feet,
+            height_feet=height_feet,
+            duration_turns=duration_turns,
+            contact_damage=contact_damage,
+            damage_type=damage_type,
+            blocks_movement=True,
+            blocks_vision=barrier_type in ("stone", "ice", "iron"),
+        )
+
+        # Store barrier in location (if location supports it)
+        if hasattr(location, 'barriers'):
+            location.barriers.append(barrier)
+
+        result = {
+            "success": True,
+            "spell": f"Wall of {barrier_type.title()}",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "barrier_id": barrier.barrier_id,
+            "barrier_type": barrier_type,
+            "dimensions": f"{length_feet}' x {height_feet}'",
+            "duration_turns": duration_turns,
+            "contact_damage": contact_damage,
+            "blocks_movement": barrier.blocks_movement,
+            "blocks_vision": barrier.blocks_vision,
+        }
+
+        self._log_event("barrier_created", result)
+        return result
+
+    def destroy_barrier(
+        self,
+        barrier_id: str,
+        location_id: str,
+    ) -> dict[str, Any]:
+        """
+        Destroy or dispel a barrier.
+
+        Args:
+            barrier_id: The barrier to destroy
+            location_id: Location containing the barrier
+
+        Returns:
+            Result of barrier destruction
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        # Remove barrier if location supports it
+        if hasattr(location, 'barriers'):
+            for barrier in location.barriers:
+                if barrier.barrier_id == barrier_id:
+                    barrier.is_active = False
+                    location.barriers.remove(barrier)
+                    return {
+                        "success": True,
+                        "barrier_id": barrier_id,
+                        "destroyed": True,
+                    }
+
+        return {"success": False, "error": "Barrier not found"}
+
+    # =========================================================================
+    # GEAS/COMPULSION METHODS
+    # =========================================================================
+
+    def apply_geas(
+        self,
+        caster_id: str,
+        target_id: str,
+        goal: str,
+        forbidden_actions: Optional[list[str]] = None,
+        duration_days: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply a Geas or Holy Quest to a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target of the geas
+            goal: What the target must accomplish
+            forbidden_actions: Actions that violate the geas
+            duration_days: Duration in days (None = until completed)
+
+        Returns:
+            Result of applying the geas
+        """
+        from src.data_models import CompulsionState
+
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        compulsion = CompulsionState(
+            target_id=target_id,
+            caster_id=caster_id,
+            spell_name="Geas",
+            goal=goal,
+            forbidden_actions=forbidden_actions or [],
+            duration_days=duration_days,
+        )
+
+        target.add_compulsion(compulsion)
+
+        result = {
+            "success": True,
+            "spell": "Geas",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "compulsion_id": compulsion.compulsion_id,
+            "goal": goal,
+            "forbidden_actions": forbidden_actions or [],
+            "duration_days": duration_days,
+        }
+
+        self._log_event("geas_applied", result)
+        return result
+
+    def check_geas_violation(
+        self,
+        character_id: str,
+        action: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an action violates any active geas.
+
+        Args:
+            character_id: The character taking the action
+            action: Description of the action
+
+        Returns:
+            Violation results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        violations = character.check_compulsion_violation(action)
+
+        result = {
+            "character_id": character_id,
+            "action": action,
+            "violations": violations,
+            "violated": len(violations) > 0,
+            "penalty": character.get_compulsion_penalty(),
+        }
+
+        if violations:
+            self._log_event("geas_violation", result)
+
+        return result
+
+    def complete_geas(
+        self,
+        character_id: str,
+        compulsion_id: str,
+    ) -> dict[str, Any]:
+        """
+        Mark a geas as completed.
+
+        Args:
+            character_id: The character who completed the geas
+            compulsion_id: The specific geas to complete
+
+        Returns:
+            Completion result
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        for compulsion in character.compulsions:
+            if compulsion.compulsion_id == compulsion_id:
+                result = compulsion.complete()
+                result["character_id"] = character_id
+                result["compulsion_id"] = compulsion_id
+                self._log_event("geas_completed", result)
+                return result
+
+        return {"error": f"Compulsion {compulsion_id} not found"}
+
+    # =========================================================================
+    # TELEPORTATION METHODS (with mishap system)
+    # =========================================================================
+
+    def teleport_with_familiarity(
+        self,
+        caster_id: str,
+        target_ids: list[str],
+        destination_id: str,
+        familiarity: str = "visited",
+    ) -> dict[str, Any]:
+        """
+        Teleport characters with familiarity-based accuracy.
+
+        Args:
+            caster_id: The caster
+            target_ids: Characters to teleport
+            destination_id: Destination location
+            familiarity: Familiarity level with destination
+
+        Returns:
+            Teleportation result including mishap check
+        """
+        from src.data_models import LocationFamiliarity, DiceRoller
+
+        destination = self._locations.get(destination_id)
+        if not destination:
+            return {"error": f"Destination {destination_id} not found"}
+
+        # Get familiarity enum
+        try:
+            fam_level = LocationFamiliarity(familiarity)
+        except ValueError:
+            fam_level = LocationFamiliarity.VISITED
+
+        # Roll for success/mishap
+        roll_result = DiceRoller.roll("1d100")
+        roll = roll_result.total
+        success_threshold = fam_level.success_chance
+        mishap_threshold = 100 - fam_level.mishap_chance
+
+        teleported = []
+        mishap = False
+        mishap_type = None
+
+        if roll <= success_threshold:
+            # Success - teleport all targets
+            for target_id in target_ids:
+                if target_id in self._characters:
+                    teleported.append(target_id)
+        elif roll >= mishap_threshold:
+            # Mishap!
+            mishap = True
+            mishap_roll = DiceRoller.roll("1d6").total
+            if mishap_roll <= 2:
+                mishap_type = "scattered"  # Targets arrive in different locations
+            elif mishap_roll <= 4:
+                mishap_type = "off_target"  # Arrive at wrong location
+            else:
+                mishap_type = "damage"  # Take 1d10 damage per teleporter level
+        else:
+            # Off target - arrive nearby
+            mishap_type = "off_target"
+            for target_id in target_ids:
+                if target_id in self._characters:
+                    teleported.append(target_id)
+
+        result = {
+            "success": not mishap,
+            "spell": "Teleport",
+            "caster_id": caster_id,
+            "destination_id": destination_id,
+            "familiarity": familiarity,
+            "roll": roll,
+            "success_threshold": success_threshold,
+            "teleported": teleported,
+            "mishap": mishap,
+            "mishap_type": mishap_type,
+        }
+
+        self._log_event("teleport_attempt", result)
+        return result
+
+    # =========================================================================
     # INTERNAL CALLBACKS
     # =========================================================================
 
