@@ -1894,6 +1894,11 @@ class Item:
     freshness_bonus_days: int = 0  # Additional days from preservation (e.g., temperature crystal)
     is_perishable: bool = False  # True for rations and other food that can spoil
 
+    # Inscriptions (for Decipher spell and similar effects)
+    # List of written text on this item - can be in any language
+    # Each inscription is a dict with: text_id, original_language, content, surface, script_style, is_magical, is_coded
+    inscriptions: list[dict[str, Any]] = field(default_factory=list)
+
     def get_total_weight(self) -> float:
         """Get total weight of this item stack (weight × quantity)."""
         return self.weight * self.quantity
