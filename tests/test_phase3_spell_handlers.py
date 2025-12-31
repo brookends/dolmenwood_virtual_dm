@@ -500,6 +500,53 @@ class TestDispelMagicSpellDataIntegration:
 
         assert result["area_size"] == "20' cube"
 
+    def test_dispel_magic_level_difference_mechanic_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, create_active_effect
+    ):
+        """Handler implements 5% per level resist chance from source."""
+        spell = spell_data_loader("arcane_level_3_1.json", "dispel_magic")
+
+        # Verify source says 5% per level
+        assert "5%" in spell["description"]
+        assert "Level difference" in spell["description"]
+
+        # Create effect from level 10 caster (5 levels higher than level 5 caster)
+        effect = create_active_effect(
+            spell_id="test_spell",
+            spell_name="Test Spell",
+            caster_id="enemy",
+            caster_level=10,
+            target_id="ally_1",
+        )
+        spell_resolver._active_effects.append(effect)
+
+        # Roll that would succeed against 25% resist chance (5 levels × 5%)
+        mock_roller = MagicMock()
+        mock_roller.roll.return_value = MagicMock(total=50)  # > 25, succeeds
+
+        result = spell_resolver._handle_dispel_magic(
+            mock_caster, ["ally_1"], mock_roller
+        )
+
+        # Effect should be dispelled (roll 50 > 25% threshold)
+        assert result["total_dispelled"] == 1
+        assert result["effects_dispelled"][0]["level_difference"] == 5
+
+    def test_dispel_magic_instant_duration_matches_source(self, spell_data_loader):
+        """Dispel Magic should have Instant duration per source."""
+        spell = spell_data_loader("arcane_level_3_1.json", "dispel_magic")
+        assert spell["duration"] == "Instant"
+
+    def test_all_phase3_spells_have_valid_spell_ids(self, spell_data_loader):
+        """Verify all Phase 3 spell_ids match dispatcher registration."""
+        phase3_spells = [
+            ("arcane_level_3_1.json", "dispel_magic"),
+        ]
+
+        for filename, spell_id in phase3_spells:
+            spell = spell_data_loader(filename, spell_id)
+            assert spell["spell_id"] == spell_id, f"Mismatch for {spell_id}"
+
 
 class TestActiveSpellEffectCasterLevel:
     """Tests for the new caster_level field on ActiveSpellEffect."""

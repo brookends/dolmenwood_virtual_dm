@@ -461,6 +461,104 @@ class TestPhase4SpellDataIntegration:
             spell = spell_data_loader(filename, spell_id)
             assert spell["spell_id"] == spell_id, f"Mismatch for {spell_id}"
 
+    def test_levitate_handler_duration_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Levitate handler duration formula matches source (6 Turns + 1/Level)."""
+        spell = spell_data_loader("arcane_level_2_2.json", "levitate")
+        assert "6 Turns" in spell["duration"]
+        assert "+1 per Level" in spell["duration"]
+
+        # Handler should calculate 6 + level
+        result = spell_resolver._handle_levitate(
+            mock_caster, [], mock_dice_roller  # mock_caster.level = 5
+        )
+        assert result["duration_turns"] == 11  # 6 + 5
+
+    def test_levitate_handler_speed_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Levitate vertical speed matches source (20' per Round)."""
+        spell = spell_data_loader("arcane_level_2_2.json", "levitate")
+        # Source says "Up to 20′ per Round" for vertical
+        assert "20" in spell["description"]
+
+        result = spell_resolver._handle_levitate(
+            mock_caster, [], mock_dice_roller
+        )
+        assert result["vertical_speed"] == 20
+
+    def test_fly_handler_duration_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster
+    ):
+        """Fly handler duration formula matches source (1d6 Turns + 1/Level)."""
+        spell = spell_data_loader("arcane_level_3_1.json", "fly")
+        assert "1d6 Turns" in spell["duration"]
+        assert "+1 per Level" in spell["duration"]
+
+        # Mock roller to return 4 for 1d6
+        mock_roller = MagicMock()
+        mock_roller.roll.return_value = MagicMock(total=4)
+
+        result = spell_resolver._handle_fly(
+            mock_caster, [], mock_roller  # mock_caster.level = 5
+        )
+        # Duration should be roll(4) + level(5) = 9
+        assert result["duration_turns"] == 9
+        assert result["duration_roll"] == 4
+
+    def test_fly_handler_speed_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Fly speed matches source (Speed 120)."""
+        spell = spell_data_loader("arcane_level_3_1.json", "fly")
+        assert "120" in spell["description"]
+
+        result = spell_resolver._handle_fly(
+            mock_caster, [], mock_dice_roller
+        )
+        assert result["flight_speed"] == 120
+
+    def test_telekinesis_handler_weight_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Telekinesis weight limit matches source (200 coins per Level)."""
+        spell = spell_data_loader("arcane_level_5_2.json", "telekinesis")
+        assert "200 coins" in spell["description"]
+        assert "per Level" in spell["description"]
+
+        result = spell_resolver._handle_telekinesis(
+            mock_caster, [], mock_dice_roller  # mock_caster.level = 5
+        )
+        # Weight should be 200 * 5 = 1000 coins
+        assert result["weight_limit_coins"] == 1000
+
+    def test_telekinesis_handler_concentration_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Telekinesis concentration requirement matches source."""
+        spell = spell_data_loader("arcane_level_5_2.json", "telekinesis")
+        assert "Concentration" in spell["duration"]
+        assert "6 Rounds" in spell["duration"]
+
+        result = spell_resolver._handle_telekinesis(
+            mock_caster, [], mock_dice_roller
+        )
+        assert result["requires_concentration"] is True
+        assert result["duration_rounds"] == 6
+
+    def test_telekinesis_handler_movement_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_dice_roller
+    ):
+        """Telekinesis movement rate matches source (20' per Round)."""
+        spell = spell_data_loader("arcane_level_5_2.json", "telekinesis")
+        assert "20" in spell["description"]
+
+        result = spell_resolver._handle_telekinesis(
+            mock_caster, [], mock_dice_roller
+        )
+        assert result["movement_speed"] == 20
+
 
 class TestPhase4FlightStateIntegration:
     """Tests for proper flight state integration."""
