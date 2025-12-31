@@ -1,0 +1,130 @@
+{
+  "oracle_only_spells": [
+    {
+      "spell_id": "beguilement",
+      "adjudication_type": "illusion_belief",
+      "default_question_template": "Beguilement: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "bird_friend",
+      "adjudication_type": "summoning_control",
+      "default_question_template": "Bird Friend: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "dancing_flame",
+      "adjudication_type": "generic",
+      "default_question_template": "Dancing Flame: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "detect_evil",
+      "adjudication_type": "divination",
+      "default_question_template": "Detect Evil: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "detect_magic",
+      "adjudication_type": "divination",
+      "default_question_template": "Detect Magic: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "disguise_object",
+      "adjudication_type": "illusion_belief",
+      "default_question_template": "Disguise Object: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "dweomerlight",
+      "adjudication_type": "divination",
+      "default_question_template": "Dweomerlight: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "fabricate",
+      "adjudication_type": "generic",
+      "default_question_template": "Fabricate: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "fairy_steed",
+      "adjudication_type": "summoning_control",
+      "default_question_template": "Fairy Steed: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "find_traps",
+      "adjudication_type": "divination",
+      "default_question_template": "Find Traps: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "mind_crystal",
+      "adjudication_type": "divination",
+      "default_question_template": "Mind Crystal: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "mirth_and_malice",
+      "adjudication_type": "illusion_belief",
+      "default_question_template": "Mirth and Malice: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "move_terrain",
+      "adjudication_type": "generic",
+      "default_question_template": "Move Terrain: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "oracle",
+      "adjudication_type": "divination",
+      "default_question_template": "Oracle: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "reveal_alignment",
+      "adjudication_type": "divination",
+      "default_question_template": "Reveal Alignment: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "root_friend",
+      "adjudication_type": "summoning_control",
+      "default_question_template": "Root Friend: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "rune_of_wishing",
+      "adjudication_type": "wish",
+      "default_question_template": "Rune of Wishing: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "summon_wild_hunt",
+      "adjudication_type": "summoning_control",
+      "default_question_template": "Summon Wild Hunt: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "thread_whistling",
+      "adjudication_type": "generic",
+      "default_question_template": "Thread Whistling: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "wood_kenning",
+      "adjudication_type": "divination",
+      "default_question_template": "Wood Kenning: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    },
+    {
+      "spell_id": "yeast_master",
+      "adjudication_type": "generic",
+      "default_question_template": "Yeast Master: Based on the current scene, what happens if the caster uses this spell as described? Provide a concrete, bounded outcome consistent with established facts.",
+      "minimal_tags": []
+    }
+  ]
+}
