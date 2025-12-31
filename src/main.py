@@ -577,6 +577,18 @@ class VirtualDM:
             return False
 
         try:
+            # Ensure base content is loaded before applying session deltas.
+            # Session saves store POI discoveries, NPC state changes, etc. which
+            # require base hex/NPC data to be present first.
+            if not self._content_loaded:
+                logger.info("Auto-loading base content before restoring save...")
+                self._load_base_content()
+                if not self._content_loaded:
+                    logger.warning(
+                        "Base content not loaded - session deltas may not apply correctly. "
+                        "Consider running with --load-content flag."
+                    )
+
             # Load session
             session = self.session_manager.load_session(filepath)
 
