@@ -13,11 +13,13 @@ This file wires those action ids to concrete engine calls.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 import re
 import random
 
-from src.main import VirtualDM
+if TYPE_CHECKING:
+    from src.main import VirtualDM
+
 from src.data_models import LightSourceType
 from src.game_state.state_machine import GameState
 from src.dungeon.dungeon_engine import DungeonActionType
@@ -41,6 +43,14 @@ class ConversationConfig:
     include_state_snapshot: bool = True
     include_events: bool = True
 
+    # Upgrade A: LLM intent parsing
+    use_llm_intent_parsing: bool = True  # Try LLM parsing first
+    llm_confidence_threshold: float = 0.7  # Minimum confidence to use LLM result
+
+    # Upgrade D: Enhanced oracle integration
+    use_oracle_enhancement: bool = True  # Detect ambiguity and offer oracle
+    oracle_auto_suggest: bool = True  # Automatically suggest oracle for questions
+
 
 class ConversationFacade:
     def __init__(self, dm: VirtualDM, *, config: Optional[ConversationConfig] = None):
@@ -51,15 +61,26 @@ class ConversationFacade:
         # Mythic oracle for uncertain questions
         self.mythic = MythicGME(rng=random.Random())
 
+        # Upgrade D: Oracle enhancement for ambiguity detection
+        self.oracle_enhancement = None
+        if self.config.use_oracle_enhancement:
+            from src.conversation.oracle_enhancement import OracleEnhancement
+            self.oracle_enhancement = OracleEnhancement(self.mythic)
+
+        # Track recent context for LLM parsing
+        self._recent_actions: list[str] = []
+        self._max_recent: int = 5
+
     # ---------------------------------------------------------------------
     # Public API
     # ---------------------------------------------------------------------
     def handle_chat(self, text: str, *, character_id: Optional[str] = None) -> TurnResponse:
         """Handle freeform player chat.
 
-        Heuristic routing:
-        - If in wilderness and a hex id is mentioned, offer to travel.
-        - Otherwise delegate to the current mode engine's `handle_player_action`.
+        Routing priority:
+        1. Try LLM intent parsing if enabled and DM agent available
+        2. Use pattern matching (hex IDs, keywords) as fallback
+        3. Delegate to engine's handle_player_action()
         """
 
         text = (text or "").strip()
@@ -68,6 +89,13 @@ class ConversationFacade:
 
         character_id = character_id or self._default_character_id()
 
+        # Try LLM intent parsing first (Upgrade A)
+        if self.config.use_llm_intent_parsing and self.dm.dm_agent:
+            intent_result = self._try_llm_intent_parse(text, character_id)
+            if intent_result:
+                return intent_result
+
+        # Fall back to pattern matching
         if self.dm.current_state == GameState.WILDERNESS_TRAVEL:
             m = HEX_ID_RE.search(text)
             if m:
@@ -80,6 +108,63 @@ class ConversationFacade:
                 return self.handle_action(f"dungeon:{lowered}")
 
         return self._handle_freeform(text, character_id=character_id)
+
+    def _try_llm_intent_parse(self, text: str, character_id: str) -> Optional[TurnResponse]:
+        """
+        Try to parse player intent using LLM.
+
+        Returns TurnResponse if successful with high confidence, None otherwise.
+        """
+        try:
+            # Get available actions for current state
+            suggestions = build_suggestions(self.dm, character_id=character_id, limit=20)
+            available_actions = [s.id for s in suggestions]
+
+            # Get location context
+            location_context = str(self.dm.controller.party_state.location)
+
+            # Get recent context
+            recent_context = "; ".join(self._recent_actions[-self._max_recent:])
+
+            # Parse intent
+            intent = self.dm.dm_agent.parse_intent(
+                player_input=text,
+                current_state=self.dm.current_state.value,
+                available_actions=available_actions,
+                location_context=location_context,
+                recent_context=recent_context,
+            )
+
+            # Check confidence threshold
+            if intent.confidence >= self.config.llm_confidence_threshold:
+                # High confidence - execute the action
+                if intent.action_id != "unknown" and intent.action_id in available_actions:
+                    # Track the action for context
+                    self._add_recent_action(f"{intent.action_id}: {text[:50]}")
+                    return self.handle_action(intent.action_id, intent.params)
+
+            # Clarification needed
+            if intent.requires_clarification:
+                return self._response(
+                    [ChatMessage("system", intent.clarification_prompt)],
+                    requires_clarification=True,
+                    clarification_prompt=intent.clarification_prompt,
+                )
+
+            # Low confidence but no clarification - fall through to pattern matching
+            return None
+
+        except Exception as e:
+            # LLM parsing failed - fall back to pattern matching
+            import logging
+            logging.getLogger(__name__).debug(f"LLM intent parse failed: {e}")
+            return None
+
+    def _add_recent_action(self, action_desc: str) -> None:
+        """Track a recent action for context."""
+        self._recent_actions.append(action_desc)
+        if len(self._recent_actions) > self._max_recent:
+            self._recent_actions.pop(0)
 
     def handle_action(self, action_id: str, params: Optional[dict[str, Any]] = None) -> TurnResponse:
         """Execute a clicked suggestion (action_id + params)."""
@@ -408,14 +493,15 @@ class ConversationFacade:
             }.get(like, Likelihood.FIFTY_FIFTY)
 
             r = self.mythic.fate_check(q, likelihood)
-            msg = f"Oracle: {r.answer.value} (roll={r.roll}, chaos={r.chaos_factor})"
-            if r.exceptional:
-                msg += " [Exceptional]"
+            result_str = r.result.value.replace("_", " ").title()
+            msg = f"Oracle: {result_str} (roll={r.roll}, chaos={r.chaos_factor})"
+            if r.random_event_triggered and r.random_event:
+                msg += f" [Random Event: {r.random_event}]"
             return self._response([ChatMessage("system", msg)])
 
         if action_id == "oracle:random_event":
             ev = self.mythic.generate_random_event()
-            msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.meaning.action} / {ev.meaning.subject}"
+            msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.action} / {ev.subject}"
             return self._response([ChatMessage("system", msg)])
 
         if action_id == "oracle:detail_check":
@@ -433,6 +519,41 @@ class ConversationFacade:
 
         state = self.dm.current_state
 
+        # Upgrade D: Check for ambiguity and offer oracle
+        if self.oracle_enhancement and self.config.oracle_auto_suggest:
+            detection = self.oracle_enhancement.detect_ambiguity(
+                text, state.value
+            )
+            if detection.is_ambiguous and detection.oracle_suggestions:
+                # Offer oracle options alongside the action
+                oracle_msg = ChatMessage("system", detection.clarification_prompt)
+                oracle_actions = self.oracle_enhancement.format_oracle_options(detection)
+
+                # Still try to process the action, but with oracle suggestions
+                response = self._process_freeform_action(text, state, character_id)
+
+                # Add oracle suggestion to messages
+                if oracle_actions:
+                    response.messages.insert(0, oracle_msg)
+                    # Add oracle actions to suggestions
+                    from src.conversation.types import SuggestedAction
+                    for oa in oracle_actions:
+                        response.suggested_actions.insert(0, SuggestedAction(
+                            id=oa["id"],
+                            label=oa["label"],
+                            params=oa.get("params", {}),
+                            safe_to_execute=True,
+                            help="Use the Oracle to resolve uncertainty"
+                        ))
+
+                return response
+
+        return self._process_freeform_action(text, state, character_id)
+
+    def _process_freeform_action(
+        self, text: str, state: GameState, character_id: str
+    ) -> TurnResponse:
+        """Process a freeform action for the current game state."""
         if state == GameState.WILDERNESS_TRAVEL:
             rr = self.dm.hex_crawl.handle_player_action(text, character_id)
             msgs: list[ChatMessage] = []

@@ -18,9 +18,11 @@ exhaustive action list and they should avoid spoilers.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
-from src.main import VirtualDM
+if TYPE_CHECKING:
+    from src.main import VirtualDM
+
 from src.game_state.state_machine import GameState
 from src.dungeon.dungeon_engine import DungeonActionType, DoorState
 from src.encounter.encounter_engine import EncounterAction

@@ -1343,7 +1343,7 @@ class HexCrawlEngine:
                     else "normal"
                 ),
                 "time_of_day": (
-                    self.controller.world_state.time_of_day.value
+                    self.controller.world_state.current_time.get_time_of_day().value
                     if self.controller.world_state
                     else "day"
                 ),

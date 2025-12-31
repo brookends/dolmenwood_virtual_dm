@@ -36,6 +36,8 @@ class PromptSchemaType(str, Enum):
     SPELL_CAST = "spell_cast"
     SPELL_REVELATION = "spell_revelation"
     MYTHIC_INTERPRETATION = "mythic_interpretation"
+    INTENT_PARSE = "intent_parse"
+    NARRATIVE_INTENT_PARSE = "narrative_intent_parse"
 
 
 # =============================================================================
@@ -2042,6 +2044,385 @@ Provide your response as valid JSON matching the format specified in the system 
 
 
 # =============================================================================
+# SCHEMA 18: INTENT PARSING
+# =============================================================================
+
+
+@dataclass
+class IntentParseInputs:
+    """Inputs for intent parsing schema."""
+
+    player_input: str  # Raw natural language input from player
+    current_state: str  # Current GameState value
+    available_actions: list[str]  # List of valid action IDs
+    location_context: str = ""  # Current location description
+    recent_context: str = ""  # Recent events/actions
+
+
+@dataclass
+class IntentParseOutput:
+    """Output structure for intent parsing."""
+
+    action_id: str  # Best matching action ID or "unknown"
+    params: dict[str, Any]  # Extracted parameters for the action
+    confidence: float  # 0.0 to 1.0 confidence score
+    requires_clarification: bool  # Whether clarification is needed
+    clarification_prompt: str  # Prompt to ask for clarification
+    reasoning: str  # Brief explanation of the parse
+
+
+class IntentParseSchema(PromptSchema):
+    """
+    Schema for parsing player natural language into structured action intents.
+
+    This schema helps the LLM understand what the player wants to do and
+    map it to one of the available action IDs.
+    """
+
+    def __init__(self, inputs: IntentParseInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.INTENT_PARSE,
+            inputs=vars(inputs),
+        )
+        self._inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "player_input": str,
+            "current_state": str,
+            "available_actions": list,
+        }
+
+    def get_system_prompt(self) -> str:
+        return """You are an intent parser for a Dolmenwood TTRPG game.
+
+Your job is to understand what the player wants to do and map it to one of the available actions.
+
+CRITICAL RULES:
+1. You may ONLY output JSON in the exact format specified
+2. You may NEVER invent actions that aren't in the available_actions list
+3. If unsure, set requires_clarification=true and provide a helpful prompt
+4. Extract any parameters mentioned (hex IDs, NPC names, item names, etc.)
+5. Be generous in interpretation - "go north" and "travel north" both mean travel
+
+OUTPUT FORMAT (strict JSON):
+{
+  "action_id": "<action_id from available_actions or 'unknown'>",
+  "params": {"<param_name>": "<value>"},
+  "confidence": <0.0 to 1.0>,
+  "requires_clarification": <true/false>,
+  "clarification_prompt": "<question to ask if clarification needed>",
+  "reasoning": "<brief explanation>"
+}
+
+CONFIDENCE GUIDELINES:
+- 0.9-1.0: Exact match or very clear intent
+- 0.7-0.9: Strong match with some inference
+- 0.5-0.7: Reasonable match, might need confirmation
+- 0.3-0.5: Uncertain, probably need clarification
+- 0.0-0.3: Very unsure, definitely need clarification"""
+
+    def build_prompt(self) -> str:
+        i = self._inputs
+
+        # Format available actions nicely
+        actions_list = "\n".join(f"  - {a}" for a in i.available_actions)
+
+        prompt = f"""Parse the following player input and determine their intent.
+
+PLAYER INPUT: "{i.player_input}"
+
+CURRENT GAME STATE: {i.current_state}
+"""
+        if i.location_context:
+            prompt += f"\nLOCATION CONTEXT: {i.location_context}"
+
+        if i.recent_context:
+            prompt += f"\nRECENT CONTEXT: {i.recent_context}"
+
+        prompt += f"""
+
+AVAILABLE ACTIONS:
+{actions_list}
+
+Analyze the player's input and respond with valid JSON matching the output format.
+If the input mentions a specific target (hex ID like "0710", NPC name, item, direction), extract it as a parameter.
+If the intent is unclear, set requires_clarification=true and ask a specific question."""
+
+        return prompt
+
+
+# =============================================================================
+# SCHEMA 19: NARRATIVE INTENT PARSING
+# =============================================================================
+
+
+@dataclass
+class NarrativeIntentInputs:
+    """
+    Inputs for narrative resolver intent parsing.
+
+    This is used to parse player input into structured ParsedIntent
+    that the NarrativeResolver can route to appropriate mechanical resolvers.
+    """
+
+    player_input: str  # Raw natural language input from player
+    current_state: str  # Current GameState value
+
+    # Character context
+    character_name: str = ""
+    character_class: str = ""
+    character_level: int = 1
+    character_abilities: dict[str, int] = field(default_factory=dict)  # STR, DEX, etc.
+
+    # Location context
+    location_type: str = ""  # wilderness, dungeon, settlement
+    location_description: str = ""
+    visible_features: list[str] = field(default_factory=list)  # Doors, items, NPCs
+
+    # Combat/encounter context
+    in_combat: bool = False
+    visible_enemies: list[str] = field(default_factory=list)
+
+    # Recent context
+    recent_actions: list[str] = field(default_factory=list)
+
+    # Available spells (for spell detection)
+    known_spell_names: list[str] = field(default_factory=list)
+
+
+@dataclass
+class NarrativeIntentOutput:
+    """
+    Output structure for narrative intent parsing.
+
+    Maps directly to ParsedIntent fields used by NarrativeResolver.
+    """
+
+    # Core classification
+    action_category: str  # spell, hazard, exploration, social, combat, survival, movement, inventory, creative, narrative
+    action_type: str  # climb, jump, swim, cast_spell, search, attack, etc.
+    confidence: float  # 0.0 to 1.0
+
+    # Target information
+    target_type: str = ""  # self, creature, object, area, door
+    target_description: str = ""  # "the goblin", "the locked door"
+
+    # For spells
+    spell_name: str = ""  # Matched spell name
+
+    # For creative solutions
+    proposed_approach: str = ""  # "pour water to reveal pit"
+
+    # Resolution hints
+    suggested_resolution: str = "check_required"  # auto_success, auto_fail, check_required, etc.
+    suggested_check: str = "none"  # strength, dexterity, search, listen, etc.
+    check_modifier: int = 0  # Suggested bonus/penalty
+
+    # Rule reference (if applicable)
+    rule_reference: str = ""  # "p150 - Climbing", "p152 - Hidden Features"
+
+    # Flags
+    is_adventurer_competency: bool = False  # Auto-success under normal conditions
+    requires_clarification: bool = False
+    clarification_prompt: str = ""
+
+    # Reasoning
+    reasoning: str = ""
+
+
+class NarrativeIntentSchema(PromptSchema):
+    """
+    Schema for parsing player input into mechanical action classification.
+
+    This schema bridges natural language input to the NarrativeResolver's
+    ParsedIntent structure. It understands Dolmenwood's rules and can
+    classify actions appropriately.
+
+    Key differences from IntentParseSchema:
+    - IntentParseSchema maps to action IDs (dungeon:search, wilderness:travel)
+    - NarrativeIntentSchema maps to ActionCategory/ActionType for mechanical resolution
+
+    The LLM's job is to:
+    1. Classify the action (spell, hazard, exploration, etc.)
+    2. Identify specific action type (climb, search, cast_spell)
+    3. Extract targets and parameters
+    4. Suggest appropriate resolution method based on Dolmenwood rules
+    5. Identify creative solutions that might warrant advantage
+    """
+
+    def __init__(self, inputs: NarrativeIntentInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.NARRATIVE_INTENT_PARSE,
+            inputs=vars(inputs),
+        )
+        self._inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "player_input": str,
+            "current_state": str,
+        }
+
+    def get_system_prompt(self) -> str:
+        return """You are a rules-aware intent parser for a Dolmenwood TTRPG game.
+
+Your job is to understand what the player wants to do and classify it for mechanical resolution.
+You have deep knowledge of OSR-style rules and Dolmenwood's specific procedures.
+
+ACTION CATEGORIES:
+- spell: Casting a spell or using magical abilities
+- hazard: Physical challenges (climb, jump, swim, force door, pick lock)
+- exploration: Search, listen, probe, examine
+- social: Parley, intimidate, persuade, deceive
+- combat: Attack, defend, flee
+- survival: Forage, fish, hunt, camp, rest
+- movement: Travel, enter location, sneak
+- inventory: Use item, equip, drop, give
+- creative: Non-standard problem solving (using items creatively, tricks)
+- narrative: Pure roleplay with no mechanical effect
+
+ACTION TYPES (common ones):
+- Spell: cast_spell, use_magic_item, dismiss_spell
+- Hazard: climb, jump, swim, force_door, pick_lock
+- Exploration: search, listen, probe, examine
+- Social: parley, intimidate, persuade, deceive
+- Combat: attack, defend, flee
+- Survival: forage, fish, hunt, camp, rest
+- Movement: travel, enter, exit, sneak
+- Inventory: use_item, equip, drop, give
+- Creative: creative_solution
+- Narrative: narrative_action
+
+RESOLUTION TYPES:
+- auto_success: Adventurer competency or trivial task (no roll needed)
+- auto_fail: Impossible action
+- check_required: Standard ability/skill check needed
+- check_advantage: Check with bonus (creative solution, good conditions)
+- check_disadvantage: Check with penalty (bad conditions)
+- save_required: Saving throw needed
+- narrative_only: No mechanical effect
+- combat_trigger: Initiates combat
+
+CHECK TYPES:
+- strength, dexterity, constitution, intelligence, wisdom, charisma
+- search (finding secret doors, traps)
+- listen (hearing through doors)
+- survival (foraging, hunting)
+- none
+
+ADVENTURER COMPETENCIES (auto-success under normal conditions, p150):
+- Camping, setting up tents, lighting fires
+- Basic horse riding
+- Pacing distances and basic mapping
+- Rope use (throwing, climbing, knots)
+- Basic swimming (treading water, short distances)
+- Traveling (packing gear, route planning)
+- Valuing treasure (gems, art objects)
+
+DOLMENWOOD HAZARD RULES:
+- Climbing (p150): Trivial for lower tree branches; otherwise DEX check, fall damage 1d6/10'
+- Jumping (p153): 5' horizontal or 3' vertical trivial with run-up; STR check for more
+- Swimming (p154): Calm water with no armor trivial; STR check with armor penalties
+- Doors (p151): STR check to force; 1 Turn time; makes noise
+- Searching (p152): SEARCH check; 1 Turn per 10x10 area; referee rolls secretly
+- Listening (p151): LISTEN check; 1 Turn; referee rolls secretly
+
+CREATIVE SOLUTIONS (p155):
+When players propose clever, non-standard solutions:
+- Match known patterns (smashing locks, jamming traps, using poles) -> auto-success or advantage
+- Novel approaches -> check with advantage if reasonable
+- "Narrative Interaction" principle: success through ingenuity often needs no roll
+
+OUTPUT FORMAT (strict JSON):
+{
+  "action_category": "<category>",
+  "action_type": "<type>",
+  "confidence": <0.0 to 1.0>,
+  "target_type": "<self|creature|object|area|door|none>",
+  "target_description": "<description of target>",
+  "spell_name": "<spell name if casting>",
+  "proposed_approach": "<description if creative solution>",
+  "suggested_resolution": "<resolution_type>",
+  "suggested_check": "<check_type>",
+  "check_modifier": <integer bonus/penalty>,
+  "rule_reference": "<page reference if applicable>",
+  "is_adventurer_competency": <true/false>,
+  "requires_clarification": <true/false>,
+  "clarification_prompt": "<question if clarification needed>",
+  "reasoning": "<brief explanation>"
+}
+
+CONFIDENCE GUIDELINES:
+- 0.9-1.0: Clear action with obvious classification
+- 0.7-0.9: Good match requiring some inference
+- 0.5-0.7: Reasonable but uncertain
+- 0.3-0.5: Ambiguous, might need clarification
+- 0.0-0.3: Very unclear"""
+
+    def build_prompt(self) -> str:
+        i = self._inputs
+
+        prompt = f"""Parse this player action for mechanical resolution:
+
+PLAYER INPUT: "{i.player_input}"
+
+GAME STATE: {i.current_state}"""
+
+        if i.character_name:
+            prompt += f"""
+
+CHARACTER:
+  Name: {i.character_name}
+  Class: {i.character_class or "Unknown"}
+  Level: {i.character_level}"""
+            if i.character_abilities:
+                abilities_str = ", ".join(f"{k}: {v}" for k, v in i.character_abilities.items())
+                prompt += f"\n  Abilities: {abilities_str}"
+
+        if i.location_type or i.location_description:
+            prompt += f"""
+
+LOCATION:
+  Type: {i.location_type or "Unknown"}
+  Description: {i.location_description or "Not specified"}"""
+            if i.visible_features:
+                prompt += f"\n  Visible: {', '.join(i.visible_features)}"
+
+        if i.in_combat:
+            prompt += f"""
+
+COMBAT: In progress"""
+            if i.visible_enemies:
+                prompt += f"\n  Enemies: {', '.join(i.visible_enemies)}"
+
+        if i.recent_actions:
+            prompt += f"""
+
+RECENT ACTIONS:
+{chr(10).join('  - ' + a for a in i.recent_actions[-3:])}"""
+
+        if i.known_spell_names:
+            prompt += f"""
+
+KNOWN SPELLS: {', '.join(i.known_spell_names[:10])}{'...' if len(i.known_spell_names) > 10 else ''}"""
+
+        prompt += """
+
+Analyze the player's input and classify it for mechanical resolution.
+Consider:
+1. What category and type of action is this?
+2. Is this an adventurer competency (auto-success)?
+3. Is this a creative solution that might get advantage?
+4. What check would be appropriate per Dolmenwood rules?
+5. Are there any targets or parameters to extract?
+
+Respond with valid JSON matching the output format."""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -2111,6 +2492,14 @@ def create_schema(
     elif schema_type == PromptSchemaType.MYTHIC_INTERPRETATION:
         typed_inputs = MythicInterpretationInputs(**inputs)
         return MythicInterpretationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.INTENT_PARSE:
+        typed_inputs = IntentParseInputs(**inputs)
+        return IntentParseSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.NARRATIVE_INTENT_PARSE:
+        typed_inputs = NarrativeIntentInputs(**inputs)
+        return NarrativeIntentSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")
