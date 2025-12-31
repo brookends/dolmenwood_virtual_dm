@@ -4151,6 +4151,11 @@ class Feature:
     hidden: bool = False
     discovered: bool = False
 
+    # Inscriptions on this feature (for Decipher spell)
+    # List of written text - can be in any language
+    # Each inscription is a dict with: text_id, original_language, content, surface, script_style, is_magical, is_coded
+    inscriptions: list[dict[str, Any]] = field(default_factory=list)
+
 
 @dataclass
 class Hazard:
@@ -5595,6 +5600,11 @@ class LocationState:
         default_factory=list
     )  # [{"direction": "N", "locked": True, "secret": False}]
     light_level: str = "dark"  # "bright", "dim", "dark"
+
+    # Environmental inscriptions (for Decipher spell)
+    # Written text on walls, floors, ceilings - not attached to specific features
+    # Each inscription is a dict with: text_id, original_language, content, surface, script_style, is_magical, is_coded
+    inscriptions: list[dict[str, Any]] = field(default_factory=list)
 
     # Settlement-specific
     buildings: list[str] = field(default_factory=list)

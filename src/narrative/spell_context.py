@@ -949,6 +949,10 @@ class DecipherProvider(SpellContextProvider):
         """
         Get written text from current location.
 
+        Queries:
+        - Location-level inscriptions (walls, floors, ceilings)
+        - Feature-level inscriptions (plaques, tombstones, signs)
+
         Returns list of (surface_description, WrittenText) tuples.
         """
         results: list[tuple[str, WrittenText]] = []
@@ -956,11 +960,32 @@ class DecipherProvider(SpellContextProvider):
         if not self._controller:
             return results
 
-        # TODO: Wire to location/dungeon manager for environmental text
-        # This would query:
-        # - Dungeon room features (carved inscriptions, wall writings)
-        # - POI descriptions with text elements
-        # - Signs, plaques, tombstones, etc.
+        # Get location state
+        location = self._controller.get_location_state(location_id)
+        if not location:
+            return results
+
+        # 1. Check location-level inscriptions (walls, environmental text)
+        location_inscriptions = getattr(location, "inscriptions", [])
+        for inscription in location_inscriptions:
+            if isinstance(inscription, dict):
+                text = WrittenText.from_dict(inscription)
+                surface_desc = text.surface if text.surface != "surface" else "the wall"
+                results.append((surface_desc, text))
+
+        # 2. Check inscriptions on features (plaques, tombstones, signs, etc.)
+        known_features = getattr(location, "known_features", [])
+        for feature in known_features:
+            # Only show inscriptions on discovered features (or non-hidden ones)
+            if getattr(feature, "hidden", False) and not getattr(feature, "discovered", False):
+                continue
+
+            feature_inscriptions = getattr(feature, "inscriptions", [])
+            for inscription in feature_inscriptions:
+                if isinstance(inscription, dict):
+                    text = WrittenText.from_dict(inscription)
+                    # Use feature name as the source
+                    results.append((feature.name, text))
 
         return results
 
