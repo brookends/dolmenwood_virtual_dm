@@ -194,6 +194,23 @@ class MechanicalEffect:
     creates_hazard: bool = False  # Area deals damage or applies effects
     entangles: bool = False  # Area restrains creatures (web, entangle)
 
+    # Buff/Immunity effects (Missile Ward, Water Breathing, etc.)
+    grants_immunity: bool = False  # This spell grants immunity to something
+    immunity_type: Optional[str] = None  # "missiles", "drowning", "gas", "fire", etc.
+    enhances_vision: bool = False  # Dark Sight, Infravision, etc.
+    vision_type: Optional[str] = None  # "darkvision", "infravision", "see_invisible"
+
+    # Stat override effects (Feeblemind, etc.)
+    is_stat_override: bool = False  # This spell overrides a stat to a fixed value
+    override_stat: Optional[str] = None  # Which stat is overridden
+    override_value: Optional[int] = None  # The value it's set to
+
+    # Dispel/Removal effects
+    is_dispel_effect: bool = False  # This spell removes other spell effects
+    dispel_target: Optional[str] = None  # "all", "specific", "curse", "poison", etc.
+    removes_condition: bool = False  # This spell removes a condition
+    condition_removed: Optional[str] = None  # Which condition is removed
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2661,6 +2678,193 @@ class SpellResolver:
                     effect.save_type = "spell"
                     effect.save_negates = True
 
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Buff/Immunity Spells (Missile Ward, Water Breathing, etc.)
+        # =================================================================
+
+        # Missile immunity patterns
+        missile_immunity_patterns = [
+            r"(?:immune|immunity)\s+(?:to\s+)?(?:normal\s+)?missiles?",
+            r"missiles?\s+(?:cannot|can't|do\s+not)\s+(?:harm|hurt|affect)",
+            r"missile\s+ward",
+            r"(?:arrows?|bolts?|projectiles?)\s+pass\s+(?:through|harmlessly)",
+        ]
+
+        for pattern in missile_immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="missiles",
+                    description="Grants immunity to normal missiles",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Drowning/breathing immunity patterns
+        breathing_patterns = [
+            r"water\s+breathing",
+            r"breathe?\s+(?:under\s*)?water",
+            r"(?:immune|immunity)\s+(?:to\s+)?drowning",
+            r"cannot\s+drown",
+            r"gills?",
+        ]
+
+        for pattern in breathing_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="drowning",
+                    description="Grants ability to breathe underwater",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Gas/poison gas immunity patterns
+        gas_immunity_patterns = [
+            r"air\s+sphere",
+            r"(?:immune|immunity)\s+(?:to\s+)?(?:gas|gaseous|poison\s+gas)",
+            r"gas(?:es)?\s+(?:cannot|can't)\s+(?:harm|affect)",
+            r"(?:protected|safe)\s+from\s+gas",
+        ]
+
+        for pattern in gas_immunity_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    grants_immunity=True,
+                    immunity_type="gas",
+                    description="Grants immunity to gaseous effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Vision enhancement patterns
+        vision_patterns = [
+            (r"dark\s*sight", "darkvision"),
+            (r"infravision", "infravision"),
+            (r"see\s+(?:in\s+)?(?:the\s+)?dark", "darkvision"),
+            (r"(?:see|perceive)\s+(?:the\s+)?invisible", "see_invisible"),
+            (r"true\s*(?:sight|seeing)", "truesight"),
+        ]
+
+        for pattern, vision_type in vision_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    enhances_vision=True,
+                    vision_type=vision_type,
+                    description=f"Grants {vision_type} vision",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Stat override patterns (Feeblemind)
+        stat_override_patterns = [
+            (r"feeblemind", "INT", 3),
+            (r"intelligence\s+(?:is\s+)?reduced\s+to\s+(?:that\s+of\s+)?(?:an?\s+)?animal", "INT", 3),
+            (r"intelligence\s+(?:becomes?|reduced\s+to|set\s+to)\s+(\d+)", "INT", None),
+            (r"wisdom\s+(?:becomes?|reduced\s+to|set\s+to)\s+(\d+)", "WIS", None),
+        ]
+
+        for pattern, stat, fixed_value in stat_override_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                value = fixed_value
+                if value is None and match.lastindex:
+                    value = int(match.group(1))
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DEBUFF,
+                    is_stat_override=True,
+                    override_stat=stat,
+                    override_value=value,
+                    description=f"Sets {stat} to {value}",
+                )
+
+                # Feeblemind typically requires save
+                if "feeblemind" in pattern or "feeblemind" in spell.name.lower():
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Dispel Magic patterns
+        dispel_patterns = [
+            r"dispel\s+magic",
+            r"(?:removes?|ends?|cancels?)\s+(?:all\s+)?(?:magical?\s+)?effects?",
+            r"(?:negates?|suppresses?)\s+(?:magical?\s+)?(?:effects?|enchantments?)",
+        ]
+
+        for pattern in dispel_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_dispel_effect=True,
+                    dispel_target="all",
+                    description="Dispels magical effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Remove Curse patterns
+        remove_curse_patterns = [
+            r"remove\s+curse",
+            r"(?:lifts?|breaks?|ends?)\s+(?:a\s+)?curse",
+            r"curse.*(?:removed|lifted|broken)",
+        ]
+
+        for pattern in remove_curse_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_dispel_effect=True,
+                    dispel_target="curse",
+                    removes_condition=True,
+                    condition_removed="cursed",
+                    description="Removes curses",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Remove Poison patterns
+        remove_poison_patterns = [
+            r"remove\s+poison",
+            r"neutralize\s+poison",
+            r"cure(?:s)?\s+poison",
+            r"poison.*(?:removed|neutralized|cured)",
+        ]
+
+        for pattern in remove_poison_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    removes_condition=True,
+                    condition_removed="poisoned",
+                    description="Removes poison effects",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Cure Affliction / Disease patterns
+        cure_affliction_patterns = [
+            r"cure\s+(?:affliction|disease)",
+            r"(?:removes?|cures?)\s+(?:all\s+)?(?:afflictions?|diseases?)",
+            r"(?:disease|affliction).*(?:removed|cured)",
+        ]
+
+        for pattern in cure_affliction_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    removes_condition=True,
+                    condition_removed="diseased",
+                    description="Removes diseases and afflictions",
+                )
                 parsed.add_effect(effect)
                 break
 

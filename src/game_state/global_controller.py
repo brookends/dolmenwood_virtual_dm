@@ -3349,6 +3349,293 @@ class GlobalController:
         result["effect_type"] = "entangle"
         return result
 
+    # =========================================================================
+    # BUFF ENHANCEMENT SPELL METHODS
+    # =========================================================================
+
+    def grant_immunity(
+        self,
+        character_id: str,
+        immunity_type: str,
+        duration_turns: int,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Grant immunity to a damage type or effect.
+
+        Args:
+            character_id: Target character
+            immunity_type: Type of immunity ("missiles", "drowning", "gas", "fire", etc.)
+            duration_turns: Duration in turns
+            source: Source name (spell name)
+            caster_id: Caster ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Apply as a special buff
+        self.apply_buff(
+            character_id=character_id,
+            stat=f"immunity_{immunity_type}",
+            value=1,  # 1 = has immunity
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "immunity_type": immunity_type,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def grant_vision_enhancement(
+        self,
+        character_id: str,
+        vision_type: str,
+        duration_turns: int,
+        range_feet: int = 60,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Grant enhanced vision (darkvision, see invisible, etc.).
+
+        Args:
+            character_id: Target character
+            vision_type: Type of vision ("darkvision", "infravision", "see_invisible", "truesight")
+            duration_turns: Duration in turns
+            range_feet: Range of the vision in feet
+            source: Source name
+            caster_id: Caster ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Special handling for see_invisible
+        if vision_type == "see_invisible":
+            character.can_see_invisible = True
+            character.see_invisible_source = source
+
+        # Apply as a buff for tracking
+        self.apply_buff(
+            character_id=character_id,
+            stat=f"vision_{vision_type}",
+            value=range_feet,
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "vision_type": vision_type,
+            "range_feet": range_feet,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def apply_stat_override(
+        self,
+        character_id: str,
+        stat: str,
+        value: int,
+        duration_turns: int,
+        source: str = "Spell",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Override a stat to a fixed value (Feeblemind, etc.).
+
+        Args:
+            character_id: Target character
+            stat: Stat to override (STR, INT, WIS, etc.)
+            value: Value to set the stat to
+            duration_turns: Duration in turns
+            source: Source name
+            caster_id: Caster ID
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        original_value = character.ability_scores.get(stat, 10)
+
+        # Apply as an override buff
+        self.apply_buff(
+            character_id=character_id,
+            stat=stat,
+            value=value,
+            source=source,
+            source_id=caster_id,
+            duration_turns=duration_turns,
+            is_override=True,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "stat": stat,
+            "original_value": original_value,
+            "new_value": value,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    def dispel_magic(
+        self,
+        target_id: str,
+        caster_level: int,
+        target_type: str = "character",
+    ) -> dict[str, Any]:
+        """
+        Dispel magical effects on a target.
+
+        Per OSE rules, there's a chance to dispel based on caster level comparison.
+
+        Args:
+            target_id: Target character or location ID
+            caster_level: Level of the dispelling caster
+            target_type: "character" or "location"
+
+        Returns:
+            Result with list of dispelled effects
+        """
+        from src.data_models import DiceRoller
+
+        dispelled = []
+        failed = []
+
+        if target_type == "character":
+            character = self.get_character(target_id)
+            if not character:
+                return {"success": False, "error": f"Character {target_id} not found"}
+
+            # Remove magical conditions
+            for condition in list(character.conditions):
+                if condition.source_spell_id:
+                    # Calculate dispel chance based on relative caster levels
+                    # Base 50% + 5% per level difference
+                    spell_level = condition.severity if condition.severity else caster_level
+                    base_chance = 50 + (caster_level - spell_level) * 5
+                    base_chance = max(5, min(95, base_chance))  # Clamp 5-95%
+
+                    dice = DiceRoller()
+                    roll = dice.roll("1d100", "Dispel check")
+
+                    if roll.total <= base_chance:
+                        character.conditions.remove(condition)
+                        dispelled.append({
+                            "type": "condition",
+                            "name": condition.condition_type.value,
+                            "source": condition.source_spell_id,
+                        })
+                    else:
+                        failed.append({
+                            "type": "condition",
+                            "name": condition.condition_type.value,
+                            "roll": roll.total,
+                            "needed": base_chance,
+                        })
+
+            # Remove stat modifiers from spells
+            for modifier in list(character.stat_modifiers):
+                if modifier.source and "spell" in modifier.source.lower():
+                    character.stat_modifiers.remove(modifier)
+                    dispelled.append({
+                        "type": "buff",
+                        "stat": modifier.stat,
+                        "source": modifier.source,
+                    })
+
+            # Reset special states
+            if character.mirror_image_count > 0:
+                dispelled.append({"type": "mirror_images", "count": character.mirror_image_count})
+                character.mirror_image_count = 0
+
+            if character.can_see_invisible and character.see_invisible_source:
+                dispelled.append({"type": "see_invisible", "source": character.see_invisible_source})
+                character.can_see_invisible = False
+                character.see_invisible_source = None
+
+        elif target_type == "location":
+            location = self._locations.get(target_id)
+            if not location:
+                return {"success": False, "error": f"Location {target_id} not found"}
+
+            # Remove area effects
+            for effect in list(location.area_effects):
+                if effect.source_spell_id:
+                    location.area_effects.remove(effect)
+                    dispelled.append({
+                        "type": "area_effect",
+                        "name": effect.name,
+                        "effect_type": effect.effect_type.value,
+                    })
+
+        return {
+            "success": True,
+            "target_id": target_id,
+            "target_type": target_type,
+            "caster_level": caster_level,
+            "dispelled": dispelled,
+            "failed": failed,
+            "total_dispelled": len(dispelled),
+        }
+
+    def remove_condition(
+        self,
+        character_id: str,
+        condition_type: str,
+    ) -> dict[str, Any]:
+        """
+        Remove a specific condition from a character.
+
+        Used by Remove Curse, Remove Poison, Cure Affliction, etc.
+
+        Args:
+            character_id: Target character
+            condition_type: Type of condition to remove ("cursed", "poisoned", "diseased")
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        removed = []
+        for condition in list(character.conditions):
+            if condition.condition_type.value == condition_type:
+                character.conditions.remove(condition)
+                removed.append({
+                    "condition_type": condition.condition_type.value,
+                    "source": condition.source,
+                })
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "condition_type": condition_type,
+            "removed_count": len(removed),
+            "removed": removed,
+        }
+
     def apply_polymorph(self, character_id: str, overlay: PolymorphOverlay) -> dict[str, Any]:
         """
         Apply a polymorph transformation to a character.
