@@ -1390,6 +1390,7 @@ class GlobalController:
         condition: Optional[str] = None,
         stacks: bool = False,
         stack_group: Optional[str] = None,
+        is_override: bool = False,
     ) -> dict[str, Any]:
         """
         Apply a stat modifier (buff or debuff) to a character.
@@ -1398,6 +1399,7 @@ class GlobalController:
             character_id: The character to buff/debuff
             stat: Stat to modify (e.g., "AC", "attack", "damage", "STR")
             value: Modifier value (positive = buff, negative = debuff)
+                   For is_override=True, this is the target value to set
             source: What caused this modifier (spell name, item, ability)
             source_id: Optional ID for removal (spell effect ID, item ID)
             duration_turns: Duration in exploration turns (10 min each)
@@ -1405,6 +1407,8 @@ class GlobalController:
             condition: When this applies (e.g., "vs_missiles", "vs_melee")
             stacks: Whether multiple instances stack
             stack_group: Group name for non-stacking (highest wins)
+            is_override: If True, set stat to value instead of adding to it
+                        (e.g., "AC becomes 17" instead of "AC +2")
 
         Returns:
             Dictionary with buff application results
@@ -1425,6 +1429,7 @@ class GlobalController:
             value=value,
             source=source,
             source_id=source_id,
+            mode="set" if is_override else "add",
             duration_turns=duration_turns,
             duration_rounds=duration_rounds,
             condition=condition,
@@ -1444,6 +1449,7 @@ class GlobalController:
             "condition": condition,
             "duration_turns": duration_turns,
             "duration_rounds": duration_rounds,
+            "is_override": is_override,
             "applied": True,
         }
 
@@ -1523,6 +1529,122 @@ class GlobalController:
         if expired:
             self._log_event("modifiers_expired", result)
 
+        return result
+
+    # =========================================================================
+    # VISIBILITY MANAGEMENT
+    # =========================================================================
+
+    def make_invisible(
+        self,
+        character_id: str,
+        source: str,
+    ) -> dict[str, Any]:
+        """
+        Make a character invisible.
+
+        Args:
+            character_id: The character to make invisible
+            source: Source of invisibility (spell ID, item ID)
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.make_invisible(source)
+
+        result = {
+            "character_id": character_id,
+            "visibility_state": "invisible",
+            "source": source,
+        }
+        self._log_event("visibility_changed", result)
+        return result
+
+    def break_invisibility(
+        self,
+        character_id: str,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Break a character's invisibility (e.g., on hostile action).
+
+        Args:
+            character_id: The character whose invisibility to break
+            reason: Why invisibility was broken
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        was_invisible = character.break_invisibility(reason)
+
+        result = {
+            "character_id": character_id,
+            "was_invisible": was_invisible,
+            "reason": reason,
+            "visibility_state": str(character.visibility_state.value),
+        }
+        if was_invisible:
+            self._log_event("invisibility_broken", result)
+        return result
+
+    def grant_see_invisible(
+        self,
+        character_id: str,
+        source: str,
+    ) -> dict[str, Any]:
+        """
+        Grant a character the ability to see invisible creatures.
+
+        Args:
+            character_id: The character to grant the ability to
+            source: Source of the ability (spell ID, item ID)
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.grant_see_invisible(source)
+
+        result = {
+            "character_id": character_id,
+            "can_see_invisible": True,
+            "source": source,
+        }
+        self._log_event("see_invisible_granted", result)
+        return result
+
+    def remove_see_invisible(self, character_id: str) -> dict[str, Any]:
+        """
+        Remove a character's ability to see invisible creatures.
+
+        Args:
+            character_id: The character to remove the ability from
+
+        Returns:
+            Dictionary with result info
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        character.remove_see_invisible()
+
+        result = {
+            "character_id": character_id,
+            "can_see_invisible": False,
+        }
+        self._log_event("see_invisible_removed", result)
         return result
 
     # =========================================================================
@@ -2071,6 +2193,204 @@ class GlobalController:
 
         self._log_event("area_effect_removed", result)
         return result
+
+    def get_area_effect(self, location_id: str, effect_id: str) -> dict[str, Any]:
+        """
+        Get details of a specific area effect.
+
+        Args:
+            location_id: The location containing the effect
+            effect_id: The effect ID to retrieve
+
+        Returns:
+            Effect details or error
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        for effect in location.area_effects:
+            if effect.effect_id == effect_id:
+                return {
+                    "effect_id": effect.effect_id,
+                    "name": effect.name,
+                    "effect_type": effect.effect_type.value,
+                    "is_active": effect.is_active,
+                    "duration_turns": effect.duration_turns,
+                    "blocks": effect.get_all_blocks(),
+                    "damage_info": effect.get_damage_info(),
+                    "can_be_escaped": effect.can_be_escaped,
+                    "escape_method": effect.get_escape_method(),
+                    "escape_dc": effect.get_escape_dc(),
+                    "trapped_characters": effect.trapped_characters.copy(),
+                }
+
+        return {"error": f"Effect {effect_id} not found"}
+
+    def process_area_entry(
+        self,
+        character_id: str,
+        location_id: str,
+        effect_id: str,
+    ) -> dict[str, Any]:
+        """
+        Process a character entering an area effect.
+
+        Handles trapping, entry damage, and other entry effects.
+
+        Args:
+            character_id: The character entering the effect
+            location_id: The location containing the effect
+            effect_id: The effect being entered
+
+        Returns:
+            Result of entry processing
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        effect = None
+        for e in location.area_effects:
+            if e.effect_id == effect_id:
+                effect = e
+                break
+
+        if not effect:
+            return {"error": f"Effect {effect_id} not found"}
+
+        if not effect.is_active:
+            return {"error": "Effect is not active"}
+
+        result: dict[str, Any] = {
+            "character_id": character_id,
+            "effect_id": effect_id,
+            "effect_name": effect.name,
+            "trapped": False,
+            "entry_damage": None,
+            "effects_applied": [],
+        }
+
+        # Handle trapping (Web, Entangle, etc.)
+        if effect.blocks_movement and effect.can_be_escaped:
+            effect.trap_character(character_id)
+            result["trapped"] = True
+            result["effects_applied"].append("trapped")
+
+        # Handle entry damage
+        if effect.has_entry_damage():
+            result["entry_damage"] = {
+                "damage_dice": effect.entry_damage,
+                "damage_type": effect.entry_damage_type,
+                "save_type": effect.save_type,
+                "save_avoids": effect.entry_save_avoids,
+            }
+            result["effects_applied"].append("entry_damage")
+
+        self._log_event("area_effect_entry", result)
+        return result
+
+    def attempt_escape(
+        self,
+        character_id: str,
+        location_id: str,
+        effect_id: str,
+        roll_result: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to escape from a trapping area effect.
+
+        Args:
+            character_id: The character attempting escape
+            location_id: The location containing the effect
+            effect_id: The effect to escape from
+            roll_result: The result of the escape roll (if applicable)
+
+        Returns:
+            Result of escape attempt
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        effect = None
+        for e in location.area_effects:
+            if e.effect_id == effect_id:
+                effect = e
+                break
+
+        if not effect:
+            return {"error": f"Effect {effect_id} not found"}
+
+        if not effect.is_character_trapped(character_id):
+            return {"error": "Character is not trapped in this effect"}
+
+        if not effect.can_be_escaped:
+            return {"error": "This effect cannot be escaped"}
+
+        result: dict[str, Any] = {
+            "character_id": character_id,
+            "effect_id": effect_id,
+            "escape_method": effect.get_escape_method(),
+            "escape_dc": effect.get_escape_dc(),
+            "roll_result": roll_result,
+            "escaped": False,
+        }
+
+        # Determine success if roll provided
+        dc = effect.get_escape_dc()
+        if roll_result is not None and dc is not None:
+            if roll_result >= dc:
+                effect.free_character(character_id)
+                result["escaped"] = True
+
+        self._log_event("escape_attempt", result)
+        return result
+
+    def get_trapped_in_effect(
+        self,
+        character_id: str,
+        location_id: str,
+    ) -> dict[str, Any]:
+        """
+        Check if a character is trapped in any effect at a location.
+
+        Args:
+            character_id: The character to check
+            location_id: The location to check
+
+        Returns:
+            Information about trapping effects
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        trapping_effects = []
+        for effect in location.area_effects:
+            if effect.is_active and effect.is_character_trapped(character_id):
+                trapping_effects.append({
+                    "effect_id": effect.effect_id,
+                    "name": effect.name,
+                    "effect_type": effect.effect_type.value,
+                    "escape_method": effect.get_escape_method(),
+                    "escape_dc": effect.get_escape_dc(),
+                })
+
+        return {
+            "character_id": character_id,
+            "location_id": location_id,
+            "is_trapped": len(trapping_effects) > 0,
+            "trapping_effects": trapping_effects,
+        }
 
     def apply_polymorph(self, character_id: str, overlay: PolymorphOverlay) -> dict[str, Any]:
         """

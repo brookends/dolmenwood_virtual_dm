@@ -193,6 +193,36 @@ class ConditionType(str, Enum):
     FOOD_POISONING = "food_poisoning"  # From eating spoiled food, penalties until cured
 
 
+class VisibilityState(str, Enum):
+    """
+    Visibility states for characters and creatures.
+
+    Used for tracking invisibility, hiding, and detection.
+    Integrates with combat targeting and spell effects.
+    """
+
+    VISIBLE = "visible"  # Normal visibility, can be targeted normally
+    HIDDEN = "hidden"  # Concealed/hiding, requires search to detect
+    INVISIBLE = "invisible"  # Magical invisibility, cannot be seen normally
+    REVEALED = "revealed"  # Was invisible but currently detected (dust, mud, etc.)
+
+    @property
+    def is_detectable(self) -> bool:
+        """Check if this state can be normally perceived."""
+        return self in (VisibilityState.VISIBLE, VisibilityState.REVEALED)
+
+    @property
+    def targeting_penalty(self) -> int:
+        """Get attack penalty for targeting this visibility state."""
+        if self == VisibilityState.INVISIBLE:
+            return -4  # Heavy penalty for invisible targets
+        if self == VisibilityState.HIDDEN:
+            return -2  # Moderate penalty for hidden targets
+        if self == VisibilityState.REVEALED:
+            return -1  # Minor penalty (outline visible but not details)
+        return 0  # No penalty for visible
+
+
 class LightSourceType(str, Enum):
     """Types of light sources with different durations."""
 
@@ -1579,12 +1609,17 @@ class Condition:
     - Periodic effects (e.g., -1 Wisdom every 2 days)
     - Recovery conditions (how the condition ends)
     - Spell effects (penalties to certain spell types)
+    - Charm/control tracking with recurring saves
     """
 
     condition_type: ConditionType
     duration_turns: Optional[int] = None  # None = permanent until cured
     source: str = ""
     severity: int = 1  # For conditions like exhaustion
+
+    # Spell/caster tracking (for charm, dominate, etc.)
+    source_spell_id: Optional[str] = None  # ID of the spell that caused this condition
+    caster_id: Optional[str] = None  # ID of the caster who applied this condition
 
     # Day-based tracking (for multi-day conditions)
     duration_days: Optional[int] = None  # Days remaining (for conditions like dreamlessness)
@@ -1593,6 +1628,13 @@ class Condition:
     # Periodic effects that trigger over time
     # Format: {stat: "wisdom", amount: -1, frequency_days: 2, description: "..."}
     periodic_effect: Optional[dict[str, Any]] = None
+
+    # Recurring save to break condition (for charm, dominate, etc.)
+    # Format: {save_type: "spell", frequency: "daily", modifier: 0, ends_on_success: True}
+    # Frequencies: "daily", "hourly", "per_turn", "on_hostile_action"
+    recurring_save: Optional[dict[str, Any]] = None
+    last_save_day: int = 0  # Day of last recurring save
+    last_save_turn: int = 0  # Turn of last recurring save (for per_turn frequency)
 
     # Recovery conditions - how this condition can end
     # Format: {type: "rest_with_dreams", description: "Once dreams return..."}
@@ -1610,6 +1652,57 @@ class Condition:
     # Threshold effect - what happens at extreme values
     # Format: {stat: "wisdom", threshold: 0, effect: "incapacitated", description: "..."}
     threshold_effect: Optional[dict[str, Any]] = None
+
+    @property
+    def is_charm_effect(self) -> bool:
+        """Check if this is a charm-type condition."""
+        return self.condition_type == ConditionType.CHARMED
+
+    @property
+    def has_recurring_save(self) -> bool:
+        """Check if this condition has a recurring save."""
+        return self.recurring_save is not None
+
+    def needs_recurring_save(self, current_day: int, current_turn: int = 0) -> bool:
+        """
+        Check if a recurring save is due.
+
+        Args:
+            current_day: Current game day
+            current_turn: Current turn number
+
+        Returns:
+            True if a save check is needed
+        """
+        if not self.recurring_save:
+            return False
+
+        frequency = self.recurring_save.get("frequency", "daily")
+
+        if frequency == "daily":
+            return current_day > self.last_save_day
+        elif frequency == "hourly":
+            # Assuming 6 turns per hour
+            turns_since = (current_day - self.last_save_day) * 144 + (current_turn - self.last_save_turn)
+            return turns_since >= 6
+        elif frequency == "per_turn":
+            return current_turn > self.last_save_turn or current_day > self.last_save_day
+        elif frequency == "on_hostile_action":
+            # This is triggered externally, not by time
+            return False
+
+        return False
+
+    def record_save_check(self, current_day: int, current_turn: int = 0) -> None:
+        """Record that a recurring save was checked."""
+        self.last_save_day = current_day
+        self.last_save_turn = current_turn
+
+    def get_save_modifier(self) -> int:
+        """Get the save modifier for recurring saves."""
+        if self.recurring_save:
+            return self.recurring_save.get("modifier", 0)
+        return 0
 
     def tick(self) -> bool:
         """
@@ -1757,13 +1850,23 @@ class StatModifier:
 
     Used for spell effects like Shield of Force (+AC), Bless (+attack), etc.
     Supports both flat modifiers and conditional modifiers (e.g., AC vs missiles only).
+
+    The `mode` field controls how the modifier is applied:
+    - "add": Add the value to the stat (default behavior)
+    - "set": Override the stat to this exact value (e.g., "AC becomes 17")
+
+    For "set" mode modifiers affecting the same stat, the best (highest for
+    beneficial stats like AC) value wins.
     """
 
     modifier_id: str  # Unique identifier for this modifier instance
     stat: str  # Stat being modified: "AC", "attack", "damage", "STR", "save_doom", etc.
-    value: int  # Modifier value (positive = buff, negative = debuff)
+    value: int  # Modifier value (for "add": bonus/penalty, for "set": target value)
     source: str  # What caused this modifier (spell name, item, ability)
     source_id: Optional[str] = None  # ID of source spell/effect for removal
+
+    # Override vs additive mode
+    mode: str = "add"  # "add" = additive modifier, "set" = override to this value
 
     # Duration tracking
     duration_turns: Optional[int] = None  # Turns remaining (None = until dispelled)
@@ -1775,6 +1878,11 @@ class StatModifier:
     # Stacking rules
     stacks: bool = False  # Whether multiple instances stack
     stack_group: Optional[str] = None  # Group name for non-stacking (highest wins)
+
+    @property
+    def is_override(self) -> bool:
+        """Check if this is an override (set) modifier."""
+        return self.mode == "set"
 
     def tick_turn(self) -> bool:
         """
@@ -4587,6 +4695,24 @@ class CharacterState:
     # These are temporary buffs/debuffs with duration tracking
     stat_modifiers: list["StatModifier"] = field(default_factory=list)
 
+    # =========================================================================
+    # VISIBILITY STATE
+    # =========================================================================
+
+    # Current visibility state (for invisibility spells, hiding, etc.)
+    visibility_state: "VisibilityState" = field(default=VisibilityState.VISIBLE)
+
+    # Source of current invisibility (spell ID, item ID, ability)
+    # Used to track what breaks invisibility
+    invisibility_source: Optional[str] = None
+
+    # Can this character see invisible creatures?
+    # Set by spells like "Perceive the Invisible" or items
+    can_see_invisible: bool = False
+
+    # Source of see-invisible ability (for duration tracking)
+    see_invisible_source: Optional[str] = None
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -4905,25 +5031,60 @@ class CharacterState:
         self, stat: str, context: Optional[str] = None
     ) -> int:
         """
-        Get total modifier for a stat, optionally in a specific context.
+        Get total additive modifier for a stat, optionally in a specific context.
+
+        Note: This only sums "add" mode modifiers. For stats that can be
+        overridden (like AC), use get_effective_stat() instead.
 
         Args:
             stat: The stat to get modifiers for (e.g., "AC", "attack", "STR")
             context: Optional context for conditional modifiers (e.g., "missiles")
 
         Returns:
-            Total modifier value
+            Total additive modifier value
         """
         total = 0
         for modifier in self.stat_modifiers:
             if modifier.stat.lower() == stat.lower():
-                if modifier.applies_to(context):
+                if modifier.applies_to(context) and modifier.mode == "add":
                     total += modifier.value
         return total
+
+    def get_stat_override(
+        self, stat: str, context: Optional[str] = None
+    ) -> Optional[int]:
+        """
+        Get the best override value for a stat, if any override modifiers apply.
+
+        For stats like AC, higher is better. For stats like "attack_penalty",
+        lower might be better - but generally overrides set a target value.
+
+        Args:
+            stat: The stat to check for overrides
+            context: Optional context for conditional modifiers
+
+        Returns:
+            The best override value, or None if no overrides apply
+        """
+        override_values = []
+        for modifier in self.stat_modifiers:
+            if modifier.stat.lower() == stat.lower():
+                if modifier.applies_to(context) and modifier.mode == "set":
+                    override_values.append(modifier.value)
+
+        if not override_values:
+            return None
+
+        # For most stats (AC, saves), higher is better
+        return max(override_values)
 
     def get_effective_ac(self, attack_type: Optional[str] = None) -> int:
         """
         Get effective armor class, applying polymorph overlay and modifiers.
+
+        Handles both override ("set" mode) and additive ("add" mode) modifiers:
+        - If any "set" mode AC modifier applies, use the best override value
+        - Then apply any additive bonuses on top of that
 
         Args:
             attack_type: Type of incoming attack for conditional AC bonuses
@@ -4932,6 +5093,7 @@ class CharacterState:
         Returns:
             Effective AC including all modifiers
         """
+        # Get base AC (from polymorph or natural)
         if self.polymorph_overlay and self.polymorph_overlay.is_active:
             if self.polymorph_overlay.armor_class is not None:
                 base_ac = self.polymorph_overlay.armor_class
@@ -4940,7 +5102,13 @@ class CharacterState:
         else:
             base_ac = self.armor_class
 
-        # Apply stat modifiers
+        # Check for AC override (e.g., Shield of Force sets AC to 17)
+        override_ac = self.get_stat_override("AC", attack_type)
+        if override_ac is not None:
+            # Use override if it's better than base
+            base_ac = max(base_ac, override_ac)
+
+        # Apply additive modifiers on top
         ac_bonus = self.get_stat_modifier_total("AC", attack_type)
         return base_ac + ac_bonus
 
@@ -4977,6 +5145,299 @@ class CharacterState:
                 remaining.append(modifier)
         self.stat_modifiers = remaining
         return expired
+
+    # =========================================================================
+    # VISIBILITY MANAGEMENT
+    # =========================================================================
+
+    def set_visibility(
+        self,
+        state: "VisibilityState",
+        source: Optional[str] = None,
+    ) -> None:
+        """
+        Set the character's visibility state.
+
+        Args:
+            state: The new visibility state
+            source: Source of the invisibility (spell ID, item ID, ability)
+        """
+        self.visibility_state = state
+        if state == VisibilityState.INVISIBLE:
+            self.invisibility_source = source
+        elif state == VisibilityState.VISIBLE:
+            self.invisibility_source = None
+
+    def make_invisible(self, source: str) -> None:
+        """
+        Make the character invisible.
+
+        Args:
+            source: Source of the invisibility (spell ID, item ID)
+        """
+        self.set_visibility(VisibilityState.INVISIBLE, source)
+
+    def break_invisibility(self, reason: str = "") -> bool:
+        """
+        Break the character's invisibility (e.g., on hostile action).
+
+        Args:
+            reason: Why invisibility was broken (for logging)
+
+        Returns:
+            True if character was invisible and is now visible
+        """
+        if self.visibility_state == VisibilityState.INVISIBLE:
+            self.visibility_state = VisibilityState.VISIBLE
+            self.invisibility_source = None
+            return True
+        return False
+
+    def reveal_invisible(self, reason: str = "") -> bool:
+        """
+        Reveal an invisible character (dust, mud, etc.) without fully breaking.
+
+        The character is still magically invisible but their outline is visible.
+
+        Args:
+            reason: What revealed them
+
+        Returns:
+            True if character was invisible and is now revealed
+        """
+        if self.visibility_state == VisibilityState.INVISIBLE:
+            self.visibility_state = VisibilityState.REVEALED
+            return True
+        return False
+
+    def hide(self) -> None:
+        """
+        Make the character hidden (non-magical concealment).
+        """
+        self.set_visibility(VisibilityState.HIDDEN)
+
+    @property
+    def is_invisible(self) -> bool:
+        """Check if character is invisible (magical invisibility)."""
+        return self.visibility_state == VisibilityState.INVISIBLE
+
+    @property
+    def is_hidden(self) -> bool:
+        """Check if character is hidden (concealed)."""
+        return self.visibility_state == VisibilityState.HIDDEN
+
+    @property
+    def is_visible(self) -> bool:
+        """Check if character is normally visible."""
+        return self.visibility_state == VisibilityState.VISIBLE
+
+    def can_perceive(self, target: "CharacterState") -> bool:
+        """
+        Check if this character can perceive another character.
+
+        Args:
+            target: The character to perceive
+
+        Returns:
+            True if target can be perceived by this character
+        """
+        # Visible and revealed characters can always be perceived
+        if target.visibility_state.is_detectable:
+            return True
+
+        # Check if we can see invisible
+        if target.is_invisible and self.can_see_invisible:
+            return True
+
+        # Hidden creatures might be detected through other means
+        # (perception checks handled elsewhere)
+        return False
+
+    def get_targeting_penalty_against(self, target: "CharacterState") -> int:
+        """
+        Get attack penalty when targeting another character.
+
+        Args:
+            target: The target being attacked
+
+        Returns:
+            Attack roll penalty (negative number)
+        """
+        # If we can see invisible, treat invisible as visible
+        if target.is_invisible and self.can_see_invisible:
+            return 0
+
+        return target.visibility_state.targeting_penalty
+
+    def grant_see_invisible(self, source: str) -> None:
+        """
+        Grant the ability to see invisible creatures.
+
+        Args:
+            source: Source of the ability (spell ID, item ID)
+        """
+        self.can_see_invisible = True
+        self.see_invisible_source = source
+
+    def remove_see_invisible(self) -> None:
+        """Remove the ability to see invisible creatures."""
+        self.can_see_invisible = False
+        self.see_invisible_source = None
+
+    # =========================================================================
+    # CHARM/CONTROL CONDITION MANAGEMENT
+    # =========================================================================
+
+    def has_condition(self, condition_type: ConditionType) -> bool:
+        """Check if character has a specific condition type."""
+        return any(c.condition_type == condition_type for c in self.conditions)
+
+    def get_condition(self, condition_type: ConditionType) -> Optional[Condition]:
+        """Get a specific condition if present."""
+        for c in self.conditions:
+            if c.condition_type == condition_type:
+                return c
+        return None
+
+    def add_condition(self, condition: Condition) -> None:
+        """Add a condition to the character."""
+        self.conditions.append(condition)
+
+    def remove_condition_type(self, condition_type: ConditionType) -> Optional[Condition]:
+        """
+        Remove a condition by type.
+
+        Args:
+            condition_type: The type of condition to remove
+
+        Returns:
+            The removed condition, or None if not found
+        """
+        for i, c in enumerate(self.conditions):
+            if c.condition_type == condition_type:
+                return self.conditions.pop(i)
+        return None
+
+    def is_charmed(self) -> bool:
+        """Check if character is charmed."""
+        return self.has_condition(ConditionType.CHARMED)
+
+    def is_charmed_by(self, caster_id: str) -> bool:
+        """
+        Check if character is charmed by a specific caster.
+
+        Args:
+            caster_id: The ID of the potential charmer
+
+        Returns:
+            True if charmed by this caster
+        """
+        for c in self.conditions:
+            if c.condition_type == ConditionType.CHARMED and c.caster_id == caster_id:
+                return True
+        return False
+
+    def get_charm_caster(self) -> Optional[str]:
+        """
+        Get the ID of whoever has this character charmed.
+
+        Returns:
+            The caster ID, or None if not charmed
+        """
+        charm = self.get_condition(ConditionType.CHARMED)
+        if charm:
+            return charm.caster_id
+        return None
+
+    def is_hostile_to(self, target_id: str) -> bool:
+        """
+        Check if this character would be hostile to a target.
+
+        Charmed characters are not hostile to their charmer.
+
+        Args:
+            target_id: The ID of the potential target
+
+        Returns:
+            True if hostile to the target
+        """
+        # If charmed by target, not hostile
+        if self.is_charmed_by(target_id):
+            return False
+
+        # Default: could be hostile (actual hostility determined elsewhere)
+        return True
+
+    def apply_charm(
+        self,
+        caster_id: str,
+        source_spell_id: str,
+        source: str = "",
+        recurring_save: Optional[dict[str, Any]] = None,
+        duration_days: Optional[int] = None,
+    ) -> Condition:
+        """
+        Apply a charm effect to this character.
+
+        Args:
+            caster_id: Who charmed this character
+            source_spell_id: The spell ID that caused the charm
+            source: Description of the source (spell name)
+            recurring_save: Recurring save configuration for breaking charm
+            duration_days: Duration in days (None for permanent until saved)
+
+        Returns:
+            The created charm condition
+        """
+        charm = Condition(
+            condition_type=ConditionType.CHARMED,
+            source=source,
+            source_spell_id=source_spell_id,
+            caster_id=caster_id,
+            duration_days=duration_days,
+            recurring_save=recurring_save,
+        )
+        self.add_condition(charm)
+        return charm
+
+    def break_charm(self, caster_id: Optional[str] = None) -> Optional[Condition]:
+        """
+        Break a charm effect on this character.
+
+        Args:
+            caster_id: Optional specific caster whose charm to break.
+                      If None, breaks any charm.
+
+        Returns:
+            The removed charm condition, or None if not charmed
+        """
+        for i, c in enumerate(self.conditions):
+            if c.condition_type == ConditionType.CHARMED:
+                if caster_id is None or c.caster_id == caster_id:
+                    return self.conditions.pop(i)
+        return None
+
+    def check_charm_saves(
+        self,
+        current_day: int,
+        current_turn: int = 0,
+    ) -> list[Condition]:
+        """
+        Check which charm effects need recurring saves.
+
+        Args:
+            current_day: Current game day
+            current_turn: Current turn number
+
+        Returns:
+            List of charm conditions that need save checks
+        """
+        needs_save = []
+        for c in self.conditions:
+            if c.condition_type == ConditionType.CHARMED:
+                if c.needs_recurring_save(current_day, current_turn):
+                    needs_save.append(c)
+        return needs_save
 
     # =========================================================================
     # INVENTORY MANAGEMENT
@@ -5407,9 +5868,22 @@ class AreaEffect:
     save_negates: bool = False
     save_halves_damage: bool = False
 
+    # Entry damage (separate from per-turn damage)
+    entry_damage: Optional[str] = None  # Dice notation for damage on entry
+    entry_damage_type: Optional[str] = None
+    entry_save_avoids: bool = False  # Whether save avoids entry damage
+
     # For entering/exiting the area
     enter_effect: Optional[str] = None  # Description of effect on entry
     exit_effect: Optional[str] = None  # Description of effect on exit
+
+    # Escape mechanism for entangle-type effects
+    # Keys: method ("strength_check", "dexterity_check", "save", "action", "spell"),
+    #       dc (difficulty class), modifier, requires_action, auto_escape_turns
+    escape_mechanism: Optional[dict[str, Any]] = None
+
+    # Trapped characters (for Web, Entangle, etc.)
+    trapped_characters: list[str] = field(default_factory=list)
 
     # State
     is_active: bool = True
@@ -5448,6 +5922,141 @@ class AreaEffect:
             self.is_active = False
             return True
         return False
+
+    # =========================================================================
+    # Entry/Exit Damage Helpers
+    # =========================================================================
+
+    def has_entry_damage(self) -> bool:
+        """Check if this effect deals damage on entry."""
+        return self.entry_damage is not None
+
+    def has_per_turn_damage(self) -> bool:
+        """Check if this effect deals damage per turn."""
+        return self.damage_per_turn is not None
+
+    def get_damage_info(self) -> dict[str, Any]:
+        """
+        Get all damage information for this effect.
+
+        Returns:
+            Dict with entry_damage and per_turn_damage info
+        """
+        return {
+            "entry_damage": self.entry_damage,
+            "entry_damage_type": self.entry_damage_type,
+            "entry_save_avoids": self.entry_save_avoids,
+            "per_turn_damage": self.damage_per_turn,
+            "per_turn_damage_type": self.damage_type,
+            "save_type": self.save_type,
+            "save_halves": self.save_halves_damage,
+        }
+
+    # =========================================================================
+    # Escape Mechanism Helpers
+    # =========================================================================
+
+    @property
+    def can_be_escaped(self) -> bool:
+        """Check if this effect can be escaped."""
+        return self.escape_mechanism is not None
+
+    def get_escape_method(self) -> Optional[str]:
+        """Get the method for escaping this effect."""
+        if self.escape_mechanism:
+            return self.escape_mechanism.get("method")
+        return None
+
+    def get_escape_dc(self) -> Optional[int]:
+        """Get the DC for escaping this effect."""
+        if self.escape_mechanism:
+            return self.escape_mechanism.get("dc")
+        return None
+
+    def escape_requires_action(self) -> bool:
+        """Check if escaping requires an action."""
+        if self.escape_mechanism:
+            return self.escape_mechanism.get("requires_action", True)
+        return True
+
+    # =========================================================================
+    # Trapped Character Management
+    # =========================================================================
+
+    def trap_character(self, character_id: str) -> bool:
+        """
+        Add a character to the trapped list.
+
+        Args:
+            character_id: ID of the character to trap
+
+        Returns:
+            True if character was newly trapped
+        """
+        if character_id not in self.trapped_characters:
+            self.trapped_characters.append(character_id)
+            return True
+        return False
+
+    def free_character(self, character_id: str) -> bool:
+        """
+        Remove a character from the trapped list.
+
+        Args:
+            character_id: ID of the character to free
+
+        Returns:
+            True if character was freed
+        """
+        if character_id in self.trapped_characters:
+            self.trapped_characters.remove(character_id)
+            return True
+        return False
+
+    def is_character_trapped(self, character_id: str) -> bool:
+        """Check if a character is trapped by this effect."""
+        return character_id in self.trapped_characters
+
+    def get_trapped_count(self) -> int:
+        """Get the number of trapped characters."""
+        return len(self.trapped_characters)
+
+    # =========================================================================
+    # Blocking Helpers
+    # =========================================================================
+
+    def blocks(self, block_type: str) -> bool:
+        """
+        Check if this effect blocks a specific type.
+
+        Args:
+            block_type: One of "movement", "vision", "sound", "magic"
+
+        Returns:
+            True if this effect blocks the specified type
+        """
+        if block_type == "movement":
+            return self.blocks_movement
+        elif block_type == "vision":
+            return self.blocks_vision
+        elif block_type == "sound":
+            return self.blocks_sound
+        elif block_type == "magic":
+            return self.blocks_magic
+        return False
+
+    def get_all_blocks(self) -> list[str]:
+        """Get a list of all things this effect blocks."""
+        blocks = []
+        if self.blocks_movement:
+            blocks.append("movement")
+        if self.blocks_vision:
+            blocks.append("vision")
+        if self.blocks_sound:
+            blocks.append("sound")
+        if self.blocks_magic:
+            blocks.append("magic")
+        return blocks
 
 
 @dataclass

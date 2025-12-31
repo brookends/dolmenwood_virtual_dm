@@ -1355,6 +1355,172 @@ class TestStatModifiers:
         ac_base = char.get_effective_ac()
         assert ac_base == 14  # No modifiers apply without context
 
+    def test_stat_modifier_override_mode(self):
+        """Test StatModifier with mode='set' for AC override."""
+        from src.data_models import StatModifier
+
+        modifier = StatModifier(
+            modifier_id="shield_force",
+            stat="AC",
+            value=17,
+            source="Shield of Force",
+            mode="set",  # Override mode
+            condition="vs_missiles",
+        )
+
+        assert modifier.is_override is True
+        assert modifier.mode == "set"
+
+        # Regular modifier
+        normal_mod = StatModifier(
+            modifier_id="bless",
+            stat="attack",
+            value=1,
+            source="Bless",
+        )
+        assert normal_mod.is_override is False
+        assert normal_mod.mode == "add"
+
+    def test_character_get_stat_override(self):
+        """Test CharacterState.get_stat_override method."""
+        from src.data_models import CharacterState, StatModifier
+
+        char = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 12, "DEX": 14, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=12,
+            base_speed=40,
+        )
+
+        # No overrides initially
+        assert char.get_stat_override("AC") is None
+
+        # Add override modifier
+        char.add_stat_modifier(StatModifier(
+            modifier_id="shield_force",
+            stat="AC",
+            value=17,
+            source="Shield of Force",
+            mode="set",
+            condition="vs_missiles",
+        ))
+
+        # Override applies to missiles
+        assert char.get_stat_override("AC", "missiles") == 17
+
+        # No override for melee
+        assert char.get_stat_override("AC", "melee") is None
+
+    def test_character_get_effective_ac_with_override(self):
+        """Test get_effective_ac uses override when appropriate."""
+        from src.data_models import CharacterState, StatModifier
+
+        # Character with low base AC (12)
+        char = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Magic-User",
+            level=1,
+            ability_scores={"STR": 10, "DEX": 12, "CON": 10, "INT": 16, "WIS": 10, "CHA": 10},
+            hp_current=4,
+            hp_max=4,
+            armor_class=12,  # Low AC
+            base_speed=40,
+        )
+
+        # Add Shield of Force: AC 17 vs missiles, AC 15 vs other
+        char.add_stat_modifier(StatModifier(
+            modifier_id="shield_missiles",
+            stat="AC",
+            value=17,
+            source="Shield of Force",
+            mode="set",
+            condition="vs_missiles",
+        ))
+        char.add_stat_modifier(StatModifier(
+            modifier_id="shield_other",
+            stat="AC",
+            value=15,
+            source="Shield of Force",
+            mode="set",
+            condition="vs_melee",
+        ))
+
+        # Override should apply (17 > 12)
+        assert char.get_effective_ac("missiles") == 17
+        assert char.get_effective_ac("melee") == 15
+
+    def test_character_get_effective_ac_override_with_bonus(self):
+        """Test get_effective_ac combines override with additive bonuses."""
+        from src.data_models import CharacterState, StatModifier
+
+        char = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 12, "DEX": 14, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=12,
+            base_speed=40,
+        )
+
+        # Add Shield of Force override
+        char.add_stat_modifier(StatModifier(
+            modifier_id="shield",
+            stat="AC",
+            value=15,
+            source="Shield of Force",
+            mode="set",
+        ))
+
+        # Add Mantle of Protection (+1 AC)
+        char.add_stat_modifier(StatModifier(
+            modifier_id="mantle",
+            stat="AC",
+            value=1,
+            source="Mantle of Protection",
+            mode="add",
+        ))
+
+        # Should be 15 (override) + 1 (bonus) = 16
+        assert char.get_effective_ac() == 16
+
+    def test_character_get_effective_ac_override_not_worse_than_base(self):
+        """Test that override doesn't lower AC below base."""
+        from src.data_models import CharacterState, StatModifier
+
+        # Character with high base AC (17)
+        char = CharacterState(
+            character_id="test",
+            name="Test",
+            character_class="Fighter",
+            level=5,
+            ability_scores={"STR": 16, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10},
+            hp_current=40,
+            hp_max=40,
+            armor_class=17,  # Plate armor
+            base_speed=30,
+        )
+
+        # Add Shield of Force (AC 15) - but character already has AC 17
+        char.add_stat_modifier(StatModifier(
+            modifier_id="shield",
+            stat="AC",
+            value=15,
+            source="Shield of Force",
+            mode="set",
+        ))
+
+        # Should keep base AC 17 since it's better than override
+        assert char.get_effective_ac() == 17
+
 
 # =============================================================================
 # SPELL NARRATOR TESTS

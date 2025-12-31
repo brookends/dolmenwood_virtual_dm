@@ -34,6 +34,22 @@ from src.content_loader.monster_registry import (
     get_monster_registry,
     reset_monster_registry,
 )
+from src.content_loader.spell_loader import (
+    SpellDataLoader,
+    SpellFileLoadResult,
+    SpellDirectoryLoadResult,
+    SpellFileMetadata,
+    SpellParser,
+    load_all_spells,
+    register_spells_with_resolver,
+)
+from src.content_loader.spell_registry import (
+    SpellRegistry,
+    SpellLookupResult,
+    SpellListResult,
+    get_spell_registry,
+    reset_spell_registry,
+)
 
 __all__ = [
     # Core manager
@@ -71,4 +87,18 @@ __all__ = [
     "NPCStatRequest",
     "get_monster_registry",
     "reset_monster_registry",
+    # Spell loader
+    "SpellDataLoader",
+    "SpellFileLoadResult",
+    "SpellDirectoryLoadResult",
+    "SpellFileMetadata",
+    "SpellParser",
+    "load_all_spells",
+    "register_spells_with_resolver",
+    # Spell registry
+    "SpellRegistry",
+    "SpellLookupResult",
+    "SpellListResult",
+    "get_spell_registry",
+    "reset_spell_registry",
 ]
