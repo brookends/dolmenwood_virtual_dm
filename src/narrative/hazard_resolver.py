@@ -671,12 +671,19 @@ class HazardResolver:
         character: "CharacterState",
         has_key: bool = False,
         can_pick: bool = False,
+        lock_modifier: int = 0,
         **kwargs: Any,
     ) -> HazardResult:
         """
         Resolve a locked door (p151).
 
         Can be opened with key, magic (Knock spell), or picked by thief.
+
+        Args:
+            character: The character attempting to open the door
+            has_key: Whether the character has the key
+            can_pick: Whether to attempt picking the lock
+            lock_modifier: Modifier to the pick lock target (positive = harder)
         """
         if has_key:
             return HazardResult(
@@ -688,14 +695,51 @@ class HazardResolver:
             )
 
         if can_pick:
-            # TODO: Thief pick lock skill check
+            # Get thief's pick lock skill target from AbilityRegistry
+            from src.classes.ability_registry import get_ability_registry
+
+            registry = get_ability_registry()
+            pick_lock_target = registry.get_skill_target(character, "pick_lock")
+
+            if pick_lock_target is None:
+                # Character doesn't have pick lock skill
+                return HazardResult(
+                    success=False,
+                    hazard_type=HazardType.DOOR_LOCKED,
+                    action_type=ActionType.PICK_LOCK,
+                    description=f"{character.name} lacks the skill to pick locks",
+                    narrative_hints=["fumbles with the mechanism", "needs thief training"],
+                )
+
+            # Apply lock difficulty modifier
+            adjusted_target = pick_lock_target + lock_modifier
+
+            # Roll d6 - succeed on >= target (lower target = better)
+            roll = self.dice.roll_d6(1, "Pick lock skill check")
+            success = roll.total >= adjusted_target
+
+            if success:
+                return HazardResult(
+                    success=True,
+                    hazard_type=HazardType.DOOR_LOCKED,
+                    action_type=ActionType.PICK_LOCK,
+                    description=f"{character.name} picked the lock (rolled {roll.total} vs target {adjusted_target})",
+                    turns_spent=1,
+                    narrative_hints=["tumblers click into place", "lock yields to skilled fingers"],
+                    damage_taken=0,
+                    damage_type=None,
+                )
+
+            # Failed attempt
             return HazardResult(
-                success=True,
+                success=False,
                 hazard_type=HazardType.DOOR_LOCKED,
                 action_type=ActionType.PICK_LOCK,
-                description="Lock picked successfully",
+                description=f"{character.name} failed to pick the lock (rolled {roll.total} vs target {adjusted_target})",
                 turns_spent=1,
-                narrative_hints=["tumblers click into place"],
+                narrative_hints=["pick slips", "mechanism resists", "can try again"],
+                damage_taken=0,
+                damage_type=None,
             )
 
         return HazardResult(
