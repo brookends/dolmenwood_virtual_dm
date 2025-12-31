@@ -31,6 +31,7 @@ from src.data_models import (
     ConditionType,
     LightSourceType,
     AreaEffect,
+    AreaEffectType,
     PolymorphOverlay,
     Glyph,
     GlyphType,
@@ -3107,6 +3108,246 @@ class GlobalController:
             "is_trapped": len(trapping_effects) > 0,
             "trapping_effects": trapping_effects,
         }
+
+    # =========================================================================
+    # SPELL-SPECIFIC AREA EFFECT METHODS
+    # =========================================================================
+
+    def cast_web(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 48,  # 8 hours default per OSE
+        area_radius_feet: int = 10,
+    ) -> dict[str, Any]:
+        """
+        Cast Web spell, creating entangling webs in an area.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns (default 48 = 8 hours)
+            area_radius_feet: Radius of the web area
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.WEB,
+            name="Web",
+            description="Sticky magical webs fill the area, trapping creatures",
+            source_spell_id="web",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_movement=True,
+            escape_mechanism={
+                "method": "strength_check",
+                "dc": 0,  # Simple check, no DC in OSE
+                "requires_action": True,
+                "description": "Struggle free with Strength check",
+            },
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Web"
+        result["effect_type"] = "web"
+        return result
+
+    def cast_silence(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 12,  # 2 hours default
+        area_radius_feet: int = 15,
+    ) -> dict[str, Any]:
+        """
+        Cast Silence spell, creating a zone where no sound can be made.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the silence zone
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.SILENCE,
+            name="Silence",
+            description="A zone of complete silence; no sound can be made or heard",
+            source_spell_id="silence",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_sound=True,
+            blocks_magic=True,  # Blocks verbal spellcasting
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Silence"
+        result["effect_type"] = "silence"
+        result["blocks_verbal_spells"] = True
+        return result
+
+    def cast_darkness(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,  # 1 hour default
+        area_radius_feet: int = 15,
+    ) -> dict[str, Any]:
+        """
+        Cast Darkness spell, creating magical darkness.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the darkness zone
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.DARKNESS,
+            name="Darkness",
+            description="Impenetrable magical darkness; even magical light cannot penetrate",
+            source_spell_id="darkness",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Darkness"
+        result["effect_type"] = "darkness"
+        return result
+
+    def cast_fog_cloud(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Fog Cloud, creating an obscuring mist.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the fog
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.FOG,
+            name="Fog Cloud",
+            description="Thick fog obscures vision in the area",
+            source_spell_id="fog_cloud",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Fog Cloud"
+        result["effect_type"] = "fog"
+        return result
+
+    def cast_stinking_cloud(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 1,  # Short duration
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Stinking Cloud, creating nauseating gas.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the cloud
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.STINKING_CLOUD,
+            name="Stinking Cloud",
+            description="Nauseating gas fills the area; creatures must save or be incapacitated",
+            source_spell_id="stinking_cloud",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_vision=True,
+            save_type="spell",
+            save_negates=True,
+            enter_effect="Must save vs Poison or be helpless with nausea",
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Stinking Cloud"
+        result["effect_type"] = "stinking_cloud"
+        result["save_required"] = "poison"
+        return result
+
+    def cast_entangle(
+        self,
+        location_id: str,
+        caster_id: str,
+        duration_turns: int = 6,
+        area_radius_feet: int = 20,
+    ) -> dict[str, Any]:
+        """
+        Cast Entangle, causing plants to grasp creatures.
+
+        Args:
+            location_id: Target location
+            caster_id: ID of the caster
+            duration_turns: Duration in turns
+            area_radius_feet: Radius of the entangle area
+
+        Returns:
+            Result info
+        """
+        effect = AreaEffect(
+            effect_type=AreaEffectType.ENTANGLE,
+            name="Entangle",
+            description="Plants wrap around creatures, restraining them",
+            source_spell_id="entangle",
+            caster_id=caster_id,
+            location_id=location_id,
+            area_radius_feet=area_radius_feet,
+            duration_turns=duration_turns,
+            blocks_movement=True,
+            save_type="spell",
+            save_negates=True,
+            escape_mechanism={
+                "method": "strength_check",
+                "dc": 0,
+                "requires_action": True,
+                "description": "Break free from vines",
+            },
+        )
+
+        result = self.add_area_effect(location_id, effect)
+        result["spell"] = "Entangle"
+        result["effect_type"] = "entangle"
+        return result
 
     def apply_polymorph(self, character_id: str, overlay: PolymorphOverlay) -> dict[str, Any]:
         """

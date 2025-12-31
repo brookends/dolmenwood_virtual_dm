@@ -184,6 +184,16 @@ class MechanicalEffect:
     attack_bonus: Optional[int] = None  # Attack bonus from spells like Ginger Snap
     initiative_bonus: Optional[int] = None  # Initiative modifier
 
+    # Area/Zone effects (Web, Silence, Darkness, Fog Cloud, etc.)
+    is_area_effect: bool = False  # This spell creates a persistent area effect
+    area_effect_type: Optional[str] = None  # "web", "silence", "darkness", "fog", etc.
+    blocks_movement: bool = False  # Area blocks/restricts movement
+    blocks_vision: bool = False  # Area blocks vision (darkness, fog)
+    blocks_sound: bool = False  # Area blocks sound (silence)
+    blocks_spellcasting: bool = False  # Area prevents verbal spellcasting
+    creates_hazard: bool = False  # Area deals damage or applies effects
+    entangles: bool = False  # Area restrains creatures (web, entangle)
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2464,6 +2474,192 @@ class SpellResolver:
                 else:
                     effect.attack_bonus = int(match.group(1))
                     effect.modifier_value = int(match.group(1))
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Area/Zone Effect Spells (Web, Silence, Darkness, Fog Cloud, etc.)
+        # =================================================================
+
+        # Web spell patterns
+        web_patterns = [
+            r"\bweb\b",
+            r"sticky\s+(?:webs?|strands?)",
+            r"(?:magical|giant)\s+spider\s*web",
+            r"webs?\s+(?:fill|cover|block)",
+        ]
+
+        for pattern in web_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="web",
+                    blocks_movement=True,
+                    entangles=True,
+                    description="Creates entangling webs",
+                )
+
+                # Check for save to avoid
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Silence spell patterns
+        silence_patterns = [
+            r"\bsilence\b",
+            r"zone\s+of\s+silence",
+            r"no\s+sound",
+            r"sound.*cannot.*pass",
+            r"prevents?\s+(?:sound|speech|verbal)",
+        ]
+
+        for pattern in silence_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="silence",
+                    blocks_sound=True,
+                    blocks_spellcasting=True,
+                    description="Creates a zone of silence",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Darkness spell patterns
+        darkness_patterns = [
+            r"\bdarkness\b",
+            r"magical\s+darkness",
+            r"impenetrable\s+dark",
+            r"blocks?\s+(?:all\s+)?light",
+            r"(?:light|torches?|lanterns?)\s+(?:cannot|won't|don't)\s+(?:penetrate|work|illuminate)",
+        ]
+
+        for pattern in darkness_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="darkness",
+                    blocks_vision=True,
+                    description="Creates magical darkness",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Fog/Obscurement spell patterns
+        fog_patterns = [
+            r"\bfog\b",
+            r"fog\s*cloud",
+            r"mist",
+            r"obscur(?:es?|ing|ement)",
+            r"thick\s+(?:cloud|vapor|haze)",
+        ]
+
+        for pattern in fog_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="fog",
+                    blocks_vision=True,
+                    description="Creates obscuring fog/mist",
+                )
+
+                parsed.add_effect(effect)
+                break
+
+        # Push/Wind spell patterns (Gust of Wind)
+        wind_patterns = [
+            r"gust\s+of\s+wind",
+            r"powerful\s+wind",
+            r"push(?:es)?\s+(?:back|away)",
+            r"blow(?:s|n)?\s+(?:back|away)",
+        ]
+
+        for pattern in wind_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="wind",
+                    description="Creates a pushing wind effect",
+                )
+
+                # Check for save to resist
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Hazard zone patterns (Stinking Cloud, Deathly Blossom, etc.)
+        hazard_patterns = [
+            r"stinking\s+cloud",
+            r"nauseat(?:ing|es?)",
+            r"poison(?:ous)?\s+(?:gas|cloud|vapor)",
+            r"deathly\s+blossom",
+            r"thorns?\s+(?:grow|spring|burst)",
+            r"(?:fire|flame|ice|acid)\s+(?:fills?|covers?|spreads?)",
+        ]
+
+        for pattern in hazard_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="hazard",
+                    creates_hazard=True,
+                    description="Creates a hazardous zone",
+                )
+
+                # Check for damage
+                damage_match = re.search(r"(\d+d\d+)\s*(?:points?\s+of\s+)?damage", description, re.IGNORECASE)
+                if damage_match:
+                    effect.damage_dice = damage_match.group(1)
+
+                # Check for save
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    if re.search(r"half\s+damage|halves", description, re.IGNORECASE):
+                        effect.save_halves = True
+                    else:
+                        effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Entangle spell patterns
+        entangle_patterns = [
+            r"\bentangle\b",
+            r"vines?\s+(?:and\s+roots?\s+)?(?:grow|wrap|grasp)",
+            r"(?:vines?\s+and\s+)?roots?\s+wrap",
+            r"plants?\s+(?:grab|restrain|hold)",
+            r"roots?\s+(?:burst|spring|grab)",
+        ]
+
+        for pattern in entangle_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_area_effect=True,
+                    area_effect_type="entangle",
+                    blocks_movement=True,
+                    entangles=True,
+                    description="Creates entangling vegetation",
+                )
+
+                if re.search(r"save", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
 
                 parsed.add_effect(effect)
                 break
