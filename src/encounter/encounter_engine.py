@@ -585,6 +585,24 @@ class EncounterEngine:
             success=True,
         )
 
+        # Check if any party member can act (for party actions)
+        if actor == "party":
+            party_can_act = False
+            party_blocked_reasons = []
+            for char in self.controller.get_active_characters():
+                can_act, reason = self.controller.can_character_act(char.character_id)
+                if can_act:
+                    party_can_act = True
+                    break
+                else:
+                    party_blocked_reasons.append(f"{char.name}: {reason}")
+
+            if not party_can_act and party_blocked_reasons:
+                result.success = False
+                result.messages.append("Party cannot act:")
+                result.messages.extend(party_blocked_reasons[:3])  # Cap at 3
+                return result
+
         declaration = ActionDeclaration(
             side=actor,
             action=action,
