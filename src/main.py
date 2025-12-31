@@ -194,6 +194,11 @@ class VirtualDM:
         self.session_manager = SessionManager(save_directory=self.config.save_dir)
         self.session_manager.new_session(session_name=self.config.campaign_name)
 
+        # Load base content if requested
+        self._content_loaded = False
+        if self.config.load_content:
+            self._load_base_content()
+
         # Initialize the DM Agent for narrative descriptions
         self._dm_agent: Optional[DMAgent] = None
         if self.config.enable_narration:
@@ -232,6 +237,53 @@ class VirtualDM:
             narrative_resolver.set_narration_callback(self._narrate_from_context)
             # Set up LLM intent parser (Upgrade A Extension)
             narrative_resolver.set_intent_parser(self._parse_narrative_intent_callback)
+
+    def _load_base_content(self) -> None:
+        """
+        Load base content into runtime engines.
+
+        Called during initialization when config.load_content is True.
+        Populates hex data in HexCrawlEngine, spells in SpellResolver, etc.
+        """
+        from src.content_loader.runtime_bootstrap import (
+            load_runtime_content,
+            register_spells_with_combat,
+        )
+
+        content_dir = self.config.content_dir or (self.config.data_dir / "content")
+        logger.info(f"Loading base content from: {content_dir}")
+
+        try:
+            content = load_runtime_content(
+                content_root=content_dir,
+                enable_vector_db=self.config.use_vector_db,
+            )
+
+            # Load hex data into HexCrawlEngine
+            for hex_id, hex_loc in content.hexes.items():
+                self.hex_crawl.load_hex_data(hex_id, hex_loc)
+
+            logger.info(f"Loaded {len(content.hexes)} hexes into HexCrawlEngine")
+
+            # Register spells with CombatEngine's SpellResolver
+            if content.spells:
+                spell_count = register_spells_with_combat(content.spells, self.combat)
+                logger.info(f"Registered {spell_count} spells with CombatEngine")
+
+            # Log any warnings
+            for warning in content.warnings[:5]:  # Cap logged warnings
+                logger.warning(f"Content load warning: {warning}")
+
+            self._content_loaded = True
+            logger.info(
+                f"Base content loaded: {content.stats.hexes_loaded} hexes, "
+                f"{content.stats.spells_loaded} spells, "
+                f"{content.stats.monsters_loaded} monsters"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to load base content: {e}", exc_info=True)
+            self._content_loaded = False
 
     def _narrate_from_context(
         self,
@@ -2680,6 +2732,14 @@ def main():
 
     # Create configuration
     config = create_config_from_args(args)
+
+    # Warn if content is not being loaded
+    if not config.load_content:
+        print("\n" + "-" * 60)
+        print("NOTE: Running without base content (--load-content not set).")
+        print("Many procedures will use placeholder data. For full gameplay,")
+        print("ensure content files exist in data/content/ and use --load-content.")
+        print("-" * 60 + "\n")
 
     # Check for PDF ingestion
     if args.ingest_pdf:

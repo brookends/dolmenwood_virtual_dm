@@ -900,7 +900,14 @@ class DungeonEngine:
         # Handle item consumption
         if interaction.item_consumed and item_used:
             result["item_consumed"] = item_used
-            # TODO: Wire to inventory system to remove item
+            # Remove consumed item from character's inventory
+            if character_id:
+                character = self.controller.get_character(character_id)
+                if character:
+                    removed = character.remove_item(item_used, quantity=1)
+                    if removed:
+                        result["item_removed"] = True
+                        self.controller.update_party_encumbrance()
 
         # Handle damage from dangerous mechanisms
         if interaction.damage_taken > 0:

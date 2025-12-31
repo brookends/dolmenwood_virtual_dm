@@ -1058,6 +1058,18 @@ class GlobalController:
 
         return self.party_state.get_movement_rate()
 
+    def get_party_movement_rate(self) -> int:
+        """
+        Get party movement rate for use in encounter/evasion calculations.
+
+        Alias for get_party_speed() with semantics suited to encounter rules.
+        Movement rate represents feet per round during combat/encounters.
+
+        Returns:
+            Party movement rate (slowest member's encumbered speed in feet/round)
+        """
+        return self.get_party_speed()
+
     def update_party_encumbrance(self) -> dict[str, Any]:
         """
         Update party encumbrance state from all characters.
@@ -1388,6 +1400,151 @@ class GlobalController:
             self._log_event("condition_removed", result)
 
         return result
+
+    def has_condition(self, character_id: str, condition_type: ConditionType) -> bool:
+        """
+        Check if a character has a specific condition.
+
+        Args:
+            character_id: The character to check
+            condition_type: The condition type to look for
+
+        Returns:
+            True if the character has the condition
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return False
+        return any(c.condition_type == condition_type for c in character.conditions)
+
+    def get_condition_attack_modifier(self, character_id: str) -> int:
+        """
+        Get total attack roll modifier from active conditions.
+
+        Condition effects (per Dolmenwood/OSE rules):
+        - BLINDED: -4 to attack
+        - POISONED: -2 to attack
+        - PRONE: -4 to melee attacks
+        - FRIGHTENED: -2 to attacks while source visible
+        - EXHAUSTED: -1 per exhaustion level
+
+        Args:
+            character_id: The character to check
+
+        Returns:
+            Total attack modifier (negative = penalty)
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return 0
+
+        modifier = 0
+        for cond in character.conditions:
+            if cond.condition_type == ConditionType.BLINDED:
+                modifier -= 4
+            elif cond.condition_type == ConditionType.POISONED:
+                modifier -= 2
+            elif cond.condition_type == ConditionType.PRONE:
+                modifier -= 4  # Melee attacks; ranged would be different
+            elif cond.condition_type == ConditionType.FRIGHTENED:
+                modifier -= 2
+            elif cond.condition_type == ConditionType.EXHAUSTED:
+                # Exhaustion stacks; check exhaustion_level if tracked
+                modifier -= 1
+
+        return modifier
+
+    def get_condition_defense_modifier(self, character_id: str) -> int:
+        """
+        Get AC/defense modifier from active conditions (for enemies attacking this character).
+
+        Condition effects:
+        - BLINDED: +4 for enemies to hit (AC effectively -4)
+        - PRONE: +4 for melee attackers, -4 for ranged (simplified to +2)
+        - PARALYZED: Melee attacks auto-hit (represented as large bonus)
+        - STUNNED: Auto-fail DEX-based AC (represented as +4)
+        - RESTRAINED: +2 for enemies to hit
+
+        Args:
+            character_id: The character being attacked
+
+        Returns:
+            Modifier for attackers (positive = easier to hit)
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return 0
+
+        modifier = 0
+        for cond in character.conditions:
+            if cond.condition_type == ConditionType.BLINDED:
+                modifier += 4  # Enemies have advantage
+            elif cond.condition_type == ConditionType.PRONE:
+                modifier += 2  # Simplified (melee +4, ranged -4)
+            elif cond.condition_type == ConditionType.PARALYZED:
+                modifier += 10  # Effectively auto-hit for melee
+            elif cond.condition_type == ConditionType.STUNNED:
+                modifier += 4
+            elif cond.condition_type == ConditionType.RESTRAINED:
+                modifier += 2
+
+        return modifier
+
+    def get_condition_save_modifier(self, character_id: str, save_type: str = "") -> int:
+        """
+        Get saving throw modifier from active conditions.
+
+        Condition effects:
+        - POISONED: -2 to all saves
+        - EXHAUSTED: -1 per level to saves
+        - FRIGHTENED: -2 to saves while source visible
+
+        Args:
+            character_id: The character making the save
+            save_type: Optional save type for specific modifiers
+
+        Returns:
+            Modifier to saving throw (negative = penalty)
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return 0
+
+        modifier = 0
+        for cond in character.conditions:
+            if cond.condition_type == ConditionType.POISONED:
+                modifier -= 2
+            elif cond.condition_type == ConditionType.EXHAUSTED:
+                modifier -= 1
+            elif cond.condition_type == ConditionType.FRIGHTENED:
+                modifier -= 2
+
+        return modifier
+
+    def can_character_act(self, character_id: str) -> tuple[bool, str]:
+        """
+        Check if a character can take actions based on conditions.
+
+        Returns:
+            Tuple of (can_act, reason_if_not)
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return False, "Character not found"
+
+        for cond in character.conditions:
+            if cond.condition_type == ConditionType.PARALYZED:
+                return False, "Paralyzed - cannot move or act"
+            elif cond.condition_type == ConditionType.STUNNED:
+                return False, "Stunned - cannot act"
+            elif cond.condition_type == ConditionType.PETRIFIED:
+                return False, "Petrified - turned to stone"
+            elif cond.condition_type == ConditionType.UNCONSCIOUS:
+                return False, "Unconscious"
+            elif cond.condition_type == ConditionType.INCAPACITATED:
+                return False, "Incapacitated"
+
+        return True, ""
 
     def apply_charm(
         self,

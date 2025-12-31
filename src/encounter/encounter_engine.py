@@ -714,12 +714,19 @@ class EncounterEngine:
             return result
 
         # Get movement rates (p146-147)
-        # Default party speed of 30, running = 90'/round
-        party_speed = 30  # TODO: Get from party state
+        party_speed = self.controller.get_party_movement_rate()
         party_running_speed = MovementCalculator.get_running_movement(party_speed)
 
-        # Assume enemy speed similar for now
-        enemy_speed = 30  # TODO: Get from encounter actors
+        # Get enemy speed from encounter combatants (use fastest enemy)
+        enemy_speed = 30  # Default fallback
+        if self._state and self._state.encounter and self._state.encounter.combatants:
+            enemy_speeds = [
+                c.stat_block.movement
+                for c in self._state.encounter.combatants
+                if c.stat_block and c.stat_block.movement and c.stat_block.hp_current > 0
+            ]
+            if enemy_speeds:
+                enemy_speed = max(enemy_speeds)
         enemy_running_speed = MovementCalculator.get_running_movement(enemy_speed)
 
         # Calculate evasion chance based on:
