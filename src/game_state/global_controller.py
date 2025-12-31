@@ -13,6 +13,12 @@ from typing import Any, Callable, Optional
 import logging
 
 from src.game_state.state_machine import GameState, StateMachine
+from src.oracle.spell_adjudicator import (
+    MythicSpellAdjudicator,
+    AdjudicationContext,
+    AdjudicationResult,
+    SpellAdjudicationType,
+)
 from src.data_models import (
     WorldState,
     PartyState,
@@ -335,6 +341,9 @@ class GlobalController:
         self._xp_manager: Optional["XPManager"] = None
         if XP_MANAGER_AVAILABLE:
             self._xp_manager = XPManager(controller=self)
+
+        # Spell adjudicator for oracle-based spell resolution (lazy init)
+        self._spell_adjudicator: Optional[MythicSpellAdjudicator] = None
 
         # Session log
         self._session_log: list[dict[str, Any]] = []
@@ -4661,6 +4670,199 @@ class GlobalController:
 
         self._log_event("teleport_attempt", result)
         return result
+
+    # =========================================================================
+    # ORACLE SPELL ADJUDICATION (Phase 4)
+    # =========================================================================
+
+    def get_spell_adjudicator(self) -> MythicSpellAdjudicator:
+        """
+        Get or create the spell adjudicator for oracle-based resolution.
+
+        Returns:
+            MythicSpellAdjudicator instance
+        """
+        if self._spell_adjudicator is None:
+            self._spell_adjudicator = MythicSpellAdjudicator()
+        return self._spell_adjudicator
+
+    def adjudicate_oracle_spell(
+        self,
+        spell_name: str,
+        caster_id: str,
+        adjudication_type: str,
+        oracle_question: Optional[str] = None,
+        target_id: Optional[str] = None,
+        intention: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AdjudicationResult:
+        """
+        Adjudicate a spell that requires oracle resolution.
+
+        This is the main entry point for Phase 4 oracle-based spell resolution.
+        It routes to the appropriate MythicSpellAdjudicator method based on
+        the adjudication type identified during spell parsing.
+
+        Args:
+            spell_name: Name of the spell being cast
+            caster_id: ID of the caster
+            adjudication_type: Type of adjudication (from SpellAdjudicationType)
+            oracle_question: Optional specific question for the oracle
+            target_id: Optional target character/entity
+            intention: What the caster is trying to achieve
+            **kwargs: Additional context for specific adjudication types
+
+        Returns:
+            AdjudicationResult with success level and interpretation context
+        """
+        caster = self._characters.get(caster_id)
+        if not caster:
+            caster = self._npcs.get(caster_id)
+
+        caster_name = caster.name if caster else "Unknown Caster"
+        caster_level = caster.level if caster else 1
+
+        # Build target description
+        target_description = ""
+        if target_id:
+            target = self._characters.get(target_id) or self._npcs.get(target_id)
+            if target:
+                target_description = target.name
+
+        # Create adjudication context
+        context = AdjudicationContext(
+            spell_name=spell_name,
+            caster_name=caster_name,
+            caster_level=caster_level,
+            target_description=target_description,
+            intention=intention or oracle_question or f"Cast {spell_name}",
+            target_power_level=kwargs.get("target_power_level", "normal"),
+            magical_resistance=kwargs.get("magical_resistance", False),
+            curse_source=kwargs.get("curse_source", ""),
+            previous_attempts=kwargs.get("previous_attempts", 0),
+        )
+
+        adjudicator = self.get_spell_adjudicator()
+
+        # Route to appropriate adjudicator method
+        try:
+            adj_type = SpellAdjudicationType(adjudication_type)
+        except ValueError:
+            adj_type = SpellAdjudicationType.GENERIC
+
+        if adj_type == SpellAdjudicationType.WISH:
+            wish_text = kwargs.get("wish_text", intention or oracle_question or "")
+            wish_power = kwargs.get("wish_power", "standard")
+            result = adjudicator.adjudicate_wish(wish_text, context, wish_power)
+
+        elif adj_type == SpellAdjudicationType.DIVINATION:
+            question = oracle_question or intention or f"What does {spell_name} reveal?"
+            divination_type = kwargs.get("divination_type", "general")
+            protected = kwargs.get("target_is_protected", False)
+            result = adjudicator.adjudicate_divination(
+                question, context, divination_type, protected
+            )
+
+        elif adj_type == SpellAdjudicationType.ILLUSION_BELIEF:
+            quality = kwargs.get("illusion_quality", "standard")
+            intelligence = kwargs.get("viewer_intelligence", "average")
+            has_doubt = kwargs.get("viewer_has_reason_to_doubt", False)
+            result = adjudicator.adjudicate_illusion_belief(
+                context, quality, intelligence, has_doubt
+            )
+
+        elif adj_type == SpellAdjudicationType.SUMMONING_CONTROL:
+            creature_type = kwargs.get("creature_type", "creature")
+            creature_power = kwargs.get("creature_power", "normal")
+            binding = kwargs.get("binding_strength", "standard")
+            result = adjudicator.adjudicate_summoning_control(
+                context, creature_type, creature_power, binding
+            )
+
+        elif adj_type == SpellAdjudicationType.CURSE_BREAK:
+            curse_power = kwargs.get("curse_power", "normal")
+            specifically_counters = kwargs.get("spell_specifically_counters", True)
+            result = adjudicator.adjudicate_curse_break(
+                context, curse_power, specifically_counters
+            )
+
+        else:
+            # Generic adjudication
+            from src.oracle.mythic_gme import Likelihood
+            question = oracle_question or f"Does {spell_name} succeed as intended?"
+            base_likelihood = Likelihood.FIFTY_FIFTY
+            result = adjudicator.adjudicate_generic(question, context, base_likelihood)
+
+        # Log the adjudication
+        self._log_event(
+            "oracle_spell_adjudication",
+            {
+                "spell": spell_name,
+                "caster_id": caster_id,
+                "adjudication_type": adj_type.value,
+                "success_level": result.success_level.value,
+                "summary": result.summary,
+                "has_complication": result.has_complication,
+            },
+        )
+
+        return result
+
+    def resolve_oracle_spell_effects(
+        self,
+        result: AdjudicationResult,
+        caster_id: str,
+        target_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply effects from an oracle spell adjudication.
+
+        Takes the AdjudicationResult and applies any predetermined effects
+        while returning context for LLM interpretation of narrative results.
+
+        Args:
+            result: The adjudication result from adjudicate_oracle_spell
+            caster_id: ID of the caster
+            target_id: Optional target ID
+
+        Returns:
+            Dictionary with applied effects and LLM interpretation context
+        """
+        applied_effects = []
+
+        # Apply predetermined effects (like curse removal on success)
+        for effect_cmd in result.predetermined_effects:
+            parts = effect_cmd.split(":")
+            if parts[0] == "remove_condition" and len(parts) >= 2:
+                condition_name = parts[1]
+                effect_target = parts[2] if len(parts) > 2 else target_id
+
+                # Find and remove the condition
+                if effect_target:
+                    target = self._characters.get(effect_target) or self._npcs.get(effect_target)
+                    if target:
+                        try:
+                            cond_type = ConditionType(condition_name)
+                            target.conditions = [
+                                c for c in target.conditions
+                                if c.condition_type != cond_type
+                            ]
+                            applied_effects.append({
+                                "type": "condition_removed",
+                                "condition": condition_name,
+                                "target": effect_target,
+                            })
+                        except ValueError:
+                            pass
+
+        return {
+            "success_level": result.success_level.value,
+            "summary": result.summary,
+            "applied_effects": applied_effects,
+            "requires_interpretation": result.requires_interpretation(),
+            "llm_context": result.to_llm_context() if result.requires_interpretation() else {},
+            "has_complication": result.has_complication,
+        }
 
     # =========================================================================
     # INTERNAL CALLBACKS

@@ -276,6 +276,11 @@ class MechanicalEffect:
     antimagic_type: Optional[str] = None  # "dispel", "suppress", "nullify"
     antimagic_radius: Optional[int] = None  # Radius of effect
 
+    # Oracle adjudication (Phase 4 - spells that defer to Mythic GME)
+    requires_oracle: bool = False  # This spell requires oracle adjudication
+    oracle_adjudication_type: Optional[str] = None  # "wish", "divination", "illusion", etc.
+    oracle_question: Optional[str] = None  # Question for oracle if applicable
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -290,11 +295,21 @@ class ParsedMechanicalEffects:
     requires_save: bool = False
     affects_multiple: bool = False
 
+    # Oracle adjudication flag
+    requires_oracle_adjudication: bool = False
+    oracle_adjudication_type: Optional[str] = None
+
     def add_effect(self, effect: MechanicalEffect) -> None:
         """Add an effect and update flags."""
         self.effects.append(effect)
         if self.primary_effect is None:
             self.primary_effect = effect
+
+        # Track oracle requirement
+        if effect.requires_oracle:
+            self.requires_oracle_adjudication = True
+            if effect.oracle_adjudication_type:
+                self.oracle_adjudication_type = effect.oracle_adjudication_type
 
         if effect.category == MechanicalEffectCategory.DAMAGE:
             self.deals_damage = True
@@ -3259,6 +3274,115 @@ class SpellResolver:
                     antimagic_type=am_type,
                     antimagic_radius=radius,
                     description=f"Anti-magic ({am_type})",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =====================================================================
+        # ORACLE ADJUDICATION PATTERNS (Phase 4)
+        # These spells defer to MythicSpellAdjudicator for resolution
+        # =====================================================================
+
+        # Wish/Reality-altering spells
+        wish_patterns = [
+            r"\bwish\b",
+            r"alter\s+reality",
+            r"miracle",
+            r"limited\s+wish",
+        ]
+
+        for pattern in wish_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="wish",
+                    description="Wish - requires oracle adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Divination spells that need oracle interpretation
+        divination_oracle_patterns = [
+            (r"commune|communion", "divination"),
+            (r"contact\s+(?:other\s+)?plane", "divination"),
+            (r"augury|omen", "divination"),
+            (r"legend\s+lore", "divination"),
+            (r"speak\s+with\s+(?:dead|spirits?)", "divination"),
+            (r"divination", "divination"),
+        ]
+
+        for pattern, adj_type in divination_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type=adj_type,
+                    description=f"Divination - requires oracle adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Illusion spells that need belief adjudication
+        illusion_oracle_patterns = [
+            r"phantasmal\s+(?:force|killer)",
+            r"programmed\s+illusion",
+            r"project\s+image",
+            r"simulacrum",
+            r"veil",
+        ]
+
+        for pattern in illusion_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="illusion_belief",
+                    description="Illusion - requires belief adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Summoning control spells
+        summoning_oracle_patterns = [
+            r"conjure\s+elemental",
+            r"summon\s+(?:demon|devil|fiend)",
+            r"planar\s+(?:binding|ally)",
+            r"gate",
+        ]
+
+        for pattern in summoning_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="summoning_control",
+                    description="Summoning - requires control adjudication",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Communication spells
+        communication_oracle_patterns = [
+            r"speak\s+with\s+(?:animals|plants|monsters)",
+            r"tongues",
+            r"sending",
+            r"message",
+            r"telepathy",
+        ]
+
+        for pattern in communication_oracle_patterns:
+            if re.search(pattern, description, re.IGNORECASE) or \
+               re.search(pattern, spell.name, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    requires_oracle=True,
+                    oracle_adjudication_type="communication",
+                    description="Communication - requires narrative adjudication",
                 )
                 parsed.add_effect(effect)
                 break
