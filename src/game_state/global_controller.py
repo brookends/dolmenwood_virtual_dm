@@ -32,6 +32,8 @@ from src.data_models import (
     LightSourceType,
     AreaEffect,
     PolymorphOverlay,
+    Glyph,
+    GlyphType,
     SocialContext,
     SocialOrigin,
     SocialParticipant,
@@ -335,6 +337,9 @@ class GlobalController:
 
         # Session log
         self._session_log: list[dict[str, Any]] = []
+
+        # Glyph tracking (glyphs on doors/objects)
+        self._glyphs: dict[str, Glyph] = {}  # glyph_id -> Glyph
 
         # Transition hooks: (from_state, to_state) -> list of callbacks
         # Callbacks receive (from_state, to_state, trigger, context)
@@ -1475,6 +1480,344 @@ class GlobalController:
                 "charm_broken": False,
                 "reason": "Character was not charmed",
             }
+
+    # =========================================================================
+    # GLYPH MANAGEMENT (Magical seals on doors/portals)
+    # =========================================================================
+
+    def place_glyph(
+        self,
+        caster_id: str,
+        target_id: str,
+        glyph_type: GlyphType,
+        source_spell_id: str,
+        name: str = "",
+        target_type: str = "door",
+        duration_turns: Optional[int] = None,
+        password: Optional[str] = None,
+        can_be_bypassed_by_level: Optional[int] = None,
+        trigger_condition: Optional[str] = None,
+        trap_effect: Optional[str] = None,
+        trap_damage: Optional[str] = None,
+        trap_save_type: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Place a magical glyph on a door or object.
+
+        Args:
+            caster_id: ID of the character placing the glyph
+            target_id: ID of the door/object
+            glyph_type: Type of glyph (SEALING, LOCKING, TRAP)
+            source_spell_id: ID of the spell creating the glyph
+            name: Name of the glyph (e.g., "Glyph of Sealing")
+            target_type: Type of target ("door", "chest", "portal")
+            duration_turns: Duration in turns (None = permanent)
+            password: Password for locking glyphs
+            can_be_bypassed_by_level: Higher-level casters can bypass
+            trigger_condition: For trap glyphs
+            trap_effect: Effect when triggered
+            trap_damage: Damage when triggered
+            trap_save_type: Save type for traps
+
+        Returns:
+            Dictionary with glyph placement results
+        """
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Create the glyph
+        glyph = Glyph(
+            glyph_type=glyph_type,
+            name=name or f"Glyph of {glyph_type.value.title()}",
+            source_spell_id=source_spell_id,
+            caster_id=caster_id,
+            caster_level=caster.level,
+            target_type=target_type,
+            target_id=target_id,
+            duration_turns=duration_turns,
+            turns_remaining=duration_turns,
+            password=password,
+            can_be_bypassed_by_level=can_be_bypassed_by_level,
+            trigger_condition=trigger_condition,
+            trap_effect=trap_effect,
+            trap_damage=trap_damage,
+            trap_save_type=trap_save_type,
+            placed_at_turn=self.time_tracker.exploration_turns,
+        )
+
+        self._glyphs[glyph.glyph_id] = glyph
+
+        result = {
+            "glyph_id": glyph.glyph_id,
+            "glyph_type": glyph_type.value,
+            "target_id": target_id,
+            "target_type": target_type,
+            "caster_id": caster_id,
+            "caster_level": caster.level,
+            "placed": True,
+            "has_password": password is not None,
+        }
+
+        self._log_event("glyph_placed", result)
+        return result
+
+    def get_glyphs_on_target(
+        self,
+        target_id: str,
+        active_only: bool = True,
+    ) -> list[Glyph]:
+        """
+        Get all glyphs on a specific target.
+
+        Args:
+            target_id: ID of the door/object
+            active_only: Only return active glyphs
+
+        Returns:
+            List of Glyph objects
+        """
+        current_turn = self.time_tracker.exploration_turns
+        return [
+            g for g in self._glyphs.values()
+            if g.target_id == target_id
+            and (not active_only or g.is_active(current_turn))
+        ]
+
+    def dispel_glyph(
+        self,
+        glyph_id: str,
+        dispeller_id: Optional[str] = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Dispel (permanently remove) a glyph.
+
+        Args:
+            glyph_id: ID of the glyph to dispel
+            dispeller_id: Who is dispelling (optional)
+            reason: Why it's being dispelled
+
+        Returns:
+            Dictionary with dispel results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        glyph.dispel()
+
+        result = {
+            "glyph_id": glyph_id,
+            "glyph_type": glyph.glyph_type.value,
+            "target_id": glyph.target_id,
+            "dispelled": True,
+            "dispeller_id": dispeller_id,
+            "reason": reason,
+        }
+
+        self._log_event("glyph_dispelled", result)
+        return result
+
+    def disable_glyph_temporarily(
+        self,
+        glyph_id: str,
+        duration_turns: int,
+        disabler_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Temporarily disable a glyph (e.g., by Knock spell).
+
+        Args:
+            glyph_id: ID of the glyph to disable
+            duration_turns: How many turns to disable
+            disabler_id: Who is disabling (optional)
+
+        Returns:
+            Dictionary with disable results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        current_turn = self.time_tracker.exploration_turns
+        glyph.disable_temporarily(duration_turns, current_turn)
+
+        result = {
+            "glyph_id": glyph_id,
+            "glyph_type": glyph.glyph_type.value,
+            "target_id": glyph.target_id,
+            "disabled": True,
+            "disabled_until_turn": glyph.disabled_until_turn,
+            "disabler_id": disabler_id,
+        }
+
+        self._log_event("glyph_disabled", result)
+        return result
+
+    def check_glyph_bypass(
+        self,
+        target_id: str,
+        character_id: str,
+        password: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Check if a character can bypass glyphs on a target.
+
+        Args:
+            target_id: ID of the door/object
+            character_id: ID of the character trying to pass
+            password: Password to try (for locking glyphs)
+
+        Returns:
+            Dictionary with bypass check results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        glyphs = self.get_glyphs_on_target(target_id, active_only=True)
+
+        if not glyphs:
+            return {
+                "can_bypass": True,
+                "blocking_glyphs": [],
+                "bypassed_glyphs": [],
+            }
+
+        blocking = []
+        bypassed = []
+
+        for glyph in glyphs:
+            can_bypass, reason = glyph.check_bypass(
+                character_id=character_id,
+                character_level=character.level,
+                password_given=password,
+            )
+
+            if can_bypass:
+                bypassed.append({
+                    "glyph_id": glyph.glyph_id,
+                    "glyph_type": glyph.glyph_type.value,
+                    "reason": reason,
+                })
+            else:
+                blocking.append({
+                    "glyph_id": glyph.glyph_id,
+                    "glyph_type": glyph.glyph_type.value,
+                    "name": glyph.name,
+                    "caster_level": glyph.caster_level,
+                })
+
+        return {
+            "can_bypass": len(blocking) == 0,
+            "blocking_glyphs": blocking,
+            "bypassed_glyphs": bypassed,
+        }
+
+    def trigger_trap_glyph(
+        self,
+        glyph_id: str,
+        triggerer_id: str,
+    ) -> dict[str, Any]:
+        """
+        Trigger a trap glyph.
+
+        Args:
+            glyph_id: ID of the glyph
+            triggerer_id: ID of the character who triggered it
+
+        Returns:
+            Dictionary with trap trigger results
+        """
+        glyph = self._glyphs.get(glyph_id)
+        if not glyph:
+            return {"error": f"Glyph {glyph_id} not found"}
+
+        if glyph.glyph_type != GlyphType.TRAP:
+            return {"error": "Glyph is not a trap"}
+
+        trigger_result = glyph.trigger_trap()
+        trigger_result["triggerer_id"] = triggerer_id
+
+        if trigger_result["triggered"]:
+            self._log_event("trap_glyph_triggered", trigger_result)
+
+        return trigger_result
+
+    def cast_knock(
+        self,
+        caster_id: str,
+        target_id: str,
+    ) -> dict[str, Any]:
+        """
+        Cast Knock on a door/portal.
+
+        Unlocks mundane locks, dispels Glyphs of Sealing,
+        and temporarily disables other glyphs.
+
+        Args:
+            caster_id: ID of the caster
+            target_id: ID of the door/portal
+
+        Returns:
+            Dictionary with Knock results
+        """
+        glyphs = self.get_glyphs_on_target(target_id, active_only=True)
+
+        dispelled = []
+        disabled = []
+
+        for glyph in glyphs:
+            if glyph.glyph_type == GlyphType.SEALING:
+                # Glyph of Sealing is dispelled
+                self.dispel_glyph(glyph.glyph_id, caster_id, "Knock spell")
+                dispelled.append({
+                    "glyph_id": glyph.glyph_id,
+                    "name": glyph.name,
+                })
+            else:
+                # Other glyphs are disabled for 1 turn
+                self.disable_glyph_temporarily(glyph.glyph_id, 1, caster_id)
+                disabled.append({
+                    "glyph_id": glyph.glyph_id,
+                    "name": glyph.name,
+                    "disabled_for_turns": 1,
+                })
+
+        result = {
+            "target_id": target_id,
+            "caster_id": caster_id,
+            "glyphs_dispelled": dispelled,
+            "glyphs_disabled": disabled,
+            "mundane_locks_opened": True,  # Knock also opens mundane locks
+        }
+
+        self._log_event("knock_cast", result)
+        return result
+
+    def tick_glyphs(self) -> list[dict[str, Any]]:
+        """
+        Process turn advancement for all glyphs.
+
+        Called automatically on turn advance.
+
+        Returns:
+            List of expired glyph info
+        """
+        expired = []
+
+        for glyph_id, glyph in list(self._glyphs.items()):
+            if not glyph.tick_turn():
+                # Glyph expired
+                expired.append({
+                    "glyph_id": glyph_id,
+                    "name": glyph.name,
+                    "target_id": glyph.target_id,
+                })
+                del self._glyphs[glyph_id]
+
+        return expired
 
     # =========================================================================
     # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)

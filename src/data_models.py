@@ -6059,6 +6059,171 @@ class AreaEffect:
         return blocks
 
 
+# =============================================================================
+# GLYPH SYSTEM (Magical Seals on Doors/Portals)
+# =============================================================================
+
+
+class GlyphType(str, Enum):
+    """Types of magical glyphs that can be placed on doors/portals."""
+
+    SEALING = "sealing"  # Glyph of Sealing - temporary magical lock
+    LOCKING = "locking"  # Glyph of Locking - permanent with password
+    TRAP = "trap"  # Serpent Glyph, etc. - triggered effect
+    WARDING = "warding"  # Protective wards
+    ALARM = "alarm"  # Silent alarm glyphs
+
+
+@dataclass
+class Glyph:
+    """
+    A magical glyph placed on a door, portal, or object.
+
+    Glyphs are magical seals that can lock doors, trigger traps,
+    or provide other magical effects when conditions are met.
+    """
+
+    glyph_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    glyph_type: GlyphType = GlyphType.SEALING
+    name: str = ""  # e.g., "Glyph of Sealing", "Serpent Glyph"
+
+    # Source tracking
+    source_spell_id: str = ""  # Spell that created this glyph
+    caster_id: str = ""
+    caster_level: int = 1
+
+    # Target (what the glyph is placed on)
+    target_type: str = "door"  # "door", "chest", "portal", "object"
+    target_id: str = ""  # ID of the door/object
+
+    # Duration and visibility
+    duration_turns: Optional[int] = None  # None = permanent
+    turns_remaining: Optional[int] = None
+    is_visible: bool = True  # False for hidden glyphs (Glyph of Locking after 1 turn)
+    is_detected: bool = False  # If hidden, has it been detected by magic?
+
+    # Locking glyph properties
+    password: Optional[str] = None  # For Glyph of Locking
+    can_be_bypassed_by_level: Optional[int] = None  # Higher-level casters can pass
+
+    # Trap glyph properties
+    trigger_condition: Optional[str] = None  # "touch", "open", "step", "read"
+    trap_effect: Optional[str] = None  # "summon_adders", "alarm", "damage"
+    trap_damage: Optional[str] = None  # e.g., "2d6"
+    trap_save_type: Optional[str] = None  # e.g., "spell"
+    triggered: bool = False  # Has the trap been triggered?
+
+    # Knock spell interaction
+    disabled_until_turn: Optional[int] = None  # Temporarily disabled by Knock
+
+    # Timestamps
+    placed_at_turn: int = 0  # Turn when glyph was placed
+
+    def is_active(self, current_turn: int = 0) -> bool:
+        """Check if the glyph is currently active."""
+        if self.triggered:
+            return False
+
+        # Check if temporarily disabled
+        if self.disabled_until_turn is not None and current_turn < self.disabled_until_turn:
+            return False
+
+        # Check duration
+        if self.turns_remaining is not None and self.turns_remaining <= 0:
+            return False
+
+        return True
+
+    def is_targetable(self, viewer_can_see_invisible: bool = False) -> bool:
+        """Check if the glyph can be targeted (for dispel, etc.)."""
+        if not self.is_visible:
+            return self.is_detected or viewer_can_see_invisible
+        return True
+
+    def check_bypass(
+        self,
+        character_id: str,
+        character_level: int = 0,
+        password_given: Optional[str] = None,
+        spell_level: int = 0,
+    ) -> tuple[bool, str]:
+        """
+        Check if a character can bypass this glyph.
+
+        Returns:
+            Tuple of (can_bypass, reason)
+        """
+        # Caster can always bypass
+        if character_id == self.caster_id:
+            return True, "caster_control"
+
+        # Password check for locking glyphs
+        if self.glyph_type == GlyphType.LOCKING and self.password:
+            if password_given and password_given.lower() == self.password.lower():
+                return True, "correct_password"
+
+        # Higher-level caster check
+        if self.can_be_bypassed_by_level is not None:
+            required_level = self.caster_level + self.can_be_bypassed_by_level
+            if character_level >= required_level:
+                return True, f"level_{character_level}_bypasses"
+
+        return False, "blocked"
+
+    def trigger_trap(self) -> dict[str, Any]:
+        """
+        Trigger a trap glyph.
+
+        Returns:
+            Dictionary with trap effect details
+        """
+        if self.glyph_type != GlyphType.TRAP:
+            return {"triggered": False, "reason": "not_a_trap"}
+
+        if self.triggered:
+            return {"triggered": False, "reason": "already_triggered"}
+
+        self.triggered = True
+
+        return {
+            "triggered": True,
+            "effect": self.trap_effect,
+            "damage": self.trap_damage,
+            "save_type": self.trap_save_type,
+            "glyph_name": self.name,
+        }
+
+    def disable_temporarily(self, duration_turns: int, current_turn: int) -> None:
+        """Temporarily disable the glyph (e.g., by Knock spell)."""
+        self.disabled_until_turn = current_turn + duration_turns
+
+    def dispel(self) -> bool:
+        """Dispel the glyph (e.g., by Knock on Glyph of Sealing)."""
+        # Mark as expired
+        self.turns_remaining = 0
+        return True
+
+    def tick_turn(self) -> bool:
+        """
+        Process a turn passing.
+
+        Returns:
+            True if glyph is still active, False if expired
+        """
+        # Make Glyph of Locking invisible after first turn
+        if self.glyph_type == GlyphType.LOCKING and self.is_visible:
+            if self.placed_at_turn > 0:  # Not the initial turn
+                self.is_visible = False
+
+        # Decrement duration
+        if self.turns_remaining is not None:
+            self.turns_remaining -= 1
+            if self.turns_remaining <= 0:
+                return False
+
+        return True
+
+
 @dataclass
 class PolymorphOverlay:
     """

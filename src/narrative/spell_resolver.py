@@ -163,6 +163,17 @@ class MechanicalEffect:
     multi_target_dice: Optional[str] = None  # For multi-target charms (e.g., "3d6")
     target_level_limit: Optional[int] = None  # Max level of affected creatures
 
+    # Glyph/Lock effects (Glyph of Sealing, Glyph of Locking, Knock, etc.)
+    is_glyph_effect: bool = False  # This spell creates/affects a glyph
+    glyph_type: Optional[str] = None  # "sealing", "locking", "trap"
+    has_password: bool = False  # Glyph can be bypassed with password
+    can_bypass_level_diff: Optional[int] = None  # Higher-level casters can bypass
+    is_unlock_effect: bool = False  # This spell unlocks/dispels (Knock)
+    dispels_sealing: bool = False  # Dispels Glyph of Sealing
+    disables_locking: bool = False  # Temporarily disables Glyph of Locking
+    is_trap_glyph: bool = False  # This creates a trap glyph
+    trap_trigger: Optional[str] = None  # "touch", "open", "read"
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2211,6 +2222,85 @@ class SpellResolver:
 
                     parsed.add_effect(effect)
                     break
+
+        # =================================================================
+        # Glyph spell patterns (Glyph of Sealing, Glyph of Locking, etc.)
+        # =================================================================
+        glyph_patterns = [
+            # "glyph of sealing" / "glowing rune...preventing"
+            (r"glyph\s+of\s+sealing", "sealing"),
+            # "glowing rune...preventing" (sealing without name)
+            (r"glowing\s+rune.*(?:preventing|sealed)", "sealing"),
+            # "glyph of locking"
+            (r"glyph\s+of\s+locking", "locking"),
+            # "glowing rune...locking" (locking without name)
+            (r"glowing\s+rune.*magically\s+locking", "locking"),
+            # "serpent glyph" / trap glyphs
+            (r"serpent\s+glyph", "trap"),
+        ]
+
+        for pattern, glyph_t in glyph_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_glyph_effect=True,
+                    glyph_type=glyph_t,
+                    description=f"Places a {glyph_t} glyph",
+                )
+
+                # Check for password feature
+                if re.search(r"password", description, re.IGNORECASE):
+                    effect.has_password = True
+
+                # Check for level bypass (e.g., "3 Levels higher", "3 or more Levels higher")
+                level_diff_match = re.search(
+                    r"(\d+)\s+(?:or\s+more\s+)?levels?\s+(?:or\s+more\s+)?(?:higher|above)",
+                    description, re.IGNORECASE
+                )
+                if level_diff_match:
+                    effect.can_bypass_level_diff = int(level_diff_match.group(1))
+
+                # Check for trap features
+                if glyph_t == "trap":
+                    effect.is_trap_glyph = True
+                    # Look for trigger condition
+                    if "touch" in description:
+                        effect.trap_trigger = "touch"
+                    elif "open" in description:
+                        effect.trap_trigger = "open"
+                    elif "step" in description:
+                        effect.trap_trigger = "step"
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Knock spell patterns (unlock/dispel)
+        # =================================================================
+        knock_patterns = [
+            r"knocks?\s+on.*portal",
+            r"portal.*magically\s+opens",
+            r"(?:locks?|bars?)\s+(?:are\s+)?(?:unlocked|removed)",
+            r"glyphs?\s+of\s+sealing\s+(?:are\s+)?dispelled",
+        ]
+
+        for pattern in knock_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_unlock_effect=True,
+                    description="Unlocks and dispels magical seals",
+                )
+
+                # Check specific dispel/disable behaviors
+                if re.search(r"sealing.*dispelled", description, re.IGNORECASE):
+                    effect.dispels_sealing = True
+
+                if re.search(r"(?:locking|magical\s+seals?).*disabled", description, re.IGNORECASE):
+                    effect.disables_locking = True
+
+                parsed.add_effect(effect)
+                break
 
         return parsed
 
