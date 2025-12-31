@@ -4005,6 +4005,10 @@ class SpellResolver:
             "animal_growth": self._handle_animal_growth,
             # Phase 3 utility spell handlers
             "dispel_magic": self._handle_dispel_magic,
+            # Phase 4 movement spell handlers
+            "levitate": self._handle_levitate,
+            "fly": self._handle_fly,
+            "telekinesis": self._handle_telekinesis,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -5224,6 +5228,280 @@ class SpellResolver:
                     if effects_resisted
                     else []
                 ),
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # Phase 4: Movement Spell Handlers
+    # -------------------------------------------------------------------------
+
+    def _handle_levitate(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Levitate spell.
+
+        Per Dolmenwood source:
+        - Caster may move up and down through the air at will
+        - Vertical movement: Up to 20' per Round
+        - Horizontal movement: Only by pushing against solid objects
+        - Duration: 6 Turns + 1 per Level
+        - Can carry normal amount of weight
+        """
+        from src.data_models import FlightState
+
+        caster_level = caster.level if hasattr(caster, "level") else 1
+        duration_turns = 6 + caster_level
+
+        # Grant levitation (hovering state, not full flight)
+        if hasattr(caster, "grant_flight"):
+            caster.grant_flight(
+                speed=20,  # 20' per round vertical only
+                source="levitate",
+                flight_state=FlightState.HOVERING,
+            )
+
+        # Register as active spell effect
+        effect_id = f"levitate_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="levitate",
+            spell_name="Levitate",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=caster.character_id,
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            created_at=datetime.now(),
+            mechanical_effects={
+                "movement_mode": "levitating",
+                "vertical_speed": 20,
+                "horizontal_requires_solid": True,
+                "grants_flight_state": "hovering",
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "duration_turns": duration_turns,
+            "vertical_speed": 20,
+            "movement_mode": "levitating",
+            "narrative_context": {
+                "levitation_granted": True,
+                "vertical_only": True,
+                "hints": [
+                    "the caster rises untethered from the ground",
+                    "gravity's pull weakens as the spell takes hold",
+                    "vertical movement at will, horizontal by pushing off solids",
+                ],
+            },
+        }
+
+    def _handle_fly(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Fly spell.
+
+        Per Dolmenwood source:
+        - Commands the wind to wrap subject in swirling zephyrs
+        - Free movement in any direction, including hovering
+        - Speed 120
+        - Duration: 1d6 Turns + 1 per Level
+        """
+        from src.data_models import DiceRoller as DR, FlightState
+
+        dice = dice_roller or DR()
+        caster_level = caster.level if hasattr(caster, "level") else 1
+
+        # Roll duration: 1d6 + caster level
+        duration_roll = dice.roll("1d6", "Fly duration")
+        duration_turns = duration_roll.total + caster_level
+
+        # Determine target (caster or touched creature)
+        target_id = caster.character_id
+        if targets_affected and len(targets_affected) > 0:
+            target_id = targets_affected[0]
+
+        # Get target character for granting flight
+        target_char = None
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+        if not target_char:
+            target_char = caster
+
+        # Grant full flight
+        if hasattr(target_char, "grant_flight"):
+            target_char.grant_flight(
+                speed=120,
+                source="fly",
+                flight_state=FlightState.FLYING,
+            )
+
+        # Register as active spell effect
+        effect_id = f"fly_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="fly",
+            spell_name="Fly",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=target_id,
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            created_at=datetime.now(),
+            mechanical_effects={
+                "movement_mode": "flying",
+                "flight_speed": 120,
+                "grants_flight_state": "flying",
+                "free_movement": True,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "target_id": target_id,
+            "caster_level": caster_level,
+            "duration_turns": duration_turns,
+            "duration_roll": duration_roll.total,
+            "flight_speed": 120,
+            "movement_mode": "flying",
+            "narrative_context": {
+                "flight_granted": True,
+                "zephyrs_summoned": True,
+                "hints": [
+                    "swirling zephyrs wrap around and lift the subject",
+                    "the winds obey, carrying the subject through the air",
+                    "free movement in any direction at Speed 120",
+                ],
+            },
+        }
+
+    def _handle_telekinesis(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Telekinesis spell.
+
+        Per Dolmenwood source:
+        - Move object or creature by thought
+        - Weight: 200 coins per Level (200 coins = ~10 lbs)
+        - Movement: 20' per Round in any direction
+        - Duration: Concentration (up to 6 Rounds)
+        - Unwilling targets: Save Versus Hold to resist
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = caster.level if hasattr(caster, "level") else 1
+
+        # Calculate weight limit
+        weight_limit_coins = 200 * caster_level
+        weight_limit_lbs = weight_limit_coins / 20  # ~10 lbs per 200 coins
+
+        # Process targets (creatures get saves)
+        targets_held = []
+        targets_resisted = []
+
+        for target_id in targets_affected:
+            target_char = None
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+
+            if target_char:
+                # Creature target - needs Save Versus Hold
+                save_modifier = 0
+                if hasattr(target_char, "get_saving_throw"):
+                    save_modifier = target_char.get_saving_throw("hold") or 0
+
+                save_roll = dice.roll_d20()
+                save_total = save_roll.total + save_modifier
+                save_target = 15  # Standard save target
+
+                if save_total >= save_target:
+                    # Resisted
+                    targets_resisted.append({
+                        "target_id": target_id,
+                        "save_roll": save_roll.total,
+                        "save_total": save_total,
+                    })
+                else:
+                    # Held
+                    targets_held.append({
+                        "target_id": target_id,
+                        "save_roll": save_roll.total,
+                        "save_total": save_total,
+                    })
+            else:
+                # Object target - no save needed
+                targets_held.append({
+                    "target_id": target_id,
+                    "is_object": True,
+                })
+
+        # Register as concentration effect
+        effect_id = f"telekinesis_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="telekinesis",
+            spell_name="Telekinesis",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=caster.character_id,  # Effect is on caster (concentration)
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.ROUNDS,
+            duration_remaining=6,  # Up to 6 rounds
+            duration_unit="rounds",
+            requires_concentration=True,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "telekinetic_control": True,
+                "weight_limit_coins": weight_limit_coins,
+                "movement_speed": 20,
+                "held_targets": [t["target_id"] for t in targets_held],
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "weight_limit_coins": weight_limit_coins,
+            "weight_limit_lbs": weight_limit_lbs,
+            "movement_speed": 20,
+            "duration_rounds": 6,
+            "requires_concentration": True,
+            "targets_held": targets_held,
+            "targets_resisted": targets_resisted,
+            "save_type": "hold",
+            "narrative_context": {
+                "telekinesis_active": True,
+                "concentration_required": True,
+                "hints": [
+                    "the caster's will extends outward, gripping the target",
+                    f"up to {weight_limit_coins} coins of weight can be moved",
+                    "movement at 20' per round in any direction",
+                    "concentration breaks if caster is harmed or acts",
+                ],
             },
         }
 
