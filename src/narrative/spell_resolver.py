@@ -121,6 +121,7 @@ class MechanicalEffect:
     damage_dice: Optional[str] = None  # e.g., "2d6", "1d8+2"
     damage_type: Optional[str] = None  # e.g., "fire", "cold", "holy"
     healing_dice: Optional[str] = None  # e.g., "1d6+1"
+    flat_healing: Optional[int] = None  # Fixed healing amount (no dice)
 
     # Conditions
     condition_applied: Optional[str] = None  # e.g., "charmed", "frightened"
@@ -140,6 +141,14 @@ class MechanicalEffect:
     save_type: Optional[str] = None  # doom, ray, hold, blast, spell
     save_negates: bool = False  # Save completely negates effect
     save_halves: bool = False  # Save reduces effect by half
+
+    # Death effects (Cloudkill, Disintegrate, Word of Doom, etc.)
+    is_death_effect: bool = False  # This is a death/destruction effect
+    death_on_failed_save: bool = False  # Failed save = instant death/destruction
+    death_hd_threshold: Optional[int] = None  # Only affects creatures below this HD
+
+    # Flat damage (for spells like Ignite that deal fixed damage)
+    flat_damage: Optional[int] = None  # Fixed damage amount (no dice)
 
     # Targeting
     max_targets: Optional[int] = None  # Number of targets affected
@@ -1809,6 +1818,73 @@ class SpellResolver:
             parsed.add_effect(effect)
 
         # =================================================================
+        # FIX 2.5: Flat damage patterns (no dice)
+        # Patterns: "1 damage per round", "2 points of damage", "takes 1 damage"
+        # =================================================================
+        flat_damage_patterns = [
+            r"(?:deals?|takes?|causes?|inflicts?)\s+(\d+)\s+(?:points?\s+of\s+)?damage",
+            r"(\d+)\s+(?:points?\s+of\s+)?damage\s+per\s+(?:round|turn)",
+            r"suffer(?:s|ing)?\s+(\d+)\s+(?:points?\s+of\s+)?damage",
+        ]
+        for pattern in flat_damage_patterns:
+            flat_matches = re.findall(pattern, description, re.IGNORECASE)
+            for flat_dmg in flat_matches:
+                damage_val = int(flat_dmg)
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DAMAGE,
+                    flat_damage=damage_val,
+                    description=f"Deals {damage_val} flat damage",
+                )
+
+                # Try to identify damage type
+                for dtype in ["fire", "cold", "lightning", "acid", "poison", "holy", "necrotic"]:
+                    if dtype in description:
+                        effect.damage_type = dtype
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one flat damage effect
+
+        # =================================================================
+        # FIX 2.6: Death effects (instant death on failed save)
+        # Patterns: "dies instantly", "killed outright", "slain", "disintegrate"
+        # =================================================================
+        death_patterns = [
+            r"(?:die|dies|death)\s+(?:instantly|immediately|outright)",
+            r"(?:killed|slain)\s+(?:instantly|outright|immediately)?",
+            r"disintegrate[sd]?",
+            r"turns?\s+to\s+(?:dust|stone|ash)",
+            r"(?:slay|slays|slaying)\s+",
+            r"creature[s]?\s+with\s+(\d+)\s+(?:or\s+fewer\s+)?(?:hd|hit\s+dice).*(?:die|killed|slain)",
+        ]
+        for pattern in death_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for HD threshold in death effects
+                hd_match = re.search(
+                    r"(\d+)\s+(?:or\s+fewer\s+)?(?:hd|hit\s+dice)",
+                    description, re.IGNORECASE
+                )
+                hd_threshold = int(hd_match.group(1)) if hd_match else None
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DAMAGE,
+                    is_death_effect=True,
+                    death_on_failed_save=True,
+                    death_hd_threshold=hd_threshold,
+                    description="Death effect on failed save",
+                )
+
+                # Check for save type
+                for save in ["doom", "ray", "hold", "blast", "spell"]:
+                    if f"save versus {save}" in description or f"save vs {save}" in description:
+                        effect.save_type = save
+                        effect.save_negates = True
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one death effect
+
+        # =================================================================
         # FIX 3: Healing patterns (exclude from damage parsing)
         # Only match "restores/heals Xd6", NOT "Xd6 Hit Points" alone
         # =================================================================
@@ -1824,6 +1900,25 @@ class SpellResolver:
                 description=f"Heals {dice_clean} HP",
             )
             parsed.add_effect(effect)
+
+        # =================================================================
+        # FIX 3.5: Flat healing patterns (no dice)
+        # Patterns: "heals 5 Hit Points", "restores 10 HP"
+        # =================================================================
+        flat_heal_patterns = [
+            r"(?:heals?|restores?|regains?)\s+(\d+)\s+(?:hit\s+points?|hp)",
+            r"(?:heals?|restores?|regains?)\s+(\d+)\s+(?:points?\s+of\s+)?(?:health|vitality)",
+        ]
+        for pattern in flat_heal_patterns:
+            flat_heal_matches = re.findall(pattern, description, re.IGNORECASE)
+            for heal_val in flat_heal_matches:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.HEALING,
+                    flat_healing=int(heal_val),
+                    description=f"Heals {heal_val} HP",
+                )
+                parsed.add_effect(effect)
+                break  # Only add one flat healing effect
 
         # =================================================================
         # FIX 4: Condition patterns with better context checking
@@ -1947,6 +2042,77 @@ class SpellResolver:
                     description=f"Grants {modifier} modifier",
                 )
                 parsed.add_effect(effect)
+
+        # =================================================================
+        # Light source patterns (for Light spell)
+        # =================================================================
+        light_patterns = [
+            r"(?:creates?|produces?|emits?|sheds?)\s+(?:bright\s+)?light",
+            r"illuminat(?:es?|ing)\s+(?:a\s+)?(\d+)['\s]?\s*(?:foot|ft)?",
+            r"light\s+(?:within|in)\s+a\s+(\d+)['\s]?\s*(?:foot|ft)?",
+        ]
+        for pattern in light_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Extract radius if present
+                radius_match = re.search(r"(\d+)['\s]?\s*(?:foot|ft|radius)", description, re.IGNORECASE)
+                radius = int(radius_match.group(1)) if radius_match else 30
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    description=f"Creates light ({radius}' radius)",
+                    area_radius=radius,
+                )
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Resistance/immunity patterns (for Ward spells)
+        # =================================================================
+        resistance_keywords = {
+            "fire": ["fire", "flame", "heat", "burn"],
+            "cold": ["cold", "ice", "frost", "freeze"],
+            "lightning": ["lightning", "electric", "shock"],
+            "poison": ["poison", "venom", "toxin"],
+            "acid": ["acid", "corrosive"],
+        }
+        for damage_type, keywords in resistance_keywords.items():
+            for keyword in keywords:
+                resist_patterns = [
+                    rf"resist(?:ance|s)?\s+(?:to\s+)?{keyword}",
+                    rf"(?:immune|immunity)\s+(?:to\s+)?{keyword}",
+                    rf"{keyword}\s+(?:damage\s+)?(?:is\s+)?(?:reduced|halved)",
+                    rf"protect(?:s|ion)?\s+(?:from|against)\s+{keyword}",
+                ]
+                for pattern in resist_patterns:
+                    if re.search(pattern, description, re.IGNORECASE):
+                        effect = MechanicalEffect(
+                            category=MechanicalEffectCategory.BUFF,
+                            stat_modified="resistance",
+                            damage_type=damage_type,
+                            description=f"Resistance to {damage_type} damage",
+                        )
+                        parsed.add_effect(effect)
+                        break
+
+        # =================================================================
+        # Morale bonus patterns (for Rally spell)
+        # =================================================================
+        morale_patterns = [
+            r"(?:grants?|provides?|gives?)\s+(?:a\s+)?(?:bonus\s+(?:to\s+)?)?morale",
+            r"morale\s+(?:bonus|boost|increase)",
+            r"(?:bolsters?|improves?|strengthens?)\s+morale",
+            r"(?:allies?|companions?)\s+(?:are\s+)?(?:immune|resist)\s+(?:to\s+)?fear",
+        ]
+        for pattern in morale_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    stat_modified="morale",
+                    modifier_value=1,  # Default morale bonus
+                    description="Grants morale bonus",
+                )
+                parsed.add_effect(effect)
+                break
 
         return parsed
 
@@ -2232,11 +2398,16 @@ class SpellResolver:
                     damage_dice=effect_data.get("damage_dice"),
                     damage_type=effect_data.get("damage_type"),
                     healing_dice=effect_data.get("healing_dice"),
+                    flat_damage=effect_data.get("flat_damage"),
+                    flat_healing=effect_data.get("flat_healing"),
                     condition_applied=effect_data.get("condition_applied"),
                     modifier_value=effect_data.get("modifier_value"),
                     save_type=effect_data.get("save_type"),
                     save_negates=effect_data.get("save_negates", False),
                     save_halves=effect_data.get("save_halves", False),
+                    is_death_effect=effect_data.get("is_death_effect", False),
+                    death_on_failed_save=effect_data.get("death_on_failed_save", False),
+                    death_hd_threshold=effect_data.get("death_hd_threshold"),
                 )
                 parsed.add_effect(effect)
         else:
@@ -2251,7 +2422,35 @@ class SpellResolver:
                 if target_saved and effect.save_negates:
                     continue
 
-                # Apply damage
+                # Apply death effects first (instant death on failed save)
+                if effect.category == MechanicalEffectCategory.DAMAGE and effect.is_death_effect:
+                    if not target_saved and effect.death_on_failed_save:
+                        # Check HD threshold if applicable
+                        apply_death = True
+                        if effect.death_hd_threshold and self._controller:
+                            target = self._controller.get_character(target_id)
+                            if target and target.level > effect.death_hd_threshold:
+                                apply_death = False  # Too many HD, effect doesn't work
+
+                        if apply_death:
+                            # Track as death effect in result
+                            if "death_effects" not in result:
+                                result["death_effects"] = []
+                            result["death_effects"].append({
+                                "target_id": target_id,
+                                "effect": "instant_death",
+                                "hd_threshold": effect.death_hd_threshold,
+                            })
+
+                            # Set HP to 0 in game state
+                            if self._controller:
+                                target = self._controller.get_character(target_id)
+                                if target:
+                                    target.hp_current = 0
+
+                    continue  # Death effects don't also deal regular damage
+
+                # Apply damage (dice-based)
                 if effect.category == MechanicalEffectCategory.DAMAGE and effect.damage_dice:
                     if dice_roller:
                         # Handle level-scaled damage (e.g., Fireball: 1d6 per level)
@@ -2278,7 +2477,23 @@ class SpellResolver:
                                 target_id, damage, effect.damage_type or "magic"
                             )
 
-                # Apply healing
+                # Apply flat damage (no dice)
+                if effect.category == MechanicalEffectCategory.DAMAGE and effect.flat_damage:
+                    damage = effect.flat_damage
+
+                    # Half damage on save (if applicable)
+                    if target_saved and effect.save_halves:
+                        damage = max(1, damage // 2)
+
+                    result["damage_dealt"][target_id] = damage
+
+                    # Apply to game state if controller available
+                    if self._controller:
+                        self._controller.apply_damage(
+                            target_id, damage, effect.damage_type or "magic"
+                        )
+
+                # Apply healing (dice-based)
                 if effect.category == MechanicalEffectCategory.HEALING and effect.healing_dice:
                     if dice_roller:
                         roll = dice_roller.roll(effect.healing_dice, f"{spell.name} healing")
@@ -2288,6 +2503,15 @@ class SpellResolver:
                         # Apply to game state if controller available
                         if self._controller:
                             self._controller.heal_character(target_id, healing)
+
+                # Apply flat healing (no dice)
+                if effect.category == MechanicalEffectCategory.HEALING and effect.flat_healing:
+                    healing = effect.flat_healing
+                    result["healing_applied"][target_id] = healing
+
+                    # Apply to game state if controller available
+                    if self._controller:
+                        self._controller.heal_character(target_id, healing)
 
                 # Apply conditions
                 if effect.category == MechanicalEffectCategory.CONDITION and effect.condition_applied:
