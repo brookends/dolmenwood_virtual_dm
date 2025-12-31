@@ -4013,6 +4013,10 @@ class SpellResolver:
             "passwall": self._handle_passwall,
             "fools_gold": self._handle_fools_gold,
             "ginger_snap": self._handle_ginger_snap,
+            # Phase 6 door/lock and trap spell handlers
+            "through_the_keyhole": self._handle_through_the_keyhole,
+            "lock_singer": self._handle_lock_singer,
+            "serpent_glyph": self._handle_serpent_glyph,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -5827,6 +5831,358 @@ class SpellResolver:
                 ),
             },
         }
+
+    # -------------------------------------------------------------------------
+    # PHASE 6 SPELL HANDLERS - Door/Lock and Trap Spells
+    # -------------------------------------------------------------------------
+
+    def _handle_through_the_keyhole(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Through the Keyhole glamour - step through doors with keyholes.
+
+        Effects:
+        - Instant teleport through any door with keyhole/aperture
+        - Magically sealed doors require Save Versus Spell
+        - Once per day per door usage limit
+
+        Args:
+            caster: The character using the glamour
+            targets_affected: List containing door ID (if applicable)
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glamour effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"through_keyhole_{uuid.uuid4().hex[:8]}"
+
+        # Check if door is magically sealed (first target could be door info)
+        door_id = targets_affected[0] if targets_affected else "unknown_door"
+        is_magically_sealed = False
+        bypass_succeeded = True
+
+        # If door info indicates magical sealing, require save
+        if targets_affected and len(targets_affected) > 1:
+            # Second element could indicate magical sealing
+            is_magically_sealed = targets_affected[1] == "magically_sealed"
+
+        if is_magically_sealed:
+            # Save Versus Spell to bypass magical sealing
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for spell saves
+            bypass_succeeded = save_roll >= 14
+
+        return {
+            "success": bypass_succeeded,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "door_id": door_id,
+            "is_magically_sealed": is_magically_sealed,
+            "bypass_succeeded": bypass_succeeded,
+            "teleported": bypass_succeeded,
+            "usage_limit": "once_per_day_per_door",
+            "narrative_context": {
+                "glamour_used": True,
+                "hints": (
+                    [
+                        "the caster steps through the keyhole as if it were a doorway",
+                        "for a moment, they seem to shrink and flow through the aperture",
+                        "they reappear on the other side in the blink of an eye",
+                    ]
+                    if bypass_succeeded
+                    else [
+                        "magical sealing prevents passage through the keyhole",
+                        "the glamour fails to pierce the warding magic",
+                    ]
+                ),
+            },
+        }
+
+    def _handle_lock_singer(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Lock Singer knack - Mossling ability to charm locks with song.
+
+        Effects vary by level:
+        - Level 1: 2-in-6 per Turn to open simple locks
+        - Level 3: Locate key (whispered cant)
+        - Level 5: Snap shut locks within 30'
+        - Level 7: Open any lock 2-in-6, magical locks with 1-in-6 backfire risk
+
+        Args:
+            caster: The Mossling character using the knack
+            targets_affected: List containing lock/door ID and ability to use
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with knack effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"lock_singer_{uuid.uuid4().hex[:8]}"
+
+        # Determine which ability is being used based on level
+        lock_id = targets_affected[0] if targets_affected else "unknown_lock"
+        ability_used = targets_affected[1] if len(targets_affected) > 1 else "open_simple"
+        is_magical_lock = targets_affected[2] == "magical" if len(targets_affected) > 2 else False
+
+        result_data: dict[str, Any] = {
+            "success": False,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "lock_id": lock_id,
+            "ability_used": ability_used,
+            "is_magical_lock": is_magical_lock,
+            "backfire": False,
+            "mouth_sealed_days": 0,
+        }
+
+        if ability_used == "open_simple" and caster_level >= 1:
+            # 2-in-6 chance per Turn to open simple lock
+            roll = dice.roll("1d6")
+            result_data["success"] = roll <= 2
+            result_data["chance"] = "2-in-6"
+            result_data["roll"] = roll
+            result_data["time_required"] = "1 Turn per attempt"
+
+        elif ability_used == "locate_key" and caster_level >= 3:
+            # Always succeeds - whispered cant reveals key location
+            result_data["success"] = True
+            result_data["key_location_revealed"] = True
+
+        elif ability_used == "snap_shut" and caster_level >= 5:
+            # Simple locks within 30' snap shut after 1 Round of song
+            result_data["success"] = True
+            result_data["range_feet"] = 30
+            result_data["time_required"] = "1 Round of singing"
+
+        elif ability_used == "open_any" and caster_level >= 7:
+            # 2-in-6 for any lock, magical locks have backfire risk
+            roll = dice.roll("1d6")
+            result_data["success"] = roll <= 2
+            result_data["chance"] = "2-in-6"
+            result_data["roll"] = roll
+
+            if is_magical_lock and result_data["success"]:
+                # 1-in-6 chance of backfire on magical locks
+                backfire_roll = dice.roll("1d6")
+                if backfire_roll == 1:
+                    result_data["backfire"] = True
+                    result_data["success"] = True  # Still opens, but with consequence
+                    # 1d4 days of sealed mouth
+                    seal_duration = dice.roll("1d4")
+                    result_data["mouth_sealed_days"] = seal_duration
+
+        else:
+            # Ability not available at this level
+            result_data["success"] = False
+            result_data["reason"] = f"ability '{ability_used}' requires higher level"
+
+        # Build narrative hints based on result
+        hints = []
+        if result_data["success"]:
+            if ability_used == "locate_key":
+                hints.append("a quiet whining from the lock reveals the key's location")
+            elif ability_used == "snap_shut":
+                hints.append("locks within earshot snap shut at the mossling's song")
+            else:
+                hints.append("the lock yields to the mossling's melodious charm")
+        else:
+            hints.append("the lock remains stubbornly closed despite the song")
+
+        if result_data.get("backfire"):
+            hints.append(
+                f"the magic backfires! the mossling's mouth is sealed for "
+                f"{result_data['mouth_sealed_days']} days"
+            )
+
+        result_data["narrative_context"] = {
+            "knack_used": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_serpent_glyph(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Serpent Glyph spell - creates a warding trap glyph.
+
+        Effects:
+        - Creates permanent glyph on text or surface (until triggered)
+        - When triggered: serpent attacks nearest creature
+        - Attack roll = caster's level
+        - On hit: victim frozen in temporal stasis for 1d4 days
+        - Material component: 100gp powdered amber
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: List containing surface/text ID and trigger target
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glyph effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"serpent_glyph_{uuid.uuid4().hex[:8]}"
+
+        # Determine glyph placement type
+        surface_id = targets_affected[0] if targets_affected else "unknown_surface"
+        glyph_type = targets_affected[1] if len(targets_affected) > 1 else "surface"
+        is_triggered = targets_affected[2] == "triggered" if len(targets_affected) > 2 else False
+        trigger_target = targets_affected[3] if len(targets_affected) > 3 else None
+
+        result_data: dict[str, Any] = {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "surface_id": surface_id,
+            "glyph_type": glyph_type,  # "text" or "surface"
+            "is_visible": glyph_type == "surface",  # Only surface glyphs glow
+            "material_component": "powdered amber (100gp)",
+            "duration": "permanent_until_triggered",
+        }
+
+        if is_triggered and trigger_target:
+            # Glyph has been triggered - serpent attacks
+            attack_roll = dice.roll("1d20")
+            attack_total = attack_roll + caster_level
+            # Assume AC 10 as baseline for hitting
+            target_ac = 10  # Could be passed in targets_affected
+            attack_hits = attack_total >= target_ac
+
+            result_data["triggered"] = True
+            result_data["attack_roll"] = attack_roll
+            result_data["attack_bonus"] = caster_level
+            result_data["attack_total"] = attack_total
+            result_data["attack_hits"] = attack_hits
+            result_data["trigger_target"] = trigger_target
+
+            if attack_hits:
+                # Victim frozen in temporal stasis
+                stasis_days = dice.roll("1d4")
+                result_data["stasis_applied"] = True
+                result_data["stasis_duration_days"] = stasis_days
+
+                # Create temporal stasis effect
+                stasis_effect = ActiveSpellEffect(
+                    effect_id=f"{effect_id}_stasis",
+                    spell_id="serpent_glyph",
+                    spell_name="Serpent Glyph (Temporal Stasis)",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=trigger_target,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.DAYS,
+                    duration_remaining=stasis_days,
+                    duration_unit="days",
+                    requires_concentration=False,
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "temporal_stasis",
+                        "cannot_move": True,
+                        "cannot_perceive": True,
+                        "cannot_think": True,
+                        "cannot_act": True,
+                        "invulnerable": True,
+                        "bubble_immovable": True,
+                        "dispellable": True,
+                        "releasable_by_caster": True,
+                    },
+                )
+                self._active_effects.append(stasis_effect)
+
+                result_data["narrative_context"] = {
+                    "glyph_triggered": True,
+                    "hints": [
+                        "a glowing serpent leaps from the glyph!",
+                        f"the serpent strikes true (attack roll {attack_total})",
+                        f"the victim is frozen in a glittering amber bubble",
+                        f"temporal stasis will last {stasis_days} days",
+                        "the victim cannot move, perceive, think, or act",
+                        "the bubble cannot be moved or penetrated",
+                    ],
+                }
+            else:
+                result_data["stasis_applied"] = False
+                result_data["narrative_context"] = {
+                    "glyph_triggered": True,
+                    "hints": [
+                        "a glowing serpent leaps from the glyph!",
+                        f"the serpent strikes but misses (attack roll {attack_total})",
+                        "the serpent dissipates with a flash, a bang, and a puff of smoke",
+                    ],
+                }
+        else:
+            # Glyph is being placed, not triggered
+            # Create the glyph trap effect
+            glyph_effect = ActiveSpellEffect(
+                effect_id=effect_id,
+                spell_id="serpent_glyph",
+                spell_name="Serpent Glyph",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=f"glyph:{surface_id}",
+                target_type="object",
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.PERMANENT,
+                duration_remaining=None,
+                duration_unit="permanent",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "trap_type": "serpent_glyph",
+                    "glyph_type": glyph_type,
+                    "attack_bonus": caster_level,
+                    "trigger_action": "read" if glyph_type == "text" else "touch",
+                    "is_visible": glyph_type == "surface",
+                    "detect_magic_reveals": glyph_type == "text",
+                },
+            )
+            self._active_effects.append(glyph_effect)
+
+            result_data["narrative_context"] = {
+                "glyph_placed": True,
+                "hints": [
+                    f"the serpent glyph is traced upon the {glyph_type}",
+                    "powdered amber is sprinkled over the arcane symbol",
+                ]
+                + (
+                    ["the glyph glows pale yellow, clearly visible"]
+                    if glyph_type == "surface"
+                    else ["the glyph mingles into the script, undetectable except by magic"]
+                ),
+            }
+
+        return result_data
 
 
 # =============================================================================
