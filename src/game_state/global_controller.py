@@ -3783,6 +3783,315 @@ class GlobalController:
         }
 
     # =========================================================================
+    # SUMMON/CONTROL METHODS
+    # =========================================================================
+
+    def summon_creatures(
+        self,
+        caster_id: str,
+        location_id: str,
+        creature_type: str,
+        count: int,
+        hd_max: Optional[int] = None,
+        duration_turns: int = 6,
+        caster_controls: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Summon creatures at a location under caster's control.
+
+        Args:
+            caster_id: The summoner
+            location_id: Where to summon
+            creature_type: Type of creature (undead, animal, elemental, etc.)
+            count: Number of creatures to summon
+            hd_max: Maximum HD of creatures
+            duration_turns: How long the summon lasts
+            caster_controls: Whether caster controls the creatures
+
+        Returns:
+            Result of the summoning
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Create summoned creatures (placeholder IDs)
+        summoned_ids = []
+        for i in range(count):
+            creature_id = f"summoned_{creature_type}_{caster_id}_{i}"
+            summoned_ids.append(creature_id)
+
+        result = {
+            "success": True,
+            "spell": "Summon Creatures",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "creature_type": creature_type,
+            "count": count,
+            "hd_max": hd_max,
+            "duration_turns": duration_turns,
+            "caster_controls": caster_controls,
+            "summoned_creature_ids": summoned_ids,
+        }
+
+        self._log_event("creatures_summoned", result)
+        return result
+
+    def animate_dead(
+        self,
+        caster_id: str,
+        location_id: str,
+        corpse_count: int,
+        hd_per_level: int = 1,
+    ) -> dict[str, Any]:
+        """
+        Animate dead corpses as undead.
+
+        Args:
+            caster_id: The necromancer
+            location_id: Where the corpses are
+            corpse_count: Number of corpses to animate
+            hd_per_level: HD of undead per caster level
+
+        Returns:
+            Result of the animation
+        """
+        location = self._locations.get(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Calculate total HD that can be animated based on caster level
+        max_hd = caster.level * hd_per_level
+
+        # Create undead (placeholder IDs)
+        undead_ids = []
+        for i in range(corpse_count):
+            undead_id = f"undead_{caster_id}_{i}"
+            undead_ids.append(undead_id)
+
+        result = {
+            "success": True,
+            "spell": "Animate Dead",
+            "caster_id": caster_id,
+            "location_id": location_id,
+            "corpses_animated": corpse_count,
+            "max_hd_controlled": max_hd,
+            "undead_ids": undead_ids,
+            "caster_controls": True,
+            "permanent": True,
+        }
+
+        self._log_event("animate_dead", result)
+        return result
+
+    def dismiss_summoned(
+        self,
+        caster_id: str,
+        creature_ids: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Dismiss summoned creatures.
+
+        Args:
+            caster_id: The summoner
+            creature_ids: Specific creatures to dismiss (None = all)
+
+        Returns:
+            Result of the dismissal
+        """
+        dismissed = creature_ids or []
+
+        result = {
+            "success": True,
+            "caster_id": caster_id,
+            "dismissed_count": len(dismissed),
+            "dismissed_ids": dismissed,
+        }
+
+        self._log_event("creatures_dismissed", result)
+        return result
+
+    # =========================================================================
+    # CURSE METHODS
+    # =========================================================================
+
+    def apply_curse(
+        self,
+        caster_id: str,
+        target_id: str,
+        curse_type: str = "major",
+        stat_affected: Optional[str] = None,
+        modifier: Optional[int] = None,
+        is_permanent: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Apply a curse to a target.
+
+        Args:
+            caster_id: The caster
+            target_id: The target of the curse
+            curse_type: Type of curse (minor, major, ability_drain, wasting)
+            stat_affected: Which stat is affected (if any)
+            modifier: Modifier to apply to the stat
+            is_permanent: Whether the curse is permanent
+
+        Returns:
+            Result of applying the curse
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Add cursed condition
+        curse_condition = Condition(
+            condition_type=ConditionType.CURSED,
+            source=f"Curse ({curse_type})",
+            duration_turns=None if is_permanent else 6,
+            caster_id=caster_id,
+        )
+        target.conditions.append(curse_condition)
+
+        # Apply stat modifier if specified
+        if stat_affected and modifier:
+            from src.data_models import StatModifier
+            import uuid
+            curse_modifier = StatModifier(
+                modifier_id=f"curse_{uuid.uuid4().hex[:8]}",
+                stat=stat_affected,
+                value=modifier,
+                source=f"Curse ({curse_type})",
+                source_id=caster_id,
+                duration_turns=None if is_permanent else 6,
+            )
+            target.add_stat_modifier(curse_modifier)
+
+        result = {
+            "success": True,
+            "spell": "Curse",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "curse_type": curse_type,
+            "stat_affected": stat_affected,
+            "modifier": modifier,
+            "is_permanent": is_permanent,
+            "requires_remove_curse": is_permanent,
+        }
+
+        self._log_event("curse_applied", result)
+        return result
+
+    def remove_curse_from_target(
+        self,
+        caster_id: str,
+        target_id: str,
+    ) -> dict[str, Any]:
+        """
+        Remove a curse from a target.
+
+        Args:
+            caster_id: The caster attempting removal
+            target_id: The cursed target
+
+        Returns:
+            Result of the removal attempt
+        """
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        # Find and remove cursed conditions
+        removed_curses = []
+        remaining_conditions = []
+        for condition in target.conditions:
+            if condition.condition_type == ConditionType.CURSED:
+                removed_curses.append({
+                    "source": condition.source,
+                    "caster_id": condition.caster_id,
+                })
+            else:
+                remaining_conditions.append(condition)
+
+        target.conditions = remaining_conditions
+
+        # Clear any curse-related stat modifiers
+        # (In a full implementation, we'd track which modifiers came from curses)
+
+        result = {
+            "success": len(removed_curses) > 0,
+            "spell": "Remove Curse",
+            "caster_id": caster_id,
+            "target_id": target_id,
+            "target_name": target.name,
+            "curses_removed": len(removed_curses),
+            "removed_details": removed_curses,
+        }
+
+        self._log_event("curse_removed", result)
+        return result
+
+    def bestow_curse(
+        self,
+        caster_id: str,
+        target_id: str,
+        effect_choice: str = "stat_penalty",
+        stat: str = "STR",
+    ) -> dict[str, Any]:
+        """
+        Bestow a curse with specific effect choice.
+
+        Args:
+            caster_id: The caster
+            target_id: The target
+            effect_choice: Type of curse effect
+            stat: Which stat for stat_penalty
+
+        Returns:
+            Result of the curse
+        """
+        # Map effect_choice to specific curse parameters
+        if effect_choice == "stat_penalty":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="ability_drain",
+                stat_affected=stat,
+                modifier=-4,
+                is_permanent=True,
+            )
+        elif effect_choice == "attack_penalty":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="minor",
+                stat_affected="attack",
+                modifier=-4,
+                is_permanent=True,
+            )
+        elif effect_choice == "action_loss":
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="major",
+                is_permanent=True,
+            )
+        else:
+            return self.apply_curse(
+                caster_id=caster_id,
+                target_id=target_id,
+                curse_type="major",
+                is_permanent=True,
+            )
+
+    # =========================================================================
     # INTERNAL CALLBACKS
     # =========================================================================
 

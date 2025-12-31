@@ -211,6 +211,24 @@ class MechanicalEffect:
     removes_condition: bool = False  # This spell removes a condition
     condition_removed: Optional[str] = None  # Which condition is removed
 
+    # Summon/Control effects (Animate Dead, Conjure Animals, etc.)
+    is_summon_effect: bool = False  # This spell summons/animates creatures
+    summon_type: Optional[str] = None  # "undead", "animal", "elemental", "construct"
+    summon_hd_max: Optional[int] = None  # Max HD of creatures summoned
+    summon_count_dice: Optional[str] = None  # Dice for number of creatures
+    summon_count_fixed: Optional[int] = None  # Fixed number of creatures
+    summon_duration: Optional[str] = None  # Duration of summoning
+    summoner_controls: bool = False  # If summoner controls the creatures
+    summon_level_scaling: bool = False  # If HD/count scales with caster level
+
+    # Curse effects (Curse, Bane, Bestow Curse, etc.)
+    is_curse_effect: bool = False  # This is a curse spell
+    curse_type: Optional[str] = None  # "minor", "major", "ability_drain", "wasting"
+    curse_stat_affected: Optional[str] = None  # Which stat is cursed
+    curse_modifier: Optional[int] = None  # How much the stat is reduced
+    curse_is_permanent: bool = False  # Curse is permanent until removed
+    requires_remove_curse: bool = False  # Requires Remove Curse to remove
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2864,6 +2882,109 @@ class SpellResolver:
                     removes_condition=True,
                     condition_removed="diseased",
                     description="Removes diseases and afflictions",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Summon/Animate patterns (ordered from specific to generic)
+        summon_patterns = [
+            # Animate Dead patterns
+            (r"animate\s+(?:the\s+)?dead", "undead", True),
+            (r"(?:raises?|creates?)\s+(?:\d+(?:d\d+)?\s+)?(?:undead|skeletons?|zombies?)", "undead", True),
+            (r"corpses?\s+(?:rise|animate|become)", "undead", True),
+            # Elemental patterns (before generic to ensure priority)
+            (r"(?:summons?|conjures?|calls?)\s+(?:an?\s+)?elementals?", "elemental", True),
+            # Construct patterns
+            (r"(?:animates?|brings?\s+to\s+life)\s+(?:an?\s+)?(?:statues?|constructs?|objects?)", "construct", True),
+            # Animal patterns (with dice notation support)
+            (r"(?:conjures?|summons?)\s+(?:\d+(?:d\d+)?\s+)?(?:animals?|beasts?)", "animal", True),
+            (r"(?:call|summon)\s+(?:forth\s+)?(?:animals?|beasts?)", "animal", True),
+            # Generic summon (last - catches everything else)
+            (r"(?:summons?|conjures?|calls?\s+forth)\s+", None, True),
+        ]
+
+        for pattern, summon_type, controls in summon_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Try to extract HD limit
+                hd_match = re.search(r"up\s+to\s+(\d+)\s*(?:HD|hit\s+dice)", description, re.IGNORECASE)
+                max_hd = int(hd_match.group(1)) if hd_match else None
+
+                # Try to extract count (dice or fixed)
+                count_dice_match = re.search(r"(\d+d\d+)\s+(?:creatures?|undead|skeletons?|zombies?|animals?|beasts?)", description, re.IGNORECASE)
+                count_fixed_match = re.search(r"(?:summons?|raises?|animates?|conjures?|creates?)\s+(\d+)\s+", description, re.IGNORECASE)
+
+                count_dice = count_dice_match.group(1) if count_dice_match else None
+                count_fixed = int(count_fixed_match.group(1)) if count_fixed_match else None
+
+                # Check for level scaling
+                level_scaling = bool(re.search(r"per\s+(?:caster\s+)?level", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.UTILITY,
+                    is_summon_effect=True,
+                    summon_type=summon_type,
+                    summon_hd_max=max_hd,
+                    summon_count_dice=count_dice,
+                    summon_count_fixed=count_fixed,
+                    summoner_controls=controls,
+                    summon_level_scaling=level_scaling,
+                    description=f"Summons {summon_type or 'creature'}",
+                )
+                parsed.add_effect(effect)
+                break
+
+        # Curse patterns (ordered from specific to generic)
+        curse_patterns = [
+            # Wasting/decay curses (check first since they contain "curse" often)
+            (r"(?:wasting|withering|decay)\s+(?:curse)?", "wasting", True),
+            (r"drains?\s+(?:the\s+)?(?:target's?\s+)?(?:vitality|life|essence)", "wasting", True),
+            # Ability drain curses
+            (r"(?:reduces?|drains?|lowers?)\s+(?:target's?\s+)?(?:strength|dexterity|constitution|intelligence|wisdom|charisma)", "ability_drain", True),
+            # Bane/minor curses
+            (r"\bbane\b", "minor", True),
+            (r"(?:ill\s+luck|bad\s+fortune|misfortune)", "minor", True),
+            # Standard curse (last - catches generic curses)
+            (r"bestow\s+curse", "major", True),
+            (r"\bcurse\b", "major", True),
+        ]
+
+        for pattern, curse_type, requires_remove in curse_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Check for stat affected
+                stat_match = re.search(r"(?:strength|str|dexterity|dex|constitution|con|intelligence|int|wisdom|wis|charisma|cha)", description, re.IGNORECASE)
+                stat_affected = None
+                if stat_match:
+                    stat_map = {
+                        "strength": "STR", "str": "STR",
+                        "dexterity": "DEX", "dex": "DEX",
+                        "constitution": "CON", "con": "CON",
+                        "intelligence": "INT", "int": "INT",
+                        "wisdom": "WIS", "wis": "WIS",
+                        "charisma": "CHA", "cha": "CHA",
+                    }
+                    stat_affected = stat_map.get(stat_match.group(0).lower())
+
+                # Check for modifier
+                modifier_match = re.search(r"[-−](\d+)", description)
+                modifier = -int(modifier_match.group(1)) if modifier_match else None
+
+                # Check for permanent
+                is_permanent = bool(re.search(r"permanent|until\s+removed", description, re.IGNORECASE))
+
+                # Check for save
+                has_save = bool(re.search(r"save|saving\s+throw", description, re.IGNORECASE))
+
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.DEBUFF,
+                    is_curse_effect=True,
+                    curse_type=curse_type,
+                    curse_stat_affected=stat_affected,
+                    curse_modifier=modifier,
+                    curse_is_permanent=is_permanent,
+                    requires_remove_curse=requires_remove,
+                    save_type="spell" if has_save else None,
+                    save_negates=has_save,
+                    description=f"Applies {curse_type} curse",
                 )
                 parsed.add_effect(effect)
                 break
