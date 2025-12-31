@@ -60,6 +60,9 @@ from src.ai.prompt_schemas import (
     POIFeatureSchema,
     ResolvedActionInputs,
     ResolvedActionSchema,
+    IntentParseInputs,
+    IntentParseSchema,
+    IntentParseOutput,
     create_schema,
 )
 from src.data_models import (
@@ -1332,6 +1335,72 @@ class DMAgent:
 
         schema = ResolvedActionSchema(inputs)
         return self._execute_schema(schema)
+
+    # =========================================================================
+    # INTENT PARSING (Upgrade A)
+    # =========================================================================
+
+    def parse_intent(
+        self,
+        player_input: str,
+        current_state: str,
+        available_actions: list[str],
+        location_context: str = "",
+        recent_context: str = "",
+    ) -> IntentParseOutput:
+        """
+        Parse player natural language input into a structured action intent.
+
+        Uses LLM to understand what the player wants to do and map it to
+        one of the available action IDs.
+
+        Args:
+            player_input: Raw natural language from player
+            current_state: Current GameState value
+            available_actions: List of valid action IDs for current state
+            location_context: Description of current location
+            recent_context: Recent events/actions for context
+
+        Returns:
+            IntentParseOutput with action_id, params, confidence, etc.
+        """
+        import json
+
+        inputs = IntentParseInputs(
+            player_input=player_input,
+            current_state=current_state,
+            available_actions=available_actions,
+            location_context=location_context,
+            recent_context=recent_context,
+        )
+
+        schema = IntentParseSchema(inputs)
+
+        # Execute and get raw result
+        result = self._execute_schema(schema)
+
+        # Parse the JSON response
+        try:
+            parsed = json.loads(result.content)
+            return IntentParseOutput(
+                action_id=parsed.get("action_id", "unknown"),
+                params=parsed.get("params", {}),
+                confidence=float(parsed.get("confidence", 0.0)),
+                requires_clarification=parsed.get("requires_clarification", True),
+                clarification_prompt=parsed.get("clarification_prompt", "What would you like to do?"),
+                reasoning=parsed.get("reasoning", ""),
+            )
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.warning(f"Failed to parse intent response: {e}")
+            # Return a safe fallback
+            return IntentParseOutput(
+                action_id="unknown",
+                params={},
+                confidence=0.0,
+                requires_clarification=True,
+                clarification_prompt="I didn't understand that. What would you like to do?",
+                reasoning=f"Parse error: {e}",
+            )
 
     # =========================================================================
     # INTERNAL METHODS

@@ -36,6 +36,7 @@ class PromptSchemaType(str, Enum):
     SPELL_CAST = "spell_cast"
     SPELL_REVELATION = "spell_revelation"
     MYTHIC_INTERPRETATION = "mythic_interpretation"
+    INTENT_PARSE = "intent_parse"
 
 
 # =============================================================================
@@ -2042,6 +2043,115 @@ Provide your response as valid JSON matching the format specified in the system 
 
 
 # =============================================================================
+# SCHEMA 18: INTENT PARSING
+# =============================================================================
+
+
+@dataclass
+class IntentParseInputs:
+    """Inputs for intent parsing schema."""
+
+    player_input: str  # Raw natural language input from player
+    current_state: str  # Current GameState value
+    available_actions: list[str]  # List of valid action IDs
+    location_context: str = ""  # Current location description
+    recent_context: str = ""  # Recent events/actions
+
+
+@dataclass
+class IntentParseOutput:
+    """Output structure for intent parsing."""
+
+    action_id: str  # Best matching action ID or "unknown"
+    params: dict[str, Any]  # Extracted parameters for the action
+    confidence: float  # 0.0 to 1.0 confidence score
+    requires_clarification: bool  # Whether clarification is needed
+    clarification_prompt: str  # Prompt to ask for clarification
+    reasoning: str  # Brief explanation of the parse
+
+
+class IntentParseSchema(PromptSchema):
+    """
+    Schema for parsing player natural language into structured action intents.
+
+    This schema helps the LLM understand what the player wants to do and
+    map it to one of the available action IDs.
+    """
+
+    def __init__(self, inputs: IntentParseInputs):
+        super().__init__(
+            schema_type=PromptSchemaType.INTENT_PARSE,
+            inputs=vars(inputs),
+        )
+        self._inputs = inputs
+
+    def get_required_inputs(self) -> dict[str, type]:
+        return {
+            "player_input": str,
+            "current_state": str,
+            "available_actions": list,
+        }
+
+    def get_system_prompt(self) -> str:
+        return """You are an intent parser for a Dolmenwood TTRPG game.
+
+Your job is to understand what the player wants to do and map it to one of the available actions.
+
+CRITICAL RULES:
+1. You may ONLY output JSON in the exact format specified
+2. You may NEVER invent actions that aren't in the available_actions list
+3. If unsure, set requires_clarification=true and provide a helpful prompt
+4. Extract any parameters mentioned (hex IDs, NPC names, item names, etc.)
+5. Be generous in interpretation - "go north" and "travel north" both mean travel
+
+OUTPUT FORMAT (strict JSON):
+{
+  "action_id": "<action_id from available_actions or 'unknown'>",
+  "params": {"<param_name>": "<value>"},
+  "confidence": <0.0 to 1.0>,
+  "requires_clarification": <true/false>,
+  "clarification_prompt": "<question to ask if clarification needed>",
+  "reasoning": "<brief explanation>"
+}
+
+CONFIDENCE GUIDELINES:
+- 0.9-1.0: Exact match or very clear intent
+- 0.7-0.9: Strong match with some inference
+- 0.5-0.7: Reasonable match, might need confirmation
+- 0.3-0.5: Uncertain, probably need clarification
+- 0.0-0.3: Very unsure, definitely need clarification"""
+
+    def build_prompt(self) -> str:
+        i = self._inputs
+
+        # Format available actions nicely
+        actions_list = "\n".join(f"  - {a}" for a in i.available_actions)
+
+        prompt = f"""Parse the following player input and determine their intent.
+
+PLAYER INPUT: "{i.player_input}"
+
+CURRENT GAME STATE: {i.current_state}
+"""
+        if i.location_context:
+            prompt += f"\nLOCATION CONTEXT: {i.location_context}"
+
+        if i.recent_context:
+            prompt += f"\nRECENT CONTEXT: {i.recent_context}"
+
+        prompt += f"""
+
+AVAILABLE ACTIONS:
+{actions_list}
+
+Analyze the player's input and respond with valid JSON matching the output format.
+If the input mentions a specific target (hex ID like "0710", NPC name, item, direction), extract it as a parameter.
+If the intent is unclear, set requires_clarification=true and ask a specific question."""
+
+        return prompt
+
+
+# =============================================================================
 # SCHEMA FACTORY
 # =============================================================================
 
@@ -2111,6 +2221,10 @@ def create_schema(
     elif schema_type == PromptSchemaType.MYTHIC_INTERPRETATION:
         typed_inputs = MythicInterpretationInputs(**inputs)
         return MythicInterpretationSchema(typed_inputs)
+
+    elif schema_type == PromptSchemaType.INTENT_PARSE:
+        typed_inputs = IntentParseInputs(**inputs)
+        return IntentParseSchema(typed_inputs)
 
     else:
         raise ValueError(f"Unknown schema type: {schema_type}")
