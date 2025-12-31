@@ -174,6 +174,16 @@ class MechanicalEffect:
     is_trap_glyph: bool = False  # This creates a trap glyph
     trap_trigger: Optional[str] = None  # "touch", "open", "read"
 
+    # Combat modifier effects (Mirror Image, Haste, Confusion, Fear)
+    is_combat_modifier: bool = False  # This spell modifies combat behavior
+    creates_mirror_images: bool = False  # Mirror Image spell
+    mirror_image_dice: Optional[str] = None  # Dice for images (e.g., "1d4")
+    is_haste_effect: bool = False  # Haste spell (extra action, +AC, +initiative)
+    is_confusion_effect: bool = False  # Confusion spell (random behavior)
+    is_fear_effect: bool = False  # Fear spell (targets must flee/cower)
+    attack_bonus: Optional[int] = None  # Attack bonus from spells like Ginger Snap
+    initiative_bonus: Optional[int] = None  # Initiative modifier
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -2298,6 +2308,162 @@ class SpellResolver:
 
                 if re.search(r"(?:locking|magical\s+seals?).*disabled", description, re.IGNORECASE):
                     effect.disables_locking = True
+
+                parsed.add_effect(effect)
+                break
+
+        # =================================================================
+        # Combat Modifier Spells (Mirror Image, Haste, Confusion, Fear)
+        # =================================================================
+
+        # Mirror Image patterns
+        mirror_image_patterns = [
+            r"mirror\s+image",
+            r"illusory\s+(?:duplicates?|copies|images?)",
+            r"(\d+d\d+)\s+(?:illusory\s+)?(?:images?|duplicates?)",
+        ]
+
+        for pattern in mirror_image_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_combat_modifier=True,
+                    creates_mirror_images=True,
+                    description="Creates illusory duplicates",
+                )
+
+                # Try to find dice for number of images
+                dice_match = re.search(r"(\d+d\d+)\s+(?:illusory\s+)?(?:images?|duplicates?|copies)", description, re.IGNORECASE)
+                if dice_match:
+                    effect.mirror_image_dice = dice_match.group(1)
+                else:
+                    # Default per OSE
+                    effect.mirror_image_dice = "1d4"
+
+                parsed.add_effect(effect)
+                break
+
+        # Haste spell patterns
+        haste_patterns = [
+            r"\bhaste\b",
+            r"(?:double|extra)\s+(?:movement|actions?)",
+            r"(?:act|move)\s+twice",
+            r"accelerat(?:e|ed|ion)",
+        ]
+
+        for pattern in haste_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    condition_applied="hasted",
+                    is_combat_modifier=True,
+                    is_haste_effect=True,
+                    description="Grants extra actions and speed",
+                )
+
+                # Look for specific bonuses
+                ac_bonus_match = re.search(r"\+(\d+)\s+(?:to\s+)?(?:ac|armou?r)", description, re.IGNORECASE)
+                if ac_bonus_match:
+                    effect.modifier_value = int(ac_bonus_match.group(1))
+                    effect.stat_modified = "AC"
+                else:
+                    # Default per OSE Haste
+                    effect.modifier_value = 2
+                    effect.stat_modified = "AC"
+
+                init_match = re.search(r"\+(\d+)\s+(?:to\s+)?initiative", description, re.IGNORECASE)
+                if init_match:
+                    effect.initiative_bonus = int(init_match.group(1))
+                else:
+                    effect.initiative_bonus = 2  # Default
+
+                parsed.add_effect(effect)
+                break
+
+        # Confusion spell patterns
+        confusion_patterns = [
+            r"\bconfusion\b",
+            r"(?:become|are|is)\s+confused",
+            r"confused?\s+(?:targets?|creatures?|subjects?)",
+            r"(?:random|erratic)\s+behavior",
+            r"behave\s+(?:erratically|randomly)",
+        ]
+
+        for pattern in confusion_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="confused",
+                    is_combat_modifier=True,
+                    is_confusion_effect=True,
+                    description="Causes random behavior",
+                )
+
+                # Check for save type
+                if re.search(r"save\s+vs\.?\s*spell", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                # Check for multi-target (e.g., "3d6 creatures")
+                hd_match = re.search(r"(\d+d\d+)\s+(?:HD|hit\s+dice|creatures?)", description, re.IGNORECASE)
+                if hd_match:
+                    effect.multi_target_dice = hd_match.group(1)
+
+                parsed.add_effect(effect)
+                break
+
+        # Fear spell patterns
+        fear_patterns = [
+            r"\bfear\b",
+            r"\bfrightened?\b",
+            r"flee\s+in\s+(?:terror|fear|panic)",
+            r"must\s+flee",
+            r"overcome\s+with\s+fear",
+        ]
+
+        for pattern in fear_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="frightened",
+                    is_combat_modifier=True,
+                    is_fear_effect=True,
+                    description="Causes targets to flee in fear",
+                )
+
+                # Check for save type
+                if re.search(r"save\s+vs\.?\s*spell", description, re.IGNORECASE):
+                    effect.save_type = "spell"
+                    effect.save_negates = True
+
+                parsed.add_effect(effect)
+                break
+
+        # Attack modifier spells (Ginger Snap, Bless, etc.)
+        attack_bonus_patterns = [
+            (r"\+(\d+)\s+(?:to\s+)?(?:attack|hit)\s+(?:rolls?|bonus)", "attack"),
+            (r"attack\s+(?:rolls?\s+)?(?:gain|have|get)\s+\+(\d+)", "attack"),
+            (r"ginger\s+snap", "ginger_snap"),
+        ]
+
+        for pattern, effect_type in attack_bonus_patterns:
+            match = re.search(pattern, description, re.IGNORECASE)
+            if match:
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.BUFF,
+                    is_combat_modifier=True,
+                    stat_modified="attack",
+                    description="Modifies attack rolls",
+                )
+
+                if effect_type == "ginger_snap":
+                    # Ginger Snap gives +2 to attack per OSE
+                    effect.attack_bonus = 2
+                    effect.modifier_value = 2
+                else:
+                    effect.attack_bonus = int(match.group(1))
+                    effect.modifier_value = int(match.group(1))
 
                 parsed.add_effect(effect)
                 break

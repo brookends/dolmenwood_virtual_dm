@@ -191,6 +191,39 @@ class ConditionType(str, Enum):
     # Environmental/magical conditions
     DREAMLESS = "dreamless"  # Cannot dream, periodic Wisdom loss, spell memorization penalty
     FOOD_POISONING = "food_poisoning"  # From eating spoiled food, penalties until cured
+    # Combat modifier conditions
+    CONFUSED = "confused"  # Random behavior each round
+    HASTED = "hasted"  # Extra actions, +2 initiative, +2 AC
+
+
+class ConfusionBehavior(str, Enum):
+    """
+    Behavior types for confused creatures.
+
+    Each round, confused creatures roll to determine behavior.
+    Based on OSE/Dolmenwood Confusion spell (2d6 table):
+    - 2-5: Attack own party
+    - 6-8: Stand confused (no action)
+    - 9-11: Attack enemies normally
+    - 12: Act normally this round
+    """
+
+    ATTACK_PARTY = "attack_party"  # Attack nearest ally
+    STAND_CONFUSED = "stand_confused"  # Do nothing
+    ATTACK_NEAREST = "attack_nearest"  # Attack nearest creature regardless of side
+    ACT_NORMALLY = "act_normally"  # Full control this round
+
+    @classmethod
+    def roll_behavior(cls, roll_2d6: int) -> "ConfusionBehavior":
+        """Determine confusion behavior from 2d6 roll."""
+        if roll_2d6 <= 5:
+            return cls.ATTACK_PARTY
+        elif roll_2d6 <= 8:
+            return cls.STAND_CONFUSED
+        elif roll_2d6 <= 11:
+            return cls.ATTACK_NEAREST
+        else:  # 12
+            return cls.ACT_NORMALLY
 
 
 class VisibilityState(str, Enum):
@@ -4713,6 +4746,16 @@ class CharacterState:
     # Source of see-invisible ability (for duration tracking)
     see_invisible_source: Optional[str] = None
 
+    # =========================================================================
+    # COMBAT MODIFIER STATE
+    # =========================================================================
+
+    # Mirror Image spell - number of illusory duplicates
+    mirror_image_count: int = 0
+
+    # Confusion behavior tracking - last rolled behavior (for continuity)
+    confusion_behavior: Optional[str] = None  # "attack_party", "attack_enemy", "wander", "stand"
+
     def get_ability_score(self, ability: str) -> int:
         """
         Get effective ability score, applying polymorph overlay if active.
@@ -5438,6 +5481,60 @@ class CharacterState:
                 if c.needs_recurring_save(current_day, current_turn):
                     needs_save.append(c)
         return needs_save
+
+    # =========================================================================
+    # COMBAT MODIFIER METHODS
+    # =========================================================================
+
+    def has_mirror_images(self) -> bool:
+        """Check if character has active mirror images."""
+        return self.mirror_image_count > 0
+
+    def resolve_attack_vs_mirror_image(self) -> bool:
+        """
+        Check if an attack hits a mirror image instead of the real character.
+
+        Returns:
+            True if a mirror image absorbed the hit (attack negated),
+            False if attack proceeds normally.
+        """
+        if self.mirror_image_count <= 0:
+            return False
+
+        # Per OSE Mirror Image: roll d(images + 1), if roll <= images, image is hit
+        # e.g., with 3 images: roll d4, 1-3 hits image, 4 hits caster
+        dice = DiceRoller()
+        roll = dice.roll(f"1d{self.mirror_image_count + 1}", "Mirror image check")
+
+        if roll.total <= self.mirror_image_count:
+            self.mirror_image_count -= 1
+            return True  # Image absorbed the hit
+        return False  # Attack proceeds to real target
+
+    def is_confused(self) -> bool:
+        """Check if character is currently confused."""
+        return self.has_condition(ConditionType.CONFUSED)
+
+    def roll_confusion_behavior(self) -> "ConfusionBehavior":
+        """
+        Roll for confusion behavior this round.
+
+        Returns:
+            ConfusionBehavior indicating what the confused creature does.
+        """
+        dice = DiceRoller()
+        roll = dice.roll("2d6", "Confusion behavior")
+        behavior = ConfusionBehavior.roll_behavior(roll.total)
+        self.confusion_behavior = behavior.value
+        return behavior
+
+    def is_hasted(self) -> bool:
+        """Check if character is hasted (extra action, +2 AC, +2 initiative)."""
+        return self.has_condition(ConditionType.HASTED)
+
+    def is_frightened(self) -> bool:
+        """Check if character is frightened (must flee or cower)."""
+        return self.has_condition(ConditionType.FRIGHTENED)
 
     # =========================================================================
     # INVENTORY MANAGEMENT

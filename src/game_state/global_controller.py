@@ -1820,6 +1820,277 @@ class GlobalController:
         return expired
 
     # =========================================================================
+    # COMBAT MODIFIER MANAGEMENT (Mirror Image, Haste, Confusion, Fear)
+    # =========================================================================
+
+    def apply_mirror_images(
+        self,
+        character_id: str,
+        dice: str = "1d4",
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Mirror Image spell to a character.
+
+        Args:
+            character_id: Target character ID
+            dice: Dice expression for number of images (default "1d4")
+            caster_id: ID of the caster (for dispel tracking)
+
+        Returns:
+            Result with image count
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Roll for number of images
+        from src.data_models import DiceRoller
+        dice_roller = DiceRoller()
+        roll = dice_roller.roll(dice, "Mirror images")
+
+        character.mirror_image_count = roll.total
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "images_created": roll.total,
+            "dice_rolled": dice,
+            "roll_details": str(roll),
+        }
+
+    def remove_mirror_images(self, character_id: str) -> dict[str, Any]:
+        """
+        Remove all mirror images from a character.
+
+        Args:
+            character_id: Target character ID
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        previous_count = character.mirror_image_count
+        character.mirror_image_count = 0
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "images_removed": previous_count,
+        }
+
+    def apply_haste(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Haste spell to a character.
+
+        Haste grants: +2 AC, +2 initiative, extra action per round.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        # Apply hasted condition
+        condition = Condition(
+            condition_type=ConditionType.HASTED,
+            source="Haste spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        # Apply AC buff
+        self.apply_buff(
+            character_id=character_id,
+            stat="AC",
+            value=2,
+            source="Haste",
+            source_id=caster_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "bonuses": {"ac": 2, "initiative": 2, "extra_action": True},
+        }
+
+    def apply_confusion(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Confusion spell to a character.
+
+        Confused creatures must roll for behavior each round.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        condition = Condition(
+            condition_type=ConditionType.CONFUSED,
+            source="Confusion spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "behavior_table": "2d6: 2-5=attack party, 6-8=stand confused, 9-11=attack nearest, 12=act normally",
+        }
+
+    def roll_confusion_behavior(self, character_id: str) -> dict[str, Any]:
+        """
+        Roll confusion behavior for a confused character.
+
+        Args:
+            character_id: Target character ID
+
+        Returns:
+            Behavior result
+        """
+        from src.data_models import ConfusionBehavior
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        if not character.is_confused():
+            return {"success": False, "error": f"{character.name} is not confused"}
+
+        behavior = character.roll_confusion_behavior()
+
+        behavior_descriptions = {
+            ConfusionBehavior.ATTACK_PARTY: "Attack nearest ally",
+            ConfusionBehavior.STAND_CONFUSED: "Stand confused (no action)",
+            ConfusionBehavior.ATTACK_NEAREST: "Attack nearest creature",
+            ConfusionBehavior.ACT_NORMALLY: "Act normally this round",
+        }
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "behavior": behavior.value,
+            "description": behavior_descriptions.get(behavior, "Unknown behavior"),
+        }
+
+    def apply_fear(
+        self,
+        character_id: str,
+        duration_turns: int,
+        caster_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply Fear effect to a character.
+
+        Frightened creatures must flee or cower if cornered.
+
+        Args:
+            character_id: Target character ID
+            duration_turns: Duration in turns
+            caster_id: ID of the caster
+
+        Returns:
+            Result info
+        """
+        from src.data_models import Condition, ConditionType
+
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        condition = Condition(
+            condition_type=ConditionType.FRIGHTENED,
+            source="Fear spell",
+            duration_turns=duration_turns,
+            caster_id=caster_id,
+        )
+        character.conditions.append(condition)
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "duration_turns": duration_turns,
+            "effect": "Must flee; if cornered, cower (-2 attacks and saves)",
+        }
+
+    def apply_attack_modifier(
+        self,
+        character_id: str,
+        modifier: int,
+        duration_turns: int,
+        source: str = "Spell",
+        source_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply an attack roll modifier to a character.
+
+        Args:
+            character_id: Target character ID
+            modifier: Attack bonus/penalty
+            duration_turns: Duration in turns
+            source: Source name (e.g., "Ginger Snap")
+            source_id: Source ID for tracking
+
+        Returns:
+            Result info
+        """
+        character = self.get_character(character_id)
+        if not character:
+            return {"success": False, "error": f"Character {character_id} not found"}
+
+        self.apply_buff(
+            character_id=character_id,
+            stat="attack",
+            value=modifier,
+            source=source,
+            source_id=source_id,
+            duration_turns=duration_turns,
+        )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "attack_modifier": modifier,
+            "duration_turns": duration_turns,
+            "source": source,
+        }
+
+    # =========================================================================
     # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)
     # =========================================================================
 
