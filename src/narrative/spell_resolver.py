@@ -4017,6 +4017,10 @@ class SpellResolver:
             "through_the_keyhole": self._handle_through_the_keyhole,
             "lock_singer": self._handle_lock_singer,
             "serpent_glyph": self._handle_serpent_glyph,
+            # Phase 7 teleportation, condition, and healing spell handlers
+            "dimension_door": self._handle_dimension_door,
+            "confusion": self._handle_confusion,
+            "greater_healing": self._handle_greater_healing,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -6181,6 +6185,397 @@ class SpellResolver:
                     else ["the glyph mingles into the script, undetectable except by magic"]
                 ),
             }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 7 HANDLERS: Teleportation, Condition, and Healing
+    # =========================================================================
+
+    def _handle_dimension_door(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Dimension Door spell.
+
+        Creates paired door-shaped rifts in space for instant teleportation.
+
+        Effects:
+        - Opens entrance door within 10' of caster
+        - Opens exit door at destination up to 360' away
+        - Single creature may step through (or be forced through)
+        - Unwilling targets get Save Versus Hold
+        - Destination can be known location or coordinate offsets
+        - No effect if destination is solid object
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"dimension_door_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        max_range = 360  # feet
+        entrance_range = 10  # feet from caster
+
+        # Get targeting information from context
+        target_id = targets_affected[0] if targets_affected else None
+        is_unwilling = False
+        destination_type = "known_location"  # or "offset_coordinates"
+        destination_offset = {"north": 0, "east": 0, "up": 0}  # for offset mode
+        destination_blocked = False
+
+        # Check for context-provided targeting info
+        if hasattr(self, "_current_context") and self._current_context:
+            ctx = self._current_context
+            is_unwilling = ctx.get("is_unwilling", False)
+            destination_type = ctx.get("destination_type", "known_location")
+            destination_offset = ctx.get("destination_offset", {"north": 0, "east": 0, "up": 0})
+            destination_blocked = ctx.get("destination_blocked", False)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "dimension_door",
+            "spell_name": "Dimension Door",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "max_range": max_range,
+            "entrance_range": entrance_range,
+            "destination_type": destination_type,
+            "success": False,
+            "teleported": False,
+        }
+
+        # Check if destination is blocked
+        if destination_blocked:
+            result_data["destination_blocked"] = True
+            result_data["narrative_context"] = {
+                "spell_fizzled": True,
+                "hints": [
+                    "the caster attempts to open a dimension door",
+                    "but the destination is occupied by a solid object",
+                    "the spell has no effect",
+                ],
+            }
+            return result_data
+
+        result_data["success"] = True
+
+        # Handle unwilling target - needs Save Versus Hold
+        if is_unwilling and target_id:
+            # Roll save for unwilling target
+            save_roll = dice.roll("1d20")
+            save_target = 14  # Default save target
+
+            # Get actual save target if target has character data
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "hold", 14)
+
+            save_success = save_roll >= save_target
+
+            result_data["is_unwilling"] = True
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+
+            if save_success:
+                result_data["teleported"] = False
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "target_resisted": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the nearby portal manifests beside {target_id}",
+                        f"but they resist the dimensional pull (save roll {save_roll})",
+                        "the portals shimmer and close without effect",
+                    ],
+                }
+                return result_data
+            else:
+                result_data["teleported"] = True
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "target_transported": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the nearby portal manifests beside {target_id}",
+                        f"they are sucked through the dimensional door (failed save {save_roll})",
+                        "the portals close behind them with a soft 'pop'",
+                    ],
+                }
+        else:
+            # Willing target or self-transport
+            result_data["is_unwilling"] = False
+            result_data["teleported"] = True
+
+            if destination_type == "offset_coordinates":
+                offset_desc = []
+                if destination_offset.get("north", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['north'])}' {'north' if destination_offset['north'] > 0 else 'south'}")
+                if destination_offset.get("east", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['east'])}' {'east' if destination_offset['east'] > 0 else 'west'}")
+                if destination_offset.get("up", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['up'])}' {'up' if destination_offset['up'] > 0 else 'down'}")
+                offset_str = ", ".join(offset_desc) if offset_desc else "nearby"
+                result_data["destination_offset"] = destination_offset
+
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the caster visualizes coordinates: {offset_str}",
+                        "a single step through the nearby door leads to instant arrival",
+                        "the portals shimmer and close",
+                    ],
+                }
+            else:
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        "the caster visualizes a known destination",
+                        "a single step through the nearby door leads to instant arrival",
+                        "the portals shimmer and close",
+                    ],
+                }
+
+        # Create the teleportation effect (duration 1 Round)
+        teleport_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="dimension_door",
+            spell_name="Dimension Door",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id or getattr(caster, "character_id", "unknown"),
+            target_type="creature",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.ROUNDS,
+            duration_remaining=1,
+            duration_unit="rounds",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "teleportation": True,
+                "max_range": max_range,
+                "entrance_range": entrance_range,
+                "one_way": True,
+                "destination_type": destination_type,
+                "destination_offset": destination_offset if destination_type == "offset_coordinates" else None,
+                "teleported": result_data["teleported"],
+            },
+        )
+        self._active_effects.append(teleport_effect)
+
+        return result_data
+
+    def _handle_confusion(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Confusion spell.
+
+        Strikes creatures with delusions, making them unable to control actions.
+
+        Effects:
+        - Affects 3d6 randomly determined creatures in 30' radius
+        - Duration: 12 Rounds
+        - Creatures Level 3+ get Save Versus Spell each round
+        - Creatures Level 2 or lower get no save
+        - Roll on Subject Behaviour table each round
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"confusion_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Roll for number of creatures affected
+        creatures_affected = dice.roll("3d6")
+        duration_rounds = 12
+        area_radius = 30  # feet
+
+        # Subject Behaviour table outcomes (d10 or d12 equivalent)
+        behavior_table = [
+            "wander_away",      # 1-2: Wander away for 1 Round
+            "wander_away",
+            "stand_confused",   # 3-4: Stand confused for 1 Round
+            "stand_confused",
+            "attack_nearest",   # 5-8: Attack nearest creature
+            "attack_nearest",
+            "attack_nearest",
+            "attack_nearest",
+            "act_normally",     # 9-10: Act normally for 1 Round
+            "act_normally",
+        ]
+
+        result_data: dict[str, Any] = {
+            "spell_id": "confusion",
+            "spell_name": "Confusion",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "max_creatures_affected": creatures_affected,
+            "duration_rounds": duration_rounds,
+            "area_radius": area_radius,
+            "behavior_table": behavior_table,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each potential target
+        for target_id in targets_affected[:creatures_affected]:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "can_save": False,
+                "confused": True,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Creatures Level 3+ can save each round
+            if creature_data["level"] >= 3:
+                creature_data["can_save"] = True
+
+            # Roll initial behavior
+            behavior_roll = dice.roll("1d10") - 1  # 0-9 index
+            creature_data["initial_behavior"] = behavior_table[behavior_roll]
+            creature_data["behavior_roll"] = behavior_roll + 1
+
+            result_data["affected_creatures"].append(creature_data)
+
+            # Create confusion effect for each affected creature
+            confusion_effect = ActiveSpellEffect(
+                effect_id=f"{effect_id}_{target_id}",
+                spell_id="confusion",
+                spell_name="Confusion",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.ROUNDS,
+                duration_remaining=duration_rounds,
+                duration_unit="rounds",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "condition": "confused",
+                    "creature_level": creature_data["level"],
+                    "can_save_each_round": creature_data["can_save"],
+                    "save_type": "spell",
+                    "behavior_table": behavior_table,
+                    "current_behavior": creature_data["initial_behavior"],
+                },
+            )
+            self._active_effects.append(confusion_effect)
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                f"a wave of befuddling magic washes over a 30' radius area",
+                f"up to {creatures_affected} creatures are stricken with delusions",
+                "affected creatures lose control of their actions",
+            ]
+            + (
+                ["creatures of Level 3 or higher may attempt to resist each Round"]
+                if any(c["can_save"] for c in result_data["affected_creatures"])
+                else ["none of the affected creatures are powerful enough to resist"]
+            ),
+        }
+
+        return result_data
+
+    def _handle_greater_healing(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Greater Healing spell.
+
+        A powerful healing prayer that restores significant Hit Points.
+
+        Effects:
+        - Heals 2d6+2 Hit Points
+        - Cannot exceed target's maximum HP
+        - St Wick's voice whispers a parable
+        - Instant duration (no ongoing effect)
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+
+        # Get target - can be caster or touched creature
+        target_id = targets_affected[0] if targets_affected else getattr(caster, "character_id", "unknown")
+
+        # Roll healing amount
+        healing_roll = dice.roll("2d6")
+        total_healing = healing_roll + 2
+
+        result_data: dict[str, Any] = {
+            "spell_id": "greater_healing",
+            "spell_name": "Greater Healing",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "healing_roll": healing_roll,
+            "healing_bonus": 2,
+            "total_healing": total_healing,
+            "actual_healing": total_healing,  # May be reduced if at max HP
+            "success": True,
+        }
+
+        # Apply healing if we have access to the target
+        if hasattr(self, "_controller") and self._controller:
+            target_char = self._controller.get_character(target_id)
+            if target_char:
+                current_hp = getattr(target_char, "current_hp", 0)
+                max_hp = getattr(target_char, "max_hp", current_hp)
+
+                # Calculate actual healing (cannot exceed max HP)
+                hp_deficit = max_hp - current_hp
+                actual_healing = min(total_healing, hp_deficit)
+                result_data["actual_healing"] = actual_healing
+                result_data["current_hp_before"] = current_hp
+                result_data["current_hp_after"] = current_hp + actual_healing
+                result_data["max_hp"] = max_hp
+
+                if actual_healing < total_healing:
+                    result_data["healing_capped"] = True
+                else:
+                    result_data["healing_capped"] = False
+
+        result_data["narrative_context"] = {
+            "prayer_answered": True,
+            "hints": [
+                "the rustic voice of St Wick manifests",
+                "a gentle parable is whispered as the caster touches the subject",
+                f"healing energy flows forth, restoring {result_data['actual_healing']} Hit Points",
+            ]
+            + (
+                ["the subject's wounds close completely"]
+                if result_data.get("healing_capped")
+                else ["the subject's wounds begin to mend"]
+            ),
+        }
+
+        # No active effect needed - this is an instant spell
+        # But we track it for narration purposes
+        result_data["duration_type"] = "instant"
 
         return result_data
 
