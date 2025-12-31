@@ -2,6 +2,7 @@
 Tests for Phase 2.5: Buff Enhancement Spells.
 
 Tests immunity spells, vision enhancements, stat overrides, and dispel/removal spells.
+Uses real Dolmenwood spells where available.
 """
 
 import pytest
@@ -23,6 +24,122 @@ from src.narrative.spell_resolver import (
     SpellData,
     SpellResolver,
 )
+from tests.dolmenwood_spell_helpers import find_spell_by_id, make_test_spell
+
+
+# =============================================================================
+# REAL DOLMENWOOD SPELL INTEGRATION TESTS
+# =============================================================================
+
+
+class TestDolmenwoodBuffSpells:
+    """Integration tests using real Dolmenwood buff spells."""
+
+    @pytest.fixture
+    def resolver(self):
+        """Create a test resolver."""
+        return SpellResolver()
+
+    def test_missile_ward_spell_loaded(self, resolver):
+        """Missile Ward spell loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("missile_ward")
+
+        assert spell.name == "Missile Ward"
+        assert spell.level == 3
+        # Verify spell is about missile immunity
+        desc_lower = spell.description.lower()
+        assert "missile" in desc_lower or "arrow" in desc_lower
+
+    def test_water_breathing_immunity(self, resolver):
+        """Water Breathing allows underwater breathing."""
+        spell = find_spell_by_id("water_breathing")
+        parsed = resolver.parse_mechanical_effects(spell)
+
+        assert spell.name == "Water Breathing"
+        immunity_effects = [e for e in parsed.effects if e.grants_immunity]
+        assert len(immunity_effects) >= 1
+
+    def test_air_sphere_spell_loaded(self, resolver):
+        """Air Sphere spell loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("air_sphere")
+
+        assert spell.name == "Air Sphere"
+        assert spell.level == 5
+        # Verify spell is about air/gas protection
+        desc_lower = spell.description.lower()
+        assert "air" in desc_lower or "gas" in desc_lower
+
+    def test_dark_sight_spell_loaded(self, resolver):
+        """Dark Sight spell loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("dark_sight")
+
+        assert spell.name == "Dark Sight"
+        assert spell.level == 3
+        # Verify spell is about seeing in darkness
+        desc_lower = spell.description.lower()
+        assert "dark" in desc_lower or "light" in desc_lower
+
+    def test_perceive_the_invisible_spell_loaded(self, resolver):
+        """Perceive the Invisible loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("perceive_the_invisible")
+
+        assert spell.name == "Perceive the Invisible"
+        assert spell.level == 2
+        # Verify spell is about seeing invisible
+        desc_lower = spell.description.lower()
+        assert "invisible" in desc_lower
+
+    def test_dispel_magic_spell_loaded(self, resolver):
+        """Dispel Magic spell loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("dispel_magic")
+
+        assert spell.name == "Dispel Magic"
+        assert spell.level == 3
+        # Verify spell is about dispelling
+        desc_lower = spell.description.lower()
+        assert "dispel" in desc_lower or "end" in desc_lower or "cancel" in desc_lower
+
+    def test_remove_curse_spell_loaded(self, resolver):
+        """Remove Curse spell loads correctly from Dolmenwood data."""
+        spell = find_spell_by_id("remove_curse")
+
+        assert spell.name == "Remove Curse"
+        assert spell.level == 3
+        # Verify spell is about curse removal
+        assert "curse" in spell.description.lower()
+
+    def test_remove_poison(self, resolver):
+        """Remove Poison neutralizes toxins."""
+        spell = find_spell_by_id("remove_poison")
+        parsed = resolver.parse_mechanical_effects(spell)
+
+        assert spell.name == "Remove Poison"
+        removal_effects = [e for e in parsed.effects if e.removes_condition]
+        assert len(removal_effects) >= 1
+
+    def test_cure_affliction(self, resolver):
+        """Cure Affliction removes diseases."""
+        spell = find_spell_by_id("cure_affliction")
+        parsed = resolver.parse_mechanical_effects(spell)
+
+        assert spell.name == "Cure Affliction"
+        removal_effects = [e for e in parsed.effects if e.removes_condition]
+        assert len(removal_effects) >= 1
+
+    def test_feeblemind_stat_override(self, resolver):
+        """Feeblemind reduces intelligence to animal level."""
+        spell = find_spell_by_id("feeblemind")
+        parsed = resolver.parse_mechanical_effects(spell)
+
+        assert spell.name == "Feeblemind"
+        override_effects = [e for e in parsed.effects if e.is_stat_override]
+        assert len(override_effects) >= 1
+        assert override_effects[0].override_stat == "INT"
+
+
+# =============================================================================
+# PATTERN PARSING UNIT TESTS
+# =============================================================================
 
 
 def create_spell(
@@ -35,7 +152,7 @@ def create_spell(
     range_: str = "30'",
     **kwargs
 ) -> SpellData:
-    """Helper to create SpellData with required fields."""
+    """Helper to create SpellData with required fields for pattern tests."""
     return SpellData(
         spell_id=spell_id,
         name=name,
