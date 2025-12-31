@@ -3990,6 +3990,12 @@ class SpellResolver:
         handlers = {
             "purify_food_and_drink": self._handle_purify_food_and_drink,
             "crystal_resonance": self._handle_crystal_resonance,
+            # Phase 1 spell handlers
+            "ventriloquism": self._handle_ventriloquism,
+            "create_food": self._handle_create_food,
+            "create_water": self._handle_create_water,
+            "air_sphere": self._handle_air_sphere,
+            "detect_disguise": self._handle_detect_disguise,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -4225,6 +4231,357 @@ class SpellResolver:
                 "crystal_created": True,
                 "crystal_name": crystal.name,
                 "energy_type": energy_type,
+            },
+        }
+
+    # =========================================================================
+    # PHASE 1 SPELL HANDLERS
+    # =========================================================================
+
+    def _handle_ventriloquism(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Ventriloquism spell.
+
+        The caster's voice emanates from any point within 60' for 1 Turn.
+        Pure narrative utility - no mechanical effects beyond duration tracking.
+
+        Per Dolmenwood Campaign Book: "The caster's voice emanates from
+        any point within range, as the caster desires."
+        """
+        return {
+            "success": True,
+            "effect_type": "utility",
+            "duration_turns": 1,
+            "range_feet": 60,
+            "narrative_context": {
+                "effect": "voice_projection",
+                "description": "Voice can emanate from any point within 60 feet",
+                "hints": [
+                    "voice seems to come from elsewhere",
+                    "sound carries unnaturally",
+                    "words echo from an impossible location",
+                ],
+            },
+        }
+
+    def _handle_create_food(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Create Food spell (Divine, Level 5).
+
+        Conjures nourishing food for 12 people and 12 mounts for one day.
+        At caster level 10+, creates additional portions: +12 people/mounts per level above 9.
+
+        Per Dolmenwood Campaign Book: "Conjures food sufficient for 12 people
+        and 12 mounts for one day."
+        """
+        from src.data_models import Item
+
+        # Calculate portions based on caster level
+        base_people = 12
+        base_mounts = 12
+        bonus_per_level = max(0, caster.level - 9)
+        total_people = base_people + (bonus_per_level * 12)
+        total_mounts = base_mounts + (bonus_per_level * 12)
+
+        # Create food items
+        items_created = []
+        current_day = 0
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        # Create rations for people (magical items that last 1 day)
+        people_rations = Item(
+            item_id=f"created_rations_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Rations ({total_people} portions)",
+            weight=total_people,  # 1 lb per portion
+            quantity=total_people,
+            description=f"Magically conjured nourishing food (created day {current_day}). Lasts 1 day.",
+            magical=True,
+        )
+
+        # Create fodder for mounts (magical items that last 1 day)
+        mount_fodder = Item(
+            item_id=f"created_fodder_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Fodder ({total_mounts} portions)",
+            weight=total_mounts * 5,  # 5 lbs per mount portion
+            quantity=total_mounts,
+            description=f"Magically conjured feed for mounts (created day {current_day}). Lasts 1 day.",
+            magical=True,
+        )
+
+        # Add to caster's inventory
+        caster.add_item(people_rations)
+        caster.add_item(mount_fodder)
+
+        items_created.append({
+            "item_id": people_rations.item_id,
+            "name": people_rations.name,
+            "quantity": total_people,
+            "type": "rations",
+        })
+        items_created.append({
+            "item_id": mount_fodder.item_id,
+            "name": mount_fodder.name,
+            "quantity": total_mounts,
+            "type": "fodder",
+        })
+
+        return {
+            "success": True,
+            "items_created": items_created,
+            "people_fed": total_people,
+            "mounts_fed": total_mounts,
+            "caster_level": caster.level,
+            "narrative_context": {
+                "food_conjured": True,
+                "people_portions": total_people,
+                "mount_portions": total_mounts,
+                "hints": [
+                    "food appears wholesome if plain",
+                    "nourishing but without memorable taste",
+                    "sustenance manifests from divine grace",
+                ],
+            },
+        }
+
+    def _handle_create_water(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Create Water spell (Divine, Level 4).
+
+        Creates approximately 50 gallons of pure water, enough for 12 people
+        and 12 mounts for one day. Scales with caster level above 8.
+
+        Per Dolmenwood Campaign Book: "Creates approximately 50 gallons of
+        pure water, enough for 12 people and 12 mounts for one day."
+        """
+        from src.data_models import Item
+
+        # Calculate portions based on caster level
+        base_gallons = 50
+        base_people = 12
+        base_mounts = 12
+        bonus_per_level = max(0, caster.level - 8)
+        total_gallons = base_gallons + (bonus_per_level * 50)
+        total_people = base_people + (bonus_per_level * 12)
+        total_mounts = base_mounts + (bonus_per_level * 12)
+
+        current_day = 0
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        # Create water container (magical item that lasts 1 day)
+        water_container = Item(
+            item_id=f"created_water_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Water ({total_gallons} gallons)",
+            weight=total_gallons * 8,  # 8 lbs per gallon
+            quantity=total_gallons,
+            description=f"Magically conjured pure water (created day {current_day}). Evaporates after 1 day.",
+            magical=True,
+        )
+
+        caster.add_item(water_container)
+
+        return {
+            "success": True,
+            "items_created": [{
+                "item_id": water_container.item_id,
+                "name": water_container.name,
+                "quantity": total_gallons,
+                "type": "water",
+            }],
+            "gallons_created": total_gallons,
+            "people_supplied": total_people,
+            "mounts_supplied": total_mounts,
+            "caster_level": caster.level,
+            "narrative_context": {
+                "water_conjured": True,
+                "gallons": total_gallons,
+                "hints": [
+                    "water springs forth from nothing",
+                    "pure and refreshing",
+                    "divine providence made manifest",
+                ],
+            },
+        }
+
+    def _handle_air_sphere(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Air Sphere spell (Arcane, Level 5).
+
+        When immersed in water, surrounds caster with a 10' radius sphere
+        of breathable air that moves with them. Duration: 1 day.
+
+        Per Dolmenwood Campaign Book: "When immersed in water, the caster
+        is surrounded by a 10' radius sphere of breathable air."
+        """
+        # Create buff effect for underwater breathing
+        buff_id = f"air_sphere_{uuid.uuid4().hex[:8]}"
+
+        # Register as active spell effect if controller available
+        if self._controller:
+            effect = ActiveSpellEffect(
+                effect_id=buff_id,
+                spell_id="air_sphere",
+                spell_name="Air Sphere",
+                caster_id=caster.character_id,
+                target_id=caster.character_id,
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.DAYS,
+                duration_remaining=1,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "underwater_breathing": True,
+                    "radius_feet": 10,
+                    "moves_with_caster": True,
+                    "protects_others_in_radius": True,
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": buff_id,
+            "effect_type": "buff",
+            "conditions_applied": ["underwater_breathing"],
+            "duration_days": 1,
+            "radius_feet": 10,
+            "centered_on": caster.character_id,
+            "narrative_context": {
+                "sphere_created": True,
+                "radius": 10,
+                "duration": "1 day",
+                "hints": [
+                    "a shimmering bubble of air surrounds you",
+                    "breathable atmosphere despite the depths",
+                    "the sphere moves as you do",
+                ],
+            },
+        }
+
+    def _handle_detect_disguise(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Detect Disguise spell (Divine, Level 1).
+
+        Reveals whether a target is disguised by mundane (non-magical) means.
+        The voice of St Dougan says "be wary" (disguised) or "be sure" (not disguised).
+        Target may Save Versus Spell to resist.
+
+        Per Dolmenwood Campaign Book: "The saint's advice reveals whether
+        a chosen person within range is disguised by mundane means."
+        """
+        from src.data_models import DiceRoller as DR
+        from src.oracle.mythic_gme import MythicGME, Likelihood
+        import random
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No target specified for Detect Disguise",
+                "narrative_context": {
+                    "no_target": True,
+                },
+            }
+
+        target_id = targets_affected[0]
+        results = []
+
+        # Get target character if available
+        target_char = None
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+
+        # Target gets a save vs spell
+        save_succeeded = False
+        save_roll = dice.roll_d20("Save vs Spell (Detect Disguise)")
+
+        if target_char:
+            save_target = target_char.get_saving_throw("spell")
+            save_succeeded = save_roll.total >= save_target
+        else:
+            # Default save target for unknown targets
+            save_succeeded = save_roll.total >= 15
+
+        if save_succeeded:
+            # Target resisted - spell reveals nothing
+            results.append({
+                "target_id": target_id,
+                "save_succeeded": True,
+                "revealed": False,
+                "message": "The spell's power is resisted.",
+            })
+            return {
+                "success": True,
+                "targets_saved": [target_id],
+                "results": results,
+                "narrative_context": {
+                    "save_succeeded": True,
+                    "st_dougan_silent": True,
+                    "hints": ["St Dougan's voice is silent", "the target's nature remains hidden"],
+                },
+            }
+
+        # Save failed - query oracle for disguise status
+        # In a real game, this would check world state or ask the DM
+        # Here we use the Mythic GME oracle for a yes/no answer
+        mythic = MythicGME(rng=random.Random())
+        oracle_result = mythic.fate_check(
+            f"Is {target_id} disguised by mundane means?",
+            Likelihood.FIFTY_FIFTY,
+        )
+
+        is_disguised = oracle_result.result.value in ["yes", "exceptional_yes"]
+        saint_response = "be wary" if is_disguised else "be sure"
+
+        results.append({
+            "target_id": target_id,
+            "save_succeeded": False,
+            "revealed": True,
+            "is_disguised": is_disguised,
+            "saint_response": saint_response,
+            "oracle_roll": oracle_result.roll,
+        })
+
+        return {
+            "success": True,
+            "results": results,
+            "saint_response": saint_response,
+            "is_disguised": is_disguised,
+            "narrative_context": {
+                "st_dougan_speaks": True,
+                "response": saint_response,
+                "is_disguised": is_disguised,
+                "hints": [
+                    f'St Dougan whispers: "{saint_response}"',
+                    "aged wisdom reveals the truth",
+                    "mundane deception cannot hide from divine sight" if is_disguised else "no false face here",
+                ],
             },
         }
 
