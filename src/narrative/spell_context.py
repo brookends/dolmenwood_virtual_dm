@@ -95,6 +95,45 @@ class SpellRevelation:
 
 
 # =============================================================================
+# WRITTEN TEXT (For Decipher and similar spells)
+# =============================================================================
+
+
+@dataclass
+class WrittenText:
+    """
+    Represents written text on an item or surface.
+
+    Used by Decipher and similar translation spells.
+    The content field contains the actual meaning - Decipher reveals this
+    by "translating" from the original_language to Woldish.
+    """
+
+    text_id: str  # Unique identifier for this text
+    original_language: str  # "elvish", "dwarvish", "ancient", "coded", "runic", etc.
+    content: str  # The actual meaning/translation
+    surface: str = "surface"  # Where text appears: "scroll", "wall", "ring inscription", etc.
+    script_style: str = "common"  # Visual style: "elegant", "crude", "ornate", "faded"
+    is_magical: bool = False  # True if the text itself is magical (e.g., spell scrolls)
+    is_coded: bool = False  # True if intentionally encrypted/encoded
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "text_id": self.text_id,
+            "original_language": self.original_language,
+            "content": self.content,
+            "surface": self.surface,
+            "script_style": self.script_style,
+            "is_magical": self.is_magical,
+            "is_coded": self.is_coded,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "WrittenText":
+        return cls(**data)
+
+
+# =============================================================================
 # LAZY-GENERATED HISTORY (Tier 2)
 # =============================================================================
 
@@ -766,6 +805,221 @@ class CrystalResonanceProvider(SpellContextProvider):
 
 
 # =============================================================================
+# DECIPHER PROVIDER
+# =============================================================================
+
+
+class DecipherProvider(SpellContextProvider):
+    """
+    Context provider for Decipher spell.
+
+    Decipher transforms written text in any language (including coded messages
+    and symbols) into readable Woldish for 2 turns. The text writhes, glows,
+    and temporarily displays its meaning.
+
+    This provider queries:
+    - Items with inscriptions within 5' range
+    - Location features with written text (signs, plaques, graffiti)
+    - Environmental text (carved runes, wall writings)
+    """
+
+    def __init__(
+        self,
+        controller: Optional["GlobalController"] = None,
+    ):
+        self._controller = controller
+
+    def get_context(
+        self,
+        caster_id: str,
+        location_id: str,
+        target_id: Optional[str] = None,
+        range_feet: int = 5,
+        **kwargs,
+    ) -> SpellRevelation:
+        """
+        Gather all written text within range for deciphering.
+
+        Args:
+            caster_id: Who is casting
+            location_id: Current location
+            target_id: Specific item/surface to decipher (optional)
+            range_feet: Range of the spell (default 5')
+
+        Returns:
+            SpellRevelation with all decipherable text
+        """
+        revelation = SpellRevelation(
+            spell_id="decipher",
+            spell_name="Decipher",
+            caster_id=caster_id,
+            detection_range=range_feet,
+            sensory_mode="sight",
+            aesthetic_notes=[
+                "The script writhes and glows with arcane light",
+                "Strange characters shift and reform into familiar Woldish text",
+                "The transformation is temporary - text will revert after 2 turns",
+            ],
+        )
+
+        # Collect all written text from various sources
+        written_texts: list[tuple[str, WrittenText]] = []
+
+        # 1. Check items in caster's inventory and nearby
+        item_texts = self._get_item_inscriptions(caster_id, target_id)
+        written_texts.extend(item_texts)
+
+        # 2. Check location for environmental text
+        location_texts = self._get_location_text(location_id)
+        written_texts.extend(location_texts)
+
+        # Create revelations for each text found
+        for source_name, text in written_texts:
+            intensity = self._determine_intensity(text)
+            description = self._format_translation(text)
+
+            revelation.revelations.append(Revelation(
+                revelation_type=RevelationType.LANGUAGE_CONTENT,
+                source_id=text.text_id,
+                source_name=source_name,
+                description=description,
+                intensity=intensity,
+                additional_data={
+                    "original_language": text.original_language,
+                    "content": text.content,
+                    "surface": text.surface,
+                    "script_style": text.script_style,
+                    "is_magical": text.is_magical,
+                    "is_coded": text.is_coded,
+                },
+            ))
+
+        if not revelation.has_revelations():
+            revelation.nothing_detected = True
+            revelation.aesthetic_notes.append(
+                "No written text is visible within range"
+            )
+
+        return revelation
+
+    def _get_item_inscriptions(
+        self,
+        caster_id: str,
+        target_id: Optional[str] = None,
+    ) -> list[tuple[str, WrittenText]]:
+        """
+        Get inscriptions from items.
+
+        Returns list of (item_name, WrittenText) tuples.
+        """
+        results: list[tuple[str, WrittenText]] = []
+
+        if not self._controller:
+            return results
+
+        # Get caster's character
+        caster = self._controller.get_character(caster_id)
+        if not caster:
+            return results
+
+        # Check caster's inventory
+        for item in caster.inventory:
+            # If target_id specified, only check that item
+            if target_id and item.item_id != target_id:
+                continue
+
+            # Check if item has inscriptions
+            inscriptions = getattr(item, "inscriptions", None)
+            if inscriptions:
+                for inscription in inscriptions:
+                    if isinstance(inscription, dict):
+                        text = WrittenText.from_dict(inscription)
+                    elif isinstance(inscription, WrittenText):
+                        text = inscription
+                    else:
+                        continue
+                    results.append((item.name, text))
+
+        return results
+
+    def _get_location_text(
+        self,
+        location_id: str,
+    ) -> list[tuple[str, WrittenText]]:
+        """
+        Get written text from current location.
+
+        Queries:
+        - Location-level inscriptions (walls, floors, ceilings)
+        - Feature-level inscriptions (plaques, tombstones, signs)
+
+        Returns list of (surface_description, WrittenText) tuples.
+        """
+        results: list[tuple[str, WrittenText]] = []
+
+        if not self._controller:
+            return results
+
+        # Get location state
+        location = self._controller.get_location_state(location_id)
+        if not location:
+            return results
+
+        # 1. Check location-level inscriptions (walls, environmental text)
+        location_inscriptions = getattr(location, "inscriptions", [])
+        for inscription in location_inscriptions:
+            if isinstance(inscription, dict):
+                text = WrittenText.from_dict(inscription)
+                surface_desc = text.surface if text.surface != "surface" else "the wall"
+                results.append((surface_desc, text))
+
+        # 2. Check inscriptions on features (plaques, tombstones, signs, etc.)
+        known_features = getattr(location, "known_features", [])
+        for feature in known_features:
+            # Only show inscriptions on discovered features (or non-hidden ones)
+            if getattr(feature, "hidden", False) and not getattr(feature, "discovered", False):
+                continue
+
+            feature_inscriptions = getattr(feature, "inscriptions", [])
+            for inscription in feature_inscriptions:
+                if isinstance(inscription, dict):
+                    text = WrittenText.from_dict(inscription)
+                    # Use feature name as the source
+                    results.append((feature.name, text))
+
+        return results
+
+    def _determine_intensity(self, text: WrittenText) -> str:
+        """Determine revelation intensity based on text properties."""
+        if text.is_magical:
+            return "strong"
+        if text.is_coded:
+            return "moderate"
+        if text.script_style == "faded":
+            return "faint"
+        if text.script_style == "ornate":
+            return "strong"
+        return "moderate"
+
+    def _format_translation(self, text: WrittenText) -> str:
+        """Format the translation for narrative display."""
+        language_desc = text.original_language.title()
+
+        if text.is_coded:
+            prefix = f"decodes from {language_desc} cipher"
+        elif text.is_magical:
+            prefix = f"reveals magical script in {language_desc}"
+        else:
+            prefix = f"translates from {language_desc}"
+
+        # Include surface context
+        surface_desc = text.surface
+        if surface_desc != "surface":
+            return f"({surface_desc}) {prefix}: '{text.content}'"
+        return f"{prefix}: '{text.content}'"
+
+
+# =============================================================================
 # PROVIDER REGISTRY
 # =============================================================================
 
@@ -793,6 +1047,7 @@ class SpellContextRegistry:
             "detect_evil": DetectEvilProvider(controller),
             "wood_kenning": WoodKenningProvider(controller, self._history),
             "crystal_resonance": CrystalResonanceProvider(controller),
+            "decipher": DecipherProvider(controller),
         }
 
     def get_context(

@@ -2267,6 +2267,43 @@ class GlobalController:
         # Consume daily resources
         self.consume_resources(food_days=days, water_days=days)
 
+        # Check for spoiled rations in all character inventories
+        current_day = self.time_tracker.days
+        spoiled_items = self._check_ration_spoilage(current_day)
+        if spoiled_items:
+            self._log_event(
+                "rations_spoiled",
+                {
+                    "current_day": current_day,
+                    "spoiled_items": spoiled_items,
+                },
+            )
+
+    def _check_ration_spoilage(self, current_day: int) -> list[dict[str, Any]]:
+        """
+        Check all character inventories for spoiled rations.
+
+        Args:
+            current_day: The current game day
+
+        Returns:
+            List of spoiled items with character and item info
+        """
+        spoiled_items = []
+        for character in self._characters.values():
+            for item in character.inventory:
+                if item.is_perishable and item.is_spoiled(current_day):
+                    # Only report newly spoiled items (check if just crossed threshold)
+                    days_remaining = item.days_until_spoiled(current_day)
+                    if days_remaining == 0:
+                        spoiled_items.append({
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "item_name": item.name,
+                            "item_id": item.item_id,
+                        })
+        return spoiled_items
+
     def _on_season_change(self, old_season: Season, new_season: Season) -> None:
         """Called when season changes."""
         self._log_event(

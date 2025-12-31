@@ -1007,6 +1007,20 @@ class SpellResolver:
             "targets_affected": targets_affected,
         }
 
+        # Check for special spell handlers (spells needing custom logic)
+        special_result = self._handle_special_spell(
+            spell=spell,
+            caster=caster,
+            targets_affected=targets_affected,
+            dice_roller=dice_roller,
+        )
+        if special_result:
+            # Merge special result data into narrative context
+            narrative_context.update(special_result.get("narrative_context", {}))
+            # Add any items created
+            if special_result.get("items_created"):
+                narrative_context["items_created"] = special_result["items_created"]
+
         return SpellCastResult(
             success=True,
             spell_id=spell.spell_id,
@@ -2213,6 +2227,270 @@ class SpellResolver:
         return {
             "glamour_records_reset": glamour_count,
             "rune_records_reset": rune_count,
+        }
+
+    # =========================================================================
+    # SPECIAL SPELL HANDLERS
+    # =========================================================================
+
+    def _handle_special_spell(
+        self,
+        spell: SpellData,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> Optional[dict[str, Any]]:
+        """
+        Handle spells that need custom logic beyond standard resolution.
+
+        Args:
+            spell: The spell being cast
+            caster: The character casting
+            targets_affected: List of affected target IDs
+            dice_roller: Dice roller for any rolls needed
+
+        Returns:
+            Dictionary with special effect data, or None if no special handling
+        """
+        handlers = {
+            "purify_food_and_drink": self._handle_purify_food_and_drink,
+            "crystal_resonance": self._handle_crystal_resonance,
+        }
+
+        handler = handlers.get(spell.spell_id)
+        if handler:
+            return handler(caster, targets_affected, dice_roller)
+        return None
+
+    def _handle_purify_food_and_drink(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Purify Food and Drink spell.
+
+        Effects:
+        - Purifies up to 12 portions of spoiled/poisoned food and drink
+        - Resets freshness on spoiled rations (roll new 1d6 freshness_days)
+        - Sets acquired_day to current day
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        current_day = 0  # Will be set from controller if available
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        purified_items: list[dict[str, Any]] = []
+        max_portions = 12
+
+        # Find spoiled rations in caster's inventory
+        for item in caster.inventory:
+            if len(purified_items) >= max_portions:
+                break
+
+            if item.is_perishable and item.is_spoiled(current_day):
+                # Roll new freshness
+                new_freshness = dice.roll("1d6", "Purified ration freshness").total
+                item.freshness_days = new_freshness
+                item.acquired_day = current_day
+                item.freshness_bonus_days = 0  # Reset any bonus
+
+                purified_items.append({
+                    "item_name": item.name,
+                    "item_id": item.item_id,
+                    "new_freshness_days": new_freshness,
+                })
+
+        return {
+            "purified_count": len(purified_items),
+            "purified_items": purified_items,
+            "narrative_context": {
+                "purified_items": purified_items,
+                "purified_count": len(purified_items),
+            },
+        }
+
+    def _handle_crystal_resonance(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Crystal Resonance spell.
+
+        Creates a resonant_crystal item in caster's inventory based on energy type chosen.
+        Energy types:
+        - Light: Crystal acts as magical light source (duration: 1 Turn x caster level)
+        - Images: Crystal stores a static image of surroundings
+        - Sound: Crystal stores ambient sounds
+        - Temperature (Heat): Crystal provides cold weather protection
+        - Temperature (Cold): Crystal extends ration freshness by 2d4 days
+
+        Note: This requires player input for energy type selection.
+        The spell resolver will return a pending_choice that the caller must resolve.
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        # Check for 1-in-20 crystal destruction chance
+        destruction_roll = dice.roll("1d20", "Crystal destruction check")
+        crystal_shattered = destruction_roll.total == 1
+
+        if crystal_shattered:
+            return {
+                "success": False,
+                "crystal_shattered": True,
+                "narrative_context": {
+                    "crystal_shattered": True,
+                    "destruction_roll": destruction_roll.total,
+                },
+            }
+
+        # Create the resonant crystal item
+        # Note: In actual gameplay, we need player input for energy_type
+        # This returns a pending_choice structure for the caller to resolve
+        return {
+            "success": True,
+            "pending_choice": {
+                "type": "energy_selection",
+                "prompt": "Choose the energy to imprint: Light, Images, Sound, or Temperature",
+                "options": ["light", "images", "sound", "temperature"],
+                "callback": "complete_crystal_resonance",
+            },
+            "caster_level": caster.level,
+            "narrative_context": {
+                "pending_energy_choice": True,
+                "available_energies": ["light", "images", "sound", "temperature"],
+            },
+        }
+
+    def complete_crystal_resonance(
+        self,
+        caster: "CharacterState",
+        energy_type: str,
+        temperature_mode: Optional[str] = None,
+        dice_roller: Optional["DiceRoller"] = None,
+        environmental_context: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """
+        Complete Crystal Resonance spell after player chooses energy type.
+
+        Args:
+            caster: The caster
+            energy_type: "light", "images", "sound", or "temperature"
+            temperature_mode: If energy_type is "temperature", either "heat" or "cold"
+            dice_roller: Dice roller for any rolls
+            environmental_context: Context about current environment for images/sound
+
+        Returns:
+            Dictionary with created item and effects
+        """
+        from src.data_models import Item, LightSourceType, DiceRoller as DR
+
+        dice = dice_roller or DR()
+        current_day = 0
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        # Base crystal item
+        crystal = Item(
+            item_id=f"resonant_crystal_{uuid.uuid4().hex[:8]}",
+            name="Resonant Crystal",
+            weight=1,
+            quantity=1,
+            magical=True,
+            value_gp=50,
+            description="A crystal imbued with captured energy.",
+        )
+
+        energy_type = energy_type.lower()
+
+        if energy_type == "light":
+            # Crystal acts as magical light source
+            duration_turns = caster.level * 10  # 1 Turn x caster level (in rounds, 10 rounds/turn)
+            crystal.light_source = LightSourceType.MAGICAL
+            crystal.light_remaining_turns = duration_turns
+            crystal.name = "Resonant Crystal (Light)"
+            crystal.description = f"A crystal glowing with captured light. Illuminates for {caster.level} turns."
+
+        elif energy_type == "images":
+            # Crystal stores a static image
+            image_desc = "the surrounding area"
+            if environmental_context:
+                image_desc = environmental_context.get("scene_description", image_desc)
+            crystal.name = "Resonant Crystal (Images)"
+            crystal.description = f"A crystal containing a captured image of {image_desc}."
+            crystal.consumption_effect = {
+                "type": "images",
+                "stored_image": image_desc,
+            }
+
+        elif energy_type == "sound":
+            # Crystal stores ambient sounds
+            sound_desc = "ambient sounds"
+            if environmental_context:
+                sound_desc = environmental_context.get("ambient_sounds", sound_desc)
+            crystal.name = "Resonant Crystal (Sound)"
+            crystal.description = f"A crystal that replays: {sound_desc}."
+            crystal.consumption_effect = {
+                "type": "sound",
+                "stored_sound": sound_desc,
+            }
+
+        elif energy_type == "temperature":
+            if temperature_mode == "heat":
+                # Protects from cold weather
+                crystal.name = "Resonant Crystal (Heat)"
+                crystal.description = "A warm crystal that provides protection from cold weather."
+                crystal.consumption_effect = {
+                    "type": "temperature",
+                    "mode": "cold_protection",
+                    "uses_remaining": 1,
+                }
+            elif temperature_mode == "cold":
+                # Extends ration freshness
+                preservation_days = dice.roll("2d4", "Ration preservation days").total
+                crystal.name = "Resonant Crystal (Cold)"
+                crystal.description = f"A cold crystal that can preserve rations for {preservation_days} additional days."
+                crystal.consumption_effect = {
+                    "type": "temperature",
+                    "mode": "preserve_rations",
+                    "preservation_days": preservation_days,
+                    "used": False,
+                }
+            else:
+                # Default to prompting for temperature mode
+                return {
+                    "success": True,
+                    "pending_choice": {
+                        "type": "temperature_mode_selection",
+                        "prompt": "Choose temperature mode: Heat (cold protection) or Cold (preserve rations)",
+                        "options": ["heat", "cold"],
+                    },
+                }
+
+        # Add crystal to caster's inventory
+        caster.add_item(crystal, current_day)
+
+        return {
+            "success": True,
+            "items_created": [{
+                "item_id": crystal.item_id,
+                "name": crystal.name,
+                "description": crystal.description,
+                "energy_type": energy_type,
+                "temperature_mode": temperature_mode,
+            }],
+            "narrative_context": {
+                "crystal_created": True,
+                "crystal_name": crystal.name,
+                "energy_type": energy_type,
+            },
         }
 
 

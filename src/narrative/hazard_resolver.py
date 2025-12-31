@@ -71,6 +71,7 @@ class HazardType(str, Enum):
     DOOR_LISTEN = "door_listen"  # p151
     EXHAUSTION = "exhaustion"  # p151
     FALLING = "falling"  # p151
+    FOOD_POISONING = "food_poisoning"  # From eating spoiled food
     HUNGER = "hunger"  # p153
     THIRST = "thirst"  # p153
     JUMPING = "jumping"  # p153
@@ -342,6 +343,7 @@ class HazardResolver:
             HazardType.DOOR_LISTEN: self._resolve_door_listen,
             HazardType.EXHAUSTION: self._resolve_exhaustion,
             HazardType.FALLING: self._resolve_falling,
+            HazardType.FOOD_POISONING: self._resolve_food_poisoning,
             HazardType.HUNGER: self._resolve_hunger,
             HazardType.JUMPING: self._resolve_jumping,
             HazardType.SWIMMING: self._resolve_swimming,
@@ -790,6 +792,47 @@ class HazardResolver:
             damage_dealt=damage_roll.total,
             damage_type="falling",
             narrative_hints=["crashes to the ground", "painful landing"],
+        )
+
+    def _resolve_food_poisoning(
+        self, character: "CharacterState", **kwargs: Any
+    ) -> HazardResult:
+        """
+        Resolve eating spoiled food.
+
+        Effects:
+        - Apply FOOD_POISONING condition
+        - Duration: 1d4 days
+        - Penalties: -2 to Attack and Saves while afflicted
+        - Can be cured by healing magic or rest
+        """
+        from src.data_models import ConditionType
+
+        # Roll duration
+        duration_roll = self.dice.roll("1d4", "Food poisoning duration")
+        duration_days = duration_roll.total
+
+        # Get character ID for applying effects
+        character_id = getattr(character, "character_id", None)
+
+        # Build apply lists
+        apply_conditions: list[tuple[str, str]] = []
+        if character_id:
+            apply_conditions.append((character_id, ConditionType.FOOD_POISONING.value))
+
+        return HazardResult(
+            success=False,
+            hazard_type=HazardType.FOOD_POISONING,
+            action_type=ActionType.NARRATIVE_ACTION,
+            description=f"Ate spoiled food! Food poisoning for {duration_days} days",
+            conditions_applied=[ConditionType.FOOD_POISONING.value],
+            apply_conditions=apply_conditions,
+            penalties_applied={"attack": -2, "saves": -2},
+            narrative_hints=[
+                "stomach churns violently",
+                "waves of nausea",
+                f"will be sick for {duration_days} days",
+            ],
         )
 
     def _resolve_hunger(
