@@ -1374,6 +1374,108 @@ class GlobalController:
 
         return result
 
+    def apply_charm(
+        self,
+        character_id: str,
+        caster_id: str,
+        source_spell_id: str,
+        source: str = "",
+        recurring_save: Optional[dict[str, Any]] = None,
+        duration_days: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply a charm effect to a character.
+
+        This method properly sets up the charm condition with all the
+        tracking needed for recurring saves, caster relationships, etc.
+
+        Args:
+            character_id: The character being charmed
+            caster_id: The character doing the charming
+            source_spell_id: ID of the charm spell
+            source: Description (spell name)
+            recurring_save: Config for recurring saves:
+                           {"save_type": "spell", "frequency": "daily",
+                            "modifier": 0, "ends_on_success": True}
+            duration_days: Duration in days (None for indefinite until save)
+
+        Returns:
+            Dictionary with charm application results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        # Check if already charmed (by anyone)
+        if character.is_charmed():
+            return {
+                "character_id": character_id,
+                "charmed": False,
+                "reason": "Already charmed",
+                "existing_charmer": character.get_charm_caster(),
+            }
+
+        # Apply the charm using CharacterState's method
+        charm_condition = character.apply_charm(
+            caster_id=caster_id,
+            source_spell_id=source_spell_id,
+            source=source,
+            recurring_save=recurring_save,
+            duration_days=duration_days,
+        )
+
+        result = {
+            "character_id": character_id,
+            "charmed": True,
+            "caster_id": caster_id,
+            "source": source,
+            "spell_id": source_spell_id,
+            "has_recurring_save": recurring_save is not None,
+            "recurring_save_frequency": recurring_save.get("frequency") if recurring_save else None,
+        }
+
+        self._log_event("charm_applied", result)
+        return result
+
+    def break_charm(
+        self,
+        character_id: str,
+        caster_id: Optional[str] = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
+        """
+        Break a charm effect on a character.
+
+        Args:
+            character_id: The charmed character
+            caster_id: Optional specific caster's charm to break
+            reason: Why the charm is breaking (save, spell dispel, etc.)
+
+        Returns:
+            Dictionary with charm removal results
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        removed_charm = character.break_charm(caster_id)
+
+        if removed_charm:
+            result = {
+                "character_id": character_id,
+                "charm_broken": True,
+                "former_charmer": removed_charm.caster_id,
+                "reason": reason,
+            }
+            self._log_event("charm_broken", result)
+            return result
+        else:
+            return {
+                "character_id": character_id,
+                "charm_broken": False,
+                "reason": "Character was not charmed",
+            }
+
     # =========================================================================
     # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)
     # =========================================================================

@@ -155,6 +155,14 @@ class MechanicalEffect:
     max_hd_affected: Optional[int] = None  # Max HD of creatures affected
     area_radius: Optional[int] = None  # Radius in feet for area effects
 
+    # Charm/Control effects (Ingratiate, Dominate, Command, etc.)
+    is_charm_effect: bool = False  # This is a charm/mind-control spell
+    recurring_save_frequency: Optional[str] = None  # "daily", "hourly", "per_turn"
+    charm_obeys_commands: bool = False  # Subject obeys verbal commands
+    command_word_only: bool = False  # Single-word command (Command spell)
+    multi_target_dice: Optional[str] = None  # For multi-target charms (e.g., "3d6")
+    target_level_limit: Optional[int] = None  # Max level of affected creatures
+
 
 @dataclass
 class ParsedMechanicalEffects:
@@ -1923,10 +1931,10 @@ class SpellResolver:
         # =================================================================
         # FIX 4: Condition patterns with better context checking
         # =================================================================
+        # Note: "charmed/charming/charm" are NOT included here because
+        # charm effects are handled by the specialized charm patterns section
+        # to ensure proper recurring save and caster tracking.
         condition_keywords = {
-            "charmed": "charmed",
-            "charming": "charmed",
-            "charm": "charmed",
             "frightened": "frightened",
             "fear": "frightened",
             "paralyzed": "paralyzed",
@@ -1947,6 +1955,7 @@ class SpellResolver:
         # Note: Removed "stone" -> petrified (too many false positives)
         # Note: Removed "invisible" (often describes objects, not conditions)
         # Note: Removed "poison" (conflicts with poisoned, use poisoned only)
+        # Note: Removed "charmed/charm" -> handled by charm patterns section
 
         for keyword, condition in condition_keywords.items():
             if keyword in description:
@@ -2113,6 +2122,95 @@ class SpellResolver:
                 )
                 parsed.add_effect(effect)
                 break
+
+        # =================================================================
+        # Charm/Control spell patterns
+        # Detects: Ingratiate, Dominate, Command, Charm Serpents, etc.
+        # =================================================================
+        charm_patterns = [
+            # "be charmed" / "or be charmed" / "is charmed"
+            r"(?:must|or)\s+(?:be\s+)?charmed",
+            # "is charmed" / "are charmed"
+            r"(?:is|are)\s+charmed",
+            # "charm a person" / "charms a creature"
+            r"charm(?:s)?\s+(?:a\s+)?(?:person|creature|humanoid|subject)",
+            # "places a powerful charm" / "enchants...charm"
+            r"(?:places?|enchants?)\s+(?:a\s+)?(?:\w+\s+)?charm",
+            # "hypnotises" (for Charm Serpents)
+            r"hypnotis(?:es?|ed)",
+        ]
+
+        for pattern in charm_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                effect = MechanicalEffect(
+                    category=MechanicalEffectCategory.CONDITION,
+                    condition_applied="charmed",
+                    is_charm_effect=True,
+                    description="Applies charm effect",
+                )
+
+                # Check for daily save pattern
+                if re.search(r"save\s+(?:versus\s+spell\s+)?once\s+per\s+day", description, re.IGNORECASE):
+                    effect.recurring_save_frequency = "daily"
+
+                # Check for command obedience
+                if re.search(r"(?:obey|commands?|orders?)\s+(?:they\s+)?(?:are\s+)?(?:obeyed|follow)", description, re.IGNORECASE) or \
+                   re.search(r"(?:give|gives?)\s+(?:the\s+)?(?:charmed\s+)?(?:subject|creature)s?\s+commands", description, re.IGNORECASE) or \
+                   re.search(r"caster\s+may\s+give.*commands", description, re.IGNORECASE):
+                    effect.charm_obeys_commands = True
+
+                # Check for multi-target dice (Dominate: "3d6 creatures")
+                multi_match = re.search(r"(\d+d\d+)\s+creatures?\s+of", description, re.IGNORECASE)
+                if multi_match:
+                    effect.multi_target_dice = multi_match.group(1)
+
+                # Check for level limit (Dominate: "up to Level 3")
+                level_match = re.search(r"(?:of\s+)?(?:up\s+to\s+)?level\s+(\d+)\s+(?:or\s+(?:lower|less|fewer))?", description, re.IGNORECASE)
+                if level_match:
+                    effect.target_level_limit = int(level_match.group(1))
+
+                # Check for save type (use regex to handle whitespace variations)
+                for save in ["doom", "ray", "hold", "blast", "spell"]:
+                    save_pattern = rf"save\s+(?:versus|vs\.?)\s+{save}"
+                    if re.search(save_pattern, description, re.IGNORECASE):
+                        effect.save_type = save
+                        effect.save_negates = True
+                        break
+
+                parsed.add_effect(effect)
+                break  # Only add one charm effect
+
+        # =================================================================
+        # Command spell patterns (single-word command)
+        # =================================================================
+        command_patterns = [
+            r"(?:utters?\s+)?(?:a\s+)?command\s+(?:word|charged\s+with)",
+            r"compelled\s+to\s+obey\s+for\s+\d+\s+round",
+            r"command\s+is\s+limited\s+to\s+a\s+single\s+word",
+        ]
+
+        for pattern in command_patterns:
+            if re.search(pattern, description, re.IGNORECASE):
+                # Don't add if we already parsed a charm effect
+                if not any(e.is_charm_effect for e in parsed.effects):
+                    effect = MechanicalEffect(
+                        category=MechanicalEffectCategory.CONDITION,
+                        condition_applied="commanded",
+                        is_charm_effect=True,
+                        command_word_only=True,
+                        description="One-word command effect",
+                    )
+
+                    # Check for save type (use regex to handle whitespace variations)
+                    for save in ["doom", "ray", "hold", "blast", "spell"]:
+                        save_pattern = rf"save\s+(?:versus|vs\.?)\s+{save}"
+                        if re.search(save_pattern, description, re.IGNORECASE):
+                            effect.save_type = save
+                            effect.save_negates = True
+                            break
+
+                    parsed.add_effect(effect)
+                    break
 
         return parsed
 
@@ -2519,9 +2617,41 @@ class SpellResolver:
 
                     # Apply to game state if controller available
                     if self._controller:
-                        self._controller.apply_condition(
-                            target_id, effect.condition_applied, source=spell.name
-                        )
+                        # Special handling for charm effects
+                        if effect.is_charm_effect and effect.condition_applied == "charmed":
+                            # Use apply_charm which sets up recurring saves
+                            recurring_save = None
+                            if effect.recurring_save_frequency:
+                                recurring_save = {
+                                    "save_type": effect.save_type or "spell",
+                                    "frequency": effect.recurring_save_frequency,
+                                    "modifier": 0,
+                                    "ends_on_success": True,
+                                }
+
+                            self._controller.apply_charm(
+                                character_id=target_id,
+                                caster_id=caster.character_id,
+                                source_spell_id=spell.spell_id,
+                                source=spell.name,
+                                recurring_save=recurring_save,
+                            )
+
+                            # Track charm-specific info in result
+                            if "charm_effects" not in result:
+                                result["charm_effects"] = []
+                            result["charm_effects"].append({
+                                "target_id": target_id,
+                                "caster_id": caster.character_id,
+                                "spell_name": spell.name,
+                                "obeys_commands": effect.charm_obeys_commands,
+                                "recurring_save": effect.recurring_save_frequency,
+                            })
+                        else:
+                            # Standard condition application
+                            self._controller.apply_condition(
+                                target_id, effect.condition_applied, source=spell.name
+                            )
 
                 # Apply stat modifiers (buffs/debuffs)
                 if effect.category in (MechanicalEffectCategory.BUFF, MechanicalEffectCategory.DEBUFF):
