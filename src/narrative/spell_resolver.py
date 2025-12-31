@@ -131,6 +131,10 @@ class MechanicalEffect:
     modifier_value: Optional[int] = None  # e.g., +2, -4
     modifier_dice: Optional[str] = None  # For variable modifiers
     condition_context: Optional[str] = None  # When modifier applies: "vs_missiles", "vs_melee"
+    ac_override: Optional[int] = None  # Set AC to specific value (e.g., Shield of Force: AC 17)
+
+    # Level scaling
+    level_multiplier: bool = False  # Multiply damage/healing by caster level
 
     # Saving throw for this effect
     save_type: Optional[str] = None  # doom, ray, hold, blast, spell
@@ -1744,13 +1748,55 @@ class SpellResolver:
         parsed = ParsedMechanicalEffects()
         description = spell.description.lower()
 
-        # Look for damage patterns: "Xd6 damage", "deals Xd8", etc.
-        damage_pattern = r"(\d+d\d+(?:\s*\+\s*\d+)?)\s*(?:points?\s+of\s+)?(?:damage|hp|hit\s+points?)"
-        damage_matches = re.findall(damage_pattern, description, re.IGNORECASE)
-        for damage_dice in damage_matches:
+        # Track dice we've already parsed to avoid duplicates
+        parsed_dice: set[str] = set()
+
+        # =================================================================
+        # FIX 1: Level-scaled damage (must check BEFORE regular damage)
+        # Pattern: "Xd6 damage per Level of the caster"
+        # =================================================================
+        level_damage_pattern = r"(\d+d\d+(?:\s*\+\s*\d+)?)\s+damage\s+per\s+level"
+        level_damage_matches = re.findall(level_damage_pattern, description, re.IGNORECASE)
+        for damage_dice in level_damage_matches:
+            dice_clean = damage_dice.replace(" ", "")
+            parsed_dice.add(dice_clean)
             effect = MechanicalEffect(
                 category=MechanicalEffectCategory.DAMAGE,
-                damage_dice=damage_dice.replace(" ", ""),
+                damage_dice=dice_clean,
+                level_multiplier=True,  # Multiply by caster level
+                description=f"Deals {dice_clean} × caster level damage",
+            )
+
+            # Try to identify damage type
+            for dtype in ["fire", "cold", "lightning", "acid", "poison", "holy", "necrotic"]:
+                if dtype in description:
+                    effect.damage_type = dtype
+                    break
+
+            parsed.add_effect(effect)
+
+        # =================================================================
+        # FIX 2: Regular damage (skip if in damage reduction context)
+        # Pattern: "Xd6 damage", but NOT "Xd6 damage is reduced"
+        # =================================================================
+        damage_pattern = r"(\d+d\d+(?:\s*\+\s*\d+)?)\s*(?:points?\s+of\s+)?damage"
+        for match in re.finditer(damage_pattern, description, re.IGNORECASE):
+            damage_dice = match.group(1).replace(" ", "")
+
+            # Skip if already parsed as level-scaled damage
+            if damage_dice in parsed_dice:
+                continue
+
+            # FIX: Check if this is damage reduction context (false positive)
+            # Look at text AFTER the match for "reduced", "reduction", "less"
+            after_text = description[match.end():match.end() + 30]
+            if "reduced" in after_text or "reduction" in after_text or "less" in after_text:
+                continue  # This describes damage reduction, not damage dealt
+
+            parsed_dice.add(damage_dice)
+            effect = MechanicalEffect(
+                category=MechanicalEffectCategory.DAMAGE,
+                damage_dice=damage_dice,
                 description=f"Deals {damage_dice} damage",
             )
 
@@ -1762,18 +1808,26 @@ class SpellResolver:
 
             parsed.add_effect(effect)
 
-        # Look for healing patterns
-        heal_pattern = r"(?:heals?|restores?|regains?)\s*(\d+d\d+(?:\s*\+\s*\d+)?)"
+        # =================================================================
+        # FIX 3: Healing patterns (exclude from damage parsing)
+        # Only match "restores/heals Xd6", NOT "Xd6 Hit Points" alone
+        # =================================================================
+        heal_pattern = r"(?:heals?|restores?|regains?)\s+(\d+d\d+(?:\s*\+\s*\d+)?)"
         heal_matches = re.findall(heal_pattern, description, re.IGNORECASE)
         for heal_dice in heal_matches:
+            dice_clean = heal_dice.replace(" ", "")
+            # Mark as parsed so damage parser skips it
+            parsed_dice.add(dice_clean)
             effect = MechanicalEffect(
                 category=MechanicalEffectCategory.HEALING,
-                healing_dice=heal_dice.replace(" ", ""),
-                description=f"Heals {heal_dice} HP",
+                healing_dice=dice_clean,
+                description=f"Heals {dice_clean} HP",
             )
             parsed.add_effect(effect)
 
-        # Look for condition patterns
+        # =================================================================
+        # FIX 4: Condition patterns with better context checking
+        # =================================================================
         condition_keywords = {
             "charmed": "charmed",
             "charming": "charmed",
@@ -1784,28 +1838,47 @@ class SpellResolver:
             "paralysis": "paralyzed",
             "paralysed": "paralyzed",
             "petrified": "petrified",
-            "stone": "petrified",
             "blinded": "blinded",
             "blind": "blinded",
             "deafened": "deafened",
             "deaf": "deafened",
             "poisoned": "poisoned",
-            "poison": "poisoned",
             "asleep": "unconscious",
             "sleep": "unconscious",
             "unconscious": "unconscious",
             "stunned": "stunned",
             "stun": "stunned",
-            "invisible": "invisible",
-            "invisibility": "invisible",
         }
+        # Note: Removed "stone" -> petrified (too many false positives)
+        # Note: Removed "invisible" (often describes objects, not conditions)
+        # Note: Removed "poison" (conflicts with poisoned, use poisoned only)
 
         for keyword, condition in condition_keywords.items():
             if keyword in description:
-                # Avoid false positives by checking context
-                # Skip if it's about removing the condition
-                if f"remove {keyword}" in description or f"cure {keyword}" in description:
+                # FIX: Better cure/remove detection with more patterns
+                removal_patterns = [
+                    f"cure {keyword}", f"cures {keyword}", f"curing {keyword}",
+                    f"remove {keyword}", f"removes {keyword}", f"removing {keyword}",
+                    f"negat" in description and keyword in description,  # "negating paralysis"
+                    f"end {keyword}", f"ends {keyword}",
+                    f"nullif" in description and keyword in description,  # "nullifying"
+                    f"purge {keyword}", f"purges {keyword}",
+                ]
+                if any(pattern if isinstance(pattern, bool) else pattern in description
+                       for pattern in removal_patterns):
                     continue
+
+                # FIX: For "invisible", only apply if it's about creatures becoming invisible
+                if keyword in ("invisible", "invisibility"):
+                    creature_invisible_patterns = [
+                        "creature.*invisible", "invisible.*creature",
+                        "caster.*invisible", "caster is rendered invisible",
+                        "subject.*invisible", "rendered invisible",
+                        "become invisible", "becomes invisible",
+                        "disappear from sight", "shimmers and disappears",
+                    ]
+                    if not any(re.search(p, description) for p in creature_invisible_patterns):
+                        continue  # Probably "invisible barrier" or similar
 
                 effect = MechanicalEffect(
                     category=MechanicalEffectCategory.CONDITION,
@@ -1824,18 +1897,56 @@ class SpellResolver:
                 parsed.add_effect(effect)
                 break  # Only add one condition per spell to avoid duplicates
 
-        # Look for stat modifier patterns
-        stat_pattern = r"([+-]\d+)\s*(?:bonus|penalty)?\s*(?:to\s+)?(?:attack|ac|armor class|saving throw)"
-        stat_matches = re.findall(stat_pattern, description, re.IGNORECASE)
-        for modifier in stat_matches:
-            mod_val = int(modifier)
-            category = MechanicalEffectCategory.BUFF if mod_val > 0 else MechanicalEffectCategory.DEBUFF
+        # =================================================================
+        # FIX 5: AC override patterns (e.g., "grants AC 17")
+        # =================================================================
+        ac_override_pattern = r"(?:grants?|provides?|gives?|has)\s+(?:the\s+)?(?:caster\s+)?(?:an?\s+)?ac\s+(\d+)"
+        ac_matches = re.findall(ac_override_pattern, description, re.IGNORECASE)
+        for ac_value in ac_matches:
             effect = MechanicalEffect(
-                category=category,
-                modifier_value=mod_val,
-                description=f"Grants {modifier} modifier",
+                category=MechanicalEffectCategory.BUFF,
+                ac_override=int(ac_value),
+                stat_modified="AC",
+                description=f"Sets AC to {ac_value}",
             )
+
+            # Check for conditional context (e.g., "AC 17 vs missiles")
+            # Look for "missile" near this AC value
+            if "missile" in description:
+                effect.condition_context = "vs_missiles"
+            elif "other" in description and "attack" in description:
+                effect.condition_context = "vs_other"
+
             parsed.add_effect(effect)
+
+        # =================================================================
+        # Stat modifier patterns (expanded for British spelling)
+        # =================================================================
+        stat_patterns = [
+            # "+1 bonus to attack" / "+1 to saving throw"
+            r"([+-]\d+)\s*(?:bonus|penalty)?\s*(?:to\s+)?(?:attack|ac|armou?r\s+class|saving\s+throws?)",
+            # "+1 Armour Class and Saving Throw bonus"
+            r"([+-]\d+)\s+(?:armou?r\s+class|ac|saving\s+throws?|attack)[^.]*bonus",
+            # "gain a +2 bonus"
+            r"gains?\s+a?\s*([+-]\d+)\s+bonus",
+        ]
+
+        found_modifiers: set[int] = set()
+        for pattern in stat_patterns:
+            stat_matches = re.findall(pattern, description, re.IGNORECASE)
+            for modifier in stat_matches:
+                mod_val = int(modifier)
+                if mod_val in found_modifiers:
+                    continue  # Avoid duplicate modifiers
+                found_modifiers.add(mod_val)
+
+                category = MechanicalEffectCategory.BUFF if mod_val > 0 else MechanicalEffectCategory.DEBUFF
+                effect = MechanicalEffect(
+                    category=category,
+                    modifier_value=mod_val,
+                    description=f"Grants {modifier} modifier",
+                )
+                parsed.add_effect(effect)
 
         return parsed
 
@@ -2143,8 +2254,17 @@ class SpellResolver:
                 # Apply damage
                 if effect.category == MechanicalEffectCategory.DAMAGE and effect.damage_dice:
                     if dice_roller:
-                        roll = dice_roller.roll(effect.damage_dice, f"{spell.name} damage")
-                        damage = roll.total
+                        # Handle level-scaled damage (e.g., Fireball: 1d6 per level)
+                        if effect.level_multiplier:
+                            # Roll damage dice once per caster level
+                            total_damage = 0
+                            for _ in range(caster.level):
+                                roll = dice_roller.roll(effect.damage_dice, f"{spell.name} damage")
+                                total_damage += roll.total
+                            damage = total_damage
+                        else:
+                            roll = dice_roller.roll(effect.damage_dice, f"{spell.name} damage")
+                            damage = roll.total
 
                         # Half damage on save
                         if target_saved and effect.save_halves:
@@ -2181,7 +2301,31 @@ class SpellResolver:
 
                 # Apply stat modifiers (buffs/debuffs)
                 if effect.category in (MechanicalEffectCategory.BUFF, MechanicalEffectCategory.DEBUFF):
-                    if effect.modifier_value is not None:
+                    # Handle AC override (e.g., Shield of Force: AC 17)
+                    if effect.ac_override is not None:
+                        modifier_info = {
+                            "target_id": target_id,
+                            "stat": "AC",
+                            "ac_override": effect.ac_override,
+                            "source": spell.name,
+                            "condition": effect.condition_context,
+                        }
+                        result["stat_modifiers_applied"].append(modifier_info)
+
+                        # Apply to game state if controller available
+                        if self._controller:
+                            self._controller.apply_buff(
+                                character_id=target_id,
+                                stat="AC",
+                                value=effect.ac_override,
+                                source=spell.name,
+                                source_id=effect_id,
+                                duration_turns=duration_turns,
+                                condition=effect.condition_context,
+                                is_override=True,  # Flag that this overrides AC, not adds to it
+                            )
+
+                    elif effect.modifier_value is not None:
                         modifier_info = {
                             "target_id": target_id,
                             "stat": effect.stat_modified or "general",
