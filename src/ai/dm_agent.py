@@ -63,6 +63,9 @@ from src.ai.prompt_schemas import (
     IntentParseInputs,
     IntentParseSchema,
     IntentParseOutput,
+    NarrativeIntentInputs,
+    NarrativeIntentSchema,
+    NarrativeIntentOutput,
     create_schema,
 )
 from src.data_models import (
@@ -1399,6 +1402,111 @@ class DMAgent:
                 confidence=0.0,
                 requires_clarification=True,
                 clarification_prompt="I didn't understand that. What would you like to do?",
+                reasoning=f"Parse error: {e}",
+            )
+
+    # =========================================================================
+    # NARRATIVE INTENT PARSING (Upgrade A Extension)
+    # =========================================================================
+
+    def parse_narrative_intent(
+        self,
+        player_input: str,
+        current_state: str,
+        character_name: str = "",
+        character_class: str = "",
+        character_level: int = 1,
+        character_abilities: Optional[dict[str, int]] = None,
+        location_type: str = "",
+        location_description: str = "",
+        visible_features: Optional[list[str]] = None,
+        in_combat: bool = False,
+        visible_enemies: Optional[list[str]] = None,
+        recent_actions: Optional[list[str]] = None,
+        known_spell_names: Optional[list[str]] = None,
+    ) -> NarrativeIntentOutput:
+        """
+        Parse player natural language input for mechanical action classification.
+
+        This is used by the NarrativeResolver to understand what the player wants
+        to do and classify it for routing to the appropriate resolver (spell,
+        hazard, exploration, creative, etc.).
+
+        Unlike parse_intent() which maps to action IDs (dungeon:search),
+        this method maps to ActionCategory/ActionType for mechanical resolution.
+
+        Args:
+            player_input: Raw natural language from player
+            current_state: Current GameState value
+            character_name: Name of the acting character
+            character_class: Character's class
+            character_level: Character's level
+            character_abilities: Dict of ability scores {STR: 14, DEX: 12, ...}
+            location_type: wilderness, dungeon, settlement
+            location_description: Brief description of current location
+            visible_features: List of visible features (doors, items, NPCs)
+            in_combat: Whether combat is active
+            visible_enemies: List of visible enemies
+            recent_actions: Recent player actions for context
+            known_spell_names: List of spells the character knows
+
+        Returns:
+            NarrativeIntentOutput with action classification, resolution hints, etc.
+        """
+        import json
+
+        inputs = NarrativeIntentInputs(
+            player_input=player_input,
+            current_state=current_state,
+            character_name=character_name,
+            character_class=character_class,
+            character_level=character_level,
+            character_abilities=character_abilities or {},
+            location_type=location_type,
+            location_description=location_description,
+            visible_features=visible_features or [],
+            in_combat=in_combat,
+            visible_enemies=visible_enemies or [],
+            recent_actions=recent_actions or [],
+            known_spell_names=known_spell_names or [],
+        )
+
+        schema = NarrativeIntentSchema(inputs)
+
+        # Execute and get raw result
+        result = self._execute_schema(schema)
+
+        # Parse the JSON response
+        try:
+            parsed = json.loads(result.content)
+            return NarrativeIntentOutput(
+                action_category=parsed.get("action_category", "narrative"),
+                action_type=parsed.get("action_type", "narrative_action"),
+                confidence=float(parsed.get("confidence", 0.5)),
+                target_type=parsed.get("target_type", ""),
+                target_description=parsed.get("target_description", ""),
+                spell_name=parsed.get("spell_name", ""),
+                proposed_approach=parsed.get("proposed_approach", ""),
+                suggested_resolution=parsed.get("suggested_resolution", "check_required"),
+                suggested_check=parsed.get("suggested_check", "none"),
+                check_modifier=int(parsed.get("check_modifier", 0)),
+                rule_reference=parsed.get("rule_reference", ""),
+                is_adventurer_competency=parsed.get("is_adventurer_competency", False),
+                requires_clarification=parsed.get("requires_clarification", False),
+                clarification_prompt=parsed.get("clarification_prompt", ""),
+                reasoning=parsed.get("reasoning", ""),
+            )
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.warning(f"Failed to parse narrative intent response: {e}")
+            # Return a safe fallback - treat as narrative action
+            return NarrativeIntentOutput(
+                action_category="narrative",
+                action_type="narrative_action",
+                confidence=0.3,
+                suggested_resolution="narrative_only",
+                suggested_check="none",
+                requires_clarification=True,
+                clarification_prompt="What exactly are you trying to do?",
                 reasoning=f"Parse error: {e}",
             )
 

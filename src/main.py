@@ -62,6 +62,13 @@ from src.ai import (
 )
 from src.ai.lore_search import create_lore_search, LoreSearchInterface
 from src.narrative import NarrationContext
+from src.narrative.intent_parser import (
+    ParsedIntent,
+    ActionCategory,
+    ActionType,
+    ResolutionType,
+    CheckType,
+)
 
 # Conversation-first interface
 from src.conversation import ConversationFacade, TurnResponse, SuggestedAction
@@ -223,6 +230,8 @@ class VirtualDM:
         narrative_resolver = self.controller.get_narrative_resolver()
         if narrative_resolver:
             narrative_resolver.set_narration_callback(self._narrate_from_context)
+            # Set up LLM intent parser (Upgrade A Extension)
+            narrative_resolver.set_intent_parser(self._parse_narrative_intent_callback)
 
     def _narrate_from_context(
         self,
@@ -269,6 +278,133 @@ class VirtualDM:
             resources_consumed=context.resources_consumed,
             narrative_hints=context.narrative_hints,
             rule_reference=context.rule_reference or "",
+        )
+
+    def _parse_narrative_intent_callback(
+        self,
+        player_input: str,
+        context: dict[str, Any],
+    ) -> ParsedIntent:
+        """
+        LLM-based intent parsing callback for NarrativeResolver.
+
+        Converts player natural language to ParsedIntent using the DM Agent.
+        Falls back to a basic ParsedIntent if LLM is unavailable.
+
+        Args:
+            player_input: Raw player input text
+            context: Context dict with game_state, location, etc.
+
+        Returns:
+            ParsedIntent for routing to appropriate resolver
+        """
+        if not self._dm_agent or not self._dm_agent.is_available():
+            # No LLM available - return a fallback that triggers pattern matching
+            return ParsedIntent(
+                action_category=ActionCategory.UNKNOWN,
+                action_type=ActionType.UNKNOWN,
+                confidence=0.0,
+                raw_input=player_input,
+                requires_clarification=True,
+                clarification_prompt="What would you like to do?",
+            )
+
+        # Extract context information
+        game_state = context.get("game_state", "unknown")
+        location_type = context.get("location_type", "")
+        location_desc = context.get("location_description", "")
+        visible_features = context.get("visible_features", [])
+        in_combat = context.get("in_combat", False)
+        visible_enemies = context.get("visible_enemies", [])
+        recent_actions = context.get("recent_actions", [])
+
+        # Get character info if available
+        character = context.get("character")
+        character_name = ""
+        character_class = ""
+        character_level = 1
+        character_abilities = {}
+        known_spells = []
+
+        if character:
+            character_name = getattr(character, "name", "")
+            character_class = getattr(character, "character_class", "")
+            character_level = getattr(character, "level", 1)
+            # Get abilities if available
+            if hasattr(character, "abilities"):
+                abilities = character.abilities
+                if abilities:
+                    character_abilities = {
+                        "STR": getattr(abilities, "strength", 10),
+                        "DEX": getattr(abilities, "dexterity", 10),
+                        "CON": getattr(abilities, "constitution", 10),
+                        "INT": getattr(abilities, "intelligence", 10),
+                        "WIS": getattr(abilities, "wisdom", 10),
+                        "CHA": getattr(abilities, "charisma", 10),
+                    }
+            # Get known spells
+            if hasattr(character, "spells"):
+                known_spells = [s.name for s in character.spells if hasattr(s, "name")]
+
+        # Call LLM to parse intent
+        llm_result = self._dm_agent.parse_narrative_intent(
+            player_input=player_input,
+            current_state=game_state,
+            character_name=character_name,
+            character_class=character_class,
+            character_level=character_level,
+            character_abilities=character_abilities,
+            location_type=location_type,
+            location_description=location_desc,
+            visible_features=visible_features,
+            in_combat=in_combat,
+            visible_enemies=visible_enemies,
+            recent_actions=recent_actions,
+            known_spell_names=known_spells,
+        )
+
+        # Convert NarrativeIntentOutput to ParsedIntent
+        # Map string values to enums
+        try:
+            action_category = ActionCategory(llm_result.action_category)
+        except ValueError:
+            action_category = ActionCategory.UNKNOWN
+
+        try:
+            action_type = ActionType(llm_result.action_type)
+        except ValueError:
+            action_type = ActionType.UNKNOWN
+
+        try:
+            resolution_type = ResolutionType(llm_result.suggested_resolution)
+        except ValueError:
+            resolution_type = ResolutionType.CHECK_REQUIRED
+
+        try:
+            check_type = CheckType(llm_result.suggested_check)
+        except ValueError:
+            check_type = CheckType.NONE
+
+        return ParsedIntent(
+            action_category=action_category,
+            action_type=action_type,
+            confidence=llm_result.confidence,
+            raw_input=player_input,
+            target_type=llm_result.target_type or None,
+            target_description=llm_result.target_description or None,
+            spell_name=llm_result.spell_name or None,
+            proposed_approach=llm_result.proposed_approach or None,
+            applicable_rule=llm_result.rule_reference or None,
+            suggested_resolution=resolution_type,
+            suggested_check=check_type,
+            check_modifier=llm_result.check_modifier,
+            requires_check=resolution_type not in (
+                ResolutionType.AUTO_SUCCESS,
+                ResolutionType.AUTO_FAIL,
+                ResolutionType.NARRATIVE_ONLY,
+            ),
+            requires_clarification=llm_result.requires_clarification,
+            clarification_prompt=llm_result.clarification_prompt or None,
         )
 
     # =========================================================================
