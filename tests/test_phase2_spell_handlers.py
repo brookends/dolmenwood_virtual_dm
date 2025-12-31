@@ -206,12 +206,17 @@ class TestEnCrouteHandler:
         assert "restrained" in result["conditions_applied"]
 
     def test_en_croute_strength_affects_escape_time(self, spell_resolver, mock_caster, mock_dice_roller):
-        """Escape time should vary based on Strength."""
+        """Escape time should vary based on Strength (STR 18+ uses rounds)."""
         save_roll = MagicMock()
         save_roll.total = 5
         mock_dice_roller.roll_d20 = MagicMock(return_value=save_roll)
 
-        # Mock target with high strength
+        # Mock 1d4 roll for STR 18+ escape time
+        escape_roll = MagicMock()
+        escape_roll.total = 2
+        mock_dice_roller.roll = MagicMock(return_value=escape_roll)
+
+        # Mock target with high strength (18+)
         mock_target = MagicMock()
         mock_target.strength = 18
         mock_target.get_saving_throw = MagicMock(return_value=0)
@@ -221,12 +226,13 @@ class TestEnCrouteHandler:
             mock_caster, ["strong_target"], mock_dice_roller
         )
 
-        # STR 18 should give 1 round escape time
-        assert result["escape_rounds"] == 1
+        # STR 18+ should give 1d4 ROUNDS escape time (per source material)
+        assert result["escape_time"] == 2  # From the mocked 1d4 roll
+        assert result["escape_unit"] == "rounds"
         assert result["target_strength"] == 18
 
     def test_en_croute_low_strength_longer_escape(self, spell_resolver, mock_caster, mock_dice_roller):
-        """Low strength should result in longer escape time."""
+        """Low strength should result in longer escape time in TURNS."""
         save_roll = MagicMock()
         save_roll.total = 5
         mock_dice_roller.roll_d20 = MagicMock(return_value=save_roll)
@@ -241,8 +247,27 @@ class TestEnCrouteHandler:
             mock_caster, ["weak_target"], mock_dice_roller
         )
 
-        # STR 5 should give 6 rounds escape time
-        assert result["escape_rounds"] == 6
+        # STR 5 or less should give 6 TURNS escape time (per source material)
+        assert result["escape_time"] == 6
+        assert result["escape_unit"] == "turns"
+
+    def test_en_croute_medium_strength_escape_time(self, spell_resolver, mock_caster, mock_dice_roller):
+        """Medium strength (9-12) should give 3 turns escape time."""
+        save_roll = MagicMock()
+        save_roll.total = 5
+        mock_dice_roller.roll_d20 = MagicMock(return_value=save_roll)
+
+        mock_target = MagicMock()
+        mock_target.strength = 10
+        mock_target.get_saving_throw = MagicMock(return_value=0)
+        spell_resolver._controller.get_character.return_value = mock_target
+
+        result = spell_resolver._handle_en_croute(
+            mock_caster, ["avg_target"], mock_dice_roller
+        )
+
+        assert result["escape_time"] == 3
+        assert result["escape_unit"] == "turns"
 
     def test_en_croute_edible_property(self, spell_resolver, mock_caster, mock_dice_roller):
         """Should indicate pastry is edible for ally escape."""
@@ -562,3 +587,83 @@ class TestPhase2ConditionApplication:
         call_args = spell_resolver._controller.apply_condition.call_args
         assert call_args[0][0] == "target_1"
         assert call_args[0][1] == "frightened"
+
+
+# =============================================================================
+# INTEGRATION TESTS WITH ACTUAL SPELL DATA
+# =============================================================================
+
+
+class TestPhase2SpellDataIntegration:
+    """Integration tests that verify handlers work with actual spell JSON data."""
+
+    @pytest.fixture
+    def spell_data_loader(self):
+        """Load actual spell data from JSON files."""
+        import json
+        from pathlib import Path
+
+        data_dir = Path(__file__).parent.parent / "data" / "content" / "spells"
+
+        def load_spell(filename: str, spell_id: str) -> dict:
+            filepath = data_dir / filename
+            with open(filepath) as f:
+                data = json.load(f)
+            for item in data.get("items", []):
+                if item.get("spell_id") == spell_id:
+                    return item
+            raise ValueError(f"Spell {spell_id} not found in {filename}")
+
+        return load_spell
+
+    def test_deathly_blossom_matches_source_data(self, spell_data_loader):
+        """Verify Deathly Blossom spell data exists and has expected structure."""
+        spell = spell_data_loader("lesser_runes.json", "deathly_blossom")
+
+        assert spell["name"] == "Deathly Blossom"
+        assert spell["magic_type"] == "rune"
+        assert "Save Versus Doom" in spell["description"]
+        assert "1d6 Turns" in spell["description"]
+        assert "appearing dead" in spell["description"]
+
+    def test_en_croute_matches_source_data(self, spell_data_loader):
+        """Verify En Croute spell data exists and has expected structure."""
+        spell = spell_data_loader("hidden_spells.json", "en_croute")
+
+        assert spell["name"] == "En Croute"
+        assert spell["level"] == 2
+        assert spell["magic_type"] == "arcane"
+        # Verify Strength-based escape times are documented
+        assert "Strength" in spell["description"]
+        assert "six Turns" in spell["description"] or "6" in spell["description"]
+
+    def test_awe_matches_source_data(self, spell_data_loader):
+        """Verify Awe glamour data exists and has expected structure."""
+        spell = spell_data_loader("glamours.json", "awe")
+
+        assert spell["name"] == "Awe"
+        assert spell["magic_type"] == "fairy_glamour"
+        assert "Morale Check" in spell["description"]
+        assert "1d4 Rounds" in spell["description"] or "1d4 Rounds" in spell.get("duration", "")
+
+    def test_animal_growth_matches_source_data(self, spell_data_loader):
+        """Verify Animal Growth spell data exists and has expected structure."""
+        spell = spell_data_loader("holy_level_3.json", "animal_growth")
+
+        assert spell["name"] == "Animal Growth"
+        assert spell["magic_type"] == "divine" or spell["magic_type"] == "holy"
+        assert "double" in spell["description"].lower()
+
+    def test_all_phase2_spells_have_valid_spell_ids(self, spell_data_loader):
+        """Verify all Phase 2 spell_ids match the dispatcher registration."""
+        # These are the spell_ids registered in the dispatcher
+        phase2_spells = [
+            ("lesser_runes.json", "deathly_blossom"),
+            ("hidden_spells.json", "en_croute"),
+            ("glamours.json", "awe"),
+            ("holy_level_3.json", "animal_growth"),
+        ]
+
+        for filename, spell_id in phase2_spells:
+            spell = spell_data_loader(filename, spell_id)
+            assert spell["spell_id"] == spell_id, f"Mismatch for {spell_id}"

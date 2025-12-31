@@ -4797,43 +4797,52 @@ class SpellResolver:
             }
 
         # Save failed - calculate escape time based on Strength
-        # Strength-based escape time (invented mechanic matching B/X feel)
-        # STR 3-5: 6 rounds, STR 6-8: 5 rounds, STR 9-12: 4 rounds,
-        # STR 13-15: 3 rounds, STR 16-17: 2 rounds, STR 18: 1 round
-        if strength <= 5:
-            escape_rounds = 6
-        elif strength <= 8:
-            escape_rounds = 5
-        elif strength <= 12:
-            escape_rounds = 4
-        elif strength <= 15:
-            escape_rounds = 3
-        elif strength <= 17:
-            escape_rounds = 2
+        # Per Dolmenwood source: escape times in TURNS (except STR 18+ which is 1d4 Rounds)
+        # STR 5 or less: 6 Turns, STR 6-8: 4 Turns, STR 9-12: 3 Turns,
+        # STR 13-15: 2 Turns, STR 16-17: 1 Turn, STR 18+: 1d4 Rounds
+        if strength >= 18:
+            # STR 18+ escapes in 1d4 Rounds (much faster!)
+            escape_time = dice.roll("1d4").total
+            escape_unit = "rounds"
+        elif strength >= 16:
+            escape_time = 1
+            escape_unit = "turns"
+        elif strength >= 13:
+            escape_time = 2
+            escape_unit = "turns"
+        elif strength >= 9:
+            escape_time = 3
+            escape_unit = "turns"
+        elif strength >= 6:
+            escape_time = 4
+            escape_unit = "turns"
         else:
-            escape_rounds = 1
+            escape_time = 6
+            escape_unit = "turns"
 
         # Apply the condition via controller if available
         if self._controller and target_char:
             self._controller.apply_condition(
-                target_id, "restrained", f"En Croute ({escape_rounds} rounds)"
+                target_id, "restrained", f"En Croute ({escape_time} {escape_unit})"
             )
 
         # Register as active spell effect
+        duration_type = DurationType.ROUNDS if escape_unit == "rounds" else DurationType.TURNS
         effect = ActiveSpellEffect(
             spell_id="en_croute",
             spell_name="En Croute",
             caster_id=caster.character_id,
             target_id=target_id,
             effect_type=SpellEffectType.MECHANICAL,
-            duration_type=DurationType.ROUNDS,
-            duration_remaining=escape_rounds,
-            duration_unit="rounds",
+            duration_type=duration_type,
+            duration_remaining=escape_time,
+            duration_unit=escape_unit,
             created_at=datetime.now(),
             mechanical_effects={
                 "condition": "restrained",
-                "escape_rounds_remaining": escape_rounds,
-                "original_escape_time": escape_rounds,
+                "escape_time_remaining": escape_time,
+                "escape_unit": escape_unit,
+                "original_escape_time": escape_time,
                 "target_strength": strength,
                 "edible": True,  # Allies can eat to free!
             },
@@ -4847,16 +4856,18 @@ class SpellResolver:
             "save_roll": save_roll.total,
             "save_total": save_total,
             "conditions_applied": ["restrained"],
-            "escape_rounds": escape_rounds,
+            "escape_time": escape_time,
+            "escape_unit": escape_unit,
             "target_strength": strength,
             "narrative_context": {
                 "encased": True,
-                "escape_time": escape_rounds,
+                "escape_time": escape_time,
+                "escape_unit": escape_unit,
                 "edible": True,
                 "hints": [
                     "golden pastry rapidly encases the target",
                     "a delicious aroma fills the air",
-                    f"with STR {strength}, escape will take {escape_rounds} rounds",
+                    f"with STR {strength}, escape will take {escape_time} {escape_unit}",
                     "allies could help by... eating the crust",
                 ],
             },

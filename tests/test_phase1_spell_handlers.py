@@ -455,3 +455,85 @@ class TestSpellHandlerWithRealController:
         assert effect.caster_id == mock_caster.character_id
         assert effect.target_id == mock_caster.character_id
         assert effect.mechanical_effects["underwater_breathing"] is True
+
+
+# =============================================================================
+# INTEGRATION TESTS WITH ACTUAL SPELL DATA
+# =============================================================================
+
+
+class TestPhase1SpellDataIntegration:
+    """Integration tests that verify handlers work with actual spell JSON data."""
+
+    @pytest.fixture
+    def spell_data_loader(self):
+        """Load actual spell data from JSON files."""
+        import json
+        from pathlib import Path
+
+        data_dir = Path(__file__).parent.parent / "data" / "content" / "spells"
+
+        def load_spell(filename: str, spell_id: str) -> dict:
+            filepath = data_dir / filename
+            with open(filepath) as f:
+                data = json.load(f)
+            for item in data.get("items", []):
+                if item.get("spell_id") == spell_id:
+                    return item
+            raise ValueError(f"Spell {spell_id} not found in {filename}")
+
+        return load_spell
+
+    def test_ventriloquism_matches_source_data(self, spell_data_loader):
+        """Verify Ventriloquism spell data exists and has expected structure."""
+        spell = spell_data_loader("arcane_level_1_2.json", "ventriloquism")
+
+        assert spell["name"] == "Ventriloquism"
+        assert spell["level"] == 1
+        assert spell["magic_type"] == "arcane"
+
+    def test_create_food_matches_source_data(self, spell_data_loader):
+        """Verify Create Food spell data exists and has expected structure."""
+        spell = spell_data_loader("holy_level_5.json", "create_food")
+
+        assert spell["name"] == "Create Food"
+        assert "12 people" in spell["description"]
+        assert "12 mounts" in spell["description"]
+
+    def test_create_water_matches_source_data(self, spell_data_loader):
+        """Verify Create Water spell data exists and has expected structure."""
+        spell = spell_data_loader("holy_level_4.json", "create_water")
+
+        assert spell["name"] == "Create Water"
+        assert "50 gallons" in spell["description"]
+
+    def test_air_sphere_matches_source_data(self, spell_data_loader):
+        """Verify Air Sphere spell data exists and has expected structure."""
+        spell = spell_data_loader("arcane_level_5_1.json", "air_sphere")
+
+        assert spell["name"] == "Air Sphere"
+        assert spell["level"] == 5
+        # Note: Data uses ′ (prime) not ' (apostrophe) for feet
+        assert "10′" in spell["description"] or "10'" in spell["description"]
+        assert "breathable air" in spell["description"].lower()
+
+    def test_detect_disguise_matches_source_data(self, spell_data_loader):
+        """Verify Detect Disguise spell data exists and has expected structure."""
+        spell = spell_data_loader("hidden_spells.json", "detect_disguise")
+
+        assert spell["name"] == "Detect Disguise"
+        assert "mundane" in spell["description"].lower()
+
+    def test_all_phase1_spells_have_valid_spell_ids(self, spell_data_loader):
+        """Verify all Phase 1 spell_ids match the dispatcher registration."""
+        phase1_spells = [
+            ("arcane_level_1_2.json", "ventriloquism"),
+            ("holy_level_5.json", "create_food"),
+            ("holy_level_4.json", "create_water"),
+            ("arcane_level_5_1.json", "air_sphere"),
+            ("hidden_spells.json", "detect_disguise"),
+        ]
+
+        for filename, spell_id in phase1_spells:
+            spell = spell_data_loader(filename, spell_id)
+            assert spell["spell_id"] == spell_id, f"Mismatch for {spell_id}"
