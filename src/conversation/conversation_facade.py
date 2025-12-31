@@ -13,11 +13,13 @@ This file wires those action ids to concrete engine calls.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 import re
 import random
 
-from src.main import VirtualDM
+if TYPE_CHECKING:
+    from src.main import VirtualDM
+
 from src.data_models import LightSourceType
 from src.game_state.state_machine import GameState
 from src.dungeon.dungeon_engine import DungeonActionType
@@ -408,14 +410,15 @@ class ConversationFacade:
             }.get(like, Likelihood.FIFTY_FIFTY)
 
             r = self.mythic.fate_check(q, likelihood)
-            msg = f"Oracle: {r.answer.value} (roll={r.roll}, chaos={r.chaos_factor})"
-            if r.exceptional:
-                msg += " [Exceptional]"
+            result_str = r.result.value.replace("_", " ").title()
+            msg = f"Oracle: {result_str} (roll={r.roll}, chaos={r.chaos_factor})"
+            if r.random_event_triggered and r.random_event:
+                msg += f" [Random Event: {r.random_event}]"
             return self._response([ChatMessage("system", msg)])
 
         if action_id == "oracle:random_event":
             ev = self.mythic.generate_random_event()
-            msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.meaning.action} / {ev.meaning.subject}"
+            msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.action} / {ev.subject}"
             return self._response([ChatMessage("system", msg)])
 
         if action_id == "oracle:detail_check":

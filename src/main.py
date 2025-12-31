@@ -63,6 +63,9 @@ from src.ai import (
 from src.ai.lore_search import create_lore_search, LoreSearchInterface
 from src.narrative import NarrationContext
 
+# Conversation-first interface
+from src.conversation import ConversationFacade, TurnResponse, SuggestedAction
+
 
 # Configure logging
 def setup_logging(verbose: bool = False) -> None:
@@ -1648,6 +1651,9 @@ class DolmenwoodCLI:
     def __init__(self, dm: VirtualDM):
         self.dm = dm
         self.running = False
+        # Conversation-first interface
+        self.conv = ConversationFacade(dm)
+        self.last_suggestions: list[SuggestedAction] = []
         self.commands = {
             "status": self.cmd_status,
             "help": self.cmd_help,
@@ -1673,7 +1679,10 @@ class DolmenwoodCLI:
         print("\n" + "=" * 60)
         print("DOLMENWOOD VIRTUAL DM - Interactive Mode")
         print("=" * 60)
-        print("Type 'help' for available commands, 'quit' to exit.\n")
+        print("Type 'help' for commands, or type naturally / select a number.\n")
+
+        # Show initial suggestions
+        self._show_initial_suggestions()
 
         while self.running:
             try:
@@ -1692,6 +1701,18 @@ class DolmenwoodCLI:
 
     def process_command(self, user_input: str) -> None:
         """Process a user command."""
+        # Handle numeric input as suggestion selection
+        if user_input.strip().isdigit() and self.last_suggestions:
+            idx = int(user_input.strip()) - 1
+            if 0 <= idx < len(self.last_suggestions):
+                action = self.last_suggestions[idx]
+                turn = self.conv.handle_action(action.id, action.params)
+                self._render_turn(turn)
+                return
+            else:
+                print(f"Invalid selection. Choose 1-{len(self.last_suggestions)}.")
+                return
+
         parts = user_input.split(maxsplit=1)
         cmd = parts[0].lower()
         args = parts[1] if len(parts) > 1 else ""
@@ -1699,7 +1720,9 @@ class DolmenwoodCLI:
         if cmd in self.commands:
             self.commands[cmd](args)
         else:
-            print(f"Unknown command: {cmd}. Type 'help' for available commands.")
+            # Treat unknown commands as natural language chat
+            turn = self.conv.handle_chat(user_input)
+            self._render_turn(turn)
 
     def cmd_help(self, args: str) -> None:
         """Show help information."""
@@ -1881,6 +1904,52 @@ Available Commands:
             else:
                 print(f"  Slot {slot}: {name}")
         print("-" * 50)
+
+    # =========================================================================
+    # CONVERSATION-FIRST HELPERS
+    # =========================================================================
+
+    def _show_initial_suggestions(self) -> None:
+        """Show initial suggestions on startup."""
+        try:
+            from src.conversation.suggestion_builder import build_suggestions
+            suggestions = build_suggestions(self.dm, limit=9)
+            self._render_suggestions(suggestions)
+        except Exception as e:
+            logger.debug(f"Could not show initial suggestions: {e}")
+
+    def _render_turn(self, turn: TurnResponse) -> None:
+        """Render a conversation turn response."""
+        # Render messages
+        for msg in turn.messages:
+            if msg.role == "system":
+                print(f"[System] {msg.content}")
+            elif msg.role == "dm":
+                print(f"\n{msg.content}")
+            elif msg.role == "player":
+                print(f"[You] {msg.content}")
+            else:
+                print(msg.content)
+
+        # Show clarification prompt if needed
+        if turn.requires_clarification and turn.clarification_prompt:
+            print(f"\n? {turn.clarification_prompt}")
+
+        # Render suggestions
+        self._render_suggestions(turn.suggested_actions)
+
+    def _render_suggestions(self, suggestions: list[SuggestedAction]) -> None:
+        """Render numbered suggestions."""
+        self.last_suggestions = suggestions[:9]  # Max 9 for single-digit selection
+
+        if not self.last_suggestions:
+            return
+
+        print("\n--- Suggested Actions ---")
+        for i, action in enumerate(self.last_suggestions, 1):
+            safe_marker = "" if action.safe_to_execute else " [!]"
+            print(f"  {i}. {action.label}{safe_marker}")
+        print()
 
 
 # =============================================================================

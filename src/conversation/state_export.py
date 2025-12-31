@@ -8,9 +8,11 @@ Keeping this separate prevents UI from reaching into internal state.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
-from src.main import VirtualDM
+if TYPE_CHECKING:
+    from src.main import VirtualDM
+
 from src.observability.run_log import RunLog, LogEvent
 
 
