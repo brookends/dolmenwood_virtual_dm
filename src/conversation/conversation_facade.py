@@ -28,6 +28,7 @@ from src.encounter.encounter_engine import EncounterAction
 from src.conversation.types import TurnResponse, ChatMessage
 from src.conversation.suggestion_builder import build_suggestions
 from src.conversation.state_export import export_public_state, EventStream
+from src.conversation.action_registry import get_default_registry, ActionRegistry
 
 # Mythic oracle (present in this repo)
 from src.oracle.mythic_gme import MythicGME, Likelihood
@@ -70,6 +71,9 @@ class ConversationFacade:
         # Track recent context for LLM parsing
         self._recent_actions: list[str] = []
         self._max_recent: int = 5
+
+        # Action registry for unified action routing
+        self._registry: ActionRegistry = get_default_registry()
 
     # ---------------------------------------------------------------------
     # Public API
@@ -170,6 +174,27 @@ class ConversationFacade:
         """Execute a clicked suggestion (action_id + params)."""
 
         params = params or {}
+
+        # ------------------------------------------------------------------
+        # Try ActionRegistry first (Upgrade B: Unified action routing)
+        # ------------------------------------------------------------------
+        spec = self._registry.get(action_id)
+        if spec and spec.executor:
+            result = self._registry.execute(self.dm, action_id, params)
+            if result.get("success", False):
+                msg = result.get("message", "Action completed.")
+                narration = result.get("narration")
+                messages = [ChatMessage("system", msg)]
+                if narration:
+                    messages.append(ChatMessage("dm", narration))
+                return self._response(messages)
+            else:
+                # Executor returned failure - return error message
+                return self._response([ChatMessage("system", result.get("message", "Action failed."))])
+
+        # ------------------------------------------------------------------
+        # Fallback: Legacy if-chain for actions without executors
+        # ------------------------------------------------------------------
 
         # ------------------------------------------------------------------
         # Meta

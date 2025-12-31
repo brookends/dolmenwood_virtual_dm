@@ -175,17 +175,74 @@ def _create_default_registry() -> ActionRegistry:
     # -------------------------------------------------------------------------
     # Meta actions (always available)
     # -------------------------------------------------------------------------
+    def _meta_status(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Generate status summary matching ConversationFacade format."""
+        from src.game_state.state_machine import GameState
+
+        ps = dm.controller.party_state
+        ws = dm.controller.world_state
+        parts = [f"Mode: {dm.current_state.value}"]
+        parts.append(f"Location: {ps.location.location_id} ({ps.location.location_type})")
+        parts.append(f"Time: {ws.current_date} {ws.current_time}")
+        if ps.active_light_source and ps.light_remaining_turns > 0:
+            parts.append(f"Light: {ps.active_light_source} ({ps.light_remaining_turns} turn(s) left)")
+        else:
+            parts.append("Light: none")
+        if dm.current_state == GameState.WILDERNESS_TRAVEL:
+            tp = getattr(dm.hex_crawl, "_travel_points_remaining", None)
+            tpt = getattr(dm.hex_crawl, "_travel_points_total", None)
+            if tp is not None and tpt is not None:
+                parts.append(f"Travel Points: {tp}/{tpt}")
+        if dm.current_state == GameState.DUNGEON_EXPLORATION:
+            try:
+                summ = dm.dungeon.get_exploration_summary()
+                parts.append(f"Dungeon Turns since rest: {summ.get('turns_since_rest')}/5")
+            except Exception:
+                pass
+        return {"success": True, "message": "\n".join(parts)}
+
     registry.register(ActionSpec(
         id="meta:status",
         label="Show status / summary",
         category=ActionCategory.META,
         help="Print a compact summary of current mode, time, and party state.",
-        executor=lambda dm, p: {"success": True, "message": dm.status()},
+        executor=_meta_status,
     ))
 
     # -------------------------------------------------------------------------
     # Oracle actions (always available)
     # -------------------------------------------------------------------------
+    def _oracle_fate_check(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Execute oracle fate check."""
+        from src.oracle.mythic_gme import MythicGME, Likelihood
+        import random
+
+        q = (p.get("question") or "").strip()
+        if not q:
+            return {"success": False, "message": "Oracle requires a yes/no question."}
+
+        like = (p.get("likelihood") or "fifty_fifty").strip().lower()
+        likelihood_map = {
+            "impossible": Likelihood.IMPOSSIBLE,
+            "very_unlikely": Likelihood.VERY_UNLIKELY,
+            "unlikely": Likelihood.UNLIKELY,
+            "fifty_fifty": Likelihood.FIFTY_FIFTY,
+            "likely": Likelihood.LIKELY,
+            "very_likely": Likelihood.VERY_LIKELY,
+            "near_sure_thing": Likelihood.NEAR_SURE_THING,
+            "a_sure_thing": Likelihood.A_SURE_THING,
+            "has_to_be": Likelihood.HAS_TO_BE,
+        }
+        likelihood = likelihood_map.get(like, Likelihood.FIFTY_FIFTY)
+
+        mythic = MythicGME(rng=random.Random())
+        r = mythic.fate_check(q, likelihood)
+        result_str = r.result.value.replace("_", " ").title()
+        msg = f"Oracle: {result_str} (roll={r.roll}, chaos={r.chaos_factor})"
+        if r.random_event_triggered and r.random_event:
+            msg += f" [Random Event: {r.random_event}]"
+        return {"success": True, "message": msg}
+
     registry.register(ActionSpec(
         id="oracle:fate_check",
         label="Ask the Oracle (yes/no)",
@@ -195,20 +252,43 @@ def _create_default_registry() -> ActionRegistry:
             "likelihood": {"type": "string", "required": False},
         },
         help="Ask a yes/no question to the Mythic GME oracle.",
+        executor=_oracle_fate_check,
     ))
+
+    def _oracle_random_event(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Generate a random event."""
+        from src.oracle.mythic_gme import MythicGME
+        import random
+
+        mythic = MythicGME(rng=random.Random())
+        ev = mythic.generate_random_event()
+        msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.action} / {ev.subject}"
+        return {"success": True, "message": msg}
 
     registry.register(ActionSpec(
         id="oracle:random_event",
         label="Mythic: Random Event",
         category=ActionCategory.ORACLE,
         help="Generate a random event using Mythic GME.",
+        executor=_oracle_random_event,
     ))
+
+    def _oracle_detail_check(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Get a detail check word pair."""
+        from src.oracle.mythic_gme import MythicGME
+        import random
+
+        mythic = MythicGME(rng=random.Random())
+        m = mythic.detail_check()
+        msg = f"Detail Check — {m.action} / {m.subject}"
+        return {"success": True, "message": msg}
 
     registry.register(ActionSpec(
         id="oracle:detail_check",
         label="Mythic: Detail Check",
         category=ActionCategory.ORACLE,
         help="Get an action/subject word pair for interpretation.",
+        executor=_oracle_detail_check,
     ))
 
     # -------------------------------------------------------------------------
@@ -226,13 +306,48 @@ def _create_default_registry() -> ActionRegistry:
         executor=lambda dm, p: dm.travel_to_hex(p.get("hex_id", "")),
     ))
 
+    def _wilderness_look_around(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Survey surroundings for hints and landmarks."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        try:
+            hints = dm.hex_crawl.get_sensory_hints(hex_id)
+        except Exception:
+            hints = []
+        try:
+            overview = dm.hex_crawl.get_hex_overview(hex_id)
+            visible = getattr(overview, "visible_locations", []) or []
+        except Exception:
+            visible = dm.hex_crawl.get_visible_pois(hex_id)
+
+        lines = [f"Location: {hex_id}"]
+        if hints:
+            lines.append("Sensory hints:")
+            lines.extend([f"- {h}" for h in hints[:6]])
+        if visible:
+            lines.append("Visible locations:")
+            for v in visible[:6]:
+                if isinstance(v, dict):
+                    t = v.get("type", "location")
+                    b = v.get("brief")
+                    lines.append(f"- {t}" + (f": {b}" if b else ""))
+                else:
+                    lines.append(f"- {v}")
+        return {"success": True, "message": "\n".join(lines)}
+
     registry.register(ActionSpec(
         id="wilderness:look_around",
         label="Look around",
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Survey your surroundings for sensory hints and visible landmarks.",
+        executor=_wilderness_look_around,
     ))
+
+    def _wilderness_search_hex(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Search the current hex thoroughly."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        result = dm.hex_crawl.search_hex(hex_id)
+        return {"success": True, "message": result.get("message", "Searched the hex.")}
 
     registry.register(ActionSpec(
         id="wilderness:search_hex",
@@ -240,7 +355,15 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Spend time searching the current hex for hidden features.",
+        executor=_wilderness_search_hex,
     ))
+
+    def _wilderness_forage(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Forage for food/water."""
+        character_id = p.get("character_id")
+        rr = dm.hex_crawl.handle_player_action("forage", character_id)
+        msg = rr.narration if rr.narration else "Foraging completed."
+        return {"success": True, "message": msg}
 
     registry.register(ActionSpec(
         id="wilderness:forage",
@@ -248,7 +371,15 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Search for edible plants, water sources, or small game.",
+        executor=_wilderness_forage,
     ))
+
+    def _wilderness_hunt(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Hunt for larger game."""
+        character_id = p.get("character_id")
+        rr = dm.hex_crawl.handle_player_action("hunt", character_id)
+        msg = rr.narration if rr.narration else "Hunting completed."
+        return {"success": True, "message": msg}
 
     registry.register(ActionSpec(
         id="wilderness:hunt",
@@ -256,7 +387,13 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Actively hunt for larger game.",
+        executor=_wilderness_hunt,
     ))
+
+    def _wilderness_end_day(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """End travel day and make camp."""
+        result = dm.hex_crawl.end_travel_day()
+        return {"success": True, "message": result.get("message", "Ended the travel day.")}
 
     registry.register(ActionSpec(
         id="wilderness:end_day",
@@ -264,7 +401,15 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="End the travel day and make camp.",
+        executor=_wilderness_end_day,
     ))
+
+    def _wilderness_approach_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Approach a point of interest."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        poi_index = int(p.get("poi_index", 0))
+        result = dm.hex_crawl.approach_poi(hex_id, poi_index)
+        return {"success": True, "message": result.get("message", "You approach the location.")}
 
     registry.register(ActionSpec(
         id="wilderness:approach_poi",
@@ -275,7 +420,16 @@ def _create_default_registry() -> ActionRegistry:
             "hex_id": {"type": "string", "required": False},
         },
         help="Cautiously approach a point of interest in the hex.",
+        executor=_wilderness_approach_poi,
     ))
+
+    def _wilderness_enter_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Enter a point of interest."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        result = dm.hex_crawl.enter_poi(hex_id)
+        if result.get("requires_entry_check"):
+            return {"success": False, "message": result.get("message", "Entry requires conditions.")}
+        return {"success": True, "message": result.get("message", "You enter.")}
 
     registry.register(ActionSpec(
         id="wilderness:enter_poi",
@@ -283,7 +437,14 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Enter a point of interest (settlement, dungeon entrance, etc.).",
+        executor=_wilderness_enter_poi,
     ))
+
+    def _wilderness_leave_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Leave the current point of interest."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        result = dm.hex_crawl.leave_poi(hex_id)
+        return {"success": True, "message": result.get("message", "You depart.")}
 
     registry.register(ActionSpec(
         id="wilderness:leave_poi",
@@ -291,11 +452,27 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.WILDERNESS,
         requires_state="wilderness_travel",
         help="Leave the current point of interest.",
+        executor=_wilderness_leave_poi,
     ))
 
     # -------------------------------------------------------------------------
     # Dungeon actions
     # -------------------------------------------------------------------------
+    def _make_dungeon_executor(action_type_name: str):
+        """Factory for dungeon action executors."""
+        def executor(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+            from src.dungeon.dungeon_engine import DungeonActionType
+            action = getattr(DungeonActionType, action_type_name)
+            turn = dm.dungeon.execute_turn(action, p or None)
+            messages = []
+            for m in (turn.messages or []):
+                messages.append(m)
+            for w in (turn.warnings or []):
+                messages.append(f"Warning: {w}")
+            msg = "\n".join(messages) if messages else turn.action_result.get("message", "Action completed.")
+            return {"success": True, "message": msg}
+        return executor
+
     registry.register(ActionSpec(
         id="dungeon:move",
         label="Move",
@@ -306,6 +483,7 @@ def _create_default_registry() -> ActionRegistry:
             "door_index": {"type": "integer", "required": False},
         },
         help="Move through a door or passage.",
+        executor=_make_dungeon_executor("MOVE"),
     ))
 
     registry.register(ActionSpec(
@@ -314,6 +492,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.DUNGEON,
         requires_state="dungeon_exploration",
         help="Search the current room for hidden features.",
+        executor=_make_dungeon_executor("SEARCH"),
     ))
 
     registry.register(ActionSpec(
@@ -325,6 +504,7 @@ def _create_default_registry() -> ActionRegistry:
             "door_index": {"type": "integer", "required": False},
         },
         help="Listen for sounds beyond a door.",
+        executor=_make_dungeon_executor("LISTEN"),
     ))
 
     registry.register(ActionSpec(
@@ -336,6 +516,7 @@ def _create_default_registry() -> ActionRegistry:
             "door_index": {"type": "integer", "required": False},
         },
         help="Attempt to open a door.",
+        executor=_make_dungeon_executor("OPEN_DOOR"),
     ))
 
     registry.register(ActionSpec(
@@ -348,6 +529,7 @@ def _create_default_registry() -> ActionRegistry:
         },
         safe_to_execute=False,
         help="Attempt to pick a lock (requires thief skills).",
+        executor=_make_dungeon_executor("PICK_LOCK"),
     ))
 
     registry.register(ActionSpec(
@@ -357,6 +539,7 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="dungeon_exploration",
         safe_to_execute=False,
         help="Attempt to disarm a detected trap.",
+        executor=_make_dungeon_executor("DISARM_TRAP"),
     ))
 
     registry.register(ActionSpec(
@@ -365,6 +548,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.DUNGEON,
         requires_state="dungeon_exploration",
         help="Take a short rest to recover.",
+        executor=_make_dungeon_executor("REST"),
     ))
 
     registry.register(ActionSpec(
@@ -373,6 +557,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.DUNGEON,
         requires_state="dungeon_exploration",
         help="Update the party's map with explored areas.",
+        executor=_make_dungeon_executor("MAP"),
     ))
 
     registry.register(ActionSpec(
@@ -384,13 +569,20 @@ def _create_default_registry() -> ActionRegistry:
             "room_id": {"type": "string", "required": True},
         },
         help="Quickly travel to a previously explored room.",
+        executor=_make_dungeon_executor("FAST_TRAVEL"),
     ))
+
+    def _dungeon_exit(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Exit the dungeon."""
+        result = dm.dungeon.exit_dungeon()
+        return {"success": True, "message": result.get("message", "Exited dungeon.")}
 
     registry.register(ActionSpec(
         id="dungeon:exit",
         label="Exit dungeon",
         category=ActionCategory.DUNGEON,
         requires_state="dungeon_exploration",
+        executor=_dungeon_exit,
         help="Leave the dungeon and return to wilderness.",
     ))
 
