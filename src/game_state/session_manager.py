@@ -127,6 +127,7 @@ class NPCStateDelta:
 
     # State changes
     is_dead: bool = False
+    is_removed: bool = False  # NPC was removed from location (fled, banished, etc.)
     is_hostile: bool = False
 
     # Quest state
@@ -146,6 +147,7 @@ class NPCStateDelta:
             "hex_id": self.hex_id,
             "disposition": self.disposition,
             "is_dead": self.is_dead,
+            "is_removed": self.is_removed,
             "is_hostile": self.is_hostile,
             "quests_given": self.quests_given,
             "quests_completed": self.quests_completed,
@@ -161,6 +163,7 @@ class NPCStateDelta:
             hex_id=data["hex_id"],
             disposition=data.get("disposition"),
             is_dead=data.get("is_dead", False),
+            is_removed=data.get("is_removed", False),
             is_hostile=data.get("is_hostile", False),
             quests_given=data.get("quests_given", []),
             quests_completed=data.get("quests_completed", []),
@@ -1049,6 +1052,44 @@ class SessionManager:
             )
 
         return hex_delta.npc_deltas[npc_id]
+
+    def mark_npc_dead(self, hex_id: str, npc_id: str) -> None:
+        """
+        Mark an NPC as dead.
+
+        Args:
+            hex_id: The hex where the NPC is located
+            npc_id: The NPC identifier
+        """
+        delta = self.get_npc_delta(hex_id, npc_id)
+        delta.is_dead = True
+
+    def mark_npc_removed(self, hex_id: str, npc_id: str) -> None:
+        """
+        Mark an NPC as removed from the location (fled, banished, teleported, etc.).
+
+        Args:
+            hex_id: The hex where the NPC was located
+            npc_id: The NPC identifier
+        """
+        delta = self.get_npc_delta(hex_id, npc_id)
+        delta.is_removed = True
+
+    def is_npc_removed(self, hex_id: str, npc_id: str) -> bool:
+        """Check if an NPC has been removed from their location."""
+        if not self._current_session:
+            return False
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return False
+
+        npc_delta = hex_delta.npc_deltas.get(npc_id)
+        return npc_delta.is_removed if npc_delta else False
+
+    def is_npc_dead_or_removed(self, hex_id: str, npc_id: str) -> bool:
+        """Check if an NPC is dead or has been removed."""
+        return self.is_npc_dead(hex_id, npc_id) or self.is_npc_removed(hex_id, npc_id)
 
     def mark_poi_discovered(self, hex_id: str, poi_name: str) -> None:
         """Mark a POI as discovered."""

@@ -20,6 +20,7 @@ import logging
 
 from src.game_state.state_machine import GameState
 from src.game_state.global_controller import GlobalController
+from src.game_state.condition_parser import check_acquisition_condition
 from src.data_models import (
     DiceRoller,
     EncounterState,
@@ -5033,6 +5034,31 @@ class HexCrawlEngine:
                         if item.get("taken", False):
                             return {"success": False, "error": "Item not found here"}
 
+                        # Check acquisition condition if present
+                        acquisition_condition = item.get("acquisition_condition")
+                        if acquisition_condition:
+                            session_mgr = None
+                            if (
+                                hasattr(self.controller, "session_manager")
+                                and self.controller.session_manager
+                            ):
+                                session_mgr = self.controller.session_manager
+
+                            if session_mgr:
+                                is_satisfied, reason = check_acquisition_condition(
+                                    condition_text=acquisition_condition,
+                                    hex_id=hex_id,
+                                    session_manager=session_mgr,
+                                    controller=self.controller,
+                                )
+                                if not is_satisfied:
+                                    return {
+                                        "success": False,
+                                        "error": reason,
+                                        "condition_blocked": True,
+                                        "acquisition_condition": acquisition_condition,
+                                    }
+
                         # Check if this is a unique item
                         is_unique = item.get("is_unique", False)
                         unique_item_id = item.get("unique_item_id")
@@ -6358,6 +6384,31 @@ class HexCrawlEngine:
                     if item.get("name", "").lower() == item_name.lower():
                         if item.get("taken", False):
                             return {"success": False, "error": "Item already taken"}
+
+                        # Check acquisition condition if present
+                        acquisition_condition = item.get("acquisition_condition")
+                        if acquisition_condition:
+                            session_mgr = None
+                            if (
+                                hasattr(self.controller, "session_manager")
+                                and self.controller.session_manager
+                            ):
+                                session_mgr = self.controller.session_manager
+
+                            if session_mgr:
+                                is_satisfied, reason = check_acquisition_condition(
+                                    condition_text=acquisition_condition,
+                                    hex_id=hex_id,
+                                    session_manager=session_mgr,
+                                    controller=self.controller,
+                                )
+                                if not is_satisfied:
+                                    return {
+                                        "success": False,
+                                        "error": reason,
+                                        "condition_blocked": True,
+                                        "acquisition_condition": acquisition_condition,
+                                    }
 
                         # Mark as taken
                         item["taken"] = True

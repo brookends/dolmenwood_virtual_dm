@@ -12,6 +12,13 @@ from src.game_state.session_manager import (
     SerializablePartyState,
     SerializableWorldState,
 )
+from src.game_state.condition_parser import (
+    AcquisitionConditionParser,
+    ConditionType,
+    ParsedCondition,
+    check_acquisition_condition,
+    get_condition_parser,
+)
 
 __all__ = [
     "GameState",
@@ -27,4 +34,9 @@ __all__ = [
     "SerializableCharacter",
     "SerializablePartyState",
     "SerializableWorldState",
+    "AcquisitionConditionParser",
+    "ConditionType",
+    "ParsedCondition",
+    "check_acquisition_condition",
+    "get_condition_parser",
 ]
