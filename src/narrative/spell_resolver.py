@@ -4025,6 +4025,10 @@ class SpellResolver:
             "animate_dead": self._handle_animate_dead,
             "cloudkill": self._handle_cloudkill,
             "insect_plague": self._handle_insect_plague,
+            # Phase 9 transformation and utility spell handlers
+            "petrification": self._handle_petrification,
+            "invisibility": self._handle_invisibility,
+            "knock": self._handle_knock,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -6929,6 +6933,310 @@ class SpellResolver:
                 if fleeing > 0
                 else []
             ),
+        }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 9 HANDLERS: Transformation and Utility
+    # =========================================================================
+
+    def _handle_petrification(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Petrification spell.
+
+        Can turn flesh to stone or stone to flesh.
+
+        Effects:
+        - Flesh to stone: Permanently transforms living creature to stone
+          (Save Versus Hold to resist)
+        - Stone to flesh: Restores petrified creature to life
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"petrification_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Determine mode from context
+        mode = "flesh_to_stone"  # or "stone_to_flesh"
+        if hasattr(self, "_current_context") and self._current_context:
+            mode = self._current_context.get("mode", "flesh_to_stone")
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        result_data: dict[str, Any] = {
+            "spell_id": "petrification",
+            "spell_name": "Petrification",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "mode": mode,
+            "success": True,
+        }
+
+        if mode == "flesh_to_stone":
+            # Target must Save Versus Hold to resist
+            save_roll = dice.roll("1d20")
+            save_target = 14  # Default hold save
+
+            if hasattr(self, "_controller") and self._controller and target_id:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "hold", 14)
+
+            save_success = save_roll >= save_target
+
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+            result_data["petrified"] = not save_success
+
+            if save_success:
+                result_data["narrative_context"] = {
+                    "spell_cast": True,
+                    "resisted": True,
+                    "hints": [
+                        "stone-grey energy crackles toward the target",
+                        f"but they resist the transformation (save roll {save_roll})",
+                        "the petrifying magic dissipates harmlessly",
+                    ],
+                }
+            else:
+                # Create permanent petrification effect
+                petri_effect = ActiveSpellEffect(
+                    effect_id=effect_id,
+                    spell_id="petrification",
+                    spell_name="Petrification",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=target_id,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.PERMANENT,
+                    duration_remaining=None,
+                    duration_unit="permanent",
+                    requires_concentration=False,
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "petrified",
+                        "transformation_type": "flesh_to_stone",
+                        "includes_equipment": True,
+                        "reversible_by": "stone_to_flesh",
+                    },
+                )
+                self._active_effects.append(petri_effect)
+
+                result_data["narrative_context"] = {
+                    "spell_cast": True,
+                    "transformation": True,
+                    "hints": [
+                        "stone-grey energy crackles toward the target",
+                        f"they fail to resist (save roll {save_roll})",
+                        "their flesh hardens and turns to grey stone",
+                        "the transformation is complete and permanent",
+                    ],
+                }
+        else:
+            # Stone to flesh - restore petrified creature
+            result_data["restored"] = True
+
+            # Remove any petrification effects on the target
+            if target_id:
+                self._active_effects = [
+                    e for e in self._active_effects
+                    if not (e.spell_id == "petrification" and e.target_id == target_id)
+                ]
+
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "restoration": True,
+                "hints": [
+                    "warm, life-giving energy flows into the stone",
+                    "cracks appear as grey turns to flesh-tone",
+                    "the creature gasps as life returns",
+                    "they have been restored from petrification",
+                ],
+            }
+
+        return result_data
+
+    def _handle_invisibility(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Invisibility spell.
+
+        Makes a creature or object invisible.
+
+        Effects:
+        - Subject and carried gear become invisible
+        - Duration: 1 hour per caster Level
+        - Ends if subject attacks or casts a spell
+        - Light sources still emit light when invisible
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"invisibility_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Duration is 1 hour per level
+        duration_hours = caster_level
+
+        # Target can be caster, another creature, or an object
+        target_id = targets_affected[0] if targets_affected else getattr(caster, "character_id", "unknown")
+
+        # Determine target type from context
+        target_type = "creature"
+        if hasattr(self, "_current_context") and self._current_context:
+            target_type = self._current_context.get("target_type", "creature")
+
+        result_data: dict[str, Any] = {
+            "spell_id": "invisibility",
+            "spell_name": "Invisibility",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "target_type": target_type,
+            "duration_hours": duration_hours,
+            "success": True,
+        }
+
+        # Create invisibility effect
+        invis_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="invisibility",
+            spell_name="Invisibility",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type=target_type,
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.HOURS,
+            duration_remaining=duration_hours,
+            duration_unit="hours",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "condition": "invisible",
+                "includes_gear": target_type == "creature",
+                "breaks_on_attack": True,
+                "breaks_on_spell_cast": True,
+                "light_sources_still_shine": True,
+            },
+        )
+        self._active_effects.append(invis_effect)
+
+        if target_type == "creature":
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "hints": [
+                    f"the target shimmers and fades from sight",
+                    "their clothing and equipment vanish with them",
+                    f"the invisibility will last up to {duration_hours} hour{'s' if duration_hours > 1 else ''}",
+                    "attacking or casting a spell will break the effect",
+                ],
+            }
+        else:
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "hints": [
+                    "the object shimmers and disappears from view",
+                    f"it will remain invisible for up to {duration_hours} hour{'s' if duration_hours > 1 else ''}",
+                ],
+            }
+
+        return result_data
+
+    def _handle_knock(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Knock spell.
+
+        Opens locked doors and disables magical seals.
+
+        Effects:
+        - Instant duration
+        - Unlocks/removes mundane locks and bars
+        - Dispels Glyphs of Sealing
+        - Disables Glyphs of Locking for 1 Turn
+        - Can open known secret doors
+        """
+        caster_level = getattr(caster, "level", 1)
+
+        # Target is the door/portal being knocked
+        target_id = targets_affected[0] if targets_affected else "door"
+
+        # Get door/portal properties from context
+        has_mundane_lock = True
+        has_bar = False
+        has_glyph_of_sealing = False
+        has_glyph_of_locking = False
+        is_secret_door = False
+
+        if hasattr(self, "_current_context") and self._current_context:
+            ctx = self._current_context
+            has_mundane_lock = ctx.get("has_mundane_lock", True)
+            has_bar = ctx.get("has_bar", False)
+            has_glyph_of_sealing = ctx.get("has_glyph_of_sealing", False)
+            has_glyph_of_locking = ctx.get("has_glyph_of_locking", False)
+            is_secret_door = ctx.get("is_secret_door", False)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "knock",
+            "spell_name": "Knock",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "duration_type": "instant",
+            "success": True,
+            "effects_applied": [],
+        }
+
+        hints = ["the caster knocks on the portal with hand or staff"]
+
+        if has_mundane_lock:
+            result_data["effects_applied"].append("mundane_lock_opened")
+            hints.append("the lock clicks and unlocks")
+
+        if has_bar:
+            result_data["effects_applied"].append("bar_removed")
+            hints.append("the bar slides aside with a groan")
+
+        if has_glyph_of_sealing:
+            result_data["effects_applied"].append("glyph_of_sealing_dispelled")
+            hints.append("the Glyph of Sealing flares and fades, dispelled")
+
+        if has_glyph_of_locking:
+            result_data["effects_applied"].append("glyph_of_locking_disabled")
+            result_data["glyph_disabled_duration"] = 1  # Turn
+            hints.append("the Glyph of Locking dims, disabled for 1 Turn")
+
+        if is_secret_door:
+            result_data["effects_applied"].append("secret_door_opened")
+            hints.append("the secret portal groans and swings open")
+
+        if not result_data["effects_applied"]:
+            hints.append("the portal was already unlocked")
+
+        hints.append("the portal groans, grumbles, and opens")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
         }
 
         return result_data
