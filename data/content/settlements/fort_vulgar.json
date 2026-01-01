@@ -1,0 +1,616 @@
+{
+  "name": "Fort Vulgar",
+  "settlement_id": "fort_vulgar",
+  "hex_id": "0604",
+  "size": "village",
+  "population": 90,
+  "population_description": "90—village",
+  "tagline": "Trading and military outpost on the haunted shores of Lake Longmere",
+  "description": "A teeming, ramshackle dock, along with a cluster of buildings, located at the point where Quogg's Creek flows into the haunted Lake Longmere. An old stone keep ringed with a dilapidated palisade stands on the cliffs above the docks, overlooking the lake.",
+  "atmosphere": "Teeming and ramshackle with haunted undertones from the lake monster",
+  "inhabitants_description": "The inhabitants of the keep itself, a handful of permanent residents around the docks, plus a transient population of traders, fishers, and barge-folk. It is common to see people from the realm to the north of Dolmenwood here.",
+  "governance": {
+    "ruler_type": "lord",
+    "ruler_name": "Sir Osric the Gaunt",
+    "ruling_body": "Sir Osric with the Vulgar Knights as law enforcement",
+    "domain": "Duchy of Brackenwold",
+    "political_status": "vassal of the Duke of Brackenwold",
+    "notes": "The Dockmaster and the Vulgar Knights act as law enforcement"
+  },
+  "religion": {
+    "primary_deity": "St Dougan",
+    "religious_buildings": [
+      "Chapel of St Dougan"
+    ],
+    "religious_practices": "Sailors and river-folk tend to be devout sorts, happy to propitiate both the saints of the Pluritine Church and an assortment of folk-deities and spirits of the water",
+    "notes": null
+  },
+  "history": [
+    "Keep Vulgular was originally constructed following the banishment of the Cold Prince, 850 years ago",
+    "With views from its towers across Lake Longmere to Hoarblight Keep (the erstwhile palace of the Cold Prince), it kept a watch for the fairy lord's return",
+    "First sightings of the lake monster Big Chook date back to 400 years ago, shortly after the coming of the Nag-Lord to Dolmenwood",
+    "Since the coming of the lake monster Big Chook, none of sound mind ply the waters of Lake Longmere"
+  ],
+  "current_events": [
+    "Trade between the Duchy of Brackenwold and the realm to the north principally flows via boats and barges along Quogg's Creek",
+    "Goods transported from the north are unloaded at Fort Vulgar onto wagons for transport on to Prigwort via the Fort Road",
+    "A number of Chookers (victims of Big Chook encounters) frequent Fort Vulgar, irresistibly drawn to shores where they may catch snippets of the monster's song"
+  ],
+  "rumors_reference": "See Rumours in Fort Vulgar, p446",
+  "special_features": [
+    {
+      "name": "Big Chook (Lake Monster)",
+      "description": "A horrible lake monster that dwells in Lake Longmere, known for its mind-melting, cockerel-like wailings",
+      "mechanical_effect": "Close encounters usually fatal; survivors often become wild-eyed obsessives called Chookers",
+      "affected_area": "Lake Longmere and surrounding shores"
+    },
+    {
+      "name": "Tentacle Tattoos",
+      "description": "Many of the barge-folk and dock workers sport a tattoo of a black tentacle coiled around one forearm as a tradition and mark of pride",
+      "mechanical_effect": null,
+      "affected_area": "Among barge-folk community"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.5,
+    "available_categories": [
+      "weapons",
+      "armor"
+    ],
+    "unavailable_categories": [
+      "vehicles",
+      "mounts"
+    ],
+    "special_items": [
+      "Dockmaster's marmalade",
+      "Crabble"
+    ],
+    "notes": "Vehicles and mounts are not generally available, though adventurers willing to pay 5 times the going rate may be able to persuade a merchant or trader to part with their transport"
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Trade Square",
+      "location_type": "marketplace",
+      "description": "A cobblestoned square where goods are traded and unloaded from boats onto wagons and vice versa, via a set of creaky winches on the eastern side of the dock",
+      "interior": null,
+      "exterior": "Cobblestoned square with creaky winches",
+      "populace": "Traders happy to sell goods to the occasional passing traveller",
+      "atmosphere": "Busy trading area",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Creaky winches for loading/unloading goods"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Docks",
+      "location_type": "docks",
+      "description": "A widened bay at the river's mouth, with piers and mooring points for trade vessels to dock. Rope ladders lead 15′ up from the piers to land level",
+      "interior": null,
+      "exterior": "Widened bay with piers and mooring points",
+      "populace": "Trade vessels and their crews",
+      "atmosphere": "Busy maritime trading hub",
+      "services": [
+        {
+          "name": "Boat travel northwards",
+          "description": "Passage on a boat to the old dock beside Avernal Lake",
+          "cost": "1gp",
+          "notes": "Journey takes 10 hours"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Chappily bridge",
+        "Chook gate",
+        "5% tax on all goods"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Tax Tower",
+      "location_type": "tower",
+      "description": "A squat, two-storey tower of pale pinkish-white stone with a pointed, tiled roof, flying a black pennant",
+      "interior": "A feasting table, well-stocked pantry, and strongbox on the lower floor. Spartan lodgings on the upper floor",
+      "exterior": "Squat, two-storey tower of pale pinkish-white stone with pointed, tiled roof and black pennant",
+      "populace": "1d4 knights and their squires during the day, 1d3 squires at night as lookouts",
+      "atmosphere": "Military outpost",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Knights practice combat manoeuvres on the riverbank"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "The Chook's Nob",
+      "location_type": "inn",
+      "description": "An old wooden warehouse building with a tarred roof, now converted into a makeshift tavern and flophouse",
+      "interior": "A lofty warehouse space with clusters of stools carelessly scattered throughout. No tables. The place is constantly filled to the brim with pipe-smoke",
+      "exterior": "Old wooden warehouse building with tarred roof, deck with barrels for tables overlooking the docks",
+      "populace": "Rough barge-folk arm-wrestling and singing raucous sea shanties. The occasional merchant or trader",
+      "atmosphere": "Rough and rowdy tavern atmosphere",
+      "services": [
+        {
+          "name": "Lodgings",
+          "description": "Poor quality, 4 private rooms available",
+          "cost": "1gp per night for private room",
+          "notes": "Other guests must sleep on common room floor"
+        },
+        {
+          "name": "Food",
+          "description": "Poor quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Dockmaster's marmalade",
+          "description": "Jars of sour crab apple jam, sweetened with lashings of honey badger slime",
+          "cost": "3gp a jar",
+          "notes": "An acquired taste"
+        },
+        {
+          "name": "Crabble",
+          "description": "Wince-inducingly sour crab apple cider fermented in the inn's cellars",
+          "cost": "4cp a mug",
+          "notes": null
+        },
+        {
+          "name": "Tattoos",
+          "description": "Traditional tentacle tattoo or custom designs",
+          "cost": "Free for traditional tentacle, 5gp+ for other designs",
+          "notes": "Customary among barge-folk"
+        }
+      ],
+      "npcs": [
+        "brewigg_shankwolde"
+      ],
+      "special_features": [
+        "Green, scaly tentacle sign oozing purple blood"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Dockmaster's Cottage",
+      "location_type": "residence",
+      "description": "The only lovingly maintained building in Fort Vulgar. The residence of the dockmaster, Wiglow Bogleman, and her family is a homely, thatched cottage with rustic roses rambling up its sides",
+      "interior": null,
+      "exterior": "Homely, thatched cottage with rustic roses rambling up its sides",
+      "populace": "Wiglow Bogleman and her family",
+      "atmosphere": "Well-maintained and homely, looking completely out of place",
+      "services": [],
+      "npcs": [
+        "wiglow_bogleman"
+      ],
+      "special_features": [
+        "Only lovingly maintained building in Fort Vulgar"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Chapel of St Dougan",
+      "location_type": "church",
+      "description": "A tall, narrow church made of vertical wooden posts with a sloping slate roof. Set atop a hill overlooking the docks, the chapel can be seen from all vantage points in Fort Vulgar",
+      "interior": "A windy, austere space with rickety, unornamented pews lined up before a monolithic altar of black stone. Upon the altar stands an unassuming wooden statue of the obscure minor saint, Dougan the Incredulous",
+      "exterior": "Tall, narrow church of vertical wooden posts with sloping slate roof, weathered door of black-lacquered oak with desiccated apple cores nailed upon it",
+      "populace": "God-fearing barge-folk, come to meekly pray for luck on their journeys and forgiveness of their sins",
+      "atmosphere": "Austere and windy religious space",
+      "services": [
+        {
+          "name": "Prayer blessing",
+          "description": "Characters praying may receive the blessing of St Dougan: the ability to cast Detect Disguise",
+          "cost": "free",
+          "notes": "See Shrines, p22 and Uncommon Spells, p454"
+        }
+      ],
+      "npcs": [
+        "father_edgar_drabe"
+      ],
+      "special_features": [
+        "Graveyard behind the chapel",
+        "Hand-lettered scriptural pamphlets"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Soured Orchard",
+      "location_type": "orchard",
+      "description": "Old, unmaintained copses of pear and apple trees, now twisted and hunchbacked. In the autumn, they bear sour fruits, which locals gather",
+      "interior": null,
+      "exterior": "Twisted and hunchbacked fruit trees",
+      "populace": "Locals gathering sour fruits in autumn",
+      "atmosphere": "Unwholesome and twisted",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Blood-red worms with tiny human-like mouths writhing among roots"
+      ],
+      "secrets": [
+        "Anyone touching the worms must Save Versus Doom or be afflicted with sickness for 1d3 days"
+      ],
+      "monsters": [
+        "blood_red_worms"
+      ],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Fort Palisade",
+      "location_type": "fortification",
+      "description": "A ramshackle wooden palisade surrounding Keep Vulgular and its grounds. The palisade is in dire need of reinforcement and, in its current state, would provide little protection against concerted attack",
+      "interior": null,
+      "exterior": "Ramshackle wooden palisade with turreted gatehouse and portcullis",
+      "populace": "1d3 squires who vet visitors",
+      "atmosphere": "Dilapidated defensive structure",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Turreted gatehouse with portcullis, usually kept open during the day"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "Keep Vulgular",
+      "location_type": "keep",
+      "description": "An old, crumbling castle of great stone blocks, partly clad in ivy. The chequered banner of House Brackenwold flies proudly from the highest gable. Its tall towers and high vantage point afford the keep excellent views across Lake Longmere",
+      "interior": "Frigid, dusty halls and chambers clad with moth-eaten tapestries, faded military maps, and damp carpets. The excess of side-doors, cramped connecting passages, and jumbled stacks of crates lends the place a bewildering, maze-like quality",
+      "exterior": "Old, crumbling castle of great stone blocks, partly clad in ivy with chequered banner of House Brackenwold",
+      "populace": "Sir Osric the Gaunt, five mounted knights, their squires and families, and a small retinue of boatmen and domestic servants",
+      "atmosphere": "Crumbling but proud castle with maze-like interior",
+      "services": [
+        {
+          "name": "Guest lodgings",
+          "description": "Sumptuous (if somewhat dusty and ageing) suites",
+          "cost": "free for qualified guests",
+          "notes": "For well-to-do merchants, Church/noble affiliates, or those bringing news from the Nagwood"
+        }
+      ],
+      "npcs": [
+        "sir_osric_the_gaunt"
+      ],
+      "special_features": [
+        "Large stable",
+        "Grassy square with jousting targets",
+        "Meagre herb garden"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "Fort Road",
+      "location_type": "road",
+      "description": "A well-maintained, much-frequented trade road that leads to Prigwort, past the ruins of the Abbey of St Clewyd",
+      "interior": null,
+      "exterior": "Well-maintained trade road",
+      "populace": "Traders and travelers",
+      "atmosphere": "Busy trade route",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "Creek Path",
+      "location_type": "trail",
+      "description": "A little-used hunter's trail leading into the depths of the forest, through the western edge of the Nagwood, and, eventually, north to the accursed Table Downs",
+      "interior": null,
+      "exterior": "Little-used hunter's trail",
+      "populace": "Occasional hunters",
+      "atmosphere": "Seldom traveled forest path",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "wiglow_bogleman",
+      "name": "Wiglow Bogleman",
+      "title": "Dockmaster",
+      "description": "A human woman in her fifties with long, straggling hair, a portly frame, and many missing teeth",
+      "kindred": "Human",
+      "age_description": "in her fifties",
+      "dress": "Sports a threadbare purple skullcap and clutches a cudgel topped with a carved wooden fist",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Wary of foot travellers",
+        "Habitually casts worried glances at the lake"
+      ],
+      "mannerisms": "Clutches a cudgel topped with a carved wooden fist",
+      "speech": "Barely comprehensible rustic burr laced with official-sounding nautical terms",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Unusual fruits",
+        "The capture of Captain Snarkscorn and his cronies, who are hunting honey badgers in the region to near extinction"
+      ],
+      "secrets": [],
+      "location_id": "5",
+      "occupation": "Dockmaster"
+    },
+    {
+      "npc_id": "brewigg_shankwolde",
+      "name": "Brewigg Shankwolde",
+      "title": "Chook's Nob Proprietor",
+      "description": "A burly shorthorn woman with coarse, ginger fur, eyes of unusual deep red, foot-long chin-locks, and one fang-like tooth",
+      "kindred": "Shorthorn",
+      "age_description": null,
+      "dress": "Keeps one forearm shaved, proudly revealing the tattooed tentacle coiling around it",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Gruff",
+        "slow-witted",
+        "Eyes guests suspiciously",
+        "eager to talk to outsiders"
+      ],
+      "mannerisms": "Eyes guests suspiciously but is eager to talk to outsiders",
+      "speech": "Strongly Gaffe-accented, frequent pauses while she gathers her thoughts",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "News from the High Wold (her land of origin)"
+      ],
+      "secrets": [],
+      "location_id": "4",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "father_edgar_drabe",
+      "name": "Father Edgar Drabe",
+      "title": "Vicar of Fort Vulgar",
+      "description": "A bald, chubby human man in his forties, with dull brown eyes hiding behind tiny spectacles",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Tiny spectacles",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Well-intentioned",
+        "somewhat snooty",
+        "Socially awkward, especially with women"
+      ],
+      "mannerisms": "Socially awkward, especially with women",
+      "speech": "Droning monologues punctuated with bursts of nervous laughter",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "Antique scriptures",
+        "A post in a more glamorous, cultured locale"
+      ],
+      "secrets": [],
+      "location_id": "6",
+      "occupation": "Vicar"
+    },
+    {
+      "npc_id": "sir_osric_the_gaunt",
+      "name": "Sir Osric \"the Gaunt\" Hazelmire",
+      "title": "Level 9 Knight",
+      "description": "A human man renowned as the heartiest, most robust, reddest-faced man in the duke's service (his epithet is ironic). His height and the curl of his moustaches are equally famed",
+      "kindred": "Human",
+      "age_description": null,
+      "dress": null,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Brash",
+        "blustery",
+        "hot-tempered",
+        "Robust back-slapping",
+        "Cranes his neck forward and stares when awaiting an answer"
+      ],
+      "mannerisms": "Cranes his neck forward and stares when awaiting an answer",
+      "speech": "Toffish, inappropriately chummy",
+      "languages": [
+        "Woldish",
+        "rusty Old Woldish"
+      ],
+      "desires": [
+        "Reconnaissance from the Nagwood",
+        "The head of the crookhorn Captain Snarkscorn, whose minions harry the river trade along Quogg's Creek",
+        "To be granted free rein to hunt crookhorns in the woods",
+        "The hand of Lady Mulbreck, whom he has admired from afar for years"
+      ],
+      "secrets": [],
+      "location_id": "9",
+      "occupation": "Knight and fort commander"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "Dockmaster Bogleman laden with baskets of crab apples or freshly trapped honey badgers",
+          "npcs_involved": [
+            "Wiglow Bogleman"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "Father Drabe chasing after hand-lettered scriptural verses, blown away by a capricious wind",
+          "npcs_involved": [
+            "Father Edgar Drabe"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "1d3 knights arguing with a boatman about the taxable value of his wares",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "1d3 merchants looking to hire caravan guards. Offering 5gp per person to Castle Brackenwold",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "A toothless old Chooker, prophesying doom for all mortals in the insatiable belly of Big Chook",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "1d4+1 northerners harassing a meek squire",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d3 crookhorns snoop around in the shadows",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Crookhorn"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "2d6 barge-folk prancing drunkenly on the lakeside cliffs, shouting \"come and get us Chookie!\"",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "1d4+1 Chookers circle around passersby, making aggressive clucking and cock-a-doodle-do noises",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A knight in the service of Lady Harrowmoor charging to the keep, bringing tidings of a force of crookhorns amassing at the ruined abbey (hex 0906)",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "2d6 zombies, riddled with blood-red worms, emerge from the soil of the soured orchard and go hunting for live brains",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Zombie"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "The cockerel-like wailings of Big Chook echo across the lake. Chookers rejoice; others rush indoors",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Big Chook"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Blood-red Worms",
+      "monster_id": "blood_red_worms",
+      "description": "Unwholesome blood-red worms writhing among the roots of the trees. They are eyeless but have tiny, human-like mouths and tongues",
+      "size": "Tiny",
+      "type": "vermin",
+      "intelligence": "animal intelligence",
+      "alignment": "Neutral",
+      "level": null,
+      "ac": null,
+      "hp": null,
+      "saves": null,
+      "attack": null,
+      "speed": null,
+      "morale": null,
+      "xp": null,
+      "special_abilities": [
+        {
+          "name": "Sickness",
+          "description": "Anyone touching the worms must Save Versus Doom or be afflicted with sickness for 1d3 days (–2 to Attack Rolls and Saving Throws)"
+        }
+      ]
+    }
+  ],
+  "roads": [
+    "Fort Road",
+    "Creek Path"
+  ],
+  "connections": [
+    "Prigwort",
+    "Abbey of St Clewyd",
+    "Nagwood",
+    "Table Downs",
+    "Avernal Lake"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      148,
+      149,
+      150,
+      151
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

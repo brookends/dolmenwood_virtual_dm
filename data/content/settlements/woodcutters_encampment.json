@@ -1,0 +1,619 @@
+{
+  "name": "Woodcutters' Encampment",
+  "settlement_id": "woodcutters_encampment",
+  "hex_id": "1109",
+  "size": "village",
+  "population": 180,
+  "population_description": "180—village",
+  "tagline": "Archaic village of loggers and wood-crafters on the verge of Hag's Addle",
+  "description": "Once truly a mere encampment in the woods, now a village proper and thriving trade community, known as \"the Camp\" for short. Streets of tall wood-panelled, clay-roofed buildings are lined with tidy rows of coppiced hazel, beech, and oak. Houses in the western part of the village rest on short stilts to alleviate flooding from the nearby swamp. A small stream named Sundiman's Beck flows through the streets in little cobblestone channels beside the thoroughfare.",
+  "atmosphere": "Thriving trade community with traditional woodcraft heritage, softened by civilized comforts",
+  "inhabitants_description": "Almost exclusively folk of Woodcutter stock, tall and hirsute",
+  "governance": {
+    "ruler_type": "lord",
+    "ruler_name": "Jollie Oistace Pollard",
+    "ruling_body": "Jollie Oistace (hereditary title among the Woodcutters, akin to a minor lord)",
+    "domain": "House Mulbreck",
+    "political_status": "Within House Mulbreck's domain",
+    "notes": "Jollie Oistace is also known as the \"Lumbermaster\" and resides in Ferneddbole House, hex 1209"
+  },
+  "religion": {
+    "primary_deity": "St Foggarty",
+    "religious_buildings": [
+      "Church of St Foggarty"
+    ],
+    "religious_practices": "The Woodcutters faithfully serve the Pluritine Church",
+    "notes": null
+  },
+  "history": [
+    "The Woodcutters have dwelt in Dolmenwood since antiquity, arriving alongside the Drune",
+    "The two groups once worked in tandem, each benefiting from the other's knowledge, these days are now only recognised in folktale",
+    "In recent years, the once hardy Woodcutters are grown indolent on the profits of trade, softened by the comforts of civilised life"
+  ],
+  "current_events": [
+    "The furnging-woods are still maintained by a stalwart few, but ever half-heartedly",
+    "Village elders scheme to revive the rapidly dying art of furnging",
+    "Woodcutters mock but secretly fear the Drune, engaging in ritual \"mocking of the Drune\" at the Stump and Poniard"
+  ],
+  "rumors_reference": "See Rumours in the Woodcutters' Encampment, p453",
+  "special_features": [
+    {
+      "name": "The Dying Art of Furnging",
+      "description": "The coppicing and maintenance of trees with a view to heightening the innate properties of the wood. The most refined arts of furnging are applied over several human lifespans and result in timbers with unusual and even magical qualities.",
+      "mechanical_effect": null,
+      "affected_area": "Village woodcraft industry"
+    },
+    {
+      "name": "Bordering the Hag's Domain",
+      "description": "Dwelling on the edge of Hag's Addle, the Woodcutters whisper fearfully of the Hag, who is said to haunt the village outskirts at night, bewitching any who glimpse her lantern.",
+      "mechanical_effect": null,
+      "affected_area": "Village outskirts at night"
+    },
+    {
+      "name": "The Mocking of the Drune",
+      "description": "A ritual where locals call out \"Oistace-kyne arise, Baggle-men bedroggle!\" then rush outside to ring the Drounbell, showing their fearlessness of the Drune, before returning and buying a round of drinks.",
+      "mechanical_effect": null,
+      "affected_area": "The Stump and Poniard tavern"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.5,
+    "available_categories": [
+      "standard equipment"
+    ],
+    "unavailable_categories": [],
+    "special_items": [
+      "Furnged wood products",
+      "Enchanted pipes",
+      "Magical pipeleafs"
+    ],
+    "notes": "Vehicles and mounts cost 50% more than usual"
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Camp Road",
+      "location_type": "road",
+      "description": "A broad, well-maintained cobbled road leading to Castle Brackenwold",
+      "interior": null,
+      "exterior": "Broad, well-maintained cobbled road",
+      "populace": "Travelers and traders",
+      "atmosphere": "Well-maintained thoroughfare",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "The Kissing Stone",
+      "location_type": "landmark",
+      "description": "An obelisk of black marble stands by the roadside. A white rope is braided around its centre.",
+      "interior": null,
+      "exterior": "Black marble obelisk with white rope braided around centre",
+      "populace": "Woodcutters returning from the woods",
+      "atmosphere": "Traditional, mystical",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Woodcutters traditionally kneel and kiss the stone when returning from the woods, claiming that doing so brings good fortune and health"
+      ],
+      "secrets": [
+        "Worn remnants of an inscription in Old Drunic at the rear tells of the presence of a \"water weird\" named Gheillough in the great lake, said to be a source of great power to the Drune"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Marrowbold's Smoke Shop",
+      "location_type": "shop",
+      "description": "A thatched cottage with two wooden towers out the back, used for drying herbs.",
+      "interior": "A cramped, soothingly dim space whose meticulously packed shelves loom reassuringly over visitors. The proprietor, Megwynne Marrowbold, smiles from behind a felt-clad counter, polishing pipes with a cloth. Above her, a range of peculiar pipes are displayed on plaques.",
+      "exterior": "Thatched cottage with two wooden towers for drying herbs. Sign shows a shorthorn breggle looking with surprise at a quizzical face coalescing in the wisps rising from his pipe.",
+      "populace": "Customers seeking pipes and pipeleaf",
+      "atmosphere": "Soothingly dim and reassuring",
+      "services": [
+        {
+          "name": "Standard pipes and pipeleaf",
+          "description": "Common and uncommon leaves always available, 3-in-6 chance of rare leaves",
+          "cost": "standard prices",
+          "notes": null
+        },
+        {
+          "name": "Magical pipeleafs",
+          "description": "2-in-6 chance each: Mallow-Puff, Purple Shag, Sticky Gilly, Wanton Wisp",
+          "cost": "See Rare Comestibles, p426",
+          "notes": null
+        },
+        {
+          "name": "Enchanted pipes",
+          "description": "Antiquated mossling manufacture with minor dweomers (purple smoke, wyrm-shaped smoke rings, jingling melodies, etc.)",
+          "cost": "100gp each",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "megwynne_marrowbold"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Lumbermaster's Lodge",
+      "location_type": "meeting_house",
+      "description": "An impressive, two-storey log cabin / manor, with exceptionally large trunks for corner posts. Originally the Jollie Oistace's residence, the lodge is now used as a meeting house by the elders who maintain the art of furnging.",
+      "interior": "A lofty space with beams and panels of fragrant wood. A round table and stools, carved from an unusual, purple-hued wood. Mighty saws and gargantuan rounds of wood decorate the walls. A library of decaying books contains the secrets of furnging, recorded in a code passed down over generations.",
+      "exterior": "Impressive, two-storey log cabin with exceptionally large trunks for corner posts. Entrance is a single, heavily furnged slab of ancient oak with animated faces in the grain that peer curiously at visitors.",
+      "populace": "Village elders one evening in three",
+      "atmosphere": "Grave scheming and traditional woodcraft knowledge",
+      "services": [
+        {
+          "name": "Furnged wood products",
+          "description": "Raw lumber or crafted items with unusual qualities (flame resistance most common, but exotic qualities like steel strength, elasticity, incorporeality beneath moonlight available)",
+          "cost": "high prices for exotic qualities",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "hagbard_sundiman"
+      ],
+      "special_features": [
+        "Animated faces in the entrance door grain",
+        "Library of furnging secrets in coded books"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Port",
+      "location_type": "port",
+      "description": "An assortment of piers, fishing boats, and lumber barges.",
+      "interior": null,
+      "exterior": "Piers, fishing boats, and lumber barges",
+      "populace": "River workers, traders, boat passengers",
+      "atmosphere": "Busy river trade",
+      "services": [
+        {
+          "name": "Boats to Dreg",
+          "description": "Passage along seven-mile stretch of river to Dreg, journey takes 1½ hours",
+          "cost": "2sp per foot passenger, 5sp per horse, 2gp per vehicle",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "The Drounbell",
+      "location_type": "landmark",
+      "description": "A great, weathered copper bell standing on a wooden platform at the riverside, beneath a clay-tiled roof. The bell is carved with the antlered head of a stag.",
+      "interior": null,
+      "exterior": "Great weathered copper bell on wooden platform with clay-tiled roof, carved with antlered stag head",
+      "populace": "Tipsy locals during \"Mocking of the Drune\" ritual",
+      "atmosphere": "Boisterous mockery and ritual defiance",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Used in the \"Mocking of the Drune\" ritual where tipsy locals ring it vigorously"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "The Stump and Poniard",
+      "location_type": "tavern",
+      "description": "A long, low wooden shack on the edge of the forest. A tree trunk pierces the roof of the tavern, with a chimney on either side.",
+      "interior": "A draughty, smoky, sawdust-floored space, little more than a barn. Not a stool or table can be found. The landlord, Jock Furngle, serves from a circular bar surrounding a varnished trunk that pierces the roof. Meats roast in a pair of fireplaces. In the evening, fiddle-players and barn-dances intermingle with drinkers.",
+      "exterior": "Long, low wooden shack with tree trunk piercing roof and chimneys on either side. Sign shows a slim dagger stuck in the side of a great stump.",
+      "populace": "Merry locals, river workers, traders, and the occasional adventuring party",
+      "atmosphere": "Draughty, smoky barn-like space with evening fiddle-playing and barn-dancing",
+      "services": [
+        {
+          "name": "Food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "jock_furngle"
+      ],
+      "special_features": [
+        "Circular bar around varnished trunk piercing roof",
+        "Evening fiddle-players and barn-dances"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Church of St Foggarty",
+      "location_type": "church",
+      "description": "A tall church constructed of varnished wooden staves, overlooking Hag's Addle. In its tower, a pale yellow flame burns, lighthouse-like, guiding lost travellers to safety.",
+      "interior": "A tall circular space with a serene pinewood aroma. An oaken idol of St Foggarty—depicted holding a lantern to guide the lost—stands opposite the door.",
+      "exterior": "Tall church of varnished wooden staves with tower containing pale yellow flame. Towering, unadorned wooden door often locked during day.",
+      "populace": "Lone locals in prayer, Father Horsely with his dog Clewyd",
+      "atmosphere": "Serene, peaceful with pinewood aroma",
+      "services": [
+        {
+          "name": "Prayer blessing",
+          "description": "Characters praying may receive the blessing of St Foggarty: the ability to cast Light",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [
+        "father_jymes_horsely"
+      ],
+      "special_features": [
+        "Pale yellow flame in tower guides lost travellers",
+        "Oaken idol of St Foggarty holding lantern"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Father Horsely"
+    },
+    {
+      "number": 9,
+      "name": "The Oistace Tree",
+      "location_type": "landmark",
+      "description": "A huge, wild-limbed oak tree allegedly over 1,000 years old, its larger branches propped up on supports. The grassy area at the foot of the oak is roped off for use in weddings and village dances.",
+      "interior": null,
+      "exterior": "Huge, wild-limbed oak over 1,000 years old with branches on supports, grassy area roped off",
+      "populace": "Wedding parties and village dancers",
+      "atmosphere": "Ceremonial and celebratory",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Used for weddings and village dances"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "The Merry Mendicant",
+      "location_type": "inn",
+      "description": "A five-storey building so narrow that it looks almost like a tower. The inn is the tallest building in the village.",
+      "interior": "A symphony of carven wood—sylvan statues clutching oil lamps peek out from little nooks and alcoves, delightful woodland dioramas form a frieze around the room, and dark beams worked into the shape of ivy-clad branches radiate out from the bar. The bar itself is constructed entirely of polished cherry-wood, with a pair of 8′-high friars toasting the health of guests, one on each side of the bar.",
+      "exterior": "Five-storey narrow building like a tower, tallest in village. Sign shows a grinning friar polishing his pate with beeswax.",
+      "populace": "Contented locals, travellers, and merchants",
+      "atmosphere": "Amiable rustic ease with elaborate wood carvings",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Addle mead",
+          "description": "A rich, herby mead brewed in the inn's cellars, from honey of beehives among the reeds on village's northern edge",
+          "cost": "15sp a glass",
+          "notes": null
+        },
+        {
+          "name": "Attic suite",
+          "description": "A cosy lounge and separate bedroom, with a luxurious feather bed of kingly proportions",
+          "cost": "3gp per night",
+          "notes": "at most 2 guests"
+        }
+      ],
+      "npcs": [
+        "clement_brancher"
+      ],
+      "special_features": [
+        "Elaborate wood carvings throughout",
+        "8-foot-high carved friars flanking the bar",
+        "Beehives among reeds on northern edge"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "megwynne_marrowbold",
+      "name": "Megwynne Marrowbold",
+      "title": "Marrowbold's Proprietor",
+      "description": "A plump, bespectacled human woman in her sixties, with plaited, grey hair down to her ankles",
+      "kindred": "Human",
+      "age_description": "in her sixties",
+      "dress": "chunky wool and an oiled leather apron",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Enthusiastic",
+        "insists customers sample at least half a dozen weeds"
+      ],
+      "mannerisms": "Polishing pipes with a cloth",
+      "speech": "Convivial, slow. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Rare and unusual pipes and weeds",
+        "To publish her life's work: a rambling collection of treatises on pipeleaf through the ages"
+      ],
+      "secrets": [],
+      "location_id": "3",
+      "occupation": "Smoke shop proprietor and pipeleaf expert"
+    },
+    {
+      "npc_id": "hagbard_sundiman",
+      "name": "Hagbard Sundiman",
+      "title": "Elder Woodcutter",
+      "description": "A remarkably hale, bear-like human man in his eighties, his dark eyes almost lost in the tangle of his russet hair and beard",
+      "kindred": "Human",
+      "age_description": "in his eighties",
+      "dress": "scratched leather and a squirrel-skin hat (complete with tail)",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Dour",
+        "God-fearing",
+        "suspicious of \"soft-skins\" (i.e. non-loggers)",
+        "brutally honest"
+      ],
+      "mannerisms": "Habitually chews pine sap",
+      "speech": "Gruff, curt. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To bring about a new dawn of Woodcutter culture by awakening the Jollie Oistace from his indolence",
+        "A complete exorcism of his manor (hex 1209) may prove necessary"
+      ],
+      "secrets": [],
+      "location_id": "4",
+      "occupation": "Elder Woodcutter and furnging maintainer"
+    },
+    {
+      "npc_id": "jock_furngle",
+      "name": "Jock Furngle",
+      "title": "Stump and Poniard Proprietor",
+      "description": "A stout, round-faced human man in his forties, with twinkling brown eyes, a mop of black hair, and ruddy cheeks",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": null,
+      "alignment": "Neutral",
+      "demeanor": [
+        "Grinning and affable",
+        "Scheming",
+        "untrustworthy",
+        "entirely unscrupulous"
+      ],
+      "mannerisms": null,
+      "speech": "Rustic, slow and circuitous. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To supply Jollie Oistace Pollard with fungi acquired from Bogwitt Manor (particularly Devil's Grease), with the aim of establishing an addiction"
+      ],
+      "secrets": [
+        "Has heard of the fungal infestation in Bogwitt Manor (hex 1210) and addiction of the nobles"
+      ],
+      "location_id": "7",
+      "occupation": "Tavern proprietor"
+    },
+    {
+      "npc_id": "father_jymes_horsely",
+      "name": "Father Jymes Horsely",
+      "title": "Vicar of the Woodcutters' Encampment",
+      "description": "A stick-thin human man in his fifties, with pale, greyish skin, wispy white hair, and darting grey eyes",
+      "kindred": "Human",
+      "age_description": "in his fifties",
+      "dress": null,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Shy",
+        "Prefers books to people",
+        "cares deeply about the plight of the suffering"
+      ],
+      "mannerisms": "Spends much of his time wandering in Hag's Addle with his dog, Clewyd",
+      "speech": "Awkward stammering. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To map Hag's Addle and drive out the Hag"
+      ],
+      "secrets": [
+        "Expert on the paths of Hag's Addle"
+      ],
+      "location_id": "8",
+      "occupation": "Vicar"
+    },
+    {
+      "npc_id": "clement_brancher",
+      "name": "Clement Brancher",
+      "title": "Merry Mendicant Proprietor",
+      "description": "A slender human woman in her twenties, with a mass of curly red hair and beady brown eyes",
+      "kindred": "Human",
+      "age_description": "in her twenties",
+      "dress": "traditional male Woodcutter garb: green tweed jacket and tight white breeches",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Warm",
+        "wry",
+        "somewhat baffled",
+        "Loves dogs and cats",
+        "Fondly predisposed towards grimalkins"
+      ],
+      "mannerisms": null,
+      "speech": "Leisurely, familiar. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "A magical hound for a pet",
+        "To marry a dashing swordsman (or swordswoman?—she's unsure)"
+      ],
+      "secrets": [
+        "Has no knowledge of the Woodcutter life, having moved here from Castle Brackenwold after inheriting the inn from her grandfather"
+      ],
+      "location_id": "10",
+      "occupation": "Inn proprietor"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "Folk flee logs tumbling off a collapsed logging cart. (The Referee may optionally call for a Save Versus Ray to jump out of the way or suffer 1d4 damage.)",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A family takes a sickly child to the Kissing Stone.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "Father Horsely leaving for Hag's Addle, with his dog and a partial map, which he hopes to expand.",
+          "npcs_involved": [
+            "Father Horsely"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A mossling pedlar laden with pipeleaf asks the way to Marrowbold's Smoke Shop.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Merry locals bedecked with garlands dance through the streets to a wedding at the Oistace Tree.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "An elder Woodcutter, dressed in traditional green tweed jacket and tight white breeches, scolds 1d3 youths for disrespectfully laughing beneath an elm.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "A tipsy local tolling the Drounbell with mad vigour.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "Hagbard Sundiman and 1d4 Woodcutter elders sneaking off to Ferneddbole House (hex 1209) to spy on the Jollie Oistace, making plans to exorcise him.",
+          "npcs_involved": [
+            "Hagbard Sundiman"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "Father Horsely rushes into the village, wide-eyed and bedraggled after a face-to-face encounter with the Hag in the swamp.",
+          "npcs_involved": [
+            "Father Horsely"
+          ],
+          "monsters_involved": [
+            "the Hag"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A lost soul wanders in from Hag's Addle.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "lost soul"
+          ],
+          "notes": "DMB"
+        },
+        {
+          "roll": 5,
+          "description": "1d6 bog corpses stumble out of the swamp.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "bog corpses"
+          ],
+          "notes": "DMB"
+        },
+        {
+          "roll": 6,
+          "description": "Jock Furngle furtively examining fungal specimens brought by a black-cloaked individual.",
+          "npcs_involved": [
+            "Jock Furngle"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "Camp Road"
+  ],
+  "connections": [
+    "Castle Brackenwold",
+    "Dreg",
+    "Hag's Addle",
+    "Ferneddbole House (hex 1209)",
+    "Bogwitt Manor (hex 1210)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      184,
+      185,
+      186,
+      187
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -51,6 +51,10 @@ from src.data_models import (
     TimeOfDay,
 )
 
+# Import v2 content models (JSON-backed settlements)
+from src.settlement.settlement_content_models import SettlementData
+from src.settlement.settlement_registry import SettlementRegistry
+
 
 logger = logging.getLogger(__name__)
 
@@ -241,9 +245,12 @@ class SettlementEngine:
         self.controller = controller
         self.dice = DiceRoller()
 
-        # Settlement data
+        # Settlement data (procedural model)
         self._settlements: dict[str, Settlement] = {}
         self._current_settlement: Optional[str] = None
+
+        # JSON-backed settlement registry (v2 content model)
+        self._registry: Optional[SettlementRegistry] = None
 
         # NPC data
         self._npcs: dict[str, NPC] = {}
@@ -266,6 +273,58 @@ class SettlementEngine:
     def register_description_callback(self, callback: Callable) -> None:
         """Register callback for settlement descriptions."""
         self._description_callback = callback
+
+    # =========================================================================
+    # REGISTRY INTEGRATION (v2 JSON-backed content)
+    # =========================================================================
+
+    def set_registry(self, registry: SettlementRegistry) -> None:
+        """
+        Set the settlement registry for JSON-backed content.
+
+        Args:
+            registry: SettlementRegistry loaded from JSON files
+        """
+        self._registry = registry
+        logger.info(f"Settlement registry set with {len(registry.list_ids())} settlements")
+
+    def get_registry(self) -> Optional[SettlementRegistry]:
+        """Get the settlement registry if loaded."""
+        return self._registry
+
+    def get_settlement_data(self, settlement_id: str) -> Optional[SettlementData]:
+        """
+        Get settlement data from registry by ID.
+
+        Args:
+            settlement_id: The settlement identifier
+
+        Returns:
+            SettlementData if found, None otherwise
+        """
+        if self._registry:
+            return self._registry.get(settlement_id)
+        return None
+
+    def get_settlement_by_hex(self, hex_id: str) -> Optional[SettlementData]:
+        """
+        Find settlement data by hex ID.
+
+        Args:
+            hex_id: The hex identifier (e.g., "1604")
+
+        Returns:
+            SettlementData if a settlement exists at that hex, None otherwise
+        """
+        if self._registry:
+            return self._registry.find_by_hex(hex_id)
+        return None
+
+    def list_settlement_ids(self) -> list[str]:
+        """List all settlement IDs in the registry."""
+        if self._registry:
+            return self._registry.list_ids()
+        return []
 
     # =========================================================================
     # SETTLEMENT MANAGEMENT

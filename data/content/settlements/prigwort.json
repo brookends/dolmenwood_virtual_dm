@@ -1,0 +1,1108 @@
+{
+  "name": "Prigwort",
+  "settlement_id": "prigwort",
+  "hex_id": "1106",
+  "size": "town",
+  "population": 2800,
+  "population_description": "2,800—small town",
+  "tagline": "Famed brewing and market town in the heart of the Wood",
+  "description": "Situated in a hilly clearing in the deep woods, Prigwort is a market town famed for its breweries, inns, and taverns. Within the confines of the town wall, twisting alleys and crooked stairways weave between quaint wooden cottages and high-gabled inns, all decorated with colourful, pseudo-heraldic imagery and elaborate wood carving.",
+  "atmosphere": "Bustling market town atmosphere with brewing culture dominating daily life",
+  "inhabitants_description": "A large majority of folk of Prigwort origin, together with a smattering of travellers and traders who wandered this way and decided to remain.",
+  "governance": {
+    "ruler_type": "council",
+    "ruler_name": null,
+    "ruling_body": "The Elevated Council of Brewmasters",
+    "domain": "Lady Harrowmoor",
+    "political_status": "sees to the day-to-day running of Prigwort, as representatives of Lady Harrowmoor",
+    "notes": "The council also (in secret) pays fealty to the fairy Earl of Yellow, under whose protection Prigwort lies"
+  },
+  "religion": {
+    "primary_deity": "St Waylaine",
+    "religious_buildings": [
+      "Church of St Waylaine"
+    ],
+    "religious_practices": "It is said (by outsiders) that Prigwort folk glorify ale above all. In reality, it would be fair to say that the church and the tavern share equal space in their hearts.",
+    "notes": null
+  },
+  "history": [
+    "The Seven Noble Brewing Houses have dominated Prigwort culture for generations",
+    "The old Swinney Tower was once important but fell into disuse",
+    "Swinney Road was once an important pilgrimage route to the Abbey of St Clewyd"
+  ],
+  "current_events": [
+    "Bands of crookhorns and other monsters have recently begun encroaching on the woods close to Prigwort",
+    "Lady Harrowmoor is overseeing the establishment of a fortified garrison in Prigwort as a precaution against war",
+    "The old Swinney Tower is now reoccupied"
+  ],
+  "rumors_reference": "See Rumours in Prigwort, p452",
+  "special_features": [
+    {
+      "name": "Secret Congress with the Earl of Yellow",
+      "description": "The brewmasters pay tribute to the Earl in the form of Prigwort's finest spirituous beverages. In return, the Earl protects the town and supplies fabulous ingredients from Fairy for inclusion in their brews.",
+      "mechanical_effect": null,
+      "affected_area": "Brewmasters and their operations"
+    },
+    {
+      "name": "The Seven Noble Brewing Houses",
+      "description": "All townsfolk are proud members of one of seven noble brewing houses, each with its own insignia, traditional festival garb, and seat on the town council.",
+      "mechanical_effect": null,
+      "affected_area": "All inhabitants"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "vehicles",
+      "mounts",
+      "hounds",
+      "tools",
+      "adventuring gear",
+      "basic weapons",
+      "armor"
+    ],
+    "unavailable_categories": [],
+    "special_items": [
+      "Beers and spirits with magical qualities",
+      "Wild herbs and fungi"
+    ],
+    "notes": "Mounts and hounds are usually only available at the market on Colly"
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Town Hall",
+      "location_type": "government",
+      "description": "A large, elaborate building with two pointy ornamental turrets, an ostentatious, portcullised gate, and a profusion of heraldic shields decorating its tiled walls. This is the town hall of Prigwort, seat of the Elevated Council of Brewmasters.",
+      "interior": "A wide, gloomy hall bedecked with heraldic tapestries bearing the insignias of the seven noble brewing houses and depicting the greatest Elevated Brewmasters of the town's past. When town meetings or legal proceedings are under way, the members of the Elevated Council are seated on wooden thrones upon a dais.",
+      "exterior": "Large, elaborate building with two pointy ornamental turrets, an ostentatious, portcullised gate, and a profusion of heraldic shields decorating its tiled walls",
+      "populace": "The Elevated Council of Brewmasters, town guards",
+      "atmosphere": "Formal seat of power with brewing house heraldry",
+      "services": [],
+      "npcs": [
+        "captain_simwise_hogwash"
+      ],
+      "special_features": [
+        "Exquisitely stocked cellars with vintage wines, spirits, beers, and ciders",
+        "Town gaol and garrison"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Market Square",
+      "location_type": "market",
+      "description": "A cobbled square whose sides are packed with tall, leaning stores and public houses. Bustling markets are held here twice a week.",
+      "interior": null,
+      "exterior": "Cobbled square with tall, leaning stores and public houses",
+      "populace": "Merchants, traders, locals shopping",
+      "atmosphere": "Bustling commercial center",
+      "services": [
+        {
+          "name": "Colly Market",
+          "description": "Livestock and crafts market",
+          "cost": "standard prices",
+          "notes": "Vehicles, mounts, hounds, tools, adventuring gear, and basic weapons and armour"
+        },
+        {
+          "name": "Frisk Market",
+          "description": "Lively food market with festive music",
+          "cost": "1d4sp per portion of fungi, 2sp per pastry",
+          "notes": "Three randomly selected types of edible fungi, fancy pastries from hex 1206"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Markets held twice weekly"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "The Oaf in the Oast",
+      "location_type": "tavern",
+      "description": "An old oast-house converted into a heaving tavern affiliated with House Ogsbody. The exterior walls are coated in once bright primary colours, now obscured by layers of thick varnish.",
+      "interior": "An arc-shaped mahogany bar in the cramped roundel is where most serious drinking takes place. On warm nights the cowl in the lofty roof is opened, allowing nightly zephyrs to sweep away the fust and fug.",
+      "exterior": "Old oast-house with walls coated in once bright primary colours, now obscured by thick varnish. Various terracotta pots fashioned as hog-like creatures, trailing brittle vines and dead flowers",
+      "populace": "A bustle of bawdy locals, mostly manual labourers",
+      "atmosphere": "Rough working-class tavern with no tolerance for fancy folk",
+      "services": [
+        {
+          "name": "Food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Heggid's Bitter",
+          "description": "Two-pint ceramic steins worked into faces of rosy-cheeked barmaids",
+          "cost": "15cp per stein",
+          "notes": null
+        },
+        {
+          "name": "Baths",
+          "description": "In the basement, minimum four people",
+          "cost": "1sp per person (Heggid), 1gp per person (Gawda or Blessie)",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "heggid_axminster"
+      ],
+      "special_features": [
+        "Grimalkins welcomed but treated like dogs and cats",
+        "Patrons in fancy attire may be barred"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Brandybile's",
+      "location_type": "shop",
+      "description": "This beautifully lacquered but otherwise inconspicuous shop is the premises of a high-class tailor of great repute.",
+      "interior": "A series of elegantly appointed chambers containing the workshops, display racks, and boudoirs of this high-class tailor. Lit by candles that flicker on and off as clients walk between rooms.",
+      "exterior": "Beautifully lacquered but inconspicuous with a small, red-painted doorway with shiny brass knob and plaque",
+      "populace": "High-class clientele by appointment only",
+      "atmosphere": "Exclusive, magical high-end tailoring establishment",
+      "services": [
+        {
+          "name": "Fine Clothing",
+          "description": "Tailoring of fancy outfits",
+          "cost": "50gp upwards",
+          "notes": null
+        },
+        {
+          "name": "Embroidery",
+          "description": "Enhancement of existing clothing with emblems, coats of arms",
+          "cost": "25gp upwards",
+          "notes": null
+        },
+        {
+          "name": "Enchantments",
+          "description": "Clothing suitable for enchantment or direct commission",
+          "cost": "double normal cost for suitable clothing",
+          "notes": "Via Shadow House contacts"
+        }
+      ],
+      "npcs": [
+        "algenon_brandybile"
+      ],
+      "special_features": [
+        "By appointment only",
+        "Warded by sorcery - theft causes hog transformation curse"
+      ],
+      "secrets": [
+        "Affiliate of the Shadow House, Castle Brackenwold"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Raptappen's Quadrant",
+      "location_type": "inn",
+      "description": "A squat building of black timber with eggshell-coloured trim, surrounding a grassy courtyard in which wavers a single stunted elm. Secure, quiet lodging is on offer here.",
+      "interior": "Entry hall lined with mossy green carpet and dark wood panelling. Maze of passages leading to private dining rooms. Preternatural calm and quiet throughout.",
+      "exterior": "Squat building of black timber with eggshell-coloured trim surrounding grassy courtyard with stunted elm",
+      "populace": "Mysterious guests rarely seen, politely timorous servant lads in rust-coloured livery",
+      "atmosphere": "Preternatural calm and quiet, mysterious",
+      "services": [
+        {
+          "name": "Lodgings and Food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Wines",
+          "description": "All uncommon wines in stock, 3-in-6 chance of rare wines",
+          "cost": "standard wine prices",
+          "notes": "Proprietor personally brings bottles from cellars"
+        }
+      ],
+      "npcs": [
+        "aspith_raptappen"
+      ],
+      "special_features": [
+        "Private dining rooms for up to fifteen",
+        "Courtyard with traditional lawn games"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "The Earl's Court",
+      "location_type": "landmark",
+      "description": "A cobblestoned courtyard featuring a charming fountain, and benches cloistered among rose-clad nooks.",
+      "interior": null,
+      "exterior": "Cobblestoned courtyard with fountain, benches among rose-clad nooks, golden statue of portly gentleman raising goblet",
+      "populace": "Locals and visitors",
+      "atmosphere": "Charming public space dedicated to the Earl of Yellow",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Golden statue of the fairy Earl of Yellow"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "The Sea of Stars",
+      "location_type": "shop",
+      "description": "A tall, narrow store, four storeys high, painted with pearls, mermaids, and gaudy nautical scenes.",
+      "interior": "A luxurious suite, with floral upholstered couches, elegant oil paintings, and display cases of polished, inlaid wood. Grand consulting desk in center.",
+      "exterior": "Tall, narrow four-storey building painted with pearls, mermaids, and gaudy nautical scenes",
+      "populace": "Wealthy clients seeking jewelry",
+      "atmosphere": "Luxurious high-end jewelry establishment",
+      "services": [
+        {
+          "name": "Gems and Jewelry",
+          "description": "Wide range of decent quality items",
+          "cost": "50-500gp",
+          "notes": "Buying and selling treasure services"
+        }
+      ],
+      "npcs": [
+        "hague_jerricorn"
+      ],
+      "special_features": [
+        "6 guards with crossbows and swords",
+        "Safe room on upper floors"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "The Wrinkled Medlar",
+      "location_type": "inn",
+      "description": "A three-winged building whose ground floor is constructed of timeworn stone blocks and two upper floors are wood-beamed and painted with murals of the town market. Cultivates the reputation of 'luxury away from home'.",
+      "interior": "Curated balance between dim, rustic cosiness and timeless elegance. Tables decked with linen, candles, and silver cutlery. Double staircases lead to intimate evening bar overlooking broad stage.",
+      "exterior": "Three-winged building with stone ground floor and wood-beamed upper floors painted with market murals",
+      "populace": "Well-to-do merchants, clergy, minor aristocrats with their entourages",
+      "atmosphere": "Refined luxury establishment with musical performances",
+      "services": [
+        {
+          "name": "Lodgings and Food",
+          "description": "Of fancy quality",
+          "cost": "fancy prices",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "maydrid_hydball",
+        "sprewdiman_kneeve"
+      ],
+      "special_features": [
+        "Strict door policy - no armor or weapons",
+        "Finest musical venue in Prigwort",
+        "Bardic Guild office behind stage"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "Wyrmspittle the Herbalist",
+      "location_type": "shop",
+      "description": "An ungainly building teeters on the edge of a small bridge spanning a street below. Prigwort's primary herbalist and apothecary, reached by a steep stair that passes alongside a stinking chicken enclosure.",
+      "interior": "Herbalist and apothecary shop",
+      "exterior": "Ungainly building on bridge edge, reached by steep stair past chicken enclosure",
+      "populace": "Customers seeking herbs and alchemical compounds",
+      "atmosphere": "Eccentric herbalist's establishment",
+      "services": [
+        {
+          "name": "Herbal Consultation",
+          "description": "Tailored herbal admixtures for extra Hit Point per day of rest",
+          "cost": "5gp per dose",
+          "notes": null
+        },
+        {
+          "name": "Mushrooms and Herbs",
+          "description": "Standard items plus rare fungi for trusted customers",
+          "cost": "standard prices",
+          "notes": "2-in-6 chance of rare fungi"
+        },
+        {
+          "name": "Alchemical Compounds",
+          "description": "Brewmaster's Balsam always in stock, others 2-in-6 chance",
+          "cost": "standard prices",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "edgar_wyrmspittle"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "Church of St Waylaine",
+      "location_type": "church",
+      "description": "A rambling structure whose original, narrow nave has been extended over time with many side-chapels in differing styles and antiquities.",
+      "interior": "Long, narrow nave lined with pillars of gleaming white marble, giving direct view onto altar bathed in coloured light. Enormous bronze statue of St Waylaine depicted as plump woman with seven arms, each bearing an axe. Many side-chapels dedicated to deceased vicars and bishops.",
+      "exterior": "Rambling structure with extravagant portal framed by seven concentric arches, carved with scenes of angels raising souls to heaven",
+      "populace": "Brewers wheeling kegs for blessing, pious locals and travellers, the vicar",
+      "atmosphere": "Sacred space where brewing and religion intersect",
+      "services": [
+        {
+          "name": "Prayer",
+          "description": "Characters praying may receive blessing of St Waylaine: ability to cast Hold Person",
+          "cost": "free",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "reverend_mother_liane_smunk"
+      ],
+      "special_features": [
+        "Walled graveyard warded by the Lichwards",
+        "Entrance visible to travellers through Turret Gate"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "The Groaning Gate",
+      "location_type": "gate",
+      "description": "A squat stone gate topped with a covered wooden lookout post, painted with the image of a sea serpent.",
+      "interior": null,
+      "exterior": "Squat stone gate with wooden lookout post painted with sea serpent",
+      "populace": "Town guards",
+      "atmosphere": "Fortified entrance to town",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "Turret Gate",
+      "location_type": "gate",
+      "description": "An ornamental, turreted gate, with portcullis and guard posts. The tops of the turrets stand fully twice the height of the town wall.",
+      "interior": null,
+      "exterior": "Ornamental turreted gate with portcullis, turrets twice the height of town wall",
+      "populace": "Town guards",
+      "atmosphere": "Grand entrance showing Church of St Waylaine to travelers",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Church entrance visible to travelers passing through"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "Abbey Gate",
+      "location_type": "gate",
+      "description": "A stone gate topped with a battlement. The gate is flanked on each side by a statue of a bishop.",
+      "interior": null,
+      "exterior": "Stone gate with battlement, flanked by bishop statues with alms slots",
+      "populace": "Town guards, pilgrims leaving alms",
+      "atmosphere": "Religious gateway from pilgrimage days",
+      "services": [
+        {
+          "name": "Alms Collection",
+          "description": "Coins dropped in statue palms go to local church",
+          "cost": "voluntary donation",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Alms boxes in bishop statues"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 14,
+      "name": "The Bagwall",
+      "location_type": "landmark",
+      "description": "A crumbling brick wall that mirrors the course of the main town wall for a quarter of its length. The Bagwall is the remnant of a failed attempt by the semi-mythical Lord Bag-in-Hand to establish a manorial estate in the outskirts of Prigwort.",
+      "interior": null,
+      "exterior": "Crumbling brick wall mirroring main town wall",
+      "populace": "Locals who joke about it",
+      "atmosphere": "Local running joke and historical curiosity",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Local phrase: 'when the Bagwall's finished' means something unlikely to occur"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 15,
+      "name": "Bag Manor",
+      "location_type": "manor",
+      "description": "A roomy, thatch-roofed residence of several rambling wings. Hereditary home of the wealthy Drouge family, prominent members of the brewing house Oberon.",
+      "interior": "Octagonal consulting study lined with bookshelves and curio cabinets. Green-stained octagonal desk in centre of carmine rug.",
+      "exterior": "Roomy, thatch-roofed residence of several rambling wings",
+      "populace": "Mostlemyre Drouge and three mysterious black-wreathed servitors",
+      "atmosphere": "Mysterious magical residence",
+      "services": [
+        {
+          "name": "Detect Magic",
+          "description": "Analysis of items",
+          "cost": "25gp per item",
+          "notes": "Takes 1d3 days"
+        },
+        {
+          "name": "Deciphering",
+          "description": "Translation of inscriptions or text",
+          "cost": "25gp per inscription or page",
+          "notes": "Takes 1d3 days"
+        },
+        {
+          "name": "Magic Item Identification",
+          "description": "Using Drouge's Arcane Unravelling spell",
+          "cost": "1,000gp per item",
+          "notes": "Takes 1d3 days"
+        }
+      ],
+      "npcs": [
+        "mostlemyre_drouge"
+      ],
+      "special_features": [
+        "Book spirit (demi-gnod) in study bookshelves",
+        "Takes 1d3 days to gain audience"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 16,
+      "name": "The Clashed Antler",
+      "location_type": "inn",
+      "description": "A rustic, two-storey building with a thatched roof and sturdy black oak beams, similar in style to Bag Manor. Supposedly located on a site intended for the grounds and outbuildings of Lord Bag-In-Hand's manor.",
+      "interior": "Grandly rustic, with thick beams, intimately cramped nooks and crannies, comfortingly low ceilings, and a horseshoe bar that looks solid enough to withstand a battering ram.",
+      "exterior": "Rustic two-storey building with thatched roof and black oak beams",
+      "populace": "Small number of cringing travellers and locals amid roistering crowd of Austache's Bounders",
+      "atmosphere": "Rowdy inn dominated by vigilante gang",
+      "services": [
+        {
+          "name": "Lodgings and Food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Private Cottages",
+          "description": "Located in beer garden, accommodate six",
+          "cost": "1gp per person per night including breakfast",
+          "notes": null
+        },
+        {
+          "name": "Bundt Cake",
+          "description": "Immense cake baked twice weekly",
+          "cost": "free to all patrons and passing beggars",
+          "notes": "Baked on Moot and Sunning"
+        }
+      ],
+      "npcs": [
+        "blino_jongle",
+        "austache_jongle"
+      ],
+      "special_features": [
+        "Beer garden with purple and orange lamps",
+        "Bounded by Bagwall and bleeds into Dolmenwood"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 17,
+      "name": "Harrow Road",
+      "location_type": "road",
+      "description": "A narrow, twisting forest road, just wide enough for a cart at the point where it leaves Prigwort. Harrow Road widens as it winds its way north towards the gates of Harrowmoor Keep.",
+      "interior": null,
+      "exterior": "Narrow, twisting forest road widening as it goes north",
+      "populace": "Travelers to Harrowmoor Keep",
+      "atmosphere": "Forest road to the keep",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 18,
+      "name": "Swinney Road",
+      "location_type": "road",
+      "description": "A well-maintained, much-frequented trade road that leads from Prigwort to Fort Vulgar. Also once an important pilgrimage route—Swinney Road passes the foot of the (now ruined) Abbey of St Clewyd.",
+      "interior": null,
+      "exterior": "Well-maintained, much-frequented trade road",
+      "populace": "Traders and travelers",
+      "atmosphere": "Busy trade route with pilgrimage history",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Former pilgrimage route to Abbey of St Clewyd"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 19,
+      "name": "Construction Site",
+      "location_type": "construction",
+      "description": "Piled beside the wall to the north of the Abbey Gate are rapidly growing heaps of brick, stone, and lumber. This site is being prepared for the construction of a garrison, at the instruction of Lady Harrowmoor and the duke.",
+      "interior": null,
+      "exterior": "Heaps of brick, stone, and lumber beside the wall",
+      "populace": "Construction workers",
+      "atmosphere": "Active military preparation",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Future garrison site"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 20,
+      "name": "Horse-Eye Road",
+      "location_type": "road",
+      "description": "A well-maintained, much-frequented trade road that connects Castle Brackenwold and Prigwort.",
+      "interior": null,
+      "exterior": "Well-maintained, much-frequented trade road",
+      "populace": "Traders and travelers",
+      "atmosphere": "Busy trade route to Castle Brackenwold",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "captain_simwise_hogwash",
+      "name": "Captain Simwise Hogwash",
+      "title": "Captain of the Alegard",
+      "description": "A bristle-bearded human man in his early sixties, his impeccably polished helmet perpetually strapped upon his shiny bald head. Goggling eyes and a stiff upper lip lend him an astonished appearance at all times.",
+      "kindred": "Human",
+      "age_description": "in his early sixties",
+      "dress": "Impeccably polished helmet perpetually strapped on bald head",
+      "alignment": "Lawful",
+      "demeanor": [
+        "brusque",
+        "suspicious",
+        "always on edge even when drunk"
+      ],
+      "mannerisms": "Eye twitches",
+      "speech": "Gentlemanly. Vacillates between barked orders and mumbled ruminations. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Suspects Austache's Bounders of criminal activity, and wishes to arrest Austache and shut down the vigilante gang"
+      ],
+      "secrets": [],
+      "location_id": "1",
+      "occupation": "Level 6 Fighter, Captain of town guards"
+    },
+    {
+      "npc_id": "heggid_axminster",
+      "name": "Heggid Axminster",
+      "title": "Oaf in the Oast Proprietor",
+      "description": "A barrel-chested, lantern-jawed human man in his forties, with hairy forearms and a thatch of matted blonde hair. Broken teeth and nose do not detract from an almost noble carriage in the swing of his proud beer gut.",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Working clothes befitting a tavern keeper",
+      "alignment": "Neutral",
+      "demeanor": [
+        "attempts to conceal scheming and sly intellect with feigned absent-mindedness"
+      ],
+      "mannerisms": "Proud beer gut carriage",
+      "speech": "Rough, barely intelligible drawl. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Scheming to set up a clandestine distillery in his cellars—out of sight of the meddling of the Brewmasters and their tax collectors—and start exporting cheap liquor to Dreg",
+        "To show his mettle defending Prigwort from any hypothetical invader"
+      ],
+      "secrets": [
+        "Plans for illegal distillery"
+      ],
+      "location_id": "3",
+      "occupation": "Tavern proprietor"
+    },
+    {
+      "npc_id": "algenon_brandybile",
+      "name": "Algenon Brandybile",
+      "title": "Brandybile's Proprietor",
+      "description": "A weaselly human man in his forties, always dressed to the height of fashion, with curl-toed moccasins and a moustache to match.",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Always dressed to the height of fashion, with curl-toed moccasins and matching moustache",
+      "alignment": "Neutral",
+      "demeanor": [
+        "fawning and sycophantic to the right breed of customer",
+        "condescending and abrupt to the wrong sort"
+      ],
+      "mannerisms": "May be brought around if his expert opinion on fashion is deferred to",
+      "speech": "Obsequious whine. Woldish, basic Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To see Cantius Croupe—his arch-rival and chief boudoir-ward of the duke—ridiculed and deposed"
+      ],
+      "secrets": [],
+      "location_id": "4",
+      "occupation": "High-class tailor"
+    },
+    {
+      "npc_id": "aspith_raptappen",
+      "name": "Aspith Raptappen",
+      "title": "Raptappen's Proprietor",
+      "description": "A sighing human woman in her 50s, of gaunt, saturnine aspect, appearing of noble parentage. Dresses in sombre black suits and smells strongly of mothballs.",
+      "kindred": "Human",
+      "age_description": "in her 50s",
+      "dress": "Sombre black suits, smells strongly of mothballs",
+      "alignment": "Lawful",
+      "demeanor": [
+        "bows scrapingly low to even the lowliest beggar",
+        "will often enquire with genuine curiosity of adventurers' recent brushes with death"
+      ],
+      "mannerisms": "Sighing, scraping bows",
+      "speech": "Sombre. Given to maudlin proverbs. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Knowledge of what lies beyond death",
+        "To host Lady Harrowmoor in the inn"
+      ],
+      "secrets": [],
+      "location_id": "5",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "hague_jerricorn",
+      "name": "Hague Jerricorn",
+      "title": "Sea of Stars Proprietor",
+      "description": "A human woman in her late thirties with cool grey eyes, straight red hair to her waist, and a birth mark across her left eye and cheek. Dresses in an odd mélange of courtly gowns and utilitarian artisan's apron.",
+      "kindred": "Human",
+      "age_description": "in her late thirties",
+      "dress": "Odd mélange of courtly gowns and utilitarian artisan's apron",
+      "alignment": "Neutral",
+      "demeanor": [
+        "disarming serenity and charm",
+        "the grace and poise of a dancer",
+        "has a reckless streak"
+      ],
+      "mannerisms": "Grace and poise of a dancer",
+      "speech": "Hypnotically melodic. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Adventure, excitement, and scandalous romance",
+        "The treasure hoard her grandfather (who founded the Sea of Stars) claims to have buried on a remote island in his seafaring days. She has a map"
+      ],
+      "secrets": [
+        "Has a map to grandfather's treasure hoard",
+        "Possesses a Ring of Invisibility"
+      ],
+      "location_id": "7",
+      "occupation": "Jeweller"
+    },
+    {
+      "npc_id": "maydrid_hydball",
+      "name": "Maydrid Hydball",
+      "title": "Wrinkled Medlar Proprietor",
+      "description": "A tall, slender human woman of great beauty in her late 20s, with cropped brown hair and a scintillating smile. Dresses in simple scarlet gowns and gold earrings.",
+      "kindred": "Human",
+      "age_description": "in her late 20s",
+      "dress": "Simple scarlet gowns and gold earrings",
+      "alignment": "Lawful",
+      "demeanor": [
+        "vivacious",
+        "light-hearted",
+        "charmingly informal, even with those of noble birth"
+      ],
+      "mannerisms": "Scintillating smile",
+      "speech": "Teasingly forthright. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To convince her staid brothers to open a ballroom in the inn's attic",
+        "For her lover—the bard Gherigew Thorncripe (see hex 0604)—to forsake the life of a wanderer and settle in Prigwort"
+      ],
+      "secrets": [
+        "Has a lover, the wandering bard Gherigew Thorncripe"
+      ],
+      "location_id": "8",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "sprewdiman_kneeve",
+      "name": "Sprewdiman Kneeve",
+      "title": "Bardic Guild Delegate",
+      "description": "A bulky, rat-faced human man in his thirties, with a powdered wig and a brass-knobbed walking cane. As Prigwort delegate of the Bardic Guild, Kneeve is an expert on matters musical and is himself a virtuoso violinist (but stage fright prevents him performing).",
+      "kindred": "Human",
+      "age_description": "in his thirties",
+      "dress": "Powdered wig and brass-knobbed walking cane",
+      "alignment": "Neutral",
+      "demeanor": [
+        "vain and insipid",
+        "expresses himself with swishes of his silk handkerchief"
+      ],
+      "mannerisms": "Swishes silk handkerchief",
+      "speech": "Nervous, affected giggling. Woldish, Caprice.",
+      "languages": [
+        "Woldish",
+        "Caprice"
+      ],
+      "desires": [
+        "The hand of Maydrid Hydball in marriage. (Maydrid has no time for the smarmy Kneeve.)"
+      ],
+      "secrets": [
+        "Stage fright prevents him from performing despite being a virtuoso violinist"
+      ],
+      "location_id": "8",
+      "occupation": "Bardic Guild delegate, virtuoso violinist"
+    },
+    {
+      "npc_id": "edgar_wyrmspittle",
+      "name": "Edgar Wyrmspittle",
+      "title": "Herbalist",
+      "description": "A shaven-headed human man in his fifties, with arched brows, a silver ring in his ear, and a long pipe of Mogglemoss in his lips. Sports a forked beard and dangling moustaches. Dresses in genteel tweed and a burgundy velvet smoking jacket.",
+      "kindred": "Human",
+      "age_description": "in his fifties",
+      "dress": "Genteel tweed and burgundy velvet smoking jacket",
+      "alignment": "Neutral",
+      "demeanor": [
+        "irascible",
+        "superior",
+        "raises one eyebrow sceptically",
+        "friendly with those who display an interest in the wild herbs and fungi of Dolmenwood"
+      ],
+      "mannerisms": "Raises one eyebrow sceptically, long pipe in lips",
+      "speech": "Smooth, erudite bass. Waxes technical. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Unusual herbs or fungi—pays well (75% of listed price)",
+        "The distillation secrets of the Brewmasters"
+      ],
+      "secrets": [],
+      "location_id": "9",
+      "occupation": "Herbalist and apothecary"
+    },
+    {
+      "npc_id": "reverend_mother_liane_smunk",
+      "name": "Reverend Mother Liane Smunk",
+      "title": "Vicar of Prigwort",
+      "description": "A plump, rosy-cheeked human woman in her forties, with prematurely white hair tied in a neat bun. Has one orange, goat-like eye. Dresses in white robes embroidered with vine-like patterns of gold thread, dotted with beads of yellow glass.",
+      "kindred": "Human",
+      "age_description": "in her forties",
+      "dress": "White robes embroidered with vine-like patterns of gold thread, dotted with beads of yellow glass",
+      "alignment": "Lawful",
+      "demeanor": [
+        "ever-cheerful (to an irritating degree)",
+        "compassionate and good-hearted"
+      ],
+      "mannerisms": "Irritatingly cheerful demeanor",
+      "speech": "Overly familial. Woldish, Liturgic, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Liturgic",
+        "Gaffe"
+      ],
+      "desires": [
+        "To send a mission to the High Wold, seeking shorthorn initiates to the clergy"
+      ],
+      "secrets": [
+        "Has breggle blood in her ancestry"
+      ],
+      "location_id": "10",
+      "occupation": "Vicar, native of Lankshorn"
+    },
+    {
+      "npc_id": "mostlemyre_drouge",
+      "name": "Mostlemyre Drouge",
+      "title": "Consulting Magician",
+      "description": "A fat human man in his late 50s, with a shaven head and pudgy, clammy hands clad with bejewelled rings (one of which is enchanted). Dresses in purple silks with an octagonal orange skullcap and a curious pair of thick, prismatic lensed spectacles.",
+      "kindred": "Human",
+      "age_description": "in his late 50s",
+      "dress": "Purple silks with octagonal orange skullcap and thick, prismatic lensed spectacles",
+      "alignment": "Neutral",
+      "demeanor": [
+        "wry",
+        "abstruse",
+        "forthright and businesslike in his dealings with strangers",
+        "has a general liking for adventurers, taking roguish antics with a pinch of salt",
+        "smiles enigmatically to himself"
+      ],
+      "mannerisms": "Smiles enigmatically to himself",
+      "speech": "Dawdling baritone. Woldish, Old Woldish, several obscure otherworldly tongues.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "several obscure otherworldly tongues"
+      ],
+      "desires": [
+        "Spells, tomes, and magic items related to scrying and other dimensions",
+        "Seeks a copy of the infamous tome of summoning magic, the Black Book of Llareggub"
+      ],
+      "secrets": [
+        "Elder brother of Elevated Sirrop Drouge",
+        "House Oberon spirits rumoured enhanced by his magic"
+      ],
+      "location_id": "15",
+      "occupation": "Level 8 Magician, consulting magician"
+    },
+    {
+      "npc_id": "blino_jongle",
+      "name": "Blino Jongle",
+      "title": "Clashed Antler Proprietor",
+      "description": "An elderly human man, once proud and strong-backed, now doddery and enfeebled. His bald pate is dotted with liver spots and his spit-soaked grey moustaches hang limply down to his chest. Dresses in a shabby black suit.",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": "Shabby black suit",
+      "alignment": "Lawful",
+      "demeanor": [
+        "feeble",
+        "familiar",
+        "forgetful",
+        "will not have a bad word said about his great-nephew Austache",
+        "looks on in silent reproach during debauches, fretfully hand-wringing and chewing moustaches"
+      ],
+      "mannerisms": "Hand-wringing and chewing moustaches",
+      "speech": "Faltering, whistling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To find a good, dependable woman for Austache to settle down with or, failing that, a strict employer to keep him out of trouble"
+      ],
+      "secrets": [],
+      "location_id": "16",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "austache_jongle",
+      "name": "Austache Jongle",
+      "title": "Vigilante Leader",
+      "description": "An awkward, pudgy human man in his early thirties (significantly older than most of his gang), with misty blue eyes and unkempt blonde hair and beard. Dresses in a ridiculous, harlequin patchwork of coloured cloth.",
+      "kindred": "Human",
+      "age_description": "in his early thirties",
+      "dress": "Ridiculous, harlequin patchwork of coloured cloth",
+      "alignment": "Neutral",
+      "demeanor": [
+        "ungainly and careless"
+      ],
+      "mannerisms": "Shaky hands caused by early-onset alcoholism",
+      "speech": "Loud whooping and jeering. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To remain young and carefree",
+        "To recruit more members to his gang—including adventurous types!—and set up continuous patrols around Prigwort, on the lookout for 'wrong-uns'"
+      ],
+      "secrets": [],
+      "location_id": "16",
+      "occupation": "Leader of Austache's Bounders vigilante gang"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "A pedlar bearing bags of fresh herbs to Wyrmspittle's.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "One of Mostlemyre Drouge's enigmatic black-wreathed servitors running errands around town.",
+          "npcs_involved": [
+            "Mostlemyre Drouge"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "1d3 Brewmasters overseeing transport of a giant vat of liquid to the Town Hall.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "Hague Jerricorn arguing with a raggedy sailor over the authenticity of an old map she is clutching.",
+          "npcs_involved": [
+            "Hague Jerricorn"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Captain Hogwash loudly leading wagon-loads of stone to the construction site beside the Abbey Gate.",
+          "npcs_involved": [
+            "Captain Hogwash"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Dozens of locals bearing the insignia of one of the noble brewing houses, rolling kegs through the streets.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "2d3 town guards dragging 1d4 protesting youths (members of Austache's Bounders) to the gaol.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "Austache and 2d4 gang members drunkenly accosting 1d4 shorthorn travellers on their way to the Oaf in the Oast for a soothing bath.",
+          "npcs_involved": [
+            "Austache"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "A Brewmaster surreptitiously reading a note written in glowing golden Sylvan script (from the Earl of Yellow, promising a shipment of 'languid evermore').",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "1d6 revellers singing the praises of Maydrid Hydball, whom they all profess their undying love for.",
+          "npcs_involved": [
+            "Maydrid Hydball"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Brash war horns ring out in the woods as a troop of 3d6 crookhorns harries 1d6 lost pilgrims.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Crookhorns"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Wyrmspittle smoking with a mossling.",
+          "npcs_involved": [
+            "Wyrmspittle"
+          ],
+          "monsters_involved": [
+            "Mossling"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "Harrow Road",
+    "Swinney Road",
+    "Horse-Eye Road"
+  ],
+  "connections": [
+    "Harrowmoor Keep (hex 1105)",
+    "Fort Vulgar",
+    "Castle Brackenwold",
+    "Abbey of St Clewyd (hex 0906)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

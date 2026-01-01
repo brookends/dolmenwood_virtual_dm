@@ -1,0 +1,828 @@
+{
+  "name": "Lankshorn",
+  "settlement_id": "lankshorn",
+  "hex_id": "0710",
+  "size": "town",
+  "population": 1100,
+  "population_description": "1,100—small town",
+  "tagline": "High Wold market town on the edge of the tangled, breggle-ruled woods",
+  "description": "A bustling town of well-kept, stonebuilt houses, clustered around a tall-steepled church and a cobbled market square. At the rear of the town, a slope rises towards Dolmenwood, which looms ominously, a reminder of Lankshorn's position on the verge of the wild.",
+  "atmosphere": "Bustling but ominous, positioned on the edge of the wild",
+  "inhabitants_description": "Mostly consisting of local, curly-haired folk of High Woldish origin who have made their livings in the town for many generations. A number of breggles also dwell in Lankshorn.",
+  "governance": {
+    "ruler_type": "lord",
+    "ruler_name": "Lord Malbleat",
+    "ruling_body": "Lord Malbleat and Berkmaster Baldricke—Malbleat's representative in the town (a mayor of sorts)",
+    "domain": "Lord Malbleat's domain",
+    "political_status": "Part of Lord Malbleat's newly established domain",
+    "notes": "Twenty-two years ago, Lankshorn was wrested overnight from the domain of Lord Ramius and became part of the newly established domain of Lord Malbleat"
+  },
+  "religion": {
+    "primary_deity": "Saint Pastery",
+    "religious_buildings": [
+      "Church of St Pastery"
+    ],
+    "religious_practices": "The people of Lankshorn are devout followers of the Pluritine Church. However, in addition to the tenets of the Church, Lankshorners proudly follow a body of local superstitions.",
+    "notes": "Ancient Gwyrae beliefs blend with the strictures of the Pluritine Church, forming an idiosyncratic mass of folk belief and superstition"
+  },
+  "history": [
+    "Lankshorn lies within a bowshot of the forest's border, acting as one of the two main 'thresholds' into Dolmenwood",
+    "Twenty-two years ago, a feud among the nobles of House Ramius led to an abrupt reshaping of traditional domain boundaries in the High Wold",
+    "Lankshorn was wrested overnight from the domain of Lord Ramius and became part of the newly established domain of Lord Malbleat",
+    "Over many generations, the humans and breggles of Lankshorn have partially intermixed"
+  ],
+  "current_events": [
+    "Malbleat's increasingly brazen cruelty is leading to unrest in Lankshorn",
+    "Some folk speak of petitioning the Baron Hogwarsh to intervene and replace Malbleat or restore Lankshorn to the domain of Lord Ramius"
+  ],
+  "rumors_reference": "See Rumours in Lankshorn, p448",
+  "special_features": [
+    {
+      "name": "Breggle Blood",
+      "description": "Over many generations, the humans and breggles of Lankshorn have partially intermixed. Most Lankshorners show no evidence of this mixed heritage, but the occasional goat-like feature can be noted among the human townsfolk.",
+      "mechanical_effect": "Roll d6 for goatish aspects: 1-Goatee beard, 2-Goat eyes, 3-Goat's hoof foot, 4-Goat's hoof hand, 5-Horn nubs on forehead, 6-Rudimentary tail",
+      "affected_area": "Human townsfolk"
+    },
+    {
+      "name": "Lankshorn Superstitions",
+      "description": "Ancient Gwyrae beliefs blend with the strictures of the Pluritine Church, forming an idiosyncratic mass of folk belief and superstition. PCs who transgress these edicts encounter an incredulous or frosty reception from locals.",
+      "mechanical_effect": "Transgressing superstitions causes frosty reception from locals",
+      "affected_area": "Throughout the town"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "standard equipment"
+    ],
+    "unavailable_categories": [],
+    "special_items": [
+      "Mounts and hounds usually only available at market on Moot"
+    ],
+    "notes": "Mounts and hounds are usually only available at the market on Moot"
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Church of St Pastery",
+      "location_type": "church",
+      "description": "An antique, stone church with a strikingly pointy steeple and a riot of carvings depicting gargoyles and angels battling.",
+      "interior": "In contrast with the church's grand exterior, the interior is simple and rustic: lacquered wooden pews, a stone block altar, and a 5′-high wooden statue of St Pastery (patron saint of butchers and well-borers) holding a meat cleaver and a shovel.",
+      "exterior": "An archway lined with white marble carvings of a friar (St Pastery) laying hands beneficently on hordes of cattle.",
+      "populace": "Solemn mourners and supplicants, cheery choirs. The local vicar, Father Eggwin Dobey, surreptitiously surveying visitors from a balcony. On Sunning mornings, most of the townsfolk attend the sermon.",
+      "atmosphere": "Simple and rustic despite grand exterior",
+      "services": [
+        {
+          "name": "Prayer",
+          "description": "Characters praying may receive the blessing of St Pastery: the ability to cast Cure Affliction",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [
+        "father_eggwin_dobey"
+      ],
+      "special_features": [
+        "Secret passage to the woods: A trapdoor is concealed beneath a stone font. Beneath, a short flight of stairs leads down to a damp tunnel that passes beneath Lankshorn and emerges in the woods in hex 0709, close to the Manor Road."
+      ],
+      "secrets": [
+        "Father Dobey uses this tunnel to come and go between Lankshorn and Redwraith Manor"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Market Square",
+      "location_type": "market",
+      "description": "A cobbled market square at the centre of the town. Markets are held here twice a week:",
+      "interior": null,
+      "exterior": "Cobbled square with market stalls",
+      "populace": "Market vendors and shoppers",
+      "atmosphere": "Bustling commercial center",
+      "services": [
+        {
+          "name": "Moot Market",
+          "description": "Food, drink, and livestock market. Stalls hawking local produce, freshly brewed cider, and a vast array of cheeses. Horses and hounds of all kinds may also be purchased on Moot.",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Sunning Market",
+          "description": "General market with a mixture of stalls",
+          "cost": "varies",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Vicarage",
+      "location_type": "residence",
+      "description": "A small, thatched cottage located to the south-east of the town proper, accessed by a track that winds through sheep-grazed pastures.",
+      "interior": "Small cottage interior",
+      "exterior": "Thatched cottage in pastoral setting",
+      "populace": "The local vicar, Father Dobey, along with his maidservant, Mabble.",
+      "atmosphere": "Quiet pastoral residence",
+      "services": [],
+      "npcs": [
+        "father_eggwin_dobey"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Graveyard",
+      "location_type": "graveyard",
+      "description": "To the rear of the vicarage lies the village's graveyard, bounded by imposing, ivy-clad walls.",
+      "interior": "Graveyard with goats' heads carved atop many gravestones",
+      "exterior": "Cast iron gates engraved with Liturgic script. The writing is a traditional plea to Saint Signis the Silent that the interred dead may slumber in rest eternal.",
+      "populace": "The dead",
+      "atmosphere": "Solemn and protected",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "To anyone familiar with religious practices within Dolmenwood, it is clear that the graveyard is under the protection of the order of Lichwards"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "The Hornstoat's Rest",
+      "location_type": "inn",
+      "description": "A high-gabled, wooden building of overhanging eaves and many-hued, lacquered panels. A wide, round door topped with a goat's skull welcomes travellers and merrymakers.",
+      "interior": "A cramped room with high stools crammed against the walls and a cluster of three small tables in the centre. In the late evenings: The tables are often pushed together in the centre of the common room and used as an improvised stage for raucous dances or musical performances.",
+      "exterior": "Sign: A white stoat with prominent red horns reclining on a luxurious purple couch.",
+      "populace": "Guests are served by the landlady, Margerie Stallowmade, her three sons, and her twelve-year-old daughter Willow (who has a goat's hoof in place of her left hand). Guests: Local folk, pedlars, travellers, and merchants. There is a 2-in-6 chance per evening of a beloved Lankshorn resident—the sage Farnham Ribblemead (who rents the inn's attic suite on a permanent basis)—quietly sharing a glass of Aspintheon with the landlady.",
+      "atmosphere": "Cramped but lively, with evening entertainment",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": "DPB"
+        },
+        {
+          "name": "Aspintheon",
+          "description": "The preferred tipple of the proprietor, Purple Aspintheon is always in stock. Favoured guests may also be offered a glass of the rarer and more infamous Green Aspintheon.",
+          "cost": "varies",
+          "notes": "Green Aspintheon p426"
+        }
+      ],
+      "npcs": [
+        "margerie_stallowmade",
+        "farnham_ribblemead"
+      ],
+      "special_features": [
+        "The attic suite: A heavy, locked door in the inn's upper floor leads, via a steep, creaky stairway, to a plush attic suite—the home of the sage Farnham Ribblemead."
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Farnham Ribblemead"
+    },
+    {
+      "number": 6,
+      "name": "Harper's Hall",
+      "location_type": "manor",
+      "description": "A tall, lime-white manor beside a shallow lake ringed with storm-wracked elms.",
+      "interior": "Town residence of Lord Malbleat, with one side-wing housing the Berkmaster and his family",
+      "exterior": "Tall, lime-white manor beside a shallow lake",
+      "populace": "The current Berkmaster (installed by Malbleat when he assumed lordship of the town) is Clewyd Baldricke ('His Lordship'), who lives here with his wife Almerie and four adolescent children.",
+      "atmosphere": "Imposing manor residence",
+      "services": [],
+      "npcs": [
+        "berkmaster_clewyd_baldricke"
+      ],
+      "special_features": [
+        "Harper's Hall serves a dual purpose. First and foremost, it is the town residence of Lord Malbleat, though he seldom inhabits it for longer than a night each month. Secondly, one of its side-wings houses the Berkmaster and his family."
+      ],
+      "secrets": [
+        "Hidden fugitive: The Berkmaster harbours his grandson—a rebellious young half-human, half-breggle boy named Billy—who stumbled out of the Wood some months ago. The boy fled from Redwraith Manor after his governess fed him a dangerous mandrake brew as punishment. The brew afflicted the boy with a curse, causing him to mutate into different forms and personalities."
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "The Bladesmith",
+      "location_type": "shop",
+      "description": "A slate-roofed, pebble-walled forge with tall chimney of stacked slate. The resident blacksmith, Joremey Whilpston-Puddingfoot, earns his daily living shoeing horses, mending pots, and forging farm tools. His true passion, however, is for the forging of artisan blades.",
+      "interior": "Working forge with smithing equipment",
+      "exterior": "Slate-roofed, pebble-walled forge with tall chimney",
+      "populace": "Joremey Whilpston-Puddingfoot, blacksmith",
+      "atmosphere": "Working forge focused on quality craftsmanship",
+      "services": [
+        {
+          "name": "Standard blades",
+          "description": "Finely crafted steel blades at 25% above the normal price",
+          "cost": "125% normal price",
+          "notes": null
+        },
+        {
+          "name": "Iron blades",
+          "description": "A small number of iron daggers are kept in stock at all times",
+          "cost": "5gp",
+          "notes": null
+        },
+        {
+          "name": "Silvering",
+          "description": "Silvered daggers and swords may be purchased at ten times the cost of a plain steel blade. Only silvered daggers are usually kept in stock.",
+          "cost": "10x normal blade cost",
+          "notes": null
+        },
+        {
+          "name": "Engraving",
+          "description": "Commissioned blades may be engraved with patterns, script, or runes, as the buyer wishes. This typically doubles the basic cost. The bladesmith's work is detailed and beautiful.",
+          "cost": "2x basic cost",
+          "notes": null
+        },
+        {
+          "name": "Moon-forging",
+          "description": "The bladesmith is privy to a craft of fairy origin—practiced by very few in the modern day—by which a blade forged by the light of the full moon can be imbued with a minor enchantment. Moon-forging takes much preparation and is only performed to special order for trusted customers.",
+          "cost": "varies by enchantment",
+          "notes": "See Moon-Forging Enchantments"
+        }
+      ],
+      "npcs": [
+        "joremey_whilpston_puddingfoot"
+      ],
+      "special_features": [
+        "His handiwork is of a quality seldom found even in great towns"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "The Man of Gold Apothecary",
+      "location_type": "shop",
+      "description": "A squat, stone building with a wooden, two-storey tower lies in a narrow alleyway at the rear of the Hornstoat's Rest, cramped between a fishmonger's and a butchery.",
+      "interior": "Apothecary shop with herbs carefully air-dried in the tower above",
+      "exterior": "Sign: The sign of a smiling, golden sun swings above the door, announcing the name and function of this shop.",
+      "populace": "Sydewich Maldwort, proprietor",
+      "atmosphere": "Cramped but well-stocked apothecary",
+      "services": [
+        {
+          "name": "Mushrooms and herbs",
+          "description": "The preparations listed in the Dolmenwood Player's Book are sold at the standard prices and with the standard chance of availability",
+          "cost": "standard prices",
+          "notes": null
+        },
+        {
+          "name": "Alchemical compounds",
+          "description": "2-in-6 chance of each being in stock: Alchemical Tonic, Amber Nectar, Memory Dust, Orgon's Scintillating Philtre",
+          "cost": "varies",
+          "notes": "See referenced pages"
+        },
+        {
+          "name": "Psychedelic compounds",
+          "description": "2-in-6 chance of each being in stock: Black Clover, Devil's Grease, Frisk, Lethe",
+          "cost": "varies",
+          "notes": "See referenced pages"
+        }
+      ],
+      "npcs": [
+        "sydewich_maldwort"
+      ],
+      "special_features": [
+        "The establishment has been in the Maldwort family for three generations and has an excellent reputation for the quality of its herbs"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "The Nuncle-Stones",
+      "location_type": "landmark",
+      "description": "A ring of ancient, moss-covered stones standing upon a hill, looming over the town.",
+      "interior": null,
+      "exterior": "Ring of ancient, moss-covered stones on a hill",
+      "populace": "The townsfolk shun the stones, believing them to be associated with the dark magic of the Drune. The stones are therefore a favoured haunt of local youths, daring to defy their elders' wisdom.",
+      "atmosphere": "Shunned and mysterious, favored by rebellious youth",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Swirling vortex: Anyone who can detect magic or the invisible (e.g. those under the influence of Green Aspintheon, p426) perceives a swirling pink and orange vortex in the sky above the stones. Anyone who flies into the vortex is swept away by a violent gust of wind and released half an hour later above the Isle of Yeth (hex 0505)."
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "The Ditchway",
+      "location_type": "road",
+      "description": "The east-west road, known to locals as the Ditchway, winds through a broad channel with sandy banks on either side. The western route is disused, as it passes by the haunted Lankston Pool (hex 0610), but the eastern road is frequented by much trade, leading to the port-town Dreg on the banks of the Hameth (hex 1110).",
+      "interior": null,
+      "exterior": "East-west road through broad channel with sandy banks",
+      "populace": "Traders on the eastern route",
+      "atmosphere": "Western route haunted and disused, eastern route busy with trade",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "To the Trothstone: An old path leads into the forest from the western road out of Lankshorn. Those who follow the path come to a glade (hex 0609) where, according to tradition, weddings of longhorn nobles take place."
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "Manor Road",
+      "location_type": "road",
+      "description": "The old north road leads to the gates of Lord Malbleat's estate at Redwraith Manor (hex 0709). Beyond the Malbleat's manor, a track known as Fisher's Path leads to the depths of Dwelmfurgh and Lake Longmere in the heart of the Wood.",
+      "interior": null,
+      "exterior": "North road leading to Redwraith Manor",
+      "populace": "Travelers to and from the manor",
+      "atmosphere": "Road to the lord's estate",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "Swallop Road",
+      "location_type": "road",
+      "description": "A hedge-lined country road winds through rustic farmland towards High-Hankle.",
+      "interior": null,
+      "exterior": "Hedge-lined country road through farmland",
+      "populace": "Farmers and travelers",
+      "atmosphere": "Rustic country road",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "Bogway's",
+      "location_type": "tavern",
+      "description": "A ramshackle two-storey drinking establishment with wonky windows. A large stable yard and stalls are located at the rear.",
+      "interior": "A lofty space, packed with wobbly tables and stumpy stools. Balconies on the upper floor overlook the common room. An iron candelabra bearing dozens of fat candles hangs from chains in the rafters, occasionally dripping gouts of wax onto patrons below. Upper rooms: A bustling and inconveniently low-roofed dancehall and a series of gloomy side-rooms for card games or discreet liaisons.",
+      "exterior": "Sign: A grinning toad holding a frothing mug of ale.",
+      "populace": "The proprietors, Lump 'Sarge' Groghorn and Whimsly Bobblefrock, serve the crowds from behind a row of barrels. Guests: A raucous mix of human and shorthorn farm hands, wayfarers, drunkards, and gamblers.",
+      "atmosphere": "Raucous and ramshackle drinking establishment",
+      "services": [
+        {
+          "name": "Food",
+          "description": "Of poor quality",
+          "cost": "standard price",
+          "notes": "No lodgings available (apart from stabling for mounts)"
+        },
+        {
+          "name": "Nippers",
+          "description": "The grimalkin's favoured tipple, Nippers is always available here",
+          "cost": "standard price",
+          "notes": "DPB"
+        },
+        {
+          "name": "Stabling",
+          "description": "Despite the low cost, the stables at Bogway's are of good quality and the grooms are well-trained and professional",
+          "cost": "3sp a night, including fodder",
+          "notes": null
+        },
+        {
+          "name": "Horses",
+          "description": "Good quality riding horses can often be purchased from the stables at the normal price",
+          "cost": "normal price",
+          "notes": "3-in-6 chance"
+        }
+      ],
+      "npcs": [
+        "lump_sarge_groghorn",
+        "whimsly_bobblefrock"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "father_eggwin_dobey",
+      "name": "Father Eggwin Dobey",
+      "title": "Vicar of Lankshorn",
+      "description": "The vicar of Lankshorn is a scrawny, stooped human man of advanced years with a wispy pate and flimsy spectacles.",
+      "kindred": "Human",
+      "age_description": "advanced years",
+      "dress": "Clerical robes",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "sharp and conniving mind",
+        "doddery impression"
+      ],
+      "mannerisms": "Has a habit of wagging his finger admonishingly",
+      "speech": "Feeble, wavering. Woldish, Liturgic, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Liturgic",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To aid Lord Malbleat in defeating his half-brother Lord Ramius and consolidating his rule over all of the High Wold",
+        "To be instated as the Archdeacon of High-Hankle"
+      ],
+      "secrets": [
+        "Dobey is a corrupt priest who cares little for the Church. He serves Lord Malbleat and is complicit in several of his wicked schemes."
+      ],
+      "location_id": 1,
+      "occupation": "Vicar"
+    },
+    {
+      "npc_id": "margerie_stallowmade",
+      "name": "Margerie Stallowmade",
+      "title": "Hornstoat's Rest Landlady",
+      "description": "A human woman of some fifty years, with twinkling eyes, a broad grin, copper hoops in her ears, and a figure plump with decades of pie-eating.",
+      "kindred": "Human",
+      "age_description": "some fifty years",
+      "dress": "Innkeeper's attire",
+      "alignment": "Lawful",
+      "demeanor": [
+        "presents herself to strangers as a harmless bumpkin",
+        "has a keen ear and a sharp memory"
+      ],
+      "mannerisms": "Constantly polishes surfaces, mugs, and guests while chatting",
+      "speech": "Incessant, rustic banter. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To meet a real witch or wizard",
+        "To visit Fairy",
+        "To taste the legendary Golden Aspintheon"
+      ],
+      "secrets": [
+        "Since the death of her husband and two eldest sons in a pointless war a decade ago, Margerie has taken to wandering in Dolmenwood, fascinated by its strange secrets",
+        "She is acquainted with the fairy Thrattlewhit (hex 0810), with whom she shares foraged blackberries and silly stories of comings and goings in Lankshorn. She knows the location of the fairy's lair, but does not share it lightly."
+      ],
+      "location_id": 5,
+      "occupation": "Innkeeper"
+    },
+    {
+      "npc_id": "farnham_ribblemead",
+      "name": "Farnham Ribblemead",
+      "title": "Sage",
+      "description": "An elderly human gentleman of gangly frame, with long white hair, hawkish nose, wide mouth, and stretched, angular cheeks. Wears shabby leather traveller's garb and a pair of half-moon spectacles balanced on his nose.",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": "shabby leather traveller's garb and a pair of half-moon spectacles",
+      "alignment": "Lawful",
+      "demeanor": [
+        "jocular",
+        "high-brow",
+        "bumbling"
+      ],
+      "mannerisms": null,
+      "speech": "Lethargic drawl. Woldish, Old Woldish, Liturgic, Caprice, Gaffe, Old Drunic, Sylvan, Drunic.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic",
+        "Caprice",
+        "Gaffe",
+        "Old Drunic",
+        "Sylvan",
+        "Drunic"
+      ],
+      "desires": [
+        "Obscure scripts",
+        "Access to Malbleat's library, said to contain a large body of texts in Old Caprice"
+      ],
+      "secrets": [],
+      "location_id": 5,
+      "occupation": "Sage"
+    },
+    {
+      "npc_id": "berkmaster_clewyd_baldricke",
+      "name": "Berkmaster Clewyd Baldricke",
+      "title": "Berkmaster",
+      "description": "A tall, plump human man of around 50 years, with densely curled, auburn hair on his head, face, and chest. He dresses in voluptuous purple velvet and wears the silver boar's head medallion hereditary to his station.",
+      "kindred": "Human",
+      "age_description": "around 50 years",
+      "dress": "voluptuous purple velvet and wears the silver boar's head medallion hereditary to his station",
+      "alignment": "Neutral",
+      "demeanor": [
+        "brusque",
+        "pompous",
+        "incredulous at any who would question his word"
+      ],
+      "mannerisms": null,
+      "speech": "Exaggerated booming. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "The respect of all in Lankshorn",
+        "To cure his grandson Billy of his curse",
+        "To temper the wickedness of Lord Malbleat"
+      ],
+      "secrets": [
+        "Privately worries that his lord's growing cruelty will lead to rebellion",
+        "Many townsfolk privately mock the Berkmaster as a self-important puppet of Lord Malbleat"
+      ],
+      "location_id": 6,
+      "occupation": "Berkmaster"
+    },
+    {
+      "npc_id": "joremey_whilpston_puddingfoot",
+      "name": "Joremey Whilpston-Puddingfoot",
+      "title": "Bladesmith",
+      "description": "A slim human man in his late forties, with black, slicked-back hair and eyes set wide apart.",
+      "kindred": "Human",
+      "age_description": "late forties",
+      "dress": "Working smith's attire",
+      "alignment": "Lawful",
+      "demeanor": [
+        "quiet and confident",
+        "down to earth",
+        "easily waxes lyrical when speaking of his craft"
+      ],
+      "mannerisms": "Holds penetrating eye contact",
+      "speech": "Gentle, lilting quality. Woldish, basic Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To know the identity of his fairy ancestor",
+        "To forge a sword for the Duke of Brackenwold"
+      ],
+      "secrets": [
+        "Unbeknown to any in the town, Joremey has fairy blood—his grandfather was sired by a wandering elf"
+      ],
+      "location_id": 7,
+      "occupation": "Blacksmith"
+    },
+    {
+      "npc_id": "sydewich_maldwort",
+      "name": "Sydewich Maldwort",
+      "title": "Man of Gold Proprietor",
+      "description": "A human bachelor in his late thirties, with a fashionable moustache and long blond hair tied in plaits.",
+      "kindred": "Human",
+      "age_description": "late thirties",
+      "dress": "Fashionable attire",
+      "alignment": "Neutral",
+      "demeanor": [
+        "sycophantic",
+        "aloof",
+        "bored with simple townsfolk",
+        "excited to converse with folk of adventurous spirit"
+      ],
+      "mannerisms": null,
+      "speech": "Nasal, oily. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To sell the apothecary and elope with Elmine Crump, wife of the keeper of the Spawning Salmon tavern in Dreg, whom he is in love with"
+      ],
+      "secrets": [],
+      "location_id": 8,
+      "occupation": "Apothecary"
+    },
+    {
+      "npc_id": "lump_sarge_groghorn",
+      "name": "Lump \"Sarge\" Groghorn",
+      "title": "Bogway's Proprietor",
+      "description": "An ageing, battle-scarred, white-eyed shorthorn man dressed in grimy leather with a single gold earring.",
+      "kindred": "Shorthorn",
+      "age_description": "ageing",
+      "dress": "grimy leather with a single gold earring",
+      "alignment": "Neutral",
+      "demeanor": [
+        "scowling",
+        "mean",
+        "laughs readily and heartily"
+      ],
+      "mannerisms": "Pulls one ear when thinking",
+      "speech": "Curt and crude. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To marry a 'real lady' (i.e. a longhorn)",
+        "To steal Lord Murkin's enchanted sword"
+      ],
+      "secrets": [
+        "Served in Lord Murkin's army for many years"
+      ],
+      "location_id": 13,
+      "occupation": "Tavern Proprietor"
+    },
+    {
+      "npc_id": "whimsly_bobblefrock",
+      "name": "Whimsly Bobblefrock",
+      "title": "Bogway's Proprietor",
+      "description": "A gangly tortoiseshell grimalkin woman who habitually wears a tricorn hat and an eyepatch.",
+      "kindred": "Grimalkin",
+      "age_description": null,
+      "dress": "tricorn hat and an eyepatch",
+      "alignment": "Neutral",
+      "demeanor": [
+        "flamboyant",
+        "indignant"
+      ],
+      "mannerisms": null,
+      "speech": "Purring punctuated with yowls. Woldish, Mewl, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Mewl",
+        "Gaffe"
+      ],
+      "desires": [
+        "To relieve the arrogant rich of their baubles",
+        "To burn down Chateau Shantywood (hex 1110)"
+      ],
+      "secrets": [
+        "Escaped imprisonment for gambling debts in Chateau Shantywood (hex 1110) with the aid of a sympathetic bard",
+        "An Eye of the Yurl (p420), hidden beneath her eyepatch"
+      ],
+      "location_id": 13,
+      "occupation": "Tavern Proprietor"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "3d6 shorthorn (DMB) soldiers bringing a caged captive to Redwraith Manor for trial before Lord Malbleat.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "shorthorn soldiers"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A company of 2d6 merchants (plus their guards—DMB) from Castle Brackenwold.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "merchants",
+            "guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "A funeral procession of 3d6 townsfolk wearing wooden goat masks, led by Father Dobey (p158).",
+          "npcs_involved": [
+            "Father Dobey"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "Berkmaster Baldricke (p159) ordering folk around.",
+          "npcs_involved": [
+            "Berkmaster Baldricke"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Lord Malbleat (p64) and 2d4 longhorn (DMB) guards demanding impromptu taxes (10% of carried wealth).",
+          "npcs_involved": [
+            "Lord Malbleat"
+          ],
+          "monsters_involved": [
+            "longhorn guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Sydewich Maldwort (p160) haggling with a loud foreign pedlar over the price of Memory Dust (p426).",
+          "npcs_involved": [
+            "Sydewich Maldwort"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d4 masked townsfolk furtively daubing \"MALBLEAT OUT!\" on walls.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "2d6 ruffians (Level 1 thieves—DMB), looking for trouble.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "ruffians"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "3d6 sprites (DMB) causing mischief.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "sprites"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "Father Dobey (p158) sneaking into the woods, via the secret passage in the church, to meet with a minion of Lord Malbleat.",
+          "npcs_involved": [
+            "Father Dobey"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Lord Malbleat (p64), 2d4 shorthorn (DMB) guards, and 1d4 longhorn (DMB) nobles driving in a fancy carriage to the Hornstoat's Rest to demand food and entertainment.",
+          "npcs_involved": [
+            "Lord Malbleat"
+          ],
+          "monsters_involved": [
+            "shorthorn guards",
+            "longhorn nobles"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Margerie Stallowmade (p159) gossiping with a barrowbogey (DMB) from hex 0810.",
+          "npcs_involved": [
+            "Margerie Stallowmade"
+          ],
+          "monsters_involved": [
+            "barrowbogey"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "The Ditchway",
+    "Manor Road",
+    "Swallop Road"
+  ],
+  "connections": [
+    "hex 0610",
+    "hex 1110",
+    "hex 0709",
+    "High-Hankle"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      158,
+      159,
+      160,
+      161,
+      162,
+      163
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

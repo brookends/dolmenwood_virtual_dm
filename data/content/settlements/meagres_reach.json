@@ -1,0 +1,627 @@
+{
+  "name": "Meagre's Reach",
+  "settlement_id": "meagres_reach",
+  "hex_id": "1703",
+  "size": "village",
+  "population": 120,
+  "population_description": "120—village",
+  "tagline": "Antiquated village dredged out of time by Ygraine's sorcery",
+  "description": "A quaint village of antique brick structures built tall and too close to one another. Meagre's Reach (or, as locals call it, simply \"the Reach\") is located close to several rich claybeds and thrives on clay mining and brickmaking.",
+  "atmosphere": "A village caught between past and present, with temporal anomalies and growing unrest between rebels and loyalists",
+  "inhabitants_description": "A noticeably aged population of folk native to the village, alongside a number of outsiders hired to work in the clay pits and brickworks",
+  "governance": {
+    "ruler_type": "council",
+    "ruler_name": null,
+    "ruling_body": "council of Elders, dominated by Reynold Barhaim and Benedict Redhearth",
+    "domain": "House Guillefer",
+    "political_status": "virtually independent, under patronage of Ygraine Mordlin",
+    "notes": "House Guillefer pays little attention to the village. Practically run by council of Elders under patronage of Ygraine Mordlin of nearby Chateau Mauvesse"
+  },
+  "religion": {
+    "primary_deity": "Pluritine Church",
+    "religious_buildings": [
+      "The Chapel of the Host of Heaven's Light"
+    ],
+    "religious_practices": "Native Reach-folk are devout adherents of the Pluritine Church, but have a preference for private contemplation, scriptural study, and prayer in their own homes. The village's church is little used.",
+    "notes": null
+  },
+  "history": [
+    "250 years ago, it was ravaged by plague and became a ghost town, entirely abandoned",
+    "100 years later, Ygraine took up residence in the nearby Chateau Mauvesse",
+    "Ygraine worked great magic to give its people a second chance. The village as it existed 300 years ago—before the plague—was wrested out of time and brought into the present day"
+  ],
+  "current_events": [
+    "Unrest is brewing in Meagre's Reach, as the two most influential Elders vie for control",
+    "Benedict Redhearth believes that Ygraine keeps the village enchanted as a plaything and wishes to break free of her sorcerous yoke",
+    "Reynold Barhaim remains loyal to Ygraine, opposing Redhearth and his rebels. In secret, Barhaim is training his workers as a militia to resist Redhearth's rebels"
+  ],
+  "rumors_reference": "See Rumours in Meagre's Reach, p449",
+  "special_features": [
+    {
+      "name": "The Curse of Meagre's Reach",
+      "description": "Any person born in Meagre's Reach cannot leave hex 1703. Those who pass outside the hex disappear into oblivion.",
+      "mechanical_effect": "Natives cannot leave hex 1703 without disappearing",
+      "affected_area": "All natives of Meagre's Reach"
+    },
+    {
+      "name": "Elders and Younglings",
+      "description": "The resurrected villagers (Elders) age at one-third of the normal rate due to temporal magic side-effects. Those born since resurrection (Younglings) age normally.",
+      "mechanical_effect": "Elders age at 1/3 normal rate",
+      "affected_area": "Elders only"
+    },
+    {
+      "name": "The Frozen",
+      "description": "Three villagers stand frozen in time in the village square—victims of a flaw in Ygraine's magic. They are impervious to weathering and damage.",
+      "mechanical_effect": "Completely frozen in time, impervious to damage",
+      "affected_area": "Village Square"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.5,
+    "available_categories": [
+      "basic equipment"
+    ],
+    "unavailable_categories": [],
+    "special_items": [],
+    "notes": "Armour, weapons, vehicles, and mounts cost 50% more than usual"
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Village Square",
+      "location_type": "landmark",
+      "description": "A tidy, brick-paved square whose breadth feels diminished by the overhanging eaves of the teetering buildings that surround it.",
+      "interior": null,
+      "exterior": "Brick-paved square surrounded by tall, overhanging buildings",
+      "populace": "Village bustle, plus three frozen individuals",
+      "atmosphere": "Busy but diminished by looming architecture",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "The Frozen - three villagers frozen in time",
+        "Eggfast market and sermons by Benedict Redhearth"
+      ],
+      "secrets": [
+        "The Frozen are victims of Ygraine's flawed magic"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "The Chapel of the Host of Heaven's Light",
+      "location_type": "church",
+      "description": "A narrow church whose sober grey stone contrasts against the colourful brickwork of the rest of the village. Gargoyles in the form of puff-cheeked, goggle-eyed devils and priests festoon its exterior, also at ground level.",
+      "interior": "A poky space crammed with pews, candle holders, incense burners, stacks of prayer books, and far too many pillars. A beautiful wooden idol of St Lillibeth of the Sugared Breath stands upon the altar, depicted with a dozen doves perched among her cascading, gilded locks.",
+      "exterior": "Grey stone with gargoyles, inconspicuous 5' high oaken door",
+      "populace": "A small number of Younglings and the occasional traveller. 2-in-6 chance of the sage Lorrima Gravesby in prayer. Sister Delora observes stoically.",
+      "atmosphere": "Cramped, solemn, little-used",
+      "services": [
+        {
+          "name": "Prayer blessing",
+          "description": "Characters praying may receive the blessing of St Lillibeth: the ability to cast Lesser Healing",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [
+        "sister_nancy_delora",
+        "lorrima_gravesby"
+      ],
+      "special_features": [
+        "Wooden idol of St Lillibeth of the Sugared Breath"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Redhearth Bakery",
+      "location_type": "shop",
+      "description": "The village bakery is notable for the vividly painted, life-size statue of St Hollyhock (patron saint of bakers' ovens) integrated into its exterior at ground level.",
+      "interior": "A cramped room stuffed with baskets. The heat and clouds of flour dust are nigh unbearable. The baker, Benedict Redhearth, furiously shovels fresh buns out of the oven and into baskets.",
+      "exterior": "Life-size statue of St Hollyhock with soot-covered face and hands, clutching a basket overflowing with scones. Two doors flank the statue.",
+      "populace": "Benedict Redhearth working furiously",
+      "atmosphere": "Hot, dusty, cramped, intense activity",
+      "services": [
+        {
+          "name": "Baked goods",
+          "description": "Exquisite cookies and spiced bread",
+          "cost": "2sp a ration",
+          "notes": "Only if caught in pleasant mood, limited opening hours"
+        }
+      ],
+      "npcs": [
+        "benedict_redhearth"
+      ],
+      "special_features": [
+        "Opens early and closes mid-morning"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Everslumber Lane",
+      "location_type": "landmark",
+      "description": "A narrow lane lined with family crypts, the arch around each door decorated with human skulls. Within each crypt are interred the bones of many generations of Reach-folk, who do not bury their dead in the ground like other folk of Dolmenwood.",
+      "interior": "Family crypts containing bones of many generations",
+      "exterior": "Narrow lane with skull-decorated crypt doors",
+      "populace": "Occasional mourners and visitors",
+      "atmosphere": "Solemn, ancestral, mysterious",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Names and dates carved on doors reveal gap in deaths between 250-100 years ago"
+      ],
+      "secrets": [
+        "The missing years reveal the time when the village was abandoned due to plague"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "The Grizzle and Grouse",
+      "location_type": "inn",
+      "description": "A tall, narrow building on the edge of the village, constructed of purple-glazed bricks with an iridescent sheen. A grinning man in the moon face is engraved in each brick.",
+      "interior": "Smoky, dimly lit, and low-beamed, with tables crammed into odd nooks and corners. A magnificent pair of stuffed grouse is poised dramatically above the bar, the landlord, Primulus Paste, serving dourly beneath.",
+      "exterior": "Purple-glazed iridescent bricks with man in the moon faces, sign showing man in moon weeping into porridge bowl",
+      "populace": "A rowdy assortment of local Reach-folk and immigrant brick-workers. A group of Redhearth's Rebels invariably occupies a shadowed corner table, conspiring quietly.",
+      "atmosphere": "Smoky, cramped, conspiratorial, forced merriment",
+      "services": [
+        {
+          "name": "Food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Stoggy stew",
+          "description": "Fermented game fowl served on a plate of beans—a local speciality",
+          "cost": "3sp a plate",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "primulus_paste"
+      ],
+      "special_features": [
+        "Evening entertainment with Betsy playing fiddle and forcing guests to dance duets"
+      ],
+      "secrets": [
+        "Redhearth's Rebels meet here and may approach outsiders for recruitment"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Smarg's Turret",
+      "location_type": "landmark",
+      "description": "A square, four-storey turret, complete with crenellations, standing utterly incongruously at the edge of the village, under the boughs of a mighty copper beech. The origin of the turret and the identity of Smarg are unclear, even to Elders, but it is commonly believed to be the remnant of a much larger fortification.",
+      "interior": "Pristine, whitewashed walls, simple yet beautiful wooden furnishings, and meticulously ordered bookshelves (folklore and bestiaries) lining the spiral stairways. A silver Holy Shield bearing the symbol of St Signis hangs in the library on the second floor.",
+      "exterior": "Square four-storey turret with crenellations under copper beech, reinforced wooden door with brass Chapes holy symbol",
+      "populace": "The sage Lorrima Gravesby and 3 lichhounds named Benester, Eggort, and Hollyhock",
+      "atmosphere": "Scholarly, pristine, mysterious origins",
+      "services": [
+        {
+          "name": "Sage consultation",
+          "description": "Monster lore expertise",
+          "cost": "standard sage rates",
+          "notes": "Apply standard rules for hiring a sage"
+        }
+      ],
+      "npcs": [
+        "lorrima_gravesby"
+      ],
+      "special_features": [
+        "Expansive cellars contain jarred and stuffed specimens of fairies, monsters, and fantastic beasts",
+        "Silver Holy Shield of St Signis in library"
+      ],
+      "secrets": [
+        "Origin of turret and identity of Smarg unknown even to Elders"
+      ],
+      "monsters": [
+        "lichhound"
+      ],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Barhaim and Sons Brickyard",
+      "location_type": "shop",
+      "description": "A broad, dusty fenced yard, with towering piles of stacked bricks and a bustle of carts, draft horses, and whistling brick-workers.",
+      "interior": "Workers' lodgings with warehouse ground floor and rows of bunks on upper floors",
+      "exterior": "Fenced yard with brick piles, three kilns operating day and night, raised observation platform",
+      "populace": "Mix of locals and migrant workers from other parts of Dolmenwood. Reynold Barhaim and his five sons observe from raised platform.",
+      "atmosphere": "Industrial, bustling, secretly militaristic",
+      "services": [
+        {
+          "name": "Bricks",
+          "description": "Clay bricks from local pits and Dark Mirror",
+          "cost": "standard rates",
+          "notes": null
+        },
+        {
+          "name": "Worker lodging",
+          "description": "Bunks for migrant workers",
+          "cost": "included with employment",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "reynold_barhaim"
+      ],
+      "special_features": [
+        "Kilns operate day and night",
+        "Uses clay from Dark Mirror",
+        "Three-storey workers' lodging building"
+      ],
+      "secrets": [
+        "Muffled sounds of military drills from basement at night - Barhaim training militia"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Follyegg Road",
+      "location_type": "landmark",
+      "description": "A twisting, little-used road in the deep forest, leading west to the village of Odd (hex 1403).",
+      "interior": null,
+      "exterior": "Twisting forest road",
+      "populace": "Occasional travelers",
+      "atmosphere": "Quiet, little-used, forest-bound",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "Mirror Road",
+      "location_type": "landmark",
+      "description": "Paved with violet-glazed bricks, shimmering as though always cast in the light of an unobscured sunset, falling only into darkness when the moon is high. The Mirror Road leads four miles directly to the gates of Chateau Mauvesse (hex 1802), home of Ygraine the Sorceress.",
+      "interior": null,
+      "exterior": "Violet-glazed brick road with supernatural sunset shimmer",
+      "populace": "Travelers to and from Chateau Mauvesse",
+      "atmosphere": "Magical, ethereal, ominous",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Shimmers like sunset light except when moon is high",
+        "Leads directly to Chateau Mauvesse"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "reynold_barhaim",
+      "name": "Reynold Barhaim",
+      "title": "Brickmaster",
+      "description": "A hearty, middle-aged human man of 115 years (as an Elder, he was born 315 years ago) with a bald pate and luxuriantly curled black beard and eyebrows.",
+      "kindred": "Human",
+      "age_description": "115 years (Elder, born 315 years ago)",
+      "dress": "As owner of the brickworks",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Bold",
+        "mirthful",
+        "arrogant"
+      ],
+      "mannerisms": null,
+      "speech": "Cordial rumbling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To see the world beyond the Reach",
+        "To quash Redhearth's rebellion"
+      ],
+      "secrets": [
+        "Possesses a silver raven Talisman of Dimensional Anchoring from Ygraine",
+        "Secretly uses talisman with his five sons to visit Chateau Mauvesse and the Dark Mirror",
+        "Training workers as militia"
+      ],
+      "location_id": "7",
+      "occupation": "Owner of brickworks, richest person in Meagre's Reach"
+    },
+    {
+      "npc_id": "sister_nancy_delora",
+      "name": "Sister Nancy Delora",
+      "title": "Nun",
+      "description": "A stony-faced old human nun, dressed in a chaste white robe embroidered with golden doves.",
+      "kindred": "Human",
+      "age_description": "old (Elder)",
+      "dress": "chaste white robe embroidered with golden doves",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Meditative stillness, verging on torpidity",
+        "Standoffish",
+        "Isolated from reality"
+      ],
+      "mannerisms": null,
+      "speech": "Frosty, creaky. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To be excluded from contentious goings-on in the village"
+      ],
+      "secrets": [
+        "Secretly wishes to leave Meagre's Reach and go on pilgrimage to Castle Brackenwold, but knows this is an impossibility",
+        "Vicar Hallyman left and disappeared into oblivion"
+      ],
+      "location_id": "2",
+      "occupation": "Nun, serves as assistant to absent Vicar Hallyman, takes confession and holds services"
+    },
+    {
+      "npc_id": "benedict_redhearth",
+      "name": "Benedict Redhearth",
+      "title": "Baker / Dissident Leader",
+      "description": "A hale old human man of 140 years (as an Elder, he was born 340 years ago) with spiky red hair and beard, a distended gut, and fire in his eyes.",
+      "kindred": "Human",
+      "age_description": "140 years (Elder, born 340 years ago)",
+      "dress": "Baker's attire",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cantankerous",
+        "obsessive"
+      ],
+      "mannerisms": null,
+      "speech": "Hoarse tirades and quiet mumbling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To free the people of Meagre's Reach from their bondage under Ygraine's magic"
+      ],
+      "secrets": [
+        "Secretly believes that ending Ygraine's spell on the village will bring about the death of its inhabitants",
+        "Desires above all to return himself and the other Elders to Heaven",
+        "Claims to recall his death and the embrace of Heaven but will not speak of details"
+      ],
+      "location_id": "3",
+      "occupation": "Village baker and leader of rebel faction"
+    },
+    {
+      "npc_id": "primulus_paste",
+      "name": "Primulus Paste",
+      "title": "Grizzle and Grouse Proprietor",
+      "description": "A rotund, sour-faced, slack-jowled human man in his middle years (a Youngling), with a dirty mop of blond hair and drooping moustaches like a pair of rat tails.",
+      "kindred": "Human",
+      "age_description": "middle years (Youngling)",
+      "dress": "grubby hose and shirts, splitting at the seams",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Miserly",
+        "easily startled"
+      ],
+      "mannerisms": null,
+      "speech": "Acerbic grumbling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To marry his eldest daughter, Pilphra (24), to any well-off outsider willing to settle in the Reach"
+      ],
+      "secrets": [],
+      "location_id": "5",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "lorrima_gravesby",
+      "name": "Lorrima Gravesby",
+      "title": "Sage (Level 4 Cleric)",
+      "description": "An elderly human woman of graceful bearing, with long silver hair and deep grey eyes.",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": "plain white robes, with an ornate, swan-crested silver helm (a Helm of Realignment—she was formerly Lawful)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Wry",
+        "humble",
+        "vilifies arrogance"
+      ],
+      "mannerisms": "Prone to in-depth tangents",
+      "speech": "Slow and soft. Woldish, Old Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "Erudite companionship",
+        "Books from afar",
+        "Monster specimens—whole carcasses or parts"
+      ],
+      "secrets": [
+        "Unbeknown to any in Meagre's Reach, Gravesby is a former cleric of the Order of St Signis and retains the capabilities of that Class"
+      ],
+      "location_id": "6",
+      "occupation": "Sage specializing in monster lore, retired from Castle Brackenwold"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d3 Elders gathered in the village square, cleaning the Frozen with soapy cloths.",
+          "npcs_involved": [
+            "Elders"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "12 immigrant brickworkers roll into the village with cartload of iridescent clay from the Dark Mirror.",
+          "npcs_involved": [
+            "immigrant brickworkers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "Panic in the village as a fire breaks out in the brickyard.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "Benedict Redhearth and Reynold Barhaim quarrel loudly in the village square.",
+          "npcs_involved": [
+            "Benedict Redhearth",
+            "Reynold Barhaim"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "A woman tearfully asking if any have seen her husband, Jock, who has not returned from hunting.",
+          "npcs_involved": [
+            "woman"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Sister Delora loudly expels Benedict Redhearth from the church, stating that malcontents are unwelcome at her services.",
+          "npcs_involved": [
+            "Sister Delora",
+            "Benedict Redhearth"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "A scuffle between 2d6 Redhearth's Rebels and a like number of Loyalist brickworkers.",
+          "npcs_involved": [
+            "Redhearth's Rebels",
+            "Loyalist brickworkers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "An adventuring party carries the bloody, decapitated head of a bestial centaur to Smarg's Turret.",
+          "npcs_involved": [
+            "adventuring party"
+          ],
+          "monsters_involved": [
+            "bestial centaur"
+          ],
+          "notes": "Reference to DMB"
+        },
+        {
+          "roll": 3,
+          "description": "Benedict Redhearth drunkenly rages through the village, urging all Reach-folk to take up arms and storm Chateau Mauvesse.",
+          "npcs_involved": [
+            "Benedict Redhearth"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A drunk claims the Frozen have returned to life.",
+          "npcs_involved": [
+            "drunk"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "A sombre procession through Everslumber Lane, bearing the bones of honoured ancestors.",
+          "npcs_involved": [
+            "mourners"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "All-night festivities at the Grizzle and Grouse, as the landlord attempts to find a suitor for his daughter.",
+          "npcs_involved": [
+            "Primulus Paste",
+            "Pilphra"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Lichhound",
+      "monster_id": "lichhound",
+      "description": "Three lichhounds named Benester, Eggort, and Hollyhock reside in Smarg's Turret with the sage",
+      "size": null,
+      "type": "undead",
+      "intelligence": null,
+      "alignment": null,
+      "level": null,
+      "ac": null,
+      "hp": null,
+      "saves": null,
+      "attack": null,
+      "speed": null,
+      "morale": null,
+      "xp": null,
+      "special_abilities": []
+    }
+  ],
+  "roads": [
+    "Follyegg Road",
+    "Mirror Road"
+  ],
+  "connections": [
+    "hex 1403 (Odd)",
+    "hex 1802 (Chateau Mauvesse)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      164,
+      165,
+      166,
+      167
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

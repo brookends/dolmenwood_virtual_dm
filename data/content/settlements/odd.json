@@ -1,0 +1,503 @@
+{
+  "name": "Odd",
+  "settlement_id": "odd",
+  "hex_id": "1403",
+  "size": "village",
+  "population": 90,
+  "population_description": "90—village",
+  "tagline": "Drifting on the borders of Fairy. Secret allies of the Drune.",
+  "description": "A huddle of thatched wooden huts intermingled with animal pens. The village is located in a glade around a grassy knoll, on which stands a ramshackle church.",
+  "atmosphere": "Rustic woodland village with dimensional vagueness and hidden fairy influences",
+  "inhabitants_description": "Rustic, woodland folk, distinguished by their height and black hair (they have mixed Drune heritage).",
+  "governance": {
+    "ruler_type": "headman",
+    "ruler_name": "Broobe Dogoode",
+    "ruling_body": "headman appointed by the sorcerers",
+    "domain": "House Guillefer (see hex 1304)",
+    "political_status": "controlled by the Drune",
+    "notes": "Odd is within the domain of House Guillefer but controlled by the Drune, via the authority of a headman appointed by the sorcerers"
+  },
+  "religion": {
+    "primary_deity": "beast saints",
+    "religious_buildings": [
+      "The Church"
+    ],
+    "religious_practices": "Odd-folk ostensibly follow the Pluritine Church, but the village church is clearly disused. If questioned about this, the villagers claim that they worship in their homes, only using the church for marriages and baptisms. In fact, they worship \"beast saints\" (amalgams of one of the saints of Dolmenwood with an animalistic folk-deity) at secret shrines in their attics.",
+    "notes": null
+  },
+  "history": [
+    "Over the last few centuries, Odd has come under the effect of a dimensional anomaly of unknown provenance—it is slowly drifting into the fairy realm of Diuthurnia",
+    "The Drune exert the power of the monolith in the church (see The Orbstone) to tether the village to the mortal world",
+    "The Orbstone was placed in Odd by the Drune many centuries ago, pre-dating the church, which was built around it later"
+  ],
+  "current_events": [
+    "The village's name keeps changing each time outsiders enter",
+    "The people of Odd are predominantly trappers and hunters, with traders regularly traveling from Prigwort to purchase fur",
+    "The bolder folk of the village venture into the hunting grounds of the fairy Duke Mai-Fleur to poach the fairy animals which live there"
+  ],
+  "rumors_reference": "See Rumours in Odd, p450",
+  "special_features": [
+    {
+      "name": "Dimensional Drifting",
+      "description": "The village is slowly drifting into the fairy realm of Diuthurnia due to a dimensional anomaly",
+      "mechanical_effect": "The village's name changes each time outsiders enter",
+      "affected_area": "entire village"
+    },
+    {
+      "name": "The Orbstone",
+      "description": "A soul siphon that traps the spirits of all who die in the village, used by the Drune to tether the village to the mortal world",
+      "mechanical_effect": "Traps souls of those who die in village",
+      "affected_area": "entire village"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "rustic weapons",
+      "luxurious furs"
+    ],
+    "unavailable_categories": [
+      "armor"
+    ],
+    "special_items": [
+      "arrows",
+      "daggers",
+      "shortbows",
+      "slings",
+      "staves",
+      "fur garments"
+    ],
+    "notes": "Only rustic weapons (e.g. arrows, daggers, shortbows, slings, staves) are available. No form of armour can be bought in Odd. Luxurious furs are available at the lodge."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The Church",
+      "location_type": "church",
+      "description": "A run-down church of weather-stained stone, perched atop the knoll in the centre of the village. The church is locked up and appears disused. In place of a spire, a black monolith protrudes (see The Orbstone).",
+      "interior": "Wooden pews stacked at one side. Thorny twigs litter the floor. Altar covered in melted, black wax. No religious oddments—it is unclear to which saint this shrine was dedicated. At the rear, the Orbstone ascends through the roof.",
+      "exterior": "The church is girded by a 5′ high wall with a rusty iron gate that creaks in the wind. Wild old yew trees. Graves marked with miniature obelisks, rather than conventional gravestones. All windows are shuttered. Doors are chained and locked.",
+      "populace": "On nights of the full moon: Drunes slip into the village and perform rituals in the church",
+      "atmosphere": "Disused and mysterious",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "The Orbstone - A 30′ tall monolith of sheer black stone with faintly glowing green markings"
+      ],
+      "secrets": [
+        "Contains the Orbstone which traps souls of the dead",
+        "Drunes perform rituals here on full moon nights"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Broobe Dogoode and the local Drune"
+    },
+    {
+      "number": 2,
+      "name": "The Moggle's Gob",
+      "location_type": "inn",
+      "description": "The village's only tavern, slumped and bulging under the weight of its oversized thatch.",
+      "interior": "Gloomy, smoky, and poky, yet cosy. The landlady, Mogget Crookbone, serves from behind a bar strewn with bear wolf pelts.",
+      "exterior": "Sign: The gaping maw of a monster, showing its malformed teeth and dangling tonsils.",
+      "populace": "The patrons, of an evening, consist of local drunkards and gamblers, prone to aggressive tirades.",
+      "atmosphere": "Gloomy but cosy tavern atmosphere",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Of poor quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Game stew",
+          "description": "Spicy fresh forest game",
+          "cost": "4sp a portion",
+          "notes": null
+        },
+        {
+          "name": "Stabling",
+          "description": "The inn has no stable, but animals can be lodged in a barn elsewhere in the village",
+          "cost": "2sp a night",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "mogget_crookbone"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "The Home of the Sage",
+      "location_type": "residence",
+      "description": "An elegant, venerable, two-storeyed home of tarred wood, and white-daubed walls, with a roof of grey slate. Stands under the eaves of several great beeches. This is the home of Philontimus the Wizened.",
+      "interior": "Jumbled piles of books, leaning bookshelves, cabinets of curiosities.",
+      "exterior": "A brass plaque hangs on the front door. It depicts the face of the Green Man and carries the slogan (in Old Woldish) \"Seek, know, teach\" (an odd variant on an old Drune rede).",
+      "populace": "The sage Philontimus the Wizened and his grandson, a lad of 20 named Briggle who acts as his manservant, page, and research assistant.",
+      "atmosphere": "Scholarly and cluttered",
+      "services": [
+        {
+          "name": "Sage consultation",
+          "description": "Specialises in the ancient religions, legends, and folklore of Dolmenwood",
+          "cost": "standard sage rates",
+          "notes": "Apply the standard rules for hiring a sage"
+        }
+      ],
+      "npcs": [
+        "philontimus_the_wizened",
+        "briggle"
+      ],
+      "special_features": [
+        "Valuable obscure items scattered throughout"
+      ],
+      "secrets": [
+        "A locked chest is hidden under the floorboards of the study. It holds 200pp, 1,200gp, 8,000sp, a pockmarked bronze Ring of Invisibility, and a vial of Vaporous Spirits."
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "The Lodge",
+      "location_type": "meeting hall",
+      "description": "A precarious, narrow, two-storey hut decorated with antlers and animal skulls hanging from the eaves. The lodge functions as a meeting place for the villagers, a fur trading emporium, and the home of the village headman, Broobe Dogoode, and his family.",
+      "interior": "A wide room with a roof supported by great, tarred beams. Hundreds of sets of antlers of all sizes hang from the rafters. A great wooden table stands in the centre of the room, typically spread with a profusion of furs. Two dozen chairs are pushed against the walls.",
+      "exterior": "A black-lacquered door in a high archway. The door is usually locked, but a dull tin bell may be rung for attention.",
+      "populace": "The village headman, Broobe Dogoode, lives in the upper floor with his family.",
+      "atmosphere": "Meeting place and trading post",
+      "services": [
+        {
+          "name": "Fur garments",
+          "description": "Luxurious garments crafted by the Odd-folk",
+          "cost": "varies by type",
+          "notes": "See fur garment price table"
+        }
+      ],
+      "npcs": [
+        "broobe_dogoode"
+      ],
+      "special_features": [
+        "Hundreds of antlers hanging from rafters",
+        "Fur trading emporium"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Broobe Dogoode"
+    },
+    {
+      "number": 5,
+      "name": "Beast Saint Statue",
+      "location_type": "landmark",
+      "description": "A worn, 8′-tall stone statue in the form of a chubby man. Strips of hide and strings of animal teeth adorn the statue. A mangy boar's head is perched on top, concealing the statue's own head.",
+      "interior": null,
+      "exterior": "If asked about the statue, villagers claim the adornments are hunters' tributes to St Hamfast. Removing the adornments reveals the grinning face of St Hamfast, depicted with four squirrels upon his shoulders.",
+      "populace": "Villagers come here to make tributes",
+      "atmosphere": "Sacred but disguised",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden face of St Hamfast beneath boar's head"
+      ],
+      "secrets": [
+        "The true identity of the saint is concealed by animal adornments"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Lochsbreth Road",
+      "location_type": "road",
+      "description": "A well-kept road leading west to Prigwort (hex 1106). Traders travel between the two settlements to procure Odd's sought-after game and furs.",
+      "interior": null,
+      "exterior": "Well-maintained road through the forest",
+      "populace": "Traders traveling between settlements",
+      "atmosphere": "Busy trade route",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Follyegg Road",
+      "location_type": "road",
+      "description": "A twisting, little-used road in the deep forest, leading to the village of Meagre's Reach (hex 1703).",
+      "interior": null,
+      "exterior": "Twisting forest path",
+      "populace": "Rarely used",
+      "atmosphere": "Isolated and mysterious",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "mogget_crookbone",
+      "name": "Mogget Crookbone",
+      "title": "Moggle's Gob Proprietor",
+      "description": "A grim-faced human woman in her forties, with curly, grizzled hair and a pipe of Old Doby perpetually in her teeth. Her left hand is missing three fingers (she alleges they were torn off by an owlbear).",
+      "kindred": "Human",
+      "age_description": "in her forties",
+      "dress": "Carries a pipe of Old Doby perpetually in her teeth",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Morbid",
+        "cool toward strangers"
+      ],
+      "mannerisms": "Rubs the stumps of her missing fingers",
+      "speech": "Sour and scornful. Cackles maniacally. Woldish, basic Drunic.",
+      "languages": [
+        "Woldish",
+        "basic Drunic"
+      ],
+      "desires": [
+        "To marry a Drune, for the prestige"
+      ],
+      "secrets": [
+        "Reports all she observes to Broobe Dogoode, the headman"
+      ],
+      "location_id": "2",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "philontimus_the_wizened",
+      "name": "Philontimus the Wizened",
+      "title": "Sage",
+      "description": "A hunched, frail, bespectacled human man of 70 years, with a white beard down to his knees. He wears a curious robe of golden feathers at all times. Originally hailing from outside Dolmenwood, Philontimus has spent the latter half of his life in Odd, drawn to the obscure reaches of Dolmenwood where ancient ways still flourish.",
+      "kindred": "Human",
+      "age_description": "70 years",
+      "dress": "wears a curious robe of golden feathers at all times",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Wry",
+        "ponderous",
+        "near-sighted",
+        "Despises the wilfully ignorant"
+      ],
+      "mannerisms": "Coughs feebly",
+      "speech": "Feeble and wavering. Prone to excited, high-pitched exclamations. Woldish, Old Woldish, Drunic, Sylvan, Caprice, a profusion of dead tongues.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Drunic",
+        "Sylvan",
+        "Caprice",
+        "a profusion of dead tongues"
+      ],
+      "desires": [
+        "Pays handsomely for ancient artefacts, especially those associated with the Gwyrae religion",
+        "Loves fruit pies"
+      ],
+      "secrets": [],
+      "location_id": "3",
+      "occupation": "Sage specializing in ancient religions, legends, and folklore of Dolmenwood"
+    },
+    {
+      "npc_id": "briggle",
+      "name": "Briggle",
+      "title": "Sage's Grandson",
+      "description": "A lad of 20 who acts as manservant, page, and research assistant to Philontimus the Wizened",
+      "kindred": "Human",
+      "age_description": "20 years old",
+      "dress": null,
+      "alignment": null,
+      "demeanor": [],
+      "mannerisms": null,
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "Trysting in the churchyard with a braithmaid"
+      ],
+      "location_id": "3",
+      "occupation": "manservant, page, and research assistant"
+    },
+    {
+      "npc_id": "broobe_dogoode",
+      "name": "Broobe Dogoode",
+      "title": "Village Headman",
+      "description": "A hulking, thickset human man in his fifties, with an unkempt mane of black hair and a purple scar across his cheek. Broobe is the village headman, appointed by the Drune, and an adept tracker.",
+      "kindred": "Human",
+      "age_description": "in his fifties",
+      "dress": null,
+      "alignment": "Neutral",
+      "demeanor": [
+        "Domineering",
+        "obstinate"
+      ],
+      "mannerisms": "Absently scratches his stubble",
+      "speech": "Sonorous, sombre. Woldish, basic Drunic.",
+      "languages": [
+        "Woldish",
+        "basic Drunic"
+      ],
+      "desires": [
+        "To join Duke Mai-Fleur's hunt",
+        "To know the origin of the wretched masses of tentacles in the woods to the south (hex 1404)"
+      ],
+      "secrets": [],
+      "location_id": "4",
+      "occupation": "Village headman and adept tracker"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "3d6 villagers waving animal heads and pelts on poles, parading to the beast saint statue.",
+          "npcs_involved": [
+            "villagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A madcap chase through the village: 1d4 villagers pursuing a mud-spattered pig, escaped from its pen.",
+          "npcs_involved": [
+            "villagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "A company of 1d4 merchants (DMB) and their guards, heading to the lodge to buy fur garments.",
+          "npcs_involved": [
+            "merchants",
+            "guards"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A braithmaid (DMB) bringing a note to the headman.",
+          "npcs_involved": [
+            "braithmaid",
+            "headman"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "An elf knight (DMB) in the service of Duke Mai-Fleur, seeking three poachers believed to be in Odd. She pays 30 coins of fairy silver (5gp each) for their capture.",
+          "npcs_involved": [
+            "elf knight"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 mosslings (DMB) stumble bleary-eyed into the village, asking for directions to the Sombre Lamb inn.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "mosslings"
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "2d6 drunkards (as Level 1 thieves—DMB) looking for trouble with outsiders.",
+          "npcs_involved": [
+            "drunkards"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "1d3 Drune cottagers (DMB) slipping into the church, carrying a woman bound in bandages upon a bier.",
+          "npcs_involved": [
+            "Drune cottagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "A monster (roll on the Monsters encounter table, see p114) wanders out of the woods and into the village.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "random monster"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "An adventuring party (DMB) with a cart-load of grave goods from the barrows in hex 1504 creep toward the home of the sage, seeking his aid.",
+          "npcs_involved": [
+            "adventuring party"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "A wandering friar (DMB) irately tearing the \"sacrilegious\" adornments from the beast saint statue.",
+          "npcs_involved": [
+            "wandering friar"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Briggle (the sage's grandson) trysting in the churchyard with a braithmaid (DMB).",
+          "npcs_involved": [
+            "Briggle",
+            "braithmaid"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "Lochsbreth Road",
+    "Follyegg Road"
+  ],
+  "connections": [
+    "Prigwort (hex 1106)",
+    "Meagre's Reach (hex 1703)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      168,
+      169,
+      170,
+      171
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

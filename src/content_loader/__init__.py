@@ -50,6 +50,11 @@ from src.content_loader.spell_registry import (
     get_spell_registry,
     reset_spell_registry,
 )
+from src.content_loader.settlement_loader import (
+    SettlementLoader,
+    SettlementFileLoadResult,
+    SettlementDirectoryLoadResult,
+)
 
 __all__ = [
     # Core manager
@@ -101,4 +106,8 @@ __all__ = [
     "SpellListResult",
     "get_spell_registry",
     "reset_spell_registry",
+    # Settlement loader
+    "SettlementLoader",
+    "SettlementFileLoadResult",
+    "SettlementDirectoryLoadResult",
 ]

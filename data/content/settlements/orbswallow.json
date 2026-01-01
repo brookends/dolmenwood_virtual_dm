@@ -1,0 +1,650 @@
+{
+  "name": "Orbswallow",
+  "settlement_id": "orbswallow",
+  "hex_id": "1405",
+  "size": "village",
+  "population": 80,
+  "population_description": "80—village",
+  "tagline": "Mossling village in the deep fungal forest of Mulchgrove",
+  "description": "A community in the seldom-trod fungal forest of Mulchgrove, clustered around a pair of gargantuan toadstools and three magical trees. Lush moss covers every surface not occupied by giant, garish fungus.",
+  "atmosphere": "Deep fungal forest with lush moss and giant, garish fungus",
+  "inhabitants_description": "Mosslings. No humans or folk of other Kindreds dwell here.",
+  "governance": {
+    "ruler_type": "chief",
+    "ruler_name": "Brimbul",
+    "ruling_body": "Chief Mulcher selected every seven years by oracular process",
+    "domain": "House Guillefer",
+    "political_status": "effectively independent",
+    "notes": "House Guillefer pays no attention whatsoever to the village of mosslings"
+  },
+  "religion": {
+    "primary_deity": "Blosquom",
+    "religious_buildings": [
+      "Fungal Shrine"
+    ],
+    "religious_practices": "Worship Blosquom that manifests in their fungal shrine. Also journey into fungal forest to seek guidance of mould oracle Gropoll in her hidden grotto dedicated to clay-god Mbombre",
+    "notes": "Nominally followers of Pluritine Church as subjects of the duke. Unbeknown to folk, Blosquom is an aspect of the Myconom"
+  },
+  "history": [
+    "Centre of Mossling Culture - heart of mossling culture lies in Orbswallow",
+    "Built around three great and venerable trees with unique magical properties",
+    "Folk divided into three clans dedicated to tending the trees"
+  ],
+  "current_events": [
+    "Ongoing and escalating conflict with nutcaps who launch aerial raids to snatch fruits of the three trees",
+    "Breeding programmes attempted to protect against loss of trees, though none entirely successful to date"
+  ],
+  "rumors_reference": "See Rumours in Orbswallow, p451",
+  "special_features": [
+    {
+      "name": "The Three Trees",
+      "description": "Milktree, Moontree, and Pipetree with unique magical properties on whose fruits the village's livelihood depends",
+      "mechanical_effect": "Loss of one tree would bring calamity to village",
+      "affected_area": "entire settlement"
+    },
+    {
+      "name": "Three Clans System",
+      "description": "Pipers (hasty and headstrong), Milkers (gullible and guileless), and Waxers (fickle and sly)",
+      "mechanical_effect": null,
+      "affected_area": "social organization"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "rustic weapons",
+      "special tree produce"
+    ],
+    "unavailable_categories": [
+      "armor except special mossling armor"
+    ],
+    "special_items": [
+      "smokepipes",
+      "creamy cheeses",
+      "Moon's Milk",
+      "various tree fruits"
+    ],
+    "notes": "Only rustic weapons (arrows, daggers, shortbows, slings, staves) available. Special produce of three trees can be bought."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The Milktree",
+      "location_type": "landmark",
+      "description": "Broad, bulbous, and oak-like tree festooned with pendulous, orb-shaped fruits bearing remarkable resemblance to mammalian teats",
+      "interior": null,
+      "exterior": "Low-hanging fruits filled with sweet, nourishing milk or yoghurt, upper branches filled with cheese",
+      "populace": "Milkers clan mosslings",
+      "atmosphere": "Cosy wicker spheres with napping mosslings among branches",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Forms significant part of village's food",
+        "Wicker spheres hanging among branches"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "The Pipetree",
+      "location_type": "landmark",
+      "description": "Sprawling and multi-limbed, with maple-like leaves, bears long, hollow, dry-husked fruits",
+      "interior": null,
+      "exterior": "Husks harvested and crafted into several kinds of pipes",
+      "populace": "Pipers clan mosslings",
+      "atmosphere": "Crafting and pipe-making",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Fruits used for pipes sold for export"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "The Moontree",
+      "location_type": "landmark",
+      "description": "Tall, elegant, and birch-like, bears fruits of several different kinds hanging in clusters high among delicate, silver limbs",
+      "interior": null,
+      "exterior": "Fruit characteristics resemble phases of moon, used as food, pigmentation, tools, oils, and lighting",
+      "populace": "Waxers clan mosslings",
+      "atmosphere": "Elegant and mystical",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Fruits resemble moon phases with various uses"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Sapling Grove",
+      "location_type": "landmark",
+      "description": "A sheltered grove of experimental saplings—cuttings and cross-breedings of the three trees",
+      "interior": null,
+      "exterior": "Experimental breeding area",
+      "populace": "Tended by villagers",
+      "atmosphere": "Hopeful but unsuccessful",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Cuttings invariably perish after a decade, never bearing fruit"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Milkers' Huts",
+      "location_type": "residential",
+      "description": "Squat huts, built of wicker and slimy mud, huddled around the base of the Milktree",
+      "interior": "Home-fromageries where specialty cheeses are made",
+      "exterior": "Reeks of mouldy cheese",
+      "populace": "Five mossling families of the Milkers clan",
+      "atmosphere": "Cheese-making and strong odors",
+      "services": [
+        {
+          "name": "Old Shuck cheese",
+          "description": "Rigid, stinking, ultra-mature cheese",
+          "cost": "10gp per 18″ round",
+          "notes": "Mild and creamy to mossling tastes"
+        },
+        {
+          "name": "Hogger cheese",
+          "description": "Wrinkled and covered in fuzzy green mould",
+          "cost": "20gp per 6″ round",
+          "notes": "10% chance per complete round of increasing Constitution by 1, induces mossy green chest hair growth"
+        },
+        {
+          "name": "Buggler-boot cheese",
+          "description": "Grotesquely slimy with hairy blue strands, sold in sock-like leather pouches",
+          "cost": "20gp per pouch",
+          "notes": "3-in-6 chance of healing 1 HP per pouch, non-mosslings can only consume one per day"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Specialty cheese production"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Old Thromby",
+      "location_type": "residential",
+      "description": "A giant toadstool which houses six mossling families of the Pipers clan",
+      "interior": "Chambers dug out of the toadstool's flesh",
+      "exterior": "Houses perched precariously upon its dome",
+      "populace": "Six mossling families of Pipers clan",
+      "atmosphere": "Precarious but functional living",
+      "services": [
+        {
+          "name": "Smokepipes",
+          "description": "Gourd-like fruits with stem, mouthpiece, and bowl for smoking pipeleaf",
+          "cost": "1gp",
+          "notes": null
+        },
+        {
+          "name": "Windpipes",
+          "description": "Long, reedy fruits that produce whistling tones soothing to livestock",
+          "cost": "4gp",
+          "notes": null
+        },
+        {
+          "name": "Dancepipes",
+          "description": "Thick, pot-bellied, woody fruits bored with holes as musical instrument",
+          "cost": "10gp",
+          "notes": "Especially beloved by woodgrues"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Pipe crafting from Pipetree fruits"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Waxers' Rock",
+      "location_type": "residential",
+      "description": "A natural rock formation that houses seven mossling families of the Waxers clan",
+      "interior": "Rooms carved out of the rock",
+      "exterior": "Hog enclosures at the feet of the rock producing cacophony of snorting and oinking",
+      "populace": "Seven mossling families of Waxers clan",
+      "atmosphere": "Noisy with hog sounds",
+      "services": [
+        {
+          "name": "New moon fruits",
+          "description": "Succulent black orbs filled with sweet, nourishing, midnight-black juice",
+          "cost": "1gp",
+          "notes": "Each fruit treated as day's rations, juice can be used as pigment"
+        },
+        {
+          "name": "Crescent fruits",
+          "description": "Golden, sickle-shaped shards with strength of steel",
+          "cost": "3gp",
+          "notes": "Used as cutting, carving, digging tools or weapon (treat as dagger)"
+        },
+        {
+          "name": "Waxing fruits",
+          "description": "Near-hemispheres of soft, yellow, fatty tissue",
+          "cost": "1gp",
+          "notes": "Valued for lubricative and preservative properties"
+        },
+        {
+          "name": "Gibbous fruits",
+          "description": "Bulbous spheroids of yellow, green-veined flesh with nectar-like flavour",
+          "cost": "2gp",
+          "notes": "Each fruit treated as day's rations"
+        },
+        {
+          "name": "Full moon fruits",
+          "description": "Perfect, milk-white spheres 1′ in diameter that give off warm, creamy glow",
+          "cost": "5gp",
+          "notes": "20′ diameter glow, subsides after 1 week once picked"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Various moon-phase fruits from Moontree"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Compost Heap",
+      "location_type": "landmark",
+      "description": "A steaming mound of decomposing vegetable matter and mossling dung",
+      "interior": null,
+      "exterior": "Stench almost unbearable to humans, mosslings savour the aroma",
+      "populace": "Defecating mosslings on toilet platform",
+      "atmosphere": "Putrid but natural to mosslings",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Toilet platform hangs over heap from top of Waxers' Rock"
+      ],
+      "secrets": [
+        "Several decomposing mossling corpses can be found - mosslings bring their dead here to decompose into mould"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "The Sombre Lamb",
+      "location_type": "inn",
+      "description": "A giant toadstool housing the village's tavern and brewery",
+      "interior": "Porous, smoke-stained walls of spongy mushroom flesh. Crowded with quirky wooden stools, tables, and log benches. Illuminated by pale, creamy glow of full moon fruits on rickety shelves among skulls and artistic wood.",
+      "exterior": "Wooden sign: 'The Sombre Lamb—Folk of All Clans Welcome'",
+      "populace": "At night jam-packed with local mosslings, merrily drinking and smoking. Travellers rare and treated politely until all inebriated.",
+      "atmosphere": "Cosy, crowded, and convivial",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Black new moon soup",
+          "description": "Spiced with pine sap, stains tongue and teeth for days",
+          "cost": "2sp",
+          "notes": null
+        },
+        {
+          "name": "Moon's Milk",
+          "description": "Brewed in mycelial cellars beneath inn",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Glubwob",
+          "description": "Brewed in mycelial cellars beneath inn",
+          "cost": "standard price",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "phrobe"
+      ],
+      "special_features": [
+        "Mycelial cellars for brewing"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "The Weaning Arch",
+      "location_type": "landmark",
+      "description": "A stone arch of apparently natural origin, completely overgrown with brambles, ivy, and wild roses",
+      "interior": null,
+      "exterior": "Overgrown with vegetation",
+      "populace": "Mosslings conducting rites of passage",
+      "atmosphere": "Mystical and ritualistic",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Used for various rites of passage where initiates are bathed in hog-cream"
+      ],
+      "secrets": [
+        "Clearing brambles reveals graven bands of magical script describing ritual to summon fire spirits. Ritual requires rare woods worth 250gp and releases fire elemental that must be controlled with Save Versus Spell"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "Fungal Shrine",
+      "location_type": "church",
+      "description": "A tall, white mushroom in the dank forest just outside village, swaying gently as if in a breeze",
+      "interior": "Little niches carved into stem occupied by offerings",
+      "exterior": "White mushroom with saffron gills",
+      "populace": "Locals leaving offerings",
+      "atmosphere": "Sacred and mystical",
+      "services": [],
+      "npcs": [
+        "blosquom"
+      ],
+      "special_features": [
+        "Offerings include gourds carved with silly faces, cheese rounds, hog blubber strips, all riddled with white mould"
+      ],
+      "secrets": [
+        "Consuming mouldy offerings requires Save Versus Doom or enter psychedelic trance for 1d8 hours with 1 HP damage per hour, survivors gain cryptic clue. Characters with Wisdom 13+ trigger manifestation of Blosquom"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "Mulcher's Path",
+      "location_type": "landmark",
+      "description": "A narrow, twisting track partially overgrown with bracken and fungal patches",
+      "interior": null,
+      "exterior": "Overgrown path leading west to Horse-Eye Road",
+      "populace": "Occasional travelers",
+      "atmosphere": "Wild and overgrown",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "Blacke Road",
+      "location_type": "landmark",
+      "description": "An old cart road, now seldom used and almost disappeared in the mycelial undergrowth of the fungal forests",
+      "interior": null,
+      "exterior": "Overgrown cart road leading east to Blackeswell",
+      "populace": "Rare travelers",
+      "atmosphere": "Abandoned and overgrown",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "brimbul",
+      "name": "Brimbul",
+      "title": "Chief Mulcher of Orbswallow",
+      "description": "A squashed-looking, middle-aged mossling woman, with tiny black eyes, matted, root-like hair, and a long, floppy nose that looks like a limp parsnip",
+      "kindred": "Mossling",
+      "age_description": "middle-aged",
+      "dress": "Lives among each of the three clans on rotating basis",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Suspicious",
+        "feigned cordiality",
+        "Quick to judge",
+        "narrow-minded"
+      ],
+      "mannerisms": null,
+      "speech": "Squeaking and grumbling. Woldish, Mulch.",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "The expulsion of all nutcaps from the surrounding woods (her husband was slain by them while defending the three trees)",
+        "The secret alchemical recipe to combine the essences of the three trees, producing an elixir of eternal life"
+      ],
+      "secrets": [
+        "Unaware that nutcaps already know how to create the elixir, though its powers are not what she imagines",
+        "Possesses prismatic crystal Talisman of Spell Reflection but unaware of its magic"
+      ],
+      "location_id": "village_leader",
+      "occupation": "Chief Mulcher"
+    },
+    {
+      "npc_id": "phrobe",
+      "name": "Phrobe",
+      "title": "Sombre Lamb Proprietor",
+      "description": "A rotund mossling man, hunched over with age, with bulbous black eyes, a broad toothless grin, and straggling, white mycelial hair",
+      "kindred": "Mossling",
+      "age_description": "aged",
+      "dress": "Mould-riddled woollens and a floppy hog-skin cap",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Gentle",
+        "nurturing",
+        "Nearly blind"
+      ],
+      "mannerisms": "Mistakes strangers for people he knows",
+      "speech": "Constant burbling and cackling. Makes jokes no one else understands. Woldish, Mulch.",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "To meet the fabled 'Duke of Brackenwoolled' (who he believes is a unicorn of some kind)"
+      ],
+      "secrets": [],
+      "location_id": "9",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "blosquom",
+      "name": "Blosquom",
+      "title": "Fungal Avatar",
+      "description": "A jolly, long-nosed face ringed with tiny, waving hands, manifested in a cloud of greenish mushroom spores",
+      "kindred": "Fungal Avatar",
+      "age_description": "timeless",
+      "dress": "Manifestation of spores",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Flippant",
+        "merry",
+        "Operates on cosmic plane with no conception of worldly matters"
+      ],
+      "mannerisms": null,
+      "speech": "Lazy sighing. Woldish, Mulch, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Mulch",
+        "Sylvan"
+      ],
+      "desires": [
+        "Corpses for spore infestation, to further spread the influence of the Myconom throughout Dolmenwood"
+      ],
+      "secrets": [
+        "Is a manifestation of the Myconom, unknown to the mosslings who worship it"
+      ],
+      "location_id": "11",
+      "occupation": "Deity/Avatar"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "A mossling explodes in a puff of slime and spores. This is regarded as a blessing from Blosquom.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "1d3 giant mutant snails slither into the village and attack the trees.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Giant Mutant Snail"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "1d3 traders come to buy pipes.",
+          "npcs_involved": [
+            "Traders"
+          ],
+          "monsters_involved": [],
+          "notes": "Level 1 hunters"
+        },
+        {
+          "roll": 4,
+          "description": "An ochre slime-hulk wanders through the village. It ignores mosslings, but attacks others.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Ochre Slime-hulk"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "3d6 mosslings dance through the village to music played on pot-bellied gourd pipes from the Pipetree.",
+          "npcs_involved": [
+            "Mosslings"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 nutcaps make an aerial raid on the fruits of one of the three trees (roll 1d3 and consult map key).",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Nutcap"
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "Coming of age ceremony: a young mossling is bathed in hog-cream beneath the Weaning Arch.",
+          "npcs_involved": [
+            "Mosslings"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A mushroom-addled mossling stumbles around, ranting about 'the coming age of the Myconom.'",
+          "npcs_involved": [
+            "Mushroom-addled Mossling"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "An adventuring party brings a corpse to the fungal shrine for spore infestation.",
+          "npcs_involved": [
+            "Adventuring Party"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "2d6 mosslings from an outlying community arrive for a rollicking night out 'on the town.' It is difficult for anyone to get any sleep during the ensuing rumpus.",
+          "npcs_involved": [
+            "Visiting Mosslings"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "3d6 mosslings singing and making offerings at the fungal shrine. The smiling face of Blosquom manifests and croons along.",
+          "npcs_involved": [
+            "Mosslings",
+            "Blosquom"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 nutcaps make an aerial raid on the fruits of one of the three trees (roll 1d3 and consult map key).",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Nutcap"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "Mulcher's Path",
+    "Blacke Road"
+  ],
+  "connections": [
+    "Horse-Eye Road",
+    "Blackeswell"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      172,
+      173,
+      174,
+      175
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
