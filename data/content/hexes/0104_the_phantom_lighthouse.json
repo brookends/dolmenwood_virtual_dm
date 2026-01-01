@@ -30,7 +30,7 @@
       "leaving": null,
       "inhabitants": "The Dredger occupies the lantern room at night, along with spectral mariners throughout the lighthouse.",
       "roll_tables": [],
-      "npcs": [],
+      "npcs": ["the_dredger"],
       "special_features": [
         "Beam at night: During the hours of darkness, a wide beam of eerie, pale blue light shines out from the summit of the tower, sweeping across the bog in slow, two-minute revolutions.",
         "Climbing onto the island: The sides are choked with thorny, scabrous succulents at ankle height. On the summit, the soil and scrubby undergrowth teem with centipedes and ticks.",
@@ -44,15 +44,48 @@
     }
   ],
   "roll_tables": [],
-  "npcs": [],
+  "npcs": [
+    {
+      "npc_id": "the_dredger",
+      "name": "The Dredger",
+      "description": "A giant, 8-armed cephalopod, with milky, near transparent flesh, a sucker-like mouth, and a trio of pupilless, purple eyes. The Dredger feeds on the magic of the Crystal of Sepulture at the lantern's heart, disrupting the crystal's function and temporarily releasing figments of the mariners' souls trapped within.",
+      "kindred": "Monstrosity",
+      "alignment": "Neutral",
+      "demeanor": ["Predatory", "Magic-hungry"],
+      "speech": "",
+      "languages": [],
+      "desires": ["Feed on magical energy"],
+      "secrets": [],
+      "possessions": [],
+      "location": "Lighthouse lantern room (nighttime only)",
+      "stat_reference": "Large Monstrosity—Animal Int.—Neutral, Level 7 AC 14 HP 45 Saves D8 R9 H10 B11 S12, Att 6 tentacles (+6, 1d4 + constriction) Speed 10 Swim 80 Morale 10 XP 1,380",
+      "is_combatant": true,
+      "combat_abilities": [
+        {
+          "name": "Constriction",
+          "description": "Tentacles grab and constrict after a hit, inflicting 1d4 automatic damage per Round."
+        },
+        {
+          "name": "Severing Tentacles",
+          "description": "Requires a hit inflicting 6+ damage."
+        },
+        {
+          "name": "Devour Magic",
+          "description": "If a spell is cast upon the Dredger, there is a 3-in-6 chance of it having no effect, the magic being instead sucked into the monster's maw. Following such magical sustenance, the Dredger regains 1d6 HP."
+        }
+      ]
+    }
+  ],
   "items": [
     {
+      "item_id": "0104:item:crystal-of-sepulture",
       "name": "Crystal Of Sepulture",
       "description": "A 1′ high, faceted, ovoid crystal that blazes with spectral blue light and rotates slowly. Contains trapped mariners' souls.",
       "location": "Lighthouse lantern room",
       "value": null,
       "magical": true,
-      "reference": "p404"
+      "reference": "p404",
+      "acquisition_condition": "Dredger must be killed or removed"
     }
   ],
   "secrets": [],

@@ -1147,6 +1147,9 @@ class ContentPipeline:
                 "encounter_notes": hex_data.procedural.encounter_notes,
                 "foraging_results": hex_data.procedural.foraging_results,
                 "foraging_special": hex_data.procedural.foraging_special,
+                "encounter_modifiers": hex_data.procedural.encounter_modifiers,
+                "lost_behavior": hex_data.procedural.lost_behavior,
+                "night_hazards": hex_data.procedural.night_hazards,
             }
 
         # Convert points of interest
@@ -1227,6 +1230,7 @@ class ContentPipeline:
                     "location": npc.location,
                     "stat_reference": npc.stat_reference,
                     "is_combatant": npc.is_combatant,
+                    "vulnerabilities": npc.vulnerabilities,
                     "relationships": npc.relationships,
                     "faction": npc.faction,
                     "loyalty": npc.loyalty,

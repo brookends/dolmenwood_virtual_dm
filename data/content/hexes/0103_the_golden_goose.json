@@ -31,7 +31,9 @@
       "inhabitants": "Sidney Tew, 4 minor nobles, and 4 ruffians",
       "roll_tables": [],
       "npcs": [
-        "sidney_tew"
+        "sidney_tew",
+        "minor_nobles",
+        "ruffians"
       ],
       "special_features": [
         "Approaching: Sidney is suspicious but outwardly welcoming. He cannot help but brag about his search and shows the golden egg to those who doubt his claims."
@@ -58,6 +60,32 @@
       "special_features": [
         "Treasure hoard: Amongst a collection of broken glass, polished metal, and worthless trinkets is 673cp, 432sp, 925gp, four golden eggs, and a pewter Talisman of Non-Detection (p398) shaped like a bisected eye."
       ],
+      "treasure_hoard": {
+        "coins": {
+          "cp": 673,
+          "sp": 432,
+          "gp": 925
+        },
+        "items": [
+          {
+            "item_id": "0103:item:golden_egg",
+            "name": "Golden Egg",
+            "quantity": 4,
+            "value_gp": 40,
+            "notes": "Induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust."
+          },
+          {
+            "item_id": "0103:item:talisman_nondetection",
+            "name": "Talisman of Non-Detection",
+            "quantity": 1,
+            "value_gp": null,
+            "magical": true,
+            "page_reference": "p398",
+            "notes": "Pewter talisman shaped like a bisected eye"
+          }
+        ],
+        "worthless": "broken glass, polished metal, and worthless trinkets"
+      },
       "secrets": [],
       "is_dungeon": true,
       "dungeon_levels": null
@@ -89,7 +117,58 @@
       "possessions": [],
       "location": "Crocus's Cave",
       "stat_reference": "Ogre (DMB). As a fairy, suffers 1 extra point of damage when hit with cold iron weapons.",
-      "is_combatant": true
+      "is_combatant": true,
+      "cold_iron_vulnerability": true,
+      "vulnerabilities": ["cold_iron", "shiny_objects", "mention_of_thorn_rosy"],
+      "known_topics": [
+        {
+          "topic_id": "shiny_distraction",
+          "content": "Crocus's eyes fix on any shiny object presented to her. She reaches for it with grasping, tooth-tipped fingers, momentarily forgetting her hunger.",
+          "keywords": ["shiny", "gold", "treasure", "jewel", "sparkle", "glitter"],
+          "required_disposition": -5,
+          "category": "interaction",
+          "shared": false,
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "thorn_rosy_fear",
+          "content": "Crocus stole the Golden Goose from her mistress, the Hag Thorn-Rosy. She lives in constant fear of discovery and punishment. Mentioning Thorn-Rosy's name causes her to flinch and glance nervously at shadows.",
+          "hint": "When fairy matters are discussed, her permanent smile seems to tighten, and she glances toward the cave entrance.",
+          "keywords": ["thorn", "rosy", "mistress", "fairy", "stole", "theft", "fear", "hiding"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "deliberate_lure",
+          "content": "Crocus deliberately allows travelers to sight the goose, using it as bait to attract greedy mortals she can feed upon. The whole 'hunt' is her trap.",
+          "hint": "The ease with which the golden egg was found seems almost... too convenient.",
+          "keywords": ["trap", "bait", "lure", "deliberate", "purpose", "why", "feed"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "thorn_rosy",
+          "relationship_type": "former_master",
+          "description": "Fled from Thorn-Rosy after stealing the Golden Goose. Lives in terror of her wrath.",
+          "hex_id": null,
+          "notes": "Thorn-Rosy is referenced on p32 of the Campaign Book"
+        },
+        {
+          "npc_id": "the_golden_goose",
+          "relationship_type": "captor",
+          "description": "Keeps the goose chained and gagged as both treasure and bait for prey.",
+          "hex_id": "0103",
+          "notes": null
+        }
+      ]
     },
     {
       "npc_id": "sidney_tew",
@@ -116,11 +195,86 @@
       ],
       "secrets": [],
       "possessions": [
-        "A silver longsword engraved with the Tew name (110gp)"
+        {
+          "item_id": "0103:item:sidney_longsword",
+          "name": "Silver Longsword",
+          "description": "A silver longsword engraved with the Tew name",
+          "value_gp": 110
+        }
       ],
       "location": "Sidney's Company",
       "stat_reference": "Level 3 fighter (DMB)",
-      "is_combatant": true
+      "is_combatant": true,
+      "vulnerabilities": ["flattery", "appeal_to_nobility", "promise_of_glory"],
+      "known_topics": [
+        {
+          "topic_id": "golden_goose_hunt",
+          "content": "Sidney proudly produces a golden egg as proof of his quarry. 'Two weeks ago, a scavenger from Fort Vulgar spotted it - a goose with feathers of pure gold! I bought his egg and his story. We're close now, I can feel it.'",
+          "keywords": ["goose", "golden", "hunt", "egg", "search", "expedition", "quest"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 10
+        },
+        {
+          "topic_id": "noble_lineage",
+          "content": "Sidney straightens with practiced dignity. 'I am a cousin of Lady Harrowmoor herself - third cousin, once removed, but blood is blood. The Tew name has a proud history, though circumstances have been... temporarily unfavorable.'",
+          "keywords": ["harrowmoor", "cousin", "noble", "family", "tew", "lineage", "blood"],
+          "required_disposition": -3,
+          "category": "personal",
+          "shared": false,
+          "priority": 5
+        },
+        {
+          "topic_id": "expedition_plans",
+          "content": "Sidney gestures vaguely at the featureless bog. 'We've been searching methodically. The scavenger said he saw it somewhere in this area. We're close - perhaps only a day or two from finding its lair.'",
+          "keywords": ["plan", "search", "find", "where", "location", "lair", "cave"],
+          "required_disposition": -4,
+          "category": "location",
+          "shared": false,
+          "priority": 7
+        },
+        {
+          "topic_id": "his_company",
+          "content": "Sidney waves dismissively at his companions. 'Fine fellows all. The nobles are second sons seeking fortune - much like myself. The others are... practical men, shall we say. Reliable when properly compensated.'",
+          "keywords": ["companions", "group", "nobles", "ruffians", "men", "followers"],
+          "required_disposition": -2,
+          "category": "npc",
+          "shared": false,
+          "priority": 3
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "distant_relation",
+          "content": "His claim to Lady Harrowmoor is technically true but practically meaningless - third cousin once removed grants no standing at court. He desperately hopes this venture will change his fortunes.",
+          "hint": "His clothes, though styled nobly, show careful mending and wear beyond their years.",
+          "keywords": ["relation", "harrowmoor", "true", "really", "actually", "claim"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "failed_schemes",
+          "content": "This goose venture is merely the latest in a long string of failed schemes. Previous attempts include a failed trading company, a collapsed mining investment, and a disastrous attempt to breed prize hunting dogs.",
+          "hint": "When pressed about his past, Sidney's confident demeanor falters momentarily, and he changes the subject.",
+          "keywords": ["past", "before", "previous", "history", "schemes", "ventures", "failed"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 20
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lady_harrowmoor",
+          "relationship_type": "distant_kin",
+          "description": "Third cousin once removed. Claims kinship frequently but has no real standing.",
+          "hex_id": null,
+          "notes": "Lady Harrowmoor is referenced on p60 of the Campaign Book"
+        }
+      ]
     },
     {
       "npc_id": "the_golden_goose",
@@ -140,31 +294,201 @@
       "possessions": [],
       "location": "Crocus's Cave",
       "stat_reference": null,
-      "is_combatant": false
+      "is_combatant": false,
+      "binding": {
+        "bound_by": "crocus",
+        "bound_with": "silver_chain",
+        "binding_value_gp": 100,
+        "gagged": true,
+        "gag_description": "cloth gag",
+        "release_conditions": [
+          "defeat_crocus",
+          "steal_goose",
+          "distract_crocus_with_shiny"
+        ],
+        "on_ungag": "Repeatedly honks 'Mother Rosy' - this may attract unwanted attention from Thorn-Rosy's agents"
+      },
+      "known_topics": [
+        {
+          "topic_id": "mother_rosy_call",
+          "content": "When ungagged, the goose repeatedly honks 'Mother Rosy! Mother Rosy!' in an urgent, plaintive tone. It seems to be calling for its former owner.",
+          "keywords": ["honk", "speak", "say", "call", "mother", "rosy", "thorn"],
+          "required_disposition": -5,
+          "category": "revelation",
+          "shared": false,
+          "priority": 10,
+          "requires_ungagged": true
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "thorn_rosy_property",
+          "content": "The Golden Goose was once the prized possession of the fairy noble Thorn-Rosy. She bestows a significant reward upon whomever returns it - and would severely punish whomever keeps it from her.",
+          "hint": "The goose's desperate honking of 'Mother Rosy' suggests powerful fairy connections.",
+          "keywords": ["thorn", "rosy", "fairy", "owner", "reward", "punish", "belong"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "vulnerabilities": ["freedom", "return_to_thorn_rosy"],
+      "relationships": [
+        {
+          "npc_id": "thorn_rosy",
+          "relationship_type": "former_owner",
+          "description": "The goose desperately calls for Thorn-Rosy when ungagged. Strong emotional bond.",
+          "hex_id": null,
+          "notes": "Thorn-Rosy is referenced on p32 of the Campaign Book"
+        },
+        {
+          "npc_id": "crocus",
+          "relationship_type": "captor",
+          "description": "Kept chained and gagged by the ogre-fairy. Used as bait.",
+          "hex_id": "0103",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "npc_id": "minor_nobles",
+      "name": "Minor Nobles",
+      "title": null,
+      "description": "Four second-son minor nobles, hangers-on who joined Sidney's expedition hoping for wealth and adventure.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Entitled but inexperienced"
+      ],
+      "speech": "Noble affect. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Wealth and recognition"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Sidney's Company",
+      "stat_reference": "Level 0 humans (DMB)",
+      "is_combatant": true,
+      "group_count": 4,
+      "faction": "sidney_tew",
+      "loyalty": "loyal"
+    },
+    {
+      "npc_id": "ruffians",
+      "name": "Ruffians",
+      "title": null,
+      "description": "Four hired muscle, Level 1 thieves who do Sidney's dirty work.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Rough and opportunistic"
+      ],
+      "speech": "Common Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Payment and easy pickings"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Sidney's Company",
+      "stat_reference": "Level 1 thief (DMB)",
+      "is_combatant": true,
+      "group_count": 4,
+      "faction": "sidney_tew",
+      "loyalty": "bought",
+      "vulnerabilities": ["better_payment", "threat_of_violence", "promise_of_larger_share"],
+      "known_topics": [
+        {
+          "topic_id": "payment_complaints",
+          "content": "The ruffians exchange meaningful glances. 'Sidney pays, sure, but not as much as he promised. Says the big payout comes when we find the goose. Been hearing that for two weeks now.'",
+          "keywords": ["pay", "money", "gold", "coin", "payment", "wages", "owed"],
+          "required_disposition": 0,
+          "category": "personal",
+          "shared": false,
+          "priority": 6
+        },
+        {
+          "topic_id": "expedition_doubts",
+          "content": "One ruffian spits into the bog. 'We've been traipsing through this muck for days. Some of the lads are starting to think this golden goose is just another of Sidney's fantasies.'",
+          "keywords": ["expedition", "search", "goose", "doubt", "believe", "real", "think"],
+          "required_disposition": 0,
+          "category": "situation",
+          "shared": false,
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "loyalty_for_sale",
+          "content": "The ruffians' loyalty extends exactly as far as Sidney's purse. A better offer - say, 50gp split among them - would have them looking the other way. 100gp would have them actively switching sides.",
+          "hint": "They count their coins frequently and cast calculating looks at the nobles' equipment.",
+          "keywords": ["hire", "pay", "buy", "bribe", "loyal", "switch", "betray"],
+          "required_disposition": 1,
+          "required_trust": 0,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        },
+        {
+          "secret_id": "dangerous_if_crossed",
+          "content": "These aren't common laborers - they're Level 1 thieves with experience in violence. If threatened or cornered, they'll fight dirty and won't hesitate to abandon Sidney to save themselves.",
+          "hint": "Their hands never stray far from concealed blades, and they position themselves with exits in mind.",
+          "keywords": ["dangerous", "fight", "thief", "thieves", "threat", "violence"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sidney_tew",
+          "relationship_type": "employer",
+          "description": "Hired muscle, loyal only while paid. Growing frustrated with delayed payment.",
+          "hex_id": "0103",
+          "notes": null
+        }
+      ]
     }
   ],
   "items": [
     {
-      "name": "Golden Eggs",
-      "description": "Every 1d4 days, it lays a golden egg worth 40gp that induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust.",
+      "item_id": "0103:item:golden_egg",
+      "name": "Golden Egg",
+      "description": "A golden egg laid by the Golden Goose. Every 1d4 days, it lays a golden egg worth 40gp that induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust.",
       "value": "40gp",
-      "mechanical_effect": "Induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust."
+      "mechanical_effect": {
+        "covetous_aura": true,
+        "decay_dice": "4d6",
+        "decay_unit": "days"
+      }
     },
     {
+      "item_id": "0103:item:silver_chain",
       "name": "Silver Chain",
       "description": "Silver chain binding the Golden Goose",
       "value": "100gp",
       "mechanical_effect": null
     },
     {
+      "item_id": "0103:item:talisman_nondetection",
       "name": "Talisman of Non-Detection",
       "description": "A pewter Talisman of Non-Detection (p398) shaped like a bisected eye",
       "value": null,
-      "mechanical_effect": "Non-Detection"
+      "magical": true,
+      "page_reference": "p398",
+      "mechanical_effect": {
+        "spell_effect": "Non-Detection",
+        "description": "Prevents magical detection"
+      }
     }
   ],
   "secrets": [],
-  "dm_notes": "Rewards: Promises a future payment in golden eggs in exchange for the PCs' assistance in obtaining the goose.",
+  "dm_notes": "Rewards: Promises a future payment in golden eggs in exchange for the PCs' assistance in obtaining the goose. Sidney's party is unknowingly a day away from discovering Crocus's Cave - this can be a timed event if the PCs don't find it first.",
   "adjacent_hexes": [],
   "roads": [],
   "_metadata": {

@@ -326,6 +326,9 @@ class HexDataLoader:
                 encounter_notes=proc_data.get("encounter_notes", ""),
                 foraging_results=proc_data.get("foraging_results", ""),
                 foraging_special=proc_data.get("foraging_special", []),
+                encounter_modifiers=proc_data.get("encounter_modifiers", []),
+                lost_behavior=proc_data.get("lost_behavior"),
+                night_hazards=proc_data.get("night_hazards", []),
             )
 
         # Parse points of interest
@@ -407,12 +410,20 @@ class HexDataLoader:
             table = self._parse_roll_table(table_data)
             roll_tables.append(table)
 
+        # Detect hidden POIs from entering field
+        # If entering contains "Hidden" (case-insensitive), mark as hidden
+        entering = data.get("entering")
+        is_hidden = data.get("hidden", False)
+        if not is_hidden and entering and isinstance(entering, str):
+            if "hidden" in entering.lower():
+                is_hidden = True
+
         return PointOfInterest(
             name=data.get("name", "Unknown"),
             poi_type=data.get("poi_type", "general"),
             description=data.get("description", ""),
             tagline=data.get("tagline"),
-            entering=data.get("entering"),
+            entering=entering,
             interior=data.get("interior"),
             exploring=data.get("exploring"),
             leaving=data.get("leaving"),
@@ -423,6 +434,7 @@ class HexDataLoader:
             secrets=data.get("secrets", []),
             is_dungeon=data.get("is_dungeon", False),
             dungeon_levels=data.get("dungeon_levels"),
+            hidden=is_hidden,
         )
 
     def _parse_roll_table(self, data: dict[str, Any]) -> RollTable:
@@ -446,6 +458,7 @@ class HexDataLoader:
             die_type=data.get("die_type", "d6"),
             description=data.get("description", ""),
             entries=entries,
+            unique_entries=data.get("unique_entries", False),
         )
 
     def _parse_hex_npc(self, data: dict[str, Any]) -> HexNPC:
@@ -466,6 +479,9 @@ class HexDataLoader:
             location=data.get("location", ""),
             stat_reference=data.get("stat_reference"),
             is_combatant=data.get("is_combatant", False),
+            vulnerabilities=data.get("vulnerabilities", []),
+            faction=data.get("faction"),
+            loyalty=data.get("loyalty", "loyal"),
         )
 
     def scan_directory(self, directory: Path) -> list[Path]:

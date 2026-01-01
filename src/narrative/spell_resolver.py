@@ -661,6 +661,38 @@ class SpellData:
     page_reference: str = ""
     source_book: str = ""
 
+    # Spell type/school classification (e.g., ["illusion", "phantasm"])
+    # Used for condition-based memorization restrictions (dreamlessness affects illusions)
+    spell_types: list[str] = field(default_factory=list)
+
+    def get_spell_types(self) -> list[str]:
+        """
+        Get spell types, inferring from name/id if not explicitly set.
+
+        Types relevant for memorization restrictions:
+        - illusion: Phantasm, Hallucinatory terrain, etc.
+        - phantasm: Phantasm spell specifically
+        - invisibility: Invisibility spells
+        """
+        if self.spell_types:
+            return self.spell_types
+
+        # Infer from spell_id or name
+        inferred = []
+        name_lower = self.name.lower()
+        spell_id_lower = self.spell_id.lower()
+
+        if "phantasm" in name_lower or "phantasm" in spell_id_lower:
+            inferred.append("phantasm")
+            inferred.append("illusion")
+        elif "illusion" in name_lower or "hallucinat" in name_lower:
+            inferred.append("illusion")
+        elif "invisib" in name_lower or "invisib" in spell_id_lower:
+            inferred.append("invisibility")
+            inferred.append("illusion")  # Invisibility is a type of illusion
+
+        return inferred
+
 
 @dataclass
 class ActiveSpellEffect:

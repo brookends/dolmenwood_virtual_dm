@@ -17,6 +17,23 @@
     "foraging_results": "Successful foraging yields 1d3 portions of Sage Toe (p430), in addition to the normal results",
     "foraging_special": [
       "Sage Toe (1d3 portions)"
+    ],
+    "lost_behavior": {
+      "type": "maze",
+      "description": "Characters who get lost in this hex spend the day wandering in circles, unable to find a way out of the maze. They remain lost in the hex until their daily check for losing direction does not indicate getting lost again.",
+      "escape_requires": "successful_lost_check"
+    },
+    "night_hazards": [
+      {
+        "trigger": "sleep",
+        "save_type": "doom",
+        "description": "At night, wisps of mauve, indigo, and orange mist drift from the mire. Characters who fall asleep here must Save Versus Doom or be stricken with a state of dreamlessness.",
+        "on_fail": {
+          "condition": "dreamless",
+          "duration_dice": "2d6",
+          "duration_unit": "days"
+        }
+      }
     ]
   },
   "description": "Among the great walls of reeds and willows (6′ tall and often 20′ or more thick), this hex is dotted with slurping pools of thick, black mud.",
@@ -36,6 +53,7 @@
           "name": "Leavings in the Mud",
           "die_type": "d6",
           "description": "Each item can be found only once. Re-roll duplicates if players search repeatedly.",
+          "unique_entries": true,
           "entries": [
             {
               "roll": 1,
@@ -117,7 +135,7 @@
   "npcs": [],
   "items": [],
   "secrets": [],
-  "dm_notes": "Getting lost: Characters who get lost in this hex spend the day wandering in circles, unable to find a way out of the maze. They remain lost in the hex until their daily check for losing direction does not indicate getting lost again. At night: At night, wisps of mauve, indigo, and orange mist drift from the mire. Characters who fall asleep here must Save Versus Doom or be stricken with a state of dreamlessness lasting for 2d6 days. Effects of Dreamlessness: Wisdom loss: –1 Wisdom every second day. A character reaching 0 Wisdom becomes utterly vacant, lost in a world of phantasms. Once dreams return, lost Wisdom is recovered at a rate of 1 point per night's rest. Difficulty memorising illusions: A character attempting to memorise a spell of illusion (e.g. Phantasm, Invisibility, etc.) must make a Save Versus Spell or fail to memorise it—the spell memorisation slot remains empty.",
+  "dm_notes": "Effects of Dreamlessness (applied via night_hazards): Wisdom loss: -1 Wisdom every second day. A character reaching 0 Wisdom becomes utterly vacant, lost in a world of phantasms. Once dreams return, lost Wisdom is recovered at a rate of 1 point per night's rest. Difficulty memorising illusions: A character attempting to memorise a spell of illusion (e.g. Phantasm, Invisibility, etc.) must make a Save Versus Spell or fail to memorise it - the spell memorisation slot remains empty.",
   "adjacent_hexes": [],
   "roads": [],
   "_metadata": {

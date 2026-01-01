@@ -20,6 +20,7 @@ import logging
 
 from src.game_state.state_machine import GameState
 from src.game_state.global_controller import GlobalController
+from src.game_state.condition_parser import check_acquisition_condition
 from src.data_models import (
     DiceRoller,
     EncounterState,
@@ -49,6 +50,8 @@ from src.data_models import (
     KnownTopic,
     SecretInfo,
     SecretStatus,
+    FactionState,
+    FactionRelationship,
 )
 from src.content_loader.monster_registry import get_monster_registry
 
@@ -450,6 +453,9 @@ class HexCrawlEngine:
 
         # Granted abilities tracker
         self._ability_tracker: AbilityGrantTracker = AbilityGrantTracker()
+
+        # Faction relationship tracking per hex
+        self._faction_states: dict[str, FactionState] = {}
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -3615,6 +3621,992 @@ class HexCrawlEngine:
 
         return result
 
+    def engage_poi_npc(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Initiate combat encounter with a combatant NPC at the current POI.
+
+        This creates an EncounterState from the NPC's stat_reference and
+        transitions to ENCOUNTER state.
+
+        Args:
+            hex_id: Current hex
+            npc_id: ID or name of NPC to engage in combat
+
+        Returns:
+            Dictionary with encounter setup or error
+        """
+        from src.content_loader.monster_registry import get_monster_registry
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Find the NPC
+        target_npc = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Check if NPC is at this POI
+                if npc_id not in poi.npcs and npc_id.lower().replace(" ", "_") not in poi.npcs:
+                    return {"success": False, "error": f"NPC '{npc_id}' not at this POI"}
+
+                # Find full NPC data
+                for hex_npc in hex_data.npcs:
+                    if hex_npc.npc_id == npc_id or hex_npc.name == npc_id:
+                        target_npc = hex_npc
+                        break
+                    # Also check slug form
+                    if hex_npc.npc_id == npc_id.lower().replace(" ", "_"):
+                        target_npc = hex_npc
+                        break
+                break
+
+        if not target_npc:
+            return {"success": False, "error": f"NPC '{npc_id}' not found in hex data"}
+
+        # Check if NPC is a combatant
+        if not getattr(target_npc, "is_combatant", False):
+            return {
+                "success": False,
+                "error": f"'{target_npc.name}' is not a combatant. Use interact_with_npc for social interaction.",
+            }
+
+        # Check for stat_reference
+        if not getattr(target_npc, "stat_reference", None):
+            return {
+                "success": False,
+                "error": f"'{target_npc.name}' has no combat stats (stat_reference missing)",
+            }
+
+        # Create combatant from NPC
+        registry = get_monster_registry()
+        import uuid
+
+        combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
+        combatant = registry.create_combatant_from_hex_npc(
+            npc=target_npc,
+            combatant_id=combatant_id,
+            side="enemy",
+        )
+
+        if not combatant:
+            return {
+                "success": False,
+                "error": f"Failed to create combatant from '{target_npc.name}'",
+            }
+
+        # Check surprise
+        surprise_status = self._check_surprise()
+        distance = self._roll_encounter_distance(surprise_status)
+
+        # Create EncounterState
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER,
+            distance=distance,
+            surprise_status=surprise_status,
+            actors=[target_npc.name],
+            context=f"Engaging {target_npc.name} at {self._current_poi}",
+            terrain=hex_data.terrain_type,
+            combatants=[combatant],
+        )
+
+        # Set encounter on controller
+        self.controller.set_encounter(encounter)
+
+        # Transition to encounter state
+        self.controller.transition(
+            "encounter_triggered",
+            context={
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "npc_id": target_npc.npc_id,
+                "npc_name": target_npc.name,
+            },
+        )
+
+        return {
+            "success": True,
+            "encounter_id": encounter.encounter_id,
+            "combatant": {
+                "id": combatant.combatant_id,
+                "name": combatant.name,
+                "ac": combatant.stat_block.armor_class if combatant.stat_block else None,
+                "hp": combatant.stat_block.hp_max if combatant.stat_block else None,
+                "attacks": len(combatant.stat_block.attacks) if combatant.stat_block else 0,
+            },
+            "distance": distance,
+            "surprise": surprise_status.value if hasattr(surprise_status, "value") else str(surprise_status),
+            "context": encounter.context,
+        }
+
+    def attempt_creative_approach(
+        self,
+        hex_id: str,
+        npc_id: str,
+        approach_description: str,
+        items_used: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt a creative, non-combat approach to dealing with an NPC.
+
+        Uses the Mythic GME oracle to adjudicate uncertain outcomes based on:
+        - NPC desires and motivations
+        - Approach plausibility
+        - Items/resources used
+
+        Args:
+            hex_id: Current hex
+            npc_id: ID or name of NPC to approach
+            approach_description: What the player is trying to do
+            items_used: Optional list of items being used in the approach
+
+        Returns:
+            Dictionary with approach result including oracle outcome
+        """
+        from src.oracle import MythicGME, Likelihood, FateResult
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Find the NPC
+        target_npc = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Find full NPC data
+                for hex_npc in hex_data.npcs:
+                    if hex_npc.npc_id == npc_id or hex_npc.name == npc_id:
+                        target_npc = hex_npc
+                        break
+                    if hex_npc.npc_id == npc_id.lower().replace(" ", "_"):
+                        target_npc = hex_npc
+                        break
+                break
+
+        if not target_npc:
+            return {"success": False, "error": f"NPC '{npc_id}' not found"}
+
+        # Analyze the approach against NPC characteristics
+        likelihood = self._evaluate_approach_likelihood(
+            target_npc, approach_description, items_used or []
+        )
+
+        # Use Mythic GME for fate check
+        mythic = MythicGME(chaos_factor=5)  # Default balanced chaos
+
+        # Formulate the question based on approach
+        question = self._formulate_approach_question(
+            target_npc, approach_description
+        )
+
+        fate_result = mythic.fate_check(question, likelihood)
+
+        # Build result based on oracle outcome
+        result = self._interpret_creative_result(
+            target_npc, approach_description, fate_result, items_used or []
+        )
+
+        return result
+
+    def _evaluate_approach_likelihood(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+        items_used: list[str],
+    ) -> "Likelihood":
+        """
+        Evaluate how likely an approach is to succeed based on NPC traits.
+
+        Args:
+            npc: The target NPC
+            approach: Description of the approach
+            items_used: Items being used
+
+        Returns:
+            Likelihood enum for Mythic GME
+        """
+        from src.oracle import Likelihood
+
+        approach_lower = approach.lower()
+        base_likelihood = Likelihood.UNLIKELY  # Default: creative solutions are hard
+
+        # Check NPC desires - if approach aligns with desires, increase likelihood
+        npc_desires = getattr(npc, "desires", []) or []
+        for desire in npc_desires:
+            desire_lower = desire.lower()
+
+            # Direct alignment with desire
+            if any(word in approach_lower for word in desire_lower.split()):
+                base_likelihood = Likelihood.LIKELY
+                break
+
+            # Offering what they want (magic for magic-hungry, etc.)
+            if "magic" in desire_lower and "magic" in approach_lower:
+                base_likelihood = Likelihood.LIKELY
+                break
+            if "feed" in desire_lower and ("food" in approach_lower or "bait" in approach_lower):
+                base_likelihood = Likelihood.LIKELY
+                break
+
+        # Check NPC intelligence/alignment for modifiers
+        npc_kindred = getattr(npc, "kindred", "").lower()
+        npc_alignment = getattr(npc, "alignment", "").lower()
+
+        # Animal intelligence creatures are easier to manipulate with basic desires
+        if "animal" in str(getattr(npc, "stat_reference", "")).lower():
+            if "lure" in approach_lower or "bait" in approach_lower or "distract" in approach_lower:
+                # Upgrade likelihood for simple creature manipulation
+                if base_likelihood == Likelihood.UNLIKELY:
+                    base_likelihood = Likelihood.FIFTY_FIFTY
+                elif base_likelihood == Likelihood.FIFTY_FIFTY:
+                    base_likelihood = Likelihood.LIKELY
+
+        # Using magical items on magic-hungry creatures
+        if items_used:
+            items_lower = " ".join(items_used).lower()
+            if "magic" in items_lower or "enchant" in items_lower or "spell" in items_lower:
+                for desire in npc_desires:
+                    if "magic" in desire.lower():
+                        base_likelihood = Likelihood.LIKELY
+                        break
+
+        # Hostile/predatory NPCs are harder to negotiate with
+        npc_demeanor = getattr(npc, "demeanor", []) or []
+        if any("predator" in d.lower() or "hostile" in d.lower() for d in npc_demeanor):
+            if base_likelihood.value > Likelihood.UNLIKELY.value:
+                # Reduce by one step
+                base_likelihood = Likelihood(max(base_likelihood.value - 1, 0))
+
+        # Check if approach leverages known vulnerabilities (significant boost)
+        npc_vulnerabilities = getattr(npc, "vulnerabilities", []) or []
+        for vuln in npc_vulnerabilities:
+            vuln_lower = vuln.lower().replace("_", " ")
+            if vuln_lower in approach_lower or vuln.lower() in approach_lower:
+                # Leveraging vulnerability is very effective
+                base_likelihood = Likelihood.VERY_LIKELY
+                break
+            # Also check items used for vulnerabilities
+            if items_used:
+                items_lower = " ".join(items_used).lower()
+                if vuln_lower in items_lower or vuln.lower() in items_lower:
+                    base_likelihood = Likelihood.VERY_LIKELY
+                    break
+
+        return base_likelihood
+
+    def _formulate_approach_question(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+    ) -> str:
+        """
+        Formulate a yes/no question for the oracle.
+
+        Args:
+            npc: The target NPC
+            approach: The approach description
+
+        Returns:
+            A yes/no question string
+        """
+        npc_name = getattr(npc, "name", "the creature")
+
+        # Determine what kind of outcome we're checking
+        approach_lower = approach.lower()
+
+        if "lure" in approach_lower or "bait" in approach_lower:
+            return f"Is {npc_name} successfully lured away?"
+        elif "distract" in approach_lower:
+            return f"Is {npc_name} distracted long enough?"
+        elif "scare" in approach_lower or "frighten" in approach_lower:
+            return f"Is {npc_name} frightened into leaving?"
+        elif "convince" in approach_lower or "persuade" in approach_lower:
+            return f"Is {npc_name} convinced by this approach?"
+        elif "sneak" in approach_lower or "avoid" in approach_lower:
+            return f"Can the party bypass {npc_name} unnoticed?"
+        elif "trick" in approach_lower or "deceive" in approach_lower:
+            return f"Is {npc_name} fooled by the deception?"
+        else:
+            return f"Does the creative approach to {npc_name} succeed?"
+
+    def _interpret_creative_result(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+        fate_result: Any,  # FateCheckResult
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """
+        Interpret the oracle result into a structured game outcome.
+
+        Args:
+            npc: The target NPC
+            approach: The approach attempted
+            fate_result: Result from Mythic GME
+            items_used: Items used in the approach
+
+        Returns:
+            Structured result dictionary
+        """
+        from src.oracle import FateResult
+
+        npc_name = getattr(npc, "name", "the creature")
+        npc_desires = getattr(npc, "desires", []) or []
+
+        result = {
+            "success": False,
+            "npc_id": getattr(npc, "npc_id", "unknown"),
+            "npc_name": npc_name,
+            "approach": approach,
+            "items_used": items_used,
+            "oracle": {
+                "question": fate_result.question,
+                "likelihood": fate_result.likelihood.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+            "follow_up_options": [],
+        }
+
+        # Interpret based on fate result
+        if fate_result.result == FateResult.EXCEPTIONAL_YES:
+            result["success"] = True
+            result["outcome"] = "exceptional_success"
+            result["narrative_hints"] = [
+                f"{npc_name} is completely taken by the approach",
+                "the plan works even better than expected",
+                "an unexpected bonus or advantage emerges",
+            ]
+            result["mechanical_effects"] = [
+                "npc_leaves_area",
+                "no_combat_required",
+                "bonus_opportunity",
+            ]
+            result["follow_up_options"] = [
+                "claim_objective",
+                "explore_bonus",
+                "press_advantage",
+            ]
+
+        elif fate_result.result == FateResult.YES:
+            result["success"] = True
+            result["outcome"] = "success"
+            result["narrative_hints"] = [
+                f"{npc_name} responds to the approach",
+                "the creative solution works",
+            ]
+            result["mechanical_effects"] = [
+                "npc_temporarily_distracted" if "distract" in approach.lower()
+                else "npc_leaves_area",
+            ]
+            result["follow_up_options"] = [
+                "proceed_carefully",
+                "claim_objective",
+            ]
+
+        elif fate_result.result == FateResult.NO:
+            result["success"] = False
+            result["outcome"] = "failure"
+            result["narrative_hints"] = [
+                f"{npc_name} is not fooled or interested",
+                "the approach doesn't work as planned",
+            ]
+            result["mechanical_effects"] = [
+                "npc_alerted" if "sneak" in approach.lower() else "npc_unaffected",
+            ]
+            result["follow_up_options"] = [
+                "try_different_approach",
+                "attempt_combat",
+                "retreat",
+            ]
+
+        elif fate_result.result == FateResult.EXCEPTIONAL_NO:
+            result["success"] = False
+            result["outcome"] = "catastrophic_failure"
+            result["narrative_hints"] = [
+                f"{npc_name} reacts violently to the attempt",
+                "the situation escalates dangerously",
+                "combat may be unavoidable",
+            ]
+            result["mechanical_effects"] = [
+                "npc_hostile",
+                "surprise_lost",
+                "immediate_reaction",
+            ]
+            result["follow_up_options"] = [
+                "prepare_for_combat",
+                "flee",
+            ]
+
+        # Add random event if triggered
+        if fate_result.random_event_triggered and fate_result.random_event:
+            result["random_event"] = {
+                "focus": fate_result.random_event.focus.value,
+                "meaning": fate_result.random_event.meaning_pair,
+            }
+            result["narrative_hints"].append(
+                f"unexpected twist: {fate_result.random_event.meaning_pair}"
+            )
+
+        # Add context about NPC desires for narration
+        if npc_desires:
+            result["npc_context"] = {
+                "desires": npc_desires,
+                "can_leverage": any(
+                    d.lower() in approach.lower() for d in npc_desires
+                ),
+            }
+
+        return result
+
+    # =========================================================================
+    # ENVIRONMENTAL CREATIVE SOLUTIONS
+    # =========================================================================
+
+    # Known patterns for avoiding/mitigating environmental hazards
+    ENVIRONMENTAL_PATTERNS = {
+        "avoid_sleep": {
+            "triggers": ["stay awake", "take shifts", "watch", "guard", "no sleep"],
+            "check_type": "constitution",
+            "difficulty": 12,
+            "time_cost_hours": 8,
+            "success_effect": "hazard_avoided",
+            "failure_effect": "exhaustion",
+        },
+        "create_shelter": {
+            "triggers": ["tent", "shelter", "cover", "seal", "ward", "protect"],
+            "check_type": "auto_success",
+            "conditions": ["has_shelter_materials"],
+            "success_effect": "hazard_blocked",
+        },
+        "magical_protection": {
+            "triggers": ["cast", "spell", "magic", "ward", "protection"],
+            "check_type": "auto_success",
+            "conditions": ["has_protective_spell"],
+            "success_effect": "hazard_blocked",
+        },
+        "navigate_maze": {
+            "triggers": ["rope", "mark", "trail", "compass", "climb", "vantage"],
+            "check_type": "wisdom",
+            "difficulty": 10,
+            "success_effect": "navigation_bonus",
+        },
+        "avoid_hazard_area": {
+            "triggers": ["avoid", "go around", "detour", "bypass"],
+            "check_type": "auto_success",
+            "time_cost_hours": 4,
+            "success_effect": "hazard_avoided",
+        },
+    }
+
+    def attempt_environmental_solution(
+        self,
+        hex_id: str,
+        hazard_type: str,
+        approach_description: str,
+        items_used: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt creative solution to environmental hazard.
+
+        Handles hazards like night_hazard (mist, dreamlessness), terrain
+        challenges (maze navigation), and other environmental obstacles.
+
+        Args:
+            hex_id: Current hex
+            hazard_type: Type of hazard ("night_hazard", "terrain", "lost")
+            approach_description: What the player is trying to do
+            items_used: Optional list of items being used
+
+        Returns:
+            Dictionary with solution result
+        """
+        from src.oracle import MythicGME, Likelihood
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Get hazard info from hex procedural data
+        hazard_info = self._get_hazard_info(hex_data, hazard_type)
+        if not hazard_info:
+            return {"success": False, "error": f"No {hazard_type} found in hex"}
+
+        # Match approach against known patterns
+        pattern_match = self._match_environmental_pattern(
+            approach_description, items_used or []
+        )
+
+        approach_lower = approach_description.lower()
+
+        if pattern_match:
+            # Use matched pattern for resolution
+            return self._resolve_environmental_pattern(
+                pattern_match, hazard_info, approach_description, items_used or []
+            )
+        else:
+            # Use oracle for unknown approaches
+            mythic = MythicGME(chaos_factor=5)
+
+            question = f"Does the creative approach to avoid {hazard_info.get('description', hazard_type)} succeed?"
+            likelihood = Likelihood.FIFTY_FIFTY
+
+            # Boost likelihood if using relevant items
+            if items_used:
+                items_lower = " ".join(items_used).lower()
+                if any(word in items_lower for word in ["tent", "shelter", "rope", "magic", "ward"]):
+                    likelihood = Likelihood.LIKELY
+
+            fate_result = mythic.fate_check(question, likelihood)
+
+            return self._interpret_environmental_result(
+                hazard_info, approach_description, fate_result, items_used or []
+            )
+
+    def _get_hazard_info(
+        self, hex_data: Any, hazard_type: str
+    ) -> Optional[dict[str, Any]]:
+        """Extract hazard information from hex procedural data."""
+        proc = getattr(hex_data, "procedural", None)
+        if not proc:
+            return None
+
+        if hazard_type == "night_hazard":
+            night_hazards = getattr(proc, "night_hazards", None)
+            if night_hazards and len(night_hazards) > 0:
+                hazard = night_hazards[0]
+                if isinstance(hazard, dict):
+                    return {
+                        "type": "night_hazard",
+                        "trigger": hazard.get("trigger", "sleep"),
+                        "save_type": hazard.get("save_type", "doom"),
+                        "description": hazard.get("description", "night hazard"),
+                        "on_fail": hazard.get("on_fail", {}),
+                    }
+        elif hazard_type == "lost" or hazard_type == "terrain":
+            lost_behavior = getattr(proc, "lost_behavior", None)
+            if lost_behavior:
+                return {
+                    "type": "terrain",
+                    "description": lost_behavior.get("description", "maze-like terrain"),
+                    "escape_requires": lost_behavior.get("escape_requires", "successful_lost_check"),
+                }
+            else:
+                return {
+                    "type": "terrain",
+                    "description": f"difficult {hex_data.terrain_type} terrain",
+                    "lost_chance": getattr(proc, "lost_chance", "1-in-6"),
+                }
+
+        return None
+
+    def _match_environmental_pattern(
+        self, approach: str, items_used: list[str]
+    ) -> Optional[dict[str, Any]]:
+        """Match approach against known environmental solution patterns."""
+        approach_lower = approach.lower()
+        items_lower = " ".join(items_used).lower() if items_used else ""
+
+        for pattern_name, pattern in self.ENVIRONMENTAL_PATTERNS.items():
+            triggers = pattern.get("triggers", [])
+            for trigger in triggers:
+                if trigger in approach_lower or trigger in items_lower:
+                    return {"name": pattern_name, **pattern}
+
+        return None
+
+    def _resolve_environmental_pattern(
+        self,
+        pattern: dict[str, Any],
+        hazard_info: dict[str, Any],
+        approach: str,
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """Resolve using a matched environmental pattern."""
+        check_type = pattern.get("check_type", "auto_success")
+        success = False
+        check_result = None
+
+        if check_type == "auto_success":
+            # Check conditions if any
+            conditions = pattern.get("conditions", [])
+            if conditions:
+                # For now, assume conditions are met if relevant items are used
+                items_lower = " ".join(items_used).lower() if items_used else ""
+                if "has_shelter_materials" in conditions:
+                    success = any(w in items_lower for w in ["tent", "tarp", "shelter"])
+                elif "has_protective_spell" in conditions:
+                    success = any(w in items_lower for w in ["scroll", "wand", "spell", "ward"])
+                else:
+                    success = True
+            else:
+                success = True
+        else:
+            # Roll check
+            difficulty = pattern.get("difficulty", 12)
+            roll = DiceRoller.roll("1d20", f"Environmental check ({check_type})")
+            check_result = roll.total
+            success = roll.total >= difficulty
+
+        result = {
+            "success": success,
+            "pattern_used": pattern.get("name", "unknown"),
+            "hazard_type": hazard_info.get("type", "unknown"),
+            "approach": approach,
+            "items_used": items_used,
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if check_result is not None:
+            result["check"] = {
+                "type": check_type,
+                "roll": check_result,
+                "difficulty": pattern.get("difficulty", 12),
+            }
+
+        if success:
+            result["outcome"] = pattern.get("success_effect", "hazard_avoided")
+            result["narrative_hints"] = [
+                "the creative approach works",
+                f"the {hazard_info.get('type', 'hazard')} is avoided or mitigated",
+            ]
+            result["mechanical_effects"] = [pattern.get("success_effect", "hazard_avoided")]
+
+            if pattern.get("time_cost_hours"):
+                result["time_cost_hours"] = pattern["time_cost_hours"]
+                result["narrative_hints"].append(
+                    f"this takes {pattern['time_cost_hours']} hours"
+                )
+        else:
+            result["outcome"] = pattern.get("failure_effect", "hazard_not_avoided")
+            result["narrative_hints"] = [
+                "the approach doesn't fully work",
+                f"the {hazard_info.get('type', 'hazard')} still poses a threat",
+            ]
+            result["mechanical_effects"] = ["partial_mitigation"]
+
+        return result
+
+    def _interpret_environmental_result(
+        self,
+        hazard_info: dict[str, Any],
+        approach: str,
+        fate_result: Any,
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """Interpret oracle result for environmental solution."""
+        from src.oracle import FateResult
+
+        result = {
+            "success": False,
+            "hazard_type": hazard_info.get("type", "unknown"),
+            "approach": approach,
+            "items_used": items_used,
+            "oracle": {
+                "question": fate_result.question,
+                "likelihood": fate_result.likelihood.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if fate_result.result == FateResult.EXCEPTIONAL_YES:
+            result["success"] = True
+            result["outcome"] = "exceptional_success"
+            result["narrative_hints"] = [
+                "the creative solution works perfectly",
+                "additional benefit discovered",
+            ]
+            result["mechanical_effects"] = ["hazard_avoided", "bonus_discovered"]
+
+        elif fate_result.result == FateResult.YES:
+            result["success"] = True
+            result["outcome"] = "success"
+            result["narrative_hints"] = [
+                "the approach successfully mitigates the hazard",
+            ]
+            result["mechanical_effects"] = ["hazard_avoided"]
+
+        elif fate_result.result == FateResult.NO:
+            result["success"] = False
+            result["outcome"] = "failure"
+            result["narrative_hints"] = [
+                "the approach doesn't work as planned",
+                f"the {hazard_info.get('description', 'hazard')} remains a threat",
+            ]
+            result["mechanical_effects"] = ["hazard_active"]
+
+        elif fate_result.result == FateResult.EXCEPTIONAL_NO:
+            result["success"] = False
+            result["outcome"] = "catastrophic_failure"
+            result["narrative_hints"] = [
+                "the attempt backfires",
+                "the situation becomes more dangerous",
+            ]
+            result["mechanical_effects"] = ["hazard_worsened"]
+
+        return result
+
+    # =========================================================================
+    # FACTION RELATIONSHIP TRACKING
+    # =========================================================================
+
+    def get_faction_state(self, hex_id: str) -> FactionState:
+        """
+        Get or create faction state for a hex.
+
+        Args:
+            hex_id: The hex ID
+
+        Returns:
+            FactionState for the hex
+        """
+        if hex_id not in self._faction_states:
+            self._faction_states[hex_id] = FactionState(hex_id=hex_id)
+            # Initialize from hex NPC data if available
+            self._initialize_faction_state(hex_id)
+        return self._faction_states[hex_id]
+
+    def _initialize_faction_state(self, hex_id: str) -> None:
+        """
+        Initialize faction relationships from hex NPC data.
+
+        Parses NPC faction/loyalty fields and faction_relationships
+        in hex JSON to populate initial relationship state.
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return
+
+        faction_state = self._faction_states[hex_id]
+
+        # Parse NPC relationships
+        for npc in hex_data.npcs:
+            npc_id = getattr(npc, "npc_id", None)
+            if not npc_id:
+                continue
+
+            # Check faction/loyalty fields
+            faction = getattr(npc, "faction", None)
+            loyalty = getattr(npc, "loyalty", "loyal")
+
+            if faction:
+                # Create relationship to faction/employer
+                disposition = {
+                    "loyal": 75,
+                    "bought": 40,
+                    "coerced": 20,
+                    "secret_traitor": -50,
+                }.get(loyalty, 50)
+
+                faction_state.relationships.append(FactionRelationship(
+                    entity_a=npc_id,
+                    entity_b=faction,
+                    disposition=disposition,
+                    relationship_type="employer",
+                    loyalty_basis="payment" if loyalty == "bought" else (
+                        "fear" if loyalty == "coerced" else "ideology"
+                    ),
+                ))
+
+            # Parse explicit relationships list
+            relationships = getattr(npc, "relationships", [])
+            for rel in relationships:
+                if isinstance(rel, dict):
+                    target_id = rel.get("npc_id", "")
+                    rel_type = rel.get("relationship_type", "neutral")
+
+                    disposition = {
+                        "ally": 60,
+                        "family": 80,
+                        "employer": 50,
+                        "subordinate": 30,
+                        "rival": -20,
+                        "enemy": -75,
+                    }.get(rel_type, 0)
+
+                    faction_state.relationships.append(FactionRelationship(
+                        entity_a=npc_id,
+                        entity_b=target_id,
+                        disposition=disposition,
+                        relationship_type=rel_type,
+                    ))
+
+    def get_npc_disposition_to_party(self, hex_id: str, npc_id: str) -> int:
+        """Get an NPC's disposition toward the party."""
+        faction_state = self.get_faction_state(hex_id)
+        return faction_state.get_party_reputation(npc_id)
+
+    def modify_npc_disposition_to_party(
+        self, hex_id: str, npc_id: str, delta: int, reason: str = ""
+    ) -> int:
+        """
+        Modify an NPC's disposition toward the party.
+
+        Args:
+            hex_id: Current hex
+            npc_id: NPC whose disposition changes
+            delta: Amount to change (-100 to +100 scale)
+            reason: Optional reason for logging
+
+        Returns:
+            New disposition value
+        """
+        faction_state = self.get_faction_state(hex_id)
+        return faction_state.modify_party_reputation(npc_id, delta)
+
+    def get_turnable_npcs(self, hex_id: str, target: str) -> list[dict[str, Any]]:
+        """
+        Get list of NPCs who could be turned against a target.
+
+        Useful for creative approaches like "convince the ruffians to
+        betray Sidney."
+
+        Args:
+            hex_id: Current hex
+            target: NPC/faction to turn others against
+
+        Returns:
+            List of {npc_id, current_loyalty, loyalty_basis} dicts
+        """
+        faction_state = self.get_faction_state(hex_id)
+        turnable_ids = faction_state.get_turnable_npcs(target)
+
+        result = []
+        for npc_id in turnable_ids:
+            rel = faction_state.get_relationship(npc_id, target)
+            if rel:
+                result.append({
+                    "npc_id": npc_id,
+                    "current_loyalty": rel.disposition,
+                    "loyalty_basis": rel.loyalty_basis,
+                    "relationship_type": rel.relationship_type,
+                })
+        return result
+
+    def attempt_turn_npc(
+        self,
+        hex_id: str,
+        npc_id: str,
+        against: str,
+        approach: str,
+        incentive: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to turn an NPC against their employer/ally.
+
+        Uses faction state + oracle to determine success.
+
+        Args:
+            hex_id: Current hex
+            npc_id: NPC to turn
+            against: Target they'd betray
+            approach: How player is trying to turn them
+            incentive: What's being offered (money, safety, etc.)
+
+        Returns:
+            Result dict with success, new disposition, narrative hints
+        """
+        from src.oracle import MythicGME, Likelihood
+
+        faction_state = self.get_faction_state(hex_id)
+        rel = faction_state.get_relationship(npc_id, against)
+
+        if not rel:
+            return {
+                "success": False,
+                "error": f"No relationship found between {npc_id} and {against}",
+            }
+
+        # Determine base likelihood from current loyalty
+        if rel.disposition >= 75:
+            base = Likelihood.VERY_UNLIKELY
+        elif rel.disposition >= 50:
+            base = Likelihood.UNLIKELY
+        elif rel.disposition >= 25:
+            base = Likelihood.FIFTY_FIFTY
+        elif rel.disposition >= 0:
+            base = Likelihood.LIKELY
+        else:
+            base = Likelihood.VERY_LIKELY
+
+        # Modify based on loyalty basis
+        if rel.loyalty_basis == "payment" and incentive and "money" in incentive.lower():
+            # Bought loyalty can be outbought
+            base = Likelihood(min(base.value + 2, 9))
+        elif rel.loyalty_basis == "fear":
+            # Fear-based loyalty can be broken with protection offer
+            if incentive and any(w in incentive.lower() for w in ["protect", "safe", "escape"]):
+                base = Likelihood(min(base.value + 2, 9))
+        elif rel.loyalty_basis == "ideology":
+            # Ideological loyalty is hardest to break
+            base = Likelihood(max(base.value - 1, 0))
+
+        # Use oracle
+        mythic = MythicGME(chaos_factor=5)
+        question = f"Can {npc_id} be convinced to turn against {against}?"
+        fate_result = mythic.fate_check(question, base)
+
+        from src.oracle import FateResult
+
+        result = {
+            "npc_id": npc_id,
+            "target": against,
+            "approach": approach,
+            "incentive": incentive,
+            "oracle": {
+                "question": question,
+                "likelihood": base.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if fate_result.result in [FateResult.YES, FateResult.EXCEPTIONAL_YES]:
+            result["success"] = True
+            # Flip the relationship
+            faction_state.modify_disposition(npc_id, against, -75)
+            result["new_disposition"] = faction_state.get_disposition(npc_id, against)
+            result["narrative_hints"] = [
+                f"{npc_id} agrees to betray {against}",
+                "a new alliance is formed",
+            ]
+            result["mechanical_effects"] = ["npc_turned", "new_ally"]
+
+            if fate_result.result == FateResult.EXCEPTIONAL_YES:
+                result["narrative_hints"].append("they're eager to help")
+                result["mechanical_effects"].append("bonus_information")
+        else:
+            result["success"] = False
+            result["narrative_hints"] = [
+                f"{npc_id} refuses to betray {against}",
+            ]
+            result["mechanical_effects"] = ["attempt_failed"]
+
+            if fate_result.result == FateResult.EXCEPTIONAL_NO:
+                # They report to their employer!
+                result["narrative_hints"].append(f"they warn {against} about the attempt")
+                result["mechanical_effects"].append("target_alerted")
+                faction_state.modify_party_reputation(against, -30)
+
+        return result
+
     # =========================================================================
     # ENCOUNTER GENERATION FOR POI INHABITANTS
     # =========================================================================
@@ -3799,6 +4791,104 @@ class HexCrawlEngine:
 
         return []
 
+    def roll_on_poi_table(
+        self, hex_id: str, table_name: str, poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Roll on a POI's roll table from the wilderness.
+
+        This allows accessing POI roll tables (like "Leavings in the Mud")
+        without entering a dungeon, useful for treasure_site POIs.
+
+        For tables with unique_entries=True, tracks which entries have been
+        found and re-rolls duplicates.
+
+        Args:
+            hex_id: The hex ID
+            table_name: Name of the table to roll on
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with roll result, or None if table not found.
+            Returns {"exhausted": True} if all unique entries have been found.
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return None
+
+        tables = self.get_poi_roll_tables(hex_id, target_poi)
+        if not tables:
+            return None
+
+        # Find the target table
+        target_table = None
+        for table in tables:
+            if table.name.lower() == table_name.lower():
+                target_table = table
+                break
+
+        if not target_table:
+            return None
+
+        # For unique entry tables, check session manager
+        session_mgr = self.controller.session_manager
+        if target_table.unique_entries and session_mgr:
+            all_roll_values = [e.roll for e in target_table.entries]
+            unfound = session_mgr.get_unfound_roll_table_entries(
+                hex_id, target_poi, table_name, all_roll_values
+            )
+            if not unfound:
+                return {
+                    "exhausted": True,
+                    "table": table_name,
+                    "poi": target_poi,
+                    "message": f"All entries in {table_name} have been found.",
+                }
+            # Roll until we get an unfound entry
+            max_attempts = 20
+            for _ in range(max_attempts):
+                roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
+                if roll.total in unfound:
+                    break
+            else:
+                # Fallback: pick random unfound entry
+                import random
+                roll_value = random.choice(unfound)
+                roll = type("Roll", (), {"total": roll_value})()
+        else:
+            # Regular roll
+            roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
+
+        # Find the entry
+        entry = None
+        for e in target_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return {"roll": roll.total, "table": table_name, "poi": target_poi, "entry": None}
+
+        # Mark entry as found for unique tables
+        if target_table.unique_entries and session_mgr:
+            session_mgr.mark_roll_table_entry_found(
+                hex_id, target_poi, table_name, roll.total
+            )
+
+        return {
+            "roll": roll.total,
+            "table": table_name,
+            "poi": target_poi,
+            "title": entry.title,
+            "description": entry.description,
+            "monsters": entry.monsters,
+            "npcs": entry.npcs,
+            "items": entry.items,
+            "mechanical_effect": entry.mechanical_effect,
+            "sub_table": entry.sub_table,
+            "quest_hook": entry.quest_hook,
+        }
+
     def get_poi_dungeon_config(
         self, hex_id: str, poi_name: Optional[str] = None
     ) -> Optional[dict[str, Any]]:
@@ -3943,6 +5033,31 @@ class HexCrawlEngine:
                         # Check if already taken (shouldn't appear in available items, but safety check)
                         if item.get("taken", False):
                             return {"success": False, "error": "Item not found here"}
+
+                        # Check acquisition condition if present
+                        acquisition_condition = item.get("acquisition_condition")
+                        if acquisition_condition:
+                            session_mgr = None
+                            if (
+                                hasattr(self.controller, "session_manager")
+                                and self.controller.session_manager
+                            ):
+                                session_mgr = self.controller.session_manager
+
+                            if session_mgr:
+                                is_satisfied, reason = check_acquisition_condition(
+                                    condition_text=acquisition_condition,
+                                    hex_id=hex_id,
+                                    session_manager=session_mgr,
+                                    controller=self.controller,
+                                )
+                                if not is_satisfied:
+                                    return {
+                                        "success": False,
+                                        "error": reason,
+                                        "condition_blocked": True,
+                                        "acquisition_condition": acquisition_condition,
+                                    }
 
                         # Check if this is a unique item
                         is_unique = item.get("is_unique", False)
@@ -5269,6 +6384,31 @@ class HexCrawlEngine:
                     if item.get("name", "").lower() == item_name.lower():
                         if item.get("taken", False):
                             return {"success": False, "error": "Item already taken"}
+
+                        # Check acquisition condition if present
+                        acquisition_condition = item.get("acquisition_condition")
+                        if acquisition_condition:
+                            session_mgr = None
+                            if (
+                                hasattr(self.controller, "session_manager")
+                                and self.controller.session_manager
+                            ):
+                                session_mgr = self.controller.session_manager
+
+                            if session_mgr:
+                                is_satisfied, reason = check_acquisition_condition(
+                                    condition_text=acquisition_condition,
+                                    hex_id=hex_id,
+                                    session_manager=session_mgr,
+                                    controller=self.controller,
+                                )
+                                if not is_satisfied:
+                                    return {
+                                        "success": False,
+                                        "error": reason,
+                                        "condition_blocked": True,
+                                        "acquisition_condition": acquisition_condition,
+                                    }
 
                         # Mark as taken
                         item["taken"] = True

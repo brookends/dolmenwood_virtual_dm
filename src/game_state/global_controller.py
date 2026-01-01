@@ -355,6 +355,9 @@ class GlobalController:
         # Session log
         self._session_log: list[dict[str, Any]] = []
 
+        # Session manager for persistence (set by VirtualDM after init)
+        self._session_manager: Optional["SessionManager"] = None
+
         # Glyph tracking (glyphs on doors/objects)
         self._glyphs: dict[str, Glyph] = {}  # glyph_id -> Glyph
 
@@ -5612,6 +5615,17 @@ class GlobalController:
                 },
             )
 
+        # Process day-based condition effects (periodic stat damage, expiration)
+        condition_effects = self._tick_conditions_daily(days)
+        if condition_effects:
+            self._log_event(
+                "condition_effects",
+                {
+                    "current_day": current_day,
+                    "effects": condition_effects,
+                },
+            )
+
     def _check_ration_spoilage(self, current_day: int) -> list[dict[str, Any]]:
         """
         Check all character inventories for spoiled rations.
@@ -5668,6 +5682,84 @@ class GlobalController:
             character.conditions = still_active
 
         return expired
+
+    def _tick_conditions_daily(self, days: int) -> list[dict[str, Any]]:
+        """
+        Process day-based condition effects for all characters.
+
+        This handles:
+        - Periodic stat damage (e.g., dreamlessness -1 WIS every 2 days)
+        - Day-based condition expiration
+        - Threshold effects (e.g., 0 WIS = incapacitated)
+
+        Args:
+            days: Number of days that have passed
+
+        Returns:
+            List of condition effects that occurred
+        """
+        effects = []
+
+        for character in self._characters.values():
+            still_active = []
+            for condition in character.conditions:
+                for _ in range(days):
+                    result = condition.tick_day()
+
+                    # Check if periodic effect triggered
+                    if result["periodic_triggered"] and result["effect"]:
+                        effect = result["effect"]
+                        stat = effect.get("stat", "").upper()
+                        amount = effect.get("amount", 0)
+
+                        # Apply the stat change
+                        if stat and stat in character.ability_scores:
+                            old_value = character.ability_scores[stat]
+                            new_value = max(0, old_value + amount)  # Don't go below 0
+                            character.ability_scores[stat] = new_value
+
+                            effect_record = {
+                                "character_id": character.character_id,
+                                "character_name": character.name,
+                                "condition": condition.condition_type.value,
+                                "effect_type": "periodic_stat_change",
+                                "stat": stat,
+                                "old_value": old_value,
+                                "new_value": new_value,
+                                "change": amount,
+                                "description": effect.get("description", ""),
+                            }
+                            effects.append(effect_record)
+
+                            # Check threshold effect after stat change
+                            threshold_result = condition.check_threshold(new_value)
+                            if threshold_result:
+                                effects.append({
+                                    "character_id": character.character_id,
+                                    "character_name": character.name,
+                                    "condition": condition.condition_type.value,
+                                    "effect_type": "threshold_reached",
+                                    "stat": stat,
+                                    "threshold": threshold_result.get("threshold", 0),
+                                    "effect": threshold_result.get("effect", ""),
+                                    "description": threshold_result.get("description", ""),
+                                })
+
+                    # Check if condition expired
+                    if result["expired"]:
+                        effects.append({
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "condition": condition.condition_type.value,
+                            "effect_type": "expired",
+                        })
+                        break
+                else:
+                    still_active.append(condition)
+
+            character.conditions = still_active
+
+        return effects
 
     def _log_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Log an event to the session log."""
@@ -5747,3 +5839,12 @@ class GlobalController:
     def clear_session_log(self) -> None:
         """Clear the session log."""
         self._session_log = []
+
+    @property
+    def session_manager(self) -> Optional["SessionManager"]:
+        """Get the session manager for persistence operations."""
+        return self._session_manager
+
+    def set_session_manager(self, manager: "SessionManager") -> None:
+        """Set the session manager (called by VirtualDM after initialization)."""
+        self._session_manager = manager

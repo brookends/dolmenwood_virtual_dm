@@ -778,6 +778,7 @@ class ContentManager:
                     location=npc_data.get("location", ""),
                     stat_reference=npc_data.get("stat_reference"),
                     is_combatant=npc_data.get("is_combatant", False),
+                    vulnerabilities=npc_data.get("vulnerabilities", []),
                     relationships=npc_data.get("relationships", []),
                     faction=npc_data.get("faction"),
                     loyalty=npc_data.get("loyalty", "loyal"),
@@ -872,12 +873,20 @@ class ContentManager:
                 table = self._dict_to_roll_table(table_data)
                 roll_tables.append(table)
 
+        # Detect hidden POIs from entering field
+        # If entering contains "Hidden" (case-insensitive), mark as hidden
+        entering = data.get("entering")
+        is_hidden = data.get("hidden", False)
+        if not is_hidden and entering and isinstance(entering, str):
+            if "hidden" in entering.lower():
+                is_hidden = True
+
         return PointOfInterest(
             name=data.get("name", "Unknown"),
             poi_type=data.get("poi_type", "general"),
             description=data.get("description", ""),
             tagline=data.get("tagline"),
-            entering=data.get("entering"),
+            entering=entering,
             interior=data.get("interior"),
             exploring=data.get("exploring"),
             leaving=data.get("leaving"),
@@ -888,6 +897,7 @@ class ContentManager:
             secrets=data.get("secrets", []),
             is_dungeon=data.get("is_dungeon", False),
             dungeon_levels=data.get("dungeon_levels"),
+            hidden=is_hidden,
             quest_hooks=data.get("quest_hooks", []),
             encounter_modifiers=data.get("encounter_modifiers", []),
             item_persistence=data.get("item_persistence"),

@@ -199,6 +199,8 @@ class VirtualDM:
         # Initialize session manager for save/load
         self.session_manager = SessionManager(save_directory=self.config.save_dir)
         self.session_manager.new_session(session_name=self.config.campaign_name)
+        # Wire session manager to controller for engine access
+        self.controller.set_session_manager(self.session_manager)
 
         # Load base content if requested
         self._content_loaded = False
