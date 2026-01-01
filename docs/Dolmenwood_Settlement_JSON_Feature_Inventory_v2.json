@@ -1,0 +1,1556 @@
+{
+  "settlements": [
+    {
+      "settlement": "Blackeswell",
+      "id": "blackeswell",
+      "hex": "1604",
+      "size": "village",
+      "population": 90,
+      "locations": 12,
+      "npcs": 4,
+      "monsters": 2,
+      "encounter_tables": 2,
+      "locked_locations": 3,
+      "services": 11
+    },
+    {
+      "settlement": "Castle Brackenwold",
+      "id": "castle_brackenwold",
+      "hex": "1508",
+      "size": "city",
+      "population": 8700,
+      "locations": 21,
+      "npcs": 7,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 2,
+      "services": 20
+    },
+    {
+      "settlement": "Cobton-on-the-Shiver",
+      "id": "cobton_on_the_shiver",
+      "hex": "1104",
+      "size": "village",
+      "population": 200,
+      "locations": 10,
+      "npcs": 6,
+      "monsters": 2,
+      "encounter_tables": 2,
+      "locked_locations": 1,
+      "services": 9
+    },
+    {
+      "settlement": "Dreg and Shantywood Isle",
+      "id": "dreg_and_shantywood_isle",
+      "hex": "1110",
+      "size": "village",
+      "population": 300,
+      "locations": 14,
+      "npcs": 9,
+      "monsters": 1,
+      "encounter_tables": 2,
+      "locked_locations": 3,
+      "services": 20
+    },
+    {
+      "settlement": "Fort Vulgar",
+      "id": "fort_vulgar",
+      "hex": "0604",
+      "size": "village",
+      "population": 90,
+      "locations": 11,
+      "npcs": 4,
+      "monsters": 1,
+      "encounter_tables": 2,
+      "locked_locations": 0,
+      "services": 8
+    },
+    {
+      "settlement": "High-Hankle",
+      "id": "high_hankle",
+      "hex": "0512",
+      "size": "large town",
+      "population": 5300,
+      "locations": 18,
+      "npcs": 10,
+      "monsters": 1,
+      "encounter_tables": 2,
+      "locked_locations": 5,
+      "services": 15
+    },
+    {
+      "settlement": "Lankshorn",
+      "id": "lankshorn",
+      "hex": "0710",
+      "size": "town",
+      "population": 1100,
+      "locations": 13,
+      "npcs": 8,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 1,
+      "services": 17
+    },
+    {
+      "settlement": "Meagre's Reach",
+      "id": "meagres_reach",
+      "hex": "1703",
+      "size": "village",
+      "population": 120,
+      "locations": 9,
+      "npcs": 5,
+      "monsters": 1,
+      "encounter_tables": 2,
+      "locked_locations": 0,
+      "services": 7
+    },
+    {
+      "settlement": "Odd",
+      "id": "odd",
+      "hex": "1403",
+      "size": "village",
+      "population": 90,
+      "locations": 7,
+      "npcs": 4,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 2,
+      "services": 5
+    },
+    {
+      "settlement": "Orbswallow",
+      "id": "orbswallow",
+      "hex": "1405",
+      "size": "village",
+      "population": 80,
+      "locations": 13,
+      "npcs": 3,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 0,
+      "services": 15
+    },
+    {
+      "settlement": "Prigwort",
+      "id": "prigwort",
+      "hex": "1106",
+      "size": "town",
+      "population": 2800,
+      "locations": 20,
+      "npcs": 12,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 0,
+      "services": 23
+    },
+    {
+      "settlement": "Woodcutters' Encampment",
+      "id": "woodcutters_encampment",
+      "hex": "1109",
+      "size": "village",
+      "population": 180,
+      "locations": 10,
+      "npcs": 5,
+      "monsters": 0,
+      "encounter_tables": 2,
+      "locked_locations": 1,
+      "services": 10
+    }
+  ],
+  "location_type_counts": {
+    "landmark": 28,
+    "church": 11,
+    "inn": 19,
+    "tavern": 6,
+    "shop": 16,
+    "keep": 2,
+    "palace": 1,
+    "seminary": 1,
+    "barracks": 1,
+    "courtyard": 1,
+    "gate": 10,
+    "cathedral": 1,
+    "square": 2,
+    "market": 4,
+    "guild hall": 1,
+    "institute": 1,
+    "plaza": 1,
+    "gardens": 3,
+    "guardhouse": 1,
+    "brewery": 1,
+    "mill": 1,
+    "road": 14,
+    "manor": 4,
+    "port": 2,
+    "smokehouse": 1,
+    "ruin": 1,
+    "dock": 2,
+    "marketplace": 1,
+    "docks": 1,
+    "tower": 1,
+    "residence": 3,
+    "orchard": 1,
+    "fortification": 1,
+    "trail": 1,
+    "castle": 1,
+    "garrison": 1,
+    "ballroom and tavern": 1,
+    "religious headquarters": 1,
+    "prison": 1,
+    "graveyard": 1,
+    "meeting hall": 1,
+    "residential": 3,
+    "government": 1,
+    "construction": 1,
+    "meeting_house": 1
+  },
+  "service_name_counts": {
+    "Prayer": 4,
+    "Lodging": 7,
+    "Food": 11,
+    "Drinks": 1,
+    "Stabling": 3,
+    "Fishfop's": 1,
+    "Other drinks": 1,
+    "Fish": 1,
+    "Fashionable outfits": 1,
+    "Fishfop's ale": 1,
+    "Sage consultation": 3,
+    "Prayer blessing": 4,
+    "Colly markets": 1,
+    "Chime markets": 1,
+    "Hayme markets": 1,
+    "Moot markets": 1,
+    "Frisk markets": 1,
+    "Eggfast markets": 1,
+    "Sunning markets": 1,
+    "Lodgings and food": 8,
+    "Concerts": 1,
+    "Detect magic": 1,
+    "Permanent enchantments": 1,
+    "Rare wines": 1,
+    "The ducal suite": 1,
+    "Portrait painting": 1,
+    "Pipeleaf": 2,
+    "Shiverston ale": 1,
+    "Boat travel": 1,
+    "Smithing": 1,
+    "Illegal weapons": 1,
+    "Mushrooms and herbs": 2,
+    "Infirmary": 1,
+    "Tea and scones": 1,
+    "Full cream tea": 1,
+    "Tweede's fish pie": 1,
+    "Passage to Woodcutters' Encampment": 1,
+    "Passage to Shantywood Isle": 1,
+    "Hammocks": 1,
+    "Beverages": 1,
+    "Prayer to St Wick": 1,
+    "Fish smoking": 1,
+    "Grilled sausages": 1,
+    "Viewing balcony access": 1,
+    "Common and uncommon spirits": 1,
+    "Barge passage to Dreg": 1,
+    "Companionship": 1,
+    "Boat travel northwards": 1,
+    "Lodgings": 1,
+    "Dockmaster's marmalade": 1,
+    "Crabble": 1,
+    "Tattoos": 1,
+    "Guest lodgings": 1,
+    "Rooms with a view": 1,
+    "Golden aspintheon": 1,
+    "Entry to the ballrooms": 1,
+    "Psychedelic compounds": 2,
+    "Eggfast horse market": 1,
+    "Standard armour": 1,
+    "Full plate armour": 1,
+    "Engraving": 2,
+    "Jewellery and antiquities": 1,
+    "Fencing": 1,
+    "Evening poetry": 1,
+    "Coldlanks": 1,
+    "Moot Market": 1,
+    "Sunning Market": 1,
+    "Aspintheon": 1,
+    "Standard blades": 1,
+    "Iron blades": 1,
+    "Silvering": 1,
+    "Moon-forging": 1,
+    "Alchemical compounds": 1,
+    "Nippers": 1,
+    "Horses": 1,
+    "Baked goods": 1,
+    "Stoggy stew": 1,
+    "Bricks": 1,
+    "Worker lodging": 1,
+    "Game stew": 1,
+    "Fur garments": 1,
+    "Old Shuck cheese": 1,
+    "Hogger cheese": 1,
+    "Buggler-boot cheese": 1,
+    "Smokepipes": 1,
+    "Windpipes": 1,
+    "Dancepipes": 1,
+    "New moon fruits": 1,
+    "Crescent fruits": 1,
+    "Waxing fruits": 1,
+    "Gibbous fruits": 1,
+    "Full moon fruits": 1,
+    "Black new moon soup": 1,
+    "Moon's Milk": 1,
+    "Glubwob": 1,
+    "Colly Market": 1,
+    "Frisk Market": 1,
+    "Heggid's Bitter": 1,
+    "Baths": 1,
+    "Fine Clothing": 1,
+    "Embroidery": 1,
+    "Enchantments": 1,
+    "Lodgings and Food": 3,
+    "Wines": 1,
+    "Gems and Jewelry": 1,
+    "Herbal Consultation": 1,
+    "Mushrooms and Herbs": 1,
+    "Alchemical Compounds": 1,
+    "Alms Collection": 1,
+    "Detect Magic": 1,
+    "Deciphering": 1,
+    "Magic Item Identification": 1,
+    "Private Cottages": 1,
+    "Bundt Cake": 1,
+    "Standard pipes and pipeleaf": 1,
+    "Magical pipeleafs": 1,
+    "Enchanted pipes": 1,
+    "Furnged wood products": 1,
+    "Boats to Dreg": 1,
+    "Addle mead": 1,
+    "Attic suite": 1
+  },
+  "service_cost_counts": {
+    "free": 9,
+    "standard price": 28,
+    "8cp a mug": 3,
+    "2sp per mount": 1,
+    "twice normal price": 1,
+    "50gp off the rack, 100gp (or more) tailored": 1,
+    "standard sage rates or free for Church servants": 1,
+    "2sp per night donation expected": 1,
+    "varies": 16,
+    "fancy rates": 2,
+    "5\u201310gp per evening": 1,
+    "25gp": 1,
+    "100gp consultation fee, actual magic begins at 500gp": 1,
+    "20gp per night": 1,
+    "500gp": 1,
+    "poor rates": 1,
+    "1sp a (half-sized) mug": 1,
+    "1gp per foot passenger": 1,
+    "standard prices": 7,
+    "ten times the normal price": 1,
+    "5gp per day": 1,
+    "2sp": 2,
+    "1gp": 5,
+    "3sp a meal": 1,
+    "2sp per foot passenger, 5sp per horse, 2gp per vehicle": 2,
+    "free of charge": 2,
+    "2cp per night": 1,
+    "50% of normal price": 1,
+    "community use": 1,
+    "3sp": 1,
+    "2sp entrance fee": 1,
+    "fancy price": 2,
+    "from 5sp per hour": 1,
+    "1gp per night for private room": 1,
+    "3gp a jar": 1,
+    "4cp a mug": 1,
+    "Free for traditional tentacle, 5gp+ for other designs": 1,
+    "free for qualified guests": 1,
+    "25gp a night": 1,
+    "see p426": 1,
+    "5gp per person": 1,
+    "125% normal price": 2,
+    "as per DPB": 1,
+    "typically doubles the basic cost": 1,
+    "200\u20135,000gp": 1,
+    "50% of full value": 1,
+    "included": 1,
+    "2-3sp": 1,
+    "5gp": 2,
+    "10x normal blade cost": 1,
+    "2x basic cost": 1,
+    "varies by enchantment": 1,
+    "3sp a night, including fodder": 1,
+    "normal price": 1,
+    "2sp a ration": 1,
+    "3sp a plate": 1,
+    "standard sage rates": 2,
+    "standard rates": 1,
+    "included with employment": 1,
+    "4sp a portion": 1,
+    "2sp a night": 1,
+    "varies by type": 1,
+    "10gp per 18\u2033 round": 1,
+    "20gp per 6\u2033 round": 1,
+    "20gp per pouch": 1,
+    "4gp": 1,
+    "10gp": 1,
+    "3gp": 1,
+    "2gp": 1,
+    "1d4sp per portion of fungi, 2sp per pastry": 1,
+    "15cp per stein": 1,
+    "1sp per person (Heggid), 1gp per person (Gawda or Blessie)": 1,
+    "50gp upwards": 1,
+    "25gp upwards": 1,
+    "double normal cost for suitable clothing": 1,
+    "standard wine prices": 1,
+    "50-500gp": 1,
+    "fancy prices": 1,
+    "5gp per dose": 1,
+    "voluntary donation": 1,
+    "25gp per item": 1,
+    "25gp per inscription or page": 1,
+    "1,000gp per item": 1,
+    "1gp per person per night including breakfast": 1,
+    "free to all patrons and passing beggars": 1,
+    "See Rare Comestibles, p426": 1,
+    "100gp each": 1,
+    "high prices for exotic qualities": 1,
+    "15sp a glass": 1,
+    "3gp per night": 1
+  },
+  "encounter_tables": {
+    "time_of_day_counts": {
+      "day": 12,
+      "night": 12
+    },
+    "die_type_counts": {
+      "d6": 24
+    },
+    "entries_len_counts": {
+      "6": 24
+    }
+  },
+  "locked_locations": [
+    {
+      "settlement": "Blackeswell",
+      "number": 2,
+      "name": "Village Square",
+      "key_holder": "Sylvain Aster"
+    },
+    {
+      "settlement": "Blackeswell",
+      "number": 4,
+      "name": "Abandoned Mine",
+      "key_holder": "Sylvain Aster"
+    },
+    {
+      "settlement": "Blackeswell",
+      "number": 10,
+      "name": "Klepp's Workshop",
+      "key_holder": "Mr Klepp"
+    },
+    {
+      "settlement": "Castle Brackenwold",
+      "number": 3,
+      "name": "Seminary of the 100 Martyrs",
+      "key_holder": "Abbot Hargle"
+    },
+    {
+      "settlement": "Castle Brackenwold",
+      "number": 19,
+      "name": "The Frolicke",
+      "key_holder": "Castle access only"
+    },
+    {
+      "settlement": "Cobton-on-the-Shiver",
+      "number": 3,
+      "name": "Guardhouse and Gaol",
+      "key_holder": "Briggsy Bugber"
+    },
+    {
+      "settlement": "Dreg and Shantywood Isle",
+      "number": 2,
+      "name": "The Mermaid's Arms",
+      "key_holder": "Tamrin Tweede"
+    },
+    {
+      "settlement": "Dreg and Shantywood Isle",
+      "number": 8,
+      "name": "Church of St Wick",
+      "key_holder": "Reverend Mother Hadlewreath (unlocked mornings only)"
+    },
+    {
+      "settlement": "Dreg and Shantywood Isle",
+      "number": 11,
+      "name": "The Boghouse",
+      "key_holder": "Boghouse Boys"
+    },
+    {
+      "settlement": "High-Hankle",
+      "number": 1,
+      "name": "Castle Perigonne",
+      "key_holder": "Baron Hogwarsh"
+    },
+    {
+      "settlement": "High-Hankle",
+      "number": 2,
+      "name": "The Griffonry",
+      "key_holder": "Sir Waverly"
+    },
+    {
+      "settlement": "High-Hankle",
+      "number": 6,
+      "name": "The Silent Tower",
+      "key_holder": "Joan Ablewright"
+    },
+    {
+      "settlement": "High-Hankle",
+      "number": 7,
+      "name": "Griffon Gate",
+      "key_holder": "Gemrand Soliquant"
+    },
+    {
+      "settlement": "High-Hankle",
+      "number": 9,
+      "name": "The Raven Tower",
+      "key_holder": "Town Guard Captain"
+    },
+    {
+      "settlement": "Lankshorn",
+      "number": 5,
+      "name": "The Hornstoat's Rest",
+      "key_holder": "Farnham Ribblemead"
+    },
+    {
+      "settlement": "Odd",
+      "number": 1,
+      "name": "The Church",
+      "key_holder": "Broobe Dogoode and the local Drune"
+    },
+    {
+      "settlement": "Odd",
+      "number": 4,
+      "name": "The Lodge",
+      "key_holder": "Broobe Dogoode"
+    },
+    {
+      "settlement": "Woodcutters' Encampment",
+      "number": 8,
+      "name": "Church of St Foggarty",
+      "key_holder": "Father Horsely"
+    }
+  ],
+  "per_settlement": {
+    "blackeswell": {
+      "name": "Blackeswell",
+      "location_types": {
+        "landmark": 5,
+        "church": 1,
+        "inn": 1,
+        "tavern": 1,
+        "shop": 4
+      },
+      "service_names": {
+        "Prayer": 1,
+        "Lodging": 1,
+        "Food": 2,
+        "Drinks": 1,
+        "Stabling": 1,
+        "Fishfop's": 1,
+        "Other drinks": 1,
+        "Fish": 1,
+        "Fashionable outfits": 1,
+        "Fishfop's ale": 1
+      },
+      "roads": [
+        "Armsheath's Road",
+        "Blacke Road",
+        "The Duke's Road"
+      ],
+      "connections": [
+        "Follyegg Road",
+        "Orbswallow",
+        "Castle Brackenwold via hex 1608"
+      ],
+      "equipment_availability": {
+        "price_modifier": 2.0,
+        "available_categories": [
+          "rustic weapons"
+        ],
+        "unavailable_categories": [
+          "armor"
+        ],
+        "special_items": [
+          "greenish-white rope made from fungal fibres harvested in Mulchgrove"
+        ],
+        "notes": "Only rustic weapons (e.g. arrows, daggers, shortbows, slings, staves) are available. No form of armour can be bought in Blackeswell."
+      },
+      "rumors_reference": "See Rumours in Blackeswell, p442",
+      "service_categories": [
+        "food_drink",
+        "other",
+        "prayer_blessing"
+      ]
+    },
+    "castle_brackenwold": {
+      "name": "Castle Brackenwold",
+      "location_types": {
+        "keep": 1,
+        "palace": 1,
+        "seminary": 1,
+        "barracks": 1,
+        "courtyard": 1,
+        "gate": 4,
+        "cathedral": 1,
+        "square": 1,
+        "market": 1,
+        "inn": 3,
+        "guild hall": 1,
+        "institute": 1,
+        "plaza": 1,
+        "gardens": 3
+      },
+      "service_names": {
+        "Sage consultation": 1,
+        "Lodging": 1,
+        "Prayer blessing": 1,
+        "Colly markets": 1,
+        "Chime markets": 1,
+        "Hayme markets": 1,
+        "Moot markets": 1,
+        "Frisk markets": 1,
+        "Eggfast markets": 1,
+        "Sunning markets": 1,
+        "Lodgings and food": 3,
+        "Concerts": 1,
+        "Detect magic": 1,
+        "Permanent enchantments": 1,
+        "Rare wines": 1,
+        "The ducal suite": 1,
+        "Portrait painting": 1,
+        "Pipeleaf": 1
+      },
+      "roads": [
+        "King's Highway"
+      ],
+      "connections": [
+        "Dolmenwood",
+        "Outer City"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "standard equipment",
+          "unusual non-standard businesses"
+        ],
+        "unavailable_categories": [],
+        "special_items": [],
+        "notes": "In addition to the standard equipment and services listed in the DPB, unusual, non-standard businesses can be located with a little investigative work."
+      },
+      "rumors_reference": "See Rumours in Castle Brackenwold, p443",
+      "service_categories": [
+        "food_drink",
+        "intoxicants_herbs",
+        "lodging",
+        "magical_services",
+        "markets_trade",
+        "other",
+        "prayer_blessing",
+        "sage_consultation"
+      ]
+    },
+    "cobton_on_the_shiver": {
+      "name": "Cobton-on-the-Shiver",
+      "location_types": {
+        "inn": 1,
+        "landmark": 2,
+        "guardhouse": 1,
+        "brewery": 1,
+        "church": 1,
+        "shop": 2,
+        "mill": 1,
+        "tavern": 1
+      },
+      "service_names": {
+        "Lodging": 1,
+        "Shiverston ale": 1,
+        "Boat travel": 1,
+        "Smithing": 1,
+        "Illegal weapons": 1,
+        "Mushrooms and herbs": 1,
+        "Infirmary": 1,
+        "Tea and scones": 1,
+        "Full cream tea": 1
+      },
+      "roads": [
+        "River Path"
+      ],
+      "connections": [
+        "hex 1004",
+        "hex 1203"
+      ],
+      "equipment_availability": {
+        "price_modifier": 10.0,
+        "available_categories": [
+          "daggers",
+          "stout staffs"
+        ],
+        "unavailable_categories": [
+          "weapons larger than a dagger",
+          "mounts",
+          "armour"
+        ],
+        "special_items": [
+          "All items for sale in Cobton are sized for Cobbins\u2014approximately half human size"
+        ],
+        "notes": "Weapons larger than a dagger are not available (except in secret, to trusted friends of the smith). Mounts and armour cannot be bought in Cobton."
+      },
+      "rumors_reference": "See Rumours in Cobton-on-the-Shiver, p444",
+      "service_categories": [
+        "food_drink",
+        "other",
+        "stabling_transport"
+      ]
+    },
+    "dreg_and_shantywood_isle": {
+      "name": "Dreg and Shantywood Isle",
+      "location_types": {
+        "road": 1,
+        "inn": 3,
+        "landmark": 1,
+        "market": 1,
+        "manor": 2,
+        "port": 1,
+        "church": 1,
+        "smokehouse": 1,
+        "ruin": 1,
+        "dock": 2
+      },
+      "service_names": {
+        "Lodging": 3,
+        "Food": 4,
+        "Tweede's fish pie": 1,
+        "Passage to Woodcutters' Encampment": 1,
+        "Passage to Shantywood Isle": 1,
+        "Hammocks": 1,
+        "Beverages": 1,
+        "Pipeleaf": 1,
+        "Prayer to St Wick": 1,
+        "Fish smoking": 1,
+        "Grilled sausages": 1,
+        "Viewing balcony access": 1,
+        "Common and uncommon spirits": 1,
+        "Barge passage to Dreg": 1,
+        "Companionship": 1
+      },
+      "roads": [
+        "The Ditchway (east-west road to Lankshorn)"
+      ],
+      "connections": [
+        "Woodcutters' Encampment",
+        "Castle Brackenwold",
+        "High-Hankle",
+        "Lankshorn",
+        "Falls of Nyf"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.5,
+        "available_categories": [
+          "vehicles",
+          "mounts",
+          "mercenary companies"
+        ],
+        "unavailable_categories": [],
+        "special_items": [
+          "Pipeleaf at 50% price at Shodgerey's Shack"
+        ],
+        "notes": "Vehicles and mounts cost 50% more than usual. Despite Dreg's status as a village, mercenary companies can occasionally be hired here (2-in-6 chance). Pipeleaf traded by sailors at reduced rates."
+      },
+      "rumors_reference": "See Rumours in Dreg and Shantywood Isle, p445",
+      "service_categories": [
+        "food_drink",
+        "intoxicants_herbs",
+        "other",
+        "prayer_blessing",
+        "stabling_transport"
+      ]
+    },
+    "fort_vulgar": {
+      "name": "Fort Vulgar",
+      "location_types": {
+        "marketplace": 1,
+        "docks": 1,
+        "tower": 1,
+        "inn": 1,
+        "residence": 1,
+        "church": 1,
+        "orchard": 1,
+        "fortification": 1,
+        "keep": 1,
+        "road": 1,
+        "trail": 1
+      },
+      "service_names": {
+        "Boat travel northwards": 1,
+        "Lodgings": 1,
+        "Food": 1,
+        "Dockmaster's marmalade": 1,
+        "Crabble": 1,
+        "Tattoos": 1,
+        "Prayer blessing": 1,
+        "Guest lodgings": 1
+      },
+      "roads": [
+        "Fort Road",
+        "Creek Path"
+      ],
+      "connections": [
+        "Prigwort",
+        "Abbey of St Clewyd",
+        "Nagwood",
+        "Table Downs",
+        "Avernal Lake"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.5,
+        "available_categories": [
+          "weapons",
+          "armor"
+        ],
+        "unavailable_categories": [
+          "vehicles",
+          "mounts"
+        ],
+        "special_items": [
+          "Dockmaster's marmalade",
+          "Crabble"
+        ],
+        "notes": "Vehicles and mounts are not generally available, though adventurers willing to pay 5 times the going rate may be able to persuade a merchant or trader to part with their transport"
+      },
+      "rumors_reference": "See Rumours in Fort Vulgar, p446",
+      "service_categories": [
+        "food_drink",
+        "other",
+        "prayer_blessing",
+        "stabling_transport"
+      ]
+    },
+    "high_hankle": {
+      "name": "High-Hankle",
+      "location_types": {
+        "castle": 1,
+        "garrison": 1,
+        "inn": 2,
+        "ballroom and tavern": 1,
+        "gate": 3,
+        "religious headquarters": 1,
+        "square": 1,
+        "prison": 1,
+        "shop": 2,
+        "church": 1,
+        "tavern": 1,
+        "road": 3
+      },
+      "service_names": {
+        "Lodgings and food": 2,
+        "Rooms with a view": 1,
+        "Golden aspintheon": 1,
+        "Entry to the ballrooms": 1,
+        "Psychedelic compounds": 1,
+        "Eggfast horse market": 1,
+        "Standard armour": 1,
+        "Full plate armour": 1,
+        "Engraving": 1,
+        "Jewellery and antiquities": 1,
+        "Fencing": 1,
+        "Evening poetry": 1,
+        "Prayer": 1,
+        "Coldlanks": 1
+      },
+      "roads": [
+        "South Road",
+        "Swallop Road",
+        "Tankards Road"
+      ],
+      "connections": [
+        "Inn of the Tankards (hex 0511)",
+        "Lord Ramius' realm",
+        "Lankshorn",
+        "regions of the High Wold to the south"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "standard equipment",
+          "unusual non-standard businesses"
+        ],
+        "unavailable_categories": [],
+        "special_items": [
+          "Golden aspintheon",
+          "Psychedelic compounds",
+          "Full plate armour"
+        ],
+        "notes": "In addition to the standard equipment and services listed in the DPB, unusual, non-standard businesses can be located with a little investigative work."
+      },
+      "rumors_reference": "See Rumours in High-Hankle, p447",
+      "service_categories": [
+        "crafting",
+        "food_drink",
+        "intoxicants_herbs",
+        "other",
+        "prayer_blessing",
+        "stabling_transport"
+      ]
+    },
+    "lankshorn": {
+      "name": "Lankshorn",
+      "location_types": {
+        "church": 1,
+        "market": 1,
+        "residence": 1,
+        "graveyard": 1,
+        "inn": 1,
+        "manor": 1,
+        "shop": 2,
+        "landmark": 1,
+        "road": 3,
+        "tavern": 1
+      },
+      "service_names": {
+        "Prayer": 1,
+        "Moot Market": 1,
+        "Sunning Market": 1,
+        "Lodgings and food": 1,
+        "Aspintheon": 1,
+        "Standard blades": 1,
+        "Iron blades": 1,
+        "Silvering": 1,
+        "Engraving": 1,
+        "Moon-forging": 1,
+        "Mushrooms and herbs": 1,
+        "Alchemical compounds": 1,
+        "Psychedelic compounds": 1,
+        "Food": 1,
+        "Nippers": 1,
+        "Stabling": 1,
+        "Horses": 1
+      },
+      "roads": [
+        "The Ditchway",
+        "Manor Road",
+        "Swallop Road"
+      ],
+      "connections": [
+        "hex 0610",
+        "hex 1110",
+        "hex 0709",
+        "High-Hankle"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "standard equipment"
+        ],
+        "unavailable_categories": [],
+        "special_items": [
+          "Mounts and hounds usually only available at market on Moot"
+        ],
+        "notes": "Mounts and hounds are usually only available at the market on Moot"
+      },
+      "rumors_reference": "See Rumours in Lankshorn, p448",
+      "service_categories": [
+        "crafting",
+        "food_drink",
+        "intoxicants_herbs",
+        "markets_trade",
+        "other",
+        "prayer_blessing"
+      ]
+    },
+    "meagres_reach": {
+      "name": "Meagre's Reach",
+      "location_types": {
+        "landmark": 5,
+        "church": 1,
+        "shop": 2,
+        "inn": 1
+      },
+      "service_names": {
+        "Prayer blessing": 1,
+        "Baked goods": 1,
+        "Food": 1,
+        "Stoggy stew": 1,
+        "Sage consultation": 1,
+        "Bricks": 1,
+        "Worker lodging": 1
+      },
+      "roads": [
+        "Follyegg Road",
+        "Mirror Road"
+      ],
+      "connections": [
+        "hex 1403 (Odd)",
+        "hex 1802 (Chateau Mauvesse)"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.5,
+        "available_categories": [
+          "basic equipment"
+        ],
+        "unavailable_categories": [],
+        "special_items": [],
+        "notes": "Armour, weapons, vehicles, and mounts cost 50% more than usual"
+      },
+      "rumors_reference": "See Rumours in Meagre's Reach, p449",
+      "service_categories": [
+        "food_drink",
+        "other",
+        "prayer_blessing",
+        "sage_consultation"
+      ]
+    },
+    "odd": {
+      "name": "Odd",
+      "location_types": {
+        "church": 1,
+        "inn": 1,
+        "residence": 1,
+        "meeting hall": 1,
+        "landmark": 1,
+        "road": 2
+      },
+      "service_names": {
+        "Lodging": 1,
+        "Game stew": 1,
+        "Stabling": 1,
+        "Sage consultation": 1,
+        "Fur garments": 1
+      },
+      "roads": [
+        "Lochsbreth Road",
+        "Follyegg Road"
+      ],
+      "connections": [
+        "Prigwort (hex 1106)",
+        "Meagre's Reach (hex 1703)"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "rustic weapons",
+          "luxurious furs"
+        ],
+        "unavailable_categories": [
+          "armor"
+        ],
+        "special_items": [
+          "arrows",
+          "daggers",
+          "shortbows",
+          "slings",
+          "staves",
+          "fur garments"
+        ],
+        "notes": "Only rustic weapons (e.g. arrows, daggers, shortbows, slings, staves) are available. No form of armour can be bought in Odd. Luxurious furs are available at the lodge."
+      },
+      "rumors_reference": "See Rumours in Odd, p450",
+      "service_categories": [
+        "other",
+        "sage_consultation"
+      ]
+    },
+    "orbswallow": {
+      "name": "Orbswallow",
+      "location_types": {
+        "landmark": 8,
+        "residential": 3,
+        "inn": 1,
+        "church": 1
+      },
+      "service_names": {
+        "Old Shuck cheese": 1,
+        "Hogger cheese": 1,
+        "Buggler-boot cheese": 1,
+        "Smokepipes": 1,
+        "Windpipes": 1,
+        "Dancepipes": 1,
+        "New moon fruits": 1,
+        "Crescent fruits": 1,
+        "Waxing fruits": 1,
+        "Gibbous fruits": 1,
+        "Full moon fruits": 1,
+        "Lodgings and food": 1,
+        "Black new moon soup": 1,
+        "Moon's Milk": 1,
+        "Glubwob": 1
+      },
+      "roads": [
+        "Mulcher's Path",
+        "Blacke Road"
+      ],
+      "connections": [
+        "Horse-Eye Road",
+        "Blackeswell"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "rustic weapons",
+          "special tree produce"
+        ],
+        "unavailable_categories": [
+          "armor except special mossling armor"
+        ],
+        "special_items": [
+          "smokepipes",
+          "creamy cheeses",
+          "Moon's Milk",
+          "various tree fruits"
+        ],
+        "notes": "Only rustic weapons (arrows, daggers, shortbows, slings, staves) available. Special produce of three trees can be bought."
+      },
+      "rumors_reference": "See Rumours in Orbswallow, p451",
+      "service_categories": [
+        "food_drink",
+        "other"
+      ]
+    },
+    "prigwort": {
+      "name": "Prigwort",
+      "location_types": {
+        "government": 1,
+        "market": 1,
+        "tavern": 1,
+        "shop": 3,
+        "inn": 3,
+        "landmark": 2,
+        "church": 1,
+        "gate": 3,
+        "manor": 1,
+        "road": 3,
+        "construction": 1
+      },
+      "service_names": {
+        "Colly Market": 1,
+        "Frisk Market": 1,
+        "Food": 1,
+        "Heggid's Bitter": 1,
+        "Baths": 1,
+        "Fine Clothing": 1,
+        "Embroidery": 1,
+        "Enchantments": 1,
+        "Lodgings and Food": 3,
+        "Wines": 1,
+        "Gems and Jewelry": 1,
+        "Herbal Consultation": 1,
+        "Mushrooms and Herbs": 1,
+        "Alchemical Compounds": 1,
+        "Prayer": 1,
+        "Alms Collection": 1,
+        "Detect Magic": 1,
+        "Deciphering": 1,
+        "Magic Item Identification": 1,
+        "Private Cottages": 1,
+        "Bundt Cake": 1
+      },
+      "roads": [
+        "Harrow Road",
+        "Swinney Road",
+        "Horse-Eye Road"
+      ],
+      "connections": [
+        "Harrowmoor Keep (hex 1105)",
+        "Fort Vulgar",
+        "Castle Brackenwold",
+        "Abbey of St Clewyd (hex 0906)"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.0,
+        "available_categories": [
+          "vehicles",
+          "mounts",
+          "hounds",
+          "tools",
+          "adventuring gear",
+          "basic weapons",
+          "armor"
+        ],
+        "unavailable_categories": [],
+        "special_items": [
+          "Beers and spirits with magical qualities",
+          "Wild herbs and fungi"
+        ],
+        "notes": "Mounts and hounds are usually only available at the market on Colly"
+      },
+      "rumors_reference": "See Rumours in Prigwort, p452",
+      "service_categories": [
+        "food_drink",
+        "magical_services",
+        "markets_trade",
+        "other",
+        "prayer_blessing"
+      ]
+    },
+    "woodcutters_encampment": {
+      "name": "Woodcutters' Encampment",
+      "location_types": {
+        "road": 1,
+        "landmark": 3,
+        "shop": 1,
+        "meeting_house": 1,
+        "port": 1,
+        "tavern": 1,
+        "church": 1,
+        "inn": 1
+      },
+      "service_names": {
+        "Standard pipes and pipeleaf": 1,
+        "Magical pipeleafs": 1,
+        "Enchanted pipes": 1,
+        "Furnged wood products": 1,
+        "Boats to Dreg": 1,
+        "Food": 1,
+        "Prayer blessing": 1,
+        "Lodgings and food": 1,
+        "Addle mead": 1,
+        "Attic suite": 1
+      },
+      "roads": [
+        "Camp Road"
+      ],
+      "connections": [
+        "Castle Brackenwold",
+        "Dreg",
+        "Hag's Addle",
+        "Ferneddbole House (hex 1209)",
+        "Bogwitt Manor (hex 1210)"
+      ],
+      "equipment_availability": {
+        "price_modifier": 1.5,
+        "available_categories": [
+          "standard equipment"
+        ],
+        "unavailable_categories": [],
+        "special_items": [
+          "Furnged wood products",
+          "Enchanted pipes",
+          "Magical pipeleafs"
+        ],
+        "notes": "Vehicles and mounts cost 50% more than usual"
+      },
+      "rumors_reference": "See Rumours in the Woodcutters' Encampment, p453",
+      "service_categories": [
+        "food_drink",
+        "intoxicants_herbs",
+        "lodging",
+        "other",
+        "prayer_blessing"
+      ]
+    }
+  },
+  "schema_version": 2,
+  "generated_at": "2025-12-31T22:44:31.508010",
+  "service_taxonomy": {
+    "category_order": [
+      "lodging",
+      "food_drink",
+      "prayer_blessing",
+      "stabling_transport",
+      "sage_consultation",
+      "markets_trade",
+      "magical_services",
+      "crafting",
+      "intoxicants_herbs",
+      "entertainment",
+      "other"
+    ],
+    "service_name_category_map": {
+      "Prayer": "prayer_blessing",
+      "Lodging": "other",
+      "Food": "food_drink",
+      "Drinks": "other",
+      "Stabling": "other",
+      "Fishfop's": "other",
+      "Other drinks": "other",
+      "Fish": "food_drink",
+      "Fashionable outfits": "other",
+      "Fishfop's ale": "food_drink",
+      "Sage consultation": "sage_consultation",
+      "Prayer blessing": "prayer_blessing",
+      "Colly markets": "markets_trade",
+      "Chime markets": "markets_trade",
+      "Hayme markets": "markets_trade",
+      "Moot markets": "markets_trade",
+      "Frisk markets": "markets_trade",
+      "Eggfast markets": "markets_trade",
+      "Sunning markets": "markets_trade",
+      "Lodgings and food": "food_drink",
+      "Concerts": "other",
+      "Detect magic": "magical_services",
+      "Permanent enchantments": "other",
+      "Rare wines": "other",
+      "The ducal suite": "lodging",
+      "Portrait painting": "other",
+      "Pipeleaf": "intoxicants_herbs",
+      "Shiverston ale": "food_drink",
+      "Boat travel": "stabling_transport",
+      "Smithing": "other",
+      "Illegal weapons": "other",
+      "Mushrooms and herbs": "other",
+      "Infirmary": "other",
+      "Tea and scones": "other",
+      "Full cream tea": "other",
+      "Tweede's fish pie": "food_drink",
+      "Passage to Woodcutters' Encampment": "stabling_transport",
+      "Passage to Shantywood Isle": "stabling_transport",
+      "Hammocks": "other",
+      "Beverages": "other",
+      "Prayer to St Wick": "prayer_blessing",
+      "Fish smoking": "food_drink",
+      "Grilled sausages": "other",
+      "Viewing balcony access": "other",
+      "Common and uncommon spirits": "other",
+      "Barge passage to Dreg": "stabling_transport",
+      "Companionship": "other",
+      "Boat travel northwards": "stabling_transport",
+      "Lodgings": "other",
+      "Dockmaster's marmalade": "other",
+      "Crabble": "other",
+      "Tattoos": "other",
+      "Guest lodgings": "other",
+      "Rooms with a view": "other",
+      "Golden aspintheon": "other",
+      "Entry to the ballrooms": "other",
+      "Psychedelic compounds": "intoxicants_herbs",
+      "Eggfast horse market": "stabling_transport",
+      "Standard armour": "other",
+      "Full plate armour": "other",
+      "Engraving": "crafting",
+      "Jewellery and antiquities": "other",
+      "Fencing": "other",
+      "Evening poetry": "other",
+      "Coldlanks": "other",
+      "Moot Market": "markets_trade",
+      "Sunning Market": "markets_trade",
+      "Aspintheon": "other",
+      "Standard blades": "other",
+      "Iron blades": "other",
+      "Silvering": "other",
+      "Moon-forging": "other",
+      "Alchemical compounds": "other",
+      "Nippers": "other",
+      "Horses": "other",
+      "Baked goods": "other",
+      "Stoggy stew": "other",
+      "Bricks": "other",
+      "Worker lodging": "other",
+      "Game stew": "other",
+      "Fur garments": "other",
+      "Old Shuck cheese": "other",
+      "Hogger cheese": "other",
+      "Buggler-boot cheese": "other",
+      "Smokepipes": "other",
+      "Windpipes": "other",
+      "Dancepipes": "other",
+      "New moon fruits": "other",
+      "Crescent fruits": "other",
+      "Waxing fruits": "other",
+      "Gibbous fruits": "other",
+      "Full moon fruits": "other",
+      "Black new moon soup": "other",
+      "Moon's Milk": "other",
+      "Glubwob": "other",
+      "Colly Market": "markets_trade",
+      "Frisk Market": "markets_trade",
+      "Heggid's Bitter": "other",
+      "Baths": "other",
+      "Fine Clothing": "other",
+      "Embroidery": "other",
+      "Enchantments": "other",
+      "Lodgings and Food": "food_drink",
+      "Wines": "other",
+      "Gems and Jewelry": "other",
+      "Herbal Consultation": "other",
+      "Mushrooms and Herbs": "other",
+      "Alchemical Compounds": "other",
+      "Alms Collection": "other",
+      "Detect Magic": "magical_services",
+      "Deciphering": "other",
+      "Magic Item Identification": "other",
+      "Private Cottages": "other",
+      "Bundt Cake": "other",
+      "Standard pipes and pipeleaf": "intoxicants_herbs",
+      "Magical pipeleafs": "other",
+      "Enchanted pipes": "other",
+      "Furnged wood products": "other",
+      "Boats to Dreg": "other",
+      "Addle mead": "other",
+      "Attic suite": "lodging"
+    }
+  },
+  "location_type_taxonomy": {
+    "category_order": [
+      "inn_tavern",
+      "religious",
+      "trade_market_shop",
+      "government_military",
+      "transport_infra",
+      "residential",
+      "industry_agriculture",
+      "landmark_nature",
+      "other"
+    ],
+    "location_type_category_map": {
+      "landmark": "landmark_nature",
+      "church": "religious",
+      "inn": "inn_tavern",
+      "tavern": "inn_tavern",
+      "shop": "trade_market_shop",
+      "keep": "government_military",
+      "palace": "other",
+      "seminary": "other",
+      "barracks": "other",
+      "courtyard": "other",
+      "gate": "government_military",
+      "cathedral": "other",
+      "square": "trade_market_shop",
+      "market": "trade_market_shop",
+      "guild hall": "other",
+      "institute": "other",
+      "plaza": "other",
+      "gardens": "landmark_nature",
+      "guardhouse": "government_military",
+      "brewery": "industry_agriculture",
+      "mill": "industry_agriculture",
+      "road": "transport_infra",
+      "manor": "residential",
+      "port": "transport_infra",
+      "smokehouse": "industry_agriculture",
+      "ruin": "landmark_nature",
+      "dock": "transport_infra",
+      "marketplace": "trade_market_shop",
+      "docks": "transport_infra",
+      "tower": "government_military",
+      "residence": "residential",
+      "orchard": "industry_agriculture",
+      "fortification": "government_military",
+      "trail": "transport_infra",
+      "castle": "government_military",
+      "garrison": "government_military",
+      "ballroom and tavern": "inn_tavern",
+      "religious headquarters": "religious",
+      "prison": "government_military",
+      "graveyard": "other",
+      "meeting hall": "other",
+      "residential": "residential",
+      "government": "other",
+      "construction": "other",
+      "meeting_house": "other"
+    }
+  },
+  "capability_matrix": [
+    {
+      "capability_id": "settlement.list_locations",
+      "priority": "P0",
+      "requires": [
+        "locations[].number",
+        "locations[].name",
+        "locations[].location_type"
+      ],
+      "engine_touchpoints": [
+        "SettlementEngine.handle_player_action/execute_action",
+        "UI suggestions"
+      ],
+      "notes": "Core navigation primitive."
+    },
+    {
+      "capability_id": "settlement.visit_location",
+      "priority": "P0",
+      "requires": [
+        "locations[].description/interior/exterior",
+        "locations[].is_locked/key_holder"
+      ],
+      "engine_touchpoints": [
+        "SettlementEngine",
+        "RunLog.log_custom(settlement_event)"
+      ],
+      "notes": "Should enforce locks and update visited flags."
+    },
+    {
+      "capability_id": "settlement.list_services_and_use",
+      "priority": "P0",
+      "requires": [
+        "locations[].services[]"
+      ],
+      "engine_touchpoints": [
+        "SettlementServiceExecutor",
+        "PartyResources (later)"
+      ],
+      "notes": "Initial pass is 'structured text' + optional coin parsing."
+    },
+    {
+      "capability_id": "settlement.list_npcs_and_talk",
+      "priority": "P1",
+      "requires": [
+        "npcs[]",
+        "locations[].npcs[]",
+        "npcs[].location_id"
+      ],
+      "engine_touchpoints": [
+        "NarrativeResolver/LLM prompt",
+        "Faction/rumor hooks (later)"
+      ],
+      "notes": "Talk should return narration + optional knowledge updates."
+    },
+    {
+      "capability_id": "settlement.rumors_and_events",
+      "priority": "P1",
+      "requires": [
+        "rumors_reference",
+        "current_events[]",
+        "history[]"
+      ],
+      "engine_touchpoints": [
+        "Rumor subsystem",
+        "Knowledge/notes tracking"
+      ],
+      "notes": "Wire into existing Knowledge/Secret system if present."
+    },
+    {
+      "capability_id": "settlement.encounters_day_night_tables",
+      "priority": "P1",
+      "requires": [
+        "encounter_tables[day/night]"
+      ],
+      "engine_touchpoints": [
+        "SettlementEncounterTables",
+        "EncounterEngine trigger"
+      ],
+      "notes": "Uses TimeOfDay->day/night mapping."
+    },
+    {
+      "capability_id": "settlement.equipment_availability",
+      "priority": "P2",
+      "requires": [
+        "equipment_availability"
+      ],
+      "engine_touchpoints": [
+        "Inventory/Shop engine"
+      ],
+      "notes": "Drive buy/sell availability and price modifiers."
+    },
+    {
+      "capability_id": "settlement.roads_and_connections",
+      "priority": "P2",
+      "requires": [
+        "roads[]",
+        "connections[]"
+      ],
+      "engine_touchpoints": [
+        "Wilderness travel / HexEngine"
+      ],
+      "notes": "Support asking directions and travel time."
+    }
+  ]
+}
