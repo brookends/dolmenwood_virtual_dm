@@ -38,6 +38,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Optional
 import logging
+import re
 
 from src.game_state.state_machine import GameState
 from src.game_state.global_controller import GlobalController
@@ -51,8 +52,32 @@ from src.data_models import (
     TimeOfDay,
 )
 
+# Import v2 content models (JSON-backed settlements)
+from src.settlement.settlement_content_models import SettlementData
+from src.settlement.settlement_registry import SettlementRegistry
+from src.settlement.settlement_encounters import (
+    SettlementEncounterTables,
+    SettlementEncounterResult,
+    tod_to_daynight,
+)
+
+# Import RunLog for settlement event logging
+try:
+    from src.observability.run_log import get_run_log
+except ImportError:
+    get_run_log = None  # type: ignore
+
 
 logger = logging.getLogger(__name__)
+
+
+def _log_settlement_event(event_type: str, details: dict) -> None:
+    """Log a settlement event if RunLog is available."""
+    if get_run_log is not None:
+        try:
+            get_run_log().log_custom(f"settlement:{event_type}", details)
+        except Exception:
+            pass  # Silently ignore logging failures
 
 
 class SettlementSize(str, Enum):
@@ -241,9 +266,21 @@ class SettlementEngine:
         self.controller = controller
         self.dice = DiceRoller()
 
-        # Settlement data
+        # Settlement data (procedural model)
         self._settlements: dict[str, Settlement] = {}
         self._current_settlement: Optional[str] = None
+
+        # JSON-backed settlement registry (v2 content model)
+        self._registry: Optional[SettlementRegistry] = None
+
+        # Runtime state for v2 content navigation
+        self._active_settlement_id: Optional[str] = None  # ID of settlement we're in (v2)
+        self._current_location_number: Optional[int] = None  # Location number we're at
+        self._visited_locations: set[int] = set()  # Locations visited in current settlement
+
+        # Location access permissions (for locked locations)
+        # Key: (settlement_id, location_number), Value: access granted
+        self._location_permissions: dict[tuple[str, int], bool] = {}
 
         # NPC data
         self._npcs: dict[str, NPC] = {}
@@ -266,6 +303,1211 @@ class SettlementEngine:
     def register_description_callback(self, callback: Callable) -> None:
         """Register callback for settlement descriptions."""
         self._description_callback = callback
+
+    # =========================================================================
+    # REGISTRY INTEGRATION (v2 JSON-backed content)
+    # =========================================================================
+
+    def set_registry(self, registry: SettlementRegistry) -> None:
+        """
+        Set the settlement registry for JSON-backed content.
+
+        Args:
+            registry: SettlementRegistry loaded from JSON files
+        """
+        self._registry = registry
+        logger.info(f"Settlement registry set with {len(registry.list_ids())} settlements")
+
+    def get_registry(self) -> Optional[SettlementRegistry]:
+        """Get the settlement registry if loaded."""
+        return self._registry
+
+    def get_settlement_data(self, settlement_id: str) -> Optional[SettlementData]:
+        """
+        Get settlement data from registry by ID.
+
+        Args:
+            settlement_id: The settlement identifier
+
+        Returns:
+            SettlementData if found, None otherwise
+        """
+        if self._registry:
+            return self._registry.get(settlement_id)
+        return None
+
+    def get_settlement_by_hex(self, hex_id: str) -> Optional[SettlementData]:
+        """
+        Find settlement data by hex ID.
+
+        Args:
+            hex_id: The hex identifier (e.g., "1604")
+
+        Returns:
+            SettlementData if a settlement exists at that hex, None otherwise
+        """
+        if self._registry:
+            return self._registry.find_by_hex(hex_id)
+        return None
+
+    def list_settlement_ids(self) -> list[str]:
+        """List all settlement IDs in the registry."""
+        if self._registry:
+            return self._registry.list_ids()
+        return []
+
+    # =========================================================================
+    # V2 RUNTIME STATE MANAGEMENT
+    # =========================================================================
+
+    def get_active_settlement(self) -> Optional[SettlementData]:
+        """Get the currently active settlement data (v2)."""
+        if self._active_settlement_id and self._registry:
+            return self._registry.get(self._active_settlement_id)
+        return None
+
+    def get_current_location(self) -> Optional["SettlementLocationData"]:
+        """Get the current location within the active settlement."""
+        from src.settlement.settlement_content_models import SettlementLocationData
+
+        settlement = self.get_active_settlement()
+        if settlement and self._current_location_number is not None:
+            loc_map = settlement.location_by_number()
+            return loc_map.get(self._current_location_number)
+        return None
+
+    def set_active_settlement(self, settlement_id: str) -> bool:
+        """
+        Set the active settlement for v2 navigation.
+
+        Args:
+            settlement_id: Settlement ID from registry
+
+        Returns:
+            True if settlement was found and set, False otherwise
+        """
+        if self._registry and self._registry.get(settlement_id):
+            self._active_settlement_id = settlement_id
+            self._current_location_number = None
+            self._visited_locations = set()
+            logger.info(f"Active settlement set to: {settlement_id}")
+            return True
+        logger.warning(f"Settlement not found in registry: {settlement_id}")
+        return False
+
+    def clear_active_settlement(self) -> None:
+        """Clear the active settlement state (when leaving)."""
+        self._active_settlement_id = None
+        self._current_location_number = None
+        self._visited_locations = set()
+
+    # =========================================================================
+    # LOCATION ACCESS CONTROL (Phase 4: Locked Locations)
+    # =========================================================================
+
+    def _check_location_access(
+        self, settlement_id: str, location_number: int, key_holder: Optional[str]
+    ) -> bool:
+        """
+        Check if the party has access to a locked location.
+
+        Access can be granted via:
+        1. Explicit permission (granted via grant_location_access)
+        2. Having the appropriate key item in party inventory
+        3. Key holder NPC has been befriended (future: relationship system)
+
+        Args:
+            settlement_id: The settlement ID
+            location_number: The location number
+            key_holder: The key holder name/description
+
+        Returns:
+            True if access is granted, False otherwise
+        """
+        # Check explicit permission
+        perm_key = (settlement_id, location_number)
+        if self._location_permissions.get(perm_key, False):
+            return True
+
+        # Check party inventory for key items
+        # Look for items with names suggesting they're keys for this location
+        try:
+            party = self.controller.party_state
+            if party and hasattr(party, 'shared_inventory'):
+                for item in party.shared_inventory:
+                    item_name = getattr(item, 'name', str(item)).lower()
+                    # Check if item appears to be a key for this location
+                    if 'key' in item_name:
+                        # Match by key holder name or location number
+                        if key_holder and key_holder.lower() in item_name:
+                            return True
+                        if str(location_number) in item_name:
+                            return True
+        except Exception:
+            pass  # No party inventory or access error
+
+        return False
+
+    def grant_location_access(
+        self, settlement_id: str, location_number: int, reason: str = ""
+    ) -> None:
+        """
+        Grant access to a locked location.
+
+        This should be called when:
+        - A key holder NPC grants permission
+        - The party obtains a key
+        - A special event unlocks the location
+
+        Args:
+            settlement_id: The settlement ID
+            location_number: The location number
+            reason: Optional reason for granting access (for logging)
+        """
+        perm_key = (settlement_id, location_number)
+        self._location_permissions[perm_key] = True
+
+        _log_settlement_event("access_granted", {
+            "settlement_id": settlement_id,
+            "location_number": location_number,
+            "reason": reason,
+        })
+
+        logger.info(f"Access granted to {settlement_id}:{location_number} - {reason}")
+
+    def revoke_location_access(self, settlement_id: str, location_number: int) -> None:
+        """Revoke access to a locked location."""
+        perm_key = (settlement_id, location_number)
+        self._location_permissions.pop(perm_key, None)
+
+    def has_location_access(self, settlement_id: str, location_number: int) -> bool:
+        """Check if access has been explicitly granted to a location."""
+        perm_key = (settlement_id, location_number)
+        return self._location_permissions.get(perm_key, False)
+
+    def get_locked_locations(self, settlement_id: Optional[str] = None) -> list[dict]:
+        """
+        Get list of locked locations in a settlement.
+
+        Args:
+            settlement_id: Settlement ID (defaults to active settlement)
+
+        Returns:
+            List of dicts with location info and access status
+        """
+        sid = settlement_id or self._active_settlement_id
+        if not sid or not self._registry:
+            return []
+
+        settlement = self._registry.get(sid)
+        if not settlement:
+            return []
+
+        locked = []
+        for loc in settlement.locations:
+            if loc.is_locked:
+                has_access = self._check_location_access(sid, loc.number, loc.key_holder)
+                locked.append({
+                    "number": loc.number,
+                    "name": loc.name,
+                    "key_holder": loc.key_holder,
+                    "has_access": has_access,
+                })
+
+        return locked
+
+    # =========================================================================
+    # PHASE 1: BRIDGE API (handle_player_action + execute_action)
+    # =========================================================================
+
+    def handle_player_action(self, text: str, character_id: Optional[str] = None) -> dict[str, Any]:
+        """
+        Bridge shim for freeform player input in settlement.
+
+        This method provides conservative keyword routing to structured actions.
+        It's designed to work with the existing ConversationFacade integration
+        while gradually migrating to execute_action().
+
+        Args:
+            text: Freeform player input text
+            character_id: Optional character performing the action
+
+        Returns:
+            Result dict with 'success', 'message', and optional data
+        """
+        text_lower = text.strip().lower()
+
+        # Try to extract intent and route to structured action
+
+        # "list locations" / "show locations" / "locations" / "where can i go"
+        if any(kw in text_lower for kw in ["list location", "show location", "locations", "where can i go", "what's here", "look around"]):
+            return self.execute_action("settlement:list_locations", {})
+
+        # "visit <number>" / "go to <number>" / "enter <number>"
+        visit_match = re.search(r"(?:visit|go to|enter|check out)\s+(?:location\s+)?(\d+)", text_lower)
+        if visit_match:
+            loc_num = int(visit_match.group(1))
+            return self.execute_action("settlement:visit_location", {"location_number": loc_num})
+
+        # "visit <name>" - try to match by location name
+        visit_name_match = re.search(r"(?:visit|go to|enter|check out)\s+(?:the\s+)?(.+)", text_lower)
+        if visit_name_match:
+            name_query = visit_name_match.group(1).strip()
+            settlement = self.get_active_settlement()
+            if settlement:
+                for loc in settlement.locations:
+                    if name_query in loc.name.lower():
+                        return self.execute_action("settlement:visit_location", {"location_number": loc.number})
+
+        # "services" / "what services" / "list services"
+        if any(kw in text_lower for kw in ["services", "what can i buy", "what's available"]):
+            return self.execute_action("settlement:list_services", {})
+
+        # "use <service>" / "buy <service>"
+        use_match = re.search(r"(?:use|buy|get|order)\s+(.+)", text_lower)
+        if use_match:
+            service_query = use_match.group(1).strip()
+            return self.execute_action("settlement:use_service", {"service_name": service_query})
+
+        # "npcs" / "who's here" / "list npcs"
+        if any(kw in text_lower for kw in ["npcs", "who's here", "who is here", "people", "locals"]):
+            return self.execute_action("settlement:list_npcs", {})
+
+        # "talk to <name>" / "speak with <name>"
+        talk_match = re.search(r"(?:talk to|speak (?:to|with)|chat with)\s+(.+)", text_lower)
+        if talk_match:
+            npc_query = talk_match.group(1).strip()
+            return self.execute_action("settlement:talk", {"npc_name": npc_query})
+
+        # "directions" / "roads" / "how do i get to"
+        if any(kw in text_lower for kw in ["directions", "roads", "way to", "path to", "route"]):
+            return self.execute_action("settlement:ask_directions", {})
+
+        # "rumors" / "gossip" / "what's the word"
+        if any(kw in text_lower for kw in ["rumor", "gossip", "word on the street", "heard anything"]):
+            return self.execute_action("settlement:ask_rumor", {})
+
+        # "leave" / "exit" / "depart"
+        if any(kw in text_lower for kw in ["leave", "exit", "depart", "go outside", "wilderness"]):
+            return self.execute_action("settlement:leave", {})
+
+        # Fallback - unrecognized input
+        return {
+            "success": False,
+            "message": f"I don't understand '{text}'. Try: list locations, visit <number>, services, npcs, talk to <name>, or leave.",
+            "action": None,
+        }
+
+    def execute_action(self, action_id: str, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Execute a structured settlement action.
+
+        This is the main router for settlement actions. Each action returns
+        a result dict suitable for UI consumption.
+
+        Args:
+            action_id: The action identifier (e.g., "settlement:list_locations")
+            params: Action parameters
+
+        Returns:
+            Result dict with 'success', 'message', and action-specific data
+        """
+        # Dispatch to action handlers
+        handlers = {
+            "settlement:list_locations": self._action_list_locations,
+            "settlement:visit_location": self._action_visit_location,
+            "settlement:list_services": self._action_list_services,
+            "settlement:use_service": self._action_use_service,
+            "settlement:list_npcs": self._action_list_npcs,
+            "settlement:talk": self._action_talk_to_npc,
+            "settlement:ask_directions": self._action_ask_directions,
+            "settlement:ask_rumor": self._action_ask_rumor,
+            "settlement:check_encounter": self._action_check_encounter,
+            "settlement:equipment_availability": self._action_equipment_availability,
+            "settlement:carouse": self._action_carouse,
+            "settlement:leave": self._action_leave,
+        }
+
+        handler = handlers.get(action_id)
+        if handler:
+            try:
+                return handler(params)
+            except Exception as e:
+                logger.exception(f"Error executing action {action_id}: {e}")
+                return {
+                    "success": False,
+                    "message": f"Error executing action: {str(e)}",
+                    "action": action_id,
+                }
+
+        return {
+            "success": False,
+            "message": f"Unknown action: {action_id}",
+            "action": action_id,
+        }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 1: Core Navigation)
+    # =========================================================================
+
+    def _action_list_locations(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List all locations in the current settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not currently in a settlement with location data.",
+                "action": "settlement:list_locations",
+            }
+
+        locations = []
+        for loc in sorted(settlement.locations, key=lambda x: x.number):
+            loc_info = {
+                "number": loc.number,
+                "name": loc.name,
+                "type": loc.location_type,
+                "visited": loc.number in self._visited_locations,
+                "is_locked": loc.is_locked,
+                "key_holder": loc.key_holder if loc.is_locked else None,
+            }
+            # Add brief description excerpt
+            if loc.description:
+                loc_info["brief"] = loc.description[:100] + "..." if len(loc.description) > 100 else loc.description
+            locations.append(loc_info)
+
+        return {
+            "success": True,
+            "message": f"{settlement.name} has {len(locations)} notable locations:",
+            "action": "settlement:list_locations",
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "locations": locations,
+            "current_location": self._current_location_number,
+        }
+
+    def _action_visit_location(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Visit a specific location by number."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not currently in a settlement.",
+                "action": "settlement:visit_location",
+            }
+
+        location_number = params.get("location_number")
+        if location_number is None:
+            return {
+                "success": False,
+                "message": "No location number specified.",
+                "action": "settlement:visit_location",
+            }
+
+        loc_map = settlement.location_by_number()
+        location = loc_map.get(location_number)
+        if not location:
+            return {
+                "success": False,
+                "message": f"Location {location_number} not found in {settlement.name}.",
+                "action": "settlement:visit_location",
+            }
+
+        # Check if locked and enforce key/permission rules
+        if location.is_locked:
+            force_entry = params.get("force_entry", False)
+            has_access = self._check_location_access(
+                settlement.settlement_id, location_number, location.key_holder
+            )
+
+            if not has_access and not force_entry:
+                # Provide helpful information about how to gain access
+                key_holder_info = location.key_holder or "unknown"
+                return {
+                    "success": False,
+                    "message": f"{location.name} is locked. Key holder: {key_holder_info}",
+                    "action": "settlement:visit_location",
+                    "location_number": location_number,
+                    "is_locked": True,
+                    "key_holder": key_holder_info,
+                    "hint": f"Talk to {key_holder_info} to request access, or find a key.",
+                }
+
+        # Update state
+        self._current_location_number = location_number
+        self._visited_locations.add(location_number)
+
+        # Log the visit event
+        _log_settlement_event("visit_location", {
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "location_number": location_number,
+            "location_name": location.name,
+            "location_type": location.location_type,
+        })
+
+        # Build location details
+        services = [{"name": s.name, "cost": s.cost, "description": s.description} for s in location.services]
+
+        # Get NPCs - both from location.npcs and by matching npc.location_id
+        npc_map = settlement.npc_by_id()
+        npc_ids_set = set(location.npcs)
+        # Also find NPCs whose location_id matches this location
+        for npc in settlement.npcs:
+            if npc.location_id and str(npc.location_id) == str(location_number):
+                npc_ids_set.add(npc.npc_id)
+        npcs = list(npc_ids_set)
+
+        return {
+            "success": True,
+            "message": f"You arrive at {location.name}.",
+            "action": "settlement:visit_location",
+            "location": {
+                "number": location.number,
+                "name": location.name,
+                "type": location.location_type,
+                "description": location.description,
+                "exterior": location.exterior,
+                "interior": location.interior,
+                "atmosphere": location.atmosphere,
+                "populace": location.populace,
+                "special_features": location.special_features,
+            },
+            "services": services,
+            "npc_ids": npcs,
+            "has_services": len(services) > 0,
+            "has_npcs": len(npcs) > 0,
+        }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 2: Services + NPCs)
+    # =========================================================================
+
+    def _action_list_services(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List services at current location."""
+        location = self.get_current_location()
+        if not location:
+            # If no specific location, list all services in settlement
+            settlement = self.get_active_settlement()
+            if not settlement:
+                return {
+                    "success": False,
+                    "message": "Not in a settlement.",
+                    "action": "settlement:list_services",
+                }
+
+            all_services = []
+            for loc in settlement.locations:
+                for svc in loc.services:
+                    all_services.append({
+                        "name": svc.name,
+                        "cost": svc.cost,
+                        "location": loc.name,
+                        "location_number": loc.number,
+                    })
+
+            return {
+                "success": True,
+                "message": f"Services available in {settlement.name}:",
+                "action": "settlement:list_services",
+                "services": all_services,
+            }
+
+        # Services at current location
+        services = [{"name": s.name, "cost": s.cost, "description": s.description, "notes": s.notes} for s in location.services]
+
+        if not services:
+            return {
+                "success": True,
+                "message": f"No services available at {location.name}.",
+                "action": "settlement:list_services",
+                "services": [],
+            }
+
+        return {
+            "success": True,
+            "message": f"Services at {location.name}:",
+            "action": "settlement:list_services",
+            "location_name": location.name,
+            "services": services,
+        }
+
+    def _action_use_service(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Use a service at the current location."""
+        from src.settlement.settlement_services import SettlementServiceExecutor, parse_cost_text
+
+        service_name = params.get("service_name", "")
+        location = self.get_current_location()
+        settlement = self.get_active_settlement()
+
+        if not location:
+            return {
+                "success": False,
+                "message": "Visit a location first to use services.",
+                "action": "settlement:use_service",
+            }
+
+        # Find matching service (try exact match first, then partial)
+        matched = None
+        for svc in location.services:
+            if svc.name.lower() == service_name.lower():
+                matched = svc
+                break
+        if not matched:
+            for svc in location.services:
+                if service_name.lower() in svc.name.lower():
+                    matched = svc
+                    break
+
+        if not matched:
+            available = [s.name for s in location.services]
+            return {
+                "success": False,
+                "message": f"Service '{service_name}' not found at {location.name}.",
+                "action": "settlement:use_service",
+                "available_services": available,
+            }
+
+        # Execute service
+        executor = SettlementServiceExecutor()
+        result = executor.use(matched, params)
+
+        # Log the service use event
+        _log_settlement_event("use_service", {
+            "settlement_id": settlement.settlement_id if settlement else None,
+            "location_name": location.name,
+            "location_number": location.number,
+            "service_name": result.service_name,
+            "cost_text": result.cost_text,
+            "cost_estimate": result.cost_estimate.__dict__ if result.cost_estimate else None,
+        })
+
+        return {
+            "success": True,
+            "message": f"Using {result.service_name}...",
+            "action": "settlement:use_service",
+            "service_result": result.to_dict(),
+            "location_name": location.name,
+        }
+
+    def _action_list_npcs(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List NPCs at current location or in settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:list_npcs",
+            }
+
+        location = self.get_current_location()
+        npc_map = settlement.npc_by_id()
+
+        if location:
+            # Get NPCs at this location from both sources:
+            # 1. location.npcs list
+            # 2. NPCs whose location_id matches this location number
+            seen_ids = set()
+            npcs = []
+
+            # From location.npcs
+            for npc_id in location.npcs:
+                if npc_id in seen_ids:
+                    continue
+                npc = npc_map.get(npc_id)
+                if npc:
+                    seen_ids.add(npc_id)
+                    npcs.append({
+                        "npc_id": npc.npc_id,
+                        "name": npc.name,
+                        "title": npc.title,
+                        "kindred": npc.kindred,
+                        "description": npc.description[:100] + "..." if len(npc.description) > 100 else npc.description,
+                    })
+
+            # From NPCs with matching location_id
+            for npc in settlement.npcs:
+                if npc.npc_id in seen_ids:
+                    continue
+                if npc.location_id and str(npc.location_id) == str(location.number):
+                    seen_ids.add(npc.npc_id)
+                    npcs.append({
+                        "npc_id": npc.npc_id,
+                        "name": npc.name,
+                        "title": npc.title,
+                        "kindred": npc.kindred,
+                        "description": npc.description[:100] + "..." if len(npc.description) > 100 else npc.description,
+                    })
+
+            return {
+                "success": True,
+                "message": f"Notable people at {location.name}:" if npcs else f"No notable NPCs at {location.name}.",
+                "action": "settlement:list_npcs",
+                "location_name": location.name,
+                "location_number": location.number,
+                "npcs": npcs,
+            }
+
+        # All NPCs in settlement
+        npcs = []
+        for npc in settlement.npcs:
+            # Try to find location name for this NPC
+            loc_name = None
+            if npc.location_id:
+                loc_map = settlement.location_by_number()
+                loc = loc_map.get(int(npc.location_id)) if npc.location_id.isdigit() else None
+                loc_name = loc.name if loc else None
+
+            npcs.append({
+                "npc_id": npc.npc_id,
+                "name": npc.name,
+                "title": npc.title,
+                "kindred": npc.kindred,
+                "occupation": npc.occupation,
+                "location_id": npc.location_id,
+                "location_name": loc_name,
+            })
+
+        return {
+            "success": True,
+            "message": f"Notable people in {settlement.name}:",
+            "action": "settlement:list_npcs",
+            "settlement_name": settlement.name,
+            "npcs": npcs,
+        }
+
+    def _action_talk_to_npc(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Talk to an NPC - provides NPC details for narration."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:talk",
+            }
+
+        npc_name = params.get("npc_name", "")
+        npc_id = params.get("npc_id")  # Allow lookup by ID too
+
+        # Find NPC by ID first, then by name
+        matched = None
+        if npc_id:
+            npc_map = settlement.npc_by_id()
+            matched = npc_map.get(npc_id)
+
+        if not matched:
+            # Try exact name match first
+            for npc in settlement.npcs:
+                if npc.name.lower() == npc_name.lower():
+                    matched = npc
+                    break
+            # Then try partial match
+            if not matched:
+                for npc in settlement.npcs:
+                    if npc_name.lower() in npc.name.lower():
+                        matched = npc
+                        break
+
+        if not matched:
+            # Suggest available NPCs
+            available = [npc.name for npc in settlement.npcs]
+            return {
+                "success": False,
+                "message": f"Could not find '{npc_name}' in {settlement.name}.",
+                "action": "settlement:talk",
+                "available_npcs": available[:5],  # Limit suggestions
+            }
+
+        # Log the talk event
+        _log_settlement_event("talk_to_npc", {
+            "settlement_id": settlement.settlement_id,
+            "npc_id": matched.npc_id,
+            "npc_name": matched.name,
+            "location_number": self._current_location_number,
+        })
+
+        # Get NPC's location name if available
+        npc_location_name = None
+        if matched.location_id:
+            loc_map = settlement.location_by_number()
+            loc = loc_map.get(int(matched.location_id)) if matched.location_id.isdigit() else None
+            npc_location_name = loc.name if loc else None
+
+        return {
+            "success": True,
+            "message": f"You approach {matched.name}.",
+            "action": "settlement:talk",
+            "npc": {
+                "npc_id": matched.npc_id,
+                "name": matched.name,
+                "title": matched.title,
+                "description": matched.description,
+                "kindred": matched.kindred,
+                "alignment": matched.alignment,
+                "demeanor": matched.demeanor,
+                "mannerisms": matched.mannerisms,
+                "speech": matched.speech,
+                "languages": matched.languages,
+                "desires": matched.desires,
+                "secrets": matched.secrets,
+                "occupation": matched.occupation,
+                "location_name": npc_location_name,
+            },
+        }
+
+    def _action_ask_directions(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Ask for directions / roads out of settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:ask_directions",
+            }
+
+        return {
+            "success": True,
+            "message": f"Roads and connections from {settlement.name}:",
+            "action": "settlement:ask_directions",
+            "roads": settlement.roads,
+            "connections": settlement.connections,
+        }
+
+    def _action_ask_rumor(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Ask about rumors (stub - needs rumor system)."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:ask_rumor",
+            }
+
+        return {
+            "success": True,
+            "message": f"Rumors in {settlement.name}...",
+            "action": "settlement:ask_rumor",
+            "rumors_reference": settlement.rumors_reference,
+            "current_events": settlement.current_events,
+            "note": "Full rumor system to be implemented.",
+        }
+
+    def _action_equipment_availability(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Query equipment availability in the settlement.
+
+        Returns what equipment categories are available/unavailable,
+        any price modifier, and special items unique to this settlement.
+
+        Args:
+            params: Optional parameters:
+                - category: Filter by specific category
+                - apply_modifier: If True, include calculated prices
+
+        Returns:
+            Result dict with equipment availability info
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:equipment_availability",
+            }
+
+        eq = settlement.equipment_availability
+        category_filter = params.get("category", "").lower()
+
+        # Filter available categories if requested
+        available = eq.available_categories
+        if category_filter:
+            available = [c for c in available if category_filter in c.lower()]
+
+        # Check if category is explicitly unavailable
+        is_unavailable = False
+        if category_filter:
+            for unavail in eq.unavailable_categories:
+                if category_filter in unavail.lower():
+                    is_unavailable = True
+                    break
+
+        result = {
+            "success": True,
+            "message": f"Equipment availability in {settlement.name}:",
+            "action": "settlement:equipment_availability",
+            "settlement_name": settlement.name,
+            "price_modifier": eq.price_modifier,
+            "price_modifier_percent": f"{int((eq.price_modifier - 1.0) * 100):+d}%" if eq.price_modifier != 1.0 else "standard",
+            "available_categories": available,
+            "unavailable_categories": eq.unavailable_categories,
+            "special_items": eq.special_items,
+            "notes": eq.notes,
+        }
+
+        if category_filter:
+            result["filtered_category"] = category_filter
+            result["category_available"] = len(available) > 0 and not is_unavailable
+            if is_unavailable:
+                result["message"] = f"'{category_filter}' is not available in {settlement.name}."
+
+        return result
+
+    def _action_leave(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Leave the settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:leave",
+            }
+
+        settlement_name = settlement.name
+        hex_id = settlement.hex_id
+
+        # Clear v2 state
+        self.clear_active_settlement()
+
+        return {
+            "success": True,
+            "message": f"You depart from {settlement_name}.",
+            "action": "settlement:leave",
+            "settlement_name": settlement_name,
+            "hex_id": hex_id,
+            "note": "Use exit_settlement() for full state transition to wilderness.",
+        }
+
+    def _action_carouse(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Carouse in the settlement - spend gold, gain XP, risk mishaps.
+
+        Based on Jeff Rients's carousing rules:
+        - Spend gold to gain XP (1 XP per 1 GP)
+        - Maximum spending is level × 100 GP per session
+        - Make a save vs. poison to avoid mishaps
+        - On failed save, roll on mishap table
+
+        Args:
+            params: Parameters:
+                - character_id: ID of the character carousing (required)
+                - gold_to_spend: Amount of gold to spend (required)
+                - venue_modifier: Optional modifier based on venue quality (-2 to +2)
+
+        Returns:
+            Result dict with carousing outcome
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement. Carousing requires a tavern or inn.",
+                "action": "settlement:carouse",
+            }
+
+        character_id = params.get("character_id")
+        if not character_id:
+            return {
+                "success": False,
+                "message": "Must specify a character_id for carousing.",
+                "action": "settlement:carouse",
+            }
+
+        gold_to_spend = params.get("gold_to_spend", 0)
+        if gold_to_spend <= 0:
+            return {
+                "success": False,
+                "message": "Must specify a positive amount of gold to spend.",
+                "action": "settlement:carouse",
+            }
+
+        venue_modifier = params.get("venue_modifier", 0)
+
+        # Import here to avoid circular imports
+        from src.settlement.carousing import CarousingEngine
+
+        carousing_engine = CarousingEngine(self.controller)
+        result = carousing_engine.carouse(
+            character_id=character_id,
+            gold_to_spend=gold_to_spend,
+            settlement_id=settlement.settlement_id,
+            settlement_name=settlement.name,
+            venue_modifier=venue_modifier,
+        )
+
+        # Log the carousing event
+        self.log(
+            f"{result.character_name} spent {result.gold_spent} GP carousing in {settlement.name}",
+            event_type="carouse",
+            details=result.to_dict(),
+        )
+
+        # Build narrative message
+        if result.outcome.value == "success":
+            message = (
+                f"{result.character_name} enjoys a fine night of revelry in {settlement.name}, "
+                f"spending {result.gold_spent} GP and gaining {result.final_xp} XP."
+            )
+        elif result.outcome.value == "bonus":
+            message = (
+                f"{result.character_name} has an excellent night in {settlement.name}! "
+                f"Spent {result.gold_spent} GP, gained {result.final_xp} XP, and {result.bonus.title.lower()}."
+            )
+        elif result.outcome.value == "minor_mishap":
+            message = (
+                f"{result.character_name}'s night in {settlement.name} took a turn... "
+                f"Spent {result.gold_spent} GP, gained {result.final_xp} XP, "
+                f"but {result.mishap.title.lower()}: {result.mishap.description}"
+            )
+        elif result.outcome.value == "major_mishap":
+            message = (
+                f"{result.character_name}'s carousing in {settlement.name} went very wrong! "
+                f"Spent {result.gold_spent} GP, only gained {result.final_xp} XP (half), "
+                f"and {result.mishap.title.lower()}: {result.mishap.description}"
+            )
+        else:
+            message = f"{result.character_name} attempted to carouse but something went awry."
+
+        return {
+            "success": True,
+            "message": message,
+            "action": "settlement:carouse",
+            "character_id": result.character_id,
+            "character_name": result.character_name,
+            "gold_spent": result.gold_spent,
+            "gold_cap": result.gold_cap,
+            "outcome": result.outcome.value,
+            "base_xp": result.base_xp,
+            "xp_modifier": result.xp_modifier,
+            "final_xp": result.final_xp,
+            "level_up_ready": result.level_up_ready,
+            "save_roll": result.save_roll,
+            "save_target": result.save_target,
+            "save_passed": result.save_passed,
+            "mishap": result.mishap.title if result.mishap else None,
+            "mishap_details": result.mishap.description if result.mishap else None,
+            "bonus": result.bonus.title if result.bonus else None,
+            "bonus_details": result.bonus.description if result.bonus else None,
+            "events": result.events,
+            "consequences": result.consequences,
+        }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 3: Encounters)
+    # =========================================================================
+
+    def _action_check_encounter(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Check for a random encounter in the settlement.
+
+        Per Dolmenwood rules (p160):
+        - Daytime: 2-in-6 chance when active
+        - Nighttime: 1-in-6 chance when active
+
+        Args:
+            params: Optional parameters:
+                - time_of_day: TimeOfDay enum or string (defaults to current time)
+                - force_roll: If True, skip probability check and roll table directly
+                - route_to_encounter_engine: If True, create EncounterState for EncounterEngine
+
+        Returns:
+            Result dict with encounter outcome
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:check_encounter",
+            }
+
+        # Get time of day
+        time_of_day = params.get("time_of_day")
+        if time_of_day is None:
+            # Get from controller's time tracker
+            try:
+                time_of_day = self.controller.time_tracker.game_time.get_time_of_day()
+            except Exception:
+                time_of_day = TimeOfDay.MIDDAY  # Default to day
+        elif isinstance(time_of_day, str):
+            try:
+                time_of_day = TimeOfDay(time_of_day)
+            except ValueError:
+                time_of_day = TimeOfDay.MIDDAY
+
+        day_night = tod_to_daynight(time_of_day)
+
+        # Roll probability check unless forced
+        force_roll = params.get("force_roll", False)
+        if not force_roll:
+            # Day: 2-in-6, Night: 1-in-6
+            threshold = 2 if day_night == "day" else 1
+            prob_roll = self.dice.roll("1d6", reason=f"Settlement encounter check ({day_night})")
+
+            if prob_roll.total > threshold:
+                return {
+                    "success": True,
+                    "message": f"No encounter ({day_night}: rolled {prob_roll.total}, needed {threshold} or less).",
+                    "action": "settlement:check_encounter",
+                    "encounter_occurred": False,
+                    "probability_roll": prob_roll.total,
+                    "threshold": threshold,
+                    "time_of_day": time_of_day.value,
+                    "day_night": day_night,
+                }
+
+        # Roll on the encounter table
+        encounter_result = self.check_settlement_encounter(time_of_day)
+
+        if not encounter_result:
+            return {
+                "success": True,
+                "message": f"No encounter table available for {settlement.name} ({day_night}).",
+                "action": "settlement:check_encounter",
+                "encounter_occurred": False,
+                "time_of_day": time_of_day.value,
+                "day_night": day_night,
+            }
+
+        # Log the encounter event
+        _log_settlement_event("encounter", {
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "time_of_day": time_of_day.value,
+            "day_night": day_night,
+            "roll": encounter_result.roll,
+            "description": encounter_result.description,
+            "npcs_involved": encounter_result.npcs_involved,
+            "monsters_involved": encounter_result.monsters_involved,
+        })
+
+        # Build response
+        result = {
+            "success": True,
+            "message": f"Encounter! ({day_night}, rolled {encounter_result.roll})",
+            "action": "settlement:check_encounter",
+            "encounter_occurred": True,
+            "time_of_day": time_of_day.value,
+            "day_night": day_night,
+            "encounter": {
+                "roll": encounter_result.roll,
+                "description": encounter_result.description,
+                "npcs_involved": encounter_result.npcs_involved,
+                "monsters_involved": encounter_result.monsters_involved,
+                "notes": encounter_result.notes,
+            },
+        }
+
+        # Optionally route to EncounterEngine
+        route_to_engine = params.get("route_to_encounter_engine", False)
+        if route_to_engine and (encounter_result.monsters_involved or encounter_result.npcs_involved):
+            result["encounter_engine_data"] = self._prepare_encounter_for_engine(
+                encounter_result, settlement, time_of_day
+            )
+
+        return result
+
+    def check_settlement_encounter(
+        self, time_of_day: Optional[TimeOfDay] = None
+    ) -> Optional[SettlementEncounterResult]:
+        """
+        Roll on the settlement encounter table.
+
+        This method rolls directly on the encounter table without checking
+        the probability threshold. Use _action_check_encounter for full
+        encounter check with probability.
+
+        Args:
+            time_of_day: The time of day (defaults to current time from controller)
+
+        Returns:
+            SettlementEncounterResult if encounter occurs, None otherwise
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return None
+
+        # Get time of day
+        if time_of_day is None:
+            try:
+                time_of_day = self.controller.time_tracker.game_time.get_time_of_day()
+            except Exception:
+                time_of_day = TimeOfDay.MIDDAY
+
+        # Create encounter tables wrapper and roll
+        tables = SettlementEncounterTables(settlement)
+        return tables.roll(self.dice, time_of_day)
+
+    def _prepare_encounter_for_engine(
+        self,
+        encounter_result: SettlementEncounterResult,
+        settlement: SettlementData,
+        time_of_day: TimeOfDay,
+    ) -> dict[str, Any]:
+        """
+        Prepare encounter data for routing to EncounterEngine.
+
+        This creates the data needed to call EncounterEngine.start_encounter().
+        The actual EncounterState creation should be done by the caller.
+
+        Args:
+            encounter_result: The settlement encounter result
+            settlement: The settlement data
+            time_of_day: The time of day
+
+        Returns:
+            Dict with data for EncounterEngine integration
+        """
+        from src.encounter.encounter_engine import EncounterOrigin
+
+        # Determine encounter type based on what's involved
+        has_monsters = bool(encounter_result.monsters_involved)
+        has_npcs = bool(encounter_result.npcs_involved)
+
+        return {
+            "origin": EncounterOrigin.SETTLEMENT.value,
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "location_number": self._current_location_number,
+            "time_of_day": time_of_day.value,
+            "actors": encounter_result.monsters_involved + encounter_result.npcs_involved,
+            "context": encounter_result.description,
+            "has_monsters": has_monsters,
+            "has_npcs": has_npcs,
+            "notes": encounter_result.notes,
+            "suggested_encounter_type": "monster" if has_monsters else "npc",
+        }
+
+    def check_encounter_on_time_advance(
+        self, new_time_of_day: TimeOfDay, is_active: bool = True
+    ) -> Optional[dict[str, Any]]:
+        """
+        Hook for checking encounters when time advances.
+
+        This should be called by time-advancing actions (rest, waiting, etc.)
+        to check for random encounters per Dolmenwood rules.
+
+        Args:
+            new_time_of_day: The time of day after advancement
+            is_active: Whether the party is active (exploring, not hidden)
+
+        Returns:
+            Encounter result dict if encounter occurs, None otherwise
+        """
+        if not is_active:
+            return None
+
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return None
+
+        # Check using the action handler
+        result = self._action_check_encounter({
+            "time_of_day": new_time_of_day,
+            "force_roll": False,
+        })
+
+        if result.get("encounter_occurred"):
+            return result
+        return None
 
     # =========================================================================
     # SETTLEMENT MANAGEMENT

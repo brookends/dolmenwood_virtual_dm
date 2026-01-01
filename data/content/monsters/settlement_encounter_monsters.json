@@ -1,0 +1,197 @@
+{
+  "_metadata": {
+    "source_file": "settlement_encounters",
+    "pages": [],
+    "content_type": "monsters",
+    "item_count": 3,
+    "errors": [],
+    "note": "Supplemental monster entries for settlement encounters"
+  },
+  "items": [
+    {
+      "name": "Zombie",
+      "monster_id": "zombie",
+      "armor_class": 11,
+      "hit_dice": "2d8",
+      "hp": 9,
+      "level": 2,
+      "movement": "Speed 20",
+      "speed": 20,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Slam (+1, 1d8)"
+      ],
+      "damage": [
+        "1d8"
+      ],
+      "save_doom": 11,
+      "save_ray": 12,
+      "save_hold": 13,
+      "save_blast": 14,
+      "save_spell": 15,
+      "saves_as": null,
+      "morale": 12,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Medium",
+      "monster_type": "Undead",
+      "sentience": "Mindless",
+      "alignment": "Chaotic",
+      "intelligence": "Mindless",
+      "special_abilities": [
+        "Undead: Immune to charm, hold, and sleep effects. Not affected by poison or disease.",
+        "Mindless: Cannot be reasoned with or frightened.",
+        "Slow: Always loses initiative.",
+        "Relentless: When reduced to 0 HP, has a 1-in-6 chance of rising again with 1 HP after 1d4 rounds unless destroyed by fire or holy water."
+      ],
+      "immunities": [
+        "Sleep",
+        "Charm",
+        "Hold",
+        "Poison",
+        "Disease"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "Fire",
+        "Holy Water"
+      ],
+      "description": "Animated corpses driven by dark magic or necromantic energy. Zombies are slow but relentless, shambling toward the living with an insatiable hunger. Often found guarding ancient tombs or serving dark masters.",
+      "behavior": "Attacks the nearest living creature mindlessly",
+      "speech": null,
+      "traits": [],
+      "number_appearing": "2d6",
+      "lair_percentage": 30,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 29,
+      "habitat": ["Dungeons", "Graveyards", "Ruins"]
+    },
+    {
+      "name": "Fire Elemental",
+      "monster_id": "fire_elemental",
+      "armor_class": 16,
+      "hit_dice": "8d8",
+      "hp": 36,
+      "level": 8,
+      "movement": "Speed 40",
+      "speed": 40,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": null,
+      "attacks": [
+        "Touch (+7, 2d8 fire)"
+      ],
+      "damage": [
+        "2d8"
+      ],
+      "save_doom": 7,
+      "save_ray": 8,
+      "save_hold": 9,
+      "save_blast": 10,
+      "save_spell": 11,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": null,
+      "possessions": null,
+      "size": "Large",
+      "monster_type": "Elemental",
+      "sentience": "Semi-intelligent",
+      "alignment": "Neutral",
+      "intelligence": "Low",
+      "special_abilities": [
+        "Fire immunity: Immune to all fire damage.",
+        "Burning aura: Creatures within 5 feet take 1d4 fire damage at the start of their turn.",
+        "Ignite: Flammable objects touched by the elemental catch fire.",
+        "Water vulnerability: Takes double damage from water-based attacks. Immersion in water deals 1d8 damage per round."
+      ],
+      "immunities": [
+        "Fire"
+      ],
+      "resistances": [],
+      "vulnerabilities": [
+        "Water",
+        "Cold"
+      ],
+      "description": "A roiling mass of living flame, vaguely humanoid in shape. Fire elementals are summoned from the Elemental Plane of Fire and are typically bound to serve a summoner. Without a master, they seek to burn everything in their path.",
+      "behavior": "Burns all flammable materials, attacks water-users first",
+      "speech": "Crackling and hissing, may understand Primordial",
+      "traits": [],
+      "number_appearing": "1",
+      "lair_percentage": null,
+      "encounter_scenarios": [],
+      "lair_descriptions": [],
+      "xp_value": 1000,
+      "habitat": ["Volcanic regions", "Magical forges", "Summoning circles"]
+    },
+    {
+      "name": "Big Chook",
+      "monster_id": "big_chook",
+      "armor_class": 18,
+      "hit_dice": "12d8",
+      "hp": 54,
+      "level": 12,
+      "movement": "Swim 60",
+      "speed": 10,
+      "burrow_speed": null,
+      "fly_speed": null,
+      "swim_speed": 60,
+      "attacks": [
+        "Bite (+10, 3d6)",
+        "Tail Slam (+10, 2d8)"
+      ],
+      "damage": [
+        "3d6",
+        "2d8"
+      ],
+      "save_doom": 5,
+      "save_ray": 6,
+      "save_hold": 7,
+      "save_blast": 8,
+      "save_spell": 9,
+      "saves_as": null,
+      "morale": 10,
+      "treasure_type": null,
+      "hoard": "Accumulated treasures from sunken boats",
+      "possessions": null,
+      "size": "Huge",
+      "monster_type": "Monster",
+      "sentience": "Cunning",
+      "alignment": "Chaotic",
+      "intelligence": "Cunning",
+      "special_abilities": [
+        "Mind-melting wail: Once per hour, Big Chook can emit a cockerel-like wailing that echoes across the lake. All who hear it within 1 mile must Save Versus Spell or become obsessed with the creature (becoming a 'Chooker'). Chookers are irresistibly drawn to the lake and may behave erratically.",
+        "Aquatic ambush: In water, Big Chook has advantage on surprise checks. Victims surprised by Big Chook in the water are automatically grappled.",
+        "Capsize: Can capsize boats up to 30 feet long with a successful attack.",
+        "Amphibious: Can breathe both air and water, though rarely ventures onto land."
+      ],
+      "immunities": [],
+      "resistances": [],
+      "vulnerabilities": [],
+      "description": "A horrible lake monster that has dwelled in Lake Longmere for over 400 years, appearing shortly after the coming of the Nag-Lord. Big Chook resembles a massive serpentine creature with an unsettling, vaguely bird-like head that can emit mind-melting, cockerel-like wailings. Those who survive close encounters often become wild-eyed obsessives called 'Chookers', irresistibly drawn to the lake shores.",
+      "behavior": "Lurks in the deep waters of Lake Longmere, occasionally surfacing to attack boats or wail across the lake",
+      "speech": "Cockerel-like wailings that carry supernatural effects",
+      "traits": [
+        "Territorial",
+        "Patient hunter",
+        "Attracted to large gatherings near the lake"
+      ],
+      "number_appearing": "1",
+      "lair_percentage": 100,
+      "encounter_scenarios": [
+        "Wailings heard from across the lake at night",
+        "Boat attacked while crossing Lake Longmere",
+        "Chookers gathered on the shore, entranced"
+      ],
+      "lair_descriptions": [
+        "Deep beneath Lake Longmere, in underwater caves filled with the treasures of sunken vessels"
+      ],
+      "xp_value": 2100,
+      "habitat": ["Lake Longmere"]
+    }
+  ]
+}

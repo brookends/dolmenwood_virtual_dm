@@ -25,6 +25,7 @@ SETTLEMENT_ACTIONS = {
     "settlement:ask_directions",
     "settlement:ask_local_info",
     "settlement:check_encounter",
+    "settlement:carouse",
     "settlement:leave",
 }
 

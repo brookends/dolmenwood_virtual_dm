@@ -276,6 +276,9 @@ class VirtualDM:
                 spell_count = register_spells_with_combat(content.spells, self.combat)
                 logger.info(f"Registered {spell_count} spells with CombatEngine")
 
+            # Load settlements into SettlementEngine
+            self._load_settlements(content_dir)
+
             # Log any warnings
             for warning in content.warnings[:5]:  # Cap logged warnings
                 logger.warning(f"Content load warning: {warning}")
@@ -290,6 +293,37 @@ class VirtualDM:
         except Exception as e:
             logger.error(f"Failed to load base content: {e}", exc_info=True)
             self._content_loaded = False
+
+    def _load_settlements(self, content_dir: Path) -> None:
+        """
+        Load settlement content from JSON files into SettlementEngine.
+
+        Args:
+            content_dir: Base content directory (contains settlements/ subdirectory)
+        """
+        from src.content_loader import SettlementLoader
+
+        settlements_dir = content_dir / "settlements"
+        if not settlements_dir.exists():
+            logger.warning(f"Settlements directory not found: {settlements_dir}")
+            return
+
+        try:
+            loader = SettlementLoader(settlements_dir)
+            registry, report = loader.load_registry_with_report()
+
+            if report.errors:
+                for err in report.errors[:3]:
+                    logger.warning(f"Settlement load error: {err}")
+
+            self.settlement.set_registry(registry)
+            logger.info(
+                f"Loaded {report.total_settlements_loaded} settlements "
+                f"from {report.files_successful} files"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to load settlements: {e}", exc_info=True)
 
     def _narrate_from_context(
         self,
