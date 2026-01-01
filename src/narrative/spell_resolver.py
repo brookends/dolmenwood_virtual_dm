@@ -4029,6 +4029,11 @@ class SpellResolver:
             "petrification": self._handle_petrification,
             "invisibility": self._handle_invisibility,
             "knock": self._handle_knock,
+            # Phase 10 remaining moderate/significant spell handlers
+            "arcane_cypher": self._handle_arcane_cypher,
+            "trap_the_soul": self._handle_trap_the_soul,
+            "holy_quest": self._handle_holy_quest,
+            "polymorph": self._handle_polymorph,
         }
 
         handler = handlers.get(spell.spell_id)
@@ -7233,6 +7238,436 @@ class SpellResolver:
             hints.append("the portal was already unlocked")
 
         hints.append("the portal groans, grumbles, and opens")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 10 HANDLERS - Remaining Moderate/Significant Spells
+    # =========================================================================
+
+    def _handle_arcane_cypher(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Arcane Cypher spell.
+
+        Transforms text into incomprehensible arcane sigils readable only by caster.
+
+        Effects:
+        - Transforms up to 1 page of text per Level (or 1 spell in spellbook)
+        - Duration is permanent
+        - Only decoded by magic (e.g. Decipher spell)
+        """
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"arcane_cypher_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        target_id = targets_affected[0] if targets_affected else "text"
+        max_pages = caster_level
+
+        result_data: dict[str, Any] = {
+            "spell_id": "arcane_cypher",
+            "spell_name": "Arcane Cypher",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "max_pages": max_pages,
+            "duration_type": "permanent",
+            "success": True,
+        }
+
+        # Create permanent effect tracking the encrypted text
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="arcane_cypher",
+            spell_name="Arcane Cypher",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type="object",
+            effect_type=SpellEffectType.NARRATIVE,
+            duration_type=DurationType.PERMANENT,
+            duration_remaining=None,
+            duration_unit="permanent",
+            requires_concentration=False,
+            mechanical_effects={
+                "encrypted": True,
+                "readable_by": [getattr(caster, "character_id", "unknown")],
+                "decryption_method": "decipher_spell",
+                "pages_affected": max_pages,
+            },
+        )
+        self._active_effects.append(effect)
+
+        result_data["effect_id"] = effect_id
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "arcane sigils shimmer across the text",
+                f"up to {max_pages} pages transformed into incomprehensible symbols",
+                "only the caster can read the encrypted text",
+            ],
+        }
+
+        return result_data
+
+    def _handle_trap_the_soul(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Trap the Soul spell.
+
+        Traps or releases a creature's life force in a prepared gem/crystal.
+
+        Effects:
+        - Trap mode: Save Versus Doom or soul trapped, body comatose (30 days to death)
+        - Release mode: Restore soul to body or transfer to another receptacle
+        - Receptacle must be worth 1000gp per target Level with name engraved
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"trap_the_soul_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Determine mode from context
+        mode = "trap"  # or "release"
+        if hasattr(self, "_current_context") and self._current_context:
+            mode = self._current_context.get("mode", "trap")
+            receptacle_id = self._current_context.get("receptacle_id", "gem")
+        else:
+            receptacle_id = "gem"
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        result_data: dict[str, Any] = {
+            "spell_id": "trap_the_soul",
+            "spell_name": "Trap the Soul",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "mode": mode,
+            "receptacle_id": receptacle_id,
+            "success": True,
+        }
+
+        hints = []
+
+        if mode == "trap":
+            # Target must Save Versus Doom
+            save_roll = dice.roll("1d20")
+            save_target = 12  # Default doom save
+
+            if hasattr(self, "_controller") and self._controller and target_id:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "doom", 12)
+
+            save_success = save_roll >= save_target
+
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+            result_data["soul_trapped"] = not save_success
+
+            if not save_success:
+                # Soul is trapped
+                effect = ActiveSpellEffect(
+                    effect_id=effect_id,
+                    spell_id="trap_the_soul",
+                    spell_name="Trap the Soul",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=target_id,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.SPECIAL,
+                    duration_remaining=30,
+                    duration_unit="days",
+                    requires_concentration=False,
+                    mechanical_effects={
+                        "soul_trapped": True,
+                        "receptacle_id": receptacle_id,
+                        "body_comatose": True,
+                        "days_until_death": 30,
+                        "can_converse": True,
+                    },
+                )
+                self._active_effects.append(effect)
+                result_data["effect_id"] = effect_id
+
+                hints.append("the target's life force is ripped from their body")
+                hints.append(f"soul trapped in the {receptacle_id}")
+                hints.append("the body falls into a deathlike coma")
+                hints.append("without intervention, death will occur in 30 days")
+            else:
+                hints.append("the target resists the spell")
+                hints.append("their soul remains firmly anchored")
+        else:
+            # Release mode
+            result_data["soul_released"] = True
+            hints.append("the trapped soul streams forth from the receptacle")
+            hints.append("life force restored to the body")
+
+            # Remove any existing trap effect
+            self._active_effects = [
+                e for e in self._active_effects
+                if not (e.spell_id == "trap_the_soul" and e.target_id == target_id)
+            ]
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_holy_quest(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Holy Quest spell.
+
+        Commands subject to perform a specific quest with penalties for refusal.
+
+        Effects:
+        - Target must perform the quest or suffer -2 to Attack Rolls and Saving Throws
+        - Save Versus Spell to resist the compulsion
+        - Duration until quest is completed
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"holy_quest_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        # Get quest description from context
+        quest_description = "complete the assigned task"
+        if hasattr(self, "_current_context") and self._current_context:
+            quest_description = self._current_context.get("quest", quest_description)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "holy_quest",
+            "spell_name": "Holy Quest",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "quest_description": quest_description,
+            "success": True,
+        }
+
+        # Target may Save Versus Spell to resist
+        save_roll = dice.roll("1d20")
+        save_target = 14  # Default spell save
+
+        if hasattr(self, "_controller") and self._controller and target_id:
+            target_char = self._controller.get_character(target_id)
+            if target_char and hasattr(target_char, "saving_throws"):
+                save_target = getattr(target_char.saving_throws, "spell", 14)
+
+        save_success = save_roll >= save_target
+
+        result_data["save_roll"] = save_roll
+        result_data["save_target"] = save_target
+        result_data["save_success"] = save_success
+        result_data["compelled"] = not save_success
+
+        hints = ["a clap of thunder accompanies the divine command"]
+        hints.append("a ray of holy light illuminates the target")
+
+        if not save_success:
+            # Target is compelled
+            effect = ActiveSpellEffect(
+                effect_id=effect_id,
+                spell_id="holy_quest",
+                spell_name="Holy Quest",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.MECHANICAL,
+                duration_type=DurationType.SPECIAL,
+                duration_remaining=None,
+                duration_unit="until_quest_complete",
+                requires_concentration=False,
+                mechanical_effects={
+                    "quest": quest_description,
+                    "compelled": True,
+                    "refusal_penalty": {
+                        "attack_rolls": -2,
+                        "saving_throws": -2,
+                    },
+                    "quest_active": True,
+                },
+            )
+            self._active_effects.append(effect)
+            result_data["effect_id"] = effect_id
+
+            hints.append(f"the target is compelled to: {quest_description}")
+            hints.append("refusal brings divine punishment (-2 to attacks and saves)")
+        else:
+            hints.append("the target resists the holy compulsion")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_polymorph(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Polymorph spell.
+
+        Transforms caster or subject into another living creature form.
+
+        Effects:
+        - Self: New form level <= caster level, keeps HP/saves/attack/intelligence
+        - Other: New form level <= 2x caster level, fully becomes new form (permanent)
+        - Physical capabilities acquired, non-physical special powers not acquired (self)
+        - Unwilling targets may Save Versus Spell to resist
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        caster_id = getattr(caster, "character_id", "unknown")
+        effect_id = f"polymorph_{caster_id}_{id(self)}"
+
+        # Determine if self-cast or other
+        target_id = targets_affected[0] if targets_affected else caster_id
+        is_self_cast = target_id == caster_id
+
+        # Get new form from context
+        new_form = "wolf"  # Default form
+        new_form_level = 2
+        if hasattr(self, "_current_context") and self._current_context:
+            new_form = self._current_context.get("new_form", new_form)
+            new_form_level = self._current_context.get("new_form_level", new_form_level)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "polymorph",
+            "spell_name": "Polymorph",
+            "caster_id": caster_id,
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "is_self_cast": is_self_cast,
+            "new_form": new_form,
+            "new_form_level": new_form_level,
+            "success": True,
+        }
+
+        hints = []
+
+        # Check level restriction
+        max_allowed_level = caster_level if is_self_cast else caster_level * 2
+        if new_form_level > max_allowed_level:
+            result_data["success"] = False
+            result_data["failure_reason"] = "new_form_level_too_high"
+            hints.append(f"the {new_form} form is too powerful for this casting")
+            result_data["narrative_context"] = {"spell_cast": False, "hints": hints}
+            return result_data
+
+        # Handle unwilling targets (not self)
+        if not is_self_cast:
+            is_unwilling = False
+            if hasattr(self, "_current_context") and self._current_context:
+                is_unwilling = self._current_context.get("is_unwilling", False)
+
+            if is_unwilling:
+                save_roll = dice.roll("1d20")
+                save_target = 14  # Default spell save
+
+                if hasattr(self, "_controller") and self._controller:
+                    target_char = self._controller.get_character(target_id)
+                    if target_char and hasattr(target_char, "saving_throws"):
+                        save_target = getattr(target_char.saving_throws, "spell", 14)
+
+                save_success = save_roll >= save_target
+
+                result_data["save_roll"] = save_roll
+                result_data["save_target"] = save_target
+                result_data["save_success"] = save_success
+
+                if save_success:
+                    result_data["success"] = False
+                    result_data["failure_reason"] = "target_resisted"
+                    hints.append("the target resists the transformation")
+                    result_data["narrative_context"] = {"spell_cast": True, "hints": hints}
+                    return result_data
+
+        # Calculate duration
+        if is_self_cast:
+            base_duration = dice.roll("1d6")
+            duration = base_duration + caster_level
+            duration_type = DurationType.TURNS
+            duration_unit = "turns"
+        else:
+            duration = None
+            duration_type = DurationType.PERMANENT
+            duration_unit = "permanent"
+
+        result_data["duration"] = duration
+        result_data["duration_unit"] = duration_unit
+
+        # Create the polymorph effect
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="polymorph",
+            spell_name="Polymorph",
+            caster_id=caster_id,
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type="creature",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=duration_type,
+            duration_remaining=duration,
+            duration_unit=duration_unit,
+            requires_concentration=False,
+            mechanical_effects={
+                "new_form": new_form,
+                "new_form_level": new_form_level,
+                "is_self_cast": is_self_cast,
+                "preserves_hp": True,
+                "preserves_saves": is_self_cast,
+                "preserves_attack": is_self_cast,
+                "preserves_intelligence": is_self_cast,
+                "acquires_physical_capabilities": True,
+                "acquires_special_powers": not is_self_cast,
+                "can_cast_spells": False,
+                "reverts_on_death": True,
+            },
+        )
+        self._active_effects.append(effect)
+        result_data["effect_id"] = effect_id
+
+        hints.append(f"flesh ripples and transforms into the form of a {new_form}")
+        if is_self_cast:
+            hints.append(f"transformation lasts {duration} turns")
+            hints.append("physical capabilities acquired, spell casting suppressed")
+        else:
+            hints.append("the transformation is permanent")
+            hints.append("the target fully becomes the new creature")
 
         result_data["narrative_context"] = {
             "spell_cast": True,
