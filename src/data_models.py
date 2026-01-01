@@ -194,6 +194,8 @@ class ConditionType(str, Enum):
     # Combat modifier conditions
     CONFUSED = "confused"  # Random behavior each round
     HASTED = "hasted"  # Extra actions, +2 initiative, +2 AC
+    # Stasis/suspension conditions
+    TEMPORAL_STASIS = "temporal_stasis"  # Frozen in time, invulnerable, cannot act
 
 
 class ConfusionBehavior(str, Enum):
@@ -1963,9 +1965,12 @@ class StatModifier:
     The `mode` field controls how the modifier is applied:
     - "add": Add the value to the stat (default behavior)
     - "set": Override the stat to this exact value (e.g., "AC becomes 17")
+    - "mul": Multiply the stat by `multiplier` (e.g., Animal Growth doubles damage)
 
     For "set" mode modifiers affecting the same stat, the best (highest for
     beneficial stats like AC) value wins.
+
+    For "mul" mode, all active multipliers for a stat are combined multiplicatively.
     """
 
     modifier_id: str  # Unique identifier for this modifier instance
@@ -1974,8 +1979,9 @@ class StatModifier:
     source: str  # What caused this modifier (spell name, item, ability)
     source_id: Optional[str] = None  # ID of source spell/effect for removal
 
-    # Override vs additive mode
-    mode: str = "add"  # "add" = additive modifier, "set" = override to this value
+    # Override vs additive vs multiplier mode
+    mode: str = "add"  # "add" = additive, "set" = override, "mul" = multiply
+    multiplier: float = 1.0  # Multiplier value (only used when mode="mul")
 
     # Duration tracking
     duration_turns: Optional[int] = None  # Turns remaining (None = until dispelled)
@@ -1992,6 +1998,11 @@ class StatModifier:
     def is_override(self) -> bool:
         """Check if this is an override (set) modifier."""
         return self.mode == "set"
+
+    @property
+    def is_multiplier(self) -> bool:
+        """Check if this is a multiplier modifier."""
+        return self.mode == "mul"
 
     def tick_turn(self) -> bool:
         """
@@ -2091,6 +2102,13 @@ class Item:
     enchantment_type: Optional[str] = None  # "arcane", "fairy", or "holy"
     special_powers: list[str] = field(default_factory=list)  # List of special powers
     oddities: list[str] = field(default_factory=list)  # List of oddities/quirks
+
+    # Soul receptacle properties (for Trap the Soul spell)
+    is_soul_receptacle: bool = False  # Can this item contain a soul?
+    contained_soul_id: Optional[str] = None  # Character ID of trapped soul
+    contained_soul_name: Optional[str] = None  # Name of trapped soul (for display)
+    soul_trapped_date: Optional["GameDate"] = None  # When soul was trapped
+    receptacle_name_engraved: Optional[str] = None  # Engraved name (must match target)
     appearance: Optional[str] = None  # Visual appearance description
     magic_item_category: Optional[str] = None  # weapon, armour, potion, scroll, etc.
 
@@ -4757,6 +4775,12 @@ class CharacterState:
     # Polymorph overlay for transformations
     polymorph_overlay: Optional["PolymorphOverlay"] = None
 
+    # Soul state (for Trap the Soul spell)
+    has_soul: bool = True  # False if soul is trapped elsewhere
+    soul_container_item_id: Optional[str] = None  # ID of item containing soul
+    soul_trapped_date: Optional["GameDate"] = None  # When soul was trapped
+    soul_death_deadline: Optional["GameDate"] = None  # When body dies if not restored
+
     # Kindred (race) information
     kindred: str = "human"  # breggle, elf, grimalkin, human, mossling, woodgrue
     gender: Optional[str] = None  # male, female, or None for unspecified
@@ -6900,6 +6924,75 @@ class PolymorphOverlay:
 
 
 @dataclass
+class DoorState:
+    """
+    State of a door, gate, or passage between locations.
+
+    Used for door/lock mechanics in spells like Through the Keyhole,
+    Lock Singer, Knock, Passwall, and Serpent Glyph.
+    """
+
+    door_id: str  # Unique identifier for this door
+    direction: str  # Cardinal direction or descriptive name (N, S, E, W, "main_gate")
+    destination_id: Optional[str] = None  # Where this door leads
+
+    # Lock state
+    is_locked: bool = False
+    lock_dc: Optional[int] = None  # DC to pick the lock (if applicable)
+    has_keyhole: bool = True  # False for barred doors, portcullis without keyhole
+    key_id: Optional[str] = None  # Item ID of the key that opens this lock
+
+    # Physical barriers
+    is_barred: bool = False  # Barred from inside
+    is_stuck: bool = False  # Swollen/jammed, requires STR check
+    stuck_dc: Optional[int] = None  # DC to force open
+
+    # Magical state
+    is_magically_sealed: bool = False  # Sealed by magic (Hold Portal, Wizard Lock)
+    magic_seal_spell: Optional[str] = None  # Spell that sealed it
+    magic_seal_caster_level: Optional[int] = None  # Caster level for dispel checks
+    magic_seal_save: str = "Spell"  # Save type to bypass ("Spell", "Doom")
+
+    # Glyph/trap state
+    has_glyph: bool = False  # Has a magical glyph (Serpent Glyph, etc.)
+    glyph_type: Optional[str] = None  # Type of glyph
+    glyph_triggered: bool = False  # Has the glyph been triggered?
+    glyph_effect_id: Optional[str] = None  # Link to ActiveSpellEffect for glyph
+
+    # Secret door state
+    is_secret: bool = False
+    is_discovered: bool = False  # Has this secret door been found?
+
+    # Temporary passage state (for Passwall)
+    is_temporary_passage: bool = False
+    passage_expires_turn: Optional[int] = None  # Turn when Passwall ends
+
+    # Physical properties
+    material: str = "wood"  # "wood", "stone", "iron", "magical"
+    hit_points: Optional[int] = None  # For breaking down doors
+
+    def can_use_keyhole(self) -> bool:
+        """Check if Through the Keyhole can be used on this door."""
+        return self.has_keyhole and not self.is_temporary_passage
+
+    def requires_magic_bypass(self) -> bool:
+        """Check if door requires magical bypass (save vs spell)."""
+        return self.is_magically_sealed
+
+    def is_passable(self) -> bool:
+        """Check if door can be passed through normally."""
+        if self.is_temporary_passage:
+            return True
+        if self.is_secret and not self.is_discovered:
+            return False
+        if self.is_locked or self.is_barred or self.is_stuck:
+            return False
+        if self.is_magically_sealed:
+            return False
+        return True
+
+
+@dataclass
 class LocationState:
     """
     State of a specific location (hex, dungeon room, settlement).
@@ -6925,7 +7018,8 @@ class LocationState:
     # Dungeon-specific
     doors: list[dict] = field(
         default_factory=list
-    )  # [{"direction": "N", "locked": True, "secret": False}]
+    )  # Legacy format: [{"direction": "N", "locked": True, "secret": False}]
+    door_states: list[DoorState] = field(default_factory=list)  # Typed door objects
     light_level: str = "dark"  # "bright", "dim", "dark"
 
     # Environmental inscriptions (for Decipher spell)
@@ -6994,6 +7088,90 @@ class LocationState:
             elif block_type == "magic" and effect.blocks_magic:
                 return True
         return False
+
+    # -------------------------------------------------------------------------
+    # DOOR MANAGEMENT
+    # -------------------------------------------------------------------------
+
+    def get_door(self, door_id_or_direction: str) -> Optional[DoorState]:
+        """
+        Find a door by ID or direction.
+
+        Args:
+            door_id_or_direction: Door ID or cardinal direction (N, S, E, W)
+
+        Returns:
+            DoorState if found, None otherwise
+        """
+        for door in self.door_states:
+            if door.door_id == door_id_or_direction:
+                return door
+            if door.direction.upper() == door_id_or_direction.upper():
+                return door
+        return None
+
+    def add_door(self, door: DoorState) -> None:
+        """Add a door to this location."""
+        # Remove existing door with same ID if present
+        self.door_states = [d for d in self.door_states if d.door_id != door.door_id]
+        self.door_states.append(door)
+
+    def unlock_door(self, door_id_or_direction: str) -> bool:
+        """
+        Unlock a door (for Knock spell, key usage, picking).
+
+        Returns:
+            True if door was unlocked, False if not found
+        """
+        door = self.get_door(door_id_or_direction)
+        if door:
+            door.is_locked = False
+            return True
+        return False
+
+    def unseal_door(self, door_id_or_direction: str) -> bool:
+        """
+        Remove magical sealing from a door (for Dispel Magic, high-level Knock).
+
+        Returns:
+            True if door was unsealed, False if not found
+        """
+        door = self.get_door(door_id_or_direction)
+        if door:
+            door.is_magically_sealed = False
+            door.magic_seal_spell = None
+            door.magic_seal_caster_level = None
+            return True
+        return False
+
+    def create_temporary_passage(
+        self,
+        direction: str,
+        destination_id: str,
+        expires_turn: int,
+    ) -> DoorState:
+        """
+        Create a temporary passage (for Passwall spell).
+
+        Args:
+            direction: Direction of the passage
+            destination_id: Where the passage leads
+            expires_turn: Turn number when passage closes
+
+        Returns:
+            The created DoorState
+        """
+        import uuid
+        door = DoorState(
+            door_id=f"passwall_{uuid.uuid4().hex[:8]}",
+            direction=direction,
+            destination_id=destination_id,
+            is_temporary_passage=True,
+            passage_expires_turn=expires_turn,
+            material="magical",
+        )
+        self.add_door(door)
+        return door
 
 
 # =============================================================================

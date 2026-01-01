@@ -14,7 +14,9 @@ Handles spell casting outside of combat, including:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Any, Optional, TYPE_CHECKING
+import json
 import re
 import uuid
 
@@ -23,6 +25,13 @@ if TYPE_CHECKING:
     from src.game_state.global_controller import GlobalController
 
 from src.narrative.intent_parser import SaveType
+from src.oracle.spell_adjudicator import (
+    MythicSpellAdjudicator,
+    SpellAdjudicationType,
+    AdjudicationContext,
+    AdjudicationResult,
+)
+from src.oracle.mythic_gme import Likelihood
 
 
 # =============================================================================
@@ -668,6 +677,7 @@ class ActiveSpellEffect:
 
     # Caster and target
     caster_id: str = ""
+    caster_level: int = 0  # Caster's level when the spell was cast (for dispel calculations)
     target_id: str = ""  # Character, NPC, Monster, or "area:location_id"
     target_type: str = "creature"  # "creature", "object", "area"
 
@@ -843,6 +853,37 @@ class SpellResolver:
 
         # Dice roller reference
         self._dice: Optional["DiceRoller"] = None
+
+        # Oracle-adjudicated spell registry and adjudicator
+        self._oracle_spell_registry: dict[str, dict[str, Any]] = {}
+        self._spell_adjudicator: Optional[MythicSpellAdjudicator] = None
+        self._load_oracle_spell_registry()
+
+        # Current casting context for special handlers
+        self._current_context: dict[str, Any] = {}
+
+    def _load_oracle_spell_registry(self) -> None:
+        """Load the oracle-only spells registry from JSON."""
+        registry_path = Path(__file__).parent.parent.parent / "data" / "system" / "oracle_only_spells.json"
+        if registry_path.exists():
+            with open(registry_path) as f:
+                data = json.load(f)
+                for entry in data.get("oracle_only_spells", []):
+                    self._oracle_spell_registry[entry["spell_id"]] = entry
+
+    def get_spell_adjudicator(self) -> MythicSpellAdjudicator:
+        """Get or create the spell adjudicator instance."""
+        if self._spell_adjudicator is None:
+            self._spell_adjudicator = MythicSpellAdjudicator()
+        return self._spell_adjudicator
+
+    def is_oracle_spell(self, spell_id: str) -> bool:
+        """Check if a spell is resolved via oracle adjudication."""
+        return spell_id in self._oracle_spell_registry
+
+    def get_oracle_spell_config(self, spell_id: str) -> Optional[dict[str, Any]]:
+        """Get the oracle configuration for a spell."""
+        return self._oracle_spell_registry.get(spell_id)
 
     def set_controller(self, controller: "GlobalController") -> None:
         """Set the game controller for effect application."""
@@ -1127,6 +1168,7 @@ class SpellResolver:
                 spell_id=spell.spell_id,
                 spell_name=spell.name,
                 caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
                 target_id=target_id or caster.character_id,
                 target_type="creature",
                 duration_type=spell.duration_type,
@@ -3990,12 +4032,211 @@ class SpellResolver:
         handlers = {
             "purify_food_and_drink": self._handle_purify_food_and_drink,
             "crystal_resonance": self._handle_crystal_resonance,
+            # Phase 1 spell handlers
+            "ventriloquism": self._handle_ventriloquism,
+            "create_food": self._handle_create_food,
+            "create_water": self._handle_create_water,
+            "air_sphere": self._handle_air_sphere,
+            "detect_disguise": self._handle_detect_disguise,
+            # Phase 2 condition-based spell handlers
+            "deathly_blossom": self._handle_deathly_blossom,
+            "en_croute": self._handle_en_croute,
+            "awe": self._handle_awe,
+            "animal_growth": self._handle_animal_growth,
+            # Phase 3 utility spell handlers
+            "dispel_magic": self._handle_dispel_magic,
+            # Phase 4 movement spell handlers
+            "levitate": self._handle_levitate,
+            "fly": self._handle_fly,
+            "telekinesis": self._handle_telekinesis,
+            # Phase 5 utility and transformation spell handlers
+            "passwall": self._handle_passwall,
+            "fools_gold": self._handle_fools_gold,
+            "ginger_snap": self._handle_ginger_snap,
+            # Phase 6 door/lock and trap spell handlers
+            "through_the_keyhole": self._handle_through_the_keyhole,
+            "lock_singer": self._handle_lock_singer,
+            "serpent_glyph": self._handle_serpent_glyph,
+            # Phase 7 teleportation, condition, and healing spell handlers
+            "dimension_door": self._handle_dimension_door,
+            "confusion": self._handle_confusion,
+            "greater_healing": self._handle_greater_healing,
+            # Phase 8 summoning and area effect spell handlers
+            "animate_dead": self._handle_animate_dead,
+            "cloudkill": self._handle_cloudkill,
+            "insect_plague": self._handle_insect_plague,
+            # Phase 9 transformation and utility spell handlers
+            "petrification": self._handle_petrification,
+            "invisibility": self._handle_invisibility,
+            "knock": self._handle_knock,
+            # Phase 10 remaining moderate/significant spell handlers
+            "arcane_cypher": self._handle_arcane_cypher,
+            "trap_the_soul": self._handle_trap_the_soul,
+            "holy_quest": self._handle_holy_quest,
+            "polymorph": self._handle_polymorph,
         }
 
         handler = handlers.get(spell.spell_id)
         if handler:
             return handler(caster, targets_affected, dice_roller)
+
+        # Check for oracle-adjudicated spells
+        if self.is_oracle_spell(spell.spell_id):
+            return self._handle_oracle_spell(spell, caster, targets_affected, dice_roller)
+
         return None
+
+    def _handle_oracle_spell(
+        self,
+        spell: SpellData,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle spells that are resolved via oracle adjudication.
+
+        These are the 21 "Skip" spells from the formal plan that require
+        Mythic GME oracle resolution rather than mechanical parsing.
+
+        Args:
+            spell: The spell being cast
+            caster: The character casting
+            targets_affected: List of affected target IDs
+            dice_roller: Dice roller for any rolls needed
+
+        Returns:
+            Dictionary with oracle adjudication results and narrative context
+        """
+        config = self.get_oracle_spell_config(spell.spell_id)
+        if not config:
+            return {"error": f"Oracle spell config not found for {spell.spell_id}"}
+
+        adjudicator = self.get_spell_adjudicator()
+        adjudication_type = config.get("adjudication_type", "generic")
+        question_template = config.get("default_question_template", "")
+
+        # Build adjudication context
+        target_description = ", ".join(targets_affected) if targets_affected else "the area"
+        context = AdjudicationContext(
+            spell_name=spell.name,
+            caster_name=caster.name,
+            caster_level=caster.level,
+            target_description=target_description,
+            intention=self._current_context.get("intention", spell.name),
+        )
+
+        # Route to appropriate adjudicator method based on type
+        result: AdjudicationResult
+        if adjudication_type == "wish":
+            wish_text = self._current_context.get("wish_text", spell.name)
+            result = adjudicator.adjudicate_wish(
+                wish_text=wish_text,
+                context=context,
+                wish_power="major",  # Rune of Wishing is mighty tier
+            )
+        elif adjudication_type == "divination":
+            question = self._current_context.get("question", question_template)
+            result = adjudicator.adjudicate_divination(
+                question=question,
+                context=context,
+                divination_type="general",
+            )
+        elif adjudication_type == "illusion_belief":
+            result = adjudicator.adjudicate_illusion_belief(
+                context=context,
+                illusion_quality="standard",
+            )
+        elif adjudication_type == "summoning_control":
+            creature_type = self._current_context.get("creature_type", "summoned creature")
+            result = adjudicator.adjudicate_summoning_control(
+                context=context,
+                creature_type=creature_type,
+            )
+        else:
+            # Generic adjudication for unspecified types
+            result = adjudicator.adjudicate_generic(
+                question=question_template,
+                context=context,
+            )
+
+        # Build narrative context from adjudication result
+        narrative_context = {
+            "oracle_adjudication": {
+                "adjudication_type": result.adjudication_type.value,
+                "success_level": result.success_level.value,
+                "summary": result.summary,
+                "requires_interpretation": result.requires_interpretation(),
+            },
+            "spell_id": spell.spell_id,
+            "spell_name": spell.name,
+            "caster_name": caster.name,
+            "targets": targets_affected,
+        }
+
+        # Include meaning roll for LLM interpretation if present
+        if result.meaning_roll:
+            narrative_context["oracle_adjudication"]["meaning_pair"] = (
+                f"{result.meaning_roll.action} + {result.meaning_roll.subject}"
+            )
+
+        # Include complication if present
+        if result.has_complication and result.complication_meaning:
+            narrative_context["oracle_adjudication"]["complication"] = (
+                f"{result.complication_meaning.action} + {result.complication_meaning.subject}"
+            )
+
+        # Track as active effect if spell has duration
+        duration_str = spell.duration.lower() if spell.duration else ""
+        if duration_str and duration_str not in ("instant", "instantaneous"):
+            # Use spell's pre-parsed duration_type, or infer from raw string
+            duration_type = spell.duration_type
+            duration_value = 1  # Default value
+
+            # If duration_type is INSTANT but raw string suggests otherwise, infer
+            if duration_type == DurationType.INSTANT:
+                if "turn" in duration_str:
+                    duration_type = DurationType.TURNS
+                elif "round" in duration_str:
+                    duration_type = DurationType.ROUNDS
+                elif "hour" in duration_str:
+                    duration_type = DurationType.HOURS
+                elif "day" in duration_str:
+                    duration_type = DurationType.DAYS
+                elif "permanent" in duration_str:
+                    duration_type = DurationType.PERMANENT
+                else:
+                    duration_type = DurationType.SPECIAL
+
+            # Try to extract numeric duration
+            numbers = re.findall(r"\d+", duration_str)
+            if numbers:
+                duration_value = int(numbers[0])
+
+            if duration_type != DurationType.INSTANT:
+                # Use first target or "area" if no specific targets
+                target_id = targets_affected[0] if targets_affected else "area"
+                active_effect = ActiveSpellEffect(
+                    effect_id=str(uuid.uuid4()),
+                    spell_id=spell.spell_id,
+                    spell_name=spell.name,
+                    caster_id=caster.character_id,
+                    caster_level=caster.level,
+                    target_id=target_id,
+                    target_type="area" if not targets_affected else "creature",
+                    duration_type=duration_type,
+                    duration_remaining=duration_value,
+                    effect_type=SpellEffectType.NARRATIVE,
+                    mechanical_effects={"oracle_adjudication": narrative_context.get("oracle_adjudication", {})},
+                    narrative_description=result.summary,
+                )
+                self._active_effects.append(active_effect)
+                narrative_context["active_effect_id"] = active_effect.effect_id
+
+        return {
+            "oracle_adjudication": result,
+            "narrative_context": narrative_context,
+        }
 
     def _handle_purify_food_and_drink(
         self,
@@ -4227,6 +4468,3410 @@ class SpellResolver:
                 "energy_type": energy_type,
             },
         }
+
+    # =========================================================================
+    # PHASE 1 SPELL HANDLERS
+    # =========================================================================
+
+    def _handle_ventriloquism(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Ventriloquism spell.
+
+        The caster's voice emanates from any point within 60' for 1 Turn.
+        Pure narrative utility - no mechanical effects beyond duration tracking.
+
+        Per Dolmenwood Campaign Book: "The caster's voice emanates from
+        any point within range, as the caster desires."
+        """
+        return {
+            "success": True,
+            "effect_type": "utility",
+            "duration_turns": 1,
+            "range_feet": 60,
+            "narrative_context": {
+                "effect": "voice_projection",
+                "description": "Voice can emanate from any point within 60 feet",
+                "hints": [
+                    "voice seems to come from elsewhere",
+                    "sound carries unnaturally",
+                    "words echo from an impossible location",
+                ],
+            },
+        }
+
+    def _handle_create_food(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Create Food spell (Divine, Level 5).
+
+        Conjures nourishing food for 12 people and 12 mounts for one day.
+        At caster level 10+, creates additional portions: +12 people/mounts per level above 9.
+
+        Per Dolmenwood Campaign Book: "Conjures food sufficient for 12 people
+        and 12 mounts for one day."
+        """
+        from src.data_models import Item
+
+        # Calculate portions based on caster level
+        base_people = 12
+        base_mounts = 12
+        bonus_per_level = max(0, caster.level - 9)
+        total_people = base_people + (bonus_per_level * 12)
+        total_mounts = base_mounts + (bonus_per_level * 12)
+
+        # Create food items
+        items_created = []
+        current_day = 0
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        # Create rations for people (magical items that last 1 day)
+        people_rations = Item(
+            item_id=f"created_rations_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Rations ({total_people} portions)",
+            weight=total_people,  # 1 lb per portion
+            quantity=total_people,
+            description=f"Magically conjured nourishing food (created day {current_day}). Lasts 1 day.",
+            magical=True,
+        )
+
+        # Create fodder for mounts (magical items that last 1 day)
+        mount_fodder = Item(
+            item_id=f"created_fodder_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Fodder ({total_mounts} portions)",
+            weight=total_mounts * 5,  # 5 lbs per mount portion
+            quantity=total_mounts,
+            description=f"Magically conjured feed for mounts (created day {current_day}). Lasts 1 day.",
+            magical=True,
+        )
+
+        # Add to caster's inventory
+        caster.add_item(people_rations)
+        caster.add_item(mount_fodder)
+
+        items_created.append({
+            "item_id": people_rations.item_id,
+            "name": people_rations.name,
+            "quantity": total_people,
+            "type": "rations",
+        })
+        items_created.append({
+            "item_id": mount_fodder.item_id,
+            "name": mount_fodder.name,
+            "quantity": total_mounts,
+            "type": "fodder",
+        })
+
+        return {
+            "success": True,
+            "items_created": items_created,
+            "people_fed": total_people,
+            "mounts_fed": total_mounts,
+            "caster_level": caster.level,
+            "narrative_context": {
+                "food_conjured": True,
+                "people_portions": total_people,
+                "mount_portions": total_mounts,
+                "hints": [
+                    "food appears wholesome if plain",
+                    "nourishing but without memorable taste",
+                    "sustenance manifests from divine grace",
+                ],
+            },
+        }
+
+    def _handle_create_water(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Create Water spell (Divine, Level 4).
+
+        Creates approximately 50 gallons of pure water, enough for 12 people
+        and 12 mounts for one day. Scales with caster level above 8.
+
+        Per Dolmenwood Campaign Book: "Creates approximately 50 gallons of
+        pure water, enough for 12 people and 12 mounts for one day."
+        """
+        from src.data_models import Item
+
+        # Calculate portions based on caster level
+        base_gallons = 50
+        base_people = 12
+        base_mounts = 12
+        bonus_per_level = max(0, caster.level - 8)
+        total_gallons = base_gallons + (bonus_per_level * 50)
+        total_people = base_people + (bonus_per_level * 12)
+        total_mounts = base_mounts + (bonus_per_level * 12)
+
+        current_day = 0
+        if self._controller:
+            current_day = self._controller.time_tracker.days
+
+        # Create water container (magical item that lasts 1 day)
+        water_container = Item(
+            item_id=f"created_water_{uuid.uuid4().hex[:8]}",
+            name=f"Conjured Water ({total_gallons} gallons)",
+            weight=total_gallons * 8,  # 8 lbs per gallon
+            quantity=total_gallons,
+            description=f"Magically conjured pure water (created day {current_day}). Evaporates after 1 day.",
+            magical=True,
+        )
+
+        caster.add_item(water_container)
+
+        return {
+            "success": True,
+            "items_created": [{
+                "item_id": water_container.item_id,
+                "name": water_container.name,
+                "quantity": total_gallons,
+                "type": "water",
+            }],
+            "gallons_created": total_gallons,
+            "people_supplied": total_people,
+            "mounts_supplied": total_mounts,
+            "caster_level": caster.level,
+            "narrative_context": {
+                "water_conjured": True,
+                "gallons": total_gallons,
+                "hints": [
+                    "water springs forth from nothing",
+                    "pure and refreshing",
+                    "divine providence made manifest",
+                ],
+            },
+        }
+
+    def _handle_air_sphere(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Air Sphere spell (Arcane, Level 5).
+
+        When immersed in water, surrounds caster with a 10' radius sphere
+        of breathable air that moves with them. Duration: 1 day.
+
+        Per Dolmenwood Campaign Book: "When immersed in water, the caster
+        is surrounded by a 10' radius sphere of breathable air."
+        """
+        # Create buff effect for underwater breathing
+        buff_id = f"air_sphere_{uuid.uuid4().hex[:8]}"
+
+        # Register as active spell effect if controller available
+        if self._controller:
+            effect = ActiveSpellEffect(
+                effect_id=buff_id,
+                spell_id="air_sphere",
+                spell_name="Air Sphere",
+                caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
+                target_id=caster.character_id,
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.DAYS,
+                duration_remaining=1,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "underwater_breathing": True,
+                    "radius_feet": 10,
+                    "moves_with_caster": True,
+                    "protects_others_in_radius": True,
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": buff_id,
+            "effect_type": "buff",
+            "conditions_applied": ["underwater_breathing"],
+            "duration_days": 1,
+            "radius_feet": 10,
+            "centered_on": caster.character_id,
+            "narrative_context": {
+                "sphere_created": True,
+                "radius": 10,
+                "duration": "1 day",
+                "hints": [
+                    "a shimmering bubble of air surrounds you",
+                    "breathable atmosphere despite the depths",
+                    "the sphere moves as you do",
+                ],
+            },
+        }
+
+    def _handle_detect_disguise(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Detect Disguise spell (Divine, Level 1).
+
+        Reveals whether a target is disguised by mundane (non-magical) means.
+        The voice of St Dougan says "be wary" (disguised) or "be sure" (not disguised).
+        Target may Save Versus Spell to resist.
+
+        Per Dolmenwood Campaign Book: "The saint's advice reveals whether
+        a chosen person within range is disguised by mundane means."
+        """
+        from src.data_models import DiceRoller as DR
+        from src.oracle.mythic_gme import MythicGME, Likelihood
+        import random
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No target specified for Detect Disguise",
+                "narrative_context": {
+                    "no_target": True,
+                },
+            }
+
+        target_id = targets_affected[0]
+        results = []
+
+        # Get target character if available
+        target_char = None
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+
+        # Target gets a save vs spell
+        save_succeeded = False
+        save_roll = dice.roll_d20("Save vs Spell (Detect Disguise)")
+
+        if target_char:
+            save_target = target_char.get_saving_throw("spell")
+            save_succeeded = save_roll.total >= save_target
+        else:
+            # Default save target for unknown targets
+            save_succeeded = save_roll.total >= 15
+
+        if save_succeeded:
+            # Target resisted - spell reveals nothing
+            results.append({
+                "target_id": target_id,
+                "save_succeeded": True,
+                "revealed": False,
+                "message": "The spell's power is resisted.",
+            })
+            return {
+                "success": True,
+                "targets_saved": [target_id],
+                "results": results,
+                "narrative_context": {
+                    "save_succeeded": True,
+                    "st_dougan_silent": True,
+                    "hints": ["St Dougan's voice is silent", "the target's nature remains hidden"],
+                },
+            }
+
+        # Save failed - query oracle for disguise status
+        # In a real game, this would check world state or ask the DM
+        # Here we use the Mythic GME oracle for a yes/no answer
+        mythic = MythicGME(rng=random.Random())
+        oracle_result = mythic.fate_check(
+            f"Is {target_id} disguised by mundane means?",
+            Likelihood.FIFTY_FIFTY,
+        )
+
+        is_disguised = oracle_result.result.value in ["yes", "exceptional_yes"]
+        saint_response = "be wary" if is_disguised else "be sure"
+
+        results.append({
+            "target_id": target_id,
+            "save_succeeded": False,
+            "revealed": True,
+            "is_disguised": is_disguised,
+            "saint_response": saint_response,
+            "oracle_roll": oracle_result.roll,
+        })
+
+        return {
+            "success": True,
+            "results": results,
+            "saint_response": saint_response,
+            "is_disguised": is_disguised,
+            "narrative_context": {
+                "st_dougan_speaks": True,
+                "response": saint_response,
+                "is_disguised": is_disguised,
+                "hints": [
+                    f'St Dougan whispers: "{saint_response}"',
+                    "aged wisdom reveals the truth",
+                    "mundane deception cannot hide from divine sight" if is_disguised else "no false face here",
+                ],
+            },
+        }
+
+    # =========================================================================
+    # PHASE 2: CONDITION-BASED SPELL HANDLERS
+    # =========================================================================
+
+    def _handle_deathly_blossom(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Deathly Blossom rune (Lesser Rune).
+
+        Conjures a rose that causes those who smell it to fall into a
+        death-like faint (unconscious) for 1d6 Turns. Target may Save vs Doom.
+
+        Per Dolmenwood Campaign Book: "Conjures a rose of sublime beauty.
+        Creatures who inhale its scent must Save Versus Doom or fall into
+        a deep faint, appearing dead, for 1d6 Turns."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        # First, create the rose item
+        rose_id = f"deathly_rose_{uuid.uuid4().hex[:8]}"
+        rose_created = {
+            "item_id": rose_id,
+            "name": "Rose of Sublime Beauty",
+            "description": "A hauntingly beautiful rose conjured by fairy magic. Those who smell it risk falling into a death-like faint.",
+            "magical": True,
+            "duration_turns": 1,  # Rose lasts 1 turn or until used
+            "single_use": True,
+        }
+
+        # If no targets, just create the rose
+        if not targets_affected:
+            return {
+                "success": True,
+                "rose_created": rose_created,
+                "effect_type": "item_creation",
+                "targets_affected": [],
+                "narrative_context": {
+                    "rose_conjured": True,
+                    "hints": [
+                        "a rose of unearthly beauty manifests",
+                        "its petals shimmer with an otherworldly gleam",
+                        "the scent promises sweet oblivion",
+                    ],
+                },
+            }
+
+        # Process each target that smells the rose
+        results = []
+        targets_saved = []
+        targets_affected_list = []
+
+        for target_id in targets_affected:
+            # Get target's save bonus if available
+            save_bonus = 0
+            target_char = None
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    save_bonus = target_char.get_saving_throw("doom") if hasattr(target_char, "get_saving_throw") else 0
+
+            # Roll save vs doom
+            save_roll = dice.roll_d20()
+            save_total = save_roll.total + save_bonus
+            save_target = 15  # Default save target
+
+            if save_total >= save_target:
+                # Save succeeded - resisted the rose's effect
+                targets_saved.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "save_succeeded": True,
+                    "save_roll": save_roll.total,
+                    "save_total": save_total,
+                })
+            else:
+                # Save failed - fall into death-like faint
+                duration_roll = dice.roll("1d6")
+                duration_turns = duration_roll.total
+
+                targets_affected_list.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "save_succeeded": False,
+                    "save_roll": save_roll.total,
+                    "save_total": save_total,
+                    "condition_applied": "unconscious",
+                    "duration_turns": duration_turns,
+                    "appears_dead": True,  # Special variant of unconscious
+                })
+
+                # Apply the condition via controller if available
+                if self._controller and target_char:
+                    self._controller.apply_condition(
+                        target_id, "unconscious", f"Deathly Blossom ({duration_turns} turns)"
+                    )
+
+                # Register as active spell effect
+                effect = ActiveSpellEffect(
+                    spell_id="deathly_blossom",
+                    spell_name="Deathly Blossom",
+                    caster_id=caster.character_id,
+                    caster_level=caster.level if hasattr(caster, "level") else 1,
+                    target_id=target_id,
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.TURNS,
+                    duration_remaining=duration_turns,
+                    duration_unit="turns",
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "unconscious",
+                        "appears_dead": True,
+                        "can_be_awakened": False,  # Only ends when duration expires
+                    },
+                )
+                self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "rose_created": rose_created,
+            "effect_type": "condition",
+            "conditions_applied": ["unconscious"],
+            "results": results,
+            "targets_saved": targets_saved,
+            "targets_affected": targets_affected_list,
+            "save_type": "doom",
+            "narrative_context": {
+                "rose_conjured": True,
+                "victims_collapsed": len(targets_affected_list),
+                "resisted": len(targets_saved),
+                "hints": [
+                    "the rose's scent wafts through the air",
+                    "victims collapse as if struck dead",
+                    "only the faintest rise and fall of breath reveals life",
+                ],
+            },
+        }
+
+    def _handle_en_croute(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle En Croute spell (Arcane, Level 2).
+
+        Encases target in pastry crust, immobilizing them. Escape time based
+        on Strength score. Save vs Spell negates.
+
+        Per Dolmenwood Campaign Book: "Encases target in a thick shell of
+        crispy pastry crust. The target is immobilised and can only break
+        free based on their Strength."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No target specified for En Croute",
+                "narrative_context": {
+                    "no_target": True,
+                },
+            }
+
+        target_id = targets_affected[0]  # Single target spell
+
+        # Get target's save bonus if available
+        save_bonus = 0
+        target_char = None
+        strength = 10  # Default strength
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+            if target_char:
+                save_bonus = target_char.get_saving_throw("spell") if hasattr(target_char, "get_saving_throw") else 0
+                if hasattr(target_char, "strength"):
+                    strength = target_char.strength or 10
+
+        # Roll save vs spell
+        save_roll = dice.roll_d20()
+        save_total = save_roll.total + save_bonus
+        save_target = 15  # Default save target
+
+        if save_total >= save_target:
+            # Save succeeded - resisted encasement
+            return {
+                "success": True,
+                "target_id": target_id,
+                "save_succeeded": True,
+                "save_roll": save_roll.total,
+                "save_total": save_total,
+                "narrative_context": {
+                    "spell_resisted": True,
+                    "hints": [
+                        "the pastry barely forms before crumbling",
+                        "target shrugs off the magical encasement",
+                    ],
+                },
+            }
+
+        # Save failed - calculate escape time based on Strength
+        # Per Dolmenwood source: escape times in TURNS (except STR 18+ which is 1d4 Rounds)
+        # STR 5 or less: 6 Turns, STR 6-8: 4 Turns, STR 9-12: 3 Turns,
+        # STR 13-15: 2 Turns, STR 16-17: 1 Turn, STR 18+: 1d4 Rounds
+        if strength >= 18:
+            # STR 18+ escapes in 1d4 Rounds (much faster!)
+            escape_time = dice.roll("1d4").total
+            escape_unit = "rounds"
+        elif strength >= 16:
+            escape_time = 1
+            escape_unit = "turns"
+        elif strength >= 13:
+            escape_time = 2
+            escape_unit = "turns"
+        elif strength >= 9:
+            escape_time = 3
+            escape_unit = "turns"
+        elif strength >= 6:
+            escape_time = 4
+            escape_unit = "turns"
+        else:
+            escape_time = 6
+            escape_unit = "turns"
+
+        # Apply the condition via controller if available
+        if self._controller and target_char:
+            self._controller.apply_condition(
+                target_id, "restrained", f"En Croute ({escape_time} {escape_unit})"
+            )
+
+        # Register as active spell effect
+        duration_type = DurationType.ROUNDS if escape_unit == "rounds" else DurationType.TURNS
+        effect = ActiveSpellEffect(
+            spell_id="en_croute",
+            spell_name="En Croute",
+            caster_id=caster.character_id,
+            caster_level=caster.level if hasattr(caster, "level") else 1,
+            target_id=target_id,
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=duration_type,
+            duration_remaining=escape_time,
+            duration_unit=escape_unit,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "condition": "restrained",
+                "escape_time_remaining": escape_time,
+                "escape_unit": escape_unit,
+                "original_escape_time": escape_time,
+                "target_strength": strength,
+                "edible": True,  # Allies can eat to free!
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "target_id": target_id,
+            "save_succeeded": False,
+            "save_roll": save_roll.total,
+            "save_total": save_total,
+            "conditions_applied": ["restrained"],
+            "escape_time": escape_time,
+            "escape_unit": escape_unit,
+            "target_strength": strength,
+            "narrative_context": {
+                "encased": True,
+                "escape_time": escape_time,
+                "escape_unit": escape_unit,
+                "edible": True,
+                "hints": [
+                    "golden pastry rapidly encases the target",
+                    "a delicious aroma fills the air",
+                    f"with STR {strength}, escape will take {escape_time} {escape_unit}",
+                    "allies could help by... eating the crust",
+                ],
+            },
+        }
+
+    def _handle_awe(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Awe glamour (Fairy Glamour).
+
+        Triggers a Morale Check for affected creatures; those who fail flee
+        for 1d4 Rounds. HD budget: creatures whose Levels total up to caster's Level.
+
+        Per Dolmenwood Campaign Book: "Triggers a Morale Check. Creatures who
+        fail flee in terror for 1d4 Rounds."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            return {
+                "success": False,
+                "message": "No targets specified for Awe",
+                "narrative_context": {
+                    "no_targets": True,
+                },
+            }
+
+        # HD budget based on caster level
+        hd_budget = caster.level if hasattr(caster, "level") else 1
+        hd_spent = 0
+
+        results = []
+        targets_fled = []
+        targets_resisted = []
+        targets_immune = []
+
+        for target_id in targets_affected:
+            target_hd = 1  # Default HD
+            morale = 7  # Default morale
+
+            # Get target info if available
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    target_hd = target_char.level if hasattr(target_char, "level") else 1
+                    if hasattr(target_char, "morale"):
+                        morale = target_char.morale
+
+            # Check HD budget
+            if hd_spent + target_hd > hd_budget:
+                targets_immune.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "immune": True,
+                    "reason": "Exceeds HD budget",
+                    "target_hd": target_hd,
+                })
+                continue
+
+            hd_spent += target_hd
+
+            # Roll morale check (2d6 vs morale score)
+            morale_roll = dice.roll("2d6")
+            morale_passed = morale_roll.total <= morale
+
+            if morale_passed:
+                # Morale passed - not affected
+                targets_resisted.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "morale_passed": True,
+                    "morale_roll": morale_roll.total,
+                    "morale_target": morale,
+                })
+            else:
+                # Morale failed - flee for 1d4 rounds
+                flee_duration = dice.roll("1d4").total
+
+                targets_fled.append(target_id)
+                results.append({
+                    "target_id": target_id,
+                    "morale_passed": False,
+                    "morale_roll": morale_roll.total,
+                    "morale_target": morale,
+                    "flee_rounds": flee_duration,
+                    "condition_applied": "frightened",
+                })
+
+                # Apply frightened condition via controller
+                if self._controller:
+                    self._controller.apply_condition(
+                        target_id, "frightened", f"Awe ({flee_duration} rounds)"
+                    )
+
+                # Register as active spell effect
+                effect = ActiveSpellEffect(
+                    spell_id="awe",
+                    spell_name="Awe",
+                    caster_id=caster.character_id,
+                    caster_level=caster.level if hasattr(caster, "level") else 1,
+                    target_id=target_id,
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.ROUNDS,
+                    duration_remaining=flee_duration,
+                    duration_unit="rounds",
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "frightened",
+                        "fleeing": True,
+                        "flee_direction": "away_from_caster",
+                    },
+                )
+                self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "hd_budget": hd_budget,
+            "hd_spent": hd_spent,
+            "targets_fled": targets_fled,
+            "targets_resisted": targets_resisted,
+            "targets_immune": targets_immune,
+            "results": results,
+            "conditions_applied": ["frightened"] if targets_fled else [],
+            "narrative_context": {
+                "fairy_majesty": True,
+                "fled_count": len(targets_fled),
+                "resisted_count": len(targets_resisted),
+                "hints": [
+                    "an overwhelming presence radiates from the caster",
+                    "lesser creatures cower before fairy majesty",
+                    "those who fail their nerve flee in terror",
+                ],
+            },
+        }
+
+    def _handle_animal_growth(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Animal Growth spell (Divine, Level 3).
+
+        Doubles an animal's size, damage, and carrying capacity.
+        Only affects normal or giant animals. Duration: 12 Turns.
+
+        Per Dolmenwood Campaign Book: "Causes 1d4 normal animals or 1 giant
+        animal to double in size. Animals' damage is doubled and they can
+        carry twice the normal load."
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+
+        if not targets_affected:
+            # Determine how many animals can be affected
+            # 1d4 normal animals OR 1 giant animal
+            normal_count = dice.roll("1d4").total
+            return {
+                "success": True,
+                "effect_type": "buff",
+                "max_normal_animals": normal_count,
+                "max_giant_animals": 1,
+                "narrative_context": {
+                    "spell_ready": True,
+                    "hints": [
+                        f"the spell can affect {normal_count} normal animals",
+                        "or 1 giant animal",
+                        "targets must be normal or giant animals",
+                    ],
+                },
+            }
+
+        # Process affected animals
+        results = []
+        affected_animals = []
+        duration_turns = 12
+
+        for target_id in targets_affected:
+            # Apply doubling effect
+            affected_animals.append(target_id)
+            results.append({
+                "target_id": target_id,
+                "size_multiplier": 2,
+                "damage_multiplier": 2,
+                "carry_capacity_multiplier": 2,
+                "duration_turns": duration_turns,
+            })
+
+            # Register as active spell effect
+            effect = ActiveSpellEffect(
+                spell_id="animal_growth",
+                spell_name="Animal Growth",
+                caster_id=caster.character_id,
+                caster_level=caster.level if hasattr(caster, "level") else 1,
+                target_id=target_id,
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.TURNS,
+                duration_remaining=duration_turns,
+                duration_unit="turns",
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "size_multiplier": 2,
+                    "damage_multiplier": 2,
+                    "carry_capacity_multiplier": 2,
+                    "stat_modifiers": [
+                        {"stat": "damage", "modifier_type": "multiplier", "value": 2},
+                        {"stat": "carry_capacity", "modifier_type": "multiplier", "value": 2},
+                    ],
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_type": "buff",
+            "targets_affected": affected_animals,
+            "results": results,
+            "duration_turns": duration_turns,
+            "stat_modifiers_applied": [
+                {"modifier_type": "multiplier", "stat": "size", "value": 2},
+                {"modifier_type": "multiplier", "stat": "damage", "value": 2},
+                {"modifier_type": "multiplier", "stat": "carry_capacity", "value": 2},
+            ],
+            "narrative_context": {
+                "growth_applied": True,
+                "animals_affected": len(affected_animals),
+                "hints": [
+                    "the animals swell to twice their normal size",
+                    "muscles bulge with divine-enhanced strength",
+                    "their attacks now deal double damage",
+                    "they can carry twice as much",
+                ],
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # Phase 3: Dispel Magic Handler
+    # -------------------------------------------------------------------------
+
+    def _handle_dispel_magic(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Dispel Magic spell.
+
+        Per Dolmenwood source:
+        - All spell effects in a 20' cube within range are unravelled
+        - Effects created by lower Level casters are automatically dispelled
+        - 5% chance per Level difference that higher-Level magic resists
+        - Magic items are unaffected
+        - Curses from spells (e.g. Hex Weaving) are affected
+        - Curses from magic items are unaffected
+        """
+        from src.data_models import DiceRoller as DR
+
+        caster_level = caster.level if hasattr(caster, "level") else 1
+        dice = dice_roller or DR()
+
+        effects_dispelled: list[dict[str, Any]] = []
+        effects_resisted: list[dict[str, Any]] = []
+        effects_checked: list[str] = []
+
+        # Gather all active effects on all targets in the area
+        for target_id in targets_affected:
+            target_effects = self.get_active_effects(target_id)
+            for effect in target_effects:
+                if effect.effect_id in effects_checked:
+                    continue
+                effects_checked.append(effect.effect_id)
+
+                # Skip if this is a magic item effect (not a spell effect)
+                if effect.mechanical_effects.get("from_magic_item", False):
+                    continue
+
+                # Calculate dispel chance based on level difference
+                effect_caster_level = effect.caster_level or 1
+                level_diff = effect_caster_level - caster_level
+
+                if level_diff <= 0:
+                    # Lower or equal level: auto-dispel
+                    dispelled = True
+                    resist_roll = None
+                else:
+                    # Higher level: 5% per level difference chance to resist
+                    resist_chance = level_diff * 5
+                    resist_roll = dice.roll("1d100", "Dispel Magic resistance")
+                    dispelled = resist_roll.total > resist_chance
+
+                effect_info = {
+                    "effect_id": effect.effect_id,
+                    "spell_name": effect.spell_name,
+                    "spell_id": effect.spell_id,
+                    "target_id": effect.target_id,
+                    "effect_caster_level": effect_caster_level,
+                    "caster_level": caster_level,
+                    "level_difference": level_diff,
+                }
+
+                if dispelled:
+                    # Dispel the effect
+                    self.dismiss_effect(effect.effect_id)
+
+                    # Remove associated conditions if controller available
+                    if self._controller and effect.mechanical_effects.get("condition"):
+                        condition = effect.mechanical_effects["condition"]
+                        self._controller.remove_condition(effect.target_id, condition)
+
+                    effect_info["dispelled"] = True
+                    effects_dispelled.append(effect_info)
+                else:
+                    effect_info["dispelled"] = False
+                    effect_info["resist_roll"] = resist_roll.total if resist_roll else None
+                    effect_info["resist_chance"] = level_diff * 5
+                    effects_resisted.append(effect_info)
+
+        return {
+            "success": True,
+            "caster_level": caster_level,
+            "area_size": "20' cube",
+            "effects_dispelled": effects_dispelled,
+            "effects_resisted": effects_resisted,
+            "total_dispelled": len(effects_dispelled),
+            "total_resisted": len(effects_resisted),
+            "targets_checked": targets_affected,
+            "narrative_context": {
+                "dispel_cast": True,
+                "magic_unravelled": len(effects_dispelled) > 0,
+                "some_resisted": len(effects_resisted) > 0,
+                "hints": [
+                    "coils of coloured energy disintegrate",
+                    "spell weaves unravel and fade",
+                    "magical effects dissolve into sparkling motes",
+                ]
+                + (
+                    ["some powerful magics resist the dispelling"]
+                    if effects_resisted
+                    else []
+                ),
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # Phase 4: Movement Spell Handlers
+    # -------------------------------------------------------------------------
+
+    def _handle_levitate(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Levitate spell.
+
+        Per Dolmenwood source:
+        - Caster may move up and down through the air at will
+        - Vertical movement: Up to 20' per Round
+        - Horizontal movement: Only by pushing against solid objects
+        - Duration: 6 Turns + 1 per Level
+        - Can carry normal amount of weight
+        """
+        from src.data_models import FlightState
+
+        caster_level = caster.level if hasattr(caster, "level") else 1
+        duration_turns = 6 + caster_level
+
+        # Grant levitation (hovering state, not full flight)
+        if hasattr(caster, "grant_flight"):
+            caster.grant_flight(
+                speed=20,  # 20' per round vertical only
+                source="levitate",
+                flight_state=FlightState.HOVERING,
+            )
+
+        # Register as active spell effect
+        effect_id = f"levitate_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="levitate",
+            spell_name="Levitate",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=caster.character_id,
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            created_at=datetime.now(),
+            mechanical_effects={
+                "movement_mode": "levitating",
+                "vertical_speed": 20,
+                "horizontal_requires_solid": True,
+                "grants_flight_state": "hovering",
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "duration_turns": duration_turns,
+            "vertical_speed": 20,
+            "movement_mode": "levitating",
+            "narrative_context": {
+                "levitation_granted": True,
+                "vertical_only": True,
+                "hints": [
+                    "the caster rises untethered from the ground",
+                    "gravity's pull weakens as the spell takes hold",
+                    "vertical movement at will, horizontal by pushing off solids",
+                ],
+            },
+        }
+
+    def _handle_fly(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Fly spell.
+
+        Per Dolmenwood source:
+        - Commands the wind to wrap subject in swirling zephyrs
+        - Free movement in any direction, including hovering
+        - Speed 120
+        - Duration: 1d6 Turns + 1 per Level
+        """
+        from src.data_models import DiceRoller as DR, FlightState
+
+        dice = dice_roller or DR()
+        caster_level = caster.level if hasattr(caster, "level") else 1
+
+        # Roll duration: 1d6 + caster level
+        duration_roll = dice.roll("1d6", "Fly duration")
+        duration_turns = duration_roll.total + caster_level
+
+        # Determine target (caster or touched creature)
+        target_id = caster.character_id
+        if targets_affected and len(targets_affected) > 0:
+            target_id = targets_affected[0]
+
+        # Get target character for granting flight
+        target_char = None
+        if self._controller:
+            target_char = self._controller.get_character(target_id)
+        if not target_char:
+            target_char = caster
+
+        # Grant full flight
+        if hasattr(target_char, "grant_flight"):
+            target_char.grant_flight(
+                speed=120,
+                source="fly",
+                flight_state=FlightState.FLYING,
+            )
+
+        # Register as active spell effect
+        effect_id = f"fly_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="fly",
+            spell_name="Fly",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=target_id,
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            created_at=datetime.now(),
+            mechanical_effects={
+                "movement_mode": "flying",
+                "flight_speed": 120,
+                "grants_flight_state": "flying",
+                "free_movement": True,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "target_id": target_id,
+            "caster_level": caster_level,
+            "duration_turns": duration_turns,
+            "duration_roll": duration_roll.total,
+            "flight_speed": 120,
+            "movement_mode": "flying",
+            "narrative_context": {
+                "flight_granted": True,
+                "zephyrs_summoned": True,
+                "hints": [
+                    "swirling zephyrs wrap around and lift the subject",
+                    "the winds obey, carrying the subject through the air",
+                    "free movement in any direction at Speed 120",
+                ],
+            },
+        }
+
+    def _handle_telekinesis(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Telekinesis spell.
+
+        Per Dolmenwood source:
+        - Move object or creature by thought
+        - Weight: 200 coins per Level (200 coins = ~10 lbs)
+        - Movement: 20' per Round in any direction
+        - Duration: Concentration (up to 6 Rounds)
+        - Unwilling targets: Save Versus Hold to resist
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = caster.level if hasattr(caster, "level") else 1
+
+        # Calculate weight limit
+        weight_limit_coins = 200 * caster_level
+        weight_limit_lbs = weight_limit_coins / 20  # ~10 lbs per 200 coins
+
+        # Process targets (creatures get saves)
+        targets_held = []
+        targets_resisted = []
+
+        for target_id in targets_affected:
+            target_char = None
+            if self._controller:
+                target_char = self._controller.get_character(target_id)
+
+            if target_char:
+                # Creature target - needs Save Versus Hold
+                save_modifier = 0
+                if hasattr(target_char, "get_saving_throw"):
+                    save_modifier = target_char.get_saving_throw("hold") or 0
+
+                save_roll = dice.roll_d20()
+                save_total = save_roll.total + save_modifier
+                save_target = 15  # Standard save target
+
+                if save_total >= save_target:
+                    # Resisted
+                    targets_resisted.append({
+                        "target_id": target_id,
+                        "save_roll": save_roll.total,
+                        "save_total": save_total,
+                    })
+                else:
+                    # Held
+                    targets_held.append({
+                        "target_id": target_id,
+                        "save_roll": save_roll.total,
+                        "save_total": save_total,
+                    })
+            else:
+                # Object target - no save needed
+                targets_held.append({
+                    "target_id": target_id,
+                    "is_object": True,
+                })
+
+        # Register as concentration effect
+        effect_id = f"telekinesis_{uuid.uuid4().hex[:8]}"
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="telekinesis",
+            spell_name="Telekinesis",
+            caster_id=caster.character_id,
+            caster_level=caster_level,
+            target_id=caster.character_id,  # Effect is on caster (concentration)
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.ROUNDS,
+            duration_remaining=6,  # Up to 6 rounds
+            duration_unit="rounds",
+            requires_concentration=True,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "telekinetic_control": True,
+                "weight_limit_coins": weight_limit_coins,
+                "movement_speed": 20,
+                "held_targets": [t["target_id"] for t in targets_held],
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "weight_limit_coins": weight_limit_coins,
+            "weight_limit_lbs": weight_limit_lbs,
+            "movement_speed": 20,
+            "duration_rounds": 6,
+            "requires_concentration": True,
+            "targets_held": targets_held,
+            "targets_resisted": targets_resisted,
+            "save_type": "hold",
+            "narrative_context": {
+                "telekinesis_active": True,
+                "concentration_required": True,
+                "hints": [
+                    "the caster's will extends outward, gripping the target",
+                    f"up to {weight_limit_coins} coins of weight can be moved",
+                    "movement at 20' per round in any direction",
+                    "concentration breaks if caster is harmed or acts",
+                ],
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # PHASE 5 SPELL HANDLERS - Utility and Transformation
+    # -------------------------------------------------------------------------
+
+    def _handle_passwall(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Passwall spell - creates temporary passage through stone/rock.
+
+        Effects:
+        - Creates a 5' diameter, 10' deep hole in solid rock or stone
+        - Duration: 3 Turns
+        - Passage is temporary and closes when spell ends
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: Not used (location-based effect)
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with passage effect details
+        """
+        import uuid
+
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"passwall_{uuid.uuid4().hex[:8]}"
+
+        # Passwall has fixed dimensions per spell description
+        diameter = 5  # 5' diameter
+        depth = 10  # Up to 10' deep
+        duration_turns = 3  # 3 Turns duration
+
+        # Create the temporary passage effect
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="passwall",
+            spell_name="Passwall",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id="area:passwall",  # Location effect
+            target_type="area",
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "passage_type": "temporary_hole",
+                "diameter_feet": diameter,
+                "depth_feet": depth,
+                "material_affected": ["rock", "stone"],
+                "blocks_passage_when_ends": True,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "passage_created": True,
+            "diameter_feet": diameter,
+            "depth_feet": depth,
+            "duration_turns": duration_turns,
+            "material_affected": ["rock", "stone"],
+            "blocks_when_ends": True,
+            "narrative_context": {
+                "passage_open": True,
+                "hints": [
+                    "a 5' diameter hole opens in solid stone",
+                    "the passage extends up to 10' deep",
+                    "the stone seems to shimmer at the edges",
+                    "the passage will close after 3 Turns",
+                ],
+            },
+        }
+
+    def _handle_fools_gold(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Fool's Gold glamour - makes copper coins appear as gold.
+
+        Effects:
+        - Up to 20 coins per caster level per day can be glamoured
+        - Duration: 1d6 minutes
+        - Each viewer may Save Versus Spell to see through the illusion
+        - Fairy glamour (not a leveled spell)
+
+        Args:
+            caster: The character casting the glamour
+            targets_affected: List of viewer IDs who observe the coins
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glamour effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"fools_gold_{uuid.uuid4().hex[:8]}"
+
+        # Maximum coins that can be glamoured
+        max_coins_per_day = 20 * caster_level
+
+        # Roll duration: 1d6 minutes
+        duration_minutes = dice.roll("1d6")
+
+        # Track which viewers see through the illusion
+        viewers_deceived: list[str] = []
+        viewers_saw_through: list[str] = []
+
+        for viewer_id in targets_affected:
+            # Each viewer gets a Save Versus Spell
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for spell saves as default
+            if save_roll >= 14:
+                viewers_saw_through.append(viewer_id)
+            else:
+                viewers_deceived.append(viewer_id)
+
+        # Create the glamour effect
+        # Using SPECIAL duration type since Fool's Gold uses minutes (not a standard duration type)
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="fools_gold",
+            spell_name="Fool's Gold",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id="object:coins",  # Item effect
+            target_type="object",
+            effect_type=SpellEffectType.HYBRID,
+            duration_type=DurationType.SPECIAL,
+            duration_remaining=duration_minutes,
+            duration_unit="minutes",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "glamour_type": "visual_illusion",
+                "appears_as": "gold_coins",
+                "actual_material": "copper_coins",
+                "max_coins": max_coins_per_day,
+                "viewers_deceived": viewers_deceived,
+                "viewers_saw_through": viewers_saw_through,
+                "save_type": "spell",
+                "duration_minutes": duration_minutes,
+            },
+        )
+        self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "glamour_active": True,
+            "max_coins_per_day": max_coins_per_day,
+            "duration_minutes": duration_minutes,
+            "viewers_deceived": viewers_deceived,
+            "viewers_saw_through": viewers_saw_through,
+            "save_type": "spell",
+            "narrative_context": {
+                "illusion_active": True,
+                "hints": [
+                    "the copper coins gleam with an unmistakable golden luster",
+                    "fairy glamour shimmers over the coins",
+                    f"the glamour will last for {duration_minutes} minutes",
+                    f"up to {max_coins_per_day} coins can be glamoured today",
+                ],
+            },
+        }
+
+    def _handle_ginger_snap(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Ginger Snap spell - transforms limbs into gingerbread.
+
+        Effects:
+        - Target transforms partially into gingerbread
+        - 1 limb per 3 caster levels affected
+        - At level 14+, head can also be transformed
+        - Transformed parts are brittle and can be smashed
+        - Save Versus Hold to resist
+        - Duration: 1d6 Rounds
+        - Smashed parts are permanently destroyed
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: List of target IDs
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with transformation effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"ginger_snap_{uuid.uuid4().hex[:8]}"
+
+        # Calculate limbs affected: 1 per 3 levels
+        limbs_affected = caster_level // 3
+        if limbs_affected < 1:
+            limbs_affected = 1
+
+        # At level 14+, head can also be transformed
+        head_vulnerable = caster_level >= 14
+
+        # Roll duration: 1d6 Rounds
+        duration_rounds = dice.roll("1d6")
+
+        # Determine which body parts are affected
+        body_parts = ["left_arm", "right_arm", "left_leg", "right_leg"]
+        affected_parts: list[str] = []
+
+        # Select limbs to transform
+        for i in range(min(limbs_affected, len(body_parts))):
+            affected_parts.append(body_parts[i])
+
+        if head_vulnerable:
+            affected_parts.append("head")
+
+        # Process saving throws for each target
+        targets_transformed: list[str] = []
+        targets_resisted: list[str] = []
+        target_details: dict[str, dict[str, Any]] = {}
+
+        for target_id in targets_affected:
+            # Save Versus Hold to resist
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for hold saves as default
+            if save_roll >= 14:
+                targets_resisted.append(target_id)
+            else:
+                targets_transformed.append(target_id)
+                target_details[target_id] = {
+                    "parts_transformed": affected_parts.copy(),
+                    "parts_smashed": [],
+                    "head_vulnerable": head_vulnerable,
+                }
+
+        # Create the transformation effect for each transformed target
+        for target_id in targets_transformed:
+            effect = ActiveSpellEffect(
+                effect_id=f"{effect_id}_{target_id}",
+                spell_id="ginger_snap",
+                spell_name="Ginger Snap",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.MECHANICAL,
+                duration_type=DurationType.ROUNDS,
+                duration_remaining=duration_rounds,
+                duration_unit="rounds",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "transformation_type": "gingerbread",
+                    "limbs_affected_count": limbs_affected,
+                    "head_vulnerable": head_vulnerable,
+                    "parts_transformed": target_details.get(target_id, {}).get(
+                        "parts_transformed", []
+                    ),
+                    "parts_smashed": [],
+                    "smashable": True,
+                    "permanent_loss_on_smash": True,
+                    "save_type": "hold",
+                },
+            )
+            self._active_effects.append(effect)
+
+        return {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "transformation_active": True,
+            "limbs_affected_count": limbs_affected,
+            "head_vulnerable": head_vulnerable,
+            "affected_parts": affected_parts,
+            "duration_rounds": duration_rounds,
+            "targets_transformed": targets_transformed,
+            "targets_resisted": targets_resisted,
+            "target_details": target_details,
+            "save_type": "hold",
+            "smashable": True,
+            "permanent_loss_on_smash": True,
+            "narrative_context": {
+                "transformation_active": True,
+                "hints": [
+                    f"{limbs_affected} limb(s) transform into crunchy gingerbread",
+                    "transformed parts are brittle and can be snapped",
+                    "smashed parts are permanently destroyed when spell ends",
+                    f"the transformation lasts for {duration_rounds} rounds",
+                ]
+                + (
+                    ["at this power level, even the head is vulnerable!"]
+                    if head_vulnerable
+                    else []
+                ),
+            },
+        }
+
+    # -------------------------------------------------------------------------
+    # PHASE 6 SPELL HANDLERS - Door/Lock and Trap Spells
+    # -------------------------------------------------------------------------
+
+    def _handle_through_the_keyhole(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Through the Keyhole glamour - step through doors with keyholes.
+
+        Effects:
+        - Instant teleport through any door with keyhole/aperture
+        - Magically sealed doors require Save Versus Spell
+        - Once per day per door usage limit
+
+        Args:
+            caster: The character using the glamour
+            targets_affected: List containing door ID (if applicable)
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glamour effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"through_keyhole_{uuid.uuid4().hex[:8]}"
+
+        # Check if door is magically sealed (first target could be door info)
+        door_id = targets_affected[0] if targets_affected else "unknown_door"
+        is_magically_sealed = False
+        bypass_succeeded = True
+
+        # If door info indicates magical sealing, require save
+        if targets_affected and len(targets_affected) > 1:
+            # Second element could indicate magical sealing
+            is_magically_sealed = targets_affected[1] == "magically_sealed"
+
+        if is_magically_sealed:
+            # Save Versus Spell to bypass magical sealing
+            save_roll = dice.roll("1d20")
+            # Assume DC 14 for spell saves
+            bypass_succeeded = save_roll >= 14
+
+        return {
+            "success": bypass_succeeded,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "door_id": door_id,
+            "is_magically_sealed": is_magically_sealed,
+            "bypass_succeeded": bypass_succeeded,
+            "teleported": bypass_succeeded,
+            "usage_limit": "once_per_day_per_door",
+            "narrative_context": {
+                "glamour_used": True,
+                "hints": (
+                    [
+                        "the caster steps through the keyhole as if it were a doorway",
+                        "for a moment, they seem to shrink and flow through the aperture",
+                        "they reappear on the other side in the blink of an eye",
+                    ]
+                    if bypass_succeeded
+                    else [
+                        "magical sealing prevents passage through the keyhole",
+                        "the glamour fails to pierce the warding magic",
+                    ]
+                ),
+            },
+        }
+
+    def _handle_lock_singer(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Lock Singer knack - Mossling ability to charm locks with song.
+
+        Effects vary by level:
+        - Level 1: 2-in-6 per Turn to open simple locks
+        - Level 3: Locate key (whispered cant)
+        - Level 5: Snap shut locks within 30'
+        - Level 7: Open any lock 2-in-6, magical locks with 1-in-6 backfire risk
+
+        Args:
+            caster: The Mossling character using the knack
+            targets_affected: List containing lock/door ID and ability to use
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with knack effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"lock_singer_{uuid.uuid4().hex[:8]}"
+
+        # Determine which ability is being used based on level
+        lock_id = targets_affected[0] if targets_affected else "unknown_lock"
+        ability_used = targets_affected[1] if len(targets_affected) > 1 else "open_simple"
+        is_magical_lock = targets_affected[2] == "magical" if len(targets_affected) > 2 else False
+
+        result_data: dict[str, Any] = {
+            "success": False,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "lock_id": lock_id,
+            "ability_used": ability_used,
+            "is_magical_lock": is_magical_lock,
+            "backfire": False,
+            "mouth_sealed_days": 0,
+        }
+
+        if ability_used == "open_simple" and caster_level >= 1:
+            # 2-in-6 chance per Turn to open simple lock
+            roll = dice.roll("1d6")
+            result_data["success"] = roll <= 2
+            result_data["chance"] = "2-in-6"
+            result_data["roll"] = roll
+            result_data["time_required"] = "1 Turn per attempt"
+
+        elif ability_used == "locate_key" and caster_level >= 3:
+            # Always succeeds - whispered cant reveals key location
+            result_data["success"] = True
+            result_data["key_location_revealed"] = True
+
+        elif ability_used == "snap_shut" and caster_level >= 5:
+            # Simple locks within 30' snap shut after 1 Round of song
+            result_data["success"] = True
+            result_data["range_feet"] = 30
+            result_data["time_required"] = "1 Round of singing"
+
+        elif ability_used == "open_any" and caster_level >= 7:
+            # 2-in-6 for any lock, magical locks have backfire risk
+            roll = dice.roll("1d6")
+            result_data["success"] = roll <= 2
+            result_data["chance"] = "2-in-6"
+            result_data["roll"] = roll
+
+            if is_magical_lock and result_data["success"]:
+                # 1-in-6 chance of backfire on magical locks
+                backfire_roll = dice.roll("1d6")
+                if backfire_roll == 1:
+                    result_data["backfire"] = True
+                    result_data["success"] = True  # Still opens, but with consequence
+                    # 1d4 days of sealed mouth
+                    seal_duration = dice.roll("1d4")
+                    result_data["mouth_sealed_days"] = seal_duration
+
+        else:
+            # Ability not available at this level
+            result_data["success"] = False
+            result_data["reason"] = f"ability '{ability_used}' requires higher level"
+
+        # Build narrative hints based on result
+        hints = []
+        if result_data["success"]:
+            if ability_used == "locate_key":
+                hints.append("a quiet whining from the lock reveals the key's location")
+            elif ability_used == "snap_shut":
+                hints.append("locks within earshot snap shut at the mossling's song")
+            else:
+                hints.append("the lock yields to the mossling's melodious charm")
+        else:
+            hints.append("the lock remains stubbornly closed despite the song")
+
+        if result_data.get("backfire"):
+            hints.append(
+                f"the magic backfires! the mossling's mouth is sealed for "
+                f"{result_data['mouth_sealed_days']} days"
+            )
+
+        result_data["narrative_context"] = {
+            "knack_used": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_serpent_glyph(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Serpent Glyph spell - creates a warding trap glyph.
+
+        Effects:
+        - Creates permanent glyph on text or surface (until triggered)
+        - When triggered: serpent attacks nearest creature
+        - Attack roll = caster's level
+        - On hit: victim frozen in temporal stasis for 1d4 days
+        - Material component: 100gp powdered amber
+
+        Args:
+            caster: The character casting the spell
+            targets_affected: List containing surface/text ID and trigger target
+            dice_roller: Optional dice roller
+
+        Returns:
+            Dictionary with glyph effect details
+        """
+        import uuid
+
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"serpent_glyph_{uuid.uuid4().hex[:8]}"
+
+        # Determine glyph placement type
+        surface_id = targets_affected[0] if targets_affected else "unknown_surface"
+        glyph_type = targets_affected[1] if len(targets_affected) > 1 else "surface"
+        is_triggered = targets_affected[2] == "triggered" if len(targets_affected) > 2 else False
+        trigger_target = targets_affected[3] if len(targets_affected) > 3 else None
+
+        result_data: dict[str, Any] = {
+            "success": True,
+            "effect_id": effect_id,
+            "caster_level": caster_level,
+            "surface_id": surface_id,
+            "glyph_type": glyph_type,  # "text" or "surface"
+            "is_visible": glyph_type == "surface",  # Only surface glyphs glow
+            "material_component": "powdered amber (100gp)",
+            "duration": "permanent_until_triggered",
+        }
+
+        if is_triggered and trigger_target:
+            # Glyph has been triggered - serpent attacks
+            attack_roll = dice.roll("1d20")
+            attack_total = attack_roll + caster_level
+            # Assume AC 10 as baseline for hitting
+            target_ac = 10  # Could be passed in targets_affected
+            attack_hits = attack_total >= target_ac
+
+            result_data["triggered"] = True
+            result_data["attack_roll"] = attack_roll
+            result_data["attack_bonus"] = caster_level
+            result_data["attack_total"] = attack_total
+            result_data["attack_hits"] = attack_hits
+            result_data["trigger_target"] = trigger_target
+
+            if attack_hits:
+                # Victim frozen in temporal stasis
+                stasis_days = dice.roll("1d4")
+                result_data["stasis_applied"] = True
+                result_data["stasis_duration_days"] = stasis_days
+
+                # Create temporal stasis effect
+                stasis_effect = ActiveSpellEffect(
+                    effect_id=f"{effect_id}_stasis",
+                    spell_id="serpent_glyph",
+                    spell_name="Serpent Glyph (Temporal Stasis)",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=trigger_target,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.DAYS,
+                    duration_remaining=stasis_days,
+                    duration_unit="days",
+                    requires_concentration=False,
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "temporal_stasis",
+                        "cannot_move": True,
+                        "cannot_perceive": True,
+                        "cannot_think": True,
+                        "cannot_act": True,
+                        "invulnerable": True,
+                        "bubble_immovable": True,
+                        "dispellable": True,
+                        "releasable_by_caster": True,
+                    },
+                )
+                self._active_effects.append(stasis_effect)
+
+                result_data["narrative_context"] = {
+                    "glyph_triggered": True,
+                    "hints": [
+                        "a glowing serpent leaps from the glyph!",
+                        f"the serpent strikes true (attack roll {attack_total})",
+                        f"the victim is frozen in a glittering amber bubble",
+                        f"temporal stasis will last {stasis_days} days",
+                        "the victim cannot move, perceive, think, or act",
+                        "the bubble cannot be moved or penetrated",
+                    ],
+                }
+            else:
+                result_data["stasis_applied"] = False
+                result_data["narrative_context"] = {
+                    "glyph_triggered": True,
+                    "hints": [
+                        "a glowing serpent leaps from the glyph!",
+                        f"the serpent strikes but misses (attack roll {attack_total})",
+                        "the serpent dissipates with a flash, a bang, and a puff of smoke",
+                    ],
+                }
+        else:
+            # Glyph is being placed, not triggered
+            # Create the glyph trap effect
+            glyph_effect = ActiveSpellEffect(
+                effect_id=effect_id,
+                spell_id="serpent_glyph",
+                spell_name="Serpent Glyph",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=f"glyph:{surface_id}",
+                target_type="object",
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.PERMANENT,
+                duration_remaining=None,
+                duration_unit="permanent",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "trap_type": "serpent_glyph",
+                    "glyph_type": glyph_type,
+                    "attack_bonus": caster_level,
+                    "trigger_action": "read" if glyph_type == "text" else "touch",
+                    "is_visible": glyph_type == "surface",
+                    "detect_magic_reveals": glyph_type == "text",
+                },
+            )
+            self._active_effects.append(glyph_effect)
+
+            result_data["narrative_context"] = {
+                "glyph_placed": True,
+                "hints": [
+                    f"the serpent glyph is traced upon the {glyph_type}",
+                    "powdered amber is sprinkled over the arcane symbol",
+                ]
+                + (
+                    ["the glyph glows pale yellow, clearly visible"]
+                    if glyph_type == "surface"
+                    else ["the glyph mingles into the script, undetectable except by magic"]
+                ),
+            }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 7 HANDLERS: Teleportation, Condition, and Healing
+    # =========================================================================
+
+    def _handle_dimension_door(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Dimension Door spell.
+
+        Creates paired door-shaped rifts in space for instant teleportation.
+
+        Effects:
+        - Opens entrance door within 10' of caster
+        - Opens exit door at destination up to 360' away
+        - Single creature may step through (or be forced through)
+        - Unwilling targets get Save Versus Hold
+        - Destination can be known location or coordinate offsets
+        - No effect if destination is solid object
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"dimension_door_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        max_range = 360  # feet
+        entrance_range = 10  # feet from caster
+
+        # Get targeting information from context
+        target_id = targets_affected[0] if targets_affected else None
+        is_unwilling = False
+        destination_type = "known_location"  # or "offset_coordinates"
+        destination_offset = {"north": 0, "east": 0, "up": 0}  # for offset mode
+        destination_blocked = False
+
+        # Check for context-provided targeting info
+        if hasattr(self, "_current_context") and self._current_context:
+            ctx = self._current_context
+            is_unwilling = ctx.get("is_unwilling", False)
+            destination_type = ctx.get("destination_type", "known_location")
+            destination_offset = ctx.get("destination_offset", {"north": 0, "east": 0, "up": 0})
+            destination_blocked = ctx.get("destination_blocked", False)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "dimension_door",
+            "spell_name": "Dimension Door",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "max_range": max_range,
+            "entrance_range": entrance_range,
+            "destination_type": destination_type,
+            "success": False,
+            "teleported": False,
+        }
+
+        # Check if destination is blocked
+        if destination_blocked:
+            result_data["destination_blocked"] = True
+            result_data["narrative_context"] = {
+                "spell_fizzled": True,
+                "hints": [
+                    "the caster attempts to open a dimension door",
+                    "but the destination is occupied by a solid object",
+                    "the spell has no effect",
+                ],
+            }
+            return result_data
+
+        result_data["success"] = True
+
+        # Handle unwilling target - needs Save Versus Hold
+        if is_unwilling and target_id:
+            # Roll save for unwilling target
+            save_roll = dice.roll("1d20")
+            save_target = 14  # Default save target
+
+            # Get actual save target if target has character data
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "hold", 14)
+
+            save_success = save_roll >= save_target
+
+            result_data["is_unwilling"] = True
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+
+            if save_success:
+                result_data["teleported"] = False
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "target_resisted": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the nearby portal manifests beside {target_id}",
+                        f"but they resist the dimensional pull (save roll {save_roll})",
+                        "the portals shimmer and close without effect",
+                    ],
+                }
+                return result_data
+            else:
+                result_data["teleported"] = True
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "target_transported": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the nearby portal manifests beside {target_id}",
+                        f"they are sucked through the dimensional door (failed save {save_roll})",
+                        "the portals close behind them with a soft 'pop'",
+                    ],
+                }
+        else:
+            # Willing target or self-transport
+            result_data["is_unwilling"] = False
+            result_data["teleported"] = True
+
+            if destination_type == "offset_coordinates":
+                offset_desc = []
+                if destination_offset.get("north", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['north'])}' {'north' if destination_offset['north'] > 0 else 'south'}")
+                if destination_offset.get("east", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['east'])}' {'east' if destination_offset['east'] > 0 else 'west'}")
+                if destination_offset.get("up", 0) != 0:
+                    offset_desc.append(f"{abs(destination_offset['up'])}' {'up' if destination_offset['up'] > 0 else 'down'}")
+                offset_str = ", ".join(offset_desc) if offset_desc else "nearby"
+                result_data["destination_offset"] = destination_offset
+
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        f"the caster visualizes coordinates: {offset_str}",
+                        "a single step through the nearby door leads to instant arrival",
+                        "the portals shimmer and close",
+                    ],
+                }
+            else:
+                result_data["narrative_context"] = {
+                    "portal_opened": True,
+                    "hints": [
+                        "a pair of glowing, door-shaped rifts tear open in the fabric of space",
+                        "the caster visualizes a known destination",
+                        "a single step through the nearby door leads to instant arrival",
+                        "the portals shimmer and close",
+                    ],
+                }
+
+        # Create the teleportation effect (duration 1 Round)
+        teleport_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="dimension_door",
+            spell_name="Dimension Door",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id or getattr(caster, "character_id", "unknown"),
+            target_type="creature",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.ROUNDS,
+            duration_remaining=1,
+            duration_unit="rounds",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "teleportation": True,
+                "max_range": max_range,
+                "entrance_range": entrance_range,
+                "one_way": True,
+                "destination_type": destination_type,
+                "destination_offset": destination_offset if destination_type == "offset_coordinates" else None,
+                "teleported": result_data["teleported"],
+            },
+        )
+        self._active_effects.append(teleport_effect)
+
+        return result_data
+
+    def _handle_confusion(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Confusion spell.
+
+        Strikes creatures with delusions, making them unable to control actions.
+
+        Effects:
+        - Affects 3d6 randomly determined creatures in 30' radius
+        - Duration: 12 Rounds
+        - Creatures Level 3+ get Save Versus Spell each round
+        - Creatures Level 2 or lower get no save
+        - Roll on Subject Behaviour table each round
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"confusion_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Roll for number of creatures affected
+        creatures_affected = dice.roll("3d6")
+        duration_rounds = 12
+        area_radius = 30  # feet
+
+        # Subject Behaviour table outcomes (d10 or d12 equivalent)
+        behavior_table = [
+            "wander_away",      # 1-2: Wander away for 1 Round
+            "wander_away",
+            "stand_confused",   # 3-4: Stand confused for 1 Round
+            "stand_confused",
+            "attack_nearest",   # 5-8: Attack nearest creature
+            "attack_nearest",
+            "attack_nearest",
+            "attack_nearest",
+            "act_normally",     # 9-10: Act normally for 1 Round
+            "act_normally",
+        ]
+
+        result_data: dict[str, Any] = {
+            "spell_id": "confusion",
+            "spell_name": "Confusion",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "max_creatures_affected": creatures_affected,
+            "duration_rounds": duration_rounds,
+            "area_radius": area_radius,
+            "behavior_table": behavior_table,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each potential target
+        for target_id in targets_affected[:creatures_affected]:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "can_save": False,
+                "confused": True,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Creatures Level 3+ can save each round
+            if creature_data["level"] >= 3:
+                creature_data["can_save"] = True
+
+            # Roll initial behavior
+            behavior_roll = dice.roll("1d10") - 1  # 0-9 index
+            creature_data["initial_behavior"] = behavior_table[behavior_roll]
+            creature_data["behavior_roll"] = behavior_roll + 1
+
+            result_data["affected_creatures"].append(creature_data)
+
+            # Create confusion effect for each affected creature
+            confusion_effect = ActiveSpellEffect(
+                effect_id=f"{effect_id}_{target_id}",
+                spell_id="confusion",
+                spell_name="Confusion",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.HYBRID,
+                duration_type=DurationType.ROUNDS,
+                duration_remaining=duration_rounds,
+                duration_unit="rounds",
+                requires_concentration=False,
+                created_at=datetime.now(),
+                mechanical_effects={
+                    "condition": "confused",
+                    "creature_level": creature_data["level"],
+                    "can_save_each_round": creature_data["can_save"],
+                    "save_type": "spell",
+                    "behavior_table": behavior_table,
+                    "current_behavior": creature_data["initial_behavior"],
+                },
+            )
+            self._active_effects.append(confusion_effect)
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                f"a wave of befuddling magic washes over a 30' radius area",
+                f"up to {creatures_affected} creatures are stricken with delusions",
+                "affected creatures lose control of their actions",
+            ]
+            + (
+                ["creatures of Level 3 or higher may attempt to resist each Round"]
+                if any(c["can_save"] for c in result_data["affected_creatures"])
+                else ["none of the affected creatures are powerful enough to resist"]
+            ),
+        }
+
+        return result_data
+
+    def _handle_greater_healing(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Greater Healing spell.
+
+        A powerful healing prayer that restores significant Hit Points.
+
+        Effects:
+        - Heals 2d6+2 Hit Points
+        - Cannot exceed target's maximum HP
+        - St Wick's voice whispers a parable
+        - Instant duration (no ongoing effect)
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+
+        # Get target - can be caster or touched creature
+        target_id = targets_affected[0] if targets_affected else getattr(caster, "character_id", "unknown")
+
+        # Roll healing amount
+        healing_roll = dice.roll("2d6")
+        total_healing = healing_roll + 2
+
+        result_data: dict[str, Any] = {
+            "spell_id": "greater_healing",
+            "spell_name": "Greater Healing",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "healing_roll": healing_roll,
+            "healing_bonus": 2,
+            "total_healing": total_healing,
+            "actual_healing": total_healing,  # May be reduced if at max HP
+            "success": True,
+        }
+
+        # Apply healing if we have access to the target
+        if hasattr(self, "_controller") and self._controller:
+            target_char = self._controller.get_character(target_id)
+            if target_char:
+                current_hp = getattr(target_char, "current_hp", 0)
+                max_hp = getattr(target_char, "max_hp", current_hp)
+
+                # Calculate actual healing (cannot exceed max HP)
+                hp_deficit = max_hp - current_hp
+                actual_healing = min(total_healing, hp_deficit)
+                result_data["actual_healing"] = actual_healing
+                result_data["current_hp_before"] = current_hp
+                result_data["current_hp_after"] = current_hp + actual_healing
+                result_data["max_hp"] = max_hp
+
+                if actual_healing < total_healing:
+                    result_data["healing_capped"] = True
+                else:
+                    result_data["healing_capped"] = False
+
+        result_data["narrative_context"] = {
+            "prayer_answered": True,
+            "hints": [
+                "the rustic voice of St Wick manifests",
+                "a gentle parable is whispered as the caster touches the subject",
+                f"healing energy flows forth, restoring {result_data['actual_healing']} Hit Points",
+            ]
+            + (
+                ["the subject's wounds close completely"]
+                if result_data.get("healing_capped")
+                else ["the subject's wounds begin to mend"]
+            ),
+        }
+
+        # No active effect needed - this is an instant spell
+        # But we track it for narration purposes
+        result_data["duration_type"] = "instant"
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 8 HANDLERS: Summoning and Area Effects
+    # =========================================================================
+
+    def _handle_animate_dead(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Animate Dead spell.
+
+        Raises corpses or skeletons as undead under caster's command.
+
+        Effects:
+        - Animates 1 corpse/skeleton per caster Level
+        - Created undead use standard stats (not original creature stats)
+        - Permanent duration until dispelled or slain
+        - Undead obey caster's commands
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"animate_dead_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Number of undead equals caster level
+        max_undead = caster_level
+        corpses_available = len(targets_affected) if targets_affected else max_undead
+
+        # Animate as many as possible up to limit
+        undead_created = min(max_undead, corpses_available)
+
+        # Standard undead stats (as per spell description)
+        undead_stats = {
+            "hit_dice": 1,
+            "armor_class": 7,
+            "attack_bonus": 0,
+            "damage": "1d6",
+            "movement": 60,
+            "morale": 12,  # Undead don't flee
+            "special_abilities": [],  # Cannot use abilities from life
+        }
+
+        result_data: dict[str, Any] = {
+            "spell_id": "animate_dead",
+            "spell_name": "Animate Dead",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "max_undead": max_undead,
+            "corpses_available": corpses_available,
+            "undead_created": undead_created,
+            "undead_stats": undead_stats,
+            "animated_corpses": [],
+            "success": True,
+        }
+
+        # Track each animated corpse
+        for i in range(undead_created):
+            corpse_id = targets_affected[i] if i < len(targets_affected) else f"corpse_{i+1}"
+            undead_id = f"undead_{corpse_id}"
+
+            result_data["animated_corpses"].append({
+                "corpse_id": corpse_id,
+                "undead_id": undead_id,
+                "undead_type": "skeleton" if "skeleton" in str(corpse_id).lower() else "zombie",
+            })
+
+        # Create permanent effect for the undead minions
+        animate_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="animate_dead",
+            spell_name="Animate Dead",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"undead_group_{effect_id}",
+            target_type="creature_group",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.PERMANENT,
+            duration_remaining=None,
+            duration_unit="permanent",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "summoned_creatures": True,
+                "creature_type": "undead",
+                "count": undead_created,
+                "stats": undead_stats,
+                "obeys_caster": True,
+                "dispellable": True,
+                "ends_when_slain": True,
+            },
+        )
+        self._active_effects.append(animate_effect)
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                f"dark energy flows from the caster's hands into {undead_created} corpse{'s' if undead_created > 1 else ''}",
+                "bones rattle and flesh stirs as the dead rise",
+                "hollow eyes glow with unholy light",
+                "the undead await their master's commands",
+            ],
+        }
+
+        return result_data
+
+    def _handle_cloudkill(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Cloudkill spell.
+
+        Creates a deadly poison fog that moves and sinks.
+
+        Effects:
+        - 30' diameter poison cloud
+        - Moves at Speed 10, sinks to lowest point
+        - 1 damage per Round to all in contact
+        - Creatures Level 4 or lower: Save Versus Doom or die
+        - Duration: 6 Turns
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"cloudkill_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        cloud_diameter = 30  # feet
+        duration_turns = 6
+        cloud_speed = 10  # movement rate
+        damage_per_round = 1
+        instant_death_level_threshold = 4
+
+        result_data: dict[str, Any] = {
+            "spell_id": "cloudkill",
+            "spell_name": "Cloudkill",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "cloud_diameter": cloud_diameter,
+            "duration_turns": duration_turns,
+            "cloud_speed": cloud_speed,
+            "damage_per_round": damage_per_round,
+            "instant_death_level_threshold": instant_death_level_threshold,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each target in the cloud
+        for target_id in targets_affected:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "damage_taken": damage_per_round,
+                "must_save_vs_death": False,
+                "save_roll": None,
+                "died": False,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Low level creatures must save or die
+            if creature_data["level"] <= instant_death_level_threshold:
+                creature_data["must_save_vs_death"] = True
+                save_roll = dice.roll("1d20")
+                save_target = 12  # Default doom save
+
+                # Get actual save target if available
+                if hasattr(self, "_controller") and self._controller:
+                    target_char = self._controller.get_character(target_id)
+                    if target_char and hasattr(target_char, "saving_throws"):
+                        save_target = getattr(target_char.saving_throws, "doom", 12)
+
+                creature_data["save_roll"] = save_roll
+                creature_data["save_target"] = save_target
+                creature_data["died"] = save_roll < save_target
+
+            result_data["affected_creatures"].append(creature_data)
+
+        # Create the cloud effect
+        cloud_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="cloudkill",
+            spell_name="Cloudkill",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"cloud_area_{effect_id}",
+            target_type="area",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "area_effect": True,
+                "cloud_diameter": cloud_diameter,
+                "cloud_speed": cloud_speed,
+                "sinks_to_lowest": True,
+                "damage_per_round": damage_per_round,
+                "instant_death_level_threshold": instant_death_level_threshold,
+                "save_type": "doom",
+            },
+        )
+        self._active_effects.append(cloud_effect)
+
+        # Count deaths for narrative
+        deaths = sum(1 for c in result_data["affected_creatures"] if c.get("died"))
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "a sickly green fog streams from the caster's fingertips",
+                f"the poisonous cloud fills a {cloud_diameter}' diameter area",
+                "the deadly fog sinks toward the ground, flowing into low places",
+            ]
+            + (
+                [f"{deaths} creature{'s' if deaths > 1 else ''} collapse{'s' if deaths == 1 else ''}, overcome by the poison"]
+                if deaths > 0
+                else ["creatures caught in the cloud choke and gasp"]
+            ),
+        }
+
+        return result_data
+
+    def _handle_insect_plague(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Insect Plague spell.
+
+        Summons a swarm of biting insects in a fixed location.
+
+        Effects:
+        - 60' diameter swarm, does not move
+        - Vision limited to 30' inside swarm
+        - 1 damage per Round to all creatures
+        - Creatures Level 1-2: Flee in horror (must go 240' away)
+        - Duration: 1 Turn per Level
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"insect_plague_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Spell parameters
+        swarm_diameter = 60  # feet
+        duration_turns = caster_level
+        damage_per_round = 1
+        vision_limit = 30  # feet inside swarm
+        flee_level_threshold = 2
+        flee_distance = 240  # feet
+
+        result_data: dict[str, Any] = {
+            "spell_id": "insect_plague",
+            "spell_name": "Insect Plague",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "swarm_diameter": swarm_diameter,
+            "duration_turns": duration_turns,
+            "damage_per_round": damage_per_round,
+            "vision_limit": vision_limit,
+            "flee_level_threshold": flee_level_threshold,
+            "flee_distance": flee_distance,
+            "affected_creatures": [],
+            "success": True,
+        }
+
+        # Process each target in the swarm
+        for target_id in targets_affected:
+            creature_data: dict[str, Any] = {
+                "target_id": target_id,
+                "level": 1,
+                "damage_taken": damage_per_round,
+                "must_flee": False,
+            }
+
+            # Get creature level if available
+            if hasattr(self, "_controller") and self._controller:
+                target_char = self._controller.get_character(target_id)
+                if target_char:
+                    creature_data["level"] = getattr(target_char, "level", 1)
+
+            # Low level creatures flee in horror
+            if creature_data["level"] <= flee_level_threshold:
+                creature_data["must_flee"] = True
+                creature_data["flee_distance"] = flee_distance
+
+            result_data["affected_creatures"].append(creature_data)
+
+        # Create the swarm effect
+        swarm_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="insect_plague",
+            spell_name="Insect Plague",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=f"swarm_area_{effect_id}",
+            target_type="area",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.TURNS,
+            duration_remaining=duration_turns,
+            duration_unit="turns",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "area_effect": True,
+                "swarm_diameter": swarm_diameter,
+                "stationary": True,
+                "damage_per_round": damage_per_round,
+                "vision_limit": vision_limit,
+                "flee_level_threshold": flee_level_threshold,
+                "flee_distance": flee_distance,
+            },
+        )
+        self._active_effects.append(swarm_effect)
+
+        # Count fleeing creatures for narrative
+        fleeing = sum(1 for c in result_data["affected_creatures"] if c.get("must_flee"))
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "a writhing mass of biting insects materializes",
+                f"the swarm fills a {swarm_diameter}' diameter area",
+                "the drone of thousands of wings fills the air",
+                f"vision is limited to {vision_limit}' within the swarm",
+            ]
+            + (
+                [f"{fleeing} low-level creature{'s' if fleeing > 1 else ''} flee{'s' if fleeing == 1 else ''} in horror"]
+                if fleeing > 0
+                else []
+            ),
+        }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 9 HANDLERS: Transformation and Utility
+    # =========================================================================
+
+    def _handle_petrification(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Petrification spell.
+
+        Can turn flesh to stone or stone to flesh.
+
+        Effects:
+        - Flesh to stone: Permanently transforms living creature to stone
+          (Save Versus Hold to resist)
+        - Stone to flesh: Restores petrified creature to life
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"petrification_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Determine mode from context
+        mode = "flesh_to_stone"  # or "stone_to_flesh"
+        if hasattr(self, "_current_context") and self._current_context:
+            mode = self._current_context.get("mode", "flesh_to_stone")
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        result_data: dict[str, Any] = {
+            "spell_id": "petrification",
+            "spell_name": "Petrification",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "mode": mode,
+            "success": True,
+        }
+
+        if mode == "flesh_to_stone":
+            # Target must Save Versus Hold to resist
+            save_roll = dice.roll("1d20")
+            save_target = 14  # Default hold save
+
+            if hasattr(self, "_controller") and self._controller and target_id:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "hold", 14)
+
+            save_success = save_roll >= save_target
+
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+            result_data["petrified"] = not save_success
+
+            if save_success:
+                result_data["narrative_context"] = {
+                    "spell_cast": True,
+                    "resisted": True,
+                    "hints": [
+                        "stone-grey energy crackles toward the target",
+                        f"but they resist the transformation (save roll {save_roll})",
+                        "the petrifying magic dissipates harmlessly",
+                    ],
+                }
+            else:
+                # Create permanent petrification effect
+                petri_effect = ActiveSpellEffect(
+                    effect_id=effect_id,
+                    spell_id="petrification",
+                    spell_name="Petrification",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=target_id,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.PERMANENT,
+                    duration_remaining=None,
+                    duration_unit="permanent",
+                    requires_concentration=False,
+                    created_at=datetime.now(),
+                    mechanical_effects={
+                        "condition": "petrified",
+                        "transformation_type": "flesh_to_stone",
+                        "includes_equipment": True,
+                        "reversible_by": "stone_to_flesh",
+                    },
+                )
+                self._active_effects.append(petri_effect)
+
+                result_data["narrative_context"] = {
+                    "spell_cast": True,
+                    "transformation": True,
+                    "hints": [
+                        "stone-grey energy crackles toward the target",
+                        f"they fail to resist (save roll {save_roll})",
+                        "their flesh hardens and turns to grey stone",
+                        "the transformation is complete and permanent",
+                    ],
+                }
+        else:
+            # Stone to flesh - restore petrified creature
+            result_data["restored"] = True
+
+            # Remove any petrification effects on the target
+            if target_id:
+                self._active_effects = [
+                    e for e in self._active_effects
+                    if not (e.spell_id == "petrification" and e.target_id == target_id)
+                ]
+
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "restoration": True,
+                "hints": [
+                    "warm, life-giving energy flows into the stone",
+                    "cracks appear as grey turns to flesh-tone",
+                    "the creature gasps as life returns",
+                    "they have been restored from petrification",
+                ],
+            }
+
+        return result_data
+
+    def _handle_invisibility(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Invisibility spell.
+
+        Makes a creature or object invisible.
+
+        Effects:
+        - Subject and carried gear become invisible
+        - Duration: 1 hour per caster Level
+        - Ends if subject attacks or casts a spell
+        - Light sources still emit light when invisible
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"invisibility_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Duration is 1 hour per level
+        duration_hours = caster_level
+
+        # Target can be caster, another creature, or an object
+        target_id = targets_affected[0] if targets_affected else getattr(caster, "character_id", "unknown")
+
+        # Determine target type from context
+        target_type = "creature"
+        if hasattr(self, "_current_context") and self._current_context:
+            target_type = self._current_context.get("target_type", "creature")
+
+        result_data: dict[str, Any] = {
+            "spell_id": "invisibility",
+            "spell_name": "Invisibility",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "target_type": target_type,
+            "duration_hours": duration_hours,
+            "success": True,
+        }
+
+        # Create invisibility effect
+        invis_effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="invisibility",
+            spell_name="Invisibility",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type=target_type,
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=DurationType.HOURS,
+            duration_remaining=duration_hours,
+            duration_unit="hours",
+            requires_concentration=False,
+            created_at=datetime.now(),
+            mechanical_effects={
+                "condition": "invisible",
+                "includes_gear": target_type == "creature",
+                "breaks_on_attack": True,
+                "breaks_on_spell_cast": True,
+                "light_sources_still_shine": True,
+            },
+        )
+        self._active_effects.append(invis_effect)
+
+        if target_type == "creature":
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "hints": [
+                    f"the target shimmers and fades from sight",
+                    "their clothing and equipment vanish with them",
+                    f"the invisibility will last up to {duration_hours} hour{'s' if duration_hours > 1 else ''}",
+                    "attacking or casting a spell will break the effect",
+                ],
+            }
+        else:
+            result_data["narrative_context"] = {
+                "spell_cast": True,
+                "hints": [
+                    "the object shimmers and disappears from view",
+                    f"it will remain invisible for up to {duration_hours} hour{'s' if duration_hours > 1 else ''}",
+                ],
+            }
+
+        return result_data
+
+    def _handle_knock(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Knock spell.
+
+        Opens locked doors and disables magical seals.
+
+        Effects:
+        - Instant duration
+        - Unlocks/removes mundane locks and bars
+        - Dispels Glyphs of Sealing
+        - Disables Glyphs of Locking for 1 Turn
+        - Can open known secret doors
+        """
+        caster_level = getattr(caster, "level", 1)
+
+        # Target is the door/portal being knocked
+        target_id = targets_affected[0] if targets_affected else "door"
+
+        # Get door/portal properties from context
+        has_mundane_lock = True
+        has_bar = False
+        has_glyph_of_sealing = False
+        has_glyph_of_locking = False
+        is_secret_door = False
+
+        if hasattr(self, "_current_context") and self._current_context:
+            ctx = self._current_context
+            has_mundane_lock = ctx.get("has_mundane_lock", True)
+            has_bar = ctx.get("has_bar", False)
+            has_glyph_of_sealing = ctx.get("has_glyph_of_sealing", False)
+            has_glyph_of_locking = ctx.get("has_glyph_of_locking", False)
+            is_secret_door = ctx.get("is_secret_door", False)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "knock",
+            "spell_name": "Knock",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "duration_type": "instant",
+            "success": True,
+            "effects_applied": [],
+        }
+
+        hints = ["the caster knocks on the portal with hand or staff"]
+
+        if has_mundane_lock:
+            result_data["effects_applied"].append("mundane_lock_opened")
+            hints.append("the lock clicks and unlocks")
+
+        if has_bar:
+            result_data["effects_applied"].append("bar_removed")
+            hints.append("the bar slides aside with a groan")
+
+        if has_glyph_of_sealing:
+            result_data["effects_applied"].append("glyph_of_sealing_dispelled")
+            hints.append("the Glyph of Sealing flares and fades, dispelled")
+
+        if has_glyph_of_locking:
+            result_data["effects_applied"].append("glyph_of_locking_disabled")
+            result_data["glyph_disabled_duration"] = 1  # Turn
+            hints.append("the Glyph of Locking dims, disabled for 1 Turn")
+
+        if is_secret_door:
+            result_data["effects_applied"].append("secret_door_opened")
+            hints.append("the secret portal groans and swings open")
+
+        if not result_data["effects_applied"]:
+            hints.append("the portal was already unlocked")
+
+        hints.append("the portal groans, grumbles, and opens")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    # =========================================================================
+    # PHASE 10 HANDLERS - Remaining Moderate/Significant Spells
+    # =========================================================================
+
+    def _handle_arcane_cypher(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Arcane Cypher spell.
+
+        Transforms text into incomprehensible arcane sigils readable only by caster.
+
+        Effects:
+        - Transforms up to 1 page of text per Level (or 1 spell in spellbook)
+        - Duration is permanent
+        - Only decoded by magic (e.g. Decipher spell)
+        """
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"arcane_cypher_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        target_id = targets_affected[0] if targets_affected else "text"
+        max_pages = caster_level
+
+        result_data: dict[str, Any] = {
+            "spell_id": "arcane_cypher",
+            "spell_name": "Arcane Cypher",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "max_pages": max_pages,
+            "duration_type": "permanent",
+            "success": True,
+        }
+
+        # Create permanent effect tracking the encrypted text
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="arcane_cypher",
+            spell_name="Arcane Cypher",
+            caster_id=getattr(caster, "character_id", "unknown"),
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type="object",
+            effect_type=SpellEffectType.NARRATIVE,
+            duration_type=DurationType.PERMANENT,
+            duration_remaining=None,
+            duration_unit="permanent",
+            requires_concentration=False,
+            mechanical_effects={
+                "encrypted": True,
+                "readable_by": [getattr(caster, "character_id", "unknown")],
+                "decryption_method": "decipher_spell",
+                "pages_affected": max_pages,
+            },
+        )
+        self._active_effects.append(effect)
+
+        result_data["effect_id"] = effect_id
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": [
+                "arcane sigils shimmer across the text",
+                f"up to {max_pages} pages transformed into incomprehensible symbols",
+                "only the caster can read the encrypted text",
+            ],
+        }
+
+        return result_data
+
+    def _handle_trap_the_soul(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Trap the Soul spell.
+
+        Traps or releases a creature's life force in a prepared gem/crystal.
+
+        Effects:
+        - Trap mode: Save Versus Doom or soul trapped, body comatose (30 days to death)
+        - Release mode: Restore soul to body or transfer to another receptacle
+        - Receptacle must be worth 1000gp per target Level with name engraved
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"trap_the_soul_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        # Determine mode from context
+        mode = "trap"  # or "release"
+        if hasattr(self, "_current_context") and self._current_context:
+            mode = self._current_context.get("mode", "trap")
+            receptacle_id = self._current_context.get("receptacle_id", "gem")
+        else:
+            receptacle_id = "gem"
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        result_data: dict[str, Any] = {
+            "spell_id": "trap_the_soul",
+            "spell_name": "Trap the Soul",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "mode": mode,
+            "receptacle_id": receptacle_id,
+            "success": True,
+        }
+
+        hints = []
+
+        if mode == "trap":
+            # Target must Save Versus Doom
+            save_roll = dice.roll("1d20")
+            save_target = 12  # Default doom save
+
+            if hasattr(self, "_controller") and self._controller and target_id:
+                target_char = self._controller.get_character(target_id)
+                if target_char and hasattr(target_char, "saving_throws"):
+                    save_target = getattr(target_char.saving_throws, "doom", 12)
+
+            save_success = save_roll >= save_target
+
+            result_data["save_roll"] = save_roll
+            result_data["save_target"] = save_target
+            result_data["save_success"] = save_success
+            result_data["soul_trapped"] = not save_success
+
+            if not save_success:
+                # Soul is trapped
+                effect = ActiveSpellEffect(
+                    effect_id=effect_id,
+                    spell_id="trap_the_soul",
+                    spell_name="Trap the Soul",
+                    caster_id=getattr(caster, "character_id", "unknown"),
+                    caster_level=caster_level,
+                    target_id=target_id,
+                    target_type="creature",
+                    effect_type=SpellEffectType.MECHANICAL,
+                    duration_type=DurationType.SPECIAL,
+                    duration_remaining=30,
+                    duration_unit="days",
+                    requires_concentration=False,
+                    mechanical_effects={
+                        "soul_trapped": True,
+                        "receptacle_id": receptacle_id,
+                        "body_comatose": True,
+                        "days_until_death": 30,
+                        "can_converse": True,
+                    },
+                )
+                self._active_effects.append(effect)
+                result_data["effect_id"] = effect_id
+
+                hints.append("the target's life force is ripped from their body")
+                hints.append(f"soul trapped in the {receptacle_id}")
+                hints.append("the body falls into a deathlike coma")
+                hints.append("without intervention, death will occur in 30 days")
+            else:
+                hints.append("the target resists the spell")
+                hints.append("their soul remains firmly anchored")
+        else:
+            # Release mode
+            result_data["soul_released"] = True
+            hints.append("the trapped soul streams forth from the receptacle")
+            hints.append("life force restored to the body")
+
+            # Remove any existing trap effect
+            self._active_effects = [
+                e for e in self._active_effects
+                if not (e.spell_id == "trap_the_soul" and e.target_id == target_id)
+            ]
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_holy_quest(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Holy Quest spell.
+
+        Commands subject to perform a specific quest with penalties for refusal.
+
+        Effects:
+        - Target must perform the quest or suffer -2 to Attack Rolls and Saving Throws
+        - Save Versus Spell to resist the compulsion
+        - Duration until quest is completed
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        effect_id = f"holy_quest_{getattr(caster, 'character_id', 'unknown')}_{id(self)}"
+
+        target_id = targets_affected[0] if targets_affected else None
+
+        # Get quest description from context
+        quest_description = "complete the assigned task"
+        if hasattr(self, "_current_context") and self._current_context:
+            quest_description = self._current_context.get("quest", quest_description)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "holy_quest",
+            "spell_name": "Holy Quest",
+            "caster_id": getattr(caster, "character_id", "unknown"),
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "quest_description": quest_description,
+            "success": True,
+        }
+
+        # Target may Save Versus Spell to resist
+        save_roll = dice.roll("1d20")
+        save_target = 14  # Default spell save
+
+        if hasattr(self, "_controller") and self._controller and target_id:
+            target_char = self._controller.get_character(target_id)
+            if target_char and hasattr(target_char, "saving_throws"):
+                save_target = getattr(target_char.saving_throws, "spell", 14)
+
+        save_success = save_roll >= save_target
+
+        result_data["save_roll"] = save_roll
+        result_data["save_target"] = save_target
+        result_data["save_success"] = save_success
+        result_data["compelled"] = not save_success
+
+        hints = ["a clap of thunder accompanies the divine command"]
+        hints.append("a ray of holy light illuminates the target")
+
+        if not save_success:
+            # Target is compelled
+            effect = ActiveSpellEffect(
+                effect_id=effect_id,
+                spell_id="holy_quest",
+                spell_name="Holy Quest",
+                caster_id=getattr(caster, "character_id", "unknown"),
+                caster_level=caster_level,
+                target_id=target_id,
+                target_type="creature",
+                effect_type=SpellEffectType.MECHANICAL,
+                duration_type=DurationType.SPECIAL,
+                duration_remaining=None,
+                duration_unit="until_quest_complete",
+                requires_concentration=False,
+                mechanical_effects={
+                    "quest": quest_description,
+                    "compelled": True,
+                    "refusal_penalty": {
+                        "attack_rolls": -2,
+                        "saving_throws": -2,
+                    },
+                    "quest_active": True,
+                },
+            )
+            self._active_effects.append(effect)
+            result_data["effect_id"] = effect_id
+
+            hints.append(f"the target is compelled to: {quest_description}")
+            hints.append("refusal brings divine punishment (-2 to attacks and saves)")
+        else:
+            hints.append("the target resists the holy compulsion")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
+
+    def _handle_polymorph(
+        self,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle Polymorph spell.
+
+        Transforms caster or subject into another living creature form.
+
+        Effects:
+        - Self: New form level <= caster level, keeps HP/saves/attack/intelligence
+        - Other: New form level <= 2x caster level, fully becomes new form (permanent)
+        - Physical capabilities acquired, non-physical special powers not acquired (self)
+        - Unwilling targets may Save Versus Spell to resist
+        """
+        from src.data_models import DiceRoller as DR
+
+        dice = dice_roller or DR()
+        caster_level = getattr(caster, "level", 1)
+        caster_id = getattr(caster, "character_id", "unknown")
+        effect_id = f"polymorph_{caster_id}_{id(self)}"
+
+        # Determine if self-cast or other
+        target_id = targets_affected[0] if targets_affected else caster_id
+        is_self_cast = target_id == caster_id
+
+        # Get new form from context
+        new_form = "wolf"  # Default form
+        new_form_level = 2
+        if hasattr(self, "_current_context") and self._current_context:
+            new_form = self._current_context.get("new_form", new_form)
+            new_form_level = self._current_context.get("new_form_level", new_form_level)
+
+        result_data: dict[str, Any] = {
+            "spell_id": "polymorph",
+            "spell_name": "Polymorph",
+            "caster_id": caster_id,
+            "caster_level": caster_level,
+            "target_id": target_id,
+            "is_self_cast": is_self_cast,
+            "new_form": new_form,
+            "new_form_level": new_form_level,
+            "success": True,
+        }
+
+        hints = []
+
+        # Check level restriction
+        max_allowed_level = caster_level if is_self_cast else caster_level * 2
+        if new_form_level > max_allowed_level:
+            result_data["success"] = False
+            result_data["failure_reason"] = "new_form_level_too_high"
+            hints.append(f"the {new_form} form is too powerful for this casting")
+            result_data["narrative_context"] = {"spell_cast": False, "hints": hints}
+            return result_data
+
+        # Handle unwilling targets (not self)
+        if not is_self_cast:
+            is_unwilling = False
+            if hasattr(self, "_current_context") and self._current_context:
+                is_unwilling = self._current_context.get("is_unwilling", False)
+
+            if is_unwilling:
+                save_roll = dice.roll("1d20")
+                save_target = 14  # Default spell save
+
+                if hasattr(self, "_controller") and self._controller:
+                    target_char = self._controller.get_character(target_id)
+                    if target_char and hasattr(target_char, "saving_throws"):
+                        save_target = getattr(target_char.saving_throws, "spell", 14)
+
+                save_success = save_roll >= save_target
+
+                result_data["save_roll"] = save_roll
+                result_data["save_target"] = save_target
+                result_data["save_success"] = save_success
+
+                if save_success:
+                    result_data["success"] = False
+                    result_data["failure_reason"] = "target_resisted"
+                    hints.append("the target resists the transformation")
+                    result_data["narrative_context"] = {"spell_cast": True, "hints": hints}
+                    return result_data
+
+        # Calculate duration
+        if is_self_cast:
+            base_duration = dice.roll("1d6")
+            duration = base_duration + caster_level
+            duration_type = DurationType.TURNS
+            duration_unit = "turns"
+        else:
+            duration = None
+            duration_type = DurationType.PERMANENT
+            duration_unit = "permanent"
+
+        result_data["duration"] = duration
+        result_data["duration_unit"] = duration_unit
+
+        # Create the polymorph effect
+        effect = ActiveSpellEffect(
+            effect_id=effect_id,
+            spell_id="polymorph",
+            spell_name="Polymorph",
+            caster_id=caster_id,
+            caster_level=caster_level,
+            target_id=target_id,
+            target_type="creature",
+            effect_type=SpellEffectType.MECHANICAL,
+            duration_type=duration_type,
+            duration_remaining=duration,
+            duration_unit=duration_unit,
+            requires_concentration=False,
+            mechanical_effects={
+                "new_form": new_form,
+                "new_form_level": new_form_level,
+                "is_self_cast": is_self_cast,
+                "preserves_hp": True,
+                "preserves_saves": is_self_cast,
+                "preserves_attack": is_self_cast,
+                "preserves_intelligence": is_self_cast,
+                "acquires_physical_capabilities": True,
+                "acquires_special_powers": not is_self_cast,
+                "can_cast_spells": False,
+                "reverts_on_death": True,
+            },
+        )
+        self._active_effects.append(effect)
+        result_data["effect_id"] = effect_id
+
+        hints.append(f"flesh ripples and transforms into the form of a {new_form}")
+        if is_self_cast:
+            hints.append(f"transformation lasts {duration} turns")
+            hints.append("physical capabilities acquired, spell casting suppressed")
+        else:
+            hints.append("the transformation is permanent")
+            hints.append("the target fully becomes the new creature")
+
+        result_data["narrative_context"] = {
+            "spell_cast": True,
+            "hints": hints,
+        }
+
+        return result_data
 
 
 # =============================================================================

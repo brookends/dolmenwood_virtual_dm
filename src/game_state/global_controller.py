@@ -2258,6 +2258,187 @@ class GlobalController:
         }
 
     # =========================================================================
+    # SOUL MANAGEMENT (for Trap the Soul spell)
+    # =========================================================================
+
+    def trap_soul(
+        self,
+        target_id: str,
+        receptacle_item_id: str,
+        caster_id: str,
+        duration_days: int = 30,
+    ) -> dict[str, Any]:
+        """
+        Trap a creature's soul in a prepared receptacle.
+
+        The target's body becomes comatose and will die after duration_days
+        if the soul is not restored.
+
+        Args:
+            target_id: Character ID of target whose soul is being trapped
+            receptacle_item_id: Item ID of the soul receptacle
+            caster_id: Character ID of the caster
+            duration_days: Days until body dies if soul not restored (default 30)
+
+        Returns:
+            Dictionary with trap results
+        """
+        from src.data_models import GameDate
+
+        target = self._characters.get(target_id)
+        if not target:
+            return {"error": f"Target {target_id} not found"}
+
+        caster = self._characters.get(caster_id)
+        if not caster:
+            return {"error": f"Caster {caster_id} not found"}
+
+        # Find receptacle item in caster's inventory
+        receptacle = None
+        for item in caster.inventory:
+            if item.item_id == receptacle_item_id:
+                receptacle = item
+                break
+
+        if not receptacle:
+            return {"error": f"Receptacle {receptacle_item_id} not found"}
+
+        if not receptacle.is_soul_receptacle:
+            return {"error": "Item is not a valid soul receptacle"}
+
+        if receptacle.contained_soul_id:
+            return {"error": "Receptacle already contains a soul"}
+
+        # Check if name is engraved correctly
+        if receptacle.receptacle_name_engraved != target.name:
+            return {
+                "error": "Receptacle must have target's name engraved",
+                "engraved_name": receptacle.receptacle_name_engraved,
+                "target_name": target.name,
+            }
+
+        # Trap the soul
+        current_date = self.get_current_date() or GameDate(year=1, month=1, day=1)
+        death_deadline = GameDate(
+            year=current_date.year,
+            month=current_date.month,
+            day=current_date.day + duration_days,
+        )
+
+        # Update target's soul state
+        target.has_soul = False
+        target.soul_container_item_id = receptacle_item_id
+        target.soul_trapped_date = current_date
+        target.soul_death_deadline = death_deadline
+
+        # Update receptacle
+        receptacle.contained_soul_id = target_id
+        receptacle.contained_soul_name = target.name
+        receptacle.soul_trapped_date = current_date
+
+        result = {
+            "success": True,
+            "target_id": target_id,
+            "target_name": target.name,
+            "receptacle_id": receptacle_item_id,
+            "caster_id": caster_id,
+            "trapped_date": str(current_date),
+            "death_deadline": str(death_deadline),
+            "duration_days": duration_days,
+        }
+
+        self._log_event("soul_trapped", result)
+        return result
+
+    def release_soul(
+        self,
+        receptacle_item_id: str,
+        restore_to_body: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Release a trapped soul from a receptacle.
+
+        Args:
+            receptacle_item_id: Item ID of the soul receptacle
+            restore_to_body: If True, restore to original body; if False,
+                           just release (soul may be lost or transferred)
+
+        Returns:
+            Dictionary with release results
+        """
+        # Find the receptacle
+        receptacle = None
+        owner_id = None
+        for char_id, char in self._characters.items():
+            for item in char.inventory:
+                if item.item_id == receptacle_item_id:
+                    receptacle = item
+                    owner_id = char_id
+                    break
+            if receptacle:
+                break
+
+        if not receptacle:
+            return {"error": f"Receptacle {receptacle_item_id} not found"}
+
+        if not receptacle.contained_soul_id:
+            return {"error": "Receptacle does not contain a soul"}
+
+        target_id = receptacle.contained_soul_id
+        target = self._characters.get(target_id)
+
+        # Clear receptacle
+        soul_name = receptacle.contained_soul_name
+        receptacle.contained_soul_id = None
+        receptacle.contained_soul_name = None
+        receptacle.soul_trapped_date = None
+
+        result = {
+            "success": True,
+            "receptacle_id": receptacle_item_id,
+            "soul_id": target_id,
+            "soul_name": soul_name,
+            "restored_to_body": restore_to_body,
+        }
+
+        if target and restore_to_body:
+            # Restore soul to body
+            target.has_soul = True
+            target.soul_container_item_id = None
+            target.soul_trapped_date = None
+            target.soul_death_deadline = None
+            result["body_restored"] = True
+        else:
+            result["body_restored"] = False
+            if not target:
+                result["warning"] = "Target character no longer exists"
+
+        self._log_event("soul_released", result)
+        return result
+
+    def get_soul_status(self, character_id: str) -> dict[str, Any]:
+        """
+        Get the soul status of a character.
+
+        Args:
+            character_id: The character to check
+
+        Returns:
+            Dictionary with soul status information
+        """
+        character = self._characters.get(character_id)
+        if not character:
+            return {"error": f"Character {character_id} not found"}
+
+        return {
+            "character_id": character_id,
+            "has_soul": character.has_soul,
+            "soul_container_item_id": character.soul_container_item_id,
+            "soul_trapped_date": str(character.soul_trapped_date) if character.soul_trapped_date else None,
+            "soul_death_deadline": str(character.soul_death_deadline) if character.soul_death_deadline else None,
+        }
+
+    # =========================================================================
     # BUFF/DEBUFF MANAGEMENT (stat modifiers from spells, items, abilities)
     # =========================================================================
 
@@ -2274,15 +2455,19 @@ class GlobalController:
         stacks: bool = False,
         stack_group: Optional[str] = None,
         is_override: bool = False,
+        mode: Optional[str] = None,
+        multiplier: float = 1.0,
     ) -> dict[str, Any]:
         """
         Apply a stat modifier (buff or debuff) to a character.
 
         Args:
             character_id: The character to buff/debuff
-            stat: Stat to modify (e.g., "AC", "attack", "damage", "STR")
+            stat: Stat to modify (e.g., "AC", "attack", "damage", "STR",
+                  "carry_capacity")
             value: Modifier value (positive = buff, negative = debuff)
                    For is_override=True, this is the target value to set
+                   For mode="mul", this is ignored (use multiplier instead)
             source: What caused this modifier (spell name, item, ability)
             source_id: Optional ID for removal (spell effect ID, item ID)
             duration_turns: Duration in exploration turns (10 min each)
@@ -2292,6 +2477,11 @@ class GlobalController:
             stack_group: Group name for non-stacking (highest wins)
             is_override: If True, set stat to value instead of adding to it
                         (e.g., "AC becomes 17" instead of "AC +2")
+                        DEPRECATED: Use mode="set" instead
+            mode: Modifier mode - "add" (default), "set" (override), or
+                  "mul" (multiply). Overrides is_override if specified.
+            multiplier: Multiplier value (only used when mode="mul")
+                        e.g., 2.0 for Animal Growth's doubled damage
 
         Returns:
             Dictionary with buff application results
@@ -2304,6 +2494,14 @@ class GlobalController:
         import uuid
         modifier_id = f"mod_{uuid.uuid4().hex[:8]}"
 
+        # Determine mode (new mode param takes precedence over is_override)
+        if mode is not None:
+            effective_mode = mode
+        elif is_override:
+            effective_mode = "set"
+        else:
+            effective_mode = "add"
+
         # Create the modifier
         from src.data_models import StatModifier
         modifier = StatModifier(
@@ -2312,7 +2510,8 @@ class GlobalController:
             value=value,
             source=source,
             source_id=source_id,
-            mode="set" if is_override else "add",
+            mode=effective_mode,
+            multiplier=multiplier,
             duration_turns=duration_turns,
             duration_rounds=duration_rounds,
             condition=condition,
@@ -2332,7 +2531,9 @@ class GlobalController:
             "condition": condition,
             "duration_turns": duration_turns,
             "duration_rounds": duration_rounds,
-            "is_override": is_override,
+            "is_override": effective_mode == "set",
+            "mode": effective_mode,
+            "multiplier": multiplier if effective_mode == "mul" else None,
             "applied": True,
         }
 
@@ -2550,6 +2751,215 @@ class GlobalController:
     def set_location_state(self, location_id: str, state: LocationState) -> None:
         """Set state for a location."""
         self._locations[location_id] = state
+
+    # =========================================================================
+    # DOOR/LOCK MANAGEMENT
+    # =========================================================================
+
+    def find_door(
+        self, location_id: str, door_id_or_direction: str
+    ) -> Optional["DoorState"]:
+        """
+        Find a door in a location by ID or direction.
+
+        Args:
+            location_id: The location containing the door
+            door_id_or_direction: Door ID or direction (N, S, E, W)
+
+        Returns:
+            DoorState if found, None otherwise
+        """
+        from src.data_models import DoorState
+
+        location = self.get_location_state(location_id)
+        if not location:
+            return None
+        return location.get_door(door_id_or_direction)
+
+    def unlock_door(
+        self,
+        location_id: str,
+        door_id_or_direction: str,
+        method: str = "key",
+    ) -> dict[str, Any]:
+        """
+        Unlock a door in a location.
+
+        Args:
+            location_id: The location containing the door
+            door_id_or_direction: Door ID or direction
+            method: How it was unlocked ("key", "picked", "knock_spell")
+
+        Returns:
+            Dictionary with unlock results
+        """
+        location = self.get_location_state(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        door = location.get_door(door_id_or_direction)
+        if not door:
+            return {"error": f"Door {door_id_or_direction} not found in {location_id}"}
+
+        if not door.is_locked:
+            return {"success": False, "reason": "Door is not locked"}
+
+        door.is_locked = False
+        result = {
+            "success": True,
+            "location_id": location_id,
+            "door_id": door.door_id,
+            "direction": door.direction,
+            "method": method,
+        }
+        self._log_event("door_unlocked", result)
+        return result
+
+    def bypass_door(
+        self,
+        location_id: str,
+        door_id_or_direction: str,
+        bypass_type: str,
+        save_result: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """
+        Bypass a door's barriers (for Through the Keyhole, magical bypass).
+
+        Args:
+            location_id: The location containing the door
+            door_id_or_direction: Door ID or direction
+            bypass_type: Type of bypass ("keyhole_glamour", "passwall", "phase")
+            save_result: Result of any required save (for magically sealed doors)
+
+        Returns:
+            Dictionary with bypass results
+        """
+        location = self.get_location_state(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        door = location.get_door(door_id_or_direction)
+        if not door:
+            return {"error": f"Door {door_id_or_direction} not found in {location_id}"}
+
+        # Check requirements based on bypass type
+        if bypass_type == "keyhole_glamour":
+            if not door.can_use_keyhole():
+                return {
+                    "success": False,
+                    "reason": "Door has no keyhole or is a temporary passage",
+                }
+
+            # Magically sealed doors require save
+            if door.is_magically_sealed and save_result is not None:
+                # Assume save DC is based on caster level
+                save_dc = 10 + (door.magic_seal_caster_level or 0)
+                if save_result < save_dc:
+                    return {
+                        "success": False,
+                        "reason": "Failed save against magical sealing",
+                        "save_result": save_result,
+                        "save_dc": save_dc,
+                    }
+
+        result = {
+            "success": True,
+            "location_id": location_id,
+            "door_id": door.door_id,
+            "direction": door.direction,
+            "bypass_type": bypass_type,
+            "destination_id": door.destination_id,
+        }
+        self._log_event("door_bypassed", result)
+        return result
+
+    def seal_door_magically(
+        self,
+        location_id: str,
+        door_id_or_direction: str,
+        spell_name: str,
+        caster_level: int,
+        save_type: str = "Spell",
+    ) -> dict[str, Any]:
+        """
+        Magically seal a door (Hold Portal, Wizard Lock).
+
+        Args:
+            location_id: The location containing the door
+            door_id_or_direction: Door ID or direction
+            spell_name: Name of sealing spell
+            caster_level: Caster's level (for dispel checks)
+            save_type: Save type to bypass
+
+        Returns:
+            Dictionary with sealing results
+        """
+        location = self.get_location_state(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        door = location.get_door(door_id_or_direction)
+        if not door:
+            return {"error": f"Door {door_id_or_direction} not found in {location_id}"}
+
+        door.is_magically_sealed = True
+        door.magic_seal_spell = spell_name
+        door.magic_seal_caster_level = caster_level
+        door.magic_seal_save = save_type
+
+        result = {
+            "success": True,
+            "location_id": location_id,
+            "door_id": door.door_id,
+            "direction": door.direction,
+            "spell_name": spell_name,
+            "caster_level": caster_level,
+        }
+        self._log_event("door_sealed", result)
+        return result
+
+    def create_passwall(
+        self,
+        location_id: str,
+        direction: str,
+        destination_id: str,
+        duration_turns: int,
+        current_turn: int,
+    ) -> dict[str, Any]:
+        """
+        Create a temporary passage through a wall (Passwall spell).
+
+        Args:
+            location_id: The location where passage is created
+            direction: Direction of the passage
+            destination_id: Where the passage leads
+            duration_turns: How long the passage lasts
+            current_turn: Current turn number
+
+        Returns:
+            Dictionary with passage creation results
+        """
+        location = self.get_location_state(location_id)
+        if not location:
+            return {"error": f"Location {location_id} not found"}
+
+        expires_turn = current_turn + duration_turns
+        door = location.create_temporary_passage(
+            direction=direction,
+            destination_id=destination_id,
+            expires_turn=expires_turn,
+        )
+
+        result = {
+            "success": True,
+            "location_id": location_id,
+            "door_id": door.door_id,
+            "direction": direction,
+            "destination_id": destination_id,
+            "expires_turn": expires_turn,
+        }
+        self._log_event("passwall_created", result)
+        return result
 
     # =========================================================================
     # ENCOUNTER MANAGEMENT
