@@ -2640,6 +2640,9 @@ class RollTable:
     die_type: str  # e.g., "d6", "d8", "d20"
     description: str = ""  # When to use this table
     entries: list[RollTableEntry] = field(default_factory=list)
+    # If True, each entry can only be found once per POI
+    # Re-rolls are used for duplicates (e.g., "Leavings in the Mud" table)
+    unique_entries: bool = False
 
 
 @dataclass

@@ -1049,6 +1049,90 @@ class DowntimeEngine:
 
         return result
 
+    def prepare_spell_with_conditions(
+        self,
+        character_id: str,
+        spell_data: Any,  # SpellData from spell_resolver
+        poor_rest: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Prepare a specific spell, checking for condition-based restrictions.
+
+        Some conditions (like dreamlessness) require saves to memorize
+        certain types of spells (like illusions). This method handles
+        both the poor rest check and condition-based checks.
+
+        Args:
+            character_id: Character preparing the spell
+            spell_data: SpellData object with spell details
+            poor_rest: Whether character had poor rest
+
+        Returns:
+            Dictionary with preparation result:
+            - success: Whether the spell was prepared
+            - save_required: Whether a condition required a save
+            - save_made: The save roll result if applicable
+            - condition: The blocking condition if any
+            - reason: Explanation of the result
+        """
+        result = {
+            "character_id": character_id,
+            "spell_id": spell_data.spell_id,
+            "spell_name": spell_data.name,
+            "success": True,
+            "save_required": False,
+            "save_made": None,
+            "condition": None,
+            "reason": None,
+        }
+
+        # Get character for condition check
+        character = self.controller.get_character(character_id)
+        if not character:
+            result["success"] = False
+            result["reason"] = "Character not found"
+            return result
+
+        # Check for condition-based restrictions on this spell type
+        spell_types = spell_data.get_spell_types() if hasattr(spell_data, 'get_spell_types') else []
+
+        for condition in character.conditions:
+            for spell_type in spell_types:
+                check = condition.get_spell_memorization_check(spell_type)
+                if check and check.get("required"):
+                    result["save_required"] = True
+                    result["condition"] = condition.condition_type.value
+
+                    # Make the saving throw
+                    save_type = check.get("save_type", "spell")
+                    save_target = character.saving_throws.get(save_type, 15)
+                    save_roll = self.dice.roll("1d20", f"save vs {save_type} to memorize {spell_data.name}")
+
+                    result["save_made"] = {
+                        "roll": save_roll.total,
+                        "target": save_target,
+                        "success": save_roll.total >= save_target,
+                    }
+
+                    if save_roll.total < save_target:
+                        result["success"] = False
+                        result["reason"] = (
+                            f"Failed to memorize {spell_data.name} due to {condition.condition_type.value}: "
+                            f"rolled {save_roll.total} vs target {save_target}"
+                        )
+                        return result
+
+        # If condition check passed, do poor rest check if applicable
+        if poor_rest:
+            roll = self.dice.roll_d6(1, f"poor rest spell preparation: {spell_data.name}")
+            if roll.total == 1:
+                result["success"] = False
+                result["reason"] = f"Failed to memorize {spell_data.name} due to poor rest (rolled 1 on d6)"
+                return result
+
+        result["reason"] = f"Successfully prepared {spell_data.name}"
+        return result
+
     def check_hex_night_hazards(
         self,
         character_id: str,

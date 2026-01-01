@@ -3799,6 +3799,104 @@ class HexCrawlEngine:
 
         return []
 
+    def roll_on_poi_table(
+        self, hex_id: str, table_name: str, poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Roll on a POI's roll table from the wilderness.
+
+        This allows accessing POI roll tables (like "Leavings in the Mud")
+        without entering a dungeon, useful for treasure_site POIs.
+
+        For tables with unique_entries=True, tracks which entries have been
+        found and re-rolls duplicates.
+
+        Args:
+            hex_id: The hex ID
+            table_name: Name of the table to roll on
+            poi_name: Optional POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with roll result, or None if table not found.
+            Returns {"exhausted": True} if all unique entries have been found.
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return None
+
+        tables = self.get_poi_roll_tables(hex_id, target_poi)
+        if not tables:
+            return None
+
+        # Find the target table
+        target_table = None
+        for table in tables:
+            if table.name.lower() == table_name.lower():
+                target_table = table
+                break
+
+        if not target_table:
+            return None
+
+        # For unique entry tables, check session manager
+        session_mgr = self.controller.session_manager
+        if target_table.unique_entries and session_mgr:
+            all_roll_values = [e.roll for e in target_table.entries]
+            unfound = session_mgr.get_unfound_roll_table_entries(
+                hex_id, target_poi, table_name, all_roll_values
+            )
+            if not unfound:
+                return {
+                    "exhausted": True,
+                    "table": table_name,
+                    "poi": target_poi,
+                    "message": f"All entries in {table_name} have been found.",
+                }
+            # Roll until we get an unfound entry
+            max_attempts = 20
+            for _ in range(max_attempts):
+                roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
+                if roll.total in unfound:
+                    break
+            else:
+                # Fallback: pick random unfound entry
+                import random
+                roll_value = random.choice(unfound)
+                roll = type("Roll", (), {"total": roll_value})()
+        else:
+            # Regular roll
+            roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
+
+        # Find the entry
+        entry = None
+        for e in target_table.entries:
+            if e.roll == roll.total:
+                entry = e
+                break
+
+        if not entry:
+            return {"roll": roll.total, "table": table_name, "poi": target_poi, "entry": None}
+
+        # Mark entry as found for unique tables
+        if target_table.unique_entries and session_mgr:
+            session_mgr.mark_roll_table_entry_found(
+                hex_id, target_poi, table_name, roll.total
+            )
+
+        return {
+            "roll": roll.total,
+            "table": table_name,
+            "poi": target_poi,
+            "title": entry.title,
+            "description": entry.description,
+            "monsters": entry.monsters,
+            "npcs": entry.npcs,
+            "items": entry.items,
+            "mechanical_effect": entry.mechanical_effect,
+            "sub_table": entry.sub_table,
+            "quest_hook": entry.quest_hook,
+        }
+
     def get_poi_dungeon_config(
         self, hex_id: str, poi_name: Optional[str] = None
     ) -> Optional[dict[str, Any]]:

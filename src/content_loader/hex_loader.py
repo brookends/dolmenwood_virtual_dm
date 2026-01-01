@@ -449,6 +449,7 @@ class HexDataLoader:
             die_type=data.get("die_type", "d6"),
             description=data.get("description", ""),
             entries=entries,
+            unique_entries=data.get("unique_entries", False),
         )
 
     def _parse_hex_npc(self, data: dict[str, Any]) -> HexNPC:

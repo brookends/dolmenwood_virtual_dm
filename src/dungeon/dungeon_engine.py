@@ -2514,11 +2514,15 @@ class DungeonEngine:
         """
         Roll on a roll table inherited from the POI.
 
+        For tables with unique_entries=True, tracks which entries have been
+        found and re-rolls duplicates until an unfound entry is hit.
+
         Args:
             table_name: Name of the table to roll on
 
         Returns:
-            Dictionary with roll result or None if table not found
+            Dictionary with roll result or None if table not found.
+            Returns {"exhausted": True} if all unique entries have been found.
         """
         if not self._dungeon_state or not self._dungeon_state.roll_tables:
             return None
@@ -2533,9 +2537,37 @@ class DungeonEngine:
         if not target_table:
             return None
 
-        # Roll on the table
-        die_type = target_table.die_type
-        roll = self.dice.roll(f"1{die_type}", f"roll on {table_name}")
+        # Get hex_id and poi_name for session tracking
+        hex_id = self._dungeon_state.hex_id
+        poi_name = self._dungeon_state.poi_name
+
+        # For unique entry tables, get unfound entries
+        if target_table.unique_entries and hex_id and poi_name:
+            all_roll_values = [e.roll for e in target_table.entries]
+            unfound = self.controller.session_manager.get_unfound_roll_table_entries(
+                hex_id, poi_name, table_name, all_roll_values
+            )
+            if not unfound:
+                # All entries have been found
+                return {
+                    "exhausted": True,
+                    "table": table_name,
+                    "message": f"All entries in {table_name} have been found.",
+                }
+            # Roll until we get an unfound entry
+            max_attempts = 20
+            for _ in range(max_attempts):
+                roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
+                if roll.total in unfound:
+                    break
+            else:
+                # Fallback: pick random unfound entry
+                import random
+                roll_value = random.choice(unfound)
+                roll = type("Roll", (), {"total": roll_value})()
+        else:
+            # Regular roll
+            roll = self.dice.roll(f"1{target_table.die_type}", f"roll on {table_name}")
 
         # Find the entry
         entry = None
@@ -2546,6 +2578,12 @@ class DungeonEngine:
 
         if not entry:
             return {"roll": roll.total, "table": table_name, "entry": None}
+
+        # Mark entry as found for unique tables
+        if target_table.unique_entries and hex_id and poi_name:
+            self.controller.session_manager.mark_roll_table_entry_found(
+                hex_id, poi_name, table_name, roll.total
+            )
 
         return {
             "roll": roll.total,

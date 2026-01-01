@@ -53,6 +53,7 @@
           "name": "Leavings in the Mud",
           "die_type": "d6",
           "description": "Each item can be found only once. Re-roll duplicates if players search repeatedly.",
+          "unique_entries": true,
           "entries": [
             {
               "roll": 1,
