@@ -49,6 +49,8 @@ from src.data_models import (
     KnownTopic,
     SecretInfo,
     SecretStatus,
+    FactionState,
+    FactionRelationship,
 )
 from src.content_loader.monster_registry import get_monster_registry
 
@@ -450,6 +452,9 @@ class HexCrawlEngine:
 
         # Granted abilities tracker
         self._ability_tracker: AbilityGrantTracker = AbilityGrantTracker()
+
+        # Faction relationship tracking per hex
+        self._faction_states: dict[str, FactionState] = {}
 
         # Callbacks for external systems (like LLM description requests)
         self._description_callback: Optional[Callable] = None
@@ -3880,6 +3885,21 @@ class HexCrawlEngine:
                 # Reduce by one step
                 base_likelihood = Likelihood(max(base_likelihood.value - 1, 0))
 
+        # Check if approach leverages known vulnerabilities (significant boost)
+        npc_vulnerabilities = getattr(npc, "vulnerabilities", []) or []
+        for vuln in npc_vulnerabilities:
+            vuln_lower = vuln.lower().replace("_", " ")
+            if vuln_lower in approach_lower or vuln.lower() in approach_lower:
+                # Leveraging vulnerability is very effective
+                base_likelihood = Likelihood.VERY_LIKELY
+                break
+            # Also check items used for vulnerabilities
+            if items_used:
+                items_lower = " ".join(items_used).lower()
+                if vuln_lower in items_lower or vuln.lower() in items_lower:
+                    base_likelihood = Likelihood.VERY_LIKELY
+                    break
+
         return base_likelihood
 
     def _formulate_approach_question(
@@ -4046,6 +4066,543 @@ class HexCrawlEngine:
                     d.lower() in approach.lower() for d in npc_desires
                 ),
             }
+
+        return result
+
+    # =========================================================================
+    # ENVIRONMENTAL CREATIVE SOLUTIONS
+    # =========================================================================
+
+    # Known patterns for avoiding/mitigating environmental hazards
+    ENVIRONMENTAL_PATTERNS = {
+        "avoid_sleep": {
+            "triggers": ["stay awake", "take shifts", "watch", "guard", "no sleep"],
+            "check_type": "constitution",
+            "difficulty": 12,
+            "time_cost_hours": 8,
+            "success_effect": "hazard_avoided",
+            "failure_effect": "exhaustion",
+        },
+        "create_shelter": {
+            "triggers": ["tent", "shelter", "cover", "seal", "ward", "protect"],
+            "check_type": "auto_success",
+            "conditions": ["has_shelter_materials"],
+            "success_effect": "hazard_blocked",
+        },
+        "magical_protection": {
+            "triggers": ["cast", "spell", "magic", "ward", "protection"],
+            "check_type": "auto_success",
+            "conditions": ["has_protective_spell"],
+            "success_effect": "hazard_blocked",
+        },
+        "navigate_maze": {
+            "triggers": ["rope", "mark", "trail", "compass", "climb", "vantage"],
+            "check_type": "wisdom",
+            "difficulty": 10,
+            "success_effect": "navigation_bonus",
+        },
+        "avoid_hazard_area": {
+            "triggers": ["avoid", "go around", "detour", "bypass"],
+            "check_type": "auto_success",
+            "time_cost_hours": 4,
+            "success_effect": "hazard_avoided",
+        },
+    }
+
+    def attempt_environmental_solution(
+        self,
+        hex_id: str,
+        hazard_type: str,
+        approach_description: str,
+        items_used: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt creative solution to environmental hazard.
+
+        Handles hazards like night_hazard (mist, dreamlessness), terrain
+        challenges (maze navigation), and other environmental obstacles.
+
+        Args:
+            hex_id: Current hex
+            hazard_type: Type of hazard ("night_hazard", "terrain", "lost")
+            approach_description: What the player is trying to do
+            items_used: Optional list of items being used
+
+        Returns:
+            Dictionary with solution result
+        """
+        from src.oracle import MythicGME, Likelihood
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Get hazard info from hex procedural data
+        hazard_info = self._get_hazard_info(hex_data, hazard_type)
+        if not hazard_info:
+            return {"success": False, "error": f"No {hazard_type} found in hex"}
+
+        # Match approach against known patterns
+        pattern_match = self._match_environmental_pattern(
+            approach_description, items_used or []
+        )
+
+        approach_lower = approach_description.lower()
+
+        if pattern_match:
+            # Use matched pattern for resolution
+            return self._resolve_environmental_pattern(
+                pattern_match, hazard_info, approach_description, items_used or []
+            )
+        else:
+            # Use oracle for unknown approaches
+            mythic = MythicGME(chaos_factor=5)
+
+            question = f"Does the creative approach to avoid {hazard_info.get('description', hazard_type)} succeed?"
+            likelihood = Likelihood.FIFTY_FIFTY
+
+            # Boost likelihood if using relevant items
+            if items_used:
+                items_lower = " ".join(items_used).lower()
+                if any(word in items_lower for word in ["tent", "shelter", "rope", "magic", "ward"]):
+                    likelihood = Likelihood.LIKELY
+
+            fate_result = mythic.fate_check(question, likelihood)
+
+            return self._interpret_environmental_result(
+                hazard_info, approach_description, fate_result, items_used or []
+            )
+
+    def _get_hazard_info(
+        self, hex_data: Any, hazard_type: str
+    ) -> Optional[dict[str, Any]]:
+        """Extract hazard information from hex procedural data."""
+        proc = getattr(hex_data, "procedural", None)
+        if not proc:
+            return None
+
+        if hazard_type == "night_hazard":
+            night_hazards = getattr(proc, "night_hazards", None)
+            if night_hazards and len(night_hazards) > 0:
+                hazard = night_hazards[0]
+                if isinstance(hazard, dict):
+                    return {
+                        "type": "night_hazard",
+                        "trigger": hazard.get("trigger", "sleep"),
+                        "save_type": hazard.get("save_type", "doom"),
+                        "description": hazard.get("description", "night hazard"),
+                        "on_fail": hazard.get("on_fail", {}),
+                    }
+        elif hazard_type == "lost" or hazard_type == "terrain":
+            lost_behavior = getattr(proc, "lost_behavior", None)
+            if lost_behavior:
+                return {
+                    "type": "terrain",
+                    "description": lost_behavior.get("description", "maze-like terrain"),
+                    "escape_requires": lost_behavior.get("escape_requires", "successful_lost_check"),
+                }
+            else:
+                return {
+                    "type": "terrain",
+                    "description": f"difficult {hex_data.terrain_type} terrain",
+                    "lost_chance": getattr(proc, "lost_chance", "1-in-6"),
+                }
+
+        return None
+
+    def _match_environmental_pattern(
+        self, approach: str, items_used: list[str]
+    ) -> Optional[dict[str, Any]]:
+        """Match approach against known environmental solution patterns."""
+        approach_lower = approach.lower()
+        items_lower = " ".join(items_used).lower() if items_used else ""
+
+        for pattern_name, pattern in self.ENVIRONMENTAL_PATTERNS.items():
+            triggers = pattern.get("triggers", [])
+            for trigger in triggers:
+                if trigger in approach_lower or trigger in items_lower:
+                    return {"name": pattern_name, **pattern}
+
+        return None
+
+    def _resolve_environmental_pattern(
+        self,
+        pattern: dict[str, Any],
+        hazard_info: dict[str, Any],
+        approach: str,
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """Resolve using a matched environmental pattern."""
+        check_type = pattern.get("check_type", "auto_success")
+        success = False
+        check_result = None
+
+        if check_type == "auto_success":
+            # Check conditions if any
+            conditions = pattern.get("conditions", [])
+            if conditions:
+                # For now, assume conditions are met if relevant items are used
+                items_lower = " ".join(items_used).lower() if items_used else ""
+                if "has_shelter_materials" in conditions:
+                    success = any(w in items_lower for w in ["tent", "tarp", "shelter"])
+                elif "has_protective_spell" in conditions:
+                    success = any(w in items_lower for w in ["scroll", "wand", "spell", "ward"])
+                else:
+                    success = True
+            else:
+                success = True
+        else:
+            # Roll check
+            difficulty = pattern.get("difficulty", 12)
+            roll = DiceRoller.roll("1d20", f"Environmental check ({check_type})")
+            check_result = roll.total
+            success = roll.total >= difficulty
+
+        result = {
+            "success": success,
+            "pattern_used": pattern.get("name", "unknown"),
+            "hazard_type": hazard_info.get("type", "unknown"),
+            "approach": approach,
+            "items_used": items_used,
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if check_result is not None:
+            result["check"] = {
+                "type": check_type,
+                "roll": check_result,
+                "difficulty": pattern.get("difficulty", 12),
+            }
+
+        if success:
+            result["outcome"] = pattern.get("success_effect", "hazard_avoided")
+            result["narrative_hints"] = [
+                "the creative approach works",
+                f"the {hazard_info.get('type', 'hazard')} is avoided or mitigated",
+            ]
+            result["mechanical_effects"] = [pattern.get("success_effect", "hazard_avoided")]
+
+            if pattern.get("time_cost_hours"):
+                result["time_cost_hours"] = pattern["time_cost_hours"]
+                result["narrative_hints"].append(
+                    f"this takes {pattern['time_cost_hours']} hours"
+                )
+        else:
+            result["outcome"] = pattern.get("failure_effect", "hazard_not_avoided")
+            result["narrative_hints"] = [
+                "the approach doesn't fully work",
+                f"the {hazard_info.get('type', 'hazard')} still poses a threat",
+            ]
+            result["mechanical_effects"] = ["partial_mitigation"]
+
+        return result
+
+    def _interpret_environmental_result(
+        self,
+        hazard_info: dict[str, Any],
+        approach: str,
+        fate_result: Any,
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """Interpret oracle result for environmental solution."""
+        from src.oracle import FateResult
+
+        result = {
+            "success": False,
+            "hazard_type": hazard_info.get("type", "unknown"),
+            "approach": approach,
+            "items_used": items_used,
+            "oracle": {
+                "question": fate_result.question,
+                "likelihood": fate_result.likelihood.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if fate_result.result == FateResult.EXCEPTIONAL_YES:
+            result["success"] = True
+            result["outcome"] = "exceptional_success"
+            result["narrative_hints"] = [
+                "the creative solution works perfectly",
+                "additional benefit discovered",
+            ]
+            result["mechanical_effects"] = ["hazard_avoided", "bonus_discovered"]
+
+        elif fate_result.result == FateResult.YES:
+            result["success"] = True
+            result["outcome"] = "success"
+            result["narrative_hints"] = [
+                "the approach successfully mitigates the hazard",
+            ]
+            result["mechanical_effects"] = ["hazard_avoided"]
+
+        elif fate_result.result == FateResult.NO:
+            result["success"] = False
+            result["outcome"] = "failure"
+            result["narrative_hints"] = [
+                "the approach doesn't work as planned",
+                f"the {hazard_info.get('description', 'hazard')} remains a threat",
+            ]
+            result["mechanical_effects"] = ["hazard_active"]
+
+        elif fate_result.result == FateResult.EXCEPTIONAL_NO:
+            result["success"] = False
+            result["outcome"] = "catastrophic_failure"
+            result["narrative_hints"] = [
+                "the attempt backfires",
+                "the situation becomes more dangerous",
+            ]
+            result["mechanical_effects"] = ["hazard_worsened"]
+
+        return result
+
+    # =========================================================================
+    # FACTION RELATIONSHIP TRACKING
+    # =========================================================================
+
+    def get_faction_state(self, hex_id: str) -> FactionState:
+        """
+        Get or create faction state for a hex.
+
+        Args:
+            hex_id: The hex ID
+
+        Returns:
+            FactionState for the hex
+        """
+        if hex_id not in self._faction_states:
+            self._faction_states[hex_id] = FactionState(hex_id=hex_id)
+            # Initialize from hex NPC data if available
+            self._initialize_faction_state(hex_id)
+        return self._faction_states[hex_id]
+
+    def _initialize_faction_state(self, hex_id: str) -> None:
+        """
+        Initialize faction relationships from hex NPC data.
+
+        Parses NPC faction/loyalty fields and faction_relationships
+        in hex JSON to populate initial relationship state.
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return
+
+        faction_state = self._faction_states[hex_id]
+
+        # Parse NPC relationships
+        for npc in hex_data.npcs:
+            npc_id = getattr(npc, "npc_id", None)
+            if not npc_id:
+                continue
+
+            # Check faction/loyalty fields
+            faction = getattr(npc, "faction", None)
+            loyalty = getattr(npc, "loyalty", "loyal")
+
+            if faction:
+                # Create relationship to faction/employer
+                disposition = {
+                    "loyal": 75,
+                    "bought": 40,
+                    "coerced": 20,
+                    "secret_traitor": -50,
+                }.get(loyalty, 50)
+
+                faction_state.relationships.append(FactionRelationship(
+                    entity_a=npc_id,
+                    entity_b=faction,
+                    disposition=disposition,
+                    relationship_type="employer",
+                    loyalty_basis="payment" if loyalty == "bought" else (
+                        "fear" if loyalty == "coerced" else "ideology"
+                    ),
+                ))
+
+            # Parse explicit relationships list
+            relationships = getattr(npc, "relationships", [])
+            for rel in relationships:
+                if isinstance(rel, dict):
+                    target_id = rel.get("npc_id", "")
+                    rel_type = rel.get("relationship_type", "neutral")
+
+                    disposition = {
+                        "ally": 60,
+                        "family": 80,
+                        "employer": 50,
+                        "subordinate": 30,
+                        "rival": -20,
+                        "enemy": -75,
+                    }.get(rel_type, 0)
+
+                    faction_state.relationships.append(FactionRelationship(
+                        entity_a=npc_id,
+                        entity_b=target_id,
+                        disposition=disposition,
+                        relationship_type=rel_type,
+                    ))
+
+    def get_npc_disposition_to_party(self, hex_id: str, npc_id: str) -> int:
+        """Get an NPC's disposition toward the party."""
+        faction_state = self.get_faction_state(hex_id)
+        return faction_state.get_party_reputation(npc_id)
+
+    def modify_npc_disposition_to_party(
+        self, hex_id: str, npc_id: str, delta: int, reason: str = ""
+    ) -> int:
+        """
+        Modify an NPC's disposition toward the party.
+
+        Args:
+            hex_id: Current hex
+            npc_id: NPC whose disposition changes
+            delta: Amount to change (-100 to +100 scale)
+            reason: Optional reason for logging
+
+        Returns:
+            New disposition value
+        """
+        faction_state = self.get_faction_state(hex_id)
+        return faction_state.modify_party_reputation(npc_id, delta)
+
+    def get_turnable_npcs(self, hex_id: str, target: str) -> list[dict[str, Any]]:
+        """
+        Get list of NPCs who could be turned against a target.
+
+        Useful for creative approaches like "convince the ruffians to
+        betray Sidney."
+
+        Args:
+            hex_id: Current hex
+            target: NPC/faction to turn others against
+
+        Returns:
+            List of {npc_id, current_loyalty, loyalty_basis} dicts
+        """
+        faction_state = self.get_faction_state(hex_id)
+        turnable_ids = faction_state.get_turnable_npcs(target)
+
+        result = []
+        for npc_id in turnable_ids:
+            rel = faction_state.get_relationship(npc_id, target)
+            if rel:
+                result.append({
+                    "npc_id": npc_id,
+                    "current_loyalty": rel.disposition,
+                    "loyalty_basis": rel.loyalty_basis,
+                    "relationship_type": rel.relationship_type,
+                })
+        return result
+
+    def attempt_turn_npc(
+        self,
+        hex_id: str,
+        npc_id: str,
+        against: str,
+        approach: str,
+        incentive: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to turn an NPC against their employer/ally.
+
+        Uses faction state + oracle to determine success.
+
+        Args:
+            hex_id: Current hex
+            npc_id: NPC to turn
+            against: Target they'd betray
+            approach: How player is trying to turn them
+            incentive: What's being offered (money, safety, etc.)
+
+        Returns:
+            Result dict with success, new disposition, narrative hints
+        """
+        from src.oracle import MythicGME, Likelihood
+
+        faction_state = self.get_faction_state(hex_id)
+        rel = faction_state.get_relationship(npc_id, against)
+
+        if not rel:
+            return {
+                "success": False,
+                "error": f"No relationship found between {npc_id} and {against}",
+            }
+
+        # Determine base likelihood from current loyalty
+        if rel.disposition >= 75:
+            base = Likelihood.VERY_UNLIKELY
+        elif rel.disposition >= 50:
+            base = Likelihood.UNLIKELY
+        elif rel.disposition >= 25:
+            base = Likelihood.FIFTY_FIFTY
+        elif rel.disposition >= 0:
+            base = Likelihood.LIKELY
+        else:
+            base = Likelihood.VERY_LIKELY
+
+        # Modify based on loyalty basis
+        if rel.loyalty_basis == "payment" and incentive and "money" in incentive.lower():
+            # Bought loyalty can be outbought
+            base = Likelihood(min(base.value + 2, 9))
+        elif rel.loyalty_basis == "fear":
+            # Fear-based loyalty can be broken with protection offer
+            if incentive and any(w in incentive.lower() for w in ["protect", "safe", "escape"]):
+                base = Likelihood(min(base.value + 2, 9))
+        elif rel.loyalty_basis == "ideology":
+            # Ideological loyalty is hardest to break
+            base = Likelihood(max(base.value - 1, 0))
+
+        # Use oracle
+        mythic = MythicGME(chaos_factor=5)
+        question = f"Can {npc_id} be convinced to turn against {against}?"
+        fate_result = mythic.fate_check(question, base)
+
+        from src.oracle import FateResult
+
+        result = {
+            "npc_id": npc_id,
+            "target": against,
+            "approach": approach,
+            "incentive": incentive,
+            "oracle": {
+                "question": question,
+                "likelihood": base.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+        }
+
+        if fate_result.result in [FateResult.YES, FateResult.EXCEPTIONAL_YES]:
+            result["success"] = True
+            # Flip the relationship
+            faction_state.modify_disposition(npc_id, against, -75)
+            result["new_disposition"] = faction_state.get_disposition(npc_id, against)
+            result["narrative_hints"] = [
+                f"{npc_id} agrees to betray {against}",
+                "a new alliance is formed",
+            ]
+            result["mechanical_effects"] = ["npc_turned", "new_ally"]
+
+            if fate_result.result == FateResult.EXCEPTIONAL_YES:
+                result["narrative_hints"].append("they're eager to help")
+                result["mechanical_effects"].append("bonus_information")
+        else:
+            result["success"] = False
+            result["narrative_hints"] = [
+                f"{npc_id} refuses to betray {against}",
+            ]
+            result["mechanical_effects"] = ["attempt_failed"]
+
+            if fate_result.result == FateResult.EXCEPTIONAL_NO:
+                # They report to their employer!
+                result["narrative_hints"].append(f"they warn {against} about the attempt")
+                result["mechanical_effects"].append("target_alerted")
+                faction_state.modify_party_reputation(against, -30)
 
         return result
 

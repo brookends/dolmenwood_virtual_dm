@@ -778,6 +778,7 @@ class ContentManager:
                     location=npc_data.get("location", ""),
                     stat_reference=npc_data.get("stat_reference"),
                     is_combatant=npc_data.get("is_combatant", False),
+                    vulnerabilities=npc_data.get("vulnerabilities", []),
                     relationships=npc_data.get("relationships", []),
                     faction=npc_data.get("faction"),
                     loyalty=npc_data.get("loyalty", "loyal"),

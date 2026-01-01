@@ -479,6 +479,9 @@ class HexDataLoader:
             location=data.get("location", ""),
             stat_reference=data.get("stat_reference"),
             is_combatant=data.get("is_combatant", False),
+            vulnerabilities=data.get("vulnerabilities", []),
+            faction=data.get("faction"),
+            loyalty=data.get("loyalty", "loyal"),
         )
 
     def scan_directory(self, directory: Path) -> list[Path]:

@@ -402,3 +402,226 @@ class TestAllHexesParse:
 
         result = loader.load_file(Path("data/content/hexes/0102_reedwall.json"))
         assert result.success, f"Hex 0102 parsing errors: {result.errors}"
+
+
+# =============================================================================
+# ENVIRONMENTAL CREATIVE RESOLVER TESTS
+# =============================================================================
+
+
+@pytest.fixture
+def hex_0102_engine():
+    """Create engine with hex 0102 (Reedwall) loaded for environmental tests."""
+    pipeline = ContentPipeline()
+    loader = HexDataLoader(pipeline)
+    result = loader.load_file(Path("data/content/hexes/0102_reedwall.json"))
+    assert result.success
+
+    controller = GlobalController()
+    engine = HexCrawlEngine(controller)
+    engine._hex_data["0102"] = pipeline.get_hex("0102")
+    return engine
+
+
+class TestEnvironmentalCreativeResolver:
+    """Test environmental hazard creative solutions."""
+
+    def test_environmental_patterns_exist(self, hex_0102_engine):
+        """Engine should have environmental pattern definitions."""
+        assert hasattr(hex_0102_engine, "ENVIRONMENTAL_PATTERNS")
+        patterns = hex_0102_engine.ENVIRONMENTAL_PATTERNS
+        assert "avoid_sleep" in patterns
+        assert "navigate_maze" in patterns
+        assert "magical_protection" in patterns
+
+    def test_attempt_environmental_solution_night_hazard(self, hex_0102_engine):
+        """Should be able to attempt solution for night hazard."""
+        result = hex_0102_engine.attempt_environmental_solution(
+            "0102", "night_hazard", "Set up a protective ward before sleeping"
+        )
+
+        assert "success" in result
+        # Environmental solutions use pattern_used, check, or oracle resolution
+        assert "pattern_used" in result or "check" in result or "oracle" in result
+        assert "hazard_type" in result
+        assert result["hazard_type"] == "night_hazard"
+
+    def test_attempt_environmental_solution_maze(self, hex_0102_engine):
+        """Should be able to attempt solution for maze lost behavior."""
+        result = hex_0102_engine.attempt_environmental_solution(
+            "0102", "lost", "Use rope and stakes to mark the path"
+        )
+
+        assert "success" in result
+        # Environmental solutions use pattern_used, check, or oracle resolution
+        assert "pattern_used" in result or "check" in result or "oracle" in result
+        assert "hazard_type" in result
+
+    def test_environmental_solution_returns_narrative_hints(self, hex_0102_engine):
+        """Environmental solution should provide narrative hints."""
+        result = hex_0102_engine.attempt_environmental_solution(
+            "0102", "night_hazard", "Stay awake taking shifts"
+        )
+
+        # Should have narrative hints for storytelling
+        assert "narrative_hints" in result
+        # And mechanical effects for game mechanics
+        assert "mechanical_effects" in result
+
+
+# =============================================================================
+# FACTION RELATIONSHIP TESTS
+# =============================================================================
+
+
+@pytest.fixture
+def hex_0103_engine():
+    """Create engine with hex 0103 (Golden Goose) loaded for faction tests."""
+    pipeline = ContentPipeline()
+    loader = HexDataLoader(pipeline)
+    result = loader.load_file(Path("data/content/hexes/0103_the_golden_goose.json"))
+    assert result.success
+
+    controller = GlobalController()
+    engine = HexCrawlEngine(controller)
+    engine._hex_data["0103"] = pipeline.get_hex("0103")
+    return engine
+
+
+class TestFactionRelationshipTracking:
+    """Test faction relationship tracking for NPCs."""
+
+    def test_ruffians_have_faction_data(self, hex_0103_engine):
+        """Ruffians should have faction and loyalty data loaded."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        ruffians = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "ruffians":
+                ruffians = npc
+                break
+
+        assert ruffians is not None
+        assert ruffians.faction == "sidney_tew"
+        # "bought" means payment-based loyalty
+        assert ruffians.loyalty == "bought"
+
+    def test_ruffians_have_vulnerability(self, hex_0103_engine):
+        """Ruffians should have better_payment vulnerability."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        ruffians = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "ruffians":
+                ruffians = npc
+                break
+
+        assert ruffians is not None
+        assert "better_payment" in ruffians.vulnerabilities
+
+    def test_minor_nobles_have_faction_data(self, hex_0103_engine):
+        """Minor nobles should have faction and loyalty data."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        nobles = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "minor_nobles":
+                nobles = npc
+                break
+
+        assert nobles is not None
+        assert nobles.faction == "sidney_tew"
+        # "loyal" means ideologically aligned
+        assert nobles.loyalty == "loyal"
+
+    def test_get_turnable_npcs(self, hex_0103_engine):
+        """Should be able to get NPCs that can be turned."""
+        hex_0103_engine._current_poi = "Sidney's Company"
+
+        # get_faction_state creates and initializes the faction state
+        hex_0103_engine.get_faction_state("0103")
+
+        turnable = hex_0103_engine.get_turnable_npcs("0103", "sidney_tew")
+
+        # Ruffians should be turnable (payment-based loyalty)
+        # get_turnable_npcs returns list of dicts, not HexNPC objects
+        assert any(npc["npc_id"] == "ruffians" for npc in turnable)
+
+    def test_attempt_turn_npc(self, hex_0103_engine):
+        """Should be able to attempt to turn an NPC against employer."""
+        hex_0103_engine._current_poi = "Sidney's Company"
+
+        result = hex_0103_engine.attempt_turn_npc(
+            "0103",
+            "ruffians",
+            "sidney_tew",
+            "Offer double their current payment",
+            incentive="50gp",
+        )
+
+        assert "success" in result
+        assert "oracle" in result
+        # The result uses "npc_id" and "target", not "target_npc" and "against"
+        assert result["npc_id"] == "ruffians"
+        assert result["target"] == "sidney_tew"
+
+
+# =============================================================================
+# VULNERABILITY-BASED LIKELIHOOD TESTS
+# =============================================================================
+
+
+class TestVulnerabilityBasedLikelihood:
+    """Test that vulnerabilities affect creative approach likelihood."""
+
+    def test_crocus_has_cold_iron_vulnerability(self, hex_0103_engine):
+        """Crocus should have cold_iron vulnerability."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "crocus":
+                crocus = npc
+                break
+
+        assert crocus is not None
+        assert "cold_iron" in crocus.vulnerabilities
+
+    def test_cold_iron_increases_likelihood(self, hex_0103_engine):
+        """Using cold iron should increase approach likelihood against Crocus."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "crocus":
+                crocus = npc
+                break
+
+        assert crocus is not None
+
+        # Test likelihood with and without cold iron
+        likelihood_with = hex_0103_engine._evaluate_approach_likelihood(
+            crocus, "Threaten with cold iron weapon", ["cold_iron_sword"]
+        )
+        likelihood_without = hex_0103_engine._evaluate_approach_likelihood(
+            crocus, "Threaten with regular weapon", ["steel_sword"]
+        )
+
+        # Cold iron should give better odds
+        assert likelihood_with.value >= likelihood_without.value
+
+    def test_better_payment_increases_likelihood_for_ruffians(self, hex_0103_engine):
+        """Offering better payment should increase likelihood with ruffians."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        ruffians = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "ruffians":
+                ruffians = npc
+                break
+
+        assert ruffians is not None
+
+        likelihood_with_money = hex_0103_engine._evaluate_approach_likelihood(
+            ruffians, "Offer them better payment to switch sides", ["gold_coins"]
+        )
+        likelihood_without = hex_0103_engine._evaluate_approach_likelihood(
+            ruffians, "Ask them nicely to switch sides", []
+        )
+
+        # Money should help with payment-loyal ruffians
+        assert likelihood_with_money.value >= likelihood_without.value

@@ -4315,6 +4315,7 @@ class HexNPC:
     # Combat
     stat_reference: Optional[str] = None  # Reference to stat block
     is_combatant: bool = False
+    vulnerabilities: list[str] = field(default_factory=list)  # e.g., ["cold_iron", "sunlight", "fire"]
 
     # Relationship network
     # Format: [{npc_id, relationship_type, description, hex_id}]
@@ -4419,6 +4420,124 @@ class Lair:
     treasure_type: Optional[str] = None
     discovered: bool = False
     cleared: bool = False
+
+
+@dataclass
+class FactionRelationship:
+    """
+    Tracks relationship between two entities (NPCs, party, factions).
+
+    Used for:
+    - NPC loyalty to employers/factions
+    - Inter-NPC relationships (allies, rivals, enemies)
+    - Party reputation with NPCs/factions
+    """
+
+    entity_a: str  # NPC ID, faction name, or "party"
+    entity_b: str  # NPC ID or faction name
+    disposition: int = 0  # -100 (hostile) to +100 (loyal)
+    relationship_type: str = "neutral"  # "ally", "rival", "employer", "enemy", "neutral"
+    loyalty_basis: str = ""  # "payment", "fear", "ideology", "personal"
+
+    def is_hostile(self) -> bool:
+        """Check if relationship is hostile."""
+        return self.disposition < -25 or self.relationship_type == "enemy"
+
+    def is_friendly(self) -> bool:
+        """Check if relationship is friendly."""
+        return self.disposition > 25 or self.relationship_type == "ally"
+
+    def can_be_turned(self) -> bool:
+        """Check if entity_a could potentially be turned against entity_b."""
+        # Low loyalty + not ideologically bound = can be turned
+        return (
+            self.disposition < 50
+            and self.loyalty_basis in ["payment", "fear", ""]
+        )
+
+
+@dataclass
+class FactionState:
+    """
+    Tracks all faction relationships in a hex or region.
+
+    Provides methods to query and modify relationships dynamically
+    based on player actions.
+    """
+
+    hex_id: str
+    relationships: list[FactionRelationship] = field(default_factory=list)
+    party_reputation: dict[str, int] = field(default_factory=dict)  # faction/npc -> reputation
+
+    def get_relationship(self, entity_a: str, entity_b: str) -> Optional[FactionRelationship]:
+        """Get relationship between two entities."""
+        for rel in self.relationships:
+            if rel.entity_a == entity_a and rel.entity_b == entity_b:
+                return rel
+            # Check reverse direction
+            if rel.entity_a == entity_b and rel.entity_b == entity_a:
+                return rel
+        return None
+
+    def get_disposition(self, entity_a: str, entity_b: str) -> int:
+        """Get disposition value between two entities (default 0)."""
+        rel = self.get_relationship(entity_a, entity_b)
+        return rel.disposition if rel else 0
+
+    def modify_disposition(self, entity_a: str, entity_b: str, delta: int) -> int:
+        """Modify disposition between entities, clamped to -100 to +100."""
+        rel = self.get_relationship(entity_a, entity_b)
+        if rel:
+            rel.disposition = max(-100, min(100, rel.disposition + delta))
+            return rel.disposition
+        else:
+            # Create new relationship
+            new_disp = max(-100, min(100, delta))
+            self.relationships.append(FactionRelationship(
+                entity_a=entity_a,
+                entity_b=entity_b,
+                disposition=new_disp,
+            ))
+            return new_disp
+
+    def get_party_reputation(self, entity: str) -> int:
+        """Get party's reputation with an entity (default 0)."""
+        return self.party_reputation.get(entity, 0)
+
+    def modify_party_reputation(self, entity: str, delta: int) -> int:
+        """Modify party's reputation with an entity."""
+        current = self.party_reputation.get(entity, 0)
+        new_rep = max(-100, min(100, current + delta))
+        self.party_reputation[entity] = new_rep
+        return new_rep
+
+    def get_turnable_npcs(self, against: str) -> list[str]:
+        """Get list of NPCs who could potentially be turned against a target."""
+        turnable = []
+        for rel in self.relationships:
+            if rel.entity_b == against and rel.can_be_turned():
+                turnable.append(rel.entity_a)
+        return turnable
+
+    def get_allies_of(self, entity: str) -> list[str]:
+        """Get list of entities allied with the given entity."""
+        allies = []
+        for rel in self.relationships:
+            if rel.entity_a == entity and rel.is_friendly():
+                allies.append(rel.entity_b)
+            elif rel.entity_b == entity and rel.is_friendly():
+                allies.append(rel.entity_a)
+        return allies
+
+    def get_enemies_of(self, entity: str) -> list[str]:
+        """Get list of entities hostile to the given entity."""
+        enemies = []
+        for rel in self.relationships:
+            if rel.entity_a == entity and rel.is_hostile():
+                enemies.append(rel.entity_b)
+            elif rel.entity_b == entity and rel.is_hostile():
+                enemies.append(rel.entity_a)
+        return enemies
 
 
 @dataclass

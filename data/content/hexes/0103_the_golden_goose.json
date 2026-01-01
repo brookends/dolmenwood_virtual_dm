@@ -118,7 +118,8 @@
       "location": "Crocus's Cave",
       "stat_reference": "Ogre (DMB). As a fairy, suffers 1 extra point of damage when hit with cold iron weapons.",
       "is_combatant": true,
-      "cold_iron_vulnerability": true
+      "cold_iron_vulnerability": true,
+      "vulnerabilities": ["cold_iron"]
     },
     {
       "npc_id": "sidney_tew",
@@ -200,7 +201,9 @@
       "location": "Sidney's Company",
       "stat_reference": "Level 0 humans (DMB)",
       "is_combatant": true,
-      "group_count": 4
+      "group_count": 4,
+      "faction": "sidney_tew",
+      "loyalty": "loyal"
     },
     {
       "npc_id": "ruffians",
@@ -224,7 +227,10 @@
       "location": "Sidney's Company",
       "stat_reference": "Level 1 thief (DMB)",
       "is_combatant": true,
-      "group_count": 4
+      "group_count": 4,
+      "faction": "sidney_tew",
+      "loyalty": "bought",
+      "vulnerabilities": ["better_payment"]
     }
   ],
   "items": [
