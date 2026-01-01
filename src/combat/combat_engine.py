@@ -830,6 +830,18 @@ class CombatEngine:
                 action_type=action.action_type,
             )
 
+        # Check for temporal stasis - targets in stasis are invulnerable
+        if defender.character_ref:
+            char = self.controller.get_character(defender.character_ref)
+            if char and char.has_condition(ConditionType.TEMPORAL_STASIS):
+                return AttackResult(
+                    attacker_id=attacker_id,
+                    defender_id=defender_id or "",
+                    action_type=action.action_type,
+                    hit=False,
+                    details=["Target in temporal stasis - immune to attacks"],
+                )
+
         # At this point defender_id must be non-None since defender exists
         assert defender_id is not None
 
