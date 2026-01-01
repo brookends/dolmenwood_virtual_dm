@@ -190,6 +190,12 @@ class VirtualDM:
         self.downtime = DowntimeEngine(self.controller)
         self.encounter = EncounterEngine(self.controller)
 
+        # Attach combat and encounter engines to controller
+        # This ensures state transitions use the same engine instances
+        # that have spell registrations and narration callbacks
+        self.controller.set_combat_engine(self.combat)
+        self.controller.set_encounter_engine(self.encounter)
+
         # Initialize session manager for save/load
         self.session_manager = SessionManager(save_directory=self.config.save_dir)
         self.session_manager.new_session(session_name=self.config.campaign_name)

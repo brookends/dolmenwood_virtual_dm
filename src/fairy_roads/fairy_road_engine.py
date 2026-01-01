@@ -10,7 +10,7 @@ Implements fairy road travel mechanics:
 
 Key design:
 - Subjective time: time advances on the road but mortal world time is frozen
-- On exit: roll for mortal world time passage (e.g., 1d12 days)
+- On exit: roll for mortal world time passage from common tables
 - Party travels as a unit; if anyone goes unconscious, ALL stray from path
 """
 
@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Optional
 import logging
-import random
+import re
 
 from src.game_state.state_machine import GameState
 from src.game_state.global_controller import GlobalController
@@ -29,20 +29,18 @@ from src.data_models import (
     Combatant,
 )
 from src.encounter.encounter_engine import EncounterOrigin
-from src.fairy_roads.fairy_road_models import (
-    FairyRoadData,
-    FairyDoor,
-    FairyRoadTravelState,
-    FairyRoadCheckResult,
-    FairyRoadCheckOutcome,
-    StrayFromPathResult,
-    StrayFromPathOutcome,
-    FairyRoadEncounterEntry,
+from src.fairy_roads.models import (
+    FairyRoadDefinition,
+    FairyRoadDoor,
+    FairyRoadCommon,
     FairyRoadLocationEntry,
+    FairyRoadEncounterEntry,
+    TimePassedEntry,
 )
 from src.content_loader.fairy_road_registry import (
     FairyRoadRegistry,
     get_fairy_road_registry,
+    DoorRef,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,6 +56,84 @@ class FairyRoadPhase(str, Enum):
     EXITING = "exiting"  # About to exit
     STRAYED = "strayed"  # Party strayed from the path
     COMPLETE = "complete"  # Travel finished
+
+
+class FairyRoadCheckResult(str, Enum):
+    """Result of a fairy road travel check (1d6)."""
+
+    MONSTER_ENCOUNTER = "monster_encounter"  # 1-2
+    LOCATION_ENCOUNTER = "location_encounter"  # 3-4
+    NOTHING = "nothing"  # 5-6
+
+
+class StrayFromPathResult(str, Enum):
+    """What happens when a character strays from the path."""
+
+    LOST_IN_WOODS = "lost_in_woods"  # Wakes in random hex
+    TIME_DILATION = "time_dilation"  # Time passes differently
+    FAIRY_ENCOUNTER = "fairy_encounter"  # Meets a fairy denizen
+
+
+@dataclass
+class FairyRoadTravelState:
+    """
+    Runtime state for a party traveling on a fairy road.
+    """
+
+    road_id: str
+    entry_door_hex: str
+    entry_door_name: str
+    current_segment: int = 0
+    total_segments: int = 3
+
+    # Time tracking
+    subjective_turns_elapsed: int = 0
+    mortal_time_frozen: bool = True
+
+    # Travel direction
+    destination_door_hex: Optional[str] = None
+    destination_door_name: Optional[str] = None
+
+    # Encounter tracking
+    encounters_triggered: int = 0
+    last_check_result: Optional[FairyRoadCheckResult] = None
+
+    # Last encounter/location data for reference
+    last_encounter_entry: Optional[FairyRoadEncounterEntry] = None
+    last_location_entry: Optional[FairyRoadLocationEntry] = None
+
+    # Status flags
+    strayed_from_path: bool = False
+    is_complete: bool = False
+
+
+@dataclass
+class FairyRoadCheckOutcome:
+    """Result of a fairy road travel check."""
+
+    check_type: FairyRoadCheckResult
+    roll: int
+
+    # For monster encounters
+    encounter_entry: Optional[FairyRoadEncounterEntry] = None
+    monster_count: int = 0
+
+    # For location encounters
+    location_entry: Optional[FairyRoadLocationEntry] = None
+
+    # Description for narration
+    description: str = ""
+
+
+@dataclass
+class StrayFromPathOutcome:
+    """Result of straying from the fairy road path."""
+
+    result_type: StrayFromPathResult
+    exit_hex_id: str = ""
+    time_passed_mortal: int = 0
+    time_unit: str = "hours"
+    description: str = ""
 
 
 @dataclass
@@ -84,10 +160,9 @@ class FairyRoadEntryResult:
 
     success: bool
     road_id: str = ""
-    door_id: str = ""
+    door_hex: str = ""
+    door_name: str = ""
     messages: list[str] = field(default_factory=list)
-    requirements_met: bool = True
-    missing_requirements: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -96,10 +171,11 @@ class FairyRoadExitResult:
 
     success: bool
     exit_hex_id: str = ""
-    door_id: str = ""
+    door_name: str = ""
     time_dilation_dice: str = ""
     time_dilation_roll: int = 0
-    mortal_days_passed: int = 0
+    mortal_time_passed: str = ""
+    mortal_turns_passed: int = 0
     messages: list[str] = field(default_factory=list)
 
 
@@ -132,7 +208,8 @@ class FairyRoadEngine:
 
         # Current travel state
         self._state: Optional[FairyRoadTravelState] = None
-        self._current_road: Optional[FairyRoadData] = None
+        self._current_road: Optional[FairyRoadDefinition] = None
+        self._common: Optional[FairyRoadCommon] = None
         self._phase: FairyRoadPhase = FairyRoadPhase.COMPLETE
 
         # Callbacks
@@ -145,120 +222,110 @@ class FairyRoadEngine:
         """Register callback for fairy road narration."""
         self._narration_callback = callback
 
+    def _ensure_registry_loaded(self) -> None:
+        """Ensure the registry is loaded."""
+        if not self.registry.is_loaded:
+            self.registry.load_from_directory()
+        if self._common is None:
+            self._common = self.registry.common
+
     # =========================================================================
     # ENTRY
     # =========================================================================
 
-    def can_enter_door(
-        self,
-        door_id: str,
-        current_hex_id: str,
-        time_of_day: Optional[str] = None,
-        moonphase: Optional[str] = None,
-        offerings: Optional[list[str]] = None,
-        password: Optional[str] = None,
-    ) -> FairyRoadEntryResult:
+    def get_doors_in_hex(self, hex_id: str) -> list[DoorRef]:
+        """Get fairy doors available in a given hex."""
+        self._ensure_registry_loaded()
+        return self.registry.get_doors_at_hex(hex_id)
+
+    def can_enter_from_hex(self, hex_id: str) -> list[dict[str, Any]]:
         """
-        Check if the party can enter through a fairy door.
+        Check what fairy roads can be entered from a hex.
 
-        Args:
-            door_id: ID of the door to enter
-            current_hex_id: Party's current hex location
-            time_of_day: Current time (e.g., "twilight", "midnight")
-            moonphase: Current moon phase (e.g., "full_moon")
-            offerings: Items offered at the door
-            password: Spoken password/phrase
-
-        Returns:
-            FairyRoadEntryResult with success status and missing requirements
+        Returns a list of available roads with door info.
         """
-        door = self.registry.get_door(door_id)
-        if not door:
-            return FairyRoadEntryResult(
-                success=False,
-                messages=[f"Fairy door '{door_id}' not found"],
-            )
-
-        # Check if party is at the right hex
-        if door.hex_id != current_hex_id:
-            return FairyRoadEntryResult(
-                success=False,
-                messages=[f"Party must be in hex {door.hex_id} to use this door"],
-            )
-
-        # Check requirements
-        missing = []
-        offerings = offerings or []
-
-        if door.requires_time and time_of_day != door.requires_time:
-            missing.append(f"Must be {door.requires_time}")
-
-        if door.requires_moonphase and moonphase != door.requires_moonphase:
-            missing.append(f"Must be during {door.requires_moonphase}")
-
-        if door.requires_offering and door.requires_offering not in offerings:
-            missing.append(f"Requires offering of {door.requires_offering}")
-
-        if door.requires_password and password != door.requires_password:
-            missing.append("Correct password required")
-
-        if missing:
-            return FairyRoadEntryResult(
-                success=False,
-                door_id=door_id,
-                road_id=door.fairy_road_id,
-                requirements_met=False,
-                missing_requirements=missing,
-                messages=[f"Cannot enter: {', '.join(missing)}"],
-            )
-
-        return FairyRoadEntryResult(
-            success=True,
-            door_id=door_id,
-            road_id=door.fairy_road_id,
-            requirements_met=True,
-            messages=[f"The way to {door.name} is open"],
-        )
+        self._ensure_registry_loaded()
+        doors = self.registry.get_doors_at_hex(hex_id)
+        result = []
+        for door_ref in doors:
+            # Only entry or endpoint doors can be entered
+            if door_ref.door.direction in ("entry", "endpoint"):
+                result.append({
+                    "road_id": door_ref.road_id,
+                    "road_name": door_ref.road_name,
+                    "door_name": door_ref.door.name,
+                    "door_hex": door_ref.door.hex_id,
+                    "direction": door_ref.door.direction,
+                })
+        return result
 
     def enter_fairy_road(
         self,
-        door_id: str,
-        destination_door_id: Optional[str] = None,
+        road_id: str,
+        entry_hex_id: str,
+        destination_hex_id: Optional[str] = None,
     ) -> FairyRoadEntryResult:
         """
         Enter a fairy road through a door.
 
         Args:
-            door_id: ID of the entry door
-            destination_door_id: Optional target exit door
+            road_id: ID of the fairy road to enter
+            entry_hex_id: The hex with the entry door
+            destination_hex_id: Optional target exit hex
 
         Returns:
             FairyRoadEntryResult with entry status
         """
-        door = self.registry.get_door(door_id)
-        if not door:
+        self._ensure_registry_loaded()
+
+        # Get the road
+        lookup = self.registry.get_by_id(road_id)
+        if not lookup.found or not lookup.road:
             return FairyRoadEntryResult(
                 success=False,
-                messages=[f"Door '{door_id}' not found"],
+                messages=[f"Fairy road '{road_id}' not found"],
             )
 
-        road = self.registry.get(door.fairy_road_id)
-        if not road:
+        road = lookup.road
+
+        # Find the door at entry hex
+        door_ref = self.registry.get_door(entry_hex_id, road_id)
+        if not door_ref:
             return FairyRoadEntryResult(
                 success=False,
-                messages=[f"Fairy road '{door.fairy_road_id}' not found"],
+                messages=[f"No door to '{road.name}' in hex {entry_hex_id}"],
             )
+
+        # Check door direction allows entry
+        if door_ref.door.direction == "exit_only":
+            return FairyRoadEntryResult(
+                success=False,
+                messages=[f"'{door_ref.door.name}' is exit-only"],
+            )
+
+        # Calculate segments based on road length (1 segment per 4 miles, minimum 2)
+        segments = max(2, int(road.length_miles / 4))
+
+        # Find destination door if specified
+        dest_door_name = None
+        dest_door_hex = None
+        if destination_hex_id:
+            dest_ref = self.registry.get_door(destination_hex_id, road_id)
+            if dest_ref:
+                dest_door_name = dest_ref.door.name
+                dest_door_hex = dest_ref.door.hex_id
 
         # Initialize travel state
         self._current_road = road
         self._state = FairyRoadTravelState(
             road_id=road.road_id,
-            entry_door_id=door_id,
-            entry_hex_id=door.hex_id,
+            entry_door_hex=entry_hex_id,
+            entry_door_name=door_ref.door.name,
             current_segment=0,
-            total_segments=road.length_segments,
-            destination_door_id=destination_door_id,
-            mortal_time_frozen=road.time_dilation_enabled,
+            total_segments=segments,
+            destination_door_hex=dest_door_hex,
+            destination_door_name=dest_door_name,
+            mortal_time_frozen=True,
         )
         self._phase = FairyRoadPhase.ENTERING
         self._frozen_mortal_turns = 0
@@ -269,36 +336,25 @@ class FairyRoadEngine:
             context={
                 "road_id": road.road_id,
                 "road_name": road.name,
-                "door_id": door_id,
-                "door_name": door.name,
-                "entry_hex": door.hex_id,
+                "door_name": door_ref.door.name,
+                "entry_hex": entry_hex_id,
             },
         )
 
         self._phase = FairyRoadPhase.TRAVELING
 
         messages = [
-            f"The party enters {door.name}...",
+            f"You pass through {door_ref.door.name}...",
             f"You step onto {road.name}.",
-            road.atmosphere,
         ]
-
-        # Add atmospheric details
-        if road.sights:
-            messages.append(f"You see: {random.choice(road.sights)}")
-        if road.sounds:
-            messages.append(f"You hear: {random.choice(road.sounds)}")
-
-        # Warn about special rules
-        if road.no_iron:
-            messages.append("WARNING: Iron is dangerous here!")
-        if road.special_rules:
-            messages.append(f"Note: {road.special_rules[0]}")
+        if road.atmosphere:
+            messages.append(road.atmosphere)
 
         return FairyRoadEntryResult(
             success=True,
             road_id=road.road_id,
-            door_id=door_id,
+            door_hex=entry_hex_id,
+            door_name=door_ref.door.name,
             messages=messages,
         )
 
@@ -336,7 +392,7 @@ class FairyRoadEngine:
         self._state.current_segment += 1
         self._state.subjective_turns_elapsed += 1
 
-        # Track frozen mortal time if time dilation is active
+        # Track frozen mortal time
         if self._state.mortal_time_frozen:
             self._frozen_mortal_turns += 1
 
@@ -391,9 +447,6 @@ class FairyRoadEngine:
 
         else:
             result.messages.append("The journey continues uneventfully...")
-            # Add atmospheric description
-            if self._current_road.sights:
-                result.messages.append(random.choice(self._current_road.sights))
 
         result.check_outcome = outcome
 
@@ -410,27 +463,35 @@ class FairyRoadEngine:
     def _roll_monster_encounter(
         self, outcome: FairyRoadCheckOutcome
     ) -> FairyRoadCheckOutcome:
-        """Roll on the monster encounter table."""
-        if not self._current_road or not self._current_road.encounter_table:
+        """Roll on the common monster encounter table."""
+        if not self._common or not self._common.encounter_table.entries:
             outcome.description = "A shadowy figure appears on the road..."
             return outcome
 
-        table = self._current_road.encounter_table
-        die_type = table.die_type or "d8"
-        roll = self.dice.roll(f"1{die_type}", "monster table roll")
+        table = self._common.encounter_table
+        die_type = table.die
+        roll = self.dice.roll(die_type, "monster table roll")
 
         # Find matching entry
-        for entry in table.monster_entries:
-            if entry.roll <= roll.total <= entry.roll_max:
-                outcome.monster_entry = entry
-                outcome.description = entry.description
+        for entry in table.entries:
+            if entry.roll == roll.total:
+                outcome.encounter_entry = entry
+                self._state.last_encounter_entry = entry
+                outcome.description = f"{entry.name} appears!"
 
                 # Roll for count
-                if entry.count_dice:
-                    count_roll = self.dice.roll(entry.count_dice, "monster count")
-                    outcome.monster_count = count_roll.total
+                if entry.count and entry.count != "1":
+                    # Parse dice notation like "2d6"
+                    if re.match(r"\d+d\d+", entry.count):
+                        count_roll = self.dice.roll(entry.count, "monster count")
+                        outcome.monster_count = count_roll.total
+                    else:
+                        outcome.monster_count = int(entry.count)
                 else:
-                    outcome.monster_count = entry.count_fixed or 1
+                    outcome.monster_count = 1
+
+                if entry.notes:
+                    outcome.description += f" ({entry.notes})"
 
                 return outcome
 
@@ -440,22 +501,21 @@ class FairyRoadEngine:
     def _roll_location_encounter(
         self, outcome: FairyRoadCheckOutcome
     ) -> FairyRoadCheckOutcome:
-        """Roll on the location encounter table."""
-        if not self._current_road or not self._current_road.encounter_table:
+        """Roll on the road-specific location table."""
+        if not self._current_road or not self._current_road.locations.entries:
             outcome.description = "A clearing appears in the ethereal mist..."
             return outcome
 
-        table = self._current_road.encounter_table
-        die_type = table.die_type or "d6"
-
-        # Location table typically uses d6
-        roll = self.dice.roll("1d6", "location table roll")
+        table = self._current_road.locations
+        die_type = table.die
+        roll = self.dice.roll(die_type, "location table roll")
 
         # Find matching entry
-        for entry in table.location_entries:
-            if entry.roll <= roll.total <= (entry.roll_max or entry.roll):
+        for entry in table.entries:
+            if entry.roll == roll.total:
                 outcome.location_entry = entry
-                outcome.description = f"{entry.name}: {entry.description}"
+                self._state.last_location_entry = entry
+                outcome.description = entry.summary
                 return outcome
 
         outcome.description = "A strange location materializes before you..."
@@ -472,21 +532,59 @@ class FairyRoadEngine:
         Returns:
             EncounterState for the encounter engine, or None if no encounter
         """
-        if not self._state or not self._state.last_check_result:
+        if not self._state or not self._state.last_encounter_entry:
             return None
 
-        if self._state.last_check_result != FairyRoadCheckResult.MONSTER_ENCOUNTER:
-            return None
+        entry = self._state.last_encounter_entry
 
-        # Get the monster entry from the last check
-        # This would need to be stored somewhere - for now return basic encounter
+        # Build actor list from encounter entry
+        actors = [entry.name]
+
         encounter = EncounterState(
-            encounter_type=EncounterType.HOSTILE,
-            actors=["Fairy road denizen"],
-            context={"origin": "fairy_road", "road_id": self._state.road_id},
+            encounter_type=EncounterType.MONSTER,
+            actors=actors,
+            context={
+                "origin": "fairy_road",
+                "road_id": self._state.road_id,
+                "monster_name": entry.name,
+                "monster_count": self._state.last_check_result,
+            },
         )
 
         return encounter
+
+    def trigger_encounter_transition(self) -> dict[str, Any]:
+        """
+        Trigger a transition to ENCOUNTER state for a fairy road monster.
+
+        This should be called after travel_segment() returns encounter_triggered=True.
+
+        Returns:
+            Dictionary with transition result
+        """
+        if not self._state or not self._state.last_encounter_entry:
+            return {"success": False, "message": "No encounter to trigger"}
+
+        encounter = self.create_monster_encounter()
+        if not encounter:
+            return {"success": False, "message": "Could not create encounter"}
+
+        # Set encounter in controller
+        self.controller.set_encounter(encounter)
+
+        # Transition to encounter state
+        self.controller.transition(
+            "encounter_triggered",
+            context={
+                "origin": "fairy_road",
+                "road_id": self._state.road_id,
+            },
+        )
+
+        return {
+            "success": True,
+            "message": f"Encounter triggered: {self._state.last_encounter_entry.name}",
+        }
 
     def resume_after_encounter(self) -> FairyRoadTravelResult:
         """
@@ -549,7 +647,6 @@ class FairyRoadEngine:
     def _check_party_unconscious(self) -> bool:
         """Check if any party member is unconscious."""
         for char in self.controller.get_active_characters():
-            # Check HP <= 0 or unconscious condition
             if char.current_hp <= 0:
                 return True
             if hasattr(char, "conditions") and "unconscious" in char.conditions:
@@ -576,38 +673,27 @@ class FairyRoadEngine:
         self._phase = FairyRoadPhase.STRAYED
         self._state.strayed_from_path = True
 
-        # Roll for exit hex
-        exit_hexes = self._current_road.stray_exit_hexes
-        if exit_hexes:
-            exit_hex = random.choice(exit_hexes)
-        else:
-            exit_hex = self._state.entry_hex_id  # Fall back to entry hex
+        # Roll for exit hex - use entry hex as fallback if no stray hexes defined
+        # For now, use entry hex (could be expanded with stray hex tables)
+        exit_hex = self._state.entry_door_hex
 
-        # Roll for additional time
-        time_dice = self._current_road.stray_time_dice or "1d6"
-        time_roll = self.dice.roll(time_dice, "stray time")
-        time_unit = self._current_road.stray_time_unit or "hours"
+        # Roll time passed using common table
+        time_str, time_turns = self._roll_time_dilation()
 
         outcome = StrayFromPathOutcome(
             result_type=StrayFromPathResult.LOST_IN_WOODS,
             exit_hex_id=exit_hex,
-            time_passed_mortal=time_roll.total,
-            time_unit=time_unit,
+            time_passed_mortal=time_turns,
+            time_unit="turns",
             description=(
                 f"The unconscious traveler causes the party to stray from the path. "
-                f"They awaken in hex {exit_hex}, having lost {time_roll.total} {time_unit}."
+                f"They awaken in hex {exit_hex}. {time_str} has passed in the mortal world."
             ),
         )
 
         # Apply time passage
-        if time_unit == "hours":
-            turns = time_roll.total * 6  # 6 turns per hour
-        elif time_unit == "days":
-            turns = time_roll.total * 144  # 144 turns per day
-        else:
-            turns = time_roll.total
-
-        self.controller.advance_time(turns)
+        if time_turns > 0:
+            self.controller.advance_time(time_turns)
 
         # Transition back to wilderness
         self.controller.transition(
@@ -615,8 +701,7 @@ class FairyRoadEngine:
             context={
                 "reason": "strayed_from_path",
                 "exit_hex": exit_hex,
-                "time_passed": time_roll.total,
-                "time_unit": time_unit,
+                "time_passed": time_str,
             },
         )
 
@@ -640,13 +725,13 @@ class FairyRoadEngine:
     # =========================================================================
 
     def exit_fairy_road(
-        self, door_id: Optional[str] = None
+        self, exit_hex_id: Optional[str] = None
     ) -> FairyRoadExitResult:
         """
         Exit the fairy road through a door.
 
         Args:
-            door_id: Door to exit through (uses destination if not specified)
+            exit_hex_id: Hex to exit at (uses destination or finds nearest if not specified)
 
         Returns:
             FairyRoadExitResult with exit details and time dilation
@@ -658,62 +743,45 @@ class FairyRoadEngine:
             )
 
         # Determine exit door
-        target_door_id = door_id or self._state.destination_door_id
-        if not target_door_id:
-            # Find the furthest door on the road
-            doors = self._current_road.doors
-            if doors:
-                target_door_id = max(doors, key=lambda d: d.road_position).door_id
-            else:
-                return FairyRoadExitResult(
-                    success=False,
-                    messages=["No exit door available"],
-                )
+        target_hex = exit_hex_id or self._state.destination_door_hex
+        if not target_hex:
+            # Find any exit door on this road
+            for door in self._current_road.doors:
+                if door.direction in ("exit_only", "endpoint"):
+                    target_hex = door.hex_id
+                    break
 
-        door = self.registry.get_door(target_door_id)
-        if not door:
+        if not target_hex:
             return FairyRoadExitResult(
                 success=False,
-                messages=[f"Exit door '{target_door_id}' not found"],
+                messages=["No exit door available"],
             )
+
+        # Get door info
+        door_ref = self.registry.get_door(target_hex, self._state.road_id)
+        door_name = door_ref.door.name if door_ref else "the exit"
 
         result = FairyRoadExitResult(
             success=True,
-            door_id=target_door_id,
-            exit_hex_id=door.hex_id,
+            door_name=door_name,
+            exit_hex_id=target_hex,
         )
 
         messages = [
-            f"You approach {door.name}...",
-            f"Stepping through, you emerge in the mortal world at hex {door.hex_id}.",
+            f"You approach {door_name}...",
+            f"Stepping through, you emerge in the mortal world at hex {target_hex}.",
         ]
 
-        # Apply time dilation if enabled
-        if self._current_road.time_dilation_enabled:
-            time_dice = self._current_road.time_dilation_dice or "1d12"
-            time_roll = self.dice.roll(time_dice, "time dilation")
-            time_unit = self._current_road.time_dilation_unit or "days"
+        # Roll time dilation
+        time_str, time_turns = self._roll_time_dilation()
+        result.mortal_time_passed = time_str
+        result.mortal_turns_passed = time_turns
 
-            result.time_dilation_dice = time_dice
-            result.time_dilation_roll = time_roll.total
-            result.mortal_days_passed = time_roll.total
-
+        if time_turns > 0:
             messages.append(
-                f"As you exit, you realize {time_roll.total} {time_unit} "
-                f"have passed in the mortal world!"
+                f"As you exit, you realize {time_str} has passed in the mortal world!"
             )
-
-            # Apply time passage
-            if time_unit == "hours":
-                turns = time_roll.total * 6
-            elif time_unit == "days":
-                turns = time_roll.total * 144
-            elif time_unit == "weeks":
-                turns = time_roll.total * 144 * 7
-            else:
-                turns = time_roll.total
-
-            self.controller.advance_time(turns)
+            self.controller.advance_time(time_turns)
 
         result.messages = messages
 
@@ -721,9 +789,8 @@ class FairyRoadEngine:
         self.controller.transition(
             "exit_fairy_road",
             context={
-                "exit_door": target_door_id,
-                "exit_hex": door.hex_id,
-                "time_passed": result.mortal_days_passed,
+                "exit_hex": target_hex,
+                "time_passed": time_str,
                 "road_id": self._state.road_id,
             },
         )
@@ -732,6 +799,74 @@ class FairyRoadEngine:
         self._clear_travel_state()
 
         return result
+
+    def _roll_time_dilation(self) -> tuple[str, int]:
+        """
+        Roll on the time passed table from common tables.
+
+        Returns:
+            Tuple of (time description string, time in turns)
+        """
+        if not self._common or not self._common.time_passed_table.entries:
+            return ("1d6 days", 144 * 3)  # Default fallback: ~3 days
+
+        table = self._common.time_passed_table
+        roll = self.dice.roll(table.die, "time dilation")
+        roll_total = roll.total
+
+        # Find matching entry
+        for entry in table.entries:
+            matched = False
+            if entry.roll is not None and entry.roll == roll_total:
+                matched = True
+            elif entry.roll_range is not None:
+                low, high = entry.roll_range
+                if low <= roll_total <= high:
+                    matched = True
+
+            if matched:
+                time_str = entry.time
+                turns = self._parse_time_to_turns(time_str)
+                return (time_str, turns)
+
+        return ("1d6 days", 144 * 3)
+
+    def _parse_time_to_turns(self, time_str: str) -> int:
+        """
+        Parse a time string like "1d6 days" or "2d6 hours" into turns.
+
+        1 turn = 10 minutes
+        1 hour = 6 turns
+        1 day = 144 turns
+        1 week = 1008 turns
+        """
+        time_str = time_str.lower().strip()
+
+        # Extract dice notation
+        dice_match = re.match(r"(\d+d\d+|\d+)", time_str)
+        if not dice_match:
+            return 144  # Default 1 day
+
+        dice_part = dice_match.group(1)
+        if "d" in dice_part:
+            roll = self.dice.roll(dice_part, "time amount")
+            amount = roll.total
+        else:
+            amount = int(dice_part)
+
+        # Determine unit
+        if "minute" in time_str:
+            turns = amount // 10  # 10 min per turn
+        elif "hour" in time_str:
+            turns = amount * 6  # 6 turns per hour
+        elif "week" in time_str:
+            turns = amount * 144 * 7  # 144 turns/day * 7 days
+        elif "day" in time_str:
+            turns = amount * 144  # 144 turns per day
+        else:
+            turns = amount * 144  # Default to days
+
+        return max(1, turns)
 
     # =========================================================================
     # HELPERS
@@ -756,7 +891,7 @@ class FairyRoadEngine:
         """Get the current travel state."""
         return self._state
 
-    def get_current_road(self) -> Optional[FairyRoadData]:
+    def get_current_road(self) -> Optional[FairyRoadDefinition]:
         """Get the current fairy road data."""
         return self._current_road
 
@@ -772,22 +907,26 @@ class FairyRoadEngine:
             "phase": self._phase.value,
             "segment": self._state.current_segment,
             "total_segments": self._state.total_segments,
-            "entry_door": self._state.entry_door_id,
-            "destination_door": self._state.destination_door_id,
+            "entry_door": self._state.entry_door_name,
+            "destination_door": self._state.destination_door_name,
             "subjective_turns": self._state.subjective_turns_elapsed,
             "encounters_triggered": self._state.encounters_triggered,
             "strayed": self._state.strayed_from_path,
         }
 
-    def get_available_exits(self) -> list[FairyDoor]:
+    def get_available_exits(self) -> list[dict[str, str]]:
         """Get available exit doors from the current road."""
         if not self._current_road:
             return []
-        return self._current_road.doors
-
-    def get_doors_in_hex(self, hex_id: str) -> list[FairyDoor]:
-        """Get fairy doors available in a given hex."""
-        return self.registry.get_doors_in_hex(hex_id)
+        exits = []
+        for door in self._current_road.doors:
+            if door.direction in ("exit_only", "endpoint"):
+                exits.append({
+                    "hex_id": door.hex_id,
+                    "name": door.name,
+                    "direction": door.direction,
+                })
+        return exits
 
 
 # Singleton instance

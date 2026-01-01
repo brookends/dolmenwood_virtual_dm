@@ -328,6 +328,13 @@ class GlobalController:
 
         # Current combat engine (if any)
         self._combat_engine: Optional[Any] = None
+        # Track if the combat engine was explicitly attached (vs created on demand)
+        self._combat_engine_attached: bool = False
+
+        # Current encounter engine (if any)
+        self._encounter_engine: Optional[Any] = None
+        # Track if the encounter engine was explicitly attached
+        self._encounter_engine_attached: bool = False
 
         # Current social context (if any)
         self._social_context: Optional[SocialContext] = None
@@ -521,6 +528,9 @@ class GlobalController:
         These hooks ensure that when transitioning to a state, the appropriate
         engine is initialized and ready to handle operations.
         """
+        # Hook: Entering ENCOUNTER activates the attached encounter engine
+        self.register_on_enter_hook(GameState.ENCOUNTER, self._on_enter_encounter)
+
         # Hook: Entering COMBAT initializes combat from the current encounter
         self.register_on_enter_hook(GameState.COMBAT, self._on_enter_combat)
 
@@ -538,13 +548,75 @@ class GlobalController:
 
         logger.debug("Default transition hooks registered")
 
+    def _on_enter_encounter(
+        self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
+    ) -> None:
+        """
+        Hook called when entering ENCOUNTER state.
+
+        Activates the attached EncounterEngine with the current encounter data.
+        This ensures that encounters triggered via controller transitions
+        (e.g., from hex crawl or dungeon exploration) properly initialize
+        the encounter engine state.
+        """
+        if self._current_encounter is None:
+            logger.warning("Entering ENCOUNTER without an active encounter set via set_encounter()")
+            return
+
+        if not self._encounter_engine or not self._encounter_engine_attached:
+            logger.debug("No attached encounter engine; encounter must be started manually")
+            return
+
+        # If the encounter engine already has state (e.g., start_encounter was called),
+        # don't reinitialize
+        if self._encounter_engine.is_active():
+            logger.debug("Encounter engine already active; skipping activation")
+            return
+
+        # Determine encounter origin from context or infer from previous state
+        origin_str = context.get("origin")
+        if origin_str:
+            from src.encounter.encounter_engine import EncounterOrigin
+            try:
+                origin = EncounterOrigin(origin_str)
+            except ValueError:
+                origin = self._infer_encounter_origin(from_state)
+        else:
+            origin = self._infer_encounter_origin(from_state)
+
+        # Activate the encounter engine with the stored encounter
+        self._encounter_engine.activate_existing_encounter(
+            encounter=self._current_encounter,
+            origin=origin,
+            context=context,
+        )
+
+        logger.info(
+            f"Encounter engine activated from {from_state.value} "
+            f"with {len(self._current_encounter.actors)} actors"
+        )
+
+    def _infer_encounter_origin(self, from_state: GameState) -> "EncounterOrigin":
+        """Infer EncounterOrigin from the previous game state."""
+        from src.encounter.encounter_engine import EncounterOrigin
+
+        origin_map = {
+            GameState.WILDERNESS_TRAVEL: EncounterOrigin.WILDERNESS,
+            GameState.DUNGEON_EXPLORATION: EncounterOrigin.DUNGEON,
+            GameState.SETTLEMENT_EXPLORATION: EncounterOrigin.SETTLEMENT,
+            GameState.FAIRY_ROAD_TRAVEL: EncounterOrigin.FAIRY_ROAD,
+        }
+        return origin_map.get(from_state, EncounterOrigin.WILDERNESS)
+
     def _on_enter_combat(
         self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
     ) -> None:
         """
         Hook called when entering COMBAT state.
 
-        Initializes the CombatEngine with the current encounter.
+        Uses the attached CombatEngine if available, otherwise creates a new one.
+        This ensures that combat started via state transitions uses the same
+        engine instance that has spell registrations and narration callbacks.
         """
         # Import here to avoid circular import
         from src.combat.combat_engine import CombatEngine
@@ -559,9 +631,16 @@ class GlobalController:
             # Get the origin from the encounter or previous state
             return_state = self.state_machine.previous_state or GameState.WILDERNESS_TRAVEL
 
-        # Create and initialize the combat engine
-        self._combat_engine = CombatEngine(self)
-        result = self._combat_engine.start_combat(
+        # Use attached engine if available; otherwise create a new one
+        if self._combat_engine_attached and self._combat_engine:
+            logger.debug("Using attached combat engine for combat")
+            engine = self._combat_engine
+        else:
+            logger.debug("Creating new combat engine (no attached engine)")
+            engine = CombatEngine(self)
+            self._combat_engine = engine
+
+        result = engine.start_combat(
             encounter=self._current_encounter,
             return_state=return_state,
         )
@@ -579,11 +658,19 @@ class GlobalController:
         """
         Hook called when exiting COMBAT state.
 
-        Cleans up the combat engine.
+        Cleans up combat state but preserves an attached engine.
+        The attached engine keeps its spell registry and narration callbacks
+        for use in future combats.
         """
         if self._combat_engine:
-            logger.debug("Clearing combat engine on exit from COMBAT")
-            self._combat_engine = None
+            # If it's an attached engine, just clear its combat state (not the engine itself)
+            if self._combat_engine_attached:
+                logger.debug("Preserving attached combat engine; combat state was cleared by end_combat()")
+                # The CombatEngine.end_combat() already clears _combat_state internally
+            else:
+                # Non-attached engines can be cleared
+                logger.debug("Clearing non-attached combat engine on exit from COMBAT")
+                self._combat_engine = None
 
     def _on_exit_encounter(
         self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]
@@ -604,6 +691,39 @@ class GlobalController:
     def combat_engine(self) -> Optional[Any]:
         """Get the current combat engine (if combat is active)."""
         return self._combat_engine
+
+    @property
+    def encounter_engine(self) -> Optional[Any]:
+        """Get the current encounter engine (if attached)."""
+        return self._encounter_engine
+
+    def set_combat_engine(self, engine: Any) -> None:
+        """
+        Attach a combat engine instance to be used for all combat.
+
+        This allows VirtualDM to provide a pre-configured CombatEngine
+        with narration callbacks and spell registrations intact.
+
+        Args:
+            engine: The CombatEngine instance to attach
+        """
+        self._combat_engine = engine
+        self._combat_engine_attached = True
+        logger.debug("Combat engine attached to controller")
+
+    def set_encounter_engine(self, engine: Any) -> None:
+        """
+        Attach an encounter engine instance to be used for all encounters.
+
+        This allows VirtualDM to provide a pre-configured EncounterEngine
+        with narration callbacks intact.
+
+        Args:
+            engine: The EncounterEngine instance to attach
+        """
+        self._encounter_engine = engine
+        self._encounter_engine_attached = True
+        logger.debug("Encounter engine attached to controller")
 
     def _on_enter_social(
         self, from_state: GameState, to_state: GameState, trigger: str, context: dict[str, Any]

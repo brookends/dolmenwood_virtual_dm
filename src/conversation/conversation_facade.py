@@ -534,7 +534,269 @@ class ConversationFacade:
             msg = f"Detail Check — {m.action} / {m.subject}"
             return self._response([ChatMessage("system", msg)])
 
+        # ------------------------------------------------------------------
+        # Combat actions
+        # ------------------------------------------------------------------
+        if action_id.startswith("combat:"):
+            return self._handle_combat_action(action_id, params)
+
+        # ------------------------------------------------------------------
+        # Fairy Road actions
+        # ------------------------------------------------------------------
+        if action_id.startswith("fairy_road:"):
+            return self._handle_fairy_road_action(action_id, params)
+
         return self._response([ChatMessage("system", f"Unrecognized action id: {action_id}")])
+
+    # ---------------------------------------------------------------------
+    # Combat handlers
+    # ---------------------------------------------------------------------
+    def _handle_combat_action(self, action_id: str, params: dict[str, Any]) -> TurnResponse:
+        """Handle combat action IDs."""
+        combat_engine = self.dm.controller.combat_engine
+
+        if action_id == "combat:resolve_round":
+            if not combat_engine or not combat_engine.is_in_combat():
+                return self._response([ChatMessage("system", "No active combat.")])
+
+            # Build default party actions (attack nearest enemy)
+            party_actions = self._build_default_party_attacks(combat_engine)
+
+            # Execute round - enemies are auto-generated
+            result = combat_engine.execute_round(party_actions)
+
+            messages = []
+            if result.get("success"):
+                for event in result.get("round_events", []):
+                    messages.append(ChatMessage("system", event))
+                if result.get("combat_ended"):
+                    messages.append(ChatMessage("system", f"Combat ended: {result.get('end_reason', 'unknown')}"))
+            else:
+                messages.append(ChatMessage("system", result.get("message", "Combat round failed.")))
+
+            return self._response(messages)
+
+        if action_id == "combat:flee":
+            if not combat_engine or not combat_engine.is_in_combat():
+                return self._response([ChatMessage("system", "No active combat.")])
+
+            result = combat_engine.attempt_flee()
+            messages = [ChatMessage("system", result.get("message", "Flee attempt resolved."))]
+            if result.get("success"):
+                messages.append(ChatMessage("system", "The party escapes!"))
+            else:
+                messages.append(ChatMessage("system", "The party cannot escape!"))
+            return self._response(messages)
+
+        if action_id == "combat:parley":
+            if not combat_engine or not combat_engine.is_in_combat():
+                return self._response([ChatMessage("system", "No active combat.")])
+
+            # Attempt to pause combat for negotiation
+            messages = [ChatMessage("system", "You attempt to parley mid-combat...")]
+            # This would transition to social interaction if successful
+            # For now, just acknowledge the attempt
+            messages.append(ChatMessage("system", "Parley during combat is not yet fully implemented."))
+            return self._response(messages)
+
+        if action_id == "combat:status":
+            if not combat_engine or not combat_engine.is_in_combat():
+                return self._response([ChatMessage("system", "No active combat.")])
+
+            summary = combat_engine.get_combat_summary()
+            lines = ["Combat Status:"]
+            lines.append(f"Round: {summary.get('round', 1)}")
+            for c in summary.get("combatants", []):
+                status = f"{c.get('name')}: HP {c.get('hp_current')}/{c.get('hp_max')}"
+                if c.get("is_defeated"):
+                    status += " [DEFEATED]"
+                lines.append(f"  {status}")
+            return self._response([ChatMessage("system", "\n".join(lines))])
+
+        if action_id == "combat:end":
+            if combat_engine and combat_engine.is_in_combat():
+                combat_engine.end_combat("player_request")
+            # Transition back to previous state
+            try:
+                self.dm.controller.transition("combat_resolved")
+            except Exception:
+                pass
+            return self._response([ChatMessage("system", "Combat ended.")])
+
+        return self._response([ChatMessage("system", f"Unknown combat action: {action_id}")])
+
+    def _build_default_party_attacks(self, combat_engine) -> list[dict[str, Any]]:
+        """Build default melee attack actions for all party members."""
+        from src.combat.combat_engine import CombatActionType
+
+        party_actions = []
+        combat_state = combat_engine._combat_state
+        if not combat_state:
+            return party_actions
+
+        # Get alive party combatants and enemies
+        party = [c for c in combat_state.combatants if c.side == "party" and not c.is_defeated]
+        enemies = [c for c in combat_state.combatants if c.side == "enemy" and not c.is_defeated]
+
+        if not enemies:
+            return party_actions
+
+        # Each party member attacks the first available enemy
+        for pc in party:
+            party_actions.append({
+                "combatant_id": pc.combatant_id,
+                "action_type": CombatActionType.MELEE_ATTACK.value,
+                "target_id": enemies[0].combatant_id,
+            })
+
+        return party_actions
+
+    # ---------------------------------------------------------------------
+    # Fairy Road handlers
+    # ---------------------------------------------------------------------
+    def _handle_fairy_road_action(self, action_id: str, params: dict[str, Any]) -> TurnResponse:
+        """Handle fairy road action IDs."""
+        from src.fairy_roads.fairy_road_engine import (
+            get_fairy_road_engine,
+            FairyRoadPhase,
+            reset_fairy_road_engine,
+        )
+
+        engine = get_fairy_road_engine(self.dm.controller)
+
+        if action_id == "fairy_road:enter":
+            road_id = params.get("road_id", "")
+            hex_id = params.get("hex_id") or self._current_hex_id()
+            destination = params.get("destination_hex_id")
+
+            result = engine.enter_fairy_road(road_id, hex_id, destination)
+
+            messages = [ChatMessage("system", msg) for msg in result.messages]
+            if not result.success:
+                return self._response(messages)
+
+            # Add atmospheric narration if LLM is available
+            if self.dm.dm_agent and result.success:
+                narration = self.dm.dm_agent.generate(
+                    prompt=f"Narrate stepping through a fairy door onto {result.door_name}.",
+                    context={"road_name": result.road_id, "door_name": result.door_name},
+                    max_tokens=150,
+                )
+                if narration:
+                    messages.append(ChatMessage("dm", narration))
+
+            return self._response(messages)
+
+        if action_id == "fairy_road:travel_segment":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            result = engine.travel_segment()
+            messages = [ChatMessage("system", msg) for msg in result.messages]
+
+            # If encounter triggered, prompt for encounter resolution
+            if result.encounter_triggered:
+                messages.append(ChatMessage("system", "An encounter awaits! Choose to face it or try to evade."))
+
+            return self._response(messages)
+
+        if action_id == "fairy_road:resolve_encounter":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            # Trigger the encounter transition
+            result = engine.trigger_encounter_transition()
+            if result.get("success"):
+                return self._response([ChatMessage("system", result.get("message", "Encounter begins!"))])
+            else:
+                return self._response([ChatMessage("system", result.get("message", "No encounter to resolve."))])
+
+        if action_id == "fairy_road:flee_encounter":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            # Skip the encounter and continue
+            result = engine.resume_after_encounter()
+            messages = [ChatMessage("system", "You evade the encounter and continue on the road...")]
+            messages.extend([ChatMessage("system", msg) for msg in result.messages])
+            return self._response(messages)
+
+        if action_id == "fairy_road:explore_location":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            summary = engine.get_travel_summary()
+            state = engine.get_travel_state()
+
+            if state and state.last_location_entry:
+                location = state.last_location_entry
+                messages = [
+                    ChatMessage("system", f"Location: {location.summary}"),
+                ]
+                # Could expand with more location interaction later
+                return self._response(messages)
+
+            return self._response([ChatMessage("system", "No location to explore.")])
+
+        if action_id == "fairy_road:continue_past":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            result = engine.resume_after_location()
+            messages = [ChatMessage("system", msg) for msg in result.messages]
+            return self._response(messages)
+
+        if action_id == "fairy_road:exit":
+            if not engine.is_active():
+                return self._response([ChatMessage("system", "Not on a fairy road.")])
+
+            exit_hex = params.get("exit_hex_id")
+            result = engine.exit_fairy_road(exit_hex)
+
+            messages = [ChatMessage("system", msg) for msg in result.messages]
+            if result.success and result.mortal_time_passed:
+                messages.append(ChatMessage("system", f"Time passed in mortal world: {result.mortal_time_passed}"))
+
+            return self._response(messages)
+
+        if action_id == "fairy_road:stray":
+            return self._response([
+                ChatMessage("system", "You intentionally leave the path..."),
+                ChatMessage("system", "This is dangerous and not yet fully implemented."),
+            ])
+
+        if action_id == "fairy_road:status":
+            summary = engine.get_travel_summary()
+            if not summary.get("active"):
+                return self._response([ChatMessage("system", "Not currently on a fairy road.")])
+
+            lines = [
+                f"Road: {summary.get('road_name', 'Unknown')}",
+                f"Phase: {summary.get('phase', 'unknown')}",
+                f"Segment: {summary.get('segment', 0)}/{summary.get('total_segments', 0)}",
+                f"Entry: {summary.get('entry_door', 'Unknown')}",
+            ]
+            if summary.get("destination_door"):
+                lines.append(f"Destination: {summary.get('destination_door')}")
+            lines.append(f"Subjective time: {summary.get('subjective_turns', 0)} turns")
+            lines.append(f"Encounters: {summary.get('encounters_triggered', 0)}")
+
+            return self._response([ChatMessage("system", "\n".join(lines))])
+
+        if action_id == "fairy_road:find_door":
+            hex_id = self._current_hex_id()
+            doors = engine.can_enter_from_hex(hex_id)
+
+            if not doors:
+                return self._response([ChatMessage("system", f"No fairy doors found in hex {hex_id}.")])
+
+            lines = [f"Fairy doors in hex {hex_id}:"]
+            for door in doors:
+                lines.append(f"  - {door.get('door_name')} → {door.get('road_name')}")
+
+            return self._response([ChatMessage("system", "\n".join(lines))])
+
+        return self._response([ChatMessage("system", f"Unknown fairy road action: {action_id}")])
 
     # ---------------------------------------------------------------------
     # Internals
@@ -611,8 +873,25 @@ class ConversationFacade:
             msgs = [ChatMessage("dm", rr.narration)] if rr.narration else [ChatMessage("system", "Resolved.")]
             return self._response(msgs, character_id=character_id)
 
-        # Default: echo as DM narration
-        return self._response([ChatMessage("dm", text)], character_id=character_id)
+        # Combat requires mechanical resolution
+        if state == GameState.COMBAT:
+            return self._response(
+                [ChatMessage("system", "Combat requires selecting an action. Use the numbered options above.")],
+                character_id=character_id,
+            )
+
+        # Fairy road travel requires choosing travel actions
+        if state == GameState.FAIRY_ROAD_TRAVEL:
+            return self._response(
+                [ChatMessage("system", "While traveling on the fairy road, select an action from the options above.")],
+                character_id=character_id,
+            )
+
+        # Default: return safe instruction for unsupported states
+        return self._response(
+            [ChatMessage("system", f"Freeform input not supported in {state.value} state. Use the numbered options.")],
+            character_id=character_id,
+        )
 
     def _response(
         self,

@@ -280,6 +280,73 @@ class EncounterEngine:
 
         return result
 
+    def activate_existing_encounter(
+        self,
+        encounter: EncounterState,
+        origin: EncounterOrigin,
+        context: Optional[dict[str, Any]] = None,
+        party_aware: bool = False,
+        enemies_aware: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Activate the encounter engine with an encounter that was already set in the controller.
+
+        This method is called by the GlobalController's on-enter hook for ENCOUNTER state
+        when the encounter was set via controller.set_encounter() but the engine wasn't
+        started directly via start_encounter().
+
+        Unlike start_encounter(), this method does NOT call controller.transition() again,
+        avoiding infinite loops when the transition hook calls this method.
+
+        Args:
+            encounter: The encounter state (already stored in controller)
+            origin: Where the encounter originated (wilderness/dungeon/settlement/fairy_road)
+            context: Optional context from the transition
+            party_aware: Whether the party was already aware of the encounter
+            enemies_aware: Whether enemies were already aware of the party
+
+        Returns:
+            Dictionary with encounter activation results
+        """
+        context = context or {}
+
+        # Extract optional context data
+        poi_name = context.get("poi_name")
+        hex_id = context.get("hex_id")
+        roll_tables = context.get("roll_tables", [])
+
+        # Initialize engine state (same as start_encounter but without the transition)
+        self._state = EncounterEngineState(
+            encounter=encounter,
+            origin=origin,
+            current_phase=EncounterPhase.AWARENESS,
+            roll_tables=roll_tables,
+            poi_name=poi_name,
+            hex_id=hex_id,
+        )
+
+        result: dict[str, Any] = {
+            "encounter_activated": True,
+            "origin": origin.value,
+            "encounter_type": encounter.encounter_type.value,
+            "actors": encounter.actors,
+            "context": encounter.context,
+            "current_phase": EncounterPhase.AWARENESS.value,
+            "poi_name": poi_name,
+            "hex_id": hex_id,
+        }
+
+        # Run awareness phase immediately
+        awareness_result = self._resolve_awareness(party_aware, enemies_aware)
+        result["awareness"] = awareness_result
+
+        logger.info(
+            f"Encounter engine activated for {origin.value} encounter "
+            f"with {len(encounter.actors)} actors"
+        )
+
+        return result
+
     # =========================================================================
     # PHASE 1: AWARENESS
     # =========================================================================

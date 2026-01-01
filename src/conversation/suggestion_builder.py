@@ -106,6 +106,12 @@ def build_suggestions(dm: VirtualDM, *, character_id: Optional[str] = None, limi
     elif state == GameState.DOWNTIME:
         candidates.extend(_downtime_suggestions(dm, cid))
 
+    elif state == GameState.COMBAT:
+        candidates.extend(_combat_suggestions(dm, cid))
+
+    elif state == GameState.FAIRY_ROAD_TRAVEL:
+        candidates.extend(_fairy_road_suggestions(dm, cid))
+
     # ------------------------------------------------------------------
     # Cross-cutting: Mythic oracle (kept visible but not dominant)
     # ------------------------------------------------------------------
@@ -979,3 +985,332 @@ def _oracle_suggestions() -> list[_Candidate]:
             score=16,
         ),
     ]
+
+
+# -----------------------------------------------------------------------------
+# Combat suggestions
+# -----------------------------------------------------------------------------
+
+
+def _combat_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
+    """Generate suggestions for COMBAT state."""
+    out: list[_Candidate] = []
+
+    # Try to get combat state info
+    try:
+        combat_engine = dm.controller.combat_engine
+        is_in_combat = combat_engine and combat_engine.is_in_combat()
+        combat_state = combat_engine._combat_state if combat_engine else None
+    except Exception:
+        is_in_combat = False
+        combat_state = None
+
+    if not is_in_combat:
+        # Combat state without active combat - offer exit
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="combat:end",
+                    label="End combat (return to exploration)",
+                    safe_to_execute=True,
+                    help="Combat is not active; this returns to the previous game state.",
+                ),
+                score=90,
+            )
+        )
+        return out
+
+    # Primary combat action: resolve a round
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="combat:resolve_round",
+                label="Resolve combat round (default attacks)",
+                safe_to_execute=True,
+                help="Party members attack the nearest enemy; enemy actions are auto-generated.",
+            ),
+            score=95,
+        )
+    )
+
+    # Attempt to flee
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="combat:flee",
+                label="Attempt to flee (morale check)",
+                safe_to_execute=True,
+                help="Party attempts to disengage and flee; enemies may pursue.",
+            ),
+            score=75,
+        )
+    )
+
+    # Parley mid-combat (if enemies haven't been made hostile permanently)
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="combat:parley",
+                label="Attempt parley (pause combat)",
+                safe_to_execute=True,
+                help="Try to negotiate with enemies; may end or pause combat.",
+            ),
+            score=65,
+        )
+    )
+
+    # Spell casting (if any casters have spells)
+    try:
+        active_chars = dm.controller.get_active_characters()
+        for char in active_chars:
+            if hasattr(char, "spell_slots") and char.spell_slots:
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="combat:cast_spell",
+                            label=f"Cast spell ({char.name})",
+                            params_schema={
+                                "type": "object",
+                                "properties": {
+                                    "character_id": {"type": "string"},
+                                    "spell_name": {"type": "string"},
+                                    "target": {"type": "string"},
+                                },
+                                "required": ["character_id", "spell_name"],
+                            },
+                            params={"character_id": char.character_id},
+                            safe_to_execute=False,
+                            help="Cast a prepared spell; requires spell name and optional target.",
+                        ),
+                        score=82,
+                    )
+                )
+                break  # Only show one spell casting option
+    except Exception:
+        pass
+
+    # Combat status
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="combat:status",
+                label="Show combat status",
+                safe_to_execute=True,
+                help="Display current combatant HP, initiative order, and active effects.",
+            ),
+            score=40,
+        )
+    )
+
+    return out
+
+
+# -----------------------------------------------------------------------------
+# Fairy Road suggestions
+# -----------------------------------------------------------------------------
+
+
+def _fairy_road_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
+    """Generate suggestions for FAIRY_ROAD_TRAVEL state."""
+    out: list[_Candidate] = []
+
+    # Try to get fairy road engine state
+    try:
+        from src.fairy_roads.fairy_road_engine import get_fairy_road_engine, FairyRoadPhase
+        engine = get_fairy_road_engine(dm.controller)
+        is_active = engine.is_active()
+        phase = engine.get_current_phase()
+        summary = engine.get_travel_summary()
+    except Exception:
+        is_active = False
+        phase = None
+        summary = {}
+
+    if not is_active:
+        # Not actively traveling - look for entry points
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:find_door",
+                    label="Search for fairy doors in this hex",
+                    safe_to_execute=True,
+                    help="Look for fairy road entry points in the current location.",
+                ),
+                score=80,
+            )
+        )
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="transition:exit_fairy_road",
+                    label="Exit (return to wilderness)",
+                    safe_to_execute=True,
+                    help="Leave fairy road travel state.",
+                ),
+                score=60,
+            )
+        )
+        return out
+
+    # Active travel - show phase-appropriate options
+    road_name = summary.get("road_name", "the fairy road")
+    segment = summary.get("segment", 0)
+    total_segments = summary.get("total_segments", 0)
+
+    # Primary action: travel segment
+    from src.fairy_roads.fairy_road_engine import FairyRoadPhase
+    if phase == FairyRoadPhase.TRAVELING:
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:travel_segment",
+                    label=f"Continue traveling ({segment}/{total_segments})",
+                    safe_to_execute=True,
+                    help="Travel one segment; may trigger encounters or locations.",
+                ),
+                score=95,
+            )
+        )
+
+    elif phase == FairyRoadPhase.ENCOUNTER:
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:resolve_encounter",
+                    label="Face the encounter",
+                    safe_to_execute=True,
+                    help="Transitions to encounter resolution; may lead to combat.",
+                ),
+                score=95,
+            )
+        )
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:flee_encounter",
+                    label="Try to evade the encounter",
+                    safe_to_execute=True,
+                    help="Attempt to avoid the encounter; may have consequences.",
+                ),
+                score=80,
+            )
+        )
+
+    elif phase == FairyRoadPhase.LOCATION:
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:explore_location",
+                    label="Explore the location",
+                    safe_to_execute=True,
+                    help="Investigate the discovered location.",
+                ),
+                score=90,
+            )
+        )
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:continue_past",
+                    label="Continue past the location",
+                    safe_to_execute=True,
+                    help="Leave the location and continue traveling.",
+                ),
+                score=75,
+            )
+        )
+
+    elif phase == FairyRoadPhase.EXITING:
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:exit",
+                    label="Exit the fairy road",
+                    safe_to_execute=True,
+                    help="Step through the exit door; time dilation will be rolled.",
+                ),
+                score=95,
+            )
+        )
+
+    # Always available during travel
+    if phase in (FairyRoadPhase.TRAVELING, FairyRoadPhase.LOCATION):
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:stray",
+                    label="Stray from the path (dangerous)",
+                    safe_to_execute=False,
+                    help="Leave the road intentionally; causes time dilation and random exit.",
+                ),
+                score=25,
+            )
+        )
+
+    # Exit early (always available)
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="fairy_road:exit",
+                label="Find an exit door",
+                safe_to_execute=True,
+                help="Look for and use an exit door.",
+            ),
+            score=60,
+        )
+    )
+
+    # Status
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="fairy_road:status",
+                label=f"Show travel status ({road_name})",
+                safe_to_execute=True,
+                help="Display current position, encounters, and destination.",
+            ),
+            score=35,
+        )
+    )
+
+    return out
+
+
+# -----------------------------------------------------------------------------
+# Wilderness fairy road door suggestions (add to wilderness when doors exist)
+# -----------------------------------------------------------------------------
+
+
+def _get_fairy_door_suggestions(dm: VirtualDM, hex_id: str) -> list[_Candidate]:
+    """Get fairy road entry suggestions for a hex with fairy doors."""
+    out: list[_Candidate] = []
+
+    try:
+        from src.fairy_roads.fairy_road_engine import get_fairy_road_engine
+        engine = get_fairy_road_engine(dm.controller)
+        available_roads = engine.can_enter_from_hex(hex_id)
+    except Exception:
+        available_roads = []
+
+    for road_info in available_roads[:3]:  # Limit to 3 doors
+        road_id = road_info.get("road_id", "")
+        road_name = road_info.get("road_name", "a fairy road")
+        door_name = road_info.get("door_name", "the door")
+
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="fairy_road:enter",
+                    label=f"Enter {road_name} via {door_name}",
+                    params={
+                        "road_id": road_id,
+                        "hex_id": hex_id,
+                    },
+                    safe_to_execute=True,
+                    help="Enter the fairy road; mortal time will be frozen until exit.",
+                ),
+                score=78,
+            )
+        )
+
+    return out

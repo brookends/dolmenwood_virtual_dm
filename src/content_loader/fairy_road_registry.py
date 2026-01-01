@@ -99,6 +99,39 @@ class FairyRoadRegistry:
     def get_doors_at_hex(self, hex_id: str) -> list[DoorRef]:
         return list(self._doors_by_hex.get(hex_id, []))
 
+    def get_door(self, hex_id: str, road_id: str) -> Optional[DoorRef]:
+        """
+        Get a specific door by hex ID and road ID.
+
+        Args:
+            hex_id: The hex containing the door
+            road_id: The fairy road this door belongs to
+
+        Returns:
+            DoorRef if found, None otherwise
+        """
+        doors = self._doors_by_hex.get(hex_id, [])
+        for door_ref in doors:
+            if door_ref.road_id == road_id:
+                return door_ref
+        return None
+
+    def get_door_by_name(self, door_name: str) -> Optional[DoorRef]:
+        """
+        Get a door by its name (searching all hexes).
+
+        Args:
+            door_name: The name of the door
+
+        Returns:
+            DoorRef if found, None otherwise
+        """
+        for hex_doors in self._doors_by_hex.values():
+            for door_ref in hex_doors:
+                if door_ref.door.name.lower() == door_name.lower():
+                    return door_ref
+        return None
+
 
 def get_fairy_road_registry() -> FairyRoadRegistry:
     global _fairy_road_registry
