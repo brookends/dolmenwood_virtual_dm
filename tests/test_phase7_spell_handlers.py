@@ -56,6 +56,22 @@ def fixed_dice_roller():
     return roller
 
 
+@pytest.fixture
+def spell_data_loader():
+    """Fixture to load actual spell data from JSON files."""
+
+    def _load_spell(filename: str, spell_id: str) -> dict:
+        spell_path = Path(__file__).parent.parent / "data" / "content" / "spells" / filename
+        with open(spell_path) as f:
+            data = json.load(f)
+        for item in data["items"]:
+            if item["spell_id"] == spell_id:
+                return item
+        raise ValueError(f"Spell {spell_id} not found in {filename}")
+
+    return _load_spell
+
+
 # =============================================================================
 # DIMENSION DOOR TESTS
 # =============================================================================
@@ -506,59 +522,92 @@ class TestGreaterHealingHandler:
 
 
 class TestPhase7SpellDataIntegration:
-    """Integration tests using actual spell JSON data."""
+    """Integration tests that verify handlers against actual spell JSON data."""
 
-    @pytest.fixture
-    def arcane_level_4_spells(self):
-        """Load arcane level 4 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "arcane_level_4_1.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+    def test_dimension_door_matches_source(self, spell_data_loader):
+        """Verify Dimension Door matches arcane_level_4_1.json."""
+        spell = spell_data_loader("arcane_level_4_1.json", "dimension_door")
 
-    @pytest.fixture
-    def holy_level_4_spells(self):
-        """Load holy level 4 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "holy_level_4.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+        assert spell["level"] == 4
+        assert spell["magic_type"] == "arcane"
+        assert spell["duration"] == "1 Round"
+        assert "10'" in spell["range"] and "360'" in spell["range"]
 
-    def test_dimension_door_matches_source_data(self, spell_resolver, mock_caster, fixed_dice_roller, arcane_level_4_spells):
-        """Test Dimension Door handler matches source JSON."""
-        if arcane_level_4_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_dimension_door_description_validation(self, spell_data_loader):
+        """Verify Dimension Door description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_4_1.json", "dimension_door")
 
-        spell_data = next(
-            (s for s in arcane_level_4_spells["items"] if s["spell_id"] == "dimension_door"),
-            None
-        )
-        assert spell_data is not None
+        # Verify description contains key mechanics from source
+        assert "door-shaped rifts" in spell["description"]
+        assert "360′" in spell["description"]  # Unicode prime character
+        assert "Save Versus Hold" in spell["description"]
+        assert "Unwilling subjects" in spell["description"]
+        assert "Occupied destination" in spell["description"]
+
+    def test_dimension_door_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_4_1.json", "dimension_door")
 
         result = spell_resolver._handle_dimension_door(
             mock_caster, ["target_1"], fixed_dice_roller
         )
 
-        # Verify range matches (10' / 360')
+        # Verify range matches (10' / 360' from source)
         assert result["entrance_range"] == 10
         assert result["max_range"] == 360
-        # Verify duration is 1 Round
+        # Verify duration is 1 Round per source
         effect = spell_resolver._active_effects[-1]
         assert effect.duration_remaining == 1
         assert effect.duration_unit == "rounds"
 
-    def test_confusion_matches_source_data(self, spell_resolver, mock_caster, mock_targets, fixed_dice_roller, arcane_level_4_spells):
-        """Test Confusion handler matches source JSON."""
-        if arcane_level_4_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_dimension_door_unwilling_save_type(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets
+    ):
+        """Verify unwilling target uses Save Versus Hold per source."""
+        spell = spell_data_loader("arcane_level_4_1.json", "dimension_door")
 
-        spell_data = next(
-            (s for s in arcane_level_4_spells["items"] if s["spell_id"] == "confusion"),
-            None
+        assert "Save Versus Hold" in spell["description"]
+
+        roller = MagicMock()
+        roller.roll = MagicMock(return_value=10)
+        spell_resolver._current_context = {"is_unwilling": True}
+
+        result = spell_resolver._handle_dimension_door(
+            mock_caster, mock_targets, roller
         )
-        assert spell_data is not None
+
+        assert result["is_unwilling"] is True
+        assert "save_roll" in result
+
+    def test_confusion_matches_source(self, spell_data_loader):
+        """Verify Confusion matches arcane_level_4_1.json."""
+        spell = spell_data_loader("arcane_level_4_1.json", "confusion")
+
+        assert spell["level"] == 4
+        assert spell["magic_type"] == "arcane"
+        assert spell["duration"] == "12 Rounds"
+        assert spell["range"] == "120'"
+
+    def test_confusion_description_validation(self, spell_data_loader):
+        """Verify Confusion description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_4_1.json", "confusion")
+
+        # Verify key mechanics from source
+        assert "3d6" in spell["description"]
+        assert "30′ radius" in spell["description"]  # Unicode prime character
+        assert "delusions" in spell["description"]
+        assert "Level 3 or greater" in spell["description"]
+        assert "Save Versus Spell" in spell["description"]
+        assert "Level 2 or lower" in spell["description"]
+        assert "May not make a Saving Throw" in spell["description"]
+
+    def test_confusion_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_4_1.json", "confusion")
 
         result = spell_resolver._handle_confusion(
             mock_caster, mock_targets, fixed_dice_roller
@@ -569,16 +618,47 @@ class TestPhase7SpellDataIntegration:
         # Verify 30' radius from source
         assert result["area_radius"] == 30
 
-    def test_greater_healing_matches_source_data(self, spell_resolver, mock_caster, mock_targets, fixed_dice_roller, holy_level_4_spells):
-        """Test Greater Healing handler matches source JSON."""
-        if holy_level_4_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_confusion_3d6_creatures_from_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets
+    ):
+        """Verify 3d6 creatures affected per source."""
+        spell = spell_data_loader("arcane_level_4_1.json", "confusion")
 
-        spell_data = next(
-            (s for s in holy_level_4_spells["items"] if s["spell_id"] == "greater_healing"),
-            None
+        assert "3d6" in spell["description"]
+
+        roller = MagicMock()
+        roller.roll = MagicMock(side_effect=lambda expr: 12 if expr == "3d6" else 5)
+
+        result = spell_resolver._handle_confusion(
+            mock_caster, mock_targets, roller
         )
-        assert spell_data is not None
+
+        assert result["max_creatures_affected"] == 12
+
+    def test_greater_healing_matches_source(self, spell_data_loader):
+        """Verify Greater Healing matches holy_level_4.json."""
+        spell = spell_data_loader("holy_level_4.json", "greater_healing")
+
+        assert spell["level"] == 4
+        assert spell["magic_type"] == "divine"
+        assert spell["duration"] == "Instant"
+
+    def test_greater_healing_description_validation(self, spell_data_loader):
+        """Verify Greater Healing description contains key mechanics."""
+        spell = spell_data_loader("holy_level_4.json", "greater_healing")
+
+        # Verify key mechanics from source
+        assert "St Wick" in spell["description"]
+        assert "parable" in spell["description"]
+        assert "2d6+2" in spell["description"]
+        assert "Hit Points" in spell["description"]
+        assert "cannot raise" in spell["description"] or "normal maximum" in spell["description"]
+
+    def test_greater_healing_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("holy_level_4.json", "greater_healing")
 
         result = spell_resolver._handle_greater_healing(
             mock_caster, mock_targets, fixed_dice_roller

@@ -52,6 +52,22 @@ def fixed_dice_roller():
     return roller
 
 
+@pytest.fixture
+def spell_data_loader():
+    """Fixture to load actual spell data from JSON files."""
+
+    def _load_spell(filename: str, spell_id: str) -> dict:
+        spell_path = Path(__file__).parent.parent / "data" / "content" / "spells" / filename
+        with open(spell_path) as f:
+            data = json.load(f)
+        for item in data["items"]:
+            if item["spell_id"] == spell_id:
+                return item
+        raise ValueError(f"Spell {spell_id} not found in {filename}")
+
+    return _load_spell
+
+
 # =============================================================================
 # PETRIFICATION TESTS
 # =============================================================================
@@ -486,55 +502,89 @@ class TestKnockHandler:
 
 
 class TestPhase9SpellDataIntegration:
-    """Integration tests using actual spell JSON data."""
+    """Integration tests that verify handlers against actual spell JSON data."""
 
-    @pytest.fixture
-    def arcane_level_6_spells(self):
-        """Load arcane level 6 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "arcane_level_6_2.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+    def test_petrification_matches_source(self, spell_data_loader):
+        """Verify Petrification matches arcane_level_6_2.json."""
+        spell = spell_data_loader("arcane_level_6_2.json", "petrification")
 
-    @pytest.fixture
-    def arcane_level_2_spells(self):
-        """Load arcane level 2 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "arcane_level_2_1.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+        assert spell["level"] == 6
+        assert spell["magic_type"] == "arcane"
+        assert "Permanent" in spell["duration"] or "instant" in spell["duration"].lower()
+        assert spell["range"] == "120'"
 
-    def test_petrification_matches_source_data(self, spell_resolver, mock_caster, mock_targets, fixed_dice_roller, arcane_level_6_spells):
-        """Test Petrification handler matches source JSON."""
-        if arcane_level_6_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_petrification_description_validation(self, spell_data_loader):
+        """Verify Petrification description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_6_2.json", "petrification")
 
-        spell_data = next(
-            (s for s in arcane_level_6_spells["items"] if s["spell_id"] == "petrification"),
-            None
-        )
-        assert spell_data is not None
+        # Verify description contains key mechanics from source
+        assert "Flesh to stone" in spell["description"]
+        assert "Stone to flesh" in spell["description"]
+        assert "Save Versus Hold" in spell["description"]
+        assert "equipment" in spell["description"].lower()
+        assert "permanently" in spell["description"].lower() or "Permanent" in spell["description"]
 
-        # Verify permanent duration from source
+    def test_petrification_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_6_2.json", "petrification")
+
         roller = MagicMock()
         roller.roll = MagicMock(return_value=5)  # Failed save
         spell_resolver._handle_petrification(mock_caster, mock_targets, roller)
 
+        # Verify permanent duration from source
         effect = spell_resolver._active_effects[-1]
         assert effect.duration_type == DurationType.PERMANENT
+        assert effect.mechanical_effects["includes_equipment"] is True
 
-    def test_invisibility_matches_source_data(self, spell_resolver, mock_caster, mock_targets, fixed_dice_roller, arcane_level_2_spells):
-        """Test Invisibility handler matches source JSON."""
-        if arcane_level_2_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_petrification_save_type_from_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets
+    ):
+        """Verify Save Versus Hold per source - handler uses hold save."""
+        spell = spell_data_loader("arcane_level_6_2.json", "petrification")
 
-        spell_data = next(
-            (s for s in arcane_level_2_spells["items"] if s["spell_id"] == "invisibility"),
-            None
+        # Verify source description requires Save Versus Hold
+        assert "Save Versus Hold" in spell["description"]
+
+        # Handler should process save and return result
+        roller = MagicMock()
+        roller.roll = MagicMock(return_value=10)
+
+        result = spell_resolver._handle_petrification(
+            mock_caster, mock_targets, roller
         )
-        assert spell_data is not None
+
+        # Handler returns save result data
+        assert "save_roll" in result
+        assert "save_target" in result
+
+    def test_invisibility_matches_source(self, spell_data_loader):
+        """Verify Invisibility matches arcane_level_2_1.json."""
+        spell = spell_data_loader("arcane_level_2_1.json", "invisibility")
+
+        assert spell["level"] == 2
+        assert spell["magic_type"] == "arcane"
+        assert "1 hour per Level" in spell["duration"]
+        assert spell["range"] == "240'"
+
+    def test_invisibility_description_validation(self, spell_data_loader):
+        """Verify Invisibility description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_2_1.json", "invisibility")
+
+        # Verify description contains key mechanics from source
+        assert "disappears from sight" in spell["description"]
+        assert "attacks or casts a spell" in spell["description"]
+        assert "invisibility is broken" in spell["description"]
+        assert "gear" in spell["description"].lower() or "equipment" in spell["description"].lower()
+        assert "light source" in spell["description"].lower()
+
+    def test_invisibility_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_2_1.json", "invisibility")
 
         result = spell_resolver._handle_invisibility(
             mock_caster, mock_targets, fixed_dice_roller
@@ -545,17 +595,34 @@ class TestPhase9SpellDataIntegration:
         # Verify effect breaks on attack from source
         effect = spell_resolver._active_effects[-1]
         assert effect.mechanical_effects["breaks_on_attack"] is True
+        assert effect.mechanical_effects["breaks_on_spell_cast"] is True
+        assert effect.mechanical_effects["light_sources_still_shine"] is True
 
-    def test_knock_matches_source_data(self, spell_resolver, mock_caster, mock_targets, fixed_dice_roller, arcane_level_2_spells):
-        """Test Knock handler matches source JSON."""
-        if arcane_level_2_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_knock_matches_source(self, spell_data_loader):
+        """Verify Knock matches arcane_level_2_1.json."""
+        spell = spell_data_loader("arcane_level_2_1.json", "knock")
 
-        spell_data = next(
-            (s for s in arcane_level_2_spells["items"] if s["spell_id"] == "knock"),
-            None
-        )
-        assert spell_data is not None
+        assert spell["level"] == 2
+        assert spell["magic_type"] == "arcane"
+        assert spell["duration"] == "Instant"
+
+    def test_knock_description_validation(self, spell_data_loader):
+        """Verify Knock description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_2_1.json", "knock")
+
+        # Verify description contains key mechanics from source
+        assert "door" in spell["description"].lower() or "portal" in spell["description"].lower()
+        assert "Locks and bars" in spell["description"]
+        assert "Glyphs of Sealing" in spell["description"]
+        assert "Glyphs of Locking" in spell["description"]
+        assert "1 Turn" in spell["description"]
+        assert "Secret doors" in spell["description"]
+
+    def test_knock_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_targets, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_2_1.json", "knock")
 
         result = spell_resolver._handle_knock(
             mock_caster, mock_targets, fixed_dice_roller
@@ -563,6 +630,21 @@ class TestPhase9SpellDataIntegration:
 
         # Verify instant duration from source
         assert result["duration_type"] == "instant"
+
+    def test_knock_glyph_of_locking_1_turn(
+        self, spell_data_loader, spell_resolver, mock_caster, fixed_dice_roller
+    ):
+        """Verify Glyph of Locking disabled for 1 Turn per source."""
+        spell = spell_data_loader("arcane_level_2_1.json", "knock")
+
+        assert "1 Turn" in spell["description"]
+
+        spell_resolver._current_context = {"has_glyph_of_locking": True}
+        result = spell_resolver._handle_knock(
+            mock_caster, ["door"], fixed_dice_roller
+        )
+
+        assert result["glyph_disabled_duration"] == 1
 
 
 # =============================================================================

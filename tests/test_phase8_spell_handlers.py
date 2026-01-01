@@ -59,6 +59,22 @@ def fixed_dice_roller():
     return roller
 
 
+@pytest.fixture
+def spell_data_loader():
+    """Fixture to load actual spell data from JSON files."""
+
+    def _load_spell(filename: str, spell_id: str) -> dict:
+        spell_path = Path(__file__).parent.parent / "data" / "content" / "spells" / filename
+        with open(spell_path) as f:
+            data = json.load(f)
+        for item in data["items"]:
+            if item["spell_id"] == spell_id:
+                return item
+        raise ValueError(f"Spell {spell_id} not found in {filename}")
+
+    return _load_spell
+
+
 # =============================================================================
 # ANIMATE DEAD TESTS
 # =============================================================================
@@ -477,36 +493,32 @@ class TestInsectPlagueHandler:
 
 
 class TestPhase8SpellDataIntegration:
-    """Integration tests using actual spell JSON data."""
+    """Integration tests that verify handlers against actual spell JSON data."""
 
-    @pytest.fixture
-    def arcane_level_5_spells(self):
-        """Load arcane level 5 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "arcane_level_5_1.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+    def test_animate_dead_matches_source(self, spell_data_loader):
+        """Verify Animate Dead matches arcane_level_5_1.json."""
+        spell = spell_data_loader("arcane_level_5_1.json", "animate_dead")
 
-    @pytest.fixture
-    def holy_level_5_spells(self):
-        """Load holy level 5 spell data."""
-        spell_file = Path(__file__).parent.parent / "data" / "content" / "spells" / "holy_level_5.json"
-        if spell_file.exists():
-            with open(spell_file) as f:
-                return json.load(f)
-        return None
+        assert spell["level"] == 5
+        assert spell["magic_type"] == "arcane"
+        assert "Permanent" in spell["duration"]
+        assert spell["range"] == "60′"
 
-    def test_animate_dead_matches_source_data(self, spell_resolver, mock_caster, mock_corpses, fixed_dice_roller, arcane_level_5_spells):
-        """Test Animate Dead handler matches source JSON."""
-        if arcane_level_5_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_animate_dead_description_validation(self, spell_data_loader):
+        """Verify Animate Dead description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_5_1.json", "animate_dead")
 
-        spell_data = next(
-            (s for s in arcane_level_5_spells["items"] if s["spell_id"] == "animate_dead"),
-            None
-        )
-        assert spell_data is not None
+        # Verify description contains key mechanics from source
+        assert "corpses or skeletons" in spell["description"]
+        assert "1 corpse or skeleton per Level" in spell["description"]
+        assert "undead under the caster's command" in spell["description"]
+        assert "dispelled" in spell["description"]
+
+    def test_animate_dead_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_corpses, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_5_1.json", "animate_dead")
 
         result = spell_resolver._handle_animate_dead(
             mock_caster, mock_corpses, fixed_dice_roller
@@ -518,16 +530,33 @@ class TestPhase8SpellDataIntegration:
         # Verify 1 per level from source
         assert result["max_undead"] == mock_caster.level
 
-    def test_cloudkill_matches_source_data(self, spell_resolver, mock_caster, mock_creatures, fixed_dice_roller, arcane_level_5_spells):
-        """Test Cloudkill handler matches source JSON."""
-        if arcane_level_5_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_cloudkill_matches_source(self, spell_data_loader):
+        """Verify Cloudkill matches arcane_level_5_1.json."""
+        spell = spell_data_loader("arcane_level_5_1.json", "cloudkill")
 
-        spell_data = next(
-            (s for s in arcane_level_5_spells["items"] if s["spell_id"] == "cloudkill"),
-            None
-        )
-        assert spell_data is not None
+        assert spell["level"] == 5
+        assert spell["magic_type"] == "arcane"
+        assert spell["duration"] == "6 Turns"
+        assert spell["range"] == "30′"
+
+    def test_cloudkill_description_validation(self, spell_data_loader):
+        """Verify Cloudkill description contains key mechanics."""
+        spell = spell_data_loader("arcane_level_5_1.json", "cloudkill")
+
+        # Verify description contains key mechanics from source
+        assert "poisonous fog" in spell["description"]
+        assert "30′ diameter" in spell["description"]
+        assert "Speed 10" in spell["description"]
+        assert "sinks" in spell["description"].lower()
+        assert "1 damage per Round" in spell["description"]
+        assert "Level 4 or lower" in spell["description"]
+        assert "Save Versus Doom" in spell["description"]
+
+    def test_cloudkill_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_creatures, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("arcane_level_5_1.json", "cloudkill")
 
         result = spell_resolver._handle_cloudkill(
             mock_caster, mock_creatures, fixed_dice_roller
@@ -539,17 +568,35 @@ class TestPhase8SpellDataIntegration:
         assert result["cloud_diameter"] == 30
         # Verify Level 4 or lower death threshold from source
         assert result["instant_death_level_threshold"] == 4
+        # Verify Speed 10 from source
+        assert result["cloud_speed"] == 10
 
-    def test_insect_plague_matches_source_data(self, spell_resolver, mock_caster, mock_creatures, fixed_dice_roller, holy_level_5_spells):
-        """Test Insect Plague handler matches source JSON."""
-        if holy_level_5_spells is None:
-            pytest.skip("Spell data file not found")
+    def test_insect_plague_matches_source(self, spell_data_loader):
+        """Verify Insect Plague matches holy_level_5.json."""
+        spell = spell_data_loader("holy_level_5.json", "insect_plague")
 
-        spell_data = next(
-            (s for s in holy_level_5_spells["items"] if s["spell_id"] == "insect_plague"),
-            None
-        )
-        assert spell_data is not None
+        assert spell["level"] == 5
+        assert spell["magic_type"] == "divine"
+        assert "1 Turn per Level" in spell["duration"]
+        assert spell["range"] == "360′"
+
+    def test_insect_plague_description_validation(self, spell_data_loader):
+        """Verify Insect Plague description contains key mechanics."""
+        spell = spell_data_loader("holy_level_5.json", "insect_plague")
+
+        # Verify description contains key mechanics from source
+        assert "60′ diameter" in spell["description"]
+        assert "biting insects" in spell["description"]
+        assert "30′" in spell["description"]  # Vision limit
+        assert "1 damage per Round" in spell["description"]
+        assert "Level 1–2" in spell["description"] or "Level 1-2" in spell["description"]
+        assert "240′" in spell["description"]  # Flee distance
+
+    def test_insect_plague_handler_matches_source(
+        self, spell_data_loader, spell_resolver, mock_caster, mock_creatures, fixed_dice_roller
+    ):
+        """Verify handler behavior matches source description."""
+        spell = spell_data_loader("holy_level_5.json", "insect_plague")
 
         result = spell_resolver._handle_insect_plague(
             mock_caster, mock_creatures, fixed_dice_roller
