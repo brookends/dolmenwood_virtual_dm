@@ -14,7 +14,9 @@ Handles spell casting outside of combat, including:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Any, Optional, TYPE_CHECKING
+import json
 import re
 import uuid
 
@@ -23,6 +25,13 @@ if TYPE_CHECKING:
     from src.game_state.global_controller import GlobalController
 
 from src.narrative.intent_parser import SaveType
+from src.oracle.spell_adjudicator import (
+    MythicSpellAdjudicator,
+    SpellAdjudicationType,
+    AdjudicationContext,
+    AdjudicationResult,
+)
+from src.oracle.mythic_gme import Likelihood
 
 
 # =============================================================================
@@ -844,6 +853,37 @@ class SpellResolver:
 
         # Dice roller reference
         self._dice: Optional["DiceRoller"] = None
+
+        # Oracle-adjudicated spell registry and adjudicator
+        self._oracle_spell_registry: dict[str, dict[str, Any]] = {}
+        self._spell_adjudicator: Optional[MythicSpellAdjudicator] = None
+        self._load_oracle_spell_registry()
+
+        # Current casting context for special handlers
+        self._current_context: dict[str, Any] = {}
+
+    def _load_oracle_spell_registry(self) -> None:
+        """Load the oracle-only spells registry from JSON."""
+        registry_path = Path(__file__).parent.parent.parent / "data" / "system" / "oracle_only_spells.json"
+        if registry_path.exists():
+            with open(registry_path) as f:
+                data = json.load(f)
+                for entry in data.get("oracle_only_spells", []):
+                    self._oracle_spell_registry[entry["spell_id"]] = entry
+
+    def get_spell_adjudicator(self) -> MythicSpellAdjudicator:
+        """Get or create the spell adjudicator instance."""
+        if self._spell_adjudicator is None:
+            self._spell_adjudicator = MythicSpellAdjudicator()
+        return self._spell_adjudicator
+
+    def is_oracle_spell(self, spell_id: str) -> bool:
+        """Check if a spell is resolved via oracle adjudication."""
+        return spell_id in self._oracle_spell_registry
+
+    def get_oracle_spell_config(self, spell_id: str) -> Optional[dict[str, Any]]:
+        """Get the oracle configuration for a spell."""
+        return self._oracle_spell_registry.get(spell_id)
 
     def set_controller(self, controller: "GlobalController") -> None:
         """Set the game controller for effect application."""
@@ -4039,7 +4079,164 @@ class SpellResolver:
         handler = handlers.get(spell.spell_id)
         if handler:
             return handler(caster, targets_affected, dice_roller)
+
+        # Check for oracle-adjudicated spells
+        if self.is_oracle_spell(spell.spell_id):
+            return self._handle_oracle_spell(spell, caster, targets_affected, dice_roller)
+
         return None
+
+    def _handle_oracle_spell(
+        self,
+        spell: SpellData,
+        caster: "CharacterState",
+        targets_affected: list[str],
+        dice_roller: Optional["DiceRoller"] = None,
+    ) -> dict[str, Any]:
+        """
+        Handle spells that are resolved via oracle adjudication.
+
+        These are the 21 "Skip" spells from the formal plan that require
+        Mythic GME oracle resolution rather than mechanical parsing.
+
+        Args:
+            spell: The spell being cast
+            caster: The character casting
+            targets_affected: List of affected target IDs
+            dice_roller: Dice roller for any rolls needed
+
+        Returns:
+            Dictionary with oracle adjudication results and narrative context
+        """
+        config = self.get_oracle_spell_config(spell.spell_id)
+        if not config:
+            return {"error": f"Oracle spell config not found for {spell.spell_id}"}
+
+        adjudicator = self.get_spell_adjudicator()
+        adjudication_type = config.get("adjudication_type", "generic")
+        question_template = config.get("default_question_template", "")
+
+        # Build adjudication context
+        target_description = ", ".join(targets_affected) if targets_affected else "the area"
+        context = AdjudicationContext(
+            spell_name=spell.name,
+            caster_name=caster.name,
+            caster_level=caster.level,
+            target_description=target_description,
+            intention=self._current_context.get("intention", spell.name),
+        )
+
+        # Route to appropriate adjudicator method based on type
+        result: AdjudicationResult
+        if adjudication_type == "wish":
+            wish_text = self._current_context.get("wish_text", spell.name)
+            result = adjudicator.adjudicate_wish(
+                wish_text=wish_text,
+                context=context,
+                wish_power="major",  # Rune of Wishing is mighty tier
+            )
+        elif adjudication_type == "divination":
+            question = self._current_context.get("question", question_template)
+            result = adjudicator.adjudicate_divination(
+                question=question,
+                context=context,
+                divination_type="general",
+            )
+        elif adjudication_type == "illusion_belief":
+            result = adjudicator.adjudicate_illusion_belief(
+                context=context,
+                illusion_quality="standard",
+            )
+        elif adjudication_type == "summoning_control":
+            creature_type = self._current_context.get("creature_type", "summoned creature")
+            result = adjudicator.adjudicate_summoning_control(
+                context=context,
+                creature_type=creature_type,
+            )
+        else:
+            # Generic adjudication for unspecified types
+            result = adjudicator.adjudicate_generic(
+                question=question_template,
+                context=context,
+            )
+
+        # Build narrative context from adjudication result
+        narrative_context = {
+            "oracle_adjudication": {
+                "adjudication_type": result.adjudication_type.value,
+                "success_level": result.success_level.value,
+                "summary": result.summary,
+                "requires_interpretation": result.requires_interpretation(),
+            },
+            "spell_id": spell.spell_id,
+            "spell_name": spell.name,
+            "caster_name": caster.name,
+            "targets": targets_affected,
+        }
+
+        # Include meaning roll for LLM interpretation if present
+        if result.meaning_roll:
+            narrative_context["oracle_adjudication"]["meaning_pair"] = (
+                f"{result.meaning_roll.action} + {result.meaning_roll.subject}"
+            )
+
+        # Include complication if present
+        if result.has_complication and result.complication_meaning:
+            narrative_context["oracle_adjudication"]["complication"] = (
+                f"{result.complication_meaning.action} + {result.complication_meaning.subject}"
+            )
+
+        # Track as active effect if spell has duration
+        duration_str = spell.duration.lower() if spell.duration else ""
+        if duration_str and duration_str not in ("instant", "instantaneous"):
+            # Use spell's pre-parsed duration_type, or infer from raw string
+            duration_type = spell.duration_type
+            duration_value = 1  # Default value
+
+            # If duration_type is INSTANT but raw string suggests otherwise, infer
+            if duration_type == DurationType.INSTANT:
+                if "turn" in duration_str:
+                    duration_type = DurationType.TURNS
+                elif "round" in duration_str:
+                    duration_type = DurationType.ROUNDS
+                elif "hour" in duration_str:
+                    duration_type = DurationType.HOURS
+                elif "day" in duration_str:
+                    duration_type = DurationType.DAYS
+                elif "permanent" in duration_str:
+                    duration_type = DurationType.PERMANENT
+                else:
+                    duration_type = DurationType.SPECIAL
+
+            # Try to extract numeric duration
+            numbers = re.findall(r"\d+", duration_str)
+            if numbers:
+                duration_value = int(numbers[0])
+
+            if duration_type != DurationType.INSTANT:
+                # Use first target or "area" if no specific targets
+                target_id = targets_affected[0] if targets_affected else "area"
+                active_effect = ActiveSpellEffect(
+                    effect_id=str(uuid.uuid4()),
+                    spell_id=spell.spell_id,
+                    spell_name=spell.name,
+                    caster_id=caster.character_id,
+                    caster_level=caster.level,
+                    target_id=target_id,
+                    target_type="area" if not targets_affected else "creature",
+                    duration_type=duration_type,
+                    duration_remaining=duration_value,
+                    effect_type=SpellEffectType.NARRATIVE,
+                    mechanical_effects={"oracle_adjudication": narrative_context.get("oracle_adjudication", {})},
+                    narrative_description=result.summary,
+                )
+                self._active_effects.append(active_effect)
+                narrative_context["active_effect_id"] = active_effect.effect_id
+
+        return {
+            "oracle_adjudication": result,
+            "narrative_context": narrative_context,
+        }
 
     def _handle_purify_food_and_drink(
         self,
