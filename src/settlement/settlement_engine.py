@@ -55,6 +55,11 @@ from src.data_models import (
 # Import v2 content models (JSON-backed settlements)
 from src.settlement.settlement_content_models import SettlementData
 from src.settlement.settlement_registry import SettlementRegistry
+from src.settlement.settlement_encounters import (
+    SettlementEncounterTables,
+    SettlementEncounterResult,
+    tod_to_daynight,
+)
 
 # Import RunLog for settlement event logging
 try:
@@ -498,6 +503,7 @@ class SettlementEngine:
             "settlement:talk": self._action_talk_to_npc,
             "settlement:ask_directions": self._action_ask_directions,
             "settlement:ask_rumor": self._action_ask_rumor,
+            "settlement:check_encounter": self._action_check_encounter,
             "settlement:leave": self._action_leave,
         }
 
@@ -979,6 +985,225 @@ class SettlementEngine:
             "hex_id": hex_id,
             "note": "Use exit_settlement() for full state transition to wilderness.",
         }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 3: Encounters)
+    # =========================================================================
+
+    def _action_check_encounter(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Check for a random encounter in the settlement.
+
+        Per Dolmenwood rules (p160):
+        - Daytime: 2-in-6 chance when active
+        - Nighttime: 1-in-6 chance when active
+
+        Args:
+            params: Optional parameters:
+                - time_of_day: TimeOfDay enum or string (defaults to current time)
+                - force_roll: If True, skip probability check and roll table directly
+                - route_to_encounter_engine: If True, create EncounterState for EncounterEngine
+
+        Returns:
+            Result dict with encounter outcome
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:check_encounter",
+            }
+
+        # Get time of day
+        time_of_day = params.get("time_of_day")
+        if time_of_day is None:
+            # Get from controller's time tracker
+            try:
+                time_of_day = self.controller.time_tracker.game_time.get_time_of_day()
+            except Exception:
+                time_of_day = TimeOfDay.MIDDAY  # Default to day
+        elif isinstance(time_of_day, str):
+            try:
+                time_of_day = TimeOfDay(time_of_day)
+            except ValueError:
+                time_of_day = TimeOfDay.MIDDAY
+
+        day_night = tod_to_daynight(time_of_day)
+
+        # Roll probability check unless forced
+        force_roll = params.get("force_roll", False)
+        if not force_roll:
+            # Day: 2-in-6, Night: 1-in-6
+            threshold = 2 if day_night == "day" else 1
+            prob_roll = self.dice.roll("1d6", reason=f"Settlement encounter check ({day_night})")
+
+            if prob_roll.total > threshold:
+                return {
+                    "success": True,
+                    "message": f"No encounter ({day_night}: rolled {prob_roll.total}, needed {threshold} or less).",
+                    "action": "settlement:check_encounter",
+                    "encounter_occurred": False,
+                    "probability_roll": prob_roll.total,
+                    "threshold": threshold,
+                    "time_of_day": time_of_day.value,
+                    "day_night": day_night,
+                }
+
+        # Roll on the encounter table
+        encounter_result = self.check_settlement_encounter(time_of_day)
+
+        if not encounter_result:
+            return {
+                "success": True,
+                "message": f"No encounter table available for {settlement.name} ({day_night}).",
+                "action": "settlement:check_encounter",
+                "encounter_occurred": False,
+                "time_of_day": time_of_day.value,
+                "day_night": day_night,
+            }
+
+        # Log the encounter event
+        _log_settlement_event("encounter", {
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "time_of_day": time_of_day.value,
+            "day_night": day_night,
+            "roll": encounter_result.roll,
+            "description": encounter_result.description,
+            "npcs_involved": encounter_result.npcs_involved,
+            "monsters_involved": encounter_result.monsters_involved,
+        })
+
+        # Build response
+        result = {
+            "success": True,
+            "message": f"Encounter! ({day_night}, rolled {encounter_result.roll})",
+            "action": "settlement:check_encounter",
+            "encounter_occurred": True,
+            "time_of_day": time_of_day.value,
+            "day_night": day_night,
+            "encounter": {
+                "roll": encounter_result.roll,
+                "description": encounter_result.description,
+                "npcs_involved": encounter_result.npcs_involved,
+                "monsters_involved": encounter_result.monsters_involved,
+                "notes": encounter_result.notes,
+            },
+        }
+
+        # Optionally route to EncounterEngine
+        route_to_engine = params.get("route_to_encounter_engine", False)
+        if route_to_engine and (encounter_result.monsters_involved or encounter_result.npcs_involved):
+            result["encounter_engine_data"] = self._prepare_encounter_for_engine(
+                encounter_result, settlement, time_of_day
+            )
+
+        return result
+
+    def check_settlement_encounter(
+        self, time_of_day: Optional[TimeOfDay] = None
+    ) -> Optional[SettlementEncounterResult]:
+        """
+        Roll on the settlement encounter table.
+
+        This method rolls directly on the encounter table without checking
+        the probability threshold. Use _action_check_encounter for full
+        encounter check with probability.
+
+        Args:
+            time_of_day: The time of day (defaults to current time from controller)
+
+        Returns:
+            SettlementEncounterResult if encounter occurs, None otherwise
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return None
+
+        # Get time of day
+        if time_of_day is None:
+            try:
+                time_of_day = self.controller.time_tracker.game_time.get_time_of_day()
+            except Exception:
+                time_of_day = TimeOfDay.MIDDAY
+
+        # Create encounter tables wrapper and roll
+        tables = SettlementEncounterTables(settlement)
+        return tables.roll(self.dice, time_of_day)
+
+    def _prepare_encounter_for_engine(
+        self,
+        encounter_result: SettlementEncounterResult,
+        settlement: SettlementData,
+        time_of_day: TimeOfDay,
+    ) -> dict[str, Any]:
+        """
+        Prepare encounter data for routing to EncounterEngine.
+
+        This creates the data needed to call EncounterEngine.start_encounter().
+        The actual EncounterState creation should be done by the caller.
+
+        Args:
+            encounter_result: The settlement encounter result
+            settlement: The settlement data
+            time_of_day: The time of day
+
+        Returns:
+            Dict with data for EncounterEngine integration
+        """
+        from src.encounter.encounter_engine import EncounterOrigin
+
+        # Determine encounter type based on what's involved
+        has_monsters = bool(encounter_result.monsters_involved)
+        has_npcs = bool(encounter_result.npcs_involved)
+
+        return {
+            "origin": EncounterOrigin.SETTLEMENT.value,
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "location_number": self._current_location_number,
+            "time_of_day": time_of_day.value,
+            "actors": encounter_result.monsters_involved + encounter_result.npcs_involved,
+            "context": encounter_result.description,
+            "has_monsters": has_monsters,
+            "has_npcs": has_npcs,
+            "notes": encounter_result.notes,
+            "suggested_encounter_type": "monster" if has_monsters else "npc",
+        }
+
+    def check_encounter_on_time_advance(
+        self, new_time_of_day: TimeOfDay, is_active: bool = True
+    ) -> Optional[dict[str, Any]]:
+        """
+        Hook for checking encounters when time advances.
+
+        This should be called by time-advancing actions (rest, waiting, etc.)
+        to check for random encounters per Dolmenwood rules.
+
+        Args:
+            new_time_of_day: The time of day after advancement
+            is_active: Whether the party is active (exploring, not hidden)
+
+        Returns:
+            Encounter result dict if encounter occurs, None otherwise
+        """
+        if not is_active:
+            return None
+
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return None
+
+        # Check using the action handler
+        result = self._action_check_encounter({
+            "time_of_day": new_time_of_day,
+            "force_roll": False,
+        })
+
+        if result.get("encounter_occurred"):
+            return result
+        return None
 
     # =========================================================================
     # SETTLEMENT MANAGEMENT
