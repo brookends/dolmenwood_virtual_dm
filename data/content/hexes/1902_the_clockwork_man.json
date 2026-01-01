@@ -1,0 +1,117 @@
+{
+  "hex_id": "1902",
+  "coordinates": [
+    19,
+    2
+  ],
+  "name": "The Clockwork Man",
+  "tagline": "Wild woods that seem inexplicably well-tended. Rows of wildflowers beside paths. Little bridges span brooks.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Wild woods that seem inexplicably well-tended. Rows of wildflowers beside paths. Little bridges span brooks.",
+  "points_of_interest": [
+    {
+      "name": "The Clockmaker's House",
+      "poi_type": "house",
+      "description": "Nestled between three hills is a two-storey house of grey, gloomy stone. Ivy climbs up its damp walls and patches of shaggy moss hang down from the bowing roof. It appears abandoned; the windows are shattered and the front door very slightly ajar.",
+      "tagline": null,
+      "entering": "A cacophony of ticking comes from inside the house.",
+      "interior": "This spacious room is being slowly claimed by patches of moss and weeds sprouting up from the floor. The room has been ransacked. Cabinets are thrust open, drawers pulled out and emptied. The walls are covered with silly but well-made clocks, still ticking away, including the Backwards Clock and the Merriman Clock. The Merriman Clock chimes suddenly, shortly after PCs enter.",
+      "exploring": "Staircase leads up to the bedroom. Three sheets of parchment are strewn upon the stairs; each is a note to a Mr Klepp in Blackeswell, unfinished past the salutation and some pleasantries. Bedroom has simple furnishings, also destroyed. A skeleton is in the bed, lying in a putrid black stain. Wadded up old clothes are piled on the floor in front of an emptied armoire. The Crooked Clock and Mood Clock hang here; if the arm on the Mood Clock is set to 'Awestruck,' a secret door in the back of the armoire swings open, leading to the Workroom.",
+      "leaving": null,
+      "inhabitants": "The Clockwork Man stands in the corner of the workroom, dusty and inert.",
+      "roll_tables": [],
+      "npcs": [
+        "the_clockwork_man"
+      ],
+      "special_features": [
+        "Workroom: Cobweb-festooned shelves packed with springs, gears, and metal sheets. Tarps cover unfinished and incomprehensible contraptions. A workbench is crowded with the schematics for ridiculous clockwork war machines.",
+        "Examining the man: A plaque on the back of his neck reads 'Clockwork Mechanical Soldier.' A large metal key protrudes from the centre of his back.",
+        "Winding the key: Sets his works ticking, and his eyes flick open. He struggles with his creaking joints, which must be oiled before he can move properly. Once fully functional, he introduces himself with a groggy 'good morning.'"
+      ],
+      "secrets": [
+        "Secret door in the back of the armoire opens when Mood Clock is set to 'Awestruck'"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_clockwork_man",
+      "name": "The Clockwork Man",
+      "title": null,
+      "description": "A humanoid automaton made entirely of brass with a rotund torso like a metal barrel. He has no mouth, but his metal moustaches waggle as he speaks.",
+      "kindred": "Construct",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Childlike curiosity",
+        "Loyal"
+      ],
+      "speech": "Tinny, as if echoing on the inside of his head. Mannerly and methodical. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To learn more about the world",
+        "To become more like a real human",
+        "He may choose to accompany the PCs for a time"
+      ],
+      "secrets": [
+        "Does not know what happened to his master",
+        "The last thing he remembers is being told to wait here, which he did until his clockworks ran down"
+      ],
+      "possessions": [],
+      "location": "The Clockmaker's House workroom",
+      "stat_reference": "Medium Construct—Sentient—Neutral, Level 3 AC 16 HP 20 Saves D11 R12 H13 B14 S15, Att Weapon (+2) Speed 30 Morale 10 XP 40, Construct: Immune to biological effects (e.g. disease, poison)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Crooked Clock",
+      "description": "A simple, elegant silver clock whose arms continually twist themselves into angular, crooked shapes.",
+      "value": "300gp",
+      "mechanical_effect": null
+    },
+    {
+      "name": "Backwards Clock",
+      "description": "Lacquered wood with a stately, enamelled face. It runs backwards, and staring at it for more than a minute induces nausea.",
+      "value": "150gp",
+      "mechanical_effect": "Staring at it for more than a minute induces nausea"
+    },
+    {
+      "name": "Mood Clock",
+      "description": "Diamond-shaped and fashioned from lead, this piece has a face with only four labels: 'Euphoric,' 'Awestruck,' 'Ticked Off (Pun Intended),' and 'Terrified.' Moving the arm to point at a label causes the clock to speak, with tone and varying phrases matching the described mood.",
+      "value": "500gp",
+      "mechanical_effect": "Moving the arm to 'Awestruck' opens secret door in armoire"
+    },
+    {
+      "name": "Merriman Clock",
+      "description": "Exquisitely detailed wooden piece in the form of a fantastically elaborate cottage. Every hour and half-hour, a tiny wooden merriman emerges from the attic door, and lies down slowly as if to sleep, all the while singing a haunting, soporific melody.",
+      "value": "750gp",
+      "mechanical_effect": "Chimes suddenly when PCs enter"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      387
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

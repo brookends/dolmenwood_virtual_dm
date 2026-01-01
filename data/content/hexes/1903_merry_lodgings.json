@@ -1,0 +1,81 @@
+{
+  "hex_id": "1903",
+  "coordinates": [
+    19,
+    3
+  ],
+  "name": "Merry Lodgings",
+  "tagline": "A profusion of ditches and gullies, their dank bottoms filled with iridescent water.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A profusion of ditches and gullies, their dank bottoms filled with iridescent water.",
+  "points_of_interest": [
+    {
+      "name": "Bracket Outlook",
+      "poi_type": "landmark",
+      "description": "Close to the centre of this hex, an enormous silver birch stands at the centre of a wide, sunlit glade. The birch is nigh on twice the height of the surrounding woods, standing a clear 60′ proud of the canopy.",
+      "tagline": null,
+      "entering": null,
+      "interior": "All the way up the birch's smooth trunk are giant, woody bracket fungi, large enough to act as seats for human-sized individuals. Climbing up the brackets, the tree's high branches can be easily attained.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "From the top of the birch, characters can survey the surrounding hexes and make out details: the edges of Dolmenwood and the desolate Table Downs beyond to the north and north-east, Chateau Mauvesse perched on cliffs above the Dark Mirror (hex 1802) to the north-west, the top of a white marble tower (hex 1904) to the south, and open land reaching to the horizon to the east."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Woodland Cottage",
+      "poi_type": "cottage",
+      "description": "A quaint little cottage stands at the base of a steep-sided valley carpeted with foxgloves. Wood is piled neatly under the eaves, smoke rises merrily from the stacked-slate chimney, and a boiling kettle whistles cheerily.",
+      "tagline": null,
+      "entering": "The door (lacquered cherry wood, painted with dainty flowers) hangs ajar. Calls of greeting go unanswered. Peeking through windows reveals that, despite appearances, no one seems to be at home.",
+      "interior": "A cosy living room lined with bookshelves, a well-stocked kitchen and pantry, and two bedrooms—all decorated in a simple, rustic style, lovingly maintained and spotlessly clean. The place is utterly still, as if the inhabitants had just stepped out. Upon entering: The furnishings and household implements magically animate to serve guests: brooms sweep away dust, kettles pour tea, chairs pull out to seat visitors, kitchen implements bake scones and boil soups, pillows and eiderdowns puff themselves, tongs and pokers stoke the hearth, etc.",
+      "exploring": null,
+      "leaving": "Any who linger beyond breakfast the following morning are physically ejected if they persist.",
+      "inhabitants": "Enchanted household objects that animate to serve guests",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The cottage gladly hosts guests for one night, providing nourishment, refreshment, and rest",
+        "The cottage has a 3-in-6 chance of noticing the theft of any object from it; if so, it attacks the thieves and attempts to retrieve the item",
+        "Enchanted items stolen from the cottage stubbornly refuse to function, unless charmed by some means",
+        "The household implements can gather into the forms of 3 manikins to attack any threats"
+      ],
+      "secrets": [
+        "The shelves in the living room hold hundreds of books, on topics ranging from herbalism and woodcraft to baking and poetry. Searching reveals a notebook written in the Witches' Cant, discussing the history of the three Mirrors of Embala, including the theft of the onyx mirror by the arch-Drune known as the Aubrathon. The notes hypothesise that the mirror still lies in the ebony tower of the Aubrathon (though no location is posited).",
+        "A sorceress and her husband once lived here in happy isolation. The enchanted objects in the house were so contented that, upon the death of the couple, they could not bear to cease their domestic functions."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      388
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

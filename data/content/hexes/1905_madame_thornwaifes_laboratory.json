@@ -1,0 +1,141 @@
+{
+  "hex_id": "1905",
+  "coordinates": [
+    19,
+    5
+  ],
+  "name": "Madame Thornwaife's Laboratory",
+  "tagline": "Great colonies of three-eyed ravens roost in the trees here.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Goatsweed (p430), in addition to the normal results",
+    "foraging_special": [
+      "Goatsweed (1d2 portions)"
+    ]
+  },
+  "description": "Great colonies of three-eyed ravens roost in the trees here.",
+  "points_of_interest": [
+    {
+      "name": "The Crystal Shard",
+      "poi_type": "crystal monument",
+      "description": "A jagged, 10′ tall shard of dark grey crystal stands in a wide glade carpeted with moss and purple lichen.",
+      "tagline": null,
+      "entering": "Metal objects brought into the glade are gently pulled towards the shard by a magical force. The pull is not strong enough to wrench items from a character's hands, but it is clearly perceptible.",
+      "interior": "Fine, angular sigils are etched into the five largest facets on the shard's surface. Arcane spell-casters recognise these as the alchemical symbols for earth, water, air, fire, and ether.",
+      "exploring": "Metallic objects that come into contact with the shard are instantly liquefied (as if in the fires of the forge) and absorbed into the crystal. Gold absorbed into the crystal (even a single gold piece) causes the entire shard to levitate 5′ off the ground, revealing a stone stairway spiralling underground, illuminated by lambent yellow crystals.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Metal attraction",
+        "Etched sigils",
+        "Touching the shard with metal liquefies metal objects",
+        "Touching gold reveals underground stairway"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Madame Thornwaife's Laboratory",
+      "poi_type": "laboratory",
+      "description": "A subterranean labyrinth of elegantly curving passages, circular antechambers, and domed halls, with rounded cobblestone floors and white plaster walls and ceilings decorated with spiralling mosaics of blue crystal. Marble statues of capering nymphs are encountered here and there. Furnishings of wood and felt lend an air of comfort.",
+      "tagline": null,
+      "entering": "The stairway leads to Madame Thornwaife's Laboratory.",
+      "interior": "A subterranean labyrinth of elegantly curving passages, circular antechambers, and domed halls, with rounded cobblestone floors and white plaster walls and ceilings decorated with spiralling mosaics of blue crystal. Marble statues of capering nymphs are encountered here and there. Furnishings of wood and felt lend an air of comfort.",
+      "exploring": "Those who come seeking Madame Thornwaife's alchemical aid or sagacious knowledge of plants and fungi are welcomed. Others are politely expelled.",
+      "leaving": null,
+      "inhabitants": "Famed alchemist Madame Thornwaife and her assistants: 6 crystaloids (DMB). The assistants are formed of milky selenite, pulsating with a rainbow-hued inner light. They speak with a humming vibration.",
+      "roll_tables": [],
+      "npcs": [
+        "madame_virginia_thornwaife"
+      ],
+      "special_features": [
+        "Alchemical laboratory at the heart of the complex, accessible only via a secret door",
+        "5,000gp worth of alchemically pure gold and platinum nuggets",
+        "3 Orbs of Illumination (worth 1,500gp each)",
+        "Ascrythe's Transfigurations twelve-volume set (worth 10,000gp)"
+      ],
+      "secrets": [
+        "Secret door to alchemical laboratory"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "madame_virginia_thornwaife",
+      "name": "Madame Virginia Thornwaife",
+      "title": "Alchemist/Sage",
+      "description": "A spry human woman in her 60s, with huge volumes of wispy white hair, wide-set eyes of clear blue, and long, deft fingers stained with chemicals. Dresses in purple velvet robes set with scintillating gemstones. Once a lecturer at the Royal Institute of Physicks and Sorcerers in Castle Brackenwold (p134), Thornwaife now lives as a recluse, absorbed by her research.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Animated",
+        "impatient",
+        "Filled with wonder when discussing her craft",
+        "Incessantly drums her fingers"
+      ],
+      "speech": "Posh. Woldish, Old Woldish, Caprice.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Caprice"
+      ],
+      "desires": [
+        "Magical herbs and fungi",
+        "Monster parts",
+        "Would pay 10,000gp for one of the Mirrors of Embala (p75)"
+      ],
+      "secrets": [
+        "Once a lecturer at the Royal Institute of Physicks and Sorcerers in Castle Brackenwold"
+      ],
+      "possessions": [
+        "A mother-of-pearl Talisman of Protection From Scrying (p398)"
+      ],
+      "location": "Madame Thornwaife's Laboratory",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Orbs of Illumination",
+      "description": "5″ crystal spheres that emit light in a 30′ radius when tapped",
+      "value": "1,500gp each",
+      "quantity": 3
+    },
+    {
+      "name": "Ascrythe's Transfigurations",
+      "description": "Complete twelve-volume set of the incredibly rare alchemical treatise, bound in cockatrice skin",
+      "value": "10,000gp",
+      "quantity": 1
+    },
+    {
+      "name": "Alchemically pure gold and platinum nuggets",
+      "description": "Pure gold and platinum nuggets",
+      "value": "5,000gp",
+      "quantity": 1
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Services available: Potions at standard prices (1d4 Prismatic Elixirs, 3-in-6 chance of Wyrmsblood Elixir, 3-in-6 chance of Vanishing Philtre, 2-in-6 chance of Liquid Time). Alchemical compounds: 4-in-6 chance each of Alchemical Tonic, Memory Dust, Orgon's Scintillating Philtre, Philtre of Wondrous Vitality. Takes alchemical commissions per standard rules.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      390
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

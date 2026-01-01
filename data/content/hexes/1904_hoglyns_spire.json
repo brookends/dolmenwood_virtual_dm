@@ -1,0 +1,150 @@
+{
+  "hex_id": "1904",
+  "coordinates": [
+    19,
+    4
+  ],
+  "name": "Hoglyn's Spire",
+  "tagline": "Tumbled walls and abandoned coppices. Ruined steadings occasionally peek out from the undergrowth.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Tumbled walls and abandoned coppices. Ruined steadings occasionally peek out from the undergrowth.",
+  "points_of_interest": [
+    {
+      "name": "Ruined Keep and Spire",
+      "poi_type": "ruined keep",
+      "description": "In the eastern reaches of the hex, a turret of white marble stands intact amid mounds of overgrown rubble. Its upper floor pierces the canopy of the forest.",
+      "tagline": null,
+      "entering": "An open archway at the base of the tower.",
+      "interior": "The first through third storeys are a series of empty halls, windowless rooms, and stairs. Numerous sets of tiny tracks are visible on the dirty stone floors, identifiable as badger prints by PCs versed in animal tracking. Fourth storey contains a massive oak desk packed with papers, each bearing a rune. The desk is an illusion concealing the door to the final stairwell. Fifth storey is a cramped library-loft maze of dusty and precarious stacks and over-packed bookshelves, with the three badgers' beds nestled among them.",
+      "exploring": "Lower storeys are empty halls and rooms. Fourth storey has illusory desk with runes. Fifth storey contains the badgers' library and living space.",
+      "leaving": null,
+      "inhabitants": "3 badger Cobbins (DMB) named Vannard, Ivol, and Segwine. Escapees from the Valley of the Wise Beasts, they learned magic decades ago as assistants to a Drune cottager who once lived nearby, and now refer to themselves as 'badger-magi.'",
+      "roll_tables": [],
+      "npcs": [
+        "vannard",
+        "ivol",
+        "segwine"
+      ],
+      "special_features": [
+        "Fourth storey: Anyone viewing the runes must Save Versus Spell or be compelled to leave the Spire at once, unable to return for 1d3 days. Spells of true seeing or detection of illusion reveal the portal.",
+        "Fifth storey: Notable in this cache is a hidebound tome containing all spells known by the badgers."
+      ],
+      "secrets": [
+        "The Spire is all that remains of the keep of Hoglyn, a vassal of the Kingdom of Brackenwold some 600 years ago. The keep was destroyed when Hoglyn joined the few lords who resisted Brackenwold's amalgamation into a wider kingdom."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 5
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "vannard",
+      "name": "Vannard",
+      "title": "Cobbin (Badger) Magician",
+      "description": "Bespectacled and clad in a cardigan with mismatched buttons. His fur has greyed with age. He is the oldest of the three and the nominal leader. He is obsessed with the sorceress Ygraine Mordlin (p84), whom he compares (unfairly) to his former master, the Nag-Lord (p45), and fears her influence in the region.",
+      "kindred": "Cobbin (Badger)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Shrewd",
+        "scholarly",
+        "absent-minded"
+      ],
+      "speech": "Precise and nasal. Woldish, basic Drunic.",
+      "languages": [
+        "Woldish",
+        "basic Drunic"
+      ],
+      "desires": [
+        "Any magical object from Ygraine's home, Chateau Mauvesse (hex 1802)"
+      ],
+      "secrets": [
+        "Obsessed with the sorceress Ygraine Mordlin",
+        "Fears her influence in the region"
+      ],
+      "possessions": [
+        "Spells: Decipher, Ingratiate, Glyph of Locking, Phantasm"
+      ],
+      "location": "Hoglyn's Spire",
+      "stat_reference": "Cobbin (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "ivol",
+      "name": "Ivol",
+      "title": "Cobbin (Badger) Magician",
+      "description": "Wears a monocle and a thick greenish wool sweater with worn suede elbow patches. Ivol is fascinated by fey magic and is the group's self-styled 'fairy expert.'",
+      "kindred": "Cobbin (Badger)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Self-important",
+        "prone to spouting wild misinformation on matters fey"
+      ],
+      "speech": "Quiet, deliberate. Woldish, mangled Sylvan.",
+      "languages": [
+        "Woldish",
+        "mangled Sylvan"
+      ],
+      "desires": [
+        "To meet fairies and demi-fey and interview them on obscure, nonsensical topics"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Spells: Ioun Shard, Vapours of Dream, Perceive the Invisible"
+      ],
+      "location": "Hoglyn's Spire",
+      "stat_reference": "Cobbin (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "segwine",
+      "name": "Segwine",
+      "title": "Cobbin (Badger) Magician",
+      "description": "Dressed in a brightly-striped cotton jumper, wearing empty eyeglass frames. She is the youngest of the group, and also the most eccentric. Spends many evenings perched on the Spire's roof, studying the stars.",
+      "kindred": "Cobbin (Badger)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cordial",
+        "dreamy",
+        "conspiratorial"
+      ],
+      "speech": "Impish whisper. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "A working telescope",
+        "A star chart"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Spells: Shield of Force, Vapours of Dream, Levitate"
+      ],
+      "location": "Hoglyn's Spire",
+      "stat_reference": "Cobbin (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Vannard can teach an arcane spell-caster how to create the runes of redirection protecting the badgers' lair (see Fourth storey).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      389
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

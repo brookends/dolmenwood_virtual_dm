@@ -1,0 +1,202 @@
+{
+  "hex_id": "1906",
+  "coordinates": [
+    19,
+    6
+  ],
+  "name": "Wetherbrooke's Last Show",
+  "tagline": "Butterflies flit through spacious glades. In winter, their wings are rimed with hoarfrost.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Butterflies flit through spacious glades. In winter, their wings are rimed with hoarfrost.",
+  "points_of_interest": [
+    {
+      "name": "Abandoned Campsite",
+      "poi_type": "campsite",
+      "description": "A glade near the forest edge contains an encampment of eight wagons of varying sizes, painted in what were once bright colours, now dulled by extensive weathering. Five enclosed wagons with doors and windows, eclectically adorned with baroque woodwork. Three cage-wagons with rusty cages, atop wagon bases. Large enough to house great beasts. The cages are unlocked and contain only parched straw. Painted on the sides of the wagons, in large, highly-stylised red-and-yellow letters, are the words 'Wetherbrooke's Wild World of Wonders.' There is no path between the trees by which the wagons might have arrived here.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The enclosed wagon interiors are ransacked, covered in cobwebs, and strewn with animal droppings. Blue wagon with partial second storey: Empty food stores and office (desk and overturned chair), with a very steep staircase leading to a bedroom. In the desk is a water-damaged financial ledger. Under the bed is a locked wooden strongbox, easily forced open, containing 205sp. Two long orange wagons: Tightly packed bunks line the walls, some containing small animal nests. The far end of each wagon is partitioned into a pair of tiny bedrooms. Short black wagon with purple trim: An embroidered cloth-covered table with a cracked crystal ball and a bed behind a curtain. Stale smell of incense. Upon entering, a disembodied female voice shrieks, urging PCs to flee the encampment immediately. Under the table is a hollow fake thumb holding a carnelian (50gp). Large white wagon: Empty crates; dried-out, brittle leather tent-bundling straps.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "No path between trees for wagon access"
+      ],
+      "secrets": [
+        "Hollow fake thumb with carnelian under fortune teller table"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Big Top",
+      "poi_type": "circus tent",
+      "description": "An adjoining glade is filled by a bright red circus tent in perfect condition, its flap open invitingly. Music emanates from the doorway, both energetic and wistful. The ropes and spikes holding up the tent are immovable and indestructible.",
+      "tagline": null,
+      "entering": "The flap is open invitingly",
+      "interior": "Wooden benches and bales of hay surround a circus ring. Spectral performers and animals wink into and out of existence, the humans' faces all grimaces of unceasing despair and terror. An audience of spectral fey creatures cheers and claps appreciatively. A ringmaster, an apparition of a tall and wiry elf in a top hat and garish red long-tailed suit soon approaches, demanding both a fee for the performance and an 'honest assessment' of the show.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Spectral performers, animals, fey audience, and ringmaster",
+      "roll_tables": [
+        {
+          "name": "Circus Acts",
+          "die_type": "d6",
+          "description": "Roll to determine which spectral act is performing",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Two tigers with tamer",
+              "description": "Two tigers with tamer",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Clowns juggling torches and knives",
+              "description": "Clowns juggling torches and knives",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Acrobats forming a human pyramid",
+              "description": "Acrobats forming a human pyramid",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Elephant performing tricks",
+              "description": "Elephant performing tricks",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Strongman lifting barbells",
+              "description": "Strongman lifting barbells",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Fire-eater",
+              "description": "Fire-eater",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "ringmaster"
+      ],
+      "special_features": [
+        "Magically rooted tent",
+        "Unending spectral show"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "ringmaster",
+      "name": "Ringmaster",
+      "title": null,
+      "description": "An apparition of a tall and wiry elf in a top hat and garish red long-tailed suit",
+      "kindred": "Elf",
+      "alignment": null,
+      "demeanor": [
+        "Demanding",
+        "theatrical"
+      ],
+      "speech": "Demands tribute and honest assessment",
+      "languages": null,
+      "desires": [
+        "Payment for performances",
+        "Honest assessment of the show"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Top hat",
+        "Red long-tailed suit"
+      ],
+      "location": "Big Top",
+      "stat_reference": null,
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Arcane Whip",
+      "description": "1d6 damage, reach 10′, +2 enchantment bonus only applies against great cats",
+      "location": "Orange wagon bedroom",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Chartreuse liquid",
+      "description": "Half-empty vial of chartreuse liquid. If consumed, Save Versus Doom or die within 1d4 Turns",
+      "location": "Orange wagon makeup table",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Carnelian",
+      "description": "Carnelian gem in hollow fake thumb",
+      "location": "Under fortune teller table",
+      "value": "50gp",
+      "magical": false
+    },
+    {
+      "name": "Silver pieces",
+      "description": "205 silver pieces in locked strongbox",
+      "location": "Blue wagon bedroom",
+      "value": "205sp",
+      "magical": false
+    }
+  ],
+  "secrets": [
+    "Tribute or trouble: If the characters hand over 20gp per PC and offer effusive praise, the ringmaster salutes their 'refinement and taste' and allows them to view the performances for as long as they like. Otherwise, his face elongates and widens into a giant, distorted parody of ire. 2 tigers (as dire wolves—DMB) become corporeal and attack, as the spectators roar with excitement.",
+    "Defeating the tigers: Causes the audience to erupt in booing. They and the circus vanish, and the tent collapses. Only the ringmaster's empty suit remains, alongside a sack containing 320gp and 512 human teeth.",
+    "Fleeing: The tigers pursue PCs for up to 10 Rounds, then vanish."
+  ],
+  "dm_notes": "The show is seemingly unending. Tigers become corporeal and attack if tribute is not paid or praise not given.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      391
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
