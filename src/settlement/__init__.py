@@ -44,6 +44,19 @@ from src.settlement.settlement_encounter_adapter import (
     get_settlement_encounter_adapter,
     get_settlement_actor_parser,
 )
+from src.settlement.carousing import (
+    CarousingEngine,
+    CarousingResult,
+    CarousingOutcome,
+    CarousingMishap,
+    CarousingBonus,
+    MishapSeverity,
+    MAJOR_MISHAPS,
+    MINOR_MISHAPS,
+    CAROUSING_BONUSES,
+    get_carousing_engine,
+    reset_carousing_engine,
+)
 
 __all__ = [
     "SettlementEngine",
@@ -85,4 +98,16 @@ __all__ = [
     "convert_settlement_encounter",
     "get_settlement_encounter_adapter",
     "get_settlement_actor_parser",
+    # Carousing
+    "CarousingEngine",
+    "CarousingResult",
+    "CarousingOutcome",
+    "CarousingMishap",
+    "CarousingBonus",
+    "MishapSeverity",
+    "MAJOR_MISHAPS",
+    "MINOR_MISHAPS",
+    "CAROUSING_BONUSES",
+    "get_carousing_engine",
+    "reset_carousing_engine",
 ]

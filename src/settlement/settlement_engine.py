@@ -624,6 +624,7 @@ class SettlementEngine:
             "settlement:ask_rumor": self._action_ask_rumor,
             "settlement:check_encounter": self._action_check_encounter,
             "settlement:equipment_availability": self._action_equipment_availability,
+            "settlement:carouse": self._action_carouse,
             "settlement:leave": self._action_leave,
         }
 
@@ -1173,6 +1174,120 @@ class SettlementEngine:
             "settlement_name": settlement_name,
             "hex_id": hex_id,
             "note": "Use exit_settlement() for full state transition to wilderness.",
+        }
+
+    def _action_carouse(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Carouse in the settlement - spend gold, gain XP, risk mishaps.
+
+        Based on Jeff Rients's carousing rules:
+        - Spend gold to gain XP (1 XP per 1 GP)
+        - Maximum spending is level × 100 GP per session
+        - Make a save vs. poison to avoid mishaps
+        - On failed save, roll on mishap table
+
+        Args:
+            params: Parameters:
+                - character_id: ID of the character carousing (required)
+                - gold_to_spend: Amount of gold to spend (required)
+                - venue_modifier: Optional modifier based on venue quality (-2 to +2)
+
+        Returns:
+            Result dict with carousing outcome
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement. Carousing requires a tavern or inn.",
+                "action": "settlement:carouse",
+            }
+
+        character_id = params.get("character_id")
+        if not character_id:
+            return {
+                "success": False,
+                "message": "Must specify a character_id for carousing.",
+                "action": "settlement:carouse",
+            }
+
+        gold_to_spend = params.get("gold_to_spend", 0)
+        if gold_to_spend <= 0:
+            return {
+                "success": False,
+                "message": "Must specify a positive amount of gold to spend.",
+                "action": "settlement:carouse",
+            }
+
+        venue_modifier = params.get("venue_modifier", 0)
+
+        # Import here to avoid circular imports
+        from src.settlement.carousing import CarousingEngine
+
+        carousing_engine = CarousingEngine(self.controller)
+        result = carousing_engine.carouse(
+            character_id=character_id,
+            gold_to_spend=gold_to_spend,
+            settlement_id=settlement.settlement_id,
+            settlement_name=settlement.name,
+            venue_modifier=venue_modifier,
+        )
+
+        # Log the carousing event
+        self.log(
+            f"{result.character_name} spent {result.gold_spent} GP carousing in {settlement.name}",
+            event_type="carouse",
+            details=result.to_dict(),
+        )
+
+        # Build narrative message
+        if result.outcome.value == "success":
+            message = (
+                f"{result.character_name} enjoys a fine night of revelry in {settlement.name}, "
+                f"spending {result.gold_spent} GP and gaining {result.final_xp} XP."
+            )
+        elif result.outcome.value == "bonus":
+            message = (
+                f"{result.character_name} has an excellent night in {settlement.name}! "
+                f"Spent {result.gold_spent} GP, gained {result.final_xp} XP, and {result.bonus.title.lower()}."
+            )
+        elif result.outcome.value == "minor_mishap":
+            message = (
+                f"{result.character_name}'s night in {settlement.name} took a turn... "
+                f"Spent {result.gold_spent} GP, gained {result.final_xp} XP, "
+                f"but {result.mishap.title.lower()}: {result.mishap.description}"
+            )
+        elif result.outcome.value == "major_mishap":
+            message = (
+                f"{result.character_name}'s carousing in {settlement.name} went very wrong! "
+                f"Spent {result.gold_spent} GP, only gained {result.final_xp} XP (half), "
+                f"and {result.mishap.title.lower()}: {result.mishap.description}"
+            )
+        else:
+            message = f"{result.character_name} attempted to carouse but something went awry."
+
+        return {
+            "success": True,
+            "message": message,
+            "action": "settlement:carouse",
+            "character_id": result.character_id,
+            "character_name": result.character_name,
+            "gold_spent": result.gold_spent,
+            "gold_cap": result.gold_cap,
+            "outcome": result.outcome.value,
+            "base_xp": result.base_xp,
+            "xp_modifier": result.xp_modifier,
+            "final_xp": result.final_xp,
+            "level_up_ready": result.level_up_ready,
+            "save_roll": result.save_roll,
+            "save_target": result.save_target,
+            "save_passed": result.save_passed,
+            "mishap": result.mishap.title if result.mishap else None,
+            "mishap_details": result.mishap.description if result.mishap else None,
+            "bonus": result.bonus.title if result.bonus else None,
+            "bonus_details": result.bonus.description if result.bonus else None,
+            "events": result.events,
+            "consequences": result.consequences,
         }
 
     # =========================================================================
