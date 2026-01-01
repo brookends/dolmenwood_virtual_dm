@@ -1,0 +1,935 @@
+{
+  "name": "Dreg and Shantywood Isle",
+  "settlement_id": "dreg_and_shantywood_isle",
+  "hex_id": "1110",
+  "size": "village",
+  "population": 300,
+  "population_description": "300—village",
+  "tagline": "Rowdy Hameth port-town and the neighbouring isle of ill-repute",
+  "description": "A rough port-town and fishing village founded amid the marshes and mists of the River Hameth's banks. Tall, wonky houses are clad with tarred wooden planks against the damp. The place is slumping inexorably into the bog and the river. Dreg has a seedy reputation as a haunt for thieves, charlatans, and rascals of all stripes.",
+  "atmosphere": "Seedy, rowdy, and corrupt with growing violence and discord",
+  "inhabitants_description": "A majority of humans of High Woldish descent have plied the river here for many generations, alongside a smaller population of shorthorns. As a centre of trade and transit, Dreg is also home to a significant population of folk from other regions.",
+  "governance": {
+    "ruler_type": "lord",
+    "ruler_name": "Lord Malbleat",
+    "ruling_body": "Berkmaster Monocleese as representative",
+    "domain": "Lord Malbleat's territory",
+    "political_status": "Notionally ruled by Lord Malbleat",
+    "notes": "Madame Shantywood, although she has no legally recognised position in Dreg, practically runs the port, due to her economic clout. Shantywood Isle is technically an independent country with the right to arbitrate its own laws."
+  },
+  "religion": {
+    "primary_deity": "St Wick",
+    "religious_buildings": [
+      "Church of St Wick"
+    ],
+    "religious_practices": "Ostensibly devotees of the Church, the rowdy folk of Dreg have a tendency towards godlessness. The rogue friar Brother Hogbeard and his flock of yellow-smocked zealots seek to reverse this trend.",
+    "notes": null
+  },
+  "history": [
+    "Founded amid the marshes and mists of the River Hameth's banks by humans of High Woldish descent",
+    "Has been a centre of trade and transit for many generations",
+    "Brother Hogbeard came to Dreg five years ago to aid the poor but has become leader of religious vigilantes",
+    "An Atacorn has dwelt hidden in the town for some years, infusing corruption"
+  ],
+  "current_events": [
+    "Violence, treachery, and discord are on the rise due to the Atacorn's influence",
+    "Hogbeard's zealots have taken to kidnapping 'sinners' for nighttime exorcism",
+    "The Boghouse Boys are planning to infiltrate the Berkmaster's manor"
+  ],
+  "rumors_reference": "See Rumours in Dreg and Shantywood Isle, p445",
+  "special_features": [
+    {
+      "name": "The Atacorn's Miasma",
+      "description": "An Atacorn—one of the spawn of Atanuwë—has dwelt hidden in the town for some years, infusing the town's smoked fish with its corrupting miasma",
+      "mechanical_effect": "–1 penalty to all Reaction Rolls",
+      "affected_area": "All of Dreg"
+    },
+    {
+      "name": "The River Trade",
+      "description": "The River Hameth runs wide and shallow at this point and is rich with fish and floating debris from the forest. Forms vital trade links east-west and north-south.",
+      "mechanical_effect": null,
+      "affected_area": "River and port areas"
+    },
+    {
+      "name": "Famed Bog-Swine Sausages",
+      "description": "Dreg is known for its fine sausages, made from the flesh of huge, bristly, black swine kept in the bogs to the north of the village.",
+      "mechanical_effect": null,
+      "affected_area": "Local reputation"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.5,
+    "available_categories": [
+      "vehicles",
+      "mounts",
+      "mercenary companies"
+    ],
+    "unavailable_categories": [],
+    "special_items": [
+      "Pipeleaf at 50% price at Shodgerey's Shack"
+    ],
+    "notes": "Vehicles and mounts cost 50% more than usual. Despite Dreg's status as a village, mercenary companies can occasionally be hired here (2-in-6 chance). Pipeleaf traded by sailors at reduced rates."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The Ditchway",
+      "location_type": "road",
+      "description": "The east-west road, known to locals as the Ditchway, winds through a broad channel with sandy banks on either side.",
+      "interior": null,
+      "exterior": "Broad channel with sandy banks on either side",
+      "populace": "Much trade traffic",
+      "atmosphere": "Busy trade route",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Leads to the market-town of Lankshorn"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "The Mermaid's Arms",
+      "location_type": "inn",
+      "description": "The only reputable inn in Dreg, the Mermaid's Arms is little more than a cottage, but is homely and well maintained. Known colloquially as the 'Mermaid's Arse.'",
+      "interior": "Dark beams, floorboards decked with round woollen rugs, the scent of wood polish, and a cheery fireplace conjure an atmosphere at once welcoming and intimate. A sign reads 'No gambling, lewdness, or sea shanties!'",
+      "exterior": "A mermaid on the seashore, bashfully hiding her modesty with her immaculately braided blonde hair (sign)",
+      "populace": "A courteous mix of travellers and locals wishing for a quiet drink away from the crowds",
+      "atmosphere": "Welcoming and intimate",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Common quality, only three 2-bed rooms and a single private room",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Food",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Tweede's fish pie",
+          "description": "Said to be the best in Dreg. Baked fresh every day",
+          "cost": "3sp a meal",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "ogham_tweede",
+        "tamrin_tweede"
+      ],
+      "special_features": [
+        "Attic suite with locked trapdoor - Tamrin's private residence and research laboratory"
+      ],
+      "secrets": [
+        "Tamrin Tweede's magical research laboratory in the attic"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Tamrin Tweede"
+    },
+    {
+      "number": 3,
+      "name": "Young Merble",
+      "location_type": "landmark",
+      "description": "A bawdy marble statue of a busty mermaid at the centre of a fenced pool.",
+      "interior": null,
+      "exterior": "Marble statue of busty mermaid in fenced pool",
+      "populace": "Dreg folk throwing coppers, occasional down-and-outs at night",
+      "atmosphere": "Local landmark with superstitious significance",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Folk throw coppers for good luck"
+      ],
+      "secrets": [
+        "Pool dredgers steal coins at night"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Fish Market",
+      "location_type": "market",
+      "description": "A cobblestoned square rammed with tarpaulin-draped market stalls.",
+      "interior": null,
+      "exterior": "Cobblestoned square with market stalls",
+      "populace": "Hawkers, customers, Brother Hogbeard and zealots during day",
+      "atmosphere": "Raucous cries of hawkers and the reek of fish—fresh and smoked—permeate all",
+      "services": [],
+      "npcs": [
+        "brother_rodger_hogbeard"
+      ],
+      "special_features": [
+        "Fresh and smoked fish sales"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Berkmaster's Manor",
+      "location_type": "manor",
+      "description": "A tall, ungainly building clad with stained wood shingles and topped with a teetering bell tower. The manor is an odd structure that has been extended many times by Berkmasters over the centuries.",
+      "interior": "Extended many times over the centuries",
+      "exterior": "Raised on high stilts, directly facing Chateau Shantywood across the river. Great, goat-faced copper bell at summit of bell tower",
+      "populace": "Berkmaster Maximilian Monocleese and his sickly wife Hilda",
+      "atmosphere": "Pretentious but ungainly",
+      "services": [],
+      "npcs": [
+        "berkmaster_maximilian_monocleese"
+      ],
+      "special_features": [
+        "The berk-bell - only rung upon arrival of longhorn noble",
+        "Hereditary bell-polisher"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Port",
+      "location_type": "port",
+      "description": "A ramshackle assortment of piers, fishing boats, and river barges. Passage by water to nearby destinations can be bought here.",
+      "interior": null,
+      "exterior": "Ramshackle piers, boats, and barges",
+      "populace": "Boat operators, Brother Hogbeard and zealots in evening",
+      "atmosphere": "Busy river trade hub",
+      "services": [
+        {
+          "name": "Passage to Woodcutters' Encampment",
+          "description": "7-mile river journey, takes 2 hours",
+          "cost": "2sp per foot passenger, 5sp per horse, 2gp per vehicle",
+          "notes": null
+        },
+        {
+          "name": "Passage to Shantywood Isle",
+          "description": "Red-lanterned barges, evening and night only",
+          "cost": "free of charge",
+          "notes": "Foot passengers only, no animals or vehicles"
+        }
+      ],
+      "npcs": [
+        "brother_rodger_hogbeard"
+      ],
+      "special_features": [
+        "River trade connections east-west and north-south"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Shodgerey's Shack",
+      "location_type": "inn",
+      "description": "A low-roofed, single storey doss-house favoured by the numerous sailors who find themselves in Dreg for a night. The cheapest place to stay in town, but hazardous for non-sailors.",
+      "interior": "A draughty hall, rammed with a jumble of rickety stools. An old fishing boat hangs from the rafters, keel down, its nets dangling at head height, festooned with crab shells and fish bones.",
+      "exterior": "A leering moon ringed with grimacing stars (sign)",
+      "populace": "Itinerant sailors and barge-folk. Raucous sea shanties and tussles over dice games are regular fixtures",
+      "atmosphere": "Rough, dangerous for outsiders",
+      "services": [
+        {
+          "name": "Hammocks",
+          "description": "Sleep in long, windowless hall lined with hammocks, nautical style",
+          "cost": "2cp per night",
+          "notes": null
+        },
+        {
+          "name": "Food",
+          "description": "Poor quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Beverages",
+          "description": "Only Pilston's Heartbreaker and Barrowblaster",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Pipeleaf",
+          "description": "All common pipeleafs available",
+          "cost": "50% of normal price",
+          "notes": "Only for those sailors take a shine to"
+        }
+      ],
+      "npcs": [
+        "lyren_shodgerey"
+      ],
+      "special_features": [
+        "Cheapest lodging in town",
+        "Pipeleaf trading"
+      ],
+      "secrets": [
+        "Landlord takes cut of thievery profits"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Church of St Wick",
+      "location_type": "church",
+      "description": "A mouldering wooden church beside the port, built upon a pier above the river. The church is dedicated to St Wick (patron saint of ferry-folk and amputees).",
+      "interior": "Dusty, musty wooden walls and pews. A tarnished pewter icon on the velvet-cloaked altar depicts St Wick with eyes raised to heaven, impaled with a horrid array of spears, arrows, and axes.",
+      "exterior": "Mouldering wooden church on pier above river. Once-solid oak door, now weathered and battered",
+      "populace": "A handful of pious locals, Reverend Mother Hadlewreath",
+      "atmosphere": "Poor state of repair indicating low esteem for organised religion",
+      "services": [
+        {
+          "name": "Prayer to St Wick",
+          "description": "Characters praying may receive blessing: ability to cast Greater Healing",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [
+        "reverend_mother_shandra_hadlewreath"
+      ],
+      "special_features": [
+        "Built on pier above river",
+        "Blessing of St Wick available"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Reverend Mother Hadlewreath (unlocked mornings only)"
+    },
+    {
+      "number": 9,
+      "name": "The Smokehouse",
+      "location_type": "smokehouse",
+      "description": "A tall, windowless building topped with a conical roof and a rusted iron chimney. The smokehouse is a communally owned facility for preserving fish by smoking.",
+      "interior": "Extensive cellars with towering stacks of firewood and smoking racks of various sizes",
+      "exterior": "Tall, windowless building with conical roof and rusted iron chimney",
+      "populace": "Community users during day",
+      "atmosphere": "Communal facility, but harboring hidden corruption",
+      "services": [
+        {
+          "name": "Fish smoking",
+          "description": "Communal facility for preserving fish",
+          "cost": "community use",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Communally owned"
+      ],
+      "secrets": [
+        "Atacorn Crewithyant lurks in dark recesses of cellars"
+      ],
+      "monsters": [
+        "crewithyant"
+      ],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "The Spawning Salmon",
+      "location_type": "inn",
+      "description": "A squat, converted warehouse, now the favoured gambling establishment in Dreg and secret headquarters of the thieves' guild.",
+      "interior": "A wide hall packed with gambling tables. The smell of roasting meat wafts from the grill at one end, mingling with the reek of pipesmoke. A stage at the other end frequently hosts bawdy performances. Viewing balcony with plush leather couches and its own bar.",
+      "exterior": "A bright pink salmon leaping out of a stream, its mouth gaping after a dangling sausage pie (sign)",
+      "populace": "River workers, mercenaries, locals, and travellers in common room; merchants lounge above",
+      "atmosphere": "Gambling, carousing, and entertainment hub",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Food",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Grilled sausages",
+          "description": "A trio of bogswine sausages fresh from the grill, served in a bowl of ale gravy",
+          "cost": "3sp",
+          "notes": null
+        },
+        {
+          "name": "Viewing balcony access",
+          "description": "Access to balcony overlooking common room",
+          "cost": "2sp entrance fee",
+          "notes": null
+        },
+        {
+          "name": "Common and uncommon spirits",
+          "description": "Only served from the bar on the viewing balcony",
+          "cost": "standard price",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "sidley_crump"
+      ],
+      "special_features": [
+        "Gambling tables",
+        "Stage for performances",
+        "Viewing balcony"
+      ],
+      "secrets": [
+        "Secret thieves' guild headquarters in cellars"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "The Boghouse",
+      "location_type": "ruin",
+      "description": "The shell of a burned-out farmhouse, now used as the meeting house of a secret society who have dubbed the ruin 'the Boghouse' and themselves 'the Boghouse Boys.'",
+      "interior": "Collapsed beams and the blackened remnants of a few walls remain. Bracken and nettles crowd the space. Secret cellar decked out as meeting house with twelve stools, rickety table, rough map of Dreg and surrounding woodland, keg of ale, and pewter tankards.",
+      "exterior": "Burned-out farmhouse shell with bootprints and disturbed undergrowth marking path to secret trapdoor",
+      "populace": "Empty during day, 3-in-6 chance of 2d6 Boghouse Boys at night",
+      "atmosphere": "Secret and conspiratorial",
+      "services": [],
+      "npcs": [
+        "brigg_hollowhand_meagre"
+      ],
+      "special_features": [
+        "Secret trapdoor under mound of rubble",
+        "Hidden cellar meeting room"
+      ],
+      "secrets": [
+        "Meeting place of Boghouse Boys secret society"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Boghouse Boys"
+    },
+    {
+      "number": 12,
+      "name": "South Cove",
+      "location_type": "dock",
+      "description": "A small dock located in a wide cove in the cliff-ringed Shantywood Isle. Boats other than the barges operated by Madame Shantywood are not permitted to land directly.",
+      "interior": null,
+      "exterior": "Small dock in wide cove with red banners bearing Madame Shantywood's coat of arms—seven golden coins encircling a black rose",
+      "populace": "Seductively attired employees operating barges",
+      "atmosphere": "Exclusive and controlled access",
+      "services": [
+        {
+          "name": "Barge passage to Dreg",
+          "description": "Red-lanterned barges, evening and night only",
+          "cost": "free of charge",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Steep stairway to Chateau Shantywood",
+        "Red banners with coat of arms"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "North Cove",
+      "location_type": "dock",
+      "description": "A broad, undecorated dock in a small cove at the north-eastern corner of Shantywood Isle, used for ferrying goods.",
+      "interior": null,
+      "exterior": "Broad, undecorated dock in small cove",
+      "populace": "2 soldiers (usually women) guard the dock at all hours",
+      "atmosphere": "Utilitarian and guarded",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Steep stairway to servants' entrance of Chateau Shantywood",
+        "Guarded at all hours"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 14,
+      "name": "Chateau Shantywood",
+      "location_type": "manor",
+      "description": "A manse of ostentatious turrets and flamboyant minarets at the summit of Shantywood Isle. The chateau is a much-frequented manor of ill-repute and home of the seductive and ruthless Madame Shantywood.",
+      "interior": "Stone-flagged hall with gaudy tapestries, crystal chandeliers, and a sea of gambling tables. Ballroom exclusively reserved for well-to-do patrons.",
+      "exterior": "Ostentatious turrets and flamboyant minarets",
+      "populace": "Boorish, drunken locals, wealthy merchants, minor nobility, successful adventurers, scantily-clad wait staff",
+      "atmosphere": "Decadent manor of ill-repute",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Fancy quality",
+          "cost": "fancy price",
+          "notes": null
+        },
+        {
+          "name": "Food",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Companionship",
+          "description": "Private company of staff in Madame Shantywood's employ",
+          "cost": "from 5sp per hour",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "madame_chandilore_shantywood"
+      ],
+      "special_features": [
+        "Gambling tables",
+        "Exclusive ballroom",
+        "Independent micro-domain"
+      ],
+      "secrets": [
+        "Madame Shantywood's magic mirror granting access to shadow manse"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "brother_rodger_hogbeard",
+      "name": "Brother Rodger Hogbeard",
+      "title": "Level 3 Friar",
+      "description": "A plump, red-faced human man in his fifties, with bushy beard and eyebrows.",
+      "kindred": "Human",
+      "age_description": "in his fifties",
+      "dress": "Dressed in the hessian robes and tonsure of a friar, with a Chapes swinging from a chain around his neck",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Magnetic",
+        "wide-eyed religious fervour"
+      ],
+      "mannerisms": null,
+      "speech": "Bombastic, doom-laden. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "For Dreg to be freed of sin",
+        "To be recognised by the Church for his holy deeds and be decreed a living saint"
+      ],
+      "secrets": [
+        "Was previously Lawful, but the Atacorn's influence has swayed him to increasing passion and violence"
+      ],
+      "location_id": "4",
+      "occupation": "Friar and leader of religious vigilantes"
+    },
+    {
+      "npc_id": "ogham_tweede",
+      "name": "Ogham Tweede",
+      "title": "Level 3 Thief, Mermaid's Arms Bartender",
+      "description": "A burly, rough-faced human man in his forties, with dense black stubble covering his face and head.",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Dresses in utilitarian leathers and white apron",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Charming",
+        "with an edge of cautionary pugnacity"
+      ],
+      "mannerisms": "Clenches his fists on the bar",
+      "speech": "Consciously hushed, bursts of loud guffawing. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Word on the whereabouts of his ex-flame, One-Eyed Gil, whom he has not seen in 15 years, since the night they fled the grounds of Redwraith Manor following an aborted burglary"
+      ],
+      "secrets": [
+        "Reformed thief",
+        "Fled Redwraith Manor with One-Eyed Gil after failed burglary"
+      ],
+      "location_id": "2",
+      "occupation": "Bartender at Mermaid's Arms"
+    },
+    {
+      "npc_id": "tamrin_tweede",
+      "name": "Tamrin Tweede",
+      "title": "Level 5 Magician, Mermaid's Arms Proprietor",
+      "description": "An elderly human woman with a frizzy mane of white hair and tiny spectacles balanced on a pinched, mouse-like visage.",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": null,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Wistful",
+        "private",
+        "Happy to converse with erudite visitors",
+        "Near-sighted"
+      ],
+      "mannerisms": null,
+      "speech": "Hushed, considered. Woldish, Caprice.",
+      "languages": [
+        "Woldish",
+        "Caprice"
+      ],
+      "desires": [
+        "To uncover the cause of the growing violence and unrest in Dreg, which she suspects to be of magical origin"
+      ],
+      "secrets": [
+        "Retired adventurer",
+        "Has magical research laboratory in attic",
+        "Possesses Ring of Energy Resistance and spell books"
+      ],
+      "location_id": "2",
+      "occupation": "Inn proprietor and retired magician"
+    },
+    {
+      "npc_id": "berkmaster_maximilian_monocleese",
+      "name": "Berkmaster Maximilian Monocleese",
+      "title": "Berkmaster",
+      "description": "A slight human man in his late fifties, with elegantly oiled and curled black hair.",
+      "kindred": "Human",
+      "age_description": "in his late fifties",
+      "dress": "Dresses in black silk shirts and slacks and wears the silver fish's head medallion hereditary to his station",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Self-important",
+        "carefully cultivated air of nobility"
+      ],
+      "mannerisms": null,
+      "speech": "Snide drawl. Woldish, patchy Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Tired of his wife's long illness, wishes for her to either be healed of her afflictions (both physical and mental) or to pass peacefully",
+        "If Hilda's fate is death: to marry Madame Shantywood, whom he admires and secretly lusts after"
+      ],
+      "secrets": [
+        "Secretly lusts after Madame Shantywood"
+      ],
+      "location_id": "5",
+      "occupation": "Berkmaster (mayor of sorts)"
+    },
+    {
+      "npc_id": "lyren_shodgerey",
+      "name": "Lyren Shodgerey",
+      "title": "Shodgerey's Shack Landlord",
+      "description": "A squat, muscular human man in his late thirties, with a shaven head and half his teeth missing. Covered from head to toe in tattoos of malignant beings (harpies, crookhorns, ogres, etc.).",
+      "kindred": "Human",
+      "age_description": "in his late thirties",
+      "dress": null,
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Oafish",
+        "relishes violence"
+      ],
+      "mannerisms": "Wipes sweat from his head and face in a single motion",
+      "speech": "Sneering, mocking laughter. Basic Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Easy money—willing to go in on any crooked scheme",
+        "To found a rival thieves' guild in Dreg"
+      ],
+      "secrets": [
+        "Turns a blind eye to thievery in the Shack in return for a small cut of the profits"
+      ],
+      "location_id": "7",
+      "occupation": "Inn landlord"
+    },
+    {
+      "npc_id": "reverend_mother_shandra_hadlewreath",
+      "name": "Reverend Mother Shandra Hadlewreath",
+      "title": "Vicar of Dreg",
+      "description": "An elderly, flabby human woman with fluffy white hair and a scratched monocle.",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": null,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Doddery",
+        "weak-willed",
+        "aloof but kindly at heart"
+      ],
+      "mannerisms": null,
+      "speech": "Timid droning. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To be left in peace and not be dragged into the unrest in Dreg"
+      ],
+      "secrets": [
+        "Has abandoned hope for the spiritual salvation of the people of Dreg"
+      ],
+      "location_id": "8",
+      "occupation": "Vicar"
+    },
+    {
+      "npc_id": "sidley_crump",
+      "name": "Sidley Crump",
+      "title": "Spawning Salmon Landlord",
+      "description": "A tall, wiry human man in his forties, with bulging eyes and long, greasy hair.",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Dresses in smart shirts and black leather trousers",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Feigned amicability",
+        "Callous"
+      ],
+      "mannerisms": "Habitually rolls up his shirt sleeves",
+      "speech": "Jovial, boisterous. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To ascertain the true purpose of his wife Elmine's trips to Lankshorn 'to visit her ailing cousin.' (She is in love with Sydewich Maldwort)"
+      ],
+      "secrets": [
+        "Member of the thieves' guild and conceals the guild's presence from the law",
+        "Wife is having an affair"
+      ],
+      "location_id": "10",
+      "occupation": "Inn landlord"
+    },
+    {
+      "npc_id": "brigg_hollowhand_meagre",
+      "name": "Brigg 'Hollowhand' Meagre",
+      "title": "Leader of Boghouse Boys",
+      "description": "A stocky, broad-shouldered human man in his late 30s, with shaven head, mop-like beard, and one wooden hand.",
+      "kindred": "Human",
+      "age_description": "in his late 30s",
+      "dress": null,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Quiet but firm",
+        "Shifty-eyed"
+      ],
+      "mannerisms": null,
+      "speech": "Dour, conspiratorial. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "For Dreg to be ruled by common folk of good sense and upstanding morality (e.g. himself)"
+      ],
+      "secrets": [
+        "Dreams haunted by false visions of great evils afoot in Dreg (the insinuations of the Atacorn Crewithyant)",
+        "Plans to infiltrate Berkmaster's manor"
+      ],
+      "location_id": "11",
+      "occupation": "Bog-swine farmer and secret society leader"
+    },
+    {
+      "npc_id": "madame_chandilore_shantywood",
+      "name": "Madame Chandilore Shantywood",
+      "title": "Lady of Shantywood Isle",
+      "description": "A bewitching human woman approaching 50, with cascading, raven locks and eyes of striking green.",
+      "kindred": "Human",
+      "age_description": "approaching 50",
+      "dress": "Dresses in an antiquated style, with black lace dress, layered petticoats, tightly strung corset, and heavily powdered face",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Self-assured",
+        "calculating",
+        "Has a taste for cruelty",
+        "Merciless in punishing those who cross her"
+      ],
+      "mannerisms": "Habitually gazes into an ivory hand mirror, reapplying her face powder with a feathery puff",
+      "speech": "Eminently refined, mischievously demeaning, callously frank. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "The amorous attentions of the sorceress Myrrsian, whom she has spied in the ballroom on occasion",
+        "The painful death of Lord Murkin who slew her eldest daughter many years ago",
+        "To keep the identity of her children's father (the gentleman in the mirror) secret"
+      ],
+      "secrets": [
+        "Possesses a magic mirror granting access to a dusty, dreamy shadow manse ruled by a spectral gentleman",
+        "The spectral gentleman is the father of her children"
+      ],
+      "location_id": "14",
+      "occupation": "Ruler of independent micro-domain and manor proprietor"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d4 longhorns (DMB)—knights in the service of Lord Malbleat (p64)—charge into town, bearing urgent news to Berkmaster Monocleese.",
+          "npcs_involved": [
+            "Berkmaster Monocleese"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "Brother Hogbeard and 1d3 zealots approach PCs asking for a donation to their cause.",
+          "npcs_involved": [
+            "Brother Hogbeard"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "2d3 fishermen come to blows outside the Smokehouse over a disagreement about who owns a batch of fish.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "1d4 town guards chase a pickpocket through the streets. Onlookers jeer and throw fish guts.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "1d4 shifty lads (members of the Boghouse Boys—see p145) staking out the Berkmaster's manor.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "1d3 Hogbeard's zealots drag a \"sinner\" to the church.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d4+1 thugs (as Level 1 thieves—DMB) follow an old lady (Tamrin Tweede, p142) into a dark alleyway. Loud cursing ensues, as the thugs are caught in her Web.",
+          "npcs_involved": [
+            "Tamrin Tweede"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "1d4+1 thugs (as Level 1 thieves—DMB), looking for prey.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "1d3 farmhands drunkenly bragging about witch-hunting, on their way to a secret meeting in the Boghouse.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A rowdy fistfight between 3d6 sailors (two rival gangs).",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "2d3 Hogbeard's zealots, bearing torches, dragging a blindfolded \"sinner\" into the woods for exorcism.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Folk stumble indoors as a thick mist rolls off the river.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Crewithyant",
+      "monster_id": "crewithyant",
+      "description": "A naked, emaciated, gangly (6′ tall) man-thing with warty, ashen skin and the decaying head of a unicorn. Crewithyant is a child of the Nag-Lord, sent out into the world to spread discord and woe.",
+      "size": "Medium",
+      "type": "Mortal",
+      "intelligence": "Sentient",
+      "alignment": "Chaotic",
+      "level": 4,
+      "ac": 12,
+      "hp": "19",
+      "saves": "D10 R11 H12 B13 S14",
+      "attack": "Horn (+3, 1d6 + disease)",
+      "speed": 40,
+      "morale": 6,
+      "xp": 180,
+      "special_abilities": [
+        {
+          "name": "Disease",
+          "description": "The victim must Save Versus Doom or suffer 1d3 damage per day, their flesh erupting in grey lumps."
+        },
+        {
+          "name": "Gaseous form",
+          "description": "Crewithyant can dissolve his physical form—including clothing and equipment—into a sooty vapour at will. The process takes 1 Round, as does re-coalescing. In gaseous form, he is immune to mundane damage and can seep through small cracks."
+        }
+      ]
+    }
+  ],
+  "roads": [
+    "The Ditchway (east-west road to Lankshorn)"
+  ],
+  "connections": [
+    "Woodcutters' Encampment",
+    "Castle Brackenwold",
+    "High-Hankle",
+    "Lankshorn",
+    "Falls of Nyf"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      142,
+      143,
+      144,
+      145,
+      146,
+      147
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

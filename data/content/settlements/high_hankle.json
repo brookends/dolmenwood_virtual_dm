@@ -1,0 +1,981 @@
+{
+  "name": "High-Hankle",
+  "settlement_id": "high_hankle",
+  "hex_id": "0512",
+  "size": "large town",
+  "population": 5300,
+  "population_description": "5,300—large town",
+  "tagline": "Ancient capital of the High Wold and burgeoning town of hedonism",
+  "description": "An ancient, thriving town that has formed the heart of High Wold culture since days long since forgotten. At its centre, within the great town walls, the imposing baronial tower—Castle Perigonne—surveys the windswept grasslands and rolling hills of the southern High Wold.",
+  "atmosphere": "A town of revelry, carousing, and debauchery of all kinds, now the favoured haunt of jaded nobles, hedonists, and thrill-seekers from far and wide",
+  "inhabitants_description": "As a town of some renown, High-Hankle is home to a diverse population of local, curly-haired High Woldish folk, breggles, and a sizeable number of immigrants from throughout Dolmenwood and beyond. Approximately half the population dwells within the town walls and half without.",
+  "governance": {
+    "ruler_type": "baron",
+    "ruler_name": "Baron Hogwarsh",
+    "ruling_body": "Baron Hogwarsh rules over High-Hankle and the surrounding High Wold region",
+    "domain": "High Wold region",
+    "political_status": "The baron's disinterest in law and order has spurred a rapid waxing in the power of the thieves' guild",
+    "notes": "Spies are numerous within the courts of Castle Perigonne. The High Wold's longhorn noble houses have long envied the power of House Hogwarsh"
+  },
+  "religion": {
+    "primary_deity": "Pluritine Church",
+    "religious_buildings": [
+      "Three Martyrs Minster",
+      "The Silent Tower"
+    ],
+    "religious_practices": "By and large, the folk of High-Hankle adhere to the tenets of the Pluritine Church, with the resplendent Three Martyrs Minster serving as their locus of worship. Led by the Baron's example, however, an irreligious mien is en vogue among the youthful aristocracy.",
+    "notes": "The Silent Tower is headquarters of the Order of St Signis the Silent"
+  },
+  "history": [
+    "Ancient capital of the High Wold",
+    "Has formed the heart of High Wold culture since days long since forgotten",
+    "Since the current baron's ascent to power, High-Hankle's reputation is one of revelry, carousing, and debauchery"
+  ],
+  "current_events": [
+    "The thieves' guild has become a power to contend with under the baron's lax rule",
+    "Three griffons recently escaped from the Griffonry and are living wild, terrorising the surrounding farmland",
+    "Lord Ramius connives against the reckless Hogwarsh, wishing to be declared baron of the High Wold in his stead"
+  ],
+  "rumors_reference": "See Rumours in High-Hankle, p447",
+  "special_features": [
+    {
+      "name": "Hangleton",
+      "description": "Once a separate village that was gradually subsumed by the town, Hangleton is the name now given to all parts of High-Hankle that lie outside the town wall. It is here that the majority of the town's lower classes dwell, in a jumble of cottages, workshops, market squares, and drinking establishments.",
+      "mechanical_effect": null,
+      "affected_area": "Outside the town wall"
+    },
+    {
+      "name": "The Escalade",
+      "description": "A labyrinthine district of bridges, arches, and raised buildings built up over many centuries around the skirts of Castle Perigonne, at the centre of the town. The Escalade now consists of three stacked layers with stairways and ramps providing access to the upper and middle layers.",
+      "mechanical_effect": null,
+      "affected_area": "Around Castle Perigonne"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "standard equipment",
+      "unusual non-standard businesses"
+    ],
+    "unavailable_categories": [],
+    "special_items": [
+      "Golden aspintheon",
+      "Psychedelic compounds",
+      "Full plate armour"
+    ],
+    "notes": "In addition to the standard equipment and services listed in the DPB, unusual, non-standard businesses can be located with a little investigative work."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "Castle Perigonne",
+      "location_type": "castle",
+      "description": "A massive, dizzyingly tall tower of stone that looms over High-Hankle. Its lower levels are now effectively subterranean, subsumed beneath the three layers of the Escalade.",
+      "interior": "Seemingly countless floors of luxurious suites, dusty libraries and map rooms, taxidermy-bedecked lounges, and opulent banquet halls. The castle's subdued tapestries and stately furnishings are rapidly being replaced with a modish array of gaudy oil paintings, silk upholstered couches, and garish carpets.",
+      "exterior": "A grand stair, lined with scowling griffon statues, leads from the upper layer of the Escalade to the black iron gates of the castle.",
+      "populace": "The Baron Hogwarsh, his doting mother, the Dowager Baroness, his timorous brother, Walter, and a staff of around 50 servants",
+      "atmosphere": "Luxurious but increasingly gaudy",
+      "services": [],
+      "npcs": [
+        "baron_hogwarsh"
+      ],
+      "special_features": [
+        "Ancient granite gate in the bowels of the Escalade's lower layer, disused and magically sealed"
+      ],
+      "secrets": [
+        "Ancient gate could provide a means of escape from the castle in dire need"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Baron Hogwarsh"
+    },
+    {
+      "number": 2,
+      "name": "The Griffonry",
+      "location_type": "garrison",
+      "description": "The High-Hankle garrison—a squat keep with six crenellated towers, adjoining the lower levels of Castle Perigonne. The central courtyard is home to a herd of griffons—the pride of the barony.",
+      "interior": "Chilly stone chambers draped with heraldic flags, sombre banquet halls, cramped dormitories.",
+      "exterior": "A portcullis and massive door inlaid with the image of a griffon battling a unicorn.",
+      "populace": "60 soldiers, led by the dashing Sir Waverly 'the Orange'",
+      "atmosphere": "Military and austere",
+      "services": [],
+      "npcs": [
+        "sir_hoarsent_waverly"
+      ],
+      "special_features": [
+        "Seven griffons total, but only four currently resident",
+        "The beasts are sometimes seen flying above the garrison, reined with long chains of fairy silver"
+      ],
+      "secrets": [
+        "Three griffons recently escaped and are living wild, terrorising the surrounding farmland"
+      ],
+      "monsters": [
+        "griffon"
+      ],
+      "is_locked": true,
+      "key_holder": "Sir Waverly"
+    },
+    {
+      "number": 3,
+      "name": "The Crown Cruciferous",
+      "location_type": "inn",
+      "description": "A lofty stone building perched upon the upper layer of the Escalade beside a grand stairway leading up from street level. The inn is styled after a cathedral, complete with small flying buttresses and stained glass windows.",
+      "interior": "A broad, reverberant stone hall, decked with plush green carpet. Booths around the perimeter, discreetly partitioned with wood panelling, contain upholstered seating and tables. The middle floor is dedicated to a dozen large private rooms, each sporting a fabulous stained glass window, as well as the inn's kitchens.",
+      "exterior": "A golden crown decorated with a hefty cross of rubies sign",
+      "populace": "Well-to-do merchants, intellectuals, priests, and the occasional aristocrat whose low rank or disfavour with the baron forces them to seek lodgings outside of Castle Perigonne",
+      "atmosphere": "Reverberant and upscale",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of fancy quality",
+          "cost": "fancy price",
+          "notes": null
+        },
+        {
+          "name": "Rooms with a view",
+          "description": "Exclusive private suites facing north-west, with a view over the Hangle Gate and the sweep of Tankards Road as it winds into the hills",
+          "cost": "25gp a night",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "emeritus_jasquith"
+      ],
+      "special_features": [
+        "Heraldic banners and the coats of arms of hundreds of obscure noble houses line the walls"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "The Balustrade",
+      "location_type": "ballroom and tavern",
+      "description": "A tall, ungainly building clad with wooden tiles, spanning all three levels of the Escalade. One entrance at street level leads to the public tavern, while another atop the Escalade (upper layer) grants entrance to the ballroom.",
+      "interior": "Common room (ground floor): A dingy, maze-like space extending beneath the Escalade. Smoke and sweat pervade. Ballrooms (upper 2 floors): Scintillating crystal chandeliers, polished oak flooring, and billowing white drapes. Scantily clad, glitter-daubed staff serve drinks on trays.",
+      "exterior": "A miniature dragon coiled around a goblet, smoke meandering from its nostrils sign",
+      "populace": "The common room is frequented by a heaving mass of people from all walks of life, as young aesthetes daringly mingle with commoners. The ballrooms are peopled by lascivious young gentry and adventurers.",
+      "atmosphere": "Hedonistic and dangerous",
+      "services": [
+        {
+          "name": "Golden aspintheon",
+          "description": "3-in-6 chance of the legendary tipple being available",
+          "cost": "see p426",
+          "notes": null
+        },
+        {
+          "name": "Entry to the ballrooms",
+          "description": "Access to upper class entertainment",
+          "cost": "5gp per person",
+          "notes": null
+        },
+        {
+          "name": "Psychedelic compounds",
+          "description": "2-in-6 chance of each compound being available from a discreet vendor",
+          "cost": "varies",
+          "notes": "Azoth, Black Clover, Devil's Grease, Frisk, Goatman's Goblet, Witch's Purple"
+        }
+      ],
+      "npcs": [
+        "bagsley_corundum"
+      ],
+      "special_features": [
+        "A marble balustrade leads up to the ballrooms",
+        "The resident, virtuoso string ensemble plays fashionable dance tunes late into the night"
+      ],
+      "secrets": [
+        "It is an open secret that the Balustrade is owned by Bagsley Corundum, master of thieves"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Hangle Gate",
+      "location_type": "gate",
+      "description": "Flanked on each side by a great stone boar, bearing the fluttering banners of House Nodlock and House Murkin. Atop the battlements stand two further boars, bearing the banners of House Ramius and House Malbleat (the latter boar of notably newer construction).",
+      "interior": null,
+      "exterior": "Stone boars with heraldic banners",
+      "populace": "2d4 soldiers of the town guard at any given time",
+      "atmosphere": "Fortified and heraldic",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Heraldic banners of the noble houses"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "The Silent Tower",
+      "location_type": "religious headquarters",
+      "description": "A mighty sandstone tower carved with a multitude of gargoyles, overlooking the placid, yew-shaded avenues of the town's graveyard. This is the headquarters of the Order of St Signis the Silent in the Dolmenwood region.",
+      "interior": null,
+      "exterior": "A stele-lined path leads through the graveyard to the tower's iron gates, engraved with litanies to St Signis",
+      "populace": "Joan Ablewright—commander of the Order of St Signis—along with 12 clerics of the Order",
+      "atmosphere": "Solemn and religious",
+      "services": [],
+      "npcs": [
+        "joan_ablewright"
+      ],
+      "special_features": [
+        "Carved with a multitude of gargoyles",
+        "Overlooks the town's graveyard"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Joan Ablewright"
+    },
+    {
+      "number": 7,
+      "name": "Griffon Gate",
+      "location_type": "gate",
+      "description": "A broad, deep gate flanked by statues of rearing griffons. Small windows indicate the presence of a set of rooms above the gate.",
+      "interior": "A locked door inside the gate leads up a narrow stair into the quarters of the Florid Envoy, including a cramped but extensive library on the lore of Fairy and its inhabitants.",
+      "exterior": "Flanked by statues of rearing griffons",
+      "populace": "2d4 soldiers of the town guard at any given time, Gemrand Soliquant, the current Florid Envoy",
+      "atmosphere": "Scholarly and mysterious",
+      "services": [],
+      "npcs": [
+        "gemrand_soliquant"
+      ],
+      "special_features": [
+        "Extensive library on the lore of Fairy and its inhabitants"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Gemrand Soliquant"
+    },
+    {
+      "number": 8,
+      "name": "Battery Square",
+      "location_type": "square",
+      "description": "A flagstoned square with a great bronze statue of a spear-pierced boar (the emblem of House Hogwarsh) at its centre.",
+      "interior": null,
+      "exterior": "Great bronze statue of a spear-pierced boar at centre",
+      "populace": "Varies by day and event",
+      "atmosphere": "Military and commercial",
+      "services": [
+        {
+          "name": "Eggfast horse market",
+          "description": "Once a week, on Eggfast, a dedicated horse market takes place. Renowned as the place to buy the finest steeds in all the duchy",
+          "cost": "varies",
+          "notes": "Weekly market"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "An arsenal of venerable catapults and ballistas stands upon the battlements of the town wall, overlooking the square"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "The Raven Tower",
+      "location_type": "prison",
+      "description": "An austere, windowless, hexagonal tower of sheer black stone, notorious throughout Dolmenwood. Dangerous convicts and political prisoners are confined before trial or execution in the many levels of dungeons, oubliettes, and interrogation chambers that extend beneath the tower.",
+      "interior": "Many levels of dungeons, oubliettes, and interrogation chambers that extend beneath the tower",
+      "exterior": "A mighty gate of solid iron, in Battery Square",
+      "populace": "A dedicated company of 20 soldiers of the town watch protects the Raven Tower",
+      "atmosphere": "Grim and foreboding",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Notorious throughout Dolmenwood"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Town Guard Captain"
+    },
+    {
+      "number": 10,
+      "name": "Helmsmith's",
+      "location_type": "shop",
+      "description": "A bulky brick building whose chimney belches day and night. The resident smith, Griselda Helmsmith, is renowned as one of the finest armourers in the duchy.",
+      "interior": "Forge and workshop",
+      "exterior": "Bulky brick building with belching chimney",
+      "populace": "Griselda Helmsmith and customers",
+      "atmosphere": "Industrial and prestigious",
+      "services": [
+        {
+          "name": "Standard armour",
+          "description": "At 25% above the normal price. Stamped with Helmsmith's prestigious hallmark",
+          "cost": "125% normal price",
+          "notes": null
+        },
+        {
+          "name": "Full plate armour",
+          "description": "Helmsmith has the expertise to craft full plate armour",
+          "cost": "as per DPB",
+          "notes": null
+        },
+        {
+          "name": "Engraving",
+          "description": "Commissioned armour may be engraved with patterns, script, or runes, as the buyer wishes",
+          "cost": "typically doubles the basic cost",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "griselda_helmsmith"
+      ],
+      "special_features": [
+        "Renowned as one of the finest armourers in the duchy"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "Hankle Heirlooms",
+      "location_type": "shop",
+      "description": "A venerable timber-framed house, leaning to one side in its age. Affiliated with the High-Hankle thieves' guild, Hankle Heirlooms maintains a 'no questions asked' policy with regard to purchasing valuable items.",
+      "interior": "A series of creaky wooden rooms crammed with antique furniture, jewellery display cases, and taxidermied curios. A genteel quietude pervades.",
+      "exterior": "A serpent coiling around a distressed lamb sign",
+      "populace": "Snerd Furroughby pops out from an unexpected location, after observing visitors for a short while. 8 shorthorns armed with crossbows and longswords lurk in corners",
+      "atmosphere": "Genteel but dangerous",
+      "services": [
+        {
+          "name": "Jewellery and antiquities",
+          "description": "Stocks a wide range of high quality items",
+          "cost": "200–5,000gp",
+          "notes": null
+        },
+        {
+          "name": "Fencing",
+          "description": "The store purchases items that may arouse suspicion at 50% of their full value",
+          "cost": "50% of full value",
+          "notes": "Fenced items are not on public display, but may be available to trusted customers"
+        }
+      ],
+      "npcs": [
+        "snerd_furroughby"
+      ],
+      "special_features": [
+        "Affiliated with the High-Hankle thieves' guild"
+      ],
+      "secrets": [
+        "Maintains a 'no questions asked' policy"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "Fettered Gate",
+      "location_type": "gate",
+      "description": "Flanked with two turrets, from which a multitude of thick, rusty chains hang. In olden times, the corpses of murderers and treasonists were hung from the chains to be devoured by crows.",
+      "interior": null,
+      "exterior": "Two turrets with thick, rusty chains hanging from them",
+      "populace": "2d4 soldiers of the town watch at any given time",
+      "atmosphere": "Grim and historical",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Multitude of thick, rusty chains"
+      ],
+      "secrets": [
+        "In olden times, the corpses of murderers and treasonists were hung from the chains to be devoured by crows"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "The Chantry",
+      "location_type": "inn",
+      "description": "A wide, wood-framed building with a multitude of odd-shaped windows and a beautifully maintained thatched roof. In former times, the Chantry only accepted clergy, but now functions as a normal travellers' inn.",
+      "interior": "An open plan space of three broad, connected rooms—each with its own hearth—occupying the inn's whole ground floor. A number of tables in odd corners are sequestered with thick curtains.",
+      "exterior": "A Chapes holy symbol ringed with holly sign",
+      "populace": "Travellers from all walks of life rub shoulders at the Chantry—the town's busiest inn",
+      "atmosphere": "Bustling and welcoming",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Evening poetry",
+          "description": "From dinner time, bards stand before the inn's three hearths and regale patrons with epics, folktales, poems, and parables",
+          "cost": "included",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "sandrine_candlewick"
+      ],
+      "special_features": [
+        "The town's busiest inn",
+        "Evening poetry entertainment"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 14,
+      "name": "Three Martyrs Minster",
+      "location_type": "church",
+      "description": "An ancient, blocky structure of crumbling sandstone with a square tower whose flat roof affords priests a view of the town. The minster's exterior is remarkable only for its utter lack of gargoyles and other ornamentation.",
+      "interior": "Contrasting its unadorned exterior, the minster's interior is a breathtaking vista of marble pillars and vaults, carved to resemble the fruit-laden boughs of an orchard. The chancel houses an unusual triumvirate of altars, dedicated to St Esther, St Hildace, and St Ingrid.",
+      "exterior": "Grand gates of weathered copper, engraved with a unicorn and cockatrice lounging in the shade of an apple tree",
+      "populace": "Awe-struck locals of the lower classes, officious priests on upper balconies quietly convening with the archdeacon, Adreline Sumner",
+      "atmosphere": "Awe-inspiring and sacred",
+      "services": [
+        {
+          "name": "Prayer",
+          "description": "Characters praying may receive the blessing of one of the three martyrs: the ability to cast Aid (St Esther), Command (St Ingrid), or Sanctuary (St Hildace)",
+          "cost": "free",
+          "notes": "See Shrines, p22 and Uncommon Spells, p454"
+        }
+      ],
+      "npcs": [
+        "venerable_adreline_sumner"
+      ],
+      "special_features": [
+        "Triumvirate of altars dedicated to St Esther, St Hildace, and St Ingrid"
+      ],
+      "secrets": [
+        "The symbolism of the entrance engraving is mysterious"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 15,
+      "name": "Coldlanks",
+      "location_type": "tavern",
+      "description": "A teetering, three storey wooden building whose small windows constantly emit the stench of pipesmoke.",
+      "interior": "A bustling space extending the full height of the building's three storeys. A rickety stairway spirals up, giving access to bowing balconies held up by makeshift beams and ropes.",
+      "exterior": "A weeping cat's face, surrounded by sliced onions sign",
+      "populace": "Drunkards, gamblers, thieves, and adventurers",
+      "atmosphere": "Raucous and chaotic",
+      "services": [
+        {
+          "name": "Coldlanks",
+          "description": "The raw grated onion dish. Classic coldlanks (marinated in mustard and beer) costs 2sp. Variant specialities (marinated in wine, mixed with horseradish, fried with bacon, fermented and smoked) cost 3sp",
+          "cost": "2-3sp",
+          "notes": "The tavern serves no food aside from its namesake"
+        }
+      ],
+      "npcs": [
+        "blinghop_drooglight"
+      ],
+      "special_features": [
+        "Musicians and fire jugglers enhance the raucous din, of an evening"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 16,
+      "name": "South Road",
+      "location_type": "road",
+      "description": "A broad, paved road that connects High-Hankle with the regions of the High Wold to the south.",
+      "interior": null,
+      "exterior": "Broad, paved road",
+      "populace": "Travelers",
+      "atmosphere": "Well-maintained thoroughfare",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 17,
+      "name": "Swallop Road",
+      "location_type": "road",
+      "description": "A hedge-lined country road that winds through rustic farmland towards Lankshorn.",
+      "interior": null,
+      "exterior": "Hedge-lined country road",
+      "populace": "Farmers and travelers",
+      "atmosphere": "Rural and peaceful",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 18,
+      "name": "Tankards Road",
+      "location_type": "road",
+      "description": "A steep road that traverses a series of hilly ridges toward the Inn of the Tankards (hex 0511) and Lord Ramius' realm.",
+      "interior": null,
+      "exterior": "Steep road through hilly ridges",
+      "populace": "Travelers",
+      "atmosphere": "Challenging terrain",
+      "services": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "sir_hoarsent_waverly",
+      "name": "Sir Hoarsent Waverly \"the Orange\"",
+      "title": "Level 10 Knight",
+      "description": "A slim, freckled, clean-shaven human man of 40 years, with cascading orange curls and striking green eyes.",
+      "kindred": "Human",
+      "age_description": "40 years",
+      "dress": "Dresses in shining, orange-crested plate or (when off duty) in orange doublet and fashionable neck ruff",
+      "alignment": "Lawful",
+      "demeanor": [
+        "rakish",
+        "somewhat aggressive",
+        "honest",
+        "loyal",
+        "upstanding moral fibre"
+      ],
+      "mannerisms": null,
+      "speech": "Enunciated, taunting. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "The baron's heart (despite Hoarsent's well-known dalliances with noblemen and academics, he loves Hogwarsh)",
+        "The return of the wayward griffons"
+      ],
+      "secrets": [
+        "Loves Baron Hogwarsh despite his well-known dalliances with noblemen and academics"
+      ],
+      "location_id": "2",
+      "occupation": "Knight, garrison commander"
+    },
+    {
+      "npc_id": "emeritus_jasquith",
+      "name": "Emeritus Jasquith",
+      "title": "Crown Cruciferous Proprietor",
+      "description": "A looming, portly human man in his late middle years, with impeccably greased hair, drooping jowls, and a brass-rimmed monocle.",
+      "kindred": "Human",
+      "age_description": "late middle years",
+      "dress": "Dresses in a pristine dinner jacket and bow tie",
+      "alignment": "Lawful",
+      "demeanor": [
+        "slow precision in all deeds"
+      ],
+      "mannerisms": null,
+      "speech": "Indignant rumbling. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "The finest wine selection in the duchy",
+        "Relics of St Howarth the Accursed, especially his hand, purported to be in the sunken ruins of Lankston (hex 0610)"
+      ],
+      "secrets": [
+        "Before taking over the Crown Cruciferous from his father, Emeritus was a monk at the Refuge of St Keye (hex 1307)"
+      ],
+      "location_id": "3",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "bagsley_corundum",
+      "name": "Bagsley Corundum",
+      "title": "Thieves' Guildmaster (Level 11 Thief)",
+      "description": "A slight, middle-aged human man, blind in one eye, his face disfigured by burn scars.",
+      "kindred": "Human",
+      "age_description": "middle-aged",
+      "dress": "Dresses in drab silks, with his face concealed within a voluminous hood",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "ruthless",
+        "tactical genius"
+      ],
+      "mannerisms": "Traces his fingers over his facial scars when in thought",
+      "speech": "Quiet yet brutal. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Infamy throughout Dolmenwood",
+        "To wed his daughter Jacinth to Baron Hogwarsh, cementing his power over High-Hankle and the High Wold"
+      ],
+      "secrets": [
+        "Owns the Balustrade",
+        "Has 4 unfailingly loyal bodyguard-lieutenants, 60 relatively loyal guild members"
+      ],
+      "location_id": "4",
+      "occupation": "Thieves' guildmaster"
+    },
+    {
+      "npc_id": "gemrand_soliquant",
+      "name": "Gemrand Soliquant",
+      "title": "The Florid Envoy (Sage)",
+      "description": "A tall, flabby, middle-aged human man with wavy blond hair, wide, green eyes, and thin, wafting moustaches.",
+      "kindred": "Human",
+      "age_description": "middle-aged",
+      "dress": "Dresses in dusty russet robes with a profusion of silver bangles, earrings, and medallions",
+      "alignment": "Neutral",
+      "demeanor": [
+        "blithesome",
+        "irreverent"
+      ],
+      "mannerisms": "Believes fairies to be superior to mortals in all respects",
+      "speech": "Rich, effusive, strays between topics. Woldish, Old Woldish, Sylvan, rudimentary High Elfish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "Fairy artefacts—he has a budget of 1,000gp",
+        "Word of any lingering fairy presence in Hoarblight Keep (hex 0505) or the Cold Prince's embassy (hex 0504)",
+        "Secretly wishes for the Cold Prince to return to Dolmenwood, and would collude to bring this about"
+      ],
+      "secrets": [
+        "Secretly wishes for the Cold Prince to return to Dolmenwood, and would collude to bring this about"
+      ],
+      "location_id": "7",
+      "occupation": "Sage specialising in the study of Fairy"
+    },
+    {
+      "npc_id": "griselda_helmsmith",
+      "name": "Griselda Helmsmith",
+      "title": "Helmsmith's Proprietor",
+      "description": "A muscular human woman in her 40s, with a snub nose, freckles, and a cascade of wiry locks.",
+      "kindred": "Human",
+      "age_description": "in her 40s",
+      "dress": "Dresses in leather apron and trousers, baring the owl tattoos on her arms",
+      "alignment": "Neutral",
+      "demeanor": [
+        "passionate about her craft"
+      ],
+      "mannerisms": "Seldom allows someone to leave without a purchase",
+      "speech": "Eloquent banter. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Rare metals",
+        "Challenging commissions from the rich and powerful"
+      ],
+      "secrets": [],
+      "location_id": "10",
+      "occupation": "Armourer"
+    },
+    {
+      "npc_id": "snerd_furroughby",
+      "name": "Snerd Furroughby",
+      "title": "Hankle Heirlooms Proprietor",
+      "description": "A mature longhorn gentleman, 6½′ tall, with dappled chestnut fur and striking eyes of deep green.",
+      "kindred": "Longhorn",
+      "age_description": "mature",
+      "dress": "Dresses in dapper tweed and black velvet smoking jacket",
+      "alignment": "Neutral",
+      "demeanor": [
+        "erudite",
+        "discreet",
+        "eminently reasonable"
+      ],
+      "mannerisms": "Twitches one eye when perturbed",
+      "speech": "Smooth and sonorous. Woldish, Caprice, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "Loves mysterious treasure maps and codes",
+        "Obsessed with the legend of the lost hoard of Dewidort of Smerne, said to include the Hanglehorn—a lost heirloom of House Hogwarsh"
+      ],
+      "secrets": [
+        "Knows that Dewidort of Smerne magically hid his treasures inside solid rock. Suspects that his lost hoard is concealed within a standing stone somewhere in Dolmenwood",
+        "Is a distant cousin of Lord Ramius"
+      ],
+      "location_id": "11",
+      "occupation": "Jeweller & Antiquarian"
+    },
+    {
+      "npc_id": "sandrine_candlewick",
+      "name": "Sandrine Candlewick",
+      "title": "Chantry Proprietor",
+      "description": "A stocky human woman in her 20s, with plaited red hair, ruddy cheeks, and aquiline nose.",
+      "kindred": "Human",
+      "age_description": "in her 20s",
+      "dress": "Dresses in a colourful, patchwork apron over frilly dresses",
+      "alignment": "Neutral",
+      "demeanor": [
+        "beaming",
+        "easily flustered"
+      ],
+      "mannerisms": null,
+      "speech": "Soft, deliberate. Woldish, basic Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To discover the location (believed to be somewhere in Dwelmfurgh) of the spiritual ascension of her ancestor, Abygail Grynn, and to petition the Church for her to be accepted into the host of saints"
+      ],
+      "secrets": [
+        "Recently took over the Chantry, following the death of her mother"
+      ],
+      "location_id": "13",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "blinghop_drooglight",
+      "name": "Blinghop Drooglight",
+      "title": "Coldlanks Proprietor",
+      "description": "A lanky woodgrue woman in her middle years, with greying fur, weepy eyes, and bright orange ears.",
+      "kindred": "Woodgrue",
+      "age_description": "middle years",
+      "dress": "Wears patchwork, many-pocketed leather garments",
+      "alignment": "Neutral",
+      "demeanor": [
+        "crude",
+        "loud-mouthed"
+      ],
+      "mannerisms": "Gleefully incites brawls and playful anarchy",
+      "speech": "Hoarse babbling and cackling. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Establish a secret den beneath the Escalade",
+        "Liaisons with broad-minded fairies of all kinds"
+      ],
+      "secrets": [],
+      "location_id": "15",
+      "occupation": "Tavern proprietor"
+    },
+    {
+      "npc_id": "venerable_adreline_sumner",
+      "name": "Venerable Adreline Sumner",
+      "title": "Archdeacon of High-Hankle",
+      "description": "A slight human woman, of wan complexion and advancing years.",
+      "kindred": "Human",
+      "age_description": "advancing years",
+      "dress": "Dresses in plain white robes, with silver hair in a long braid",
+      "alignment": "Lawful",
+      "demeanor": [
+        "introverted",
+        "contemplative",
+        "stern when required"
+      ],
+      "mannerisms": "Prone to paranoia",
+      "speech": "Wavering. Woldish, Liturgic, Caprice.",
+      "languages": [
+        "Woldish",
+        "Liturgic",
+        "Caprice"
+      ],
+      "desires": [
+        "Private discourse with Abbot Hargle about Bishop Sanguine's waxing zealotry"
+      ],
+      "secrets": [
+        "The Archdeacon is utterly absorbed in Church matters, and knows little of High-Hankle's recent degeneration"
+      ],
+      "location_id": "14",
+      "occupation": "Archdeacon"
+    },
+    {
+      "npc_id": "joan_ablewright",
+      "name": "Joan Ablewright",
+      "title": "Commander of the Order of St Signis",
+      "description": null,
+      "kindred": null,
+      "age_description": null,
+      "dress": null,
+      "alignment": null,
+      "demeanor": [],
+      "mannerisms": null,
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "location_id": "6",
+      "occupation": "Commander of religious order"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "2 dandies (Level 1 knights—DMB) duel in a square.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "2d4 town guards arresting 1d4 shorthorns (DMB) on false claims of smuggling, demanding a hefty bribe.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "2 griffons (DMB) shriek in battle above the Griffonry.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "griffon"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "3 grimalkins (DMB) in estray carrying the huge skull of a mogglewomp (DMB) to the Florid Envoy.",
+          "npcs_involved": [
+            "Gemrand Soliquant"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Sir Waverly \"the Orange\" and 4 knights (Level 3 knights—DMB) parade a noble, chained griffon (DMB) through the streets. Crowds of onlookers cheer.",
+          "npcs_involved": [
+            "Sir Waverly \"the Orange\""
+          ],
+          "monsters_involved": [
+            "griffon"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d6 urchins roam the streets begging, on their way to their homes in the lower layer of the Escalade.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "Venerable Adreline Sumner and 1d6 acolytes (Level 1 clerics—DMB) marching to the Silent Tower to consult the Order of St Signis on rumours of an undead plague around the ruins of Lankston (hex 0610).",
+          "npcs_involved": [
+            "Venerable Adreline Sumner"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "2d4 gentry raucously roam the streets, singing and laughing, after a night at the Balustrade.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "2d6 thieves (Level 1 thieves—DMB) set fire to the shop of an artisan who refused to pay their \"protection\" fees.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A man lies dying, his face burned by acid. He is a guild thief who crossed Bagsley Corundum.",
+          "npcs_involved": [
+            "Bagsley Corundum"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "2d6 acolytes (Level 1 clerics—DMB) silently patrol.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 thieves furtively bringing fenced statuettes from Hankle Heirlooms into the lower levels of the Escalade.",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Griffon",
+      "monster_id": "griffon",
+      "description": "The beasts are sometimes seen flying above the garrison, reined with long chains of fairy silver",
+      "size": null,
+      "type": null,
+      "intelligence": null,
+      "alignment": null,
+      "level": null,
+      "ac": null,
+      "hp": null,
+      "saves": null,
+      "attack": null,
+      "speed": null,
+      "morale": null,
+      "xp": null,
+      "special_abilities": []
+    }
+  ],
+  "roads": [
+    "South Road",
+    "Swallop Road",
+    "Tankards Road"
+  ],
+  "connections": [
+    "Inn of the Tankards (hex 0511)",
+    "Lord Ramius' realm",
+    "Lankshorn",
+    "regions of the High Wold to the south"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      152,
+      153,
+      154,
+      155,
+      156,
+      157
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

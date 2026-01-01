@@ -1,0 +1,703 @@
+{
+  "name": "Cobton-on-the-Shiver",
+  "settlement_id": "cobton_on_the_shiver",
+  "hex_id": "1104",
+  "size": "village",
+  "population": 200,
+  "population_description": "200—village",
+  "tagline": "A thriving village of Cobbins, ruled by cruel crookhorn ruffians",
+  "description": "An idyllic-seeming village situated at a bend in the River Shiver, in the Valley of Wise Beasts. Most of the buildings in the village are quaint little houses of wood, half human size, with charmingly carved and painted gables. Mingled among them are a number of treehouses, stilt-houses (beside the river), and a few larger buildings of stone (located around the village square).",
+  "atmosphere": "Upon first impression, all in Cobton seems well. Animals merrily go about their business, fishing, sailing little boats, making and mending, smoking pipes and drinking tea. In truth, however, the inhabitants of the Valley live under the totalitarian rule of the crookhorn Baron Fragglehorn and his band of ruffians.",
+  "inhabitants_description": "Talking, humanoid animals who call themselves Cobbins, 2′–3′ tall, dressed in dapper woollens and tweed. Many species of Cobbins live in Cobton including badgers, foxes, hares, moles, mice, otters, rabbits, rats, squirrels, toads, water voles, and weasels.",
+  "governance": {
+    "ruler_type": "baron",
+    "ruler_name": "Baron Fragglehorn",
+    "ruling_body": "crookhorn ruffians",
+    "domain": "Atanuwë",
+    "political_status": "under totalitarian rule",
+    "notes": "The village is within the dominion of Atanuwë, under the totalitarian rule of the crookhorn Baron Fragglehorn and his band of ruffians from his tower in hex 1004."
+  },
+  "religion": {
+    "primary_deity": "Atanuwë (the Nag-Lord)",
+    "religious_buildings": [
+      "Village Church"
+    ],
+    "religious_practices": "Daily communal worship of the Nag-Lord is enforced. Every evening, the whole village gathers at the church for forced communal hymns and prayer.",
+    "notes": "The animals of Cobton worship Atanuwë as lord of all creation. The villagers refer to their master as the Nag-Lord, not knowing of its other names."
+  },
+  "history": [
+    "Atanuwë decided it needed servitors and worshippers upon taking up lordship of the abandoned reaches of northern Dolmenwood",
+    "It created the crookhorns to do its bidding in war, but also saw fit to awaken sentience in the woodland animals of the nearby valley",
+    "Cobton was built upon the ruins of a human settlement which had lain derelict and overgrown for untold centuries",
+    "Atanuwë tasked the newly awakened Cobbins with clearing the ruins and building a village for their own kind there, in mockery of the proud creations of humankind"
+  ],
+  "current_events": [
+    "Daily communal worship of the Nag-Lord is enforced, and it is illegal (on pain of death!) for any Cobbin to leave the Valley",
+    "While the majority of Cobbins simply wish to lead a quiet life and stay out of trouble, a rebellion is brewing—the Grey League",
+    "After a recent backlash, the Grey League is reduced to three mice, a badger, and two water voles, in addition to their leader, Wallobry Trundlehorn"
+  ],
+  "rumors_reference": "See Rumours in Cobton-on-the-Shiver, p444",
+  "special_features": [
+    {
+      "name": "Illegal to Bear Arms",
+      "description": "The bearing of anything more threatening than a dagger or a stout staff is banned in Cobton",
+      "mechanical_effect": "Transgressors quickly attract the attentions of the crookhorn guards",
+      "affected_area": "entire village"
+    },
+    {
+      "name": "Reaction to Outsiders",
+      "description": "Visitors from beyond the Valley are a once-in-a-lifetime event for the residents of Cobton",
+      "mechanical_effect": "Strangers rapidly come to the attention of the crookhorn village guard, who try to imprison or expel them",
+      "affected_area": "entire village"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 10.0,
+    "available_categories": [
+      "daggers",
+      "stout staffs"
+    ],
+    "unavailable_categories": [
+      "weapons larger than a dagger",
+      "mounts",
+      "armour"
+    ],
+    "special_items": [
+      "All items for sale in Cobton are sized for Cobbins—approximately half human size"
+    ],
+    "notes": "Weapons larger than a dagger are not available (except in secret, to trusted friends of the smith). Mounts and armour cannot be bought in Cobton."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The King's Head",
+      "location_type": "inn",
+      "description": "A human-height ground floor of ancient stone, augmented with a miniature upper floor in red-varnished wood. The King's Head is the social nexus of the village.",
+      "interior": "Cheery and spotlessly clean. Miniature (half human size) tables are decked with embroidered tablecloths and lace doilies, and ringed with dainty stools carved with sylvan scenes. Little cast iron lanterns hang from the human-height (8′) ceiling, lending a warm, flickering glow to the space. Rocking chairs with cosy cushions stand in the corners.",
+      "exterior": "A portrait of Atanuwë, depicted (as is traditional in the Valley) with white fur, purple horn, pink mane, a toothy smirk, and seven eyes in a row.",
+      "populace": "Cobbins of all species, drinking, singing, and dancing upon tables. Crookhorn guards poke their heads in periodically.",
+      "atmosphere": "Social nexus of the village with warm, flickering atmosphere",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Common quality, only Cobbin-sized beds available",
+          "cost": "standard price",
+          "notes": "Medium characters may be offered a cramped space in the common room"
+        },
+        {
+          "name": "Shiverston ale",
+          "description": "The only drink served is the local brew—a golden ale with a smooth texture and a hint of honey",
+          "cost": "1sp a (half-sized) mug",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "smunkey_o_brady"
+      ],
+      "special_features": [
+        "No stabling - the inn has no stable, and the village no facilities for handling large mounts"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Village Square and Docks",
+      "location_type": "landmark",
+      "description": "A neat cobbled square beside the river, with a set of small piers and moorings.",
+      "interior": null,
+      "exterior": "Hanging ominously in the middle of the square are the rotting corpses of three hares (erstwhile members of the Grey League).",
+      "populace": "Once a week—on Frisk—Cobbins from throughout the Valley gather here to sell their wares and produce.",
+      "atmosphere": "Ominous due to the gallows, but bustling on market day",
+      "services": [
+        {
+          "name": "Boat travel",
+          "description": "Passage on a boat to hexes 1004 or 1203",
+          "cost": "1gp per foot passenger",
+          "notes": "Mounts and vehicles cannot be handled. The journey takes 1½ hours to 1004 and 2 hours to 1203."
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Gallows with three hanged hares",
+        "Weekly Frisk market"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Guardhouse and Gaol",
+      "location_type": "guardhouse",
+      "description": "An old stone house of human dimensions, extended with a wooden lookout tower and used as the village guard's base of operations.",
+      "interior": "12 crookhorns are barracked here, along with the guard captain Briggsy Bugber. 2d6 of them are present at any given time, while the rest patrol the village.",
+      "exterior": "Old stone house with wooden lookout tower extension",
+      "populace": "Crookhorn guards and their captain",
+      "atmosphere": "Oppressive and militaristic",
+      "services": [],
+      "npcs": [
+        "briggsy_bugber"
+      ],
+      "special_features": [
+        "Prisoner: A rat named Hackle Kingsley is currently in the gaol, awaiting trial for the crime of attempting to leave the Valley"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Briggsy Bugber"
+    },
+    {
+      "number": 4,
+      "name": "The Shiverston Brewery",
+      "location_type": "brewery",
+      "description": "A long, low building of black-glazed bricks, alive with the sounds of cheery industry.",
+      "interior": "Cellars where the Grey League holds their candlelit meetings",
+      "exterior": "Long, low building of black-glazed bricks",
+      "populace": "Brewery workers",
+      "atmosphere": "Industrial but with secret resistance activity",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Secret meetings: Of late, the Grey League has held their candlelit meetings in the cellars of the brewery"
+      ],
+      "secrets": [
+        "Grey League meeting place"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Village Church",
+      "location_type": "church",
+      "description": "A wee, human-sized chapel repurposed as a Cobbin-sized church praising the Nag-Lord. The walls are of pebble-dashed stucco and a wicker unicorn is perched atop the pointed roof.",
+      "interior": "Polished river stones serve as seats. A gaudily painted clay effigy of the Nag-Lord stands upon a 4′ high altar. A holy unicorn horn (actually a painted piece of carved wood) hangs by a chain from the ceiling.",
+      "exterior": "Pebble-dashed stucco walls with a wicker unicorn perched atop the pointed roof",
+      "populace": "Cobbins cower before the effigy of their lord, praying for mercy. Every evening, the whole village gathers at the church for (forced) communal hymns and prayer.",
+      "atmosphere": "Oppressive religious fear and forced worship",
+      "services": [],
+      "npcs": [
+        "briggsy_bugber"
+      ],
+      "special_features": [
+        "Briggsy Bugber acts as priest, bearing a viciously spiked ceremonial mace and wearing a cloak studded with hundreds of horns"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "The Smithy",
+      "location_type": "shop",
+      "description": "The village's smithy is dug into the banks of the eastern side of the river, its location signified by a tall brick chimney emerging from the grass.",
+      "interior": "Underground smithy workspace",
+      "exterior": "Tall brick chimney emerging from grass, entrance from riverside dock or back door",
+      "populace": "The smith, Fosbry Hollowhop",
+      "atmosphere": "Industrial and secretive",
+      "services": [
+        {
+          "name": "Smithing",
+          "description": "Cares for the village's supplies in pots, pans, and tools",
+          "cost": "standard prices",
+          "notes": null
+        },
+        {
+          "name": "Illegal weapons",
+          "description": "Illegally manufactures weapons for the Grey League in secret",
+          "cost": "ten times the normal price",
+          "notes": "Only for trusted Grey League members"
+        }
+      ],
+      "npcs": [
+        "fosbry_hollowhop"
+      ],
+      "special_features": [
+        "Secret weapon manufacturing for Grey League"
+      ],
+      "secrets": [
+        "Manufactures illegal weapons for the resistance"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Toad's Hole",
+      "location_type": "shop",
+      "description": "A round door and windows in a little knoll, bordered by well-tended herb gardens and a wicker fence. The village herbalist does nothing to advertise the presence of his business, but is known to all locals.",
+      "interior": "A series of cosy subterranean chambers with rounded doors, walls, and ceilings (6′ tall at their highest point). Shelves stacked with textbooks, notebooks, and jars of ointment line the walls. Bundles of drying herbs hang beside fireplaces.",
+      "exterior": "A plain wooden door with a brass plaque: 'Dr. Simeone Fisher—all who ail are welcome.'",
+      "populace": "Dr. Simeone Fisher, the herbalist",
+      "atmosphere": "Cosy, scholarly, and medicinal",
+      "services": [
+        {
+          "name": "Mushrooms and herbs",
+          "description": "The preparations listed in the Dolmenwood Player's Book",
+          "cost": "standard prices",
+          "notes": "standard chance of availability"
+        },
+        {
+          "name": "Infirmary",
+          "description": "Private care for patients",
+          "cost": "5gp per day",
+          "notes": "Ailments are cured after half the normal duration and there is a 1-in-4 chance of magical diseases being healed after 2d6 days. The cost of any specific herbs required is extra."
+        }
+      ],
+      "npcs": [
+        "doctor_simeone_fisher"
+      ],
+      "special_features": [
+        "Well-tended herb gardens"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Water Mill",
+      "location_type": "mill",
+      "description": "An imposing stone building of human dimensions with a granary tower at the rear. The lapping of the mill wheel and the grinding of the stone are ceaseless—the place produces sack after sack of fine, white flour.",
+      "interior": "Mill workspace with secret door in cellar leading to harpy's lair - a suite of plushly decorated boudoirs and bedchambers, where the light of hypnotically flickering purple lanterns reflects off dozens of mirrors",
+      "exterior": "Imposing stone building with granary tower",
+      "populace": "The mouse millers (husband and wife) and their four children",
+      "atmosphere": "Industrial but with sinister undertones due to harpy influence",
+      "services": [],
+      "npcs": [
+        "old_madame_whipthorn"
+      ],
+      "special_features": [
+        "Mouse informants: Every evening, the miller mice go below and tell the harpy of all that they saw and heard that day"
+      ],
+      "secrets": [
+        "Harpy in the cellar: Old Madame Whipthorn lives secreted in the cellar as a spy for Atanuwë"
+      ],
+      "monsters": [
+        "old_madame_whipthorn"
+      ],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "Dobbledown Tea Rooms",
+      "location_type": "tavern",
+      "description": "A little white-walled farmhouse with a thatched roof, sitting at the edge of several acres of arable.",
+      "interior": "The front room and kitchen of the farm now serve as a public tea room, with little rickety tables and chairs situated around a circular, green rug embroidered with the smiling cow.",
+      "exterior": "A smiling cow wearing a chef's hat (sign)",
+      "populace": "The owner, a twitchy squirrel named Nathaniel Nutkin, scurries between tables serving guests",
+      "atmosphere": "Cosy farmhouse tea room atmosphere",
+      "services": [
+        {
+          "name": "Tea and scones",
+          "description": "A pot of tea with creamy milk",
+          "cost": "2sp",
+          "notes": null
+        },
+        {
+          "name": "Full cream tea",
+          "description": "Tea with scones, butter, clotted cream, and blackberry jam",
+          "cost": "1gp",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Several acres of arable land"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "River Path",
+      "location_type": "landmark",
+      "description": "A little footpath (not suitable for large mounts or vehicles) that winds along the northern bank of the River Shiver, leading from Baron Fragglehorn's tower (hex 1004) to Longshanks Falls (hex 1203).",
+      "interior": null,
+      "exterior": "Winding footpath along riverbank",
+      "populace": "Occasional travelers on foot",
+      "atmosphere": "Peaceful riverside path",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Not suitable for large mounts or vehicles"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "wallobry_trundlehorn",
+      "name": "Wallobry Trundlehorn",
+      "title": "Grey League Leader",
+      "description": "An old mole lady with twinkling eyes and a grey patch on her head",
+      "kindred": "Cobbin (Mole)",
+      "age_description": "old",
+      "dress": "Dresses in ill-fitting woollens and a floppy, floral hat",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Timid",
+        "principled"
+      ],
+      "mannerisms": "Looks at the ground when speaking",
+      "speech": "Hesitant mumbling",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "All crookhorns expelled from the Valley",
+        "To marry the innkeeper, Smunkey O'Brady"
+      ],
+      "secrets": [],
+      "location_id": null,
+      "occupation": "Resistance leader"
+    },
+    {
+      "npc_id": "smunkey_o_brady",
+      "name": "Smunkey O'Brady",
+      "title": "King's Head Proprietor",
+      "description": "A tan male hare, with one bent ear",
+      "kindred": "Cobbin (Hare)",
+      "age_description": null,
+      "dress": "Dresses in red and white polka dot pantaloons with a black apron",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Excitable",
+        "boastful",
+        "conspiratorial"
+      ],
+      "mannerisms": "Tugs on his bent ear when thinking",
+      "speech": "Whiny drawl",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "For Cobton to be freed from slavery",
+        "To sail upon the mythical Lake Longmere"
+      ],
+      "secrets": [
+        "Knows of the Grey League and has contacts",
+        "Knows that Baron Fragglehorn is afraid of snakes"
+      ],
+      "location_id": "1",
+      "occupation": "Innkeeper"
+    },
+    {
+      "npc_id": "briggsy_bugber",
+      "name": "Briggsy Bugber",
+      "title": "Crookhorn Guard Captain",
+      "description": "A red-furred, hunch-backed crookhorn woman with frenzied, staring eyes and a single, spiralling horn in the centre of her forehead (regarded as highly auspicious)",
+      "kindred": "Crookhorn",
+      "age_description": null,
+      "dress": "Wears a chainmail hauberk daubed with blood",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Brutal",
+        "utterly humourless"
+      ],
+      "mannerisms": null,
+      "speech": "Dictatorial braying",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To serve in battle under Captain Snarkscorn—bored of her post in Cobton"
+      ],
+      "secrets": [],
+      "location_id": "3",
+      "occupation": "Guard Captain"
+    },
+    {
+      "npc_id": "doctor_simeone_fisher",
+      "name": "Doctor Simeone Fisher",
+      "title": "Herbalist",
+      "description": "An elderly male toad with dark blue skin and unusual pale violet eyes",
+      "kindred": "Cobbin (Toad)",
+      "age_description": "elderly",
+      "dress": "Dresses in pristine, medical whites, with little spectacles perched upon his nose",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Cantankerous but kindly"
+      ],
+      "mannerisms": null,
+      "speech": "Rumbling and burping",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Rare herbs and mushrooms",
+        "To cure the crookhorns of their maladies (believing their evil nature to be a product of their sickness)"
+      ],
+      "secrets": [],
+      "location_id": "7",
+      "occupation": "Herbalist"
+    },
+    {
+      "npc_id": "fosbry_hollowhop",
+      "name": "Fosbry Hollowhop",
+      "title": "Smith",
+      "description": "A middle-aged male fox with grizzled fur and an eye patch",
+      "kindred": "Cobbin (Fox)",
+      "age_description": "middle-aged",
+      "dress": "Dresses in scorched leathers and always carries a flask of strong spirits in his belt",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Affable friend-to-all"
+      ],
+      "mannerisms": "Remains carefully neutral, politically",
+      "speech": "Eloquent and meandering",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To be the wealthiest Cobbin in the Valley—and leader of Cobton—if the crookhorn regime is deposed"
+      ],
+      "secrets": [],
+      "location_id": "6",
+      "occupation": "Smith"
+    },
+    {
+      "npc_id": "old_madame_whipthorn",
+      "name": "Old Madame Whipthorn",
+      "title": "Harpy",
+      "description": "A bent, warty, pallid-skinned crone with staring red eyes and the legs, tail, and wings of a great crow. Scrawny, 3-jointed arms emerge from her shoulders, below the wings. On her head is a luxuriant cascade of blonde curls",
+      "kindred": "Harpy",
+      "age_description": "old crone",
+      "dress": "She adorns herself with pearls",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Narcissistic",
+        "loves flattery"
+      ],
+      "mannerisms": null,
+      "speech": "The beautiful, clear voice of a young noblewoman",
+      "languages": [
+        "Woldish",
+        "Gaffe",
+        "Sylvan",
+        "the tongue of crows"
+      ],
+      "desires": [
+        "Magic items",
+        "To eat the flesh of magicians",
+        "To bear an Atacorn—a spawn of the Nag-Lord"
+      ],
+      "secrets": [
+        "A charmed willow stick (Wand of Phantasm with 12 charges)",
+        "Pearl brooch (1,500gp) and earrings (600gp each)"
+      ],
+      "location_id": "8",
+      "occupation": "Spy for Atanuwë"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d4 cackling crookhorn guards tripping passersby",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Crookhorn Guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "2 moles flounder in the river, their boat capsized",
+          "npcs_involved": [
+            "2 moles"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "One of the mouse millers (see the Water Mill) with a glazed expression, gazing into empty space",
+          "npcs_involved": [
+            "mouse miller"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "2d3 crookhorn guards round up everyone in the village to the church to celebrate the Nag-Lord's birthday (of which there are several per year)",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Crookhorn Guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "The public hanging of the rat Hackle Kingsley, who has been lingering in the gaol for some months",
+          "npcs_involved": [
+            "Hackle Kingsley"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "1d4 crookhorn guards drag a yelping rabbit—caught with a knife longer than the permitted 6″—to the gaol",
+          "npcs_involved": [
+            "rabbit"
+          ],
+          "monsters_involved": [
+            "Crookhorn Guards"
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d3 heretical mice remove the hanged hares from the village square and replace them with unicorn effigies",
+          "npcs_involved": [
+            "heretical mice"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "Briggsy Bugber slipping into the mill's back door to consult with Old Madame Whipthorn",
+          "npcs_involved": [
+            "Briggsy Bugber",
+            "Old Madame Whipthorn"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "Loud cheers and merry singing drift from the Dobbledown Tea Rooms—a birthday party",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "1d4 crookhorn guards enforcing an impromptu curfew",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "Crookhorn Guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "Briggsy Bugber and 2d4 crookhorn guards march through the streets to welcome a visiting party including Baron Fragglehorn himself",
+          "npcs_involved": [
+            "Briggsy Bugber",
+            "Baron Fragglehorn"
+          ],
+          "monsters_involved": [
+            "Crookhorn Guards"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Wallobry Trundlehorn sneaking round the back of the Shiverston Brewery for a secret meeting of the Grey League",
+          "npcs_involved": [
+            "Wallobry Trundlehorn"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Briggsy Bugber",
+      "monster_id": "briggsy_bugber",
+      "description": "A red-furred, hunch-backed crookhorn woman with frenzied, staring eyes and a single, spiralling horn in the centre of her forehead",
+      "size": "Medium",
+      "type": "Mortal—Sentient",
+      "intelligence": "sentient",
+      "alignment": "Chaotic",
+      "level": 4,
+      "ac": 14,
+      "hp": "22",
+      "saves": "D10 R11 H12 B13 S14",
+      "attack": "Bite/butt (+3, 1d8 + disease) or great axe (+3, 2d4)",
+      "speed": 40,
+      "morale": 9,
+      "xp": 130,
+      "special_abilities": [
+        {
+          "name": "Disease",
+          "description": "Anyone bitten or butted by Briggsy must Save Versus Doom or be afflicted by a nasty infection (see crookhorn—DMB)"
+        }
+      ]
+    },
+    {
+      "name": "Old Madame Whipthorn",
+      "monster_id": "old_madame_whipthorn",
+      "description": "A bent, warty, pallid-skinned crone with staring red eyes and the legs, tail, and wings of a great crow. Scrawny, 3-jointed arms emerge from her shoulders, below the wings. On her head is a luxuriant cascade of blonde curls. She adorns herself with pearls.",
+      "size": null,
+      "type": "Harpy",
+      "intelligence": "sentient",
+      "alignment": "Chaotic",
+      "level": null,
+      "ac": null,
+      "hp": null,
+      "saves": null,
+      "attack": null,
+      "speed": null,
+      "morale": null,
+      "xp": null,
+      "special_abilities": [
+        {
+          "name": "Possessions",
+          "description": "A charred willow stick (Wand of Phantasm with 12 charges). Pearl brooch (1,500gp) and earrings (600gp each)."
+        }
+      ]
+    }
+  ],
+  "roads": [
+    "River Path"
+  ],
+  "connections": [
+    "hex 1004",
+    "hex 1203"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      138,
+      139,
+      140,
+      141
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

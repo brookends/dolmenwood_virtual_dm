@@ -1,0 +1,1001 @@
+{
+  "name": "Castle Brackenwold",
+  "settlement_id": "castle_brackenwold",
+  "hex_id": "1508",
+  "size": "city",
+  "population": 8700,
+  "population_description": "8,700—city",
+  "tagline": "The fortified castle and keep of the dukes of Brackenwold sit proudly atop a tall hill, with a city stretched at their feet",
+  "description": "Located four miles from the eaves of Dolmenwood, the fortified castle and keep of the dukes of Brackenwold sit proudly atop a tall hill, with a city stretched at their feet. While the name Castle Brackenwold properly refers only to the castle itself, the surrounding city is commonly included in the designation.",
+  "atmosphere": "A bustling metropolis that seems a world apart from the rustic ways of Dolmenwood",
+  "inhabitants_description": "As is the way in all large settlements, folk of all kinds live in Castle Brackenwold. The total population is just under 9,000 souls, principally humans native to the city, but with a sizeable number of immigrants from elsewhere in the Duchy and beyond. Approximately 1,000 people dwell within the walled Inner City.",
+  "governance": {
+    "ruler_type": "duke",
+    "ruler_name": "Duke of Brackenwold",
+    "ruling_body": "The Duke of Brackenwold himself directly rules over Castle Brackenwold",
+    "domain": "Duchy of Brackenwold",
+    "political_status": "seat of ducal power",
+    "notes": null
+  },
+  "religion": {
+    "primary_deity": "St Signis",
+    "religious_buildings": [
+      "Cathedral of St Signis",
+      "Seminary of the 100 Martyrs",
+      "Bishop's Palace"
+    ],
+    "religious_practices": "Castle Brackenwold is the seat of the Pluritine Church in the Dolmenwood region. Even in the bustling metropolis, however, seemingly a world apart from the rustic ways of Dolmenwood, remnants of ancient Gwyrae worship can be spotted.",
+    "notes": null
+  },
+  "history": [
+    "Castle Brackenwold is an ancient place whose oldest parts were built by elf lords in days of yore, long before the people of Brackenwold migrated to Dolmenwood",
+    "This fact has blurred into legends hinting at the fairy blood of the noble line of Brackenwold",
+    "A pact was made in the unknown past, compelling each duke of the line of Brackenwold to sacrifice his first born daughter to the entity in the oubliette"
+  ],
+  "current_events": [
+    "The duke hosts a great tourney at midsummer each year",
+    "The ladies of the Brackenwold line have a propensity toward witchcraft and are allied with the witches"
+  ],
+  "rumors_reference": "See Rumours in Castle Brackenwold, p443",
+  "special_features": [
+    {
+      "name": "The Lost Wing",
+      "description": "A lost suite of rooms, visible from the outside but which no internal doors or stairways reach. Impetuous young nobles of each generation attempt to gain entrance to the lost rooms, but invariably meet an unpleasant and mysterious doom.",
+      "mechanical_effect": null,
+      "affected_area": "Ducal Keep"
+    },
+    {
+      "name": "The Oubliette",
+      "description": "A secret place in the dungeons of the keep where an ancient evil lurks, chained within the form of a stone throne atop a great pedestal.",
+      "mechanical_effect": null,
+      "affected_area": "Ducal Keep dungeons"
+    },
+    {
+      "name": "The Witches' Library",
+      "description": "Secret passages lead to an occult library in the dusty attics of a little-used tower, where the ladies of the Brackenwold line practice witchcraft.",
+      "mechanical_effect": null,
+      "affected_area": "Ducal Keep"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 1.0,
+    "available_categories": [
+      "standard equipment",
+      "unusual non-standard businesses"
+    ],
+    "unavailable_categories": [],
+    "special_items": [],
+    "notes": "In addition to the standard equipment and services listed in the DPB, unusual, non-standard businesses can be located with a little investigative work."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The Ducal Keep",
+      "location_type": "keep",
+      "description": "A lofty, white stone keep with numerous towers, turrets, minarets. The ducal keep is the ancestral home to the nobility of the Brackenwold line.",
+      "interior": "Exorbitant luxury. A seemingly endless procession of hallways, studies, drawing rooms, dining halls, and suites. Luxurious carpets, gold-leafed doorways, exquisite cabinetry, artisan wallpapers painted with scenes from fable and history.",
+      "exterior": "A lofty, white stone keep with numerous towers, turrets, minarets",
+      "populace": "The Duke of Brackenwold, the Duchess of Brackenwold, their unmarried daughter (Zoemina—a dashing and highly eligible young woman of 22), their youngest son (Edmund—a callow lad of 14), the Dowager Duchess (the duke's elderly mother—decrepit, dithering, and highly demanding), a continually shifting entourage of noble visitors, and nigh on a hundred servants",
+      "atmosphere": "Exorbitant luxury",
+      "services": [],
+      "npcs": [
+        "duke_of_brackenwold",
+        "duchess_of_brackenwold"
+      ],
+      "special_features": [
+        "The Lost Wing",
+        "The Oubliette",
+        "The Witches' Library"
+      ],
+      "secrets": [
+        "A pact compelling each duke to sacrifice his first born daughter to the entity in the oubliette"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Bishop's Palace",
+      "location_type": "palace",
+      "description": "An imposing, church-like building of black stone. The administrative locus of the Church within the Duchy of Brackenwold and home of the bishop.",
+      "interior": "Cathedralesque vaulted halls, sombre reading rooms, plush studies, and opulent appointment chambers.",
+      "exterior": "An imposing, church-like building of black stone",
+      "populace": "The Bishop of Brackenwold, several dozen assistants and librarians, several dozen servants, and a varying number of visiting Church dignitaries",
+      "atmosphere": "Imposing and ecclesiastical",
+      "services": [],
+      "npcs": [
+        "bishop_of_brackenwold"
+      ],
+      "special_features": [
+        "The Throne Room",
+        "The Episcopal Library",
+        "The Stellarium and the Night Tower"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 3,
+      "name": "Seminary of the 100 Martyrs",
+      "location_type": "seminary",
+      "description": "A 4-storeyed edifice decorated with grimacing gargoyles of dark stone. Priests of the Pluritine Church dwelling in the Dolmenwood region are trained within these halls.",
+      "interior": "Bustling common rooms, hushed hallways, contemplative courtyards.",
+      "exterior": "A 4-storeyed edifice decorated with grimacing gargoyles of dark stone",
+      "populace": "Abbot Hargle, Sanctus Primus, 100 monastics and priests in training, 15 clerics of the Order of St Faxis, a dozen librarians",
+      "atmosphere": "Contemplative and scholarly",
+      "services": [
+        {
+          "name": "Sage consultation",
+          "description": "Research into matters of Church lore",
+          "cost": "standard sage rates or free for Church servants",
+          "notes": null
+        },
+        {
+          "name": "Lodging",
+          "description": "Simple monastic lodgings and food for Church servants",
+          "cost": "2sp per night donation expected",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "abbot_hargle",
+        "sanctus_primus"
+      ],
+      "special_features": [
+        "The Theological Libraries",
+        "The Holy Gaol"
+      ],
+      "secrets": [
+        "Texts of questionable nature hidden in locked crypt vaults",
+        "Secret gaols and interrogation chambers for political prisoners, Drunes, and witches"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Abbot Hargle"
+    },
+    {
+      "number": 4,
+      "name": "Ducal Barracks",
+      "location_type": "barracks",
+      "description": "A long, low building of heavy stone with many small windows. Home to the castle garrison.",
+      "interior": "Spartan mess halls, plush officers' studies and smoking rooms, stark bunk rooms.",
+      "exterior": "A long, low building of heavy stone with many small windows",
+      "populace": "Captain Bogle (commander of the garrison), 80 soldiers, a dozen staff",
+      "atmosphere": "Military and spartan",
+      "services": [],
+      "npcs": [
+        "captain_merriman_bogle"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 5,
+      "name": "Tourney Grounds",
+      "location_type": "courtyard",
+      "description": "The paved inner courtyard of the castle, used as a practice grounds for the duke's soldiery and knights.",
+      "interior": null,
+      "exterior": "Paved inner courtyard",
+      "populace": "Duke's soldiery and knights",
+      "atmosphere": "Martial training ground",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "The Duke's Tourney at midsummer"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "Clod's Stair and the Headless Gate",
+      "location_type": "gate",
+      "description": "A wide stair climbs the steep northern slope of Clod's Seat, ascending from the streets of the Inner City to the castle itself. At the summit, the castle gate is flanked by two huge (30′ tall) statues of warrior kings. Both are headless.",
+      "interior": null,
+      "exterior": "Wide stair with headless statues flanking the gate",
+      "populace": "2d6+6 ducal guards stationed at any given time",
+      "atmosphere": "Imposing and well-guarded",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Two 30' tall headless statues of warrior kings"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Cathedral of St Signis",
+      "location_type": "cathedral",
+      "description": "The centre of worship in the city, the great cathedral of St Signis rivals the Ducal Keep in height and grandeur. The cathedral's exterior is a masterwork of architecture, bristling with gargoyles and flying buttresses.",
+      "interior": "An echoing nave of breathtaking height and architectural ingenuity, supported by pillars and ribs resembling the trunks and limbs of trees. Candle holders and censers of pure gold. A 20′ marble statue of St Signis standing cloaked behind the altar. A profusion of side-chapels dedicated to other saints.",
+      "exterior": "A masterwork of architecture, bristling with gargoyles and flying buttresses",
+      "populace": "Weeping supplicants, silent priests",
+      "atmosphere": "Sacred and awe-inspiring",
+      "services": [
+        {
+          "name": "Prayer blessing",
+          "description": "Characters praying may receive the blessing of St Signis: the ability to cast Silence",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "20' marble statue of St Signis",
+        "Side-chapels dedicated to other saints"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Square of the Eidolon",
+      "location_type": "square",
+      "description": "A wide, brick-paved square with a great iron statue at the centre. It depicts a looming phantom dressed in rags (known as the Eidolon), harried by two (much smaller) winged angels with swords.",
+      "interior": null,
+      "exterior": "Wide, brick-paved square with great iron statue",
+      "populace": "General public",
+      "atmosphere": "Mysterious and symbolic",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Great iron statue of the Eidolon with mysterious runes"
+      ],
+      "secrets": [
+        "The statue's origin is unknown and its runes cannot be deciphered even by magic"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "The Silent Gate",
+      "location_type": "gate",
+      "description": "The Inner City's south gate is flanked on each side by a statue of an angel with a finger raised to its lips in a gesture of silence.",
+      "interior": null,
+      "exterior": "Gate flanked by angel statues gesturing silence",
+      "populace": "2d6 soldiers of the city watch at any given time",
+      "atmosphere": "Quietly watchful",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Angel statues gesturing silence"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "Grand Market",
+      "location_type": "market",
+      "description": "The city's most luxurious markets take place daily in this cobblestoned square. Specialist merchants of different kinds are present on each particular day of the week.",
+      "interior": null,
+      "exterior": "Cobblestoned square",
+      "populace": "Specialist merchants, 1d6 soldiers of the city watch",
+      "atmosphere": "Bustling and luxurious",
+      "services": [
+        {
+          "name": "Colly markets",
+          "description": "Hounds, trained beasts, and rare animals",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Chime markets",
+          "description": "Jewellery and crystalware",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Hayme markets",
+          "description": "Antique books and maps",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Moot markets",
+          "description": "Gastronomic specialities from far and wide",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Frisk markets",
+          "description": "Wines and rare spirits",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Eggfast markets",
+          "description": "Curios, taxidermy, and objets d'art",
+          "cost": "varies",
+          "notes": null
+        },
+        {
+          "name": "Sunning markets",
+          "description": "Religious icons and jewellery",
+          "cost": "varies",
+          "notes": null
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Different specialist merchants each day of the week"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 11,
+      "name": "The Chateau",
+      "location_type": "inn",
+      "description": "A grandiose, 4-storey inn with a black wooden frame and painted wooden panels in the style of a rustic manor house. The Chateau is known as the city's second finest inn—despite the continued efforts of the proprietors, its reputation is one of affected luxury, rather than the true class of its rival, The Bitter Rose.",
+      "interior": "Private, waited rooms. A small auditorium music room with deep carmine wallpaper and dainty chairs upholstered in floral silk.",
+      "exterior": "Grandiose, 4-storey inn with black wooden frame and painted wooden panels",
+      "populace": "Flashy merchants, wealthy dilettantes, upcoming musicians and singers, foppish minor nobles and their fawning entourages",
+      "atmosphere": "Affected luxury",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of fancy quality",
+          "cost": "fancy rates",
+          "notes": null
+        },
+        {
+          "name": "Concerts",
+          "description": "Performances in the music room",
+          "cost": "5–10gp per evening",
+          "notes": "depending on the musicians performing"
+        }
+      ],
+      "npcs": [
+        "drouge_underhill"
+      ],
+      "special_features": [
+        "No public bar or common room",
+        "Music room for performances"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "The Maw",
+      "location_type": "gate",
+      "description": "The Inner City's west gate is shaped like the gaping mouth of a dragon-like monster.",
+      "interior": null,
+      "exterior": "Gate shaped like a dragon's gaping mouth",
+      "populace": "2d6 soldiers of the city watch at any given time",
+      "atmosphere": "Menacing",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Dragon mouth design"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 13,
+      "name": "The Shadow House",
+      "location_type": "guild hall",
+      "description": "Home to the city's only commercially-minded guild of magicians, whose services are available for hire, to the wealthy. The Shadow House appears to be an amalgamation of random parts of several smaller buildings of clashing styles. One side features a great astrological clock.",
+      "interior": "A bewildering maze of wood-panelled corridors, dingy libraries, magical laboratories, and oddly-dimensioned conference rooms. The Shadow House is certainly larger inside than it seems from the outside.",
+      "exterior": "Amalgamation of random parts of several smaller buildings of clashing styles with a great astrological clock",
+      "populace": "Half a dozen guildmembers, Lady Periwinkle",
+      "atmosphere": "Mysterious and magical",
+      "services": [
+        {
+          "name": "Detect magic",
+          "description": "Detection of magic on an item",
+          "cost": "25gp",
+          "notes": "takes 1d4 days, item must be left at the House"
+        },
+        {
+          "name": "Permanent enchantments",
+          "description": "Permanent magicks of warding and detection",
+          "cost": "100gp consultation fee, actual magic begins at 500gp",
+          "notes": "for wealthy clients, principally merchants"
+        }
+      ],
+      "npcs": [
+        "lady_periwinkle"
+      ],
+      "special_features": [
+        "Larger inside than outside",
+        "Brass imp's face addresses visitors",
+        "Secret entrance for guildmembers"
+      ],
+      "secrets": [
+        "Lady Periwinkle dwells in a sub-dimensional manor accessible from the cellars"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 14,
+      "name": "The Bitter Rose",
+      "location_type": "inn",
+      "description": "Once the home of a minor noble, this old-fashioned wooden manor now acts as the city's fanciest inn.",
+      "interior": "The manor's former feasting hall, now furnished with discreetly spaced tables, candles, silver cutlery, and leather-upholstered seating. Musicians play tastefully subdued tunes from a balcony. Private dining rooms converted from studies and smoking rooms.",
+      "exterior": "Old-fashioned wooden manor",
+      "populace": "Rich merchants and minor nobles, accompanied by a smattering of bodyguards",
+      "atmosphere": "True class and luxury",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of fancy quality",
+          "cost": "fancy rates",
+          "notes": null
+        },
+        {
+          "name": "Rare wines",
+          "description": "One of the finest wine cellars in the duchy",
+          "cost": "varies",
+          "notes": "always has all wines listed in DPB in stock"
+        },
+        {
+          "name": "The ducal suite",
+          "description": "Extra-luxurious suite for visiting nobility",
+          "cost": "20gp per night",
+          "notes": "may require 100gp in palm greasing to book directly"
+        },
+        {
+          "name": "Portrait painting",
+          "description": "Performed by sanctioned artist",
+          "cost": "500gp",
+          "notes": "takes 1d6+6 days"
+        }
+      ],
+      "npcs": [
+        "hadle_butterwheeve"
+      ],
+      "special_features": [
+        "Secret passage to the Frolicke"
+      ],
+      "secrets": [
+        "Owners keep their identity well-guarded",
+        "Secret passage to The Frolicke via wine cellar"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 15,
+      "name": "Royal Institute of Physicks and Sorcerers",
+      "location_type": "institute",
+      "description": "An imposing, ecclesiastical-looking building of dark stone with a red tiled roof and two pointy towers. This is the farthest flung outpost of a magicians' guild of some influence in the wider kingdom beyond Dolmenwood—the pompously titled Royal Institute of Physicks and Sorcerers. The institute has the honour of being the only magic guild officially sanctioned by the nobility.",
+      "interior": "Chilly flagstoned passages, sprawling libraries, cosy studies warmed by enchanted purple flames, secluded alchemical laboratories. A profusion of odd statues lurks in nooks and corners and upon high plinths.",
+      "exterior": "Imposing, ecclesiastical-looking building of dark stone with red tiled roof and two pointy towers",
+      "populace": "Four lecturers (including Professor Edwynne Woglemain), a dozen apprentices, and a handful of servants",
+      "atmosphere": "Scholarly and mysterious",
+      "services": [],
+      "npcs": [
+        "professor_edwynne_woglemain"
+      ],
+      "special_features": [
+        "The Feast Hall",
+        "The Heptagrammic Vault"
+      ],
+      "secrets": [
+        "A demon is currently trapped in the Heptagrammic Vault",
+        "Forbidden magicks of summoning and dimensional travel are explored"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 16,
+      "name": "Fool's Row",
+      "location_type": "plaza",
+      "description": "Following King's Highway into Castle Brackenwold and through the Sunken Gate, one comes to a breezy plaza known colloquially as Fool's Row.",
+      "interior": null,
+      "exterior": "Breezy plaza lined with heroic statues",
+      "populace": "Jugglers, fire-breathers, sword-eaters, animal tamers, conjurers, 1d6 soldiers of the city watch",
+      "atmosphere": "Lively and entertaining",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Heroic statues including Sir Windlass and Sir Chyde",
+        "Autumnal parade on 7th of Reedwryme"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 17,
+      "name": "The Sunken Gate",
+      "location_type": "gate",
+      "description": "The east gate to the Inner City is (due to a long-forgotten quirk of planning) located beneath the wall. A stairway descends 20′ on either side of the wall, leading to a broad tunnel with the portcullised gate at its middle.",
+      "interior": "Broad tunnel with portcullised gate",
+      "exterior": "Stairways descending 20' on either side of the wall",
+      "populace": "2d6 soldiers of the city watch at any given time",
+      "atmosphere": "Unusual and well-guarded",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Gate located beneath the wall"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 18,
+      "name": "Well Gardens",
+      "location_type": "gardens",
+      "description": "Fancy public gardens, where well-to-do couples stroll on sunny days and love-struck poets compose odes.",
+      "interior": null,
+      "exterior": "Fancy public gardens with wishing well and swan fountain",
+      "populace": "Well-to-do couples, poets, 1d3 soldiers of the city watch",
+      "atmosphere": "Romantic and peaceful",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Wishing well with coins at bottom",
+        "Extravagant tiered marble fountain with swan heads"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 19,
+      "name": "The Frolicke",
+      "location_type": "gardens",
+      "description": "The slopes of Clod's Seat are devoted to scrupulously cultivated woods and gardens where nobles come to frolic and pontificate. The woods can only be accessed from within the castle; there is no public entry from the Inner City.",
+      "interior": null,
+      "exterior": "Scrupulously cultivated woods and gardens on the slopes of Clod's Seat",
+      "populace": "Nobles, 2d4 ducal guards",
+      "atmosphere": "Exclusive and refined",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Bronze statue of howling Duchess Phespherine",
+        "Secret passage to the Bitter Rose"
+      ],
+      "secrets": [
+        "Hidden trapdoor at foot of merman statue leads to secret passage",
+        "Duchess Phespherine's spirit haunts the woods"
+      ],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Castle access only"
+    },
+    {
+      "number": 20,
+      "name": "Herb Gardens",
+      "location_type": "gardens",
+      "description": "Neat rows of medicinal herbs, fastidiously maintained by the monks of the Seminary of 100 Martyrs.",
+      "interior": null,
+      "exterior": "Neat rows of medicinal herbs with old yew tree at center",
+      "populace": "Monks from the Seminary, Mistress Waldefroum",
+      "atmosphere": "Peaceful and medicinal",
+      "services": [],
+      "npcs": [
+        "mistress_hanctra_waldefroum"
+      ],
+      "special_features": [
+        "St Wort's tree - dilapidated old yew tree"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 21,
+      "name": "The Poppy Cock",
+      "location_type": "inn",
+      "description": "A dishevelled building of tarred planks with a huge weather-cock on the point of its roof. The Poppy Cock is an infamous den of gamblers, smugglers, cutpurses, and harlots.",
+      "interior": "A winding, low-roofed room, narrowing almost to a corridor in places, packed with rickety stools. The place reeks with the bonfire aroma of Burglar's Blend pipeleaf. Gloomy side-rooms for gambling.",
+      "exterior": "Dishevelled building of tarred planks with huge weather-cock",
+      "populace": "Thieves, thugs, mercenaries, gamblers, smugglers, cutpurses, harlots",
+      "atmosphere": "Rowdy and criminal",
+      "services": [
+        {
+          "name": "Lodgings and food",
+          "description": "Of poor quality",
+          "cost": "poor rates",
+          "notes": null
+        },
+        {
+          "name": "Pipeleaf",
+          "description": "All common and uncommon varieties",
+          "cost": "varies",
+          "notes": "purchased from pedlars in common room"
+        }
+      ],
+      "npcs": [
+        "one_eyed_gil"
+      ],
+      "special_features": [
+        "Thieves' Guild regular haunt",
+        "Card rooms for gambling"
+      ],
+      "secrets": [
+        "Thieves' guild meeting place with code phrases and gestures"
+      ],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "captain_merriman_bogle",
+      "name": "Captain Merriman Bogle",
+      "title": "Commander of the Garrison",
+      "description": "A red-cheeked, white-whiskered human man in his middle years, never seen without his pipe in his teeth",
+      "kindred": "Human",
+      "age_description": "in his middle years",
+      "dress": "Military attire",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Boastful",
+        "overbearing",
+        "rigorous"
+      ],
+      "mannerisms": "Twirls moustache",
+      "speech": "Staccato, rife with military metaphor. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Word on the whereabouts of his eldest son, Jocund, who disappeared in the vicinity of Prigwort while hunting",
+        "A landed title—has his eye on Malbleat's manse, Redwraith Manor (hex 0709)"
+      ],
+      "secrets": [],
+      "location_id": "4",
+      "occupation": "Level 10 Fighter, Commander of the Garrison"
+    },
+    {
+      "npc_id": "drouge_underhill",
+      "name": "Drouge Underhill",
+      "title": "The Chateau Proprietor",
+      "description": "A human man resisting his advancing years, his balding pate topped with a modish wig, his cheek adorned with a beauty mark, and his moustache fashionably curled",
+      "kindred": "Human",
+      "age_description": "advancing years",
+      "dress": "Modish wig, beauty mark, fashionably curled moustache",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Fawning",
+        "utterly vapid yet somehow engaging"
+      ],
+      "mannerisms": "Overly tactile",
+      "speech": "Rapid, nasal, jittery. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To eclipse the Bitter Rose as the town's finest inn",
+        "The hand of Lady Haeroth in marriage"
+      ],
+      "secrets": [],
+      "location_id": "11",
+      "occupation": "Inn Proprietor"
+    },
+    {
+      "npc_id": "lady_periwinkle",
+      "name": "Lady Periwinkle",
+      "title": "Guildmistress of the Shadow House",
+      "description": "A wan, wide-eyed human woman apparently in her 20s, dressed in elegant courtly gowns and adorned with a profusion of pearls. Her delicate, perfectly formed visage and lustrous silver locks enchant those who look upon her",
+      "kindred": "Human",
+      "age_description": "apparently in her 20s",
+      "dress": "Elegant courtly gowns adorned with a profusion of pearls",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Distant",
+        "distracted",
+        "flashes of blazing wit"
+      ],
+      "mannerisms": "Fleeting eye contact",
+      "speech": "Demure yet firm. Woldish, Old Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "The arcane secrets of Ygraine",
+        "The affections of Lady Zoemina, the duke's 22-year-old daughter"
+      ],
+      "secrets": [
+        "In truth, Lady Periwinkle is in her middle-age, using a Mirror of Youthfulness"
+      ],
+      "location_id": "13",
+      "occupation": "Level 11 Magician"
+    },
+    {
+      "npc_id": "hadle_butterwheeve",
+      "name": "Hadle Butterwheeve",
+      "title": "Bitter Rose Butler",
+      "description": "A portly human man in his late forties, with prodigious mutton chops, beady eyes, and a petulantly protruding lower lip. His tailored black attire is the picture of tasteful modesty. His only indulgence is his fastidiously preened hair",
+      "kindred": "Human",
+      "age_description": "in his late forties",
+      "dress": "Tailored black attire, fastidiously preened hair",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Scrupulously mannered",
+        "perfectly timed"
+      ],
+      "mannerisms": "Habitually bows",
+      "speech": "Slow, painfully courteous rumbling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To expand his collection of taxidermied trottelings",
+        "Privately wishes to know more about his enigmatic employers"
+      ],
+      "secrets": [
+        "Knows about the secret passage to The Frolicke but not where it leads"
+      ],
+      "location_id": "14",
+      "occupation": "Butler"
+    },
+    {
+      "npc_id": "professor_edwynne_woglemain",
+      "name": "Professor Edwynne Woglemain",
+      "title": "Divination Master and Head of College",
+      "description": "An ambitious, scheming human man in his fifties, dressed in purple felt, with a white beard to his belly. His beak-like nose and intensely peering eyes lend him a hawkish air. Wears half-moon spectacles",
+      "kindred": "Human",
+      "age_description": "in his fifties",
+      "dress": "Purple felt, half-moon spectacles",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cold",
+        "obsessive",
+        "only wishes to speak with those of great intellect"
+      ],
+      "mannerisms": null,
+      "speech": "Precise and succinct. Woldish, Old Woldish, Sylvan, Caprice, a smattering of otherworldly tongues.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan",
+        "Caprice",
+        "otherworldly tongues"
+      ],
+      "desires": [
+        "Knowledge of other worlds",
+        "To convince the duke that the rumours of black magic conducted at the institute are untrue",
+        "To enlist the aid of his former colleague, Madame Thornwaife in constructing demon-binding chains"
+      ],
+      "secrets": [],
+      "location_id": "15",
+      "occupation": "Level 10 Magician"
+    },
+    {
+      "npc_id": "one_eyed_gil",
+      "name": "One-Eyed Gil",
+      "title": "Poppy Cock Landlady",
+      "description": "A wiry-framed human woman in her late thirties, with cropped black hair, a dozen earrings, and both eyes intact. (She and the regulars mockingly refuse to explain the origin of her nickname.) Her arms are adorned with tattoos of burly breggles",
+      "kindred": "Human",
+      "age_description": "in her late thirties",
+      "dress": "Cropped black hair, dozen earrings, tattoos of burly breggles",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Brash",
+        "cool-headed"
+      ],
+      "mannerisms": "Feigned drunkenness",
+      "speech": "Snarling, habitually shouts. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Information on the layout of the Ducal Keep and any weaknesses in its defences",
+        "To insinuate herself deeper into the trust of Sanctus Primus and subtly elicit secrets",
+        "To become mistress of the thieves' guild"
+      ],
+      "secrets": [
+        "Has a clandestine relationship with Sanctus Primus",
+        "Is a member of the thieves' guild"
+      ],
+      "location_id": "21",
+      "occupation": "Level 4 Thief, Landlady"
+    },
+    {
+      "npc_id": "mistress_hanctra_waldefroum",
+      "name": "Mistress Hanctra Waldefroum",
+      "title": "Seminary Herbalist",
+      "description": "An elderly human woman with a wobbly pot-belly and eyes like merrily gleaming jewels. Walks with a stick",
+      "kindred": "Human",
+      "age_description": "elderly",
+      "dress": "Simple religious attire",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Patient",
+        "inquisitive"
+      ],
+      "mannerisms": "Benevolent smile. Rubs her sore knees and back",
+      "speech": "Wavering, meandering, filled with reminiscences. Grumbles good-naturedly about her back pains. Woldish, Liturgic, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Liturgic",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Rare herb and fungus varieties (willing to purchase with Church funds)"
+      ],
+      "secrets": [],
+      "location_id": "20",
+      "occupation": "Level 8 Friar, Herbalist"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "1d4 longhorns and 3d6 shorthorns—emissaries of Lord Ramius sent to the duke",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "longhorns",
+            "shorthorns"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A pickpocket charging through the streets, 2d4 soldiers of the town watch pursuing",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "pickpocket",
+            "soldiers"
+          ],
+          "notes": "Level 1 thief"
+        },
+        {
+          "roll": 3,
+          "description": "20 musicians and carts laden with fancy, orchestral instruments, heading to the Chateau",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "A grimalkin pedlar laden with herbs to sell to Mistress Waldefroum",
+          "npcs_involved": [
+            "Mistress Waldefroum"
+          ],
+          "monsters_involved": [
+            "grimalkin"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "12 pilgrims on their way to the Cathedral of St Signis",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "Captain Bogle and 2d6 nobles returning from the hunt with several stag heads",
+          "npcs_involved": [
+            "Captain Bogle"
+          ],
+          "monsters_involved": [
+            "nobles"
+          ],
+          "notes": "Level 1 knights"
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "2d4 clerics of St Faxis carrying a cloaked man (allegedly a Drune) in silver chains to the holy gaol in the Seminary of the 100 Martyrs",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "clerics"
+          ],
+          "notes": "Level 1 clerics"
+        },
+        {
+          "roll": 2,
+          "description": "A troupe of jugglers, fire breathers, and thespians performing in a public square. Pickpockets are rife",
+          "npcs_involved": [],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "2d4 thieves sneaking to the Frolicke, seeking a secret passage beneath a merman statue",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "thieves"
+          ],
+          "notes": "Level 1"
+        },
+        {
+          "roll": 4,
+          "description": "A young woman with a curious glint in her eyes (charmed) bearing a report from the Drune to Bishop Sanguine on the doings of the Cold Prince",
+          "npcs_involved": [
+            "Bishop Sanguine"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "An adventuring party bringing a bound fire elemental to Professor Woglemain",
+          "npcs_involved": [
+            "Professor Woglemain"
+          ],
+          "monsters_involved": [
+            "fire elemental"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 soldiers of the town watch questioning passersby",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "soldiers"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [],
+  "roads": [
+    "King's Highway"
+  ],
+  "connections": [
+    "Dolmenwood",
+    "Outer City"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

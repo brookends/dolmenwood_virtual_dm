@@ -1,0 +1,683 @@
+{
+  "name": "Blackeswell",
+  "settlement_id": "blackeswell",
+  "hex_id": "1604",
+  "size": "village",
+  "population": 90,
+  "population_description": "90—village",
+  "tagline": "Isolated Mulchgrove village, nearing the utmost decay of its former wealth",
+  "description": "A village of finely-built houses and stores, slowly falling into disrepair. Blackeswell is situated beside a stinking pool in the isolated northern reaches of Mulchgrove, now subsumed in the slowly expanding fungal forest.",
+  "atmosphere": "An eerie emptiness pervades, with the ever present stench of the Blacke wafting through abandoned buildings that remind of past prosperity",
+  "inhabitants_description": "A proud and somewhat inbred folk who cling to the remnants of their ancestors' prosperity. Visitors to Blackeswell are rare, and new settlers ever rarer (though its isolation appeals to a certain type of eccentric). The people have pallid skin with a distinct greenish tinge visible under candlelight from drinking the contaminated water of the Blacke.",
+  "governance": {
+    "ruler_type": "council",
+    "ruler_name": "Sylvain Aster",
+    "ruling_body": "council of representatives of six guilds—the guilds of tailors, lenders, taverners, masons, jewellers, and chandlers",
+    "domain": "House Guillefer (see hex 1304)",
+    "political_status": "nigh forgotten and virtually independent",
+    "notes": "The tailor, Sylvain Aster, is the elected leader of the council"
+  },
+  "religion": {
+    "primary_deity": "St Gondyw",
+    "religious_buildings": [
+      "Church of St Gondyw"
+    ],
+    "religious_practices": "The ostentatious and fastidiously maintained church of St Gondyw on the village square is by far the largest remaining building in the settlement. Characters praying may receive the blessing of St Gondyw: the ability to cast Bless.",
+    "notes": null
+  },
+  "history": [
+    "Blackeswell was founded at the site of a rich vein of Hag Iron, a rare metal renowned for its curative properties when crafted into jewellery",
+    "Wagon-loads of the metal were exported from the village to Castle Brackenwold and trade brought great prosperity—a thriving marketplace, amenities to entertain merchants, and artisans' workshops soon followed",
+    "Blackeswell gained a reputation as a place of good taste and exquisite craftsmanship",
+    "200 years ago, the vein of Hag Iron began to dry up. Trade slowed, as ever smaller quantities of the metal were extracted",
+    "Eventually the mine was exhausted and trade halted. Blackeswell's reputation faded and the village became little more than a curiosity on old maps",
+    "The population of Blackeswell has greatly diminished since the village's heyday and many once-proud buildings have been abandoned"
+  ],
+  "current_events": [
+    "The mysterious outsider Mr Klepp, said to be of Castle Brackenwold, recently purchased an old warehouse in Blackeswell and has moved in all manner of odd equipment",
+    "Agents of the equally enigmatic Mr Paronax are said to be eyeing derelict buildings for purchase",
+    "The vicar, Father Bertil, and the council leader, Sylvain Aster, secretly plot to discover more about the outsiders' (presumably nefarious) schemes"
+  ],
+  "rumors_reference": "See Rumours in Blackeswell, p442",
+  "special_features": [
+    {
+      "name": "The Blacke",
+      "description": "A foetid pool that was once a cheery stream, now choked with silt and stinking purple lilies. The villagers drink the stinking, green water with gusto, which lends their skin a pallid tint with a distinct greenish tinge visible under candlelight.",
+      "mechanical_effect": "Outsiders who consume the unprocessed waters of the Blacke become sick, suffering from vomiting and shakes for 1d4 days (–1 penalty to Attack Rolls and Saving Throws)",
+      "affected_area": "The entire settlement is pervaded by a fishy, rotting stench wafting from the pool"
+    }
+  ],
+  "equipment_availability": {
+    "price_modifier": 2.0,
+    "available_categories": [
+      "rustic weapons"
+    ],
+    "unavailable_categories": [
+      "armor"
+    ],
+    "special_items": [
+      "greenish-white rope made from fungal fibres harvested in Mulchgrove"
+    ],
+    "notes": "Only rustic weapons (e.g. arrows, daggers, shortbows, slings, staves) are available. No form of armour can be bought in Blackeswell."
+  },
+  "locations": [
+    {
+      "number": 1,
+      "name": "The Blacke",
+      "location_type": "landmark",
+      "description": "Once a cheery stream, shifting waters in Mulchgrove gradually transformed the Blacke into a foetid pool, choked with silt and stinking purple lilies.",
+      "interior": null,
+      "exterior": "Long-disused fishing huts, now ruined and rotting, stand along the shore.",
+      "populace": "Generally empty",
+      "atmosphere": "Foetid and stinking",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Source of contaminated water that gives villagers greenish skin tinge"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 2,
+      "name": "Village Square",
+      "location_type": "landmark",
+      "description": "A broad, paved square, neatly maintained but seldom used.",
+      "interior": null,
+      "exterior": "White marble statue of St Gondyw clad in mail, holding aloft a lantern and carrying an unfurled scroll. Comical diorama depicts three laughing maidens, waving coyly, pursued by a leering shorthorn. Locked brick watchtower with rickety wooden lookout.",
+      "populace": "Seldom used",
+      "atmosphere": "An eerie emptiness pervades",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Statue of St Gondyw",
+        "Breggle statue",
+        "Watchtower"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Sylvain Aster"
+    },
+    {
+      "number": 3,
+      "name": "Church of St Gondyw",
+      "location_type": "church",
+      "description": "A grand church in an unusual provincial style, worthy of a much larger town. A tall bell tower with a weathercockatrice at its apex overlooks the village.",
+      "interior": "An austere space of cold stone pews and stark pillars, with a plain marble altar. The only decoration is a huge portrait of St Gondyw staring down from the ceiling.",
+      "exterior": "Beautifully wrought doors of black iron. Graveyard ringed with iron railings, with an ornamental gate in the south-east corner.",
+      "populace": "The occasional devout local. Generally empty.",
+      "atmosphere": "Austere and cold",
+      "services": [
+        {
+          "name": "Prayer",
+          "description": "Characters praying may receive the blessing of St Gondyw: the ability to cast Bless",
+          "cost": "free",
+          "notes": "See Shrines, p22"
+        }
+      ],
+      "npcs": [
+        "father_ingram_bertil"
+      ],
+      "special_features": [
+        "Blessing of St Gondyw available through prayer"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 4,
+      "name": "Abandoned Mine",
+      "location_type": "landmark",
+      "description": "A decrepit, tiled-roof building—the former headquarters of the Blackeswell Mining Co—stands beside the fenced-off mining pit which was the source of Blackeswell's former wealth.",
+      "interior": "Former headquarters of the Blackeswell Mining Co",
+      "exterior": "Decrepit, tiled-roof building beside fenced-off mining pit",
+      "populace": "Abandoned",
+      "atmosphere": "Decrepit and abandoned",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Former source of Hag Iron that brought the village prosperity"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": true,
+      "key_holder": "Sylvain Aster"
+    },
+    {
+      "number": 5,
+      "name": "The Crooked Arm",
+      "location_type": "inn",
+      "description": "A homely, rural inn with a sagging, tiled roof. At the south-east corner, a closed hatch gives access to the cellar.",
+      "interior": "A gloomy space of black beams, sombre portraits, and pipesmoke-stained walls. The landlady, Arbie Snyde, serves from a solid oak counter.",
+      "exterior": "Homely, rural inn with sagging, tiled roof and cellar hatch",
+      "populace": "The occasional morose local or lone traveller",
+      "atmosphere": "Gloomy and sombre",
+      "services": [
+        {
+          "name": "Lodging",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Food",
+          "description": "Common quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Drinks",
+          "description": "The local, frothing green ale (Fishfop's)",
+          "cost": "8cp a mug",
+          "notes": "No other drinks are served"
+        },
+        {
+          "name": "Stabling",
+          "description": "Mounts are accommodated in the adjacent goat field, with no form of shelter",
+          "cost": "2sp per mount",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "arbie_snyde"
+      ],
+      "special_features": [
+        "Sign: A Chapes holy symbol hanging in the crook of a flexed arm"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 6,
+      "name": "The Spigot and Gullet",
+      "location_type": "tavern",
+      "description": "A low, one-storey tavern with a door on each side and numerous round, porthole-like windows. The thatched roof is topped with a wooden sea monster's head.",
+      "interior": "A round room with too few tables, too many chairs, and a wobbly drinks table at one side. Locals serve themselves, as the landlady, Gilly-Ann Locke, carouses and dances to the ever-present fiddle music.",
+      "exterior": "Low, one-storey building with porthole windows and sea monster head on roof",
+      "populace": "Merry, tipsy locals, dancing, boozing, and chewing the fat. An occasional pedlar selling wares.",
+      "atmosphere": "Merry and boisterous with ever-present fiddle music",
+      "services": [
+        {
+          "name": "Food",
+          "description": "Poor quality",
+          "cost": "standard price",
+          "notes": null
+        },
+        {
+          "name": "Fishfop's",
+          "description": "Frothing green ale (locally brewed)",
+          "cost": "8cp a mug",
+          "notes": null
+        },
+        {
+          "name": "Other drinks",
+          "description": "Imported drinks",
+          "cost": "twice normal price",
+          "notes": null
+        }
+      ],
+      "npcs": [
+        "gilly_ann_locke"
+      ],
+      "special_features": [
+        "Sign: A sea monster clutching ale kegs in its maw"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 7,
+      "name": "Council House",
+      "location_type": "landmark",
+      "description": "A once-stately building of plastered stone, that is now beginning to crumble. A tower stands at the south-east corner, now home to a great colony of rooks.",
+      "interior": "Meeting place for the council",
+      "exterior": "Once-stately building of plastered stone, now crumbling, with tower housing rooks",
+      "populace": "The council meets here once a month, but the building is otherwise little used",
+      "atmosphere": "Crumbling and little used",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Tower home to great colony of rooks"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 8,
+      "name": "Fish Market",
+      "location_type": "shop",
+      "description": "The stink of fresh fish wafts from this low, tin-roofed marketplace. Most of the fish on sale are oddly green-hued and many have unusual features such as extra eyes, clusters of tentacles, human-like snouts, or two heads.",
+      "interior": "Low, tin-roofed marketplace",
+      "exterior": "Low building with tin roof",
+      "populace": "Fish vendors and occasional customers",
+      "atmosphere": "Stinking of fresh fish",
+      "services": [
+        {
+          "name": "Fish",
+          "description": "Oddly green-hued fish with unusual features",
+          "cost": "standard price",
+          "notes": "Fish have extra eyes, clusters of tentacles, human-like snouts, or two heads"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Mutated fish with unusual features"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 9,
+      "name": "Aster's Fine Costumery",
+      "location_type": "shop",
+      "description": "A tidy little store on the edge of the village. Mannequins stand outside, sporting outlandish waistcoats and caps.",
+      "interior": "Overbrimming with mannequins, display cases, and bolts of fabric. The tailor, Sylvain Aster, greets clients, while his aide, the dour Henricus Buttons, stitches furiously in the back room.",
+      "exterior": "Tidy little store with mannequins displaying outlandish clothing",
+      "populace": "Sylvain Aster and his aide Henricus Buttons",
+      "atmosphere": "Busy with tailoring work",
+      "services": [
+        {
+          "name": "Fashionable outfits",
+          "description": "Off the rack or tailored to order",
+          "cost": "50gp off the rack, 100gp (or more) tailored",
+          "notes": "Aster's concept of fashion is highly idiosyncratic"
+        }
+      ],
+      "npcs": [
+        "sylvain_aster"
+      ],
+      "special_features": [
+        "Highly idiosyncratic fashion sense"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 10,
+      "name": "Klepp's Workshop",
+      "location_type": "shop",
+      "description": "A long, one-storey building that was recently purchased by a mysterious out-of-towner, Mr Klepp.",
+      "interior": "Crates of gears, rivets, and metal plates, watched by a clockwork guardian programmed to expel intruders.",
+      "exterior": "Long, one-storey building with shuttered windows and massive stone front door",
+      "populace": "Mr Klepp (not yet moved in) and clockwork guardian",
+      "atmosphere": "Mysterious and secretive",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Strange shipments arrive every 2-3 weeks",
+        "Mr Klepp is an artificer specialising in clockwork automata"
+      ],
+      "secrets": [
+        "Mr Klepp is an artificer specialising in clockwork automata"
+      ],
+      "monsters": [
+        "clockwork_guardian"
+      ],
+      "is_locked": true,
+      "key_holder": "Mr Klepp"
+    },
+    {
+      "number": 11,
+      "name": "Fishfop Brewery",
+      "location_type": "shop",
+      "description": "A small brewery with a massive brick chimney, providing for all the village's spirituous needs. Clusters of barrels stand outside, reeking of fish and pondweed, their lids ajar and overbrimming with pale green foam.",
+      "interior": "Brewery equipment",
+      "exterior": "Small brewery with massive brick chimney and barrels outside",
+      "populace": "Brewery workers",
+      "atmosphere": "Reeking of fish and pondweed",
+      "services": [
+        {
+          "name": "Fishfop's ale",
+          "description": "Frothing green ale",
+          "cost": "8cp a mug",
+          "notes": "Local specialty"
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Provides all the village's spirituous needs"
+      ],
+      "secrets": [],
+      "monsters": [],
+      "is_locked": false,
+      "key_holder": null
+    },
+    {
+      "number": 12,
+      "name": "Disused Granary",
+      "location_type": "landmark",
+      "description": "A squat, square stone tower of two storeys overlooking the Blacke. A cacophony of croaking can often be heard from its empty windows and door frame.",
+      "interior": "A colony of 15 quag toads has taken up residence in the slime-drenched rooms of the ruin. They do not appreciate people poking around in their lair.",
+      "exterior": "Squat, square stone tower with empty windows and door frame",
+      "populace": "15 quag toads",
+      "atmosphere": "Cacophony of croaking, slime-drenched",
+      "services": [],
+      "npcs": [],
+      "special_features": [
+        "Colony of 15 quag toads"
+      ],
+      "secrets": [],
+      "monsters": [
+        "quag_toads"
+      ],
+      "is_locked": false,
+      "key_holder": null
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "sylvain_aster",
+      "name": "Sylvain Aster",
+      "title": "Tailor and Council Leader",
+      "description": "A broad-faced human man in his forties, with sparkling green eyes, a dazzling smile, prodigious red sideburns, and a shiny monocle.",
+      "kindred": "Human",
+      "age_description": "in his forties",
+      "dress": "Dresses in paisley waistcoats, billowing silk pantaloons, and pompously plumed velvet caps.",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Narcissistic",
+        "two-faced"
+      ],
+      "mannerisms": "Clasps his hands together in delight.",
+      "speech": "Affectedly upper class. Seldom wishes to speak of non-sartorial matters. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To discover the intent of the outsiders Mr Klepp and Mr Paronax in Blackeswell and to convince the council to ban the sale of property to non-Blackeswellers",
+        "For his singular vision of costumery to be celebrated far and wide, bringing prosperity to Blackeswell once more"
+      ],
+      "secrets": [
+        "Secretly plots with Father Bertil to discover more about the outsiders' schemes"
+      ],
+      "location_id": "9",
+      "occupation": "Tailor and elected leader of the council"
+    },
+    {
+      "npc_id": "gilly_ann_locke",
+      "name": "Gilly-Ann Locke",
+      "title": "Spigot and Gullet Proprietor",
+      "description": "A busty human woman in her 60s, with curly locks and remarkably hairy ears.",
+      "kindred": "Human",
+      "age_description": "in her 60s",
+      "dress": "Dresses in stretched woollens.",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Nosy",
+        "open-minded"
+      ],
+      "mannerisms": "Wipes her nose on her sleeve.",
+      "speech": "Vulgar, chummy. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Tales from afar",
+        "To welcome Mr Klepp to the village by cooking his favourite food for him"
+      ],
+      "secrets": [],
+      "location_id": "6",
+      "occupation": "Tavern proprietor"
+    },
+    {
+      "npc_id": "arbie_snyde",
+      "name": "Arbie Snyde",
+      "title": "Crooked Arm Proprietor",
+      "description": "A stooped, corpulent human woman in her fifties, with a mop of grey hair, pendulous jowls, and a peg leg.",
+      "kindred": "Human",
+      "age_description": "in her fifties",
+      "dress": null,
+      "alignment": "Neutral",
+      "demeanor": [
+        "Sombre",
+        "penny-pinching"
+      ],
+      "mannerisms": "Perpetually grimacing—as if she is the only villager who can smell the Blacke.",
+      "speech": "Cantankerous drawl. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Money",
+        "To relocate to Castle Brackenwold"
+      ],
+      "secrets": [],
+      "location_id": "5",
+      "occupation": "Inn proprietor"
+    },
+    {
+      "npc_id": "father_ingram_bertil",
+      "name": "Father Ingram Bertil",
+      "title": "Vicar of Blackeswell",
+      "description": "An ageing, frizzy-haired human bachelor with bent spectacles and bristling, white eyebrows.",
+      "kindred": "Human",
+      "age_description": "ageing",
+      "dress": null,
+      "alignment": "Neutral",
+      "demeanor": [
+        "Animated",
+        "scatty"
+      ],
+      "mannerisms": "Wonky grin.",
+      "speech": "Flighty, well enunciated. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To expel meddling outsiders",
+        "To do as little work as possible—gladly lets the pious villagers take care of many of his duties"
+      ],
+      "secrets": [
+        "Secretly plots with Sylvain Aster to discover more about the outsiders' schemes"
+      ],
+      "location_id": "3",
+      "occupation": "Vicar"
+    }
+  ],
+  "encounter_tables": [
+    {
+      "time_of_day": "day",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "Father Bertil (p126) snooping disapprovingly around Klepp's workshop, trying to peek through the shutters.",
+          "npcs_involved": [
+            "Father Bertil"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "A ruined building collapses. 2d4 villagers begin clearing the rubble.",
+          "npcs_involved": [
+            "2d4 villagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "2d4 villagers erect precarious ladders and scaffolds around the church, preparing to clean its exterior.",
+          "npcs_involved": [
+            "2d4 villagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "2d4 mercenaries (Level 1 fighters—DMB) roll up in 1d4 wagons and proceed to unload at Klepp's workshop.",
+          "npcs_involved": [
+            "2d4 mercenaries"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "2d4 villagers hauling barrels of stinking water from the Blacke to the Fishfop brewery.",
+          "npcs_involved": [
+            "2d4 villagers"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 6,
+          "description": "2d4 mosslings (DMB) arrive to trade.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "2d4 mosslings"
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "time_of_day": "night",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": 1,
+          "description": "The landlady, Gilly-Ann Locke (p126), capering giddily through the square, singing raunchy ballads.",
+          "npcs_involved": [
+            "Gilly-Ann Locke"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 2,
+          "description": "The innkeeper, Arbie Snyde (p126), poking around a derelict building, looking for abandoned treasures.",
+          "npcs_involved": [
+            "Arbie Snyde"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 3,
+          "description": "Sylvain Aster loitering by Klepp's workshop, listening for the tell-tale sounds of black magic.",
+          "npcs_involved": [
+            "Sylvain Aster"
+          ],
+          "monsters_involved": [],
+          "notes": null
+        },
+        {
+          "roll": 4,
+          "description": "The clockwork guardian (p127) bursts out of Klepp's workshop and runs amok.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "clockwork guardian"
+          ],
+          "notes": null
+        },
+        {
+          "roll": 5,
+          "description": "An adventuring party (DMB) arrives, covered in sticky orange slime. (They have travelled through the fungal chasm in hex 1605.)",
+          "npcs_involved": [
+            "adventuring party"
+          ],
+          "monsters_involved": [],
+          "notes": "They have travelled through the fungal chasm in hex 1605"
+        },
+        {
+          "roll": 6,
+          "description": "A hungry ochre slime-hulk (DMB) wanders through, sniffing out fresh flesh.",
+          "npcs_involved": [],
+          "monsters_involved": [
+            "ochre slime-hulk"
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Quag Toads",
+      "monster_id": "quag_toads",
+      "description": "2′ long, black-skinned toads with quizzically rotating eyeballs and mouths full of gnarled fangs.",
+      "size": "Small",
+      "type": "Animal",
+      "intelligence": "Animal Intelligence",
+      "alignment": "Neutral",
+      "level": 1,
+      "ac": 11,
+      "hp": "1d8 (4)",
+      "saves": "D12 R13 H14 B15 S16",
+      "attack": "Bite (+0, 1d4 + poison)",
+      "speed": 30,
+      "morale": 7,
+      "xp": 15,
+      "special_abilities": [
+        {
+          "name": "Poison",
+          "description": "Save Versus Doom or become sick for 1d10 days: –2 to Attack Rolls and Saving Throws, Speed reduced by half."
+        }
+      ]
+    },
+    {
+      "name": "Clockwork Guardian",
+      "monster_id": "clockwork_guardian",
+      "description": "A hulking, 6′ tall, humanoid automaton of brass and bolts, powered by gears, springs, and coils.",
+      "size": "Medium",
+      "type": "Construct",
+      "intelligence": "Mindless",
+      "alignment": "Neutral",
+      "level": 3,
+      "ac": 16,
+      "hp": "20",
+      "saves": "D11 R12 H13 B14 S15",
+      "attack": "Two-handed sword (+2, 1d10)",
+      "speed": 20,
+      "morale": 12,
+      "xp": 40,
+      "special_abilities": [
+        {
+          "name": "Construct",
+          "description": "Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate)."
+        }
+      ]
+    }
+  ],
+  "roads": [
+    "Armsheath's Road",
+    "Blacke Road",
+    "The Duke's Road"
+  ],
+  "connections": [
+    "Follyegg Road",
+    "Orbswallow",
+    "Castle Brackenwold via hex 1608"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      126,
+      127,
+      128,
+      129
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
