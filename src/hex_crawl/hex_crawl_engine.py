@@ -3739,6 +3739,316 @@ class HexCrawlEngine:
             "context": encounter.context,
         }
 
+    def attempt_creative_approach(
+        self,
+        hex_id: str,
+        npc_id: str,
+        approach_description: str,
+        items_used: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt a creative, non-combat approach to dealing with an NPC.
+
+        Uses the Mythic GME oracle to adjudicate uncertain outcomes based on:
+        - NPC desires and motivations
+        - Approach plausibility
+        - Items/resources used
+
+        Args:
+            hex_id: Current hex
+            npc_id: ID or name of NPC to approach
+            approach_description: What the player is trying to do
+            items_used: Optional list of items being used in the approach
+
+        Returns:
+            Dictionary with approach result including oracle outcome
+        """
+        from src.oracle import MythicGME, Likelihood, FateResult
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Find the NPC
+        target_npc = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Find full NPC data
+                for hex_npc in hex_data.npcs:
+                    if hex_npc.npc_id == npc_id or hex_npc.name == npc_id:
+                        target_npc = hex_npc
+                        break
+                    if hex_npc.npc_id == npc_id.lower().replace(" ", "_"):
+                        target_npc = hex_npc
+                        break
+                break
+
+        if not target_npc:
+            return {"success": False, "error": f"NPC '{npc_id}' not found"}
+
+        # Analyze the approach against NPC characteristics
+        likelihood = self._evaluate_approach_likelihood(
+            target_npc, approach_description, items_used or []
+        )
+
+        # Use Mythic GME for fate check
+        mythic = MythicGME(chaos_factor=5)  # Default balanced chaos
+
+        # Formulate the question based on approach
+        question = self._formulate_approach_question(
+            target_npc, approach_description
+        )
+
+        fate_result = mythic.fate_check(question, likelihood)
+
+        # Build result based on oracle outcome
+        result = self._interpret_creative_result(
+            target_npc, approach_description, fate_result, items_used or []
+        )
+
+        return result
+
+    def _evaluate_approach_likelihood(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+        items_used: list[str],
+    ) -> "Likelihood":
+        """
+        Evaluate how likely an approach is to succeed based on NPC traits.
+
+        Args:
+            npc: The target NPC
+            approach: Description of the approach
+            items_used: Items being used
+
+        Returns:
+            Likelihood enum for Mythic GME
+        """
+        from src.oracle import Likelihood
+
+        approach_lower = approach.lower()
+        base_likelihood = Likelihood.UNLIKELY  # Default: creative solutions are hard
+
+        # Check NPC desires - if approach aligns with desires, increase likelihood
+        npc_desires = getattr(npc, "desires", []) or []
+        for desire in npc_desires:
+            desire_lower = desire.lower()
+
+            # Direct alignment with desire
+            if any(word in approach_lower for word in desire_lower.split()):
+                base_likelihood = Likelihood.LIKELY
+                break
+
+            # Offering what they want (magic for magic-hungry, etc.)
+            if "magic" in desire_lower and "magic" in approach_lower:
+                base_likelihood = Likelihood.LIKELY
+                break
+            if "feed" in desire_lower and ("food" in approach_lower or "bait" in approach_lower):
+                base_likelihood = Likelihood.LIKELY
+                break
+
+        # Check NPC intelligence/alignment for modifiers
+        npc_kindred = getattr(npc, "kindred", "").lower()
+        npc_alignment = getattr(npc, "alignment", "").lower()
+
+        # Animal intelligence creatures are easier to manipulate with basic desires
+        if "animal" in str(getattr(npc, "stat_reference", "")).lower():
+            if "lure" in approach_lower or "bait" in approach_lower or "distract" in approach_lower:
+                # Upgrade likelihood for simple creature manipulation
+                if base_likelihood == Likelihood.UNLIKELY:
+                    base_likelihood = Likelihood.FIFTY_FIFTY
+                elif base_likelihood == Likelihood.FIFTY_FIFTY:
+                    base_likelihood = Likelihood.LIKELY
+
+        # Using magical items on magic-hungry creatures
+        if items_used:
+            items_lower = " ".join(items_used).lower()
+            if "magic" in items_lower or "enchant" in items_lower or "spell" in items_lower:
+                for desire in npc_desires:
+                    if "magic" in desire.lower():
+                        base_likelihood = Likelihood.LIKELY
+                        break
+
+        # Hostile/predatory NPCs are harder to negotiate with
+        npc_demeanor = getattr(npc, "demeanor", []) or []
+        if any("predator" in d.lower() or "hostile" in d.lower() for d in npc_demeanor):
+            if base_likelihood.value > Likelihood.UNLIKELY.value:
+                # Reduce by one step
+                base_likelihood = Likelihood(max(base_likelihood.value - 1, 0))
+
+        return base_likelihood
+
+    def _formulate_approach_question(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+    ) -> str:
+        """
+        Formulate a yes/no question for the oracle.
+
+        Args:
+            npc: The target NPC
+            approach: The approach description
+
+        Returns:
+            A yes/no question string
+        """
+        npc_name = getattr(npc, "name", "the creature")
+
+        # Determine what kind of outcome we're checking
+        approach_lower = approach.lower()
+
+        if "lure" in approach_lower or "bait" in approach_lower:
+            return f"Is {npc_name} successfully lured away?"
+        elif "distract" in approach_lower:
+            return f"Is {npc_name} distracted long enough?"
+        elif "scare" in approach_lower or "frighten" in approach_lower:
+            return f"Is {npc_name} frightened into leaving?"
+        elif "convince" in approach_lower or "persuade" in approach_lower:
+            return f"Is {npc_name} convinced by this approach?"
+        elif "sneak" in approach_lower or "avoid" in approach_lower:
+            return f"Can the party bypass {npc_name} unnoticed?"
+        elif "trick" in approach_lower or "deceive" in approach_lower:
+            return f"Is {npc_name} fooled by the deception?"
+        else:
+            return f"Does the creative approach to {npc_name} succeed?"
+
+    def _interpret_creative_result(
+        self,
+        npc: Any,  # HexNPC
+        approach: str,
+        fate_result: Any,  # FateCheckResult
+        items_used: list[str],
+    ) -> dict[str, Any]:
+        """
+        Interpret the oracle result into a structured game outcome.
+
+        Args:
+            npc: The target NPC
+            approach: The approach attempted
+            fate_result: Result from Mythic GME
+            items_used: Items used in the approach
+
+        Returns:
+            Structured result dictionary
+        """
+        from src.oracle import FateResult
+
+        npc_name = getattr(npc, "name", "the creature")
+        npc_desires = getattr(npc, "desires", []) or []
+
+        result = {
+            "success": False,
+            "npc_id": getattr(npc, "npc_id", "unknown"),
+            "npc_name": npc_name,
+            "approach": approach,
+            "items_used": items_used,
+            "oracle": {
+                "question": fate_result.question,
+                "likelihood": fate_result.likelihood.name,
+                "roll": fate_result.roll,
+                "result": fate_result.result.value,
+            },
+            "narrative_hints": [],
+            "mechanical_effects": [],
+            "follow_up_options": [],
+        }
+
+        # Interpret based on fate result
+        if fate_result.result == FateResult.EXCEPTIONAL_YES:
+            result["success"] = True
+            result["outcome"] = "exceptional_success"
+            result["narrative_hints"] = [
+                f"{npc_name} is completely taken by the approach",
+                "the plan works even better than expected",
+                "an unexpected bonus or advantage emerges",
+            ]
+            result["mechanical_effects"] = [
+                "npc_leaves_area",
+                "no_combat_required",
+                "bonus_opportunity",
+            ]
+            result["follow_up_options"] = [
+                "claim_objective",
+                "explore_bonus",
+                "press_advantage",
+            ]
+
+        elif fate_result.result == FateResult.YES:
+            result["success"] = True
+            result["outcome"] = "success"
+            result["narrative_hints"] = [
+                f"{npc_name} responds to the approach",
+                "the creative solution works",
+            ]
+            result["mechanical_effects"] = [
+                "npc_temporarily_distracted" if "distract" in approach.lower()
+                else "npc_leaves_area",
+            ]
+            result["follow_up_options"] = [
+                "proceed_carefully",
+                "claim_objective",
+            ]
+
+        elif fate_result.result == FateResult.NO:
+            result["success"] = False
+            result["outcome"] = "failure"
+            result["narrative_hints"] = [
+                f"{npc_name} is not fooled or interested",
+                "the approach doesn't work as planned",
+            ]
+            result["mechanical_effects"] = [
+                "npc_alerted" if "sneak" in approach.lower() else "npc_unaffected",
+            ]
+            result["follow_up_options"] = [
+                "try_different_approach",
+                "attempt_combat",
+                "retreat",
+            ]
+
+        elif fate_result.result == FateResult.EXCEPTIONAL_NO:
+            result["success"] = False
+            result["outcome"] = "catastrophic_failure"
+            result["narrative_hints"] = [
+                f"{npc_name} reacts violently to the attempt",
+                "the situation escalates dangerously",
+                "combat may be unavoidable",
+            ]
+            result["mechanical_effects"] = [
+                "npc_hostile",
+                "surprise_lost",
+                "immediate_reaction",
+            ]
+            result["follow_up_options"] = [
+                "prepare_for_combat",
+                "flee",
+            ]
+
+        # Add random event if triggered
+        if fate_result.random_event_triggered and fate_result.random_event:
+            result["random_event"] = {
+                "focus": fate_result.random_event.focus.value,
+                "meaning": fate_result.random_event.meaning_pair,
+            }
+            result["narrative_hints"].append(
+                f"unexpected twist: {fate_result.random_event.meaning_pair}"
+            )
+
+        # Add context about NPC desires for narration
+        if npc_desires:
+            result["npc_context"] = {
+                "desires": npc_desires,
+                "can_leverage": any(
+                    d.lower() in approach.lower() for d in npc_desires
+                ),
+            }
+
+        return result
+
     # =========================================================================
     # ENCOUNTER GENERATION FOR POI INHABITANTS
     # =========================================================================

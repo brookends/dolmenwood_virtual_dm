@@ -282,6 +282,96 @@ class TestDredgerCombatEngagement:
 
 
 # =============================================================================
+# CREATIVE APPROACH TESTS
+# =============================================================================
+
+
+class TestCreativeApproach:
+    """Test creative, non-combat approaches to the Dredger."""
+
+    def test_creative_approach_requires_poi(self, hex_engine):
+        """Cannot attempt creative approach without being at POI."""
+        hex_engine._current_poi = None
+        result = hex_engine.attempt_creative_approach(
+            "0104", "the_dredger", "Lure it away with magic"
+        )
+        assert result["success"] is False
+        assert "Not at a POI" in result["error"]
+
+    def test_creative_approach_returns_oracle_result(self, hex_engine):
+        """Creative approach should return oracle outcome."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+        result = hex_engine.attempt_creative_approach(
+            "0104", "the_dredger", "Distract the Dredger"
+        )
+
+        # Should have oracle details regardless of success
+        assert "oracle" in result
+        assert "question" in result["oracle"]
+        assert "likelihood" in result["oracle"]
+        assert "roll" in result["oracle"]
+        assert "result" in result["oracle"]
+
+    def test_magic_bait_increases_likelihood(self, hex_engine):
+        """Using magical items should increase likelihood for magic-hungry creatures."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+
+        # Get Dredger NPC
+        hex_data = hex_engine._hex_data["0104"]
+        dredger = hex_data.npcs[0]
+
+        # Verify Dredger desires magic
+        assert "Feed on magical energy" in dredger.desires
+
+        # Test likelihood evaluation
+        from src.oracle import Likelihood
+
+        likelihood_with_magic = hex_engine._evaluate_approach_likelihood(
+            dredger, "Lure with magical bait", ["enchanted wand"]
+        )
+        likelihood_without = hex_engine._evaluate_approach_likelihood(
+            dredger, "Lure with regular bait", []
+        )
+
+        # Magic should give better odds
+        assert likelihood_with_magic.value >= likelihood_without.value
+
+    def test_approach_formulates_correct_question(self, hex_engine):
+        """Different approaches should generate appropriate oracle questions."""
+        hex_data = hex_engine._hex_data["0104"]
+        dredger = hex_data.npcs[0]
+
+        q1 = hex_engine._formulate_approach_question(dredger, "Lure it away")
+        assert "lured away" in q1
+
+        q2 = hex_engine._formulate_approach_question(dredger, "Distract the creature")
+        assert "distracted" in q2
+
+        q3 = hex_engine._formulate_approach_question(dredger, "Sneak past it")
+        assert "bypass" in q3
+
+    def test_creative_approach_provides_follow_up_options(self, hex_engine):
+        """Result should include follow-up action options."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+        result = hex_engine.attempt_creative_approach(
+            "0104", "the_dredger", "Distract the Dredger"
+        )
+
+        assert "follow_up_options" in result
+        assert len(result["follow_up_options"]) > 0
+
+    def test_creative_approach_includes_narrative_hints(self, hex_engine):
+        """Result should include narrative hints for LLM."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+        result = hex_engine.attempt_creative_approach(
+            "0104", "the_dredger", "Lure the Dredger with magic"
+        )
+
+        assert "narrative_hints" in result
+        assert len(result["narrative_hints"]) > 0
+
+
+# =============================================================================
 # SMOKE TEST - PARSE ALL HEXES
 # =============================================================================
 
