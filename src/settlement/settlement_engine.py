@@ -278,6 +278,10 @@ class SettlementEngine:
         self._current_location_number: Optional[int] = None  # Location number we're at
         self._visited_locations: set[int] = set()  # Locations visited in current settlement
 
+        # Location access permissions (for locked locations)
+        # Key: (settlement_id, location_number), Value: access granted
+        self._location_permissions: dict[tuple[str, int], bool] = {}
+
         # NPC data
         self._npcs: dict[str, NPC] = {}
 
@@ -398,6 +402,121 @@ class SettlementEngine:
         self._visited_locations = set()
 
     # =========================================================================
+    # LOCATION ACCESS CONTROL (Phase 4: Locked Locations)
+    # =========================================================================
+
+    def _check_location_access(
+        self, settlement_id: str, location_number: int, key_holder: Optional[str]
+    ) -> bool:
+        """
+        Check if the party has access to a locked location.
+
+        Access can be granted via:
+        1. Explicit permission (granted via grant_location_access)
+        2. Having the appropriate key item in party inventory
+        3. Key holder NPC has been befriended (future: relationship system)
+
+        Args:
+            settlement_id: The settlement ID
+            location_number: The location number
+            key_holder: The key holder name/description
+
+        Returns:
+            True if access is granted, False otherwise
+        """
+        # Check explicit permission
+        perm_key = (settlement_id, location_number)
+        if self._location_permissions.get(perm_key, False):
+            return True
+
+        # Check party inventory for key items
+        # Look for items with names suggesting they're keys for this location
+        try:
+            party = self.controller.party_state
+            if party and hasattr(party, 'shared_inventory'):
+                for item in party.shared_inventory:
+                    item_name = getattr(item, 'name', str(item)).lower()
+                    # Check if item appears to be a key for this location
+                    if 'key' in item_name:
+                        # Match by key holder name or location number
+                        if key_holder and key_holder.lower() in item_name:
+                            return True
+                        if str(location_number) in item_name:
+                            return True
+        except Exception:
+            pass  # No party inventory or access error
+
+        return False
+
+    def grant_location_access(
+        self, settlement_id: str, location_number: int, reason: str = ""
+    ) -> None:
+        """
+        Grant access to a locked location.
+
+        This should be called when:
+        - A key holder NPC grants permission
+        - The party obtains a key
+        - A special event unlocks the location
+
+        Args:
+            settlement_id: The settlement ID
+            location_number: The location number
+            reason: Optional reason for granting access (for logging)
+        """
+        perm_key = (settlement_id, location_number)
+        self._location_permissions[perm_key] = True
+
+        _log_settlement_event("access_granted", {
+            "settlement_id": settlement_id,
+            "location_number": location_number,
+            "reason": reason,
+        })
+
+        logger.info(f"Access granted to {settlement_id}:{location_number} - {reason}")
+
+    def revoke_location_access(self, settlement_id: str, location_number: int) -> None:
+        """Revoke access to a locked location."""
+        perm_key = (settlement_id, location_number)
+        self._location_permissions.pop(perm_key, None)
+
+    def has_location_access(self, settlement_id: str, location_number: int) -> bool:
+        """Check if access has been explicitly granted to a location."""
+        perm_key = (settlement_id, location_number)
+        return self._location_permissions.get(perm_key, False)
+
+    def get_locked_locations(self, settlement_id: Optional[str] = None) -> list[dict]:
+        """
+        Get list of locked locations in a settlement.
+
+        Args:
+            settlement_id: Settlement ID (defaults to active settlement)
+
+        Returns:
+            List of dicts with location info and access status
+        """
+        sid = settlement_id or self._active_settlement_id
+        if not sid or not self._registry:
+            return []
+
+        settlement = self._registry.get(sid)
+        if not settlement:
+            return []
+
+        locked = []
+        for loc in settlement.locations:
+            if loc.is_locked:
+                has_access = self._check_location_access(sid, loc.number, loc.key_holder)
+                locked.append({
+                    "number": loc.number,
+                    "name": loc.name,
+                    "key_holder": loc.key_holder,
+                    "has_access": has_access,
+                })
+
+        return locked
+
+    # =========================================================================
     # PHASE 1: BRIDGE API (handle_player_action + execute_action)
     # =========================================================================
 
@@ -504,6 +623,7 @@ class SettlementEngine:
             "settlement:ask_directions": self._action_ask_directions,
             "settlement:ask_rumor": self._action_ask_rumor,
             "settlement:check_encounter": self._action_check_encounter,
+            "settlement:equipment_availability": self._action_equipment_availability,
             "settlement:leave": self._action_leave,
         }
 
@@ -591,16 +711,25 @@ class SettlementEngine:
                 "action": "settlement:visit_location",
             }
 
-        # Check if locked (Phase 4 will add proper enforcement)
+        # Check if locked and enforce key/permission rules
         if location.is_locked:
-            return {
-                "success": False,
-                "message": f"{location.name} is locked. Key holder: {location.key_holder or 'unknown'}",
-                "action": "settlement:visit_location",
-                "location_number": location_number,
-                "is_locked": True,
-                "key_holder": location.key_holder,
-            }
+            force_entry = params.get("force_entry", False)
+            has_access = self._check_location_access(
+                settlement.settlement_id, location_number, location.key_holder
+            )
+
+            if not has_access and not force_entry:
+                # Provide helpful information about how to gain access
+                key_holder_info = location.key_holder or "unknown"
+                return {
+                    "success": False,
+                    "message": f"{location.name} is locked. Key holder: {key_holder_info}",
+                    "action": "settlement:visit_location",
+                    "location_number": location_number,
+                    "is_locked": True,
+                    "key_holder": key_holder_info,
+                    "hint": f"Talk to {key_holder_info} to request access, or find a key.",
+                }
 
         # Update state
         self._current_location_number = location_number
@@ -960,6 +1089,66 @@ class SettlementEngine:
             "current_events": settlement.current_events,
             "note": "Full rumor system to be implemented.",
         }
+
+    def _action_equipment_availability(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Query equipment availability in the settlement.
+
+        Returns what equipment categories are available/unavailable,
+        any price modifier, and special items unique to this settlement.
+
+        Args:
+            params: Optional parameters:
+                - category: Filter by specific category
+                - apply_modifier: If True, include calculated prices
+
+        Returns:
+            Result dict with equipment availability info
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:equipment_availability",
+            }
+
+        eq = settlement.equipment_availability
+        category_filter = params.get("category", "").lower()
+
+        # Filter available categories if requested
+        available = eq.available_categories
+        if category_filter:
+            available = [c for c in available if category_filter in c.lower()]
+
+        # Check if category is explicitly unavailable
+        is_unavailable = False
+        if category_filter:
+            for unavail in eq.unavailable_categories:
+                if category_filter in unavail.lower():
+                    is_unavailable = True
+                    break
+
+        result = {
+            "success": True,
+            "message": f"Equipment availability in {settlement.name}:",
+            "action": "settlement:equipment_availability",
+            "settlement_name": settlement.name,
+            "price_modifier": eq.price_modifier,
+            "price_modifier_percent": f"{int((eq.price_modifier - 1.0) * 100):+d}%" if eq.price_modifier != 1.0 else "standard",
+            "available_categories": available,
+            "unavailable_categories": eq.unavailable_categories,
+            "special_items": eq.special_items,
+            "notes": eq.notes,
+        }
+
+        if category_filter:
+            result["filtered_category"] = category_filter
+            result["category_available"] = len(available) > 0 and not is_unavailable
+            if is_unavailable:
+                result["message"] = f"'{category_filter}' is not available in {settlement.name}."
+
+        return result
 
     def _action_leave(self, params: dict[str, Any]) -> dict[str, Any]:
         """Leave the settlement."""
