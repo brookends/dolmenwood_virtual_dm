@@ -3615,6 +3615,130 @@ class HexCrawlEngine:
 
         return result
 
+    def engage_poi_npc(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Initiate combat encounter with a combatant NPC at the current POI.
+
+        This creates an EncounterState from the NPC's stat_reference and
+        transitions to ENCOUNTER state.
+
+        Args:
+            hex_id: Current hex
+            npc_id: ID or name of NPC to engage in combat
+
+        Returns:
+            Dictionary with encounter setup or error
+        """
+        from src.content_loader.monster_registry import get_monster_registry
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not loaded"}
+
+        # Find the NPC
+        target_npc = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Check if NPC is at this POI
+                if npc_id not in poi.npcs and npc_id.lower().replace(" ", "_") not in poi.npcs:
+                    return {"success": False, "error": f"NPC '{npc_id}' not at this POI"}
+
+                # Find full NPC data
+                for hex_npc in hex_data.npcs:
+                    if hex_npc.npc_id == npc_id or hex_npc.name == npc_id:
+                        target_npc = hex_npc
+                        break
+                    # Also check slug form
+                    if hex_npc.npc_id == npc_id.lower().replace(" ", "_"):
+                        target_npc = hex_npc
+                        break
+                break
+
+        if not target_npc:
+            return {"success": False, "error": f"NPC '{npc_id}' not found in hex data"}
+
+        # Check if NPC is a combatant
+        if not getattr(target_npc, "is_combatant", False):
+            return {
+                "success": False,
+                "error": f"'{target_npc.name}' is not a combatant. Use interact_with_npc for social interaction.",
+            }
+
+        # Check for stat_reference
+        if not getattr(target_npc, "stat_reference", None):
+            return {
+                "success": False,
+                "error": f"'{target_npc.name}' has no combat stats (stat_reference missing)",
+            }
+
+        # Create combatant from NPC
+        registry = get_monster_registry()
+        import uuid
+
+        combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
+        combatant = registry.create_combatant_from_hex_npc(
+            npc=target_npc,
+            combatant_id=combatant_id,
+            side="enemy",
+        )
+
+        if not combatant:
+            return {
+                "success": False,
+                "error": f"Failed to create combatant from '{target_npc.name}'",
+            }
+
+        # Check surprise
+        surprise_status = self._check_surprise()
+        distance = self._roll_encounter_distance(surprise_status)
+
+        # Create EncounterState
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER,
+            distance=distance,
+            surprise_status=surprise_status,
+            actors=[target_npc.name],
+            context=f"Engaging {target_npc.name} at {self._current_poi}",
+            terrain=hex_data.terrain_type,
+            combatants=[combatant],
+        )
+
+        # Set encounter on controller
+        self.controller.set_encounter(encounter)
+
+        # Transition to encounter state
+        self.controller.transition(
+            "encounter_triggered",
+            context={
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "npc_id": target_npc.npc_id,
+                "npc_name": target_npc.name,
+            },
+        )
+
+        return {
+            "success": True,
+            "encounter_id": encounter.encounter_id,
+            "combatant": {
+                "id": combatant.combatant_id,
+                "name": combatant.name,
+                "ac": combatant.stat_block.armor_class if combatant.stat_block else None,
+                "hp": combatant.stat_block.hp_max if combatant.stat_block else None,
+                "attacks": len(combatant.stat_block.attacks) if combatant.stat_block else 0,
+            },
+            "distance": distance,
+            "surprise": surprise_status.value if hasattr(surprise_status, "value") else str(surprise_status),
+            "context": encounter.context,
+        }
+
     # =========================================================================
     # ENCOUNTER GENERATION FOR POI INHABITANTS
     # =========================================================================

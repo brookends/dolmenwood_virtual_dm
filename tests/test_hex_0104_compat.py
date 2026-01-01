@@ -215,6 +215,73 @@ class TestHex0104EngineInteraction:
 
 
 # =============================================================================
+# NPC COMBAT ENGAGEMENT TESTS
+# =============================================================================
+
+
+class TestDredgerCombatEngagement:
+    """Test engaging the Dredger in combat."""
+
+    def test_engage_dredger_requires_poi(self, hex_engine):
+        """Cannot engage NPC without being at a POI."""
+        hex_engine._current_poi = None
+        result = hex_engine.engage_poi_npc("0104", "the_dredger")
+        assert result["success"] is False
+        assert "Not at a POI" in result["error"]
+
+    def test_engage_dredger_at_lighthouse(self, hex_engine):
+        """Can engage the Dredger when at the lighthouse POI."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+        result = hex_engine.engage_poi_npc("0104", "the_dredger")
+
+        assert result["success"] is True
+        assert result["combatant"]["name"] == "The Dredger"
+        assert result["combatant"]["ac"] == 14
+        assert result["combatant"]["hp"] == 45
+        assert result["combatant"]["attacks"] == 6
+
+    def test_engage_wrong_npc_at_poi(self, hex_engine):
+        """Cannot engage NPC that isn't at current POI."""
+        hex_engine._current_poi = "Lighthouse in the Bog"
+        result = hex_engine.engage_poi_npc("0104", "nonexistent_npc")
+        assert result["success"] is False
+        assert "not at this POI" in result["error"]
+
+    def test_stat_reference_parser(self):
+        """Test inline stat block parser directly."""
+        from src.content_loader.monster_registry import get_monster_registry
+
+        registry = get_monster_registry()
+        stat_ref = "Level 5 AC 16 HP 30 Morale 8 Speed 30 Att 2 claws (+4, 1d6)"
+
+        result = registry.parse_inline_stat_block(stat_ref)
+        assert result.success is True
+        assert result.stat_block.armor_class == 16
+        assert result.stat_block.hp_max == 30
+        assert result.stat_block.morale == 8
+        assert len(result.stat_block.attacks) == 2
+
+    def test_combatant_creation_from_hex_npc(self, hex_0104):
+        """Test creating combatant from HexNPC."""
+        from src.content_loader.monster_registry import get_monster_registry
+
+        registry = get_monster_registry()
+        dredger = hex_0104.npcs[0]
+
+        combatant = registry.create_combatant_from_hex_npc(
+            npc=dredger,
+            combatant_id="test_dredger",
+            side="enemy",
+        )
+
+        assert combatant is not None
+        assert combatant.name == "The Dredger"
+        assert combatant.side == "enemy"
+        assert combatant.stat_block.armor_class == 14
+        assert combatant.stat_block.hp_max == 45
+
+
+# =============================================================================
 # SMOKE TEST - PARSE ALL HEXES
 # =============================================================================
 

@@ -649,6 +649,204 @@ class MonsterRegistry:
             stat_block=result.stat_block,
         )
 
+    def parse_inline_stat_block(self, stat_reference: str) -> StatBlockResult:
+        """
+        Parse an inline stat block from a stat_reference string.
+
+        Handles formats like:
+        "Large Monstrosity—Animal Int.—Neutral, Level 7 AC 14 HP 45 Saves D8 R9 H10 B11 S12,
+         Att 6 tentacles (+6, 1d4 + constriction) Speed 10 Swim 80 Morale 10 XP 1,380"
+
+        Args:
+            stat_reference: The stat reference string to parse
+
+        Returns:
+            StatBlockResult with parsed StatBlock or error
+        """
+        try:
+            # Extract key stats using regex
+            level_match = re.search(r"Level\s+(\d+)", stat_reference, re.IGNORECASE)
+            ac_match = re.search(r"AC\s+(\d+)", stat_reference, re.IGNORECASE)
+            hp_match = re.search(r"HP\s+(\d+)", stat_reference, re.IGNORECASE)
+            morale_match = re.search(r"Morale\s+(\d+)", stat_reference, re.IGNORECASE)
+            speed_match = re.search(r"Speed\s+(\d+)", stat_reference, re.IGNORECASE)
+
+            # Parse saves: "Saves D8 R9 H10 B11 S12"
+            saves_match = re.search(
+                r"Saves?\s+D(\d+)\s+R(\d+)\s+H(\d+)\s+B(\d+)\s+S(\d+)",
+                stat_reference,
+                re.IGNORECASE,
+            )
+
+            # Parse attack: "Att 6 tentacles (+6, 1d4 + constriction)" or similar
+            attack_match = re.search(
+                r"Att\s+(.+?)(?=Speed|Morale|XP|$)",
+                stat_reference,
+                re.IGNORECASE,
+            )
+
+            # Require at minimum AC and HP
+            if not ac_match or not hp_match:
+                return StatBlockResult(
+                    success=False,
+                    error=f"Could not parse AC/HP from: {stat_reference[:100]}...",
+                )
+
+            level = int(level_match.group(1)) if level_match else 1
+            ac = int(ac_match.group(1))
+            hp = int(hp_match.group(1))
+            morale = int(morale_match.group(1)) if morale_match else 7
+            speed = int(speed_match.group(1)) if speed_match else 40
+
+            # Build hit dice from level (approximation: level d8)
+            hit_dice = f"{level}d8"
+
+            # Parse attacks
+            attacks = []
+            if attack_match:
+                attack_str = attack_match.group(1).strip().rstrip(",")
+                # Try to parse attack bonus and damage
+                # Format: "6 tentacles (+6, 1d4 + constriction)"
+                att_detail = re.search(
+                    r"(\d+)?\s*(.+?)\s*\(\+?(-?\d+),?\s*(\d+d\d+(?:[+-]\d+)?)?",
+                    attack_str,
+                )
+                if att_detail:
+                    num_attacks = int(att_detail.group(1)) if att_detail.group(1) else 1
+                    attack_name = att_detail.group(2).strip()
+                    attack_bonus = int(att_detail.group(3)) if att_detail.group(3) else 0
+                    damage = att_detail.group(4) if att_detail.group(4) else "1d6"
+
+                    for i in range(min(num_attacks, 6)):  # Cap at 6 attacks
+                        attacks.append({
+                            "name": attack_name if num_attacks == 1 else f"{attack_name} {i+1}",
+                            "damage": damage,
+                            "bonus": attack_bonus,
+                        })
+                else:
+                    # Fallback: single attack
+                    attacks.append({
+                        "name": "Attack",
+                        "damage": "1d6",
+                        "bonus": level,
+                    })
+            else:
+                # Default attack
+                attacks.append({
+                    "name": "Attack",
+                    "damage": "1d6",
+                    "bonus": level,
+                })
+
+            # Build special abilities from combat_abilities if available later
+            special_abilities = []
+
+            stat_block = StatBlock(
+                armor_class=ac,
+                hit_dice=hit_dice,
+                hp_current=hp,
+                hp_max=hp,
+                movement=speed,
+                attacks=attacks,
+                morale=morale,
+                save_as=f"Monster {level}",
+                special_abilities=special_abilities,
+            )
+
+            return StatBlockResult(
+                stat_block=stat_block,
+                source_type="inline_parsed",
+                source_id="stat_reference",
+                success=True,
+            )
+
+        except Exception as e:
+            logger.warning(f"Failed to parse inline stat block: {e}")
+            return StatBlockResult(
+                success=False,
+                error=f"Parse error: {e}",
+            )
+
+    def create_combatant_from_hex_npc(
+        self,
+        npc: Any,  # HexNPC
+        combatant_id: str,
+        side: str = "enemy",
+    ) -> Optional[Combatant]:
+        """
+        Create a Combatant from a HexNPC.
+
+        Handles both:
+        - Simple monster name references (e.g., "Ogre") → lookup in registry
+        - Inline stat blocks (e.g., "Level 7 AC 14 HP 45...") → parse inline
+
+        Args:
+            npc: HexNPC object with stat_reference field
+            combatant_id: Unique ID for this combatant instance
+            side: "party" or "enemy"
+
+        Returns:
+            Combatant instance or None if generation failed
+        """
+        if not hasattr(npc, "stat_reference") or not npc.stat_reference:
+            logger.warning(f"NPC {getattr(npc, 'name', 'unknown')} has no stat_reference")
+            return None
+
+        stat_reference = npc.stat_reference
+
+        # Check if it's a simple monster name (no numbers, short string)
+        is_simple_name = (
+            len(stat_reference) < 50
+            and not re.search(r"AC\s+\d+|HP\s+\d+|Level\s+\d+", stat_reference, re.IGNORECASE)
+        )
+
+        if is_simple_name:
+            # Try monster registry lookup
+            # Extract monster name (handle "Ogre" or "frost elf courtier (DMB)")
+            monster_name = stat_reference.split("(")[0].strip()
+            monster_id = monster_name.lower().replace(" ", "_")
+
+            lookup = self.get_monster(monster_id)
+            if lookup.found:
+                return self.create_combatant(
+                    monster_id=monster_id,
+                    combatant_id=combatant_id,
+                    side=side,
+                    name_override=getattr(npc, "name", None),
+                    roll_hp=True,
+                )
+
+            # Try by name
+            lookup_by_name = self.get_monster_by_name(monster_name)
+            if lookup_by_name.found:
+                return self.create_combatant(
+                    monster_id=lookup_by_name.monster.monster_id,
+                    combatant_id=combatant_id,
+                    side=side,
+                    name_override=getattr(npc, "name", None),
+                    roll_hp=True,
+                )
+
+            # Try NPC generator for class-based descriptions
+            request = NPCStatRequest(
+                description=stat_reference,
+                name=getattr(npc, "name", None),
+            )
+            return self.create_combatant_from_npc(request, combatant_id, side)
+        else:
+            # Parse inline stat block
+            result = self.parse_inline_stat_block(stat_reference)
+            if not result.success:
+                logger.warning(f"Failed to parse stat_reference: {result.error}")
+                return None
+
+            return Combatant(
+                combatant_id=combatant_id,
+                name=getattr(npc, "name", "Unknown"),
+                side=side,
+                stat_block=result.stat_block,
+            )
+
     def roll_number_appearing(self, monster_id: str) -> int:
         """
         Roll the number appearing for a monster type.
