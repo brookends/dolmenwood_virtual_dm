@@ -77,6 +77,23 @@
           ]
         }
       }
+    ],
+    "lost_behavior": {
+      "type": "standard",
+      "description": "The bog is disorienting, especially when strains of violin music seem to come from all directions at once.",
+      "escape_requires": "successful_lost_check"
+    },
+    "night_hazards": [
+      {
+        "trigger": "sleep",
+        "save_type": "spell",
+        "description": "At night, the veil between worlds grows thin. Characters who sleep in this hex may find themselves drawn toward the Spectral Manse in their dreams, and must Save Versus Spell or awaken within the manse itself.",
+        "on_fail": {
+          "condition": "transported",
+          "destination": "The Spectral Manse",
+          "duration_unit": "until_escape"
+        }
+      }
     ]
   },
   "description": "A barren expanse of stagnant pools. The keening wind carries strains of distant violin music.",
@@ -352,6 +369,9 @@
       "location": "The Spectral Manse",
       "stat_reference": "frost elf courtier (DMB)",
       "is_combatant": true,
+      "vulnerabilities": ["mention_of_ygraine", "promise_of_freedom", "musical_appreciation"],
+      "faction": "prince_mallowheart",
+      "loyalty": "coerced",
       "relationships": [
         {
           "npc_id": "prince_mallowheart",
