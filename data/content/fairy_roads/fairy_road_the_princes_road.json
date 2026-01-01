@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "the_princes_road",
+  "name": "The Prince’s Road",
+  "length_miles": 24,
+  "doors": [
+    {
+      "hex_id": "1308",
+      "name": "Hoary Gate",
+      "direction": "entry"
+    },
+    {
+      "hex_id": "0806",
+      "name": "Dumped Exit (no door)",
+      "direction": "exit_only",
+      "notes": "Travelers reaching the end are ejected here near the wall of white flame."
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Ravenwild",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Relentlessly straight road of cut ice through frozen wastes and blizzards; path is cut short by ley-line interference.",
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "The road crosses a frozen river flowing toward a misty pine-wood; it is a side-road to Ravenwild.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "ravenwild",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "Icy statues of elf nobles whisper: pay fealty to the Prince.",
+          "effects": [],
+          "tags": [
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 3,
+          "summary": "Two towering ice knights demand a toll of 100gp per mortal; refusing provokes an attack.",
+          "effects": [
+            {
+              "type": "toll",
+              "currency": "gp",
+              "amount_per_mortal": 100
+            },
+            {
+              "type": "encounter_on_refusal",
+              "foe": "ice_knights",
+              "count": 2
+            }
+          ],
+          "tags": [
+            "toll"
+          ]
+        },
+        {
+          "roll": 4,
+          "summary": "A raging blizzard buries the road; 3-in-6 chance of straying (lost).",
+          "effects": [
+            {
+              "type": "chance",
+              "probability": "3-in-6",
+              "on_true": [
+                {
+                  "type": "stray_from_path"
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "blizzard",
+            "stray_risk"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "A frozen mortal is entombed under the ice; if dug up they thaw within a day and fear the Cold Prince.",
+          "effects": [
+            {
+              "type": "npc_find",
+              "npc_type": "frozen_mortal",
+              "thaw_time": "1 day"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 6,
+          "summary": "A goblin-run inn offers common lodging; only fairy fruit for food at 1gp per serving.",
+          "effects": [
+            {
+              "type": "service_inn",
+              "lodging_quality": "common",
+              "food": "fairy_fruit",
+              "price_per_serving_gp": 1
+            }
+          ],
+          "tags": [
+            "inn"
+          ]
+        },
+        {
+          "roll": 7,
+          "summary": "A trail of blood crosses the road and leads off into the snow.",
+          "effects": [],
+          "tags": [
+            "hook",
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 8,
+          "summary": "A bottomless chasm blocks the road; those who cannot cross must turn back.",
+          "effects": [
+            {
+              "type": "travel_block",
+              "block": "chasm",
+              "resolution": "turn_back_if_uncrossable"
+            }
+          ],
+          "tags": []
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json",
+  "notes": "Only the Hoary Gate grants entry. Reaching the end ejects travelers into hex 0806."
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "duke_mai_fleur_road",
+  "name": "Duke Mai-Fleur’s Road",
+  "length_miles": 24,
+  "doors": [
+    {
+      "hex_id": "1502",
+      "name": "Unicorn Gate",
+      "direction": "endpoint"
+    },
+    {
+      "hex_id": "1508",
+      "name": "Grey King’s Barrow",
+      "direction": "endpoint"
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Diuthurnia",
+      "requires_invitation": true
+    },
+    {
+      "name": "Ravenwild",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Sandy road through misty pines; raven-cries; depressing drizzle; perpetual dusk.",
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "Flagstoned branch-road marked with an ivy-crowned unicorn; side-road to Diuthurnia.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "diuthurnia",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "Rocky ledge above a second road that diverges; side-road toward Ravenwild.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "ravenwild",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 3,
+          "summary": "Gravelly switchbacks; 3-in-6 landslide. Save vs Hold or take 1d8 damage.",
+          "effects": [
+            {
+              "type": "chance",
+              "probability": "3-in-6",
+              "on_true": [
+                {
+                  "type": "save",
+                  "save_type": "Hold",
+                  "on_fail": [
+                    {
+                      "type": "damage",
+                      "amount": "1d8"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "hazard"
+          ]
+        },
+        {
+          "roll": 4,
+          "summary": "Stone bridge with unicorn statues; gazing into the river shows distant scenes from Castle Brackenwold.",
+          "effects": [],
+          "tags": [
+            "scrying",
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "Night falls for 6 hours; during the darkness, 2d4 shadows hunt the living.",
+          "effects": [
+            {
+              "type": "environment",
+              "effect": "darkness",
+              "duration": "6 hours"
+            },
+            {
+              "type": "encounter",
+              "foe": "shadows",
+              "count": "2d4"
+            }
+          ],
+          "tags": [
+            "darkness"
+          ]
+        },
+        {
+          "roll": 6,
+          "summary": "Misty heath with 1d6 blessed unicorns grazing.",
+          "effects": [],
+          "tags": [
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 7,
+          "summary": "An abandoned hunting lodge; sleeping here heals 1d6 HP and gives the sleeper grey hair.",
+          "effects": [
+            {
+              "type": "rest_site",
+              "quality": "safe",
+              "heal": "1d6",
+              "side_effect": "greying_hair"
+            }
+          ],
+          "tags": [
+            "rest"
+          ]
+        },
+        {
+          "roll": 8,
+          "summary": "Ravens cry maddeningly; PCs with very low Wisdom must Save vs Spell or flee off the road (stray).",
+          "effects": [
+            {
+              "type": "conditional_save",
+              "condition": "wisdom<=6",
+              "save_type": "Spell",
+              "on_fail": [
+                {
+                  "type": "stray_from_path"
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "stray_risk"
+          ]
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json"
+}

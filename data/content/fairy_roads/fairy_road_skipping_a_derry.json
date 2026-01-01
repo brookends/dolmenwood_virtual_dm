@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "skipping_a_derry",
+  "name": "Skipping-a-Derry",
+  "length_miles": 36,
+  "doors": [
+    {
+      "hex_id": "0711",
+      "name": "Moggle Door",
+      "direction": "endpoint"
+    },
+    {
+      "hex_id": "1305",
+      "name": "Willow Gate",
+      "direction": "endpoint"
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Absynthe",
+      "requires_invitation": true
+    },
+    {
+      "name": "Catland",
+      "requires_invitation": true
+    },
+    {
+      "name": "Whyforth",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Rustic pathway through pleasant water meadows, valleys, and merry knolls under a cheerful sun.",
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "A dark-stone paved road crosses the path; it is a side-road to Absynthe.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "absynthe",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "A sparkling stream meanders into a cave mouth; side-road to Catland.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "catland",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 3,
+          "summary": "A cornfield crossroads; signpost points to Spoondrift and Wattle-Town—both routes lead to Whyforth.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "whyforth",
+              "requires_invitation": true
+            }
+          ],
+          "tags": [
+            "crossroads"
+          ]
+        },
+        {
+          "roll": 4,
+          "summary": "The sun sets instantly; a singing blue moon rises. Save vs Spell or gain a daylight penalty (attacks/saves -1).",
+          "effects": [
+            {
+              "type": "save",
+              "save_type": "Spell",
+              "on_fail": [
+                {
+                  "type": "condition",
+                  "id": "enamoured_of_night",
+                  "duration": "permanent",
+                  "modifiers": {
+                    "daylight_attack": -1,
+                    "daylight_save": -1
+                  }
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "curse"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "Elder-blossom wood with graves bearing names of deceased relatives. Laying flowers grants +1 saves for 1 week.",
+          "effects": [
+            {
+              "type": "buff",
+              "id": "blessed_by_ancestors",
+              "duration": "1 week",
+              "modifiers": {
+                "saving_throws": 1
+              }
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 6,
+          "summary": "A hilltop carpeted with wildflowers and butterflies; sleeping here heals 1d6 HP.",
+          "effects": [
+            {
+              "type": "rest_site",
+              "quality": "safe",
+              "heal": "1d6"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 7,
+          "summary": "A wooden bridge guarded by a sylvan centaur who challenges the strongest PC to non-lethal unarmed combat.",
+          "effects": [
+            {
+              "type": "challenge",
+              "challenge_type": "nonlethal_unarmed_duel",
+              "opponent": "sylvan_centaur"
+            }
+          ],
+          "tags": [
+            "guardian"
+          ]
+        },
+        {
+          "roll": 8,
+          "summary": "A low tunnel through willow roots; 2d6 sprites dwell here and harass travelers.",
+          "effects": [
+            {
+              "type": "encounter",
+              "foe": "sprites",
+              "count": "2d6",
+              "mood": "mischief"
+            }
+          ],
+          "tags": []
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json"
+}

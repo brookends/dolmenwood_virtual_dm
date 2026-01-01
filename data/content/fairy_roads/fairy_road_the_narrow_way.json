@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "the_narrow_way",
+  "name": "The Narrow Way",
+  "length_miles": 36,
+  "doors": [
+    {
+      "hex_id": "0309",
+      "name": "Twice-Wreathed Door",
+      "direction": "endpoint"
+    },
+    {
+      "hex_id": "1402",
+      "name": "Dungle-crack",
+      "direction": "endpoint"
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Gladding-Gloam",
+      "requires_invitation": true
+    },
+    {
+      "name": "Goblinhold",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Shadowy path along a canyon base under a huge red sun in a midnight-blue sky; ley-line interference makes it unstable.",
+  "special_rules": [
+    {
+      "id": "ley_line_chell_instability",
+      "summary": "Magical interference can destabilize the road; some locations may eject travelers back to the mortal world."
+    }
+  ],
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "A lopsided door opens into mazy tunnels—side-road to Goblinhold.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "goblinhold",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "A jester-knocker door opens to steaming tropical gardens—side-road to the Gladding-Gloam.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "gladding_gloam",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 3,
+          "summary": "The canyon splits into a maze; increase effective road length by 4d6 miles (reduced by 2 miles per PC with INT 15+).",
+          "effects": [
+            {
+              "type": "modify_effective_length",
+              "delta": "4d6 miles",
+              "reduction_per_pc": {
+                "stat": "INT",
+                "threshold": 15,
+                "reduce": "2 miles"
+              }
+            }
+          ],
+          "tags": [
+            "navigation"
+          ]
+        },
+        {
+          "roll": 4,
+          "summary": "A falling star-ember offers a wish in exchange for a soul (no resurrection).",
+          "effects": [],
+          "tags": [
+            "bargain",
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "2d4 goblin peddlers sell wares from candlelit niches.",
+          "effects": [],
+          "tags": [
+            "merchant",
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 6,
+          "summary": "A steep stair descends into 1 mile of pitch darkness.",
+          "effects": [
+            {
+              "type": "environment",
+              "effect": "darkness",
+              "distance": "1 mile"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 7,
+          "summary": "2d6 skeletons burst from the canyon walls, clawing at living flesh.",
+          "effects": [
+            {
+              "type": "encounter",
+              "foe": "skeletons",
+              "count": "2d6"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 8,
+          "summary": "Ley line disruption fractures space; the party is ejected into the mortal world in hex 0807.",
+          "effects": [
+            {
+              "type": "forced_exit",
+              "to_hex": "0807",
+              "also_apply_mortal_time_passed": true
+            }
+          ],
+          "tags": [
+            "ejection"
+          ]
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json"
+}
