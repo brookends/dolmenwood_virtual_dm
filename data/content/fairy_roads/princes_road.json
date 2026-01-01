@@ -1,0 +1,204 @@
+{
+  "road_id": "princes_road",
+  "name": "The Prince's Road",
+  "description": "An ancient fairy road that winds through the heart of Dolmenwood, said to have been walked by the Cold Prince himself in ages past. The path gleams silver in moonlight, and strange music can sometimes be heard drifting through the mist.",
+  "length_segments": 4,
+  "difficulty": "dangerous",
+  "time_dilation_enabled": true,
+  "time_dilation_dice": "1d12",
+  "time_dilation_unit": "days",
+  "atmosphere": "The air shimmers with an ethereal light, and shadows move independently of their casters. The silence is broken only by distant, otherworldly music.",
+  "sights": [
+    "Luminescent mushrooms lining the path",
+    "Ghostly figures walking parallel paths",
+    "Stars that seem far too close",
+    "Trees with silver leaves"
+  ],
+  "sounds": [
+    "Distant, haunting music",
+    "Whispers in unknown languages",
+    "The tinkling of bells",
+    "Footsteps that echo strangely"
+  ],
+  "smells": [
+    "Wild roses",
+    "Autumn leaves",
+    "Cold iron",
+    "Something sweet and dangerous"
+  ],
+  "doors": [
+    {
+      "door_id": "princes_road_hollow_oak",
+      "name": "The Hollow Oak Door",
+      "hex_id": "0704",
+      "fairy_road_id": "princes_road",
+      "description": "A massive hollow oak tree with a doorway carved into its trunk. The doorway glows faintly at twilight.",
+      "requires_time": "twilight",
+      "always_visible": false,
+      "detection_dc": 15,
+      "road_position": 0.0
+    },
+    {
+      "door_id": "princes_road_standing_stones",
+      "name": "The Standing Stone Circle",
+      "hex_id": "1203",
+      "fairy_road_id": "princes_road",
+      "description": "A circle of ancient standing stones. At midnight during a full moon, a doorway appears between the two tallest stones.",
+      "requires_time": "midnight",
+      "requires_moonphase": "full_moon",
+      "always_visible": false,
+      "detection_dc": 10,
+      "road_position": 0.5
+    },
+    {
+      "door_id": "princes_road_frozen_spring",
+      "name": "The Frozen Spring",
+      "hex_id": "1508",
+      "fairy_road_id": "princes_road",
+      "description": "A spring that never thaws, even in summer. Leaving an offering of silver coins in the water opens the way.",
+      "requires_offering": "silver coin",
+      "always_visible": true,
+      "detection_dc": 0,
+      "road_position": 1.0
+    }
+  ],
+  "encounter_table": {
+    "table_id": "princes_road_encounters",
+    "name": "Prince's Road Encounters",
+    "die_type": "d8",
+    "monster_entries": [
+      {
+        "roll": 1,
+        "creature_type": "Redcap",
+        "count_dice": "1d4",
+        "description": "A gang of murderous redcaps, their caps freshly dyed with blood.",
+        "behavior": "Hostile - will attack travelers immediately",
+        "is_hostile": true,
+        "monster_ids": ["redcap"]
+      },
+      {
+        "roll": 2,
+        "creature_type": "Will-o'-Wisp",
+        "count_dice": "1d3",
+        "description": "Flickering lights that attempt to lead travelers astray.",
+        "behavior": "Deceptive - tries to lure travelers off the path",
+        "is_hostile": false,
+        "monster_ids": ["will_o_wisp"]
+      },
+      {
+        "roll": 3,
+        "creature_type": "Moss Dwarf Patrol",
+        "count_dice": "2d4",
+        "description": "A patrol of moss dwarfs, suspicious of outsiders.",
+        "behavior": "Wary - will question travelers but not attack unprovoked",
+        "is_hostile": false,
+        "monster_ids": ["moss_dwarf"]
+      },
+      {
+        "roll": 4,
+        "creature_type": "Fairy Noble",
+        "count_fixed": 1,
+        "description": "A fairy noble traveling with 1d4 attendants.",
+        "behavior": "Capricious - may help or hinder based on whim",
+        "is_hostile": false,
+        "monster_ids": ["fairy_noble"]
+      },
+      {
+        "roll": 5,
+        "creature_type": "Lost Souls",
+        "count_dice": "1d6",
+        "description": "The spirits of mortals who died on the road, trapped between worlds.",
+        "behavior": "Mournful - seek help but may attack if refused",
+        "is_hostile": false,
+        "monster_ids": ["ghost"]
+      },
+      {
+        "roll": 6,
+        "creature_type": "Woodgrue",
+        "count_dice": "1d2",
+        "description": "Twisted plant creatures that hunt the edges of the path.",
+        "behavior": "Predatory - stalks and attacks weak travelers",
+        "is_hostile": true,
+        "monster_ids": ["woodgrue"]
+      },
+      {
+        "roll": 7,
+        "creature_type": "Fairy Hounds",
+        "count_dice": "2d4",
+        "description": "White hounds with red ears, hunting something unseen.",
+        "behavior": "Focused - ignore travelers unless interfered with",
+        "is_hostile": false,
+        "monster_ids": ["fairy_hound"]
+      },
+      {
+        "roll": 8,
+        "creature_type": "The Wild Hunt",
+        "count_fixed": 1,
+        "description": "The dreaded Wild Hunt passes by - seek cover immediately!",
+        "behavior": "Catastrophic - all must hide or be swept up in the hunt",
+        "is_hostile": true,
+        "monster_ids": ["wild_hunt"]
+      }
+    ],
+    "location_entries": [
+      {
+        "roll": 1,
+        "name": "The Crossroads Shrine",
+        "description": "A small shrine where fairy roads intersect. Offerings left here may grant boons.",
+        "features": ["Offerings of food and trinkets", "Carved stone markers"],
+        "hazards": [],
+        "treasures": ["Previous travelers' offerings (1d20 sp)"]
+      },
+      {
+        "roll": 2,
+        "name": "The Weeping Willow",
+        "description": "A massive willow tree that appears to weep silver tears. Resting here restores 1d6 HP but advances mortal time by 1d4 days.",
+        "features": ["Healing waters", "Comfortable shade"],
+        "hazards": ["Time dilation"],
+        "treasures": []
+      },
+      {
+        "roll": 3,
+        "name": "The Merchant's Rest",
+        "description": "A clearing with a small inn that appears and disappears. A goblin merchant offers strange wares.",
+        "features": ["Warm fire", "Strange goods for sale"],
+        "hazards": ["Fey bargains"],
+        "treasures": [],
+        "npcs": ["goblin_merchant"]
+      },
+      {
+        "roll": 4,
+        "name": "The Bone Bridge",
+        "description": "A bridge made of interlocking bones spans a chasm of swirling mist. Something stirs below.",
+        "features": ["Unsettling construction", "Mist-filled depths"],
+        "hazards": ["Unstable footing", "Something lurks below"]
+      },
+      {
+        "roll": 5,
+        "name": "The Garden of Statues",
+        "description": "A garden filled with lifelike statues of travelers. Are they stone, or something else?",
+        "features": ["Beautiful flowers", "Eerily lifelike statues"],
+        "hazards": ["Basilisk territory", "Petrification risk"]
+      },
+      {
+        "roll": 6,
+        "name": "The Mushroom Ring",
+        "description": "A ring of giant toadstools, some large enough to shelter beneath. Spore clouds drift lazily.",
+        "features": ["Natural shelter", "Bioluminescence"],
+        "hazards": ["Hallucinogenic spores"],
+        "treasures": ["Rare mushroom specimens"]
+      }
+    ]
+  },
+  "stray_exit_hexes": ["0705", "0803", "1104", "1305", "1407"],
+  "stray_time_dice": "1d6",
+  "stray_time_unit": "hours",
+  "denizens": ["cold_prince_servitor", "fairy_guide"],
+  "no_magic": false,
+  "no_iron": true,
+  "special_rules": [
+    "Iron items cause 1d6 damage per turn to their carriers",
+    "Cold iron weapons deal double damage to all creatures here",
+    "Characters who sleep on the road must save vs Spell or dream true prophecies"
+  ]
+}

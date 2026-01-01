@@ -54,6 +54,7 @@ class EncounterOrigin(str, Enum):
     WILDERNESS = "wilderness"
     DUNGEON = "dungeon"
     SETTLEMENT = "settlement"
+    FAIRY_ROAD = "fairy_road"
 
 
 class EncounterAction(str, Enum):
@@ -807,6 +808,9 @@ class EncounterEngine:
             elif self._state.origin == EncounterOrigin.DUNGEON:
                 result.transition_to = "encounter_end_dungeon"
                 self.controller.transition("encounter_end_dungeon")
+            elif self._state.origin == EncounterOrigin.FAIRY_ROAD:
+                result.transition_to = "encounter_end_fairy_road"
+                self.controller.transition("encounter_end_fairy_road")
             else:
                 result.transition_to = "encounter_end_settlement"
                 self.controller.transition("encounter_end_settlement")
@@ -997,6 +1001,8 @@ class EncounterEngine:
             trigger = "encounter_end_wilderness"
         elif self._state.origin == EncounterOrigin.DUNGEON:
             trigger = "encounter_end_dungeon"
+        elif self._state.origin == EncounterOrigin.FAIRY_ROAD:
+            trigger = "encounter_end_fairy_road"
         else:
             trigger = "encounter_end_settlement"
 

@@ -27,6 +27,7 @@ class GameState(str, Enum):
 
     WILDERNESS_TRAVEL = "wilderness_travel"
     DUNGEON_EXPLORATION = "dungeon_exploration"
+    FAIRY_ROAD_TRAVEL = "fairy_road_travel"
     ENCOUNTER = "encounter"  # Unified encounter state for all locations
     COMBAT = "combat"
     SETTLEMENT_EXPLORATION = "settlement_exploration"
@@ -77,6 +78,37 @@ VALID_TRANSITIONS: list[StateTransition] = [
         GameState.DOWNTIME,
         "begin_rest",
         "Party begins extended rest or downtime",
+    ),
+    StateTransition(
+        GameState.WILDERNESS_TRAVEL,
+        GameState.FAIRY_ROAD_TRAVEL,
+        "enter_fairy_road",
+        "Party enters a fairy road through a fairy door",
+    ),
+    # Fairy Road Travel transitions
+    StateTransition(
+        GameState.FAIRY_ROAD_TRAVEL,
+        GameState.ENCOUNTER,
+        "encounter_triggered",
+        "Encounter occurs on the fairy road",
+    ),
+    StateTransition(
+        GameState.FAIRY_ROAD_TRAVEL,
+        GameState.COMBAT,
+        "fairy_road_combat",
+        "Combat breaks out on fairy road",
+    ),
+    StateTransition(
+        GameState.FAIRY_ROAD_TRAVEL,
+        GameState.SOCIAL_INTERACTION,
+        "initiate_conversation",
+        "Party initiates conversation with fairy road denizen",
+    ),
+    StateTransition(
+        GameState.FAIRY_ROAD_TRAVEL,
+        GameState.WILDERNESS_TRAVEL,
+        "exit_fairy_road",
+        "Party exits fairy road at destination or strays from path",
     ),
     # Dungeon Exploration transitions
     StateTransition(
@@ -165,6 +197,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "encounter_end_settlement",
         "Encounter resolved, return to settlement exploration",
     ),
+    StateTransition(
+        GameState.ENCOUNTER,
+        GameState.FAIRY_ROAD_TRAVEL,
+        "encounter_end_fairy_road",
+        "Encounter resolved, return to fairy road travel",
+    ),
     # Combat transitions
     StateTransition(
         GameState.COMBAT,
@@ -183,6 +221,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
         GameState.SETTLEMENT_EXPLORATION,
         "combat_end_settlement",
         "Combat ends in settlement",
+    ),
+    StateTransition(
+        GameState.COMBAT,
+        GameState.FAIRY_ROAD_TRAVEL,
+        "combat_end_fairy_road",
+        "Combat ends on fairy road",
     ),
     StateTransition(
         GameState.COMBAT,
@@ -214,6 +258,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
         GameState.SETTLEMENT_EXPLORATION,
         "conversation_end_settlement",
         "Conversation ends, return to settlement",
+    ),
+    StateTransition(
+        GameState.SOCIAL_INTERACTION,
+        GameState.FAIRY_ROAD_TRAVEL,
+        "conversation_end_fairy_road",
+        "Conversation ends, return to fairy road",
     ),
     StateTransition(
         GameState.SOCIAL_INTERACTION,
@@ -436,6 +486,13 @@ class StateMachine:
             (GameState.ENCOUNTER, GameState.WILDERNESS_TRAVEL): "encounter_end_wilderness",
             (GameState.ENCOUNTER, GameState.DUNGEON_EXPLORATION): "encounter_end_dungeon",
             (GameState.ENCOUNTER, GameState.SETTLEMENT_EXPLORATION): "encounter_end_settlement",
+            (GameState.ENCOUNTER, GameState.FAIRY_ROAD_TRAVEL): "encounter_end_fairy_road",
+            # Fairy road endings
+            (GameState.COMBAT, GameState.FAIRY_ROAD_TRAVEL): "combat_end_fairy_road",
+            (
+                GameState.SOCIAL_INTERACTION,
+                GameState.FAIRY_ROAD_TRAVEL,
+            ): "conversation_end_fairy_road",
         }
 
         key = (self._current_state, self._previous_state)
@@ -573,6 +630,7 @@ class StateMachine:
             GameState.WILDERNESS_TRAVEL,
             GameState.DUNGEON_EXPLORATION,
             GameState.SETTLEMENT_EXPLORATION,
+            GameState.FAIRY_ROAD_TRAVEL,
         }
 
     def is_encounter_state(self) -> bool:

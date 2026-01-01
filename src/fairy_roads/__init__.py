@@ -1,25 +1,47 @@
-"""Fairy road package.
+"""Fairy roads travel engine module for Dolmenwood."""
 
-This package currently contains content-layer models used by the loader/registry.
-The travel engine will live alongside these models (e.g., `fairy_road_engine.py`).
-"""
-
-from .models import (
-    FairyRoadCommon,
-    FairyRoadDefinition,
-    FairyRoadDoor,
-    FairyRoadEffect,
+from src.fairy_roads.fairy_road_models import (
+    FairyRoadCheckResult,
+    StrayFromPathResult,
+    FairyDoor,
+    FairyRoadEncounterEntry,
     FairyRoadLocationEntry,
-    FairyRoadLocationTable,
-    FairyRoadSideRoad,
+    FairyRoadEncounterTable,
+    FairyRoadData,
+    FairyRoadTravelState,
+    FairyRoadCheckOutcome,
+    StrayFromPathOutcome,
+)
+from src.fairy_roads.fairy_road_engine import (
+    FairyRoadEngine,
+    FairyRoadPhase,
+    FairyRoadTravelResult,
+    FairyRoadEntryResult,
+    FairyRoadExitResult,
+    get_fairy_road_engine,
+    reset_fairy_road_engine,
 )
 
 __all__ = [
-    "FairyRoadCommon",
-    "FairyRoadDefinition",
-    "FairyRoadDoor",
-    "FairyRoadEffect",
+    # Enums
+    "FairyRoadCheckResult",
+    "StrayFromPathResult",
+    "FairyRoadPhase",
+    # Content models
+    "FairyDoor",
+    "FairyRoadEncounterEntry",
     "FairyRoadLocationEntry",
-    "FairyRoadLocationTable",
-    "FairyRoadSideRoad",
+    "FairyRoadEncounterTable",
+    "FairyRoadData",
+    # Runtime state
+    "FairyRoadTravelState",
+    "FairyRoadCheckOutcome",
+    "StrayFromPathOutcome",
+    # Engine
+    "FairyRoadEngine",
+    "FairyRoadTravelResult",
+    "FairyRoadEntryResult",
+    "FairyRoadExitResult",
+    "get_fairy_road_engine",
+    "reset_fairy_road_engine",
 ]
