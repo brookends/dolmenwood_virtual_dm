@@ -32,6 +32,18 @@ from src.settlement.settlement_state_export import (
     SettlementEventBuffer,
     build_settlement_snapshot,
 )
+from src.settlement.settlement_encounter_adapter import (
+    SettlementActorParser,
+    SettlementEncounterAdapter,
+    SettlementActorType,
+    ParsedActor,
+    SettlementEncounterConversion,
+    SETTLEMENT_ACTOR_MAP,
+    parse_settlement_actor,
+    convert_settlement_encounter,
+    get_settlement_encounter_adapter,
+    get_settlement_actor_parser,
+)
 
 __all__ = [
     "SettlementEngine",
@@ -62,4 +74,15 @@ __all__ = [
     "SettlementEvent",
     "SettlementEventBuffer",
     "build_settlement_snapshot",
+    # Encounter adapter
+    "SettlementActorParser",
+    "SettlementEncounterAdapter",
+    "SettlementActorType",
+    "ParsedActor",
+    "SettlementEncounterConversion",
+    "SETTLEMENT_ACTOR_MAP",
+    "parse_settlement_actor",
+    "convert_settlement_encounter",
+    "get_settlement_encounter_adapter",
+    "get_settlement_actor_parser",
 ]
