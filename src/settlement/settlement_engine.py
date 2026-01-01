@@ -38,6 +38,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Optional
 import logging
+import re
 
 from src.game_state.state_machine import GameState
 from src.game_state.global_controller import GlobalController
@@ -252,6 +253,11 @@ class SettlementEngine:
         # JSON-backed settlement registry (v2 content model)
         self._registry: Optional[SettlementRegistry] = None
 
+        # Runtime state for v2 content navigation
+        self._active_settlement_id: Optional[str] = None  # ID of settlement we're in (v2)
+        self._current_location_number: Optional[int] = None  # Location number we're at
+        self._visited_locations: set[int] = set()  # Locations visited in current settlement
+
         # NPC data
         self._npcs: dict[str, NPC] = {}
 
@@ -325,6 +331,534 @@ class SettlementEngine:
         if self._registry:
             return self._registry.list_ids()
         return []
+
+    # =========================================================================
+    # V2 RUNTIME STATE MANAGEMENT
+    # =========================================================================
+
+    def get_active_settlement(self) -> Optional[SettlementData]:
+        """Get the currently active settlement data (v2)."""
+        if self._active_settlement_id and self._registry:
+            return self._registry.get(self._active_settlement_id)
+        return None
+
+    def get_current_location(self) -> Optional["SettlementLocationData"]:
+        """Get the current location within the active settlement."""
+        from src.settlement.settlement_content_models import SettlementLocationData
+
+        settlement = self.get_active_settlement()
+        if settlement and self._current_location_number is not None:
+            loc_map = settlement.location_by_number()
+            return loc_map.get(self._current_location_number)
+        return None
+
+    def set_active_settlement(self, settlement_id: str) -> bool:
+        """
+        Set the active settlement for v2 navigation.
+
+        Args:
+            settlement_id: Settlement ID from registry
+
+        Returns:
+            True if settlement was found and set, False otherwise
+        """
+        if self._registry and self._registry.get(settlement_id):
+            self._active_settlement_id = settlement_id
+            self._current_location_number = None
+            self._visited_locations = set()
+            logger.info(f"Active settlement set to: {settlement_id}")
+            return True
+        logger.warning(f"Settlement not found in registry: {settlement_id}")
+        return False
+
+    def clear_active_settlement(self) -> None:
+        """Clear the active settlement state (when leaving)."""
+        self._active_settlement_id = None
+        self._current_location_number = None
+        self._visited_locations = set()
+
+    # =========================================================================
+    # PHASE 1: BRIDGE API (handle_player_action + execute_action)
+    # =========================================================================
+
+    def handle_player_action(self, text: str, character_id: Optional[str] = None) -> dict[str, Any]:
+        """
+        Bridge shim for freeform player input in settlement.
+
+        This method provides conservative keyword routing to structured actions.
+        It's designed to work with the existing ConversationFacade integration
+        while gradually migrating to execute_action().
+
+        Args:
+            text: Freeform player input text
+            character_id: Optional character performing the action
+
+        Returns:
+            Result dict with 'success', 'message', and optional data
+        """
+        text_lower = text.strip().lower()
+
+        # Try to extract intent and route to structured action
+
+        # "list locations" / "show locations" / "locations" / "where can i go"
+        if any(kw in text_lower for kw in ["list location", "show location", "locations", "where can i go", "what's here", "look around"]):
+            return self.execute_action("settlement:list_locations", {})
+
+        # "visit <number>" / "go to <number>" / "enter <number>"
+        visit_match = re.search(r"(?:visit|go to|enter|check out)\s+(?:location\s+)?(\d+)", text_lower)
+        if visit_match:
+            loc_num = int(visit_match.group(1))
+            return self.execute_action("settlement:visit_location", {"location_number": loc_num})
+
+        # "visit <name>" - try to match by location name
+        visit_name_match = re.search(r"(?:visit|go to|enter|check out)\s+(?:the\s+)?(.+)", text_lower)
+        if visit_name_match:
+            name_query = visit_name_match.group(1).strip()
+            settlement = self.get_active_settlement()
+            if settlement:
+                for loc in settlement.locations:
+                    if name_query in loc.name.lower():
+                        return self.execute_action("settlement:visit_location", {"location_number": loc.number})
+
+        # "services" / "what services" / "list services"
+        if any(kw in text_lower for kw in ["services", "what can i buy", "what's available"]):
+            return self.execute_action("settlement:list_services", {})
+
+        # "use <service>" / "buy <service>"
+        use_match = re.search(r"(?:use|buy|get|order)\s+(.+)", text_lower)
+        if use_match:
+            service_query = use_match.group(1).strip()
+            return self.execute_action("settlement:use_service", {"service_name": service_query})
+
+        # "npcs" / "who's here" / "list npcs"
+        if any(kw in text_lower for kw in ["npcs", "who's here", "who is here", "people", "locals"]):
+            return self.execute_action("settlement:list_npcs", {})
+
+        # "talk to <name>" / "speak with <name>"
+        talk_match = re.search(r"(?:talk to|speak (?:to|with)|chat with)\s+(.+)", text_lower)
+        if talk_match:
+            npc_query = talk_match.group(1).strip()
+            return self.execute_action("settlement:talk", {"npc_name": npc_query})
+
+        # "directions" / "roads" / "how do i get to"
+        if any(kw in text_lower for kw in ["directions", "roads", "way to", "path to", "route"]):
+            return self.execute_action("settlement:ask_directions", {})
+
+        # "rumors" / "gossip" / "what's the word"
+        if any(kw in text_lower for kw in ["rumor", "gossip", "word on the street", "heard anything"]):
+            return self.execute_action("settlement:ask_rumor", {})
+
+        # "leave" / "exit" / "depart"
+        if any(kw in text_lower for kw in ["leave", "exit", "depart", "go outside", "wilderness"]):
+            return self.execute_action("settlement:leave", {})
+
+        # Fallback - unrecognized input
+        return {
+            "success": False,
+            "message": f"I don't understand '{text}'. Try: list locations, visit <number>, services, npcs, talk to <name>, or leave.",
+            "action": None,
+        }
+
+    def execute_action(self, action_id: str, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Execute a structured settlement action.
+
+        This is the main router for settlement actions. Each action returns
+        a result dict suitable for UI consumption.
+
+        Args:
+            action_id: The action identifier (e.g., "settlement:list_locations")
+            params: Action parameters
+
+        Returns:
+            Result dict with 'success', 'message', and action-specific data
+        """
+        # Dispatch to action handlers
+        handlers = {
+            "settlement:list_locations": self._action_list_locations,
+            "settlement:visit_location": self._action_visit_location,
+            "settlement:list_services": self._action_list_services,
+            "settlement:use_service": self._action_use_service,
+            "settlement:list_npcs": self._action_list_npcs,
+            "settlement:talk": self._action_talk_to_npc,
+            "settlement:ask_directions": self._action_ask_directions,
+            "settlement:ask_rumor": self._action_ask_rumor,
+            "settlement:leave": self._action_leave,
+        }
+
+        handler = handlers.get(action_id)
+        if handler:
+            try:
+                return handler(params)
+            except Exception as e:
+                logger.exception(f"Error executing action {action_id}: {e}")
+                return {
+                    "success": False,
+                    "message": f"Error executing action: {str(e)}",
+                    "action": action_id,
+                }
+
+        return {
+            "success": False,
+            "message": f"Unknown action: {action_id}",
+            "action": action_id,
+        }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 1: Core Navigation)
+    # =========================================================================
+
+    def _action_list_locations(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List all locations in the current settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not currently in a settlement with location data.",
+                "action": "settlement:list_locations",
+            }
+
+        locations = []
+        for loc in sorted(settlement.locations, key=lambda x: x.number):
+            loc_info = {
+                "number": loc.number,
+                "name": loc.name,
+                "type": loc.location_type,
+                "visited": loc.number in self._visited_locations,
+                "is_locked": loc.is_locked,
+                "key_holder": loc.key_holder if loc.is_locked else None,
+            }
+            # Add brief description excerpt
+            if loc.description:
+                loc_info["brief"] = loc.description[:100] + "..." if len(loc.description) > 100 else loc.description
+            locations.append(loc_info)
+
+        return {
+            "success": True,
+            "message": f"{settlement.name} has {len(locations)} notable locations:",
+            "action": "settlement:list_locations",
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "locations": locations,
+            "current_location": self._current_location_number,
+        }
+
+    def _action_visit_location(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Visit a specific location by number."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not currently in a settlement.",
+                "action": "settlement:visit_location",
+            }
+
+        location_number = params.get("location_number")
+        if location_number is None:
+            return {
+                "success": False,
+                "message": "No location number specified.",
+                "action": "settlement:visit_location",
+            }
+
+        loc_map = settlement.location_by_number()
+        location = loc_map.get(location_number)
+        if not location:
+            return {
+                "success": False,
+                "message": f"Location {location_number} not found in {settlement.name}.",
+                "action": "settlement:visit_location",
+            }
+
+        # Check if locked (Phase 4 will add proper enforcement)
+        if location.is_locked:
+            return {
+                "success": False,
+                "message": f"{location.name} is locked. Key holder: {location.key_holder or 'unknown'}",
+                "action": "settlement:visit_location",
+                "location_number": location_number,
+                "is_locked": True,
+                "key_holder": location.key_holder,
+            }
+
+        # Update state
+        self._current_location_number = location_number
+        self._visited_locations.add(location_number)
+
+        # Build location details
+        services = [{"name": s.name, "cost": s.cost, "description": s.description} for s in location.services]
+        npcs = location.npcs  # NPC IDs
+
+        return {
+            "success": True,
+            "message": f"You arrive at {location.name}.",
+            "action": "settlement:visit_location",
+            "location": {
+                "number": location.number,
+                "name": location.name,
+                "type": location.location_type,
+                "description": location.description,
+                "exterior": location.exterior,
+                "interior": location.interior,
+                "atmosphere": location.atmosphere,
+                "populace": location.populace,
+                "special_features": location.special_features,
+            },
+            "services": services,
+            "npc_ids": npcs,
+            "has_services": len(services) > 0,
+            "has_npcs": len(npcs) > 0,
+        }
+
+    # =========================================================================
+    # ACTION HANDLERS (Phase 2: Services + NPCs - Stubs for now)
+    # =========================================================================
+
+    def _action_list_services(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List services at current location."""
+        location = self.get_current_location()
+        if not location:
+            # If no specific location, list all services in settlement
+            settlement = self.get_active_settlement()
+            if not settlement:
+                return {
+                    "success": False,
+                    "message": "Not in a settlement.",
+                    "action": "settlement:list_services",
+                }
+
+            all_services = []
+            for loc in settlement.locations:
+                for svc in loc.services:
+                    all_services.append({
+                        "name": svc.name,
+                        "cost": svc.cost,
+                        "location": loc.name,
+                        "location_number": loc.number,
+                    })
+
+            return {
+                "success": True,
+                "message": f"Services available in {settlement.name}:",
+                "action": "settlement:list_services",
+                "services": all_services,
+            }
+
+        # Services at current location
+        services = [{"name": s.name, "cost": s.cost, "description": s.description, "notes": s.notes} for s in location.services]
+
+        if not services:
+            return {
+                "success": True,
+                "message": f"No services available at {location.name}.",
+                "action": "settlement:list_services",
+                "services": [],
+            }
+
+        return {
+            "success": True,
+            "message": f"Services at {location.name}:",
+            "action": "settlement:list_services",
+            "location_name": location.name,
+            "services": services,
+        }
+
+    def _action_use_service(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Use a service (stub - Phase 2 will implement fully)."""
+        from src.settlement.settlement_services import SettlementServiceExecutor
+
+        service_name = params.get("service_name", "")
+        location = self.get_current_location()
+
+        if not location:
+            return {
+                "success": False,
+                "message": "Visit a location first to use services.",
+                "action": "settlement:use_service",
+            }
+
+        # Find matching service
+        matched = None
+        for svc in location.services:
+            if service_name.lower() in svc.name.lower():
+                matched = svc
+                break
+
+        if not matched:
+            return {
+                "success": False,
+                "message": f"Service '{service_name}' not found at {location.name}.",
+                "action": "settlement:use_service",
+            }
+
+        # Execute service
+        executor = SettlementServiceExecutor()
+        result = executor.use(matched, params)
+
+        return {
+            "success": True,
+            "message": f"Using {result.service_name}...",
+            "action": "settlement:use_service",
+            "service_result": result.to_dict(),
+        }
+
+    def _action_list_npcs(self, params: dict[str, Any]) -> dict[str, Any]:
+        """List NPCs at current location or in settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:list_npcs",
+            }
+
+        location = self.get_current_location()
+        npc_map = settlement.npc_by_id()
+
+        if location:
+            # NPCs at this location
+            npcs = []
+            for npc_id in location.npcs:
+                npc = npc_map.get(npc_id)
+                if npc:
+                    npcs.append({
+                        "npc_id": npc.npc_id,
+                        "name": npc.name,
+                        "title": npc.title,
+                        "description": npc.description[:100] + "..." if len(npc.description) > 100 else npc.description,
+                    })
+
+            return {
+                "success": True,
+                "message": f"Notable people at {location.name}:" if npcs else f"No notable NPCs at {location.name}.",
+                "action": "settlement:list_npcs",
+                "location_name": location.name,
+                "npcs": npcs,
+            }
+
+        # All NPCs in settlement
+        npcs = []
+        for npc in settlement.npcs:
+            npcs.append({
+                "npc_id": npc.npc_id,
+                "name": npc.name,
+                "title": npc.title,
+                "occupation": npc.occupation,
+                "location_id": npc.location_id,
+            })
+
+        return {
+            "success": True,
+            "message": f"Notable people in {settlement.name}:",
+            "action": "settlement:list_npcs",
+            "npcs": npcs,
+        }
+
+    def _action_talk_to_npc(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Talk to an NPC (narration-only stub for Phase 2)."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:talk",
+            }
+
+        npc_name = params.get("npc_name", "")
+        npc_map = settlement.npc_by_id()
+
+        # Find NPC by name
+        matched = None
+        for npc in settlement.npcs:
+            if npc_name.lower() in npc.name.lower():
+                matched = npc
+                break
+
+        if not matched:
+            return {
+                "success": False,
+                "message": f"Could not find '{npc_name}' in {settlement.name}.",
+                "action": "settlement:talk",
+            }
+
+        return {
+            "success": True,
+            "message": f"You approach {matched.name}.",
+            "action": "settlement:talk",
+            "npc": {
+                "npc_id": matched.npc_id,
+                "name": matched.name,
+                "title": matched.title,
+                "description": matched.description,
+                "kindred": matched.kindred,
+                "demeanor": matched.demeanor,
+                "mannerisms": matched.mannerisms,
+                "speech": matched.speech,
+            },
+            "note": "Full conversation system will be implemented in Phase 2.",
+        }
+
+    def _action_ask_directions(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Ask for directions / roads out of settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:ask_directions",
+            }
+
+        return {
+            "success": True,
+            "message": f"Roads and connections from {settlement.name}:",
+            "action": "settlement:ask_directions",
+            "roads": settlement.roads,
+            "connections": settlement.connections,
+        }
+
+    def _action_ask_rumor(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Ask about rumors (stub - needs rumor system)."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:ask_rumor",
+            }
+
+        return {
+            "success": True,
+            "message": f"Rumors in {settlement.name}...",
+            "action": "settlement:ask_rumor",
+            "rumors_reference": settlement.rumors_reference,
+            "current_events": settlement.current_events,
+            "note": "Full rumor system to be implemented.",
+        }
+
+    def _action_leave(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Leave the settlement."""
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:leave",
+            }
+
+        settlement_name = settlement.name
+        hex_id = settlement.hex_id
+
+        # Clear v2 state
+        self.clear_active_settlement()
+
+        return {
+            "success": True,
+            "message": f"You depart from {settlement_name}.",
+            "action": "settlement:leave",
+            "settlement_name": settlement_name,
+            "hex_id": hex_id,
+            "note": "Use exit_settlement() for full state transition to wilderness.",
+        }
 
     # =========================================================================
     # SETTLEMENT MANAGEMENT
