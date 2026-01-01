@@ -1,0 +1,237 @@
+{
+  "hex_id": "0404",
+  "coordinates": [
+    4,
+    4
+  ],
+  "name": "The Remembering Mist",
+  "tagline": "Shifting pockets of pale mist hang ominously in this hex.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Sloping down eastward. Muddy, 10–20′ high cliffs, festooned with lush ferns and trickling waterfalls. Shifting pockets of pale mist hang ominously in this hex.",
+  "points_of_interest": [
+    {
+      "name": "The Remembering Mist",
+      "poi_type": "hazard",
+      "description": "Shifting pockets of pale mist hang ominously in this hex.",
+      "tagline": null,
+      "entering": "Characters may navigate around the pockets of mist, but doing so increases all Travel Point costs (e.g. to search or leave the hex) by 1.",
+      "interior": "All characters entering the mist must make an Intelligence Check. If the check fails, the mist steals part of the character's memory away until they sleep in an inn or settlement. The mist has a rudimentary sentience of sorts, and savours replaying memories it has absorbed over the years.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Phantasms",
+          "die_type": "d8",
+          "description": "Characters may witness ghostly sounds and sights manifesting in the mist",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Hunting hounds baying",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "The climax of a battle",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "A joyful, woodland wedding",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Twins being born",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "A leper crawling, coughing, and dying",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "A knight charging to deliver a message",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "A child singing nursery rhymes",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "Men unearthing a grave",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Memory Drain",
+          "die_type": "d8",
+          "description": "Roll when Intelligence Check fails in the mist",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Name",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Place of birth",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Parents",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "The last week",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Companions",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Reason for being in this hex",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "Proudest moment",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "Most hated enemy or rival",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Memory drain on failed Intelligence Check",
+        "Phantasms replay absorbed memories",
+        "Avoiding mist increases Travel Point costs by 1"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Willofrith",
+      "poi_type": "shrine",
+      "description": "Amid the mist stands the lost shrine to St Willofrith, slowly sinking in a boggy dell.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The shrine consists of four stone pillars (carved with images of a hand reaching out to a fancy sword) and a slate roof (now collapsed). Toppled, 5′ tall statue carved in black wood, swollen with damp and covered in moss. The saint is depicted as a broad-bellied, grinning friar, holding a pie in his hands.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden location",
+        "If shrine is righted, characters praying may receive blessing of St Willofrith: ability to cast Reveal Alignment"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      229
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

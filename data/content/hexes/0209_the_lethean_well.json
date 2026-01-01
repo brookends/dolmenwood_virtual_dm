@@ -1,0 +1,237 @@
+{
+  "hex_id": "0209",
+  "coordinates": [
+    2,
+    9
+  ],
+  "name": "The Lethean Well",
+  "tagline": "Tree trunks and boughs twist, sway, and writhe, creating weirdly silhouetted forms.",
+  "region": "High Wold",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), High Wold",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Woodpurse (p430), in addition to the normal results",
+    "foraging_special": [
+      "Woodpurse (1d2 portions)"
+    ]
+  },
+  "description": "Tree trunks and boughs twist, sway, and writhe, creating weirdly silhouetted forms. A trail branches off of the High Road in hex 0208 to the north of here; crossing into this hex, it soon becomes a long, tree-lined, bough-vaulted path that travels gently uphill. The lake known as the Lethean Well sits nestled in a hilly region, surrounded by treacherous 60′ crags and pitch-dark woods.",
+  "points_of_interest": [
+    {
+      "name": "The Grasping Corridor",
+      "poi_type": "trail",
+      "description": "A long, tree-lined, bough-vaulted path that travels gently uphill. Inhabitants of this region call the path the Grasping Corridor, and it is known to be the sole route to the Lethean Well, a fabled lake in the hills.",
+      "tagline": null,
+      "entering": "A trail branches off of the High Road in hex 0208 to the north of here; crossing into this hex, it soon becomes a long, tree-lined, bough-vaulted path.",
+      "interior": "Perpetual dark: Beneath the dense canopy, it is like night, even during the brightest hours of daylight. Drifting mist: A thin, pale mist drifts in the brooding blackness of the woods on either side of the trail.",
+      "exploring": "Anyone getting too close to the inky darkness of the forest beyond the trail is grasped by cold, pale hands that form out of the mist. They must Save Versus Spell or vanish into the blackness of the woods, reappearing back on the trail 1d6 hours later, stripped of valuables they carried and with no memory of where they have been.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Perpetual dark beneath dense canopy",
+        "Drifting pale mist in the woods",
+        "Grasping hands from mist - Save Versus Spell or vanish for 1d6 hours, lose valuables and memory",
+        "Open flame causes shrieking - Save Versus Hold after 1 Turn or lose 1d3 Wisdom (recovered after a week)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lethean Well",
+      "poi_type": "lake",
+      "description": "The lake known as the Lethean Well sits nestled in a hilly region, surrounded by treacherous 60′ crags and pitch-dark woods. It is nearly two miles across, and its banks are overgrown and lined with dreamy weeping willows in abundance.",
+      "tagline": null,
+      "entering": "For those who do not wish to scale the rock faces, the lake is reachable only via the Grasping Corridor, which opens outwards at its terminus on the lake's northern shore.",
+      "interior": "Dark, slumbrous waters with a slowly pulsing vibration. Banks overgrown and lined with dreamy weeping willows.",
+      "exploring": "PCs who remain on the lakeshore for at least an hour attract the attention of 1d3 boggins, who swim to the water's edge to converse. Should characters bathe in the lake, there is a 3-in-6 chance of 1d3 of the boggins attacking them, attempting to drag them to their lair below.",
+      "leaving": null,
+      "inhabitants": "A malign clan of 12 boggins (DMB) inhabits the lake.",
+      "roll_tables": [
+        {
+          "name": "Lake Enchantments",
+          "die_type": "d6",
+          "description": "Bathing in the Lethean Well cures a magical disease or curse, as well as causing one of the following effects. Each character can only be affected by the enchanted waters once per year.",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Brain becomes increasingly sharp, permanently increasing Intelligence by 1.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Permanently increase Intelligence by 1"
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Gain a sense of serenity and contentment, permanently increasing Wisdom by 1.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Permanently increase Wisdom by 1"
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Visage becomes radiant and beautiful, permanently increasing Charisma by 1.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Permanently increase Charisma by 1"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Become convinced they are half-pig.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Believe you are half-pig"
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Insatiable hunger for raw root vegetables.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Insatiable hunger for raw root vegetables"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Believe they are one of the Lords of the High Wold.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Believe you are one of the Lords of the High Wold"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Bathing for more than an hour cures magical disease or curse and causes enchantment",
+        "3-in-6 chance of 1d3 boggin attack when bathing",
+        "Boggins trade gems/jewellery (20gp+) or magic items for safe bathing or Lethe doses",
+        "Each character can only be affected by enchanted waters once per year"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lethean Door",
+      "poi_type": "portal",
+      "description": "High in the rocky peaks that surround the lake is a 10′ tall craggy portal of utter blackness that even magic cannot illuminate. Adventurers with an invitation from Duke Mai-Fleur may step into the portal and be transported to the wild forests of Diuthurnia (p30). Without an invitation, the door is impassable.",
+      "tagline": null,
+      "entering": "Adventurers with an invitation from Duke Mai-Fleur may step into the portal and be transported to the wild forests of Diuthurnia. Without an invitation, the door is impassable.",
+      "interior": "Portal of utter blackness that even magic cannot illuminate.",
+      "exploring": null,
+      "leaving": "Transports to the wild forests of Diuthurnia with proper invitation.",
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "10′ tall craggy portal of utter blackness",
+        "Magic cannot illuminate the portal",
+        "Requires invitation from Duke Mai-Fleur to use",
+        "Transports to wild forests of Diuthurnia"
+      ],
+      "secrets": [
+        "Hidden location high in the rocky peaks"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Lake Enchantments",
+      "die_type": "d6",
+      "description": "Bathing in the Lethean Well cures a magical disease or curse, as well as causing one of the following effects. Each character can only be affected by the enchanted waters once per year.",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "Brain becomes increasingly sharp, permanently increasing Intelligence by 1.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Permanently increase Intelligence by 1"
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "Gain a sense of serenity and contentment, permanently increasing Wisdom by 1.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Permanently increase Wisdom by 1"
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "Visage becomes radiant and beautiful, permanently increasing Charisma by 1.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Permanently increase Charisma by 1"
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "Become convinced they are half-pig.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Believe you are half-pig"
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "Insatiable hunger for raw root vegetables.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Insatiable hunger for raw root vegetables"
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "Believe they are one of the Lords of the High Wold.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Believe you are one of the Lords of the High Wold"
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "The Lethean Door is hidden high in the rocky peaks"
+  ],
+  "dm_notes": "Referees wishing to expand play into the realm of Diuthurnia may allow adventurers to enter the Lethean Door without an invitation. This requires the Referee to develop adventure locales of their own in Diuthurnia.",
+  "adjacent_hexes": [
+    "0208"
+  ],
+  "roads": [
+    "Grasping Corridor connects to High Road in hex 0208"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      211
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

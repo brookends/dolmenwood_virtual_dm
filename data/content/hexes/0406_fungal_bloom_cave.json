@@ -1,0 +1,142 @@
+{
+  "hex_id": "0406",
+  "coordinates": [
+    4,
+    6
+  ],
+  "name": "Fungal Bloom Cave",
+  "tagline": "Humidity permeates these woods. The ground is muddy, the trees mostly rotting.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Humidity permeates these woods. The ground is muddy, the trees mostly rotting. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Fungal Bloom Cave",
+      "poi_type": "cave",
+      "description": "On the gentle slope of a hillside sits a bright patch of white, fibrous mycelia, about 5′ square, blocking the entrance to what appears to be a cave. This gate is part of Bloom—the fungal entity inhabiting the cave's interior.",
+      "tagline": null,
+      "entering": "As adventurers approach, the mycelial patch emits a hovering cloud of yellowish, fuzzy spores. A character who enters the spore cloud is able to telepathically communicate with the gate. If good intentions are convincingly expressed, a portion of the mycelial gate parts, allowing access. Applying force to the barrier causes Bloom to retaliate.",
+      "interior": "The cave is large and dank, and slopes downward in a staggered series of steps. Ribbed, white mycelia extend to the cave mouth from deeper in the cavern. At the very bottom of the cave lies a multi-hued fungal growth the size of a small oak tree. In this growth resides the consciousness of Bloom. Swaddled within the fungal mass can be seen the form of a pale young woman, breathing slowly as if asleep, mycelial tendrils delving into her flesh.",
+      "exploring": "Touching the woman awakens her. She is Polldra Duskwith, a Drune Braithmaid. Polldra and Bloom fell in love and she is in the process of being assimilated into the fungal entity.",
+      "leaving": "Removing Polldra requires 1d6+1 Rounds of cutting—with Polldra vehemently protesting all the while—and incurs the wrath of Bloom. Polldra fights and attempts escape as long as she is with the PCs. Returning her to the Drune earns a 1,500gp reward for the party.",
+      "inhabitants": "Bloom, a sentient fungal entity, and Polldra Duskwith, a Drune Braithmaid being assimilated into the fungal mass.",
+      "roll_tables": [],
+      "npcs": [
+        "polldra_duskwith",
+        "bloom"
+      ],
+      "special_features": [
+        "Spore cloud communication",
+        "Fungal assimilation process"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Abthius",
+      "poi_type": "shrine",
+      "description": "A 20′ mound of semi-translucent, purple ooze stands in an isolated glade, exuding a chill mist. Buried within the wobbling ooze can be seen the lost shrine to St Abthius, its wooden structure perfectly preserved by the jelly.",
+      "tagline": "Hidden",
+      "entering": "The ooze can be dug away, but re-coagulates at a frightful rate. A team of six or more people could extract the shrine in 4 hours. Magical fire burns the ooze away, but risks damaging the wooden shrine.",
+      "interior": null,
+      "exploring": "If the shrine is extracted from the ooze, characters praying may receive the blessing of St Abthius: the ability to cast Frost Ward.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Purple ooze preservation",
+        "St Abthius blessing"
+      ],
+      "secrets": [
+        "Hidden shrine location"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "polldra_duskwith",
+      "name": "Polldra Duskwith",
+      "title": "Braithmaid",
+      "description": "A slight human woman of 21, pale, her long black hair adorned by variously coloured mushrooms that infest it. A shrivelled human hand is strung around her neck, recognisable as a Drune artefact to those familiar with that faction (a Braithmaid Hand of Glory talisman—DMB).",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Serene",
+        "content"
+      ],
+      "speech": "Affectless, deliberate. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "To remain here forever, in union with Bloom"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Braithmaid Hand of Glory talisman"
+      ],
+      "location": "Fungal Bloom Cave",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "bloom",
+      "name": "Bloom",
+      "title": null,
+      "description": "An extensive agglomeration of endlessly varied colours and species of fungus. It lies in impressive repose, ensconced in a soft bioluminescence, swathed in a thick mist of placidly floating spores.",
+      "kindred": "Large Fungus",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Contemplative",
+        "benign"
+      ],
+      "speech": "Bloom expels spore clouds, which establish a telepathic link with the inhaler. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To commune blissfully with its love, Polldra",
+        "To absorb organic material to augment its consciousness, particularly snails, slugs, and other gastropods"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Fungal Bloom Cave",
+      "stat_reference": "Large Fungus—Sentient—Neutral, Level 4 AC 8 HP 24 Saves D10 R11 H12 B13 S14, Att Spore cloud Speed 0 Morale 8 XP 130, Spore cloud (once a day): A 30′ radius cloud of deadly lung-burr spores, filling the cave. All within the cloud must Save Versus Blast with a +2 bonus or die. Polldra is immune.",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Rare Fungi",
+      "description": "If given sufficient organic material, Bloom allows characters to harvest some of its growth: 1d6 doses chosen randomly from Lambent Stinkhorn, Mottlecap, Devil's Grease, or Witch's Purple."
+    }
+  ],
+  "secrets": [
+    "The Shrine to St Abthius is hidden within purple ooze"
+  ],
+  "dm_notes": "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      231
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

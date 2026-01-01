@@ -1,0 +1,69 @@
+{
+  "hex_id": "0104",
+  "coordinates": [
+    1,
+    4
+  ],
+  "name": "The Phantom Lighthouse",
+  "tagline": "Unsteady islands of festering vegetation, amid a mire of black mud and iridescent pools.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Unsteady islands of festering vegetation, amid a mire of black mud and iridescent pools.",
+  "points_of_interest": [
+    {
+      "name": "Lighthouse in the Bog",
+      "poi_type": "lighthouse",
+      "description": "Toward the north of the hex, a low, scrubby island 200 yards across rises out of the festering bog. A lonely tower stands defiantly in the middle.",
+      "tagline": null,
+      "entering": "A portal gapes at the base of the tower, the door having fallen and rotted long ago. There are two square windows at each of the four levels, barred with rusted iron.",
+      "interior": "The interior of the lighthouse differs based on the time of day. During daytime, it is slick with black lichen but otherwise utterly barren. At nighttime, pale blue, spectral mariners crowd around benches and barrels in the lighthouse's whitewashed chambers, raising mugs of ale in delirious toasts to 'the Lord of the Seas.' They do not perceive PCs, who are able to walk right through them.",
+      "exploring": "The lighthouse is circular, four storeys tall, and made of rough stone blocks. At the summit is a roofed area with a thick metal railing. During the hours of darkness, a wide beam of eerie, pale blue light shines out from the summit of the tower, sweeping across the bog in slow, two-minute revolutions.",
+      "leaving": null,
+      "inhabitants": "The Dredger occupies the lantern room at night, along with spectral mariners throughout the lighthouse.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Beam at night: During the hours of darkness, a wide beam of eerie, pale blue light shines out from the summit of the tower, sweeping across the bog in slow, two-minute revolutions.",
+        "Climbing onto the island: The sides are choked with thorny, scabrous succulents at ankle height. On the summit, the soil and scrubby undergrowth teem with centipedes and ticks.",
+        "The lantern room (daytime): Worn shards of the shattered lantern litter the upper floor. Inside the wrecked frame, a faint blackness and shimmering can be seen, as if a patch of the starry night sky were trying to pierce through into the day. Touching the blackness induces a feeling of nausea and dread.",
+        "The lantern room (nighttime): A spectral blue light beam blazes from a 1′ high, faceted, ovoid crystal positioned behind the lenses of the lantern. The crystal rotates slowly. The slimy bulk of an octopoid monstrosity—the Dredger—fills most of the room, its tentacles wrapped around the lantern, the light beam blazing visibly through its translucent flesh.",
+        "Removing the Dredger: If the Dredger is killed or removed from the lantern room, the beam of light is extinguished and the spectral mariners vanish from the lighthouse, reabsorbed by the crystal at the lantern's heart. The lantern can be opened and the crystal accessed—it is a Crystal Of Sepulture."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Crystal Of Sepulture",
+      "description": "A 1′ high, faceted, ovoid crystal that blazes with spectral blue light and rotates slowly. Contains trapped mariners' souls.",
+      "location": "Lighthouse lantern room",
+      "value": null,
+      "magical": true,
+      "reference": "p404"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "The Dredger: A giant, 8-armed cephalopod, with milky, near transparent flesh, a sucker-like mouth, and a trio of pupilless, purple eyes. The Dredger feeds on the magic of the Crystal of Sepulture at the lantern's heart, disrupting the crystal's function and temporarily releasing figments of the mariners' souls trapped within. Large Monstrosity—Animal Int.—Neutral, Level 7 AC 14 HP 45 Saves D8 R9 H10 B11 S12, Att 6 tentacles (+6, 1d4 + constriction) Speed 10 Swim 80 Morale 10 XP 1,380. Constriction: Tentacles grab and constrict after a hit, inflicting 1d4 automatic damage per Round. Severing tentacles: Requires a hit inflicting 6+ damage. Devour magic: If a spell is cast upon the Dredger, there is a 3-in-6 chance of it having no effect, the magic being instead sucked into the monster's maw. Following such magical sustenance, the Dredger regains 1d6 HP.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      195
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

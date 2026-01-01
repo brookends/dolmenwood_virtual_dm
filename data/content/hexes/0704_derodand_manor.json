@@ -1,0 +1,118 @@
+{
+  "hex_id": "0704",
+  "coordinates": [
+    7,
+    4
+  ],
+  "name": "Derodand Manor",
+  "tagline": "The stench of rotting sludge fills the air, wafting from stagnant pools around Quogg's Creek.",
+  "region": "Dwelmfurgh / Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Dwelmfurgh / Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The stench of rotting sludge fills the air, wafting from stagnant pools around Quogg's Creek. In the north-east of this hex, near the junction of paths connecting Fort Vulgar to regions to the north, a track turns off and heads into a wood of twisted hazel, deep with ferns.",
+  "points_of_interest": [
+    {
+      "name": "Derodand Manor",
+      "poi_type": "manor",
+      "description": "300 yards along this path is a mossy wall of round stones and a wrought-iron gate with patterns of curling ivy. Beyond is a small mansion house, overgrown with climbing roses: Derodand Manor.",
+      "tagline": "Secluded Manor",
+      "entering": null,
+      "interior": "Wood-panelled hallways lined with stilted portraits and overflowing bookshelves. Studies and chambers furnished with embroidered upholstery, as was the fashion a hundred years past. All areas are illuminated—in an archaic fashion—with candles.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "This is the home of the Lady Emelda Haeroth (p76), her three maidservants, her 4 Lankston mastiffs (DPB), and other manor staff. Lady Haeroth is many things: a noble of the Harrowmoor family; great-aunt to Lady Theatrice Harrowmoor (p60); and (in secret) one of the High Priestesses of the witches of Dolmenwood.",
+      "roll_tables": [],
+      "npcs": [
+        "lady_emelda_haeroth"
+      ],
+      "special_features": [
+        "A magical household: The Lady's servants are aware of her occult practices, though not of her role as High Priestess of the witches. All are fanatically loyal and would never knowingly betray her. Her three maidservants have some small training in the magical arts—each is able to cast Ingratiate once per week.",
+        "Visitors: The Lady is reclusive and enigmatic, and does not welcome visitors. She releases her 4 Lankston mastiffs (DPB) on any intruders.",
+        "Attic room: In a secret attic room, an item of great power is kept upon a circular table: a tea set known as the Service of Calthrounhe. The Lady's familiar, a witch owl (DMB) named Hallohoo, watches over the tea set and the room."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Rose Gardens",
+      "poi_type": "gardens",
+      "description": "Verdant rose gardens dotted with statues and follies ramble languidly behind the manor.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Temple of the Green Man: An artfully overgrown circular temple of stone pillars, a fashionable folly over whose entrance is carved the benevolently smiling, leaf-ringed visage of Cwrnus, the Green Man (p36). On auspicious occasions, members of Lady Haeroth's local coven gather here to perform rites praising the Gwyrigons (p74).",
+        "Statue of the Forroth: Amid a glade of silver birches, an odd statue of white marble stands atop a plinth-like slab of uncarved granite. The statue depicts an entity of roughly spherical mass, sprawling with tentacles. At its base, an inscription in Liturgic reads \"In memory of Eldrin Harrowmoor. May he rest in peace.\" The statue depicts the Forroth (see hex 1105) and commemorates Lady Haeroth's brother, Eldrin, who was driven mad by contact with the entity."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_emelda_haeroth",
+      "name": "Lady Emelda Haeroth",
+      "title": "Lady",
+      "description": "A noble of the Harrowmoor family; great-aunt to Lady Theatrice Harrowmoor; and (in secret) one of the High Priestesses of the witches of Dolmenwood.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [
+        "Reclusive",
+        "enigmatic"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "One of the High Priestesses of the witches of Dolmenwood"
+      ],
+      "possessions": [
+        "Service of Calthrounhe tea set",
+        "4 Lankston mastiffs",
+        "witch owl familiar named Hallohoo"
+      ],
+      "location": "Derodand Manor",
+      "stat_reference": "p76",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Service of Calthrounhe",
+      "description": "A glass and bone china tea set, painted with owls and dainty forget-me-nots. Worth 10,000gp. The tea set was procured for Haeroth by the scrabey Horticule (hex 0705), whose memory the witch subsequently stole.",
+      "value": "10,000gp",
+      "powers": "Serving tea from the set at night by candlelight summons spirits of the dead to sit at the table and converse.",
+      "perils": "Using the tea set is perilous: one who pours tea with the dead must Save Versus Doom or have their maximum Hit Points permanently reduced by 1d3. Spell-casters of Level 4 or above are immune.",
+      "location": "Secret attic room in Derodand Manor"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Path connecting Fort Vulgar to regions to the north"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      265
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "hex_id": "0506",
+  "coordinates": [
+    5,
+    6
+  ],
+  "name": "The Stone of Repentance",
+  "tagline": "Lonely pine woods punctuated with granite outcroppings. A moaning wind pervades.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Lonely pine woods punctuated with granite outcroppings. A moaning wind pervades.",
+  "points_of_interest": [
+    {
+      "name": "The Moaning Sphere",
+      "poi_type": "stone",
+      "description": "An area of flat, windswept marsh 100 yards wide separates Lake Longmere from the woods. At the centre of this sedge-dotted strand is a 10′ sphere of granite.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The sphere is the source of the moaning wind that pervades this hex. It reaches near-maddening intensity as one approaches the stone. The sphere is carved with a runic inscription identical to that found on the Summerstones.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Moaning wind reaches near-maddening intensity",
+        "Carved with runic inscription identical to Summerstones",
+        "False Summerstone placed by the Drune as distraction"
+      ],
+      "secrets": [
+        "The Drune placed this stone here as a distraction for those who might seek out Drodh"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Summerstone Drodh",
+      "poi_type": "summerstone",
+      "description": "A ring of trilithons stands in a clearing atop a 40′ high crag. At the centre of the ring is the 15′ high stone of black basalt called Drodh, the Stone of Repentance.",
+      "tagline": null,
+      "entering": "Entering the ring of stones awakens Rigmirth.",
+      "interior": "The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer. The stones encircling the Summerstone are covered with a thin layer of pustules and gore.",
+      "exploring": "Drunic runes upon Drodh describe the arcane spell Hex Weaving.",
+      "leaving": "Upon leaving the area the character has no memory of what occurred there or of having ever seen the place if they failed their save.",
+      "inhabitants": "The Audrune Rigmirth exists in occult symbiosis with the stones",
+      "roll_tables": [],
+      "npcs": [
+        "the_audrune_rigmirth"
+      ],
+      "special_features": [
+        "120-yard radius of hazy warmth and balmy stillness",
+        "Stones covered with pustules and gore",
+        "Inscribed with Hex Weaving spell"
+      ],
+      "secrets": [
+        "Hidden location"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_audrune_rigmirth",
+      "name": "The Audrune Rigmirth",
+      "title": null,
+      "description": "Rigmirth exists in an occult symbiosis with the stones of this glade, his skin and organs stretched across the megaliths around Drodh. If intruders enter the circle, Rigmirth can rip the stones out of the ground, becoming a gargantuan construct, 15′ tall, of stretched skin and rune-bound stone.",
+      "kindred": "Large Mortal / Construct",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Genius"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Guarding Drodh"
+      ],
+      "secrets": [],
+      "possessions": [
+        "opal Ring of Protection",
+        "platinum torc (350gp)",
+        "silver-plated finger bone (grants ability to detect witches, 1,000gp)"
+      ],
+      "location": "The Summerstone Drodh",
+      "stat_reference": "Level 10 AC 19 HP 46 Saves D6 R7 H8 B9 S10, Att 2 fists (+8, 3d6) or spell Speed 30 Morale 10 XP 3,550",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "opal Ring of Protection",
+      "description": "Embedded in the Audrune's flesh",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "platinum torc",
+      "description": "Embedded in the Audrune's flesh",
+      "value": "350gp",
+      "magical": false
+    },
+    {
+      "name": "silver-plated finger bone",
+      "description": "Grants the ability to detect witches while held tightly in the palm",
+      "value": "1,000gp",
+      "magical": true
+    }
+  ],
+  "secrets": [
+    "The Drune placed the Moaning Sphere as a distraction for those who might seek out Drodh",
+    "The Summerstone Drodh is hidden",
+    "Viewing Drodh requires Save Versus Spell or memory is lost"
+  ],
+  "dm_notes": "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure. Destroying the Moaning Sphere causes it to return the following day unscathed after creating an illusory procession of frost elf knights.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      243
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

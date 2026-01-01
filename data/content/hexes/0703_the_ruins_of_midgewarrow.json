@@ -1,0 +1,169 @@
+{
+  "hex_id": "0703",
+  "coordinates": [
+    7,
+    3
+  ],
+  "name": "The Ruins of Midgewarrow",
+  "tagline": "Trunks swollen and blistered, weeping orange sap. A drear quietude pervades.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d4 cannibals (see hex 0801), attempting to capture travellers and drag them back to their lair",
+    "foraging_results": "Successful foraging yields 1d2 Shub Eggs (p430), in addition to the normal results",
+    "foraging_special": [
+      "Shub Eggs (1d2)"
+    ]
+  },
+  "description": "Trunks swollen and blistered, weeping orange sap. A drear quietude pervades.",
+  "points_of_interest": [
+    {
+      "name": "The Old Road",
+      "poi_type": "road",
+      "description": "A track that was once a road, now overgrown with bracken and slender birches.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Warning signs: Half a mile from the centre of the hex (in both directions) a series of boulders beside the trail are painted with crosses and skulls, now faded with age. These markings forewarn travellers of the vicinity of the plague town."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Midgewarrow",
+      "poi_type": "ruins",
+      "description": "At the centre of the hex stand the remnants of the ghost town Midgewarrow, abandoned for two centuries after the plague struck and the place was shunned.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The ruined town is now reclaimed by the forest: stone walls crumbling and clad with vines, moss, and rotting fungi. In this state, it is difficult to discern the purposes of any of the buildings.",
+      "exploring": "Characters may discover an arched tunnel, lined with candle sconces (now covered in moss), leading down to a pair of still-locked wooden doors. Behind lies the Chapel of St Eggort.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "One structure, however, stands in its original form, unmarred by neglect and the passing of the centuries: a white tower in the centre of the ruined town."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Chapel of St Eggort",
+      "poi_type": "chapel",
+      "description": "A vaulted crypt with hundreds of candle sconces carved from the stone of its walls.",
+      "tagline": null,
+      "entering": "Characters may discover an arched tunnel, lined with candle sconces (now covered in moss), leading down to a pair of still-locked wooden doors.",
+      "interior": "A vaulted crypt with hundreds of candle sconces carved from the stone of its walls. A life-size rendering of the saint in simple grey sandstone. Eggort is depicted in a hooded robe, head bowed, holding a candle aloft.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: Characters praying may receive the blessing of St Eggort: the ability to cast Holy Light. See Shrines, p22."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The White Tower",
+      "poi_type": "tower",
+      "description": "A square tower of pristine white marble with a silver pennant fluttering at its summit.",
+      "tagline": null,
+      "entering": "The tower emits a loud boom if anyone draws near. The black oak door is sealed with a Glyph of Locking (by a Level 7 caster). Windows: Made of an enchanted glass, unbreakable by mundane means.",
+      "interior": "A procession of four storeys of utterly empty (but perfectly clean) chambers lead, via a winding stair, to a magically locked door (sealed with a Glyph of Locking by a Level 7 caster). The door prevents entry to the upper floor, which consists of a single room—a bedchamber in which a woman rests in enchanted sleep.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Merwyth sleeps in enchanted sleep in the bedchamber",
+      "roll_tables": [],
+      "npcs": [
+        "merwyth"
+      ],
+      "special_features": [
+        "History: Those versed in the history of Dolmenwood (e.g. the Lady Harrowmoor, p60) may be familiar with the tower and its former inhabitants"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 5
+    },
+    {
+      "name": "The Bedchamber",
+      "poi_type": "chamber",
+      "description": "A beautifully furnished bedchamber at the summit of the tower. Not a speck of dust can be found on any of the carpets, tapestries, or furniture; it is as if the room had been meticulously cleaned only an hour ago.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Sleeping in the bed is a young woman with long, black hair laid neatly in plaits upon her pillow. If she is examined, purple pustules may be noted on her skin.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Merwyth",
+      "roll_tables": [],
+      "npcs": [
+        "merwyth"
+      ],
+      "special_features": [
+        "Enchantment: An enchantment of temporal stasis is about her (and the whole tower). It may be broken by use of Dispel Magic (against a Level 7 caster) or with a kiss.",
+        "If the enchantment is broken: The woman—named Merwyth—awakens. This also awakens the plague which destroyed the town. Unless cured, Merwyth perishes within a month, and PCs who fail a Save Versus Doom also contract the disease."
+      ],
+      "secrets": [
+        "Origins: Merwyth is the daughter of the magician Hodrych who lived in this tower long ago. Fleeing the plague, he placed his daughter under a protective spell, hoping to return with a cure for the illness. As fate would have it, he perished in Dolmenwood and never returned."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "merwyth",
+      "name": "Merwyth",
+      "title": null,
+      "description": "A young woman with long, black hair laid neatly in plaits upon her pillow. If she is examined, purple pustules may be noted on her skin.",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [
+        "Sleeping"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": null,
+      "secrets": [
+        "Daughter of the magician Hodrych who lived in this tower long ago",
+        "Under enchantment of temporal stasis",
+        "Carries the plague that destroyed the town"
+      ],
+      "possessions": [],
+      "location": "The Bedchamber",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "The Old Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      264
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

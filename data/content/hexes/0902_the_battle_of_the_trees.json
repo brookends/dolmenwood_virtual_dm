@@ -1,0 +1,86 @@
+{
+  "hex_id": "0902",
+  "coordinates": [
+    9,
+    2
+  ],
+  "name": "The Battle of the Trees",
+  "tagline": "Uneven ground, riven with ditches, gullies, and rifts. Foul, purple vapours drift from the earth.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with a treowere (DMB), either Lawful or Chaotic (see The Battle of the Trees)",
+    "foraging_results": "Successful foraging yields ruddy medlars sufficient for 1d6 doses of Moonhaw (DPB), in addition to the normal results",
+    "foraging_special": [
+      "ruddy medlars (1d6 doses of Moonhaw)"
+    ]
+  },
+  "description": "Uneven ground, riven with ditches, gullies, and rifts. Foul, purple vapours drift from the earth. As the adventurers struggle through the hex, they hear the sound of a terrible ruckus. It sounds like falling trees and the roaring of monsters.",
+  "points_of_interest": [
+    {
+      "name": "The Battle of the Trees",
+      "poi_type": "battle site",
+      "description": "Two groups of treoweres, each of different appearance, fighting each other in a field of upturned trunks and torn-up foliage. There are nearly two dozen combatants on each side.",
+      "tagline": null,
+      "entering": "Following the sound: Adventurers come upon an extraordinary scene",
+      "interior": "Chaotic treoweres: Bent, twisted, thorny, briar-ridden trees who scream horridly as they fight. These have been corrupted by Atanuwë (p45) and fight to drive the Lawful treoweres from the area. They number 8 treoweres and 16 animated trees. Lawful treoweres: Appear as normal, if enormous, trees. They put up a ferocious resistance to the Chaotic invaders. They number 6 treoweres and 12 animated trees.",
+      "exploring": "If the adventurers enter the affray, tardy though they may be, they might make the difference between victory and defeat for one of the warring sides (see Fighting the Battle).",
+      "leaving": null,
+      "inhabitants": "8 Chaotic treoweres, 16 Chaotic animated trees, 6 Lawful treoweres, 12 Lawful animated trees",
+      "roll_tables": [
+        {
+          "name": "Fighting the Battle",
+          "die_type": "special",
+          "description": "If the party joins the battle, the Referee may resolve it in one of the following ways",
+          "entries": [
+            {
+              "roll": "Standard",
+              "title": "Standard combat",
+              "description": "Use the standard combat rules to resolve the engagement of 14 treoweres, 28 animated trees, and the PCs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": "Abstract",
+              "title": "Abstract combat",
+              "description": "Abstract the course of the battle into a smaller engagement between the PCs and a small number of opponents. If the adventurers aid the Chaotic treoweres, they need only fight and destroy a single Lawful treowere before the tide turns and the Lawful treoweres are defeated and repulsed. If they aid the Lawful treoweres, the PCs must defeat two corrupted treoweres to repel the Chaotic force, though they gain the aid of two formerly Chaotic animated trees after defeating the first treowere.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Aid Chaotic: defeat 1 Lawful treowere. Aid Lawful: defeat 2 Chaotic treoweres, gain 2 animated tree allies after first victory"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Rewards: The Chaotic treoweres, if victorious, reward any who aid them by issuing a personal invitation to the Court of the Nag-Lord (hex 0904), so that Atanuwë may reward them 'personally.' The Lawful treoweres, should they prevail, reward the adventurers for their aid with a Arcane Shortbow (Chaos Bane, p412) made from a branch of an old treowere who died long ago."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      287
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

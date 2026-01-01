@@ -1,0 +1,174 @@
+{
+  "hex_id": "0708",
+  "coordinates": [
+    7,
+    8
+  ],
+  "name": "The Hamlet of Shagsend",
+  "tagline": "Verdant paths and glades wind among sheer slate cliffs topped with trailing brambles.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Nighttime encounters are 3-in-6 likely to be with a Drune cottager (DMB) and 1d4 bramblings (DMB), spying on Shagsend, seeking their lost comrade, Cranthus (imprisoned in Shagsend).",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A fortified breggle settlement built atop a flat hill ringed with a forbidding wooden palisade. Timber-framed, thatch-roofed houses with hastily extended attics and upper floors teeter above the palisade. Fenced glades nearby teem with miniature swine and strutting turkeys.",
+  "points_of_interest": [
+    {
+      "name": "The Hamlet of Shagsend",
+      "poi_type": "settlement",
+      "description": "A fortified breggle settlement built atop a flat hill ringed with a forbidding wooden palisade. Timber-framed, thatch-roofed houses with hastily extended attics and upper floors teeter above the palisade. Fenced glades nearby teem with miniature swine and strutting turkeys.",
+      "tagline": null,
+      "entering": "The palisade is breached by a large gate, manned by shorthorn guards. They admit travellers, so long as there are no Drune—real or suspected—among them.",
+      "interior": "Home to some 70 shorthorns (DMB—40 soldiers and 30 unarmed villagers), ruled by the sorcerer Hoblewort, a servant of Lord Malbleat.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Shagsend is home to some 70 shorthorns (DMB—40 soldiers and 30 unarmed villagers), ruled by the sorcerer Hoblewort, a servant of Lord Malbleat.",
+      "roll_tables": [],
+      "npcs": [
+        "windore_hoblewort"
+      ],
+      "special_features": [
+        "Fear the Drune: Situated on the edge of Dwelmfurgh, Shagsend is ever-threatened by the Drune. Locals venture to Catcher's Bay (hex 0707) on Lake Longmere to fish, but do not stray from Fisher's Path."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The black tower",
+      "poi_type": "tower",
+      "description": "A three-storey tower of black stone looms over the hamlet, the glaring red eyes painted at its summit ominously observing all below. This is the home of the sorcerer Hoblewort, ruler of Shagsend.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Hoblewort's private chambers in the upper floor are guarded by a devil goat (DMB) and contain his arcane library (including scrolls of Perceive the Invisible, Lightning Bolt, and Arcane Eye). An invisible chest on a high shelf contains 50pp, 1,300gp, 500sp, and a masterfully faceted star sapphire worth 2,000gp. In a dangerous act of hubris, Hoblewort has imprisoned a Drune cottager named Cranthus in his dungeon (sealed with a Glyph of Locking—Level 4 caster).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Hoblewort and a devil goat guard",
+      "roll_tables": [],
+      "npcs": [
+        "windore_hoblewort"
+      ],
+      "special_features": [],
+      "secrets": [
+        "Cranthus the Drune cottager imprisoned in dungeon"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 3
+    },
+    {
+      "name": "The Crab and Copper",
+      "poi_type": "inn",
+      "description": "A low, tile-roofed building with a wonky chimney and bulging walls. The sign depicts a grinning crab boiling in a copper pot. The interior is a gloomy, smoke-fogged haze of benches and low stools where locals drink, dine, and crowd around games of dice and cards.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The owner, a squat old shorthorn woman named Gwendilore, shouts above the din and whacks unruly customers with her walking stick.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Gwendilore (owner)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Services: Lodgings and food of poor quality. Accommodation is limited to a single shared room (four beds) or the common room floor. Giblet dunkers: A local speciality: metallic, bitter ale with a bundle of pickled turkey giblets. 3sp per mug."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Garrison",
+      "poi_type": "military",
+      "description": "Greatly expanded since Shagsend came under the rule of Lord Malbleat, a 40-strong soldiery is housed in this blocky, brick building in the centre of the hamlet.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "40 shorthorn soldiers",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "windore_hoblewort",
+      "name": "Windore Hoblewort",
+      "title": "Level 4 Magician",
+      "description": "An austere longhorn man with white fur, silver horns, and pink eyes. Dresses in black robes trimmed with gold sigils. Walks with a limp. Hoblewort rules Shagsend and its garrison, under the banner of Lord Malbleat.",
+      "kindred": "Longhorn",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Cool-tempered megalomaniac",
+        "Despises the cultured excesses of his master, Malbleat"
+      ],
+      "speech": "Eloquent whisper",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe",
+        "basic Drunic"
+      ],
+      "desires": [
+        "The secrets of Drune magic",
+        "Possession of Malbleat's soul-bound tome"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Elf-bone Ring of Protection",
+        "Ebony walking cane (treat as a Wand of Paralysation, 5 charges)",
+        "Spell books: Rank 1 Shield of Force, Vapours of Dream, Rank 2 Phantasm, Glyph of Locking"
+      ],
+      "location": "The black tower, Shagsend",
+      "stat_reference": "Level 4 Magician",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Elf-bone Ring of Protection",
+      "type": "ring",
+      "description": null,
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Ebony walking cane",
+      "type": "wand",
+      "description": "treat as a Wand of Paralysation, 5 charges",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Star sapphire",
+      "type": "gem",
+      "description": "masterfully faceted star sapphire",
+      "value": "2,000gp",
+      "magical": false
+    }
+  ],
+  "secrets": [
+    "Cranthus the Drune cottager is imprisoned in Hoblewort's dungeon"
+  ],
+  "dm_notes": "Ley line proximity Chell/Ywyr: Arcane spell-casters perceive the distant moaning of the dead and the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Fisher's Path to Catcher's Bay (hex 0707)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      269
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "hex_id": "0701",
+  "coordinates": [
+    7,
+    1
+  ],
+  "name": "The Ruined Watchtower",
+  "tagline": "Coarse, clawed grasses grasp and tear at travellers' clothes. Carrion birds cry out, as if warning off trespassers.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Coarse, clawed grasses grasp and tear at travellers' clothes. Carrion birds cry out, as if warning off trespassers.",
+  "points_of_interest": [
+    {
+      "name": "The Ruined Watchtower",
+      "poi_type": "tower",
+      "description": "A stone tower looms on a high hill, like a sentinel surveying the surrounding downs. Windows on the ground and middle floors gape, empty. Its upper floor has no aperture. A doorway at ground level leers open, as if daring mortal souls to disturb the tower's silent vigil.",
+      "tagline": null,
+      "entering": "A doorway at ground level leers open, as if daring mortal souls to disturb the tower's silent vigil.",
+      "interior": "The tower has three floors plus a hidden crypt. Ground floor has barren flagstones and a tapestry. Middle floor has a banquet table with feast. Upper floor is windowless with the Malachite Mirror. Crypt contains the tombs of the lord, lady, and their twelve children.",
+      "exploring": "Entering the middle floor or disturbing the crypt awakens the spirits of the tower.",
+      "leaving": null,
+      "inhabitants": "The spirits of a lord, lady, and their twelve children haunt the tower.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Approaching: Shadows seem to flit past the gaping windows, as if someone or something within watches those ascending the hill.",
+        "At night: Ultraviolet blue fire flickers over the tower's surface, streaming into the heavens.",
+        "Ground floor: Barren flagstones, scattered with wind-blown debris. No plant has dared to intrude. A ragged tapestry depicts a grim lord and lady, seated on thrones composed entirely of wolf skulls, their twelve adult children standing solemnly on either side. A stairway winds upwards. A stone door concealed behind the tapestry leads down to the Crypt.",
+        "Middle floor: Walls hung with scarlet banners with a wolf skull emblem. A mighty banquet table and high-backed chairs of dark wood. Upon the table, a great feast is laid out. Candelabras burn with an eerie, reddish light. Across the room, a stairway leads upward. If any living creature enters, the spirits of the tower awaken.",
+        "Upper floor: Windowless. On a pedestal stands the Malachite Mirror. At its base lies a woman's skeleton, dressed in decayed rags (the witch who hid the mirror here).",
+        "Crypt: The skeletons of the lord and lady and their twelve children are interred in granite coffers, carved with leaping wolves rending humans limb from limb. In the two largest coffers, the lord and lady lie with their treasures: 2 platinum and jet crowns (2,000gp each), a moonstone-encrusted gold rod (2,500gp), and an ebony Staff of Striking. Disturbing the tombs awakens the spirits of the tower."
+      ],
+      "secrets": [
+        "Spirits Awakened: Stepping into the tower's middle floor or disturbing the crypt triggers awakening effects. Middle floor: The banquet rots away to maggot-crawling sludge and 2 spectres (the spirits of the lord and lady) manifest at the head of the table, each crowned with a circlet of red flame. Hissing 'death, doom, oblivion' in Old Woldish, they arise to repel intruders. Ground floor: The shades of the children emerge from the tapestry, leaving gaping black holes in their stead. Treat the shades as 12 shadows, which can be turned as undead. They linger in the ground floor, awaiting the commands of the spectres."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 4
+    },
+    {
+      "name": "The Malachite Mirror",
+      "poi_type": "artifact",
+      "description": "A mirror of scintillating malachite, deep green. This is one of the long-lost Mirrors of Embala.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Touching the mirror: The first time the mirror is touched, a terrible vision of a woman's head, crowned with barbs of iron, flickers briefly across its surface. Her face is flayed, bloody, and contorted with rage, her ice-blue eyes staring into the soul of any who return her gaze. This is a glimpse of the Flayed Queen, an undead being in the northern Table Downs whose influence, slowly spreading southwards into Dolmenwood, awakened the spirits of this tower.",
+        "Powers: Reveals events that occurred in the past in the current location. A spell-caster can concentrate to sift through past events, revealing anything from mere moments ago to centuries past.",
+        "Dreams: After using the mirror, a character's sleep for 7 nights is wracked with feverish dreams of diving into the unfathomable darkness of the Groaning Loch, drowning in the embrace of a great serpent."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The Malachite Mirror",
+      "description": "A mirror of scintillating malachite, deep green. This is one of the long-lost Mirrors of Embala.",
+      "mechanical_effect": "Reveals events that occurred in the past in the current location. A spell-caster can concentrate to sift through past events, revealing anything from mere moments ago to centuries past. After using the mirror, a character's sleep for 7 nights is wracked with feverish dreams of diving into the unfathomable darkness of the Groaning Loch, drowning in the embrace of a great serpent.",
+      "value": null
+    },
+    {
+      "name": "Platinum and jet crowns",
+      "description": "2 platinum and jet crowns",
+      "mechanical_effect": null,
+      "value": "2,000gp each"
+    },
+    {
+      "name": "Moonstone-encrusted gold rod",
+      "description": "A moonstone-encrusted gold rod",
+      "mechanical_effect": null,
+      "value": "2,500gp"
+    },
+    {
+      "name": "Staff of Striking",
+      "description": "An ebony Staff of Striking",
+      "mechanical_effect": "See p416",
+      "value": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      262
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

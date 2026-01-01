@@ -1,0 +1,83 @@
+{
+  "hex_id": "0106",
+  "coordinates": [
+    1,
+    6
+  ],
+  "name": "The Outlook and the Red Monolith",
+  "tagline": "Spires and crags of pale, wind-carved rock, like the bones of gargantuan beasts.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Wayfarrow (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Wayfarrow (1d3 portions)"
+    ]
+  },
+  "description": "Spires and crags of pale, wind-carved rock, like the bones of gargantuan beasts.",
+  "points_of_interest": [
+    {
+      "name": "Granite Crag",
+      "poi_type": "crag",
+      "description": "Close to the eastern edge of the hex, a sheer granite crag, 50′ wide at the base, smothered in ivy and brambles, rises unexpectedly and penetrates the canopy of the wood. A faint crimson glow is visible at the summit.",
+      "tagline": null,
+      "entering": "Characters with the ability to climb walls can scale it without danger. Others must make a Dexterity Check to climb unaided.",
+      "interior": "The crag is 100′ tall and steep-sided. The crag tapers to a 30′ wide summit.",
+      "exploring": "Searching the brambles at the base of the crag reveals the remnants of ancient magical runes, hinting at the astral significance of the place, as well as several human skeletons. Many of the bones on the skeletons are broken.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Panoramic views: The summit affords a panoramic view of the surrounding land, as far as the Falls of Naon to the north-east, on a clear day."
+      ],
+      "secrets": [
+        "Ancient magical runes at base hint at astral significance",
+        "Human skeletons with broken bones at base"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Red Vorpal Monolith",
+      "poi_type": "monolith",
+      "description": "Hovering at the top of the granite crag is a 20′-high spectral monolith of crimson light. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood. In spring, summer, and autumn, the monolith is a mere shimmering figment. In wintertime, it becomes semi-corporeal.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Viewing: All who behold the monolith in the wintertime must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Those who fail are overcome by a wave of terror and the desire to leave the monolith's presence as quickly as possible. Climbing down in this state of dread requires a Climb Walls Check or a Dexterity Check with a –2 penalty.",
+        "Touching: In its wintertime manifestation, the monolith's partially tangible surface feels like cold, sticky slime. Spells of shadow or darkness cast while touching the monolith are made permanent. In other seasons, a PC touching the monolith's diaphanous outline temporarily experiences the frosty chill of a winter's day."
+      ],
+      "secrets": [
+        "One of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      197
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

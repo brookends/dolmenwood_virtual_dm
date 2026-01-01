@@ -1,0 +1,127 @@
+{
+  "hex_id": "0804",
+  "coordinates": [
+    8,
+    4
+  ],
+  "name": "The Summerstone Hadrwyl",
+  "tagline": "Clogged with cobwebs and crawling with spiders. Great clouds of flies and gnats emerge from the dank soil.",
+  "region": "Nagwood / Dwelmfurgh",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Nagwood / Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "In the eastern part of the hex (outside of Dwelmfurgh), encounters are 2-in-6 likely to be with 1d4 Chaotic treoweres (DMB)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The eastern portion of this hex, outside of the Ring of Chell, is a treacherous tangle of stunted, black-leafed trees with thorny, claw-like branches. The trees that line the border with Dwelmfurgh (along the path of the Ring of Chell) are frozen and dead, their brittle branches blanketed with frost. On the other side of the frozen border is a normal wood of hawthorn and blackthorn, untainted by the toxic influence of Atanuwë. Travellers in this hex are likely to come across the decapitated heads of crookhorns, skewered atop stakes. Some are fresh and gory, while others are skulls, picked clean by birds.",
+  "points_of_interest": [
+    {
+      "name": "Grasping Thorns",
+      "poi_type": "hazard",
+      "description": "The eastern portion of this hex, outside of the Ring of Chell, is a treacherous tangle of stunted, black-leafed trees with thorny, claw-like branches.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Travellers in this forsaken wood awaken a wicked sentience in the trees, which slowly come to life and attempt to grasp onto those who dare disturb their brooding slumber.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Characters must Save Versus Hold. All who fail suffer 1d6 points of damage from the trees' rending branches"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Crookhorn Heads",
+      "poi_type": "landmark",
+      "description": "Travellers in this hex are likely to come across the decapitated heads of crookhorns, skewered atop stakes. Some are fresh and gory, while others are skulls, picked clean by birds.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "The skulls are victims of the Audrune Hermanach, guardian of the Summerstone Hadrwyl, placed to deter intrusion by Atanuwë's minions"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Summerstone Hadrwyl",
+      "poi_type": "summerstone",
+      "description": "An evergreen glade of beech and hawthorn surrounds a 15′ shard of black basalt. This is the Summerstone named Hadrwyl, also called the Sagestone.",
+      "tagline": null,
+      "entering": "All who enter the glade (within 60′ of the stone) must Save Versus Spell or be blinded for 24 hours, their eyes veiled with frost",
+      "interior": "The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer. Drunic runes describe the arcane spell Oracle.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Audrune Hermanach and 6 bramblings (DMB) who serve him. Hermanach is indifferent to travellers sleeping here, but does not allow any to touch the Summerstone.",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_hermanach"
+      ],
+      "special_features": [
+        "While touching the stone, all written languages can be read without fail",
+        "Blinded victims of Hadrwyl who sleep the night nearby receive a prophetic dream containing symbols and allusions hinting at the answer to a question which perplexes them",
+        "Inscribed spell: Oracle"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_hermanach",
+      "name": "The Audrune Hermanach",
+      "title": null,
+      "description": "A short, stocky, shaven-headed human man with dark, sparkling eyes, a pointy, freckled nose, and a long braid of black beard hanging from his chin. He dresses in the traditional night-black cloak and hood of his order. Hermanach lives in the woods around Hadrwyl, spending most of his time in the form of a raven (using his magic ring).",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Dispassionate",
+        "stands eerily still"
+      ],
+      "speech": "Soft yet forceful. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "To destroy the crookhorn garrison in hex 0803",
+        "To discover the location of the Aubrathon's secret tower (see hex 1103)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A tarnished copper Ring of Animal Affinity (Ravens, p410)"
+      ],
+      "location": "The Summerstone Hadrwyl",
+      "stat_reference": "Audrune (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      277
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

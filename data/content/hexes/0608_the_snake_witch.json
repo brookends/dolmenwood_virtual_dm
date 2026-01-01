@@ -1,0 +1,143 @@
+{
+  "hex_id": "0608",
+  "coordinates": [
+    6,
+    8
+  ],
+  "name": "The Snake Witch",
+  "tagline": "Gnarled trees perch among cliffs and jagged promontories of slate. Ravens roost here in great numbers.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d8 adders (DMB) or 1d3 giant pythons (DMB)",
+    "foraging_results": "Successful foraging yields 1d4 portions of Spirithame (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Spirithame (1d4 portions)"
+    ]
+  },
+  "description": "Gnarled trees perch among cliffs and jagged promontories of slate. Ravens roost here in great numbers.",
+  "points_of_interest": [
+    {
+      "name": "Hanging Bones",
+      "poi_type": "landmark",
+      "description": "In the central regions of this hex, the mightiest, most venerable, and most gnarled trees are hung with rattling arrangements of humanoid bones: skulls dangling lop-sided from cords, ribs strung up in star formations, arm and thigh bones bound around trunks. The fastidiously cleaned bones are of human and breggle origin.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Snake Cave",
+      "poi_type": "cave",
+      "description": "Near the centre of the hex, a jagged canyon descends to a cave mouth from which wafts a stale, carrion scent. Fang-like stalactites lend it the appearance of a gaping, serpentine mouth. The cave mouth is festooned with thorny creepers and humanoid bones.",
+      "tagline": null,
+      "entering": "Cave mouth with fang-like stalactites, festooned with thorny creepers and humanoid bones",
+      "interior": "Beyond the mouth lies a 100′ wide, circular cavern, carpeted with faintly luminescent violet lichen and hung with hundreds of slender stalactites. Three cramped passages wind to Grwith's lair (hot, carrion scent), the Tenebrous pool (cold, damp), and the Hatching chamber (faint slithering sound).",
+      "exploring": "Three passages lead to different chambers: Grwith's lair, the Tenebrous pool, and the Hatching chamber",
+      "leaving": null,
+      "inhabitants": "Grwith the Scaled, witch High Priestess of Southern Dolmenwood and 12 giant pythons that serve Grwith, charmed by her staff",
+      "roll_tables": [],
+      "npcs": [
+        "grwith_the_scaled"
+      ],
+      "special_features": [
+        {
+          "name": "Grwith's lair",
+          "description": "A dry chamber, stiflingly hot, strewn with moulted snake skins and humanoid bones. Scrawled repeatedly on the walls is a curled worm emblem (a sigil of the Gwyrigon Limwdd). Buried beneath the snake skins are 5 silver daggers with amber-encrusted hilts (1,000gp each), an octahedral flask of Prismatic Elixir, a tiny crystal vial of Dimensional Solvent, Silver, and necklace of onyx chunks (1,500gp)."
+        },
+        {
+          "name": "The tenebrous pool",
+          "description": "A subterranean pool that snuffs out all light (both magical and mundane) brought within 15′ of it. Bathing in the cold, black waters, a humanoid gains +1 Constitution. Repeated bathing causes a person to slowly take on serpentine qualities (e.g. scaly skin, the ability to unhinge the jaw, a forked tongue, a ravenously carnivorous appetite, etc.)."
+        },
+        {
+          "name": "Hatching chamber",
+          "description": "A pillar of slimy grey gristle covered with hundreds of fist-sized eggs. Within the translucent shell of each egg can be seen the pale, squirming form of a baby snake."
+        }
+      ],
+      "secrets": [
+        "The ritual of serpentine doom: The eggs in the hatching chamber are the fruit of years of Grwith's secret arcane research. Once hatched and fed on human blood, each snake magically seeks out and attempts to murder a specific member of the Drune cult. She requires the complete skeletons of two dozen Drunes to complete the hatching ritual."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "grwith_the_scaled",
+      "name": "Grwith the Scaled",
+      "title": "witch High Priestess of Southern Dolmenwood",
+      "description": "Witch High Priestess of Southern Dolmenwood who dwells in the Snake Cave with 12 charmed giant pythons",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "To complete the ritual of serpentine doom",
+        "To obtain complete skeletons of two dozen Drunes"
+      ],
+      "secrets": [
+        "The eggs in the hatching chamber are the fruit of years of secret arcane research",
+        "Each hatched snake will magically seek out and murder a specific Drune cult member"
+      ],
+      "possessions": [
+        "Staff that charms giant pythons"
+      ],
+      "location": "The Snake Cave",
+      "stat_reference": "p76",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Silver daggers with amber-encrusted hilts",
+      "description": "5 silver daggers with amber-encrusted hilts",
+      "value": "1,000gp each",
+      "location": "Grwith's lair, buried beneath snake skins"
+    },
+    {
+      "name": "Octahedral flask of Prismatic Elixir",
+      "description": "An octahedral flask of Prismatic Elixir",
+      "value": null,
+      "location": "Grwith's lair, buried beneath snake skins"
+    },
+    {
+      "name": "Dimensional Solvent, Silver",
+      "description": "A tiny crystal vial of Dimensional Solvent, Silver",
+      "value": null,
+      "location": "Grwith's lair, buried beneath snake skins"
+    },
+    {
+      "name": "Necklace of onyx chunks",
+      "description": "Necklace of onyx chunks",
+      "value": "1,500gp",
+      "location": "Grwith's lair, buried beneath snake skins"
+    }
+  ],
+  "secrets": [
+    "Grwith repels intruders with violence and magic, unless they bring a gift of flesh (she favours the meat of humanoids). If suitably propitiated, she shares information about the surrounding region, especially relating to the movements of the Drune."
+  ],
+  "dm_notes": "Ley line proximity Chell/Ywyr: Arcane spell-casters perceive the distant moaning of the dead and the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      257
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

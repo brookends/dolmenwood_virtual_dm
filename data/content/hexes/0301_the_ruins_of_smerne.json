@@ -1,0 +1,101 @@
+{
+  "hex_id": "0301",
+  "coordinates": [
+    3,
+    1
+  ],
+  "name": "The Ruins of Smerne",
+  "tagline": "Pools of black, iridescent water. Abandoned peat beds riddled with ditches and collapsed banks.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Horridwort (p430), in addition to the normal results",
+    "foraging_special": [
+      "Horridwort (1d2 portions)"
+    ]
+  },
+  "description": "The remnants of an abandoned village sit in the midst of the fens, sinking slowly, over the course of the long, lonely years, into a bog. Crows roost amid the ruins, bitterly cawing at intruders into their realm.",
+  "points_of_interest": [
+    {
+      "name": "The Ruins of Smerne",
+      "poi_type": "ruins",
+      "description": "The remnants of an abandoned village sit in the midst of the fens, sinking slowly, over the course of the long, lonely years, into a bog. Crows roost amid the ruins, bitterly cawing at intruders into their realm.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Wooden houses built upon stilts now kiss the sodden ground, drystone walls are collapsed into heaps, and sturdy dwellings of stone lie slumped, half submerged beneath the mire.",
+      "exploring": "The few still-intact interior spaces are filled with sludge, brambles, and decaying leaves.",
+      "leaving": null,
+      "inhabitants": "Crows roost amid the ruins. The Ghosts of Smerne can be awakened by touching the graves.",
+      "roll_tables": [],
+      "npcs": [
+        "ghosts_of_smerne"
+      ],
+      "special_features": [
+        {
+          "name": "Wolf statue",
+          "description": "In the centre of the ruined settlement, the statue of a great, shaggy wolf still stands, its head raised as if defiantly howling at the sky. The pedestal on which the statue stands is engraved with the word 'Egrydgenn.'"
+        },
+        {
+          "name": "Church and graveyard",
+          "description": "The leaning posts of a ruined stave church stand, ribcage-like, at the north of the village—a favoured roosting place for the crows. Surrounding the church, the tops of a few dozen almost-submerged gravestones peek out of the mire."
+        },
+        {
+          "name": "Ley line Hoad",
+          "description": "Arcane spell-casters perceive the feeling of having just awoken from a dream."
+        }
+      ],
+      "secrets": [
+        "Dewidort of Smerne—infamous highwayman and scion of this desolate place—used the word 'Egrydgenn' as the magical means of revealing his treasure hoard. See 0607."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "ghosts_of_smerne",
+      "name": "The Ghosts of Smerne",
+      "title": null,
+      "description": "A roiling cluster of colourless, vaporous spirits, with stretched, gaping mouths, clawed, grasping hands, and baleful holes of blackness where their eyes should be. Dressed in ragged leather and dented wolf's-head helms, with hoods of moss draped over their shoulders. The ghosts number some three dozen, but speak in unison and attack as a single combatant, their deathless minds merged into a cacophony of hunger.",
+      "kindred": "Undead",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Desperately hungry",
+        "plead for vittles favoured in life"
+      ],
+      "speech": "Plaintive babbling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Filling food and hearty drink"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Church and graveyard",
+      "stat_reference": "Large Undead—Sentient—Neutral, Level 6 AC 14 HP 30 Saves D9 R10 H11 B12 S13, Att Horde (+5, 1d6 + chill) Speed 30 Morale 12, XP 920",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Touching the graves awakens the Ghosts of Smerne, who rush from the black, boggy earth like a cloying, twisting smoke, whirling around those who disturb their rest.",
+    "If the ghosts are sated (requires at least 10 rations), the ghosts sigh and dissipate, giving their blessing to those who pitied them. All characters present gain a +4 bonus to the next Saving Throw they roll against a deadly effect."
+  ],
+  "dm_notes": "Attack if mocked or provoked. Undead: Silent before attacking. Immune to biological effects and mind-affecting spells. Only harmed by magic or magic weapons. Horde: The ghosts make a single Attack Roll against all creatures within a 20′ radius area. Chill: Victims lose 1 Constitution per hit. If reduced to 0 Constitution, the victim turns to ash and blows away with the wind. Lost Constitution recovers at a rate of one point per day.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      214
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

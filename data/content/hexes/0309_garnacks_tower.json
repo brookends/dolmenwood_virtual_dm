@@ -1,0 +1,148 @@
+{
+  "hex_id": "0309",
+  "coordinates": [
+    3,
+    9
+  ],
+  "name": "Garnack's Tower",
+  "tagline": "Birches rise from the sodden ground, impaled spear-like through the rotten remains of once greater trees.",
+  "region": "High Wold",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Birches rise from the sodden ground, impaled spear-like through the rotten remains of once greater trees.",
+  "points_of_interest": [
+    {
+      "name": "Ramshackle Tower",
+      "poi_type": "tower",
+      "description": "Seemingly only upright due to the straining efforts of buckling scaffolds, a three-storey peel tower stands with an almost defiant pride on a bald hill overlooking the High Road and the surrounding woods. It is the home and headquarters of the brutish longhorn hedge knight, Garnack the Horse.",
+      "tagline": null,
+      "entering": "The door to the tower is a grand wooden affair of oak, emblazoned with the cruel faces of wood spirits and rapacious swine, battered towards its hinges from the wounds of an ancient siege.",
+      "interior": "The tower's layout includes a large common room coated in louse-ridden animal pelt rugs, an armoury, shorthorn quarters, a small larder (originally a dungeon for prisoners), and Garnack's chambers.",
+      "exploring": "Garnack's quarters are on the top floor of the tower, behind a door secured with a half-dozen locks. Within this locked room Garnack keeps scarce furnishings and a few trophies from conquests of old.",
+      "leaving": null,
+      "inhabitants": "Garnack himself, and 12 shorthorns (DMB), who maintain the grounds and spend their lives suffering the rigours of their master's rules.",
+      "roll_tables": [],
+      "npcs": [
+        "garnack_the_horse"
+      ],
+      "special_features": [
+        "Garnack's Hoard"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 3
+    },
+    {
+      "name": "The Twice-Wreathed Door",
+      "poi_type": "portal",
+      "description": "In a glade of holly atop a steep knoll floats a sphere of porous black rock wreathed in sheets of flame and whirling snow.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Wreaths of flame and snow: Both are illusory and emit no heat or cold.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Hamfast",
+      "poi_type": "shrine",
+      "description": "Bobbing precariously upon a floating moss island amid a small pond is a wooden wayside shrine.",
+      "tagline": null,
+      "entering": "Stepping onto the island: Unbalances it, tipping the shrine into the pool.",
+      "interior": "Statue of St Hamfast: A rosewood statue of Hamfast as a friar, with a squirrel on his shoulder and a songbird in his palm. Thorny shoots and black roses sprout from the wood.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "garnack_the_horse",
+      "name": "Garnack the Horse",
+      "title": "Level 5 Fighter",
+      "description": "A corpulent longhorn man with matted, greying fur, eyes of deep red, and one broken horn. Has a vicious reputation, earned through bloody service in the many wars amongst the longhorn noble houses and against the Drune.",
+      "kindred": "Longhorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Stern and utterly humourless",
+        "Eyes strangers up and down, as if assessing their worth as battle fodder"
+      ],
+      "speech": "Ominous rumbling",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "Well-remunerated employment in military campaigns of any kind",
+        "Also open to joining adventurers on daring escapades",
+        "To marry Jesmerelda, daughter of Lord Ramius"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Truespite, a large Arcane Warhammer (Drune Bane) especially enchanted for crushing the skulls of Drunes. Its handle is of thunderstruck elm; its head is of fused and compacted breggle horns"
+      ],
+      "location": "Ramshackle Tower",
+      "stat_reference": "Level 5 Fighter",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Garnack's Hoard",
+      "type": "treasure",
+      "description": "The following treasures are contained in an old wooden footlocker beneath Garnack's bed: 370gp, 229sp, 1,321cp. Damaged gold medallion: A 3″ medallion studded with red garnets forming the gnarled eye emblem of House Ramius. A large blade scar reduces the item's value to 800gp. (Skilfully repaired, it would be worth 1,500gp.) Three bottles of mead: Bearing the mark of Shobrattle's brewery in Dreg. Worth 36sp each. A human shin bone: Etched with Drunic runes relating the deeds of an ancient Drune. Worth 150gp if sold to the Drune, though the transaction also arouses the suspicions of the Aegis towards the sellers. Drune map: A fragment of an old map, written in Drunic, indicating the location of a dark tower upon an island in the Brinemere (hex 1103). The phrase 'Aubrathon—Traitor to his kind' is inscribed in red beside the tower.",
+      "mechanical_effect": null
+    },
+    {
+      "name": "The Twice-Wreathed Door",
+      "type": "portal",
+      "description": "Touching the sphere: Whisks one away to the fairy road The Narrow Way",
+      "mechanical_effect": "Touching the sphere whisks one away to the fairy road The Narrow Way"
+    },
+    {
+      "name": "Shrine to St Hamfast",
+      "type": "shrine",
+      "description": "Prayer: If the shrine is brought to stable ground and the statue pruned, characters praying may receive the blessing of St Hamfast: the ability to cast Speak With Animals",
+      "mechanical_effect": "If the shrine is brought to stable ground and the statue pruned, characters praying may receive the blessing of St Hamfast: the ability to cast Speak With Animals"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "High Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      222
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "hex_id": "0402",
+  "coordinates": [
+    4,
+    2
+  ],
+  "name": "The Lady of Spring Unending",
+  "tagline": "Serene glades of anemones, celandine, and bluebells. Vernal clemency and eerie silence prevail.",
+  "region": "Northern Scratch",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The serene woodland glades in the dread domain of the Lady of Spring Unending are enchanting but deadly.",
+  "points_of_interest": [
+    {
+      "name": "The Ever-Blossoming Death Glades",
+      "poi_type": "enchanted glades",
+      "description": "The serene woodland glades in the dread domain of the Lady of Spring Unending are enchanting but deadly.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Enchantment: Mortals and demi-fey who wander among the death glades must Save Versus Doom or become suffused with drowsy wonder. Enchanted characters suffer a –2 penalty to Attack Rolls and Saving Throws while in this hex, and continue to wander, eventually discovering The Lady's Palace unless led out by unaffected party members."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lady's Palace",
+      "poi_type": "palace",
+      "description": "A palace of white marble spires and crystalline cupolas, set beside a mist-shrouded pool amid meandering acres of meadows, ornamental rose gardens, and trellis-lined avenues.",
+      "tagline": null,
+      "entering": "The front door—tall, narrow and arched—stands unlocked, giving way to a labyrinth of immaculate, lifeless halls.",
+      "interior": "Luxurious furnishings lie covered in sterile white drapes. A cold, blue gloom pervades, dimming all vibrancy.",
+      "exploring": null,
+      "leaving": "It is impossible to retrace one's steps—only by magic or with the Lady's permission can one leave.",
+      "inhabitants": "The Lady of Spring Unending, her 12 spectral hounds, and 36 servants—grey-clad human women who wandered into her domain and were charmed to remain forever in servitude.",
+      "roll_tables": [],
+      "npcs": [
+        "the_lady_of_spring_unending"
+      ],
+      "special_features": [
+        "Vaults: Beneath the palace, grey, pillared vaults stretch endlessly, filled with lifelike statues of people, animals, and monsters. Many are victims of the Lady's fell magic. In a particularly bleak and frigid domed chamber, a Petrified Fairy Heart (p420) lies upon a pedestal.",
+        "Visitors: The Lady suffers no one to enter her palace or grounds. Female intruders may be charmed (see the Lady's combat stats) to serve in the gardens and vaults. Others are attacked by 3d4 spectral hounds, or dispatched by the Lady herself. However, the Lady may converse with any who mention her half-sister, Princess Andromethia (p34)."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_lady_of_spring_unending",
+      "name": "The Lady of Spring Unending",
+      "title": null,
+      "description": "A tall, elegant elf woman of youthful complexion, with eyes of crystalline silver and golden hair falling to her feet. Appears warm and radiant, amid the sombre gloom of her palace. Clad in gowns of white, with a pendant of scintillating silver. The Lady is the half-sister of Princess Andromethia (p34), exiled from her native realm of the Blossom Fields and unable to leave this hex.",
+      "kindred": "Fairy",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Hateful",
+        "Loves only revenge"
+      ],
+      "speech": "Mellifluous but bitter. Woldish, Old Woldish, Sylvan, High Elfish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "The death of her half-sister, Princess Andromethia (p34)",
+        "Entrusts willing conspirators with a white rose whose aroma slays Andromethia",
+        "Escape to Fairy"
+      ],
+      "secrets": [
+        "Half-sister of Princess Andromethia",
+        "Exiled from her native realm of the Blossom Fields",
+        "Unable to leave this hex"
+      ],
+      "possessions": [
+        "Fairy silver star-shaped Talisman of Spell Reflection (p398, 8 charges)"
+      ],
+      "location": "The Lady's Palace",
+      "stat_reference": "Medium Fairy—Genius—Chaotic Level 10 AC 18 HP 55",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Petrified Fairy Heart",
+      "description": "Lies upon a pedestal in a particularly bleak and frigid domed chamber beneath the palace",
+      "location": "Palace vaults",
+      "value": null,
+      "reference": "p420"
+    },
+    {
+      "name": "White Rose",
+      "description": "A white rose whose aroma slays Princess Andromethia",
+      "location": "Given by the Lady",
+      "value": null,
+      "reference": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Rewards: A wish (see p397). See p33 for more details on the Lady.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      227
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

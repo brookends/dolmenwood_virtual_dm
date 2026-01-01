@@ -1,0 +1,103 @@
+{
+  "hex_id": "0410",
+  "coordinates": [
+    4,
+    10
+  ],
+  "name": "Castle Everdusk",
+  "tagline": "Carefully managed woods rife with the grunting of wild boars. Benches sit at the edges of pretty glades.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Carefully managed woods rife with the grunting of wild boars. Benches sit at the edges of pretty glades.",
+  "points_of_interest": [
+    {
+      "name": "Castle Everdusk",
+      "poi_type": "castle",
+      "description": "Deep in the tangled woods, the stone keep of Castle Everdusk stands atop a steep, bare hill, looming above the palisaded garrison at its feet. It is here that the longhorn nobles of House Ramius have brooded over the High Wold since antiquity.",
+      "tagline": null,
+      "entering": "An avenue of sighing copper beeches leads from Capring Road to the iron-studded gates of the garrison. 2d4 shorthorn (DMB) soldiers interrogate would-be visitors from an adjoining tower.",
+      "interior": "Oddly proportioned chambers with ill-fitting furnishings, all thickly clad with tapestries and animal skin rugs. A preternatural chill pervades, in spite of the cladding, as if the castle were built of ice, not stone. Only the sumptuous studies—where Lord Ramius spends his days huddled in thought before the fire—feel lived in.",
+      "leaving": null,
+      "inhabitants": "The nobility of House Ramius (longhorns—DMB), including Lord Ramius (p65), two of his three sons (Braembel and Hrannid), and two of his four daughters (Lady Berryld and Nannigrew). Lady Berryld, heir of House Ramius, deals with guests and oversees the shorthorn servants and the running of the keep.",
+      "exploring": "Visitors are only permitted on official business, and are kept carefully contained and out of Lord Ramius' way.",
+      "roll_tables": [],
+      "npcs": [
+        "lady_berryld_ramius"
+      ],
+      "special_features": [
+        "The garrison: Stone barracks and stables, housing the army of House Ramius. Drills and pike training take place in the courtyard, under the command of Braembel and Hrannid Ramius, Lord Ramius' sons (longhorns—DMB).",
+        "Stairs and gate: A steep stair of white marble, flanked with banners of House Ramius, leads up the hill to the gates of the keep.",
+        "The keep: Tall and austere, built of ancient stone, girded with towers and ringed with a stockade of mighty pine trunks, each branded with the thorned eye emblem of House Ramius.",
+        "Throne room: A red-carpeted hall on the keep's upper floor, its walls lined with archaic polearms. A pair of taxidermied unicorns rear beside the elaborately carved, thorn-rimmed throne of Lord Ramius. Grand windows fill the hall with coloured light and present dramatic views over the High Wold.",
+        "Ancestral crypts: Befuddling, twisting levels of tombs and dungeons are built into the hill beneath the keep. It is here that the scions of House Ramius are interred.",
+        "Monument to Hraigl: Among the countless tombs is an ancient monument dedicated to Hraigl—the fabled progenitor of the longhorn noble houses. A remarkable carving in white marble depicts Hraigl atop Wight Falls, wearing the Horned Crown of the Hydrogyle, about to leap to her doom (see History, p14). Lady Berryld spends much of her time here, contemplating the deeds and power of her ancestor.",
+        "Ice caverns: A gated stairwell spirals down from the deepest crypt to a series of scintillating ice caverns that have remained frozen since the reign of the Cold Prince."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_berryld_ramius",
+      "name": "Lady Berryld Ramius",
+      "title": "Lady",
+      "description": "A graceful, 6½' tall longhorn woman in her thirties, with ivory horns, unusual pink eyes, and her father's snow-white fur. Dresses in gowns of green velvet, with a silver circlet and cascades of pearls. As heir to House Ramius, Lady Berryld is scrupulously trained in the arts of diplomacy and intrigue by her father. Her true passion lies with the occult, believing herself (in vainer moments) to be the arcane heir of Hraigl.",
+      "kindred": "Longhorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Arch",
+        "haughty",
+        "spiteful",
+        "Carefully mannered with those of noble stock",
+        "disdainful and curt with those of lower station"
+      ],
+      "speech": "High and warbling, precisely enunciated",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Lore relating to her ancestor Hraigl",
+        "To insinuate herself into the trust of her uncle and fellow student of occult ancestors, Lord Malbleat (p64), in order to purloin his tomes",
+        "To marry anyone but Baron Hogwarsh (p60)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "gowns of green velvet",
+        "silver circlet",
+        "cascades of pearls"
+      ],
+      "location": "Castle Everdusk",
+      "stat_reference": "Longhorn (DMB). Lady Berryld is a magician and can memorise Glyph of Sealing and Shield of Force.",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Capring Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      235
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

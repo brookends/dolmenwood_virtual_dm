@@ -1,0 +1,145 @@
+{
+  "hex_id": "0304",
+  "coordinates": [
+    3,
+    4
+  ],
+  "name": "The Summerstone Sigil",
+  "tagline": "Mossy paths navigate between sodden shallows and impenetrably tangled groves of blackthorn and nettle.",
+  "region": "Northern Scratch / Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Northern Scr. / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely to be with the Audrune Wargfole as he wanders the hex, cleaning the Pointing Statues in honour of the sacrifice they made to maintain the wards against the Cold Prince",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Mossy paths navigate between sodden shallows and impenetrably tangled groves of blackthorn and nettle. White marble statues, devoid of blemish or moss, dot the morose woods of this hex. They depict hunters, warriors, hermits, and woodcutters, all with one hand raised, pointing toward the centre of the hex—in the direction of the Soul Pyre.",
+  "points_of_interest": [
+    {
+      "name": "Pointing Statues",
+      "poi_type": "statues",
+      "description": "White marble statues, devoid of blemish or moss, dot the morose woods of this hex. They depict hunters, warriors, hermits, and woodcutters, all with one hand raised, pointing toward the centre of the hex—in the direction of the Soul Pyre.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "All point toward the Soul Pyre",
+        "Petrified bodies of those robbed of their souls"
+      ],
+      "secrets": [
+        "The Pointing Statues are the petrified bodies of those robbed of their souls"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Soul Pyre",
+      "poi_type": "wicker man",
+      "description": "In a glade of mighty, long-limbed copper beeches at the centre of the hex is a giant wicker man, 20′ high, ablaze with an uncanny green flame emanating from within its belly. The flame does not consume the wicker laths that form the man.",
+      "tagline": null,
+      "entering": "Closer up, distorted faces of mortals grimace and howl silently within the flickering flame. These are the souls of victims trapped by the Audrune Wargfole.",
+      "interior": null,
+      "exploring": "Toppling the man: Extinguishes the flame, releases the trapped souls, and terminates the illusion hiding Sigil. If a soul's body has not yet become a statue, the soul returns to it; otherwise, it moves on to the afterlife.",
+      "leaving": null,
+      "inhabitants": "Trapped souls of victims",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "20′ high wicker man",
+        "Uncanny green flame that doesn't consume the wicker",
+        "Contains trapped souls"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Giant Stump (Veiled Nodal)",
+      "poi_type": "veiled sigil",
+      "description": "In the north-west of the hex is a dewy glade riddled with thick roots growing from a giant tree stump. The stump is 20′ high and 10′ around, coated in lush moss. The roots and stump are all illusory, veiling the presence of the Summerstone Sigil.",
+      "tagline": null,
+      "entering": "The veiled stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer.",
+      "interior": "Those who can see through illusions perceive the Summerstone: a ragged shard of basalt (15′ high, 8′ around). Drunic runes describe the arcane spell Dweomerlight.",
+      "exploring": "Touching: One who perceives Sigil and touches it gains a permanent +1 bonus to Intelligence, and the ability to cast the holy spell Locate Object once within the next week.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Illusory giant stump 20′ high and 10′ around",
+        "120-yard radius of balmy warmth",
+        "Contains Summerstone Sigil",
+        "Inscribed with Dweomerlight spell"
+      ],
+      "secrets": [
+        "The stump is an illusion hiding the Summerstone Sigil"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_wargfole",
+      "name": "The Audrune Wargfole",
+      "title": null,
+      "description": "A frail old human man, bent and hooded, leaning on his walking staff and carrying a lamp of polished bone that burns with a shimmering, golden light. Concealed beneath his cowl, he wears a skull-like mask, also of bone.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Grim",
+        "mournful"
+      ],
+      "speech": "Croaking whisper. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Souls to feed the Soul Pyre—he seeks to drain them from those who seem worthy of serving a great cause",
+        "Fine ale and provender—he misses the luxuries of civilisation"
+      ],
+      "secrets": [],
+      "possessions": [
+        "The Mask and Lamp of Ghrind (worth 20,000gp)",
+        "Walking staff"
+      ],
+      "location": "Wanders the hex, cleaning the Pointing Statues",
+      "stat_reference": null,
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Mask and Lamp of Ghrind",
+      "description": "A skull-like mask and a lamp, both made from burnished, lustrous bone. Worth 20,000gp.",
+      "mechanical_effect": "Soul draining: Once per day, the lamp has the power to drain the soul of a person to whom the mask is revealed. The victim may Save Versus Doom to resist. Victims' bodies are initially paralysed, then turn into marble statues over a period of 1d6 weeks. If a victim's body has not yet turned to stone, they can be saved by smashing the lamp, releasing their soul. Trap the Soul is also effective.",
+      "value": "20,000gp"
+    }
+  ],
+  "secrets": [
+    "The Pointing Statues are the petrified bodies of those robbed of their souls",
+    "The Giant Stump is an illusion hiding the Summerstone Sigil",
+    "The illusion is maintained by souls fed to the Soul Pyre"
+  ],
+  "dm_notes": "Ley Line Chell: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure. The Veiling of Sigil: The Summerstone Sigil is hidden by an illusion of a Giant Stump. This powerful illusion cannot be dispelled and is maintained by the souls fed to the Soul Pyre by the Audrune Wargfole, using the magical Mask and Lamp of Ghrind.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      217
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "hex_id": "0411",
+  "coordinates": [
+    4,
+    11
+  ],
+  "name": "Mannog's Flock",
+  "tagline": "Undulating plains of coarse, knee-deep grass dotted with heather-clad knolls.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6 (2-in-6 at night)",
+    "encounter_notes": "Encounters are 1-in-6 likely (2-in-6 likely at night) to be with 1d3+2 bandits (Level 1 thieves—DMB) and 1d3+2 shorthorns (DMB)—members of the gang based in hex 0311. Opposing side has a 3-in-6 chance of being surprised, due to bandits hiding in the woods.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Undulating plains of coarse, knee-deep grass dotted with heather-clad knolls.",
+  "points_of_interest": [
+    {
+      "name": "Farmstead",
+      "poi_type": "farmstead",
+      "description": "A quarter mile north of Bove's Road at the edge of the woods sit the old, stone buildings of a farmstead: two barns, some outbuildings, and a large cottage. A thriving flock of sheep roams the nearby eaves of the forest.",
+      "tagline": null,
+      "entering": "Visitors are greeted gruffly and offered the opportunity to purchase Mannog's garments. He typically has three garments for sale.",
+      "interior": "A jumbled living space with chunky woollen rugs, low oak tables, and colourful floor cushions (no chairs). Creaky doors lead into poky, smoky workshops for greasing, combing, spinning, and weaving wool.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The farmer Old Mannog Murderman, his 2 shorthorn farmhands (DMB), and his sheep.",
+      "roll_tables": [
+        {
+          "name": "Mannog's Garments - Type",
+          "die_type": "d6",
+          "description": "Roll for garment type",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Cap",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Cardigan",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Hood",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Long johns",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Socks",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Trousers",
+              "description": null,
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Mannog's Garments - Appearance",
+          "die_type": "d6",
+          "description": "Roll for bestowed appearance and cost",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Drune",
+              "description": "400gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Elf",
+              "description": "250gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Grimalkin",
+              "description": "250gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Mossling",
+              "description": "150gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Shorthorn",
+              "description": "250gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Woodgrue",
+              "description": "200gp",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "old_mannog_murderman"
+      ],
+      "special_features": [
+        "Grazing area: Large concealed net traps surround the sheep's grazing area. A group approaching the sheep has a 2-in-6 chance of triggering one; each member must then Save Versus Hold or be hoisted from the ground and ensnared. Anyone caught in the trap is manhandled, imprisoned, and interrogated by Mannog and his farmhands, suspicious of potential sheep thieves.",
+        "Bedroom: Mannog keeps his stocks of wool and finished garments in three great closets in his bedroom. They are locked and guarded by 3 dolmen pinchers (see Hounds, DPB) that hide under the bed.",
+        "The Flock and Its Wool: Mannog's sheep are a special breed with long, lustrous wool, and icy blue, almost human-like eyes. Their diet of weird woodland fungi lends their wool magical properties.",
+        "Magical wool: Garments created from the sheep's wool allows the wearer to assume the appearance of another being. No other farmer in the region can replicate it. Old Mannog sells the garments, but not the wool or sheep."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "old_mannog_murderman",
+      "name": "Old Mannog Murderman",
+      "title": null,
+      "description": "A hairy human man in his middle years, with burly arms, a barrel chest, and a frazzled beard down to his paunch. Wears a sheepskin jacket and a pink felt cap. Smokes Barley Blend (DPB) in a long, sheep-horn pipe.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Rude",
+        "cantankerous",
+        "shrewd businessman"
+      ],
+      "speech": "Wheezing and rumbling. Woldish, basic Gaffe.",
+      "languages": [
+        "Woldish",
+        "basic Gaffe"
+      ],
+      "desires": [
+        "Strong ciders and beers",
+        "To grow and protect his flock",
+        "To marry Mother Goat (hex 0312)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Sheepskin jacket",
+        "Pink felt cap",
+        "Long sheep-horn pipe",
+        "Barley Blend"
+      ],
+      "location": "Farmstead",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Mannog's Garments",
+      "description": "A garment transforms the wearer's appearance to that of another being, until removed. The effect is visual only, altering only appearance and garb. Anyone able to see the invisible can see through the deceit. Each garment offered for sale is of a random type (1d6) and appearance/cost (1d6). Garments can also be made to order for 100gp extra, taking 1d3 weeks.",
+      "mechanical_effect": "Transforms wearer's appearance to another being until removed. Visual only effect.",
+      "value": "150-400gp depending on type"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Bove's Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      236
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

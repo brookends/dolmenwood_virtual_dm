@@ -1,0 +1,97 @@
+{
+  "hex_id": "0302",
+  "coordinates": [
+    3,
+    2
+  ],
+  "name": "The Stone Woods",
+  "tagline": "Sludgy layers of black, brown, and red earth, teeming with flies and creeping newts.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Marshwick (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Marshwick (1d3 portions)"
+    ]
+  },
+  "description": "Sludgy layers of black, brown, and red earth, teeming with flies and creeping newts.",
+  "points_of_interest": [
+    {
+      "name": "Grey, Leafless Trees",
+      "poi_type": "copse",
+      "description": "Copses of leafless, grey trees are dotted across the barren, boggy expanse of this hex.",
+      "tagline": null,
+      "entering": "At 100 yards distance, it becomes clear that the trees are dead. They stand at odd angles, some partially submerged in pools of stagnant water. They have no twigs—only their largest limbs remain.",
+      "interior": "It becomes apparent that the trees are actually made of stone.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "One who touches the trees with a bare hand experiences a momentary reverie in which they see the foetid bog transformed into a lush meadow and the trees flourishing and laden with blossom"
+      ],
+      "secrets": [
+        "This region was once woodland, and part of the dominion of the wicked Lady of Spring Unending (see p33). With each act of cruelty she has committed, her realm has diminished. Over time, this has caused the once vibrant woods here to turn to lifeless stone, and her power over this region to dissipate."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Sludge Trail",
+      "poi_type": "trail",
+      "description": "A 10′ wide trail of sludge crosses the hex, as if a giant plough has furrowed the boggy earth.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "The trail leads north-west to the lost Shrine of St Quister.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Quister",
+      "poi_type": "shrine",
+      "description": "In the far north-west of the hex stands the lost shrine to St Quister—a narrow, blocky structure of granite, half buried in a disturbed mound of boggy earth.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Statue of St Quister: 4′ tall, carved in green marble. The saint is depicted squatting beside a hunting hound, pouring wine from a bottle into his loyal companion's mouth.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "An unknown force drags the shrine slowly through the mire on a course to the north-west. At intervals, the shrine shudders, creaks, and carves its way another half-inch through the bog, moving a total of around 5′ per day",
+        "Characters praying may receive the blessing of St Quister: the ability to cast Create Water. See Shrines, p22."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      215
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

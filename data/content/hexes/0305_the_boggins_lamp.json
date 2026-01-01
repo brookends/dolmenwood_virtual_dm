@@ -1,0 +1,147 @@
+{
+  "hex_id": "0305",
+  "coordinates": [
+    3,
+    5
+  ],
+  "name": "The Boggin's Lamp",
+  "tagline": "Scrubby heath, mud, and shallow pools. Windless and quiet. Eerie lights and strands of mist drift.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 marsh lanterns (DMB)",
+    "foraging_results": "Successful foraging yields 1d2 portions of Oddy Sorrel (p430), in addition to the normal results",
+    "foraging_special": [
+      "Oddy Sorrel (1d2 portions)"
+    ],
+    "special_conditions": "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure."
+  },
+  "description": "Scrubby heath, mud, and shallow pools. Windless and quiet. Eerie lights and strands of mist drift.",
+  "points_of_interest": [
+    {
+      "name": "The Boggin's Lamp",
+      "poi_type": "inn",
+      "description": "A homely inn stands inexplicably in the midst of the trackless bog, its lights flickering welcomingly at all hours.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Low beams, crackling fire, chunky oak tables and chairs. Narrow windows look out into the night, whatever time of day a traveller entered. A sign reads \"To each their own rede; to each their own seclusion.\" The landlord, Smauvol Oddnum, serves from a nook lined with bottles.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A merry assortment of travellers from far-off places (some real, some imaginary). Carrington Shydewick (going by the name of Mercy Alquip) mingles in the crowd, contentedly sipping a glass of Underbrood's Vintage (DPB). There is a 2-in-6 chance of 1d3 Drune cottagers (DMB) quietly conversing in a corner.",
+      "roll_tables": [],
+      "npcs": [
+        "carrington_shydewick",
+        "smauvol_oddnum"
+      ],
+      "special_features": [
+        "Sign: A young boy gazing in wonderment at a glowing crystal pendant held by a cloaked, bearded hermit.",
+        "Protection from divination: The inn is swathed in a dweomer that stymies all magical scrying and detection.",
+        "Food and drink: The inn's pantries and cellars are magically replenished daily. Items taken from the inn disappear after 1d6 days.",
+        "Origin: A magical lodging of fairy construction, claimed by the Drune after the Cold Prince was banished.",
+        "Services: Lodgings and food of common quality. Smet: A hearty dish of bread, gravy, turnip, and goose fat. 4sp. Wine: The inn stocks all wines listed in the Dolmenwood Player's Book. No stabling: The inn has no housing for mounts."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Dank",
+      "poi_type": "shrine",
+      "description": "A wooden wayside shrine, now decaying and covered in moss, lies toppled in the mud beside a reeking pool.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Idol of St Dank: A 2′ square marble relief depicting St Dank with a great serpent around his neck, flanked by two kneeling longhorn acolytes.",
+        "Prayer: If the shrine is righted and cleaned, characters praying may receive the blessing of St Dank: the ability to cast Charm Serpents. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "carrington_shydewick",
+      "name": "Carrington Shydewick",
+      "title": "\"Mercy Alquip\" (Level 7 Thief)",
+      "description": "A youthful human woman with a button nose, freckles, a beauty mark, and voluminous golden tresses (a wig). Wears an extravagant ball gown of turquoise satin, with a blue leather girdle embossed with silver hops. Currently lying low in the Boggin's Lamp after infiltrating the Hall of Sleep (1304) and stealing a platinum tiara from the sleeping Lady Guillefer.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jaded aesthete",
+        "Arches her brows with curiosity"
+      ],
+      "speech": "Affected upper class accent. Casually impudent. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Information on tombs, dungeons, and ruins in the Table Downs",
+        "Clues about the location of Dewidort of Smerne's lost hoard (see 0607)",
+        "To undertake thrilling robberies of heavily guarded sites",
+        "Has her eye on Nodding Castle (0210) and the Drune mausoleum on Phantom Isle (0706)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Belt of Might (p406)",
+        "A Bag of Holding (p420), containing an Arcane Longsword (p412), 3 Fairy Daggers (p412), 500pp, 1,000gp, and a platinum tiara stolen from the Hall of Sleep (2,000gp)"
+      ],
+      "location": "The Boggin's Lamp",
+      "stat_reference": "Level 7 Thief",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "smauvol_oddnum",
+      "name": "Smauvol Oddnum",
+      "title": "Boggin's Lamp Proprietor",
+      "description": "A broad-faced, wide-eyed human man in his late 40s, with black, shoulder length hair. Wears a chequered doublet, white hose, pointy shoes, and a brass skull necklace. Refuses to discuss any of the inn's peculiarities, merely replying that he keeps his own rede.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Smug",
+        "enigmatic",
+        "mirthful"
+      ],
+      "speech": "Softly spoken. Shifts between rustic, urban, and archaic. Woldish, Old Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Peace and good company",
+        "Tales from afar"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Boggin's Lamp",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      218
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "hex_id": "0811",
+  "coordinates": [
+    8,
+    11
+  ],
+  "name": "Cornew Cliffs",
+  "tagline": "Low, flat-topped hills criss-crossed with chalky paths and dotted with boulders.",
+  "region": "High Wold",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "On sunny days, encounters are 2-in-6 likely to be with 2d6 young women from the farms to the north-west. The maidens come here to forage for the mushrooms known as Lover's Gasp that grow on the rotting tree trunks at the edge of the Wood. (These mushrooms are said to bring luck in courtship.) They may warn PCs not to disturb the cornews (a type of fairy) who live in burrows within and beneath the rotting trunks.",
+    "foraging_results": "Characters successfully foraging among the trunks find 2d6 fresh rations of mushrooms (double the normal foraging yield—roll twice on the edible fungi table, p118) in addition to 1d6 portions of Lover's Gasp",
+    "foraging_special": [
+      "Lover's Gasp (1d6 portions)",
+      "mushrooms (2d6 rations, double normal yield)"
+    ]
+  },
+  "description": "Low, flat-topped hills criss-crossed with chalky paths and dotted with boulders. The forest ends abruptly at a shallow sandstone cliff overlooking the rolling hills to the south and the farmland to the west.",
+  "points_of_interest": [
+    {
+      "name": "Sandstone Cliffs",
+      "poi_type": "cliff",
+      "description": "The forest ends abruptly at a shallow sandstone cliff overlooking the rolling hills to the south and the farmland to the west.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        {
+          "name": "Small caves",
+          "description": "Between the tangle of overhanging trees can be found numerous small caves riddled with roots. Aside from birds and small mammals, the caves are uninhabited. There is a 2-in-6 chance of finding a random human or elf trinket (DPB)."
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Rotting Tree Trunks",
+      "poi_type": "natural_feature",
+      "description": "Older trees, in their decrepitude, have tumbled over the edge of the cliff and lie rotting at its base. The trunks are covered in mushrooms of various kinds, thriving in the rotting wood sheltered beneath the cliff.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "The larger trunks are riddled with 8″ holes, leading to burrows in the trees' decomposing hearts and the earth below. Rooting around in the holes attracts the attention of 2d6 cornews, emerging from the burrows.",
+      "leaving": null,
+      "inhabitants": "Cornews live in burrows within and beneath the rotting trunks",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        {
+          "name": "Cornew burrows",
+          "description": "6′ underground, at the heart of each burrow, the cornews keep their treasure: pilfered cutlery and thimbles, a handful of shiny coins (3d20cp, 1d10gp), and 1d4 pouches of Moth-Wing Dust."
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Moth-Wing Dust",
+      "description": "Flaky, shimmering dust. Worth 1,000gp per portion.",
+      "mechanical_effect": "If thrown in the air, a portion of dust causes creatures in a 5′ radius to Save Versus Blast or rush towards the nearest light source (possibly the sun, if outside), fascinated for 1d6 Turns.",
+      "value": "1,000gp per portion"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Cornews are 6″ tall fairies that look like pink puffballs with goggling eyes, gossamer wings, and thin, straggling limbs. Demeanour (Neutral): Delight in entertaining visitors with their quaint, squeaking songs. Lay a curse on any who meddle with them or their burrows. Speech: Adorable squeaking. Sylvan, basic Woldish. Small Fairy—Sentient—Neutral Level 1 AC 16 HP 1d4 (2) Saves D12 R13 H14 B15 S16 Att Curse (speechlessness) or moth-wing dust (range 20′) Fly 20 Morale 5 XP 15. Cold iron: As fairies, cornews suffer 1 extra point of damage when hit with cold iron weapons. Curse: The target must Save Versus Spell or lose the power of speech for 1d6 days. Moth-wing dust: Fetch from their lairs if threatened.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      284
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

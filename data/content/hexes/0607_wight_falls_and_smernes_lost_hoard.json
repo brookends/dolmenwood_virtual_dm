@@ -1,0 +1,134 @@
+{
+  "hex_id": "0607",
+  "coordinates": [
+    6,
+    7
+  ],
+  "name": "Wight Falls and Smerne's Lost Hoard",
+  "tagline": "Bluffs and great boulders of granite, many carved with Drune owl symbols.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Bluffs and great boulders of granite, many carved with Drune owl symbols. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Wight Falls",
+      "poi_type": "waterfall",
+      "description": "The circuitous Skull Creek ends here at Wight Falls, plummeting 100′ over a sheer granite cliff into Lake Longmere.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Top of the falls: Peering over the edge, a cave behind the base of the waterfall can be clearly spied. Cliff path: A treacherous path along the cliffside allows transit between the base and top of the falls. Encumbered characters have a 1-in-6 chance of slipping. Base of the falls: A narrow bay of algae-coated boulders, misty spray, and little rock pools. Cave behind falls: In a deep cave behind the falls stands a heavily calcified statue of a breggle woman holding aloft a horned crown. This is a monument to Hraigl, reputed ancestor of the longhorn noble houses, who died at the base of the falls. It has stood here intact for centuries, as the Drune shun Wight Falls.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Encumbered characters have a 1-in-6 chance of slipping on cliff path"
+      ],
+      "secrets": [
+        "Searching the crown: Tucked among the horns is a pouch containing 108gp, marked with the \"thorned eye\" crest of House Ramius, left here as an offering."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Smerne's Lost Hoard",
+      "poi_type": "hidden treasure",
+      "description": "Deep in a secluded, moss-draped valley stands a 20′ tall granite boulder, split down the middle. The stone—known to the Drune as the Willingstone—exudes an aura of stillness, as if rooted in the primordial past.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Touching the stone: Sends a character into a dreamlike reverie wherein they experience the manifestation of their heart's desire, lasting as long as the stone is touched. Lingering at the stone: Attracts the ghost of Dewidort of Smerne, attempting to nonchalantly or violently deter visitors from the site, protecting his treasure hoard, which lies magically hidden within the Willingstone.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Dewidort of Smerne (ghost)",
+      "roll_tables": [],
+      "npcs": [
+        "dewidort_of_smerne"
+      ],
+      "special_features": [
+        "Touching stone causes dreamlike reverie",
+        "Speaking \"Egrydgenn\" causes hoard to appear and Dewidort to attack"
+      ],
+      "secrets": [
+        "The hoard of Dewidort of Smerne: Hidden inside the stone by the power of the magic ring Smerne possessed in life is a plain wooden box containing: a diamond necklace (3,000gp), a ring of ruby and gold (2,000gp), 4 platinum bars (500gp each), and the Hanglehorn."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Galaunt",
+      "poi_type": "hidden shrine",
+      "description": "The lost shrine to St Galaunt is concealed in reed beds at the shore of Lake Longmere, partially submerged in silt. A simple, wood-shingled wayside shrine. A rotting wooden statue depicts the saint holding a holy book in one hand and a fat, smiling frog in the other.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "If the shrine is extricated from the lake, characters praying may receive the blessing of St Galaunt: the ability to cast Holy Quest"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "dewidort_of_smerne",
+      "name": "Dewidort of Smerne",
+      "title": "Ghost",
+      "description": "A faint blue, spectral human gentleman with pointed moustaches and a sabre at his side. Dressed in outmoded dapper ruffs and frilly doublet. His ghostly ringlets waft in an imaginary breeze. In life, Dewidort was a notorious highwayman who terrorised travellers along Swinney Road, before being caught and hanged in Prigwort. His ghost now lingers in this hex, where his treasure is hidden, and haunts Swinney Road at night.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Alternates between dashing camaraderie and deranged fury"
+      ],
+      "speech": "Gentlemanly, archaic. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To terrorise the living",
+        "To keep his treasure hoard secret"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Smerne's Lost Hoard",
+      "stat_reference": "Spectre (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Hanglehorn",
+      "description": "A great hunting horn formed from a polished devil goat horn, carved with battle scenes and inlaid with sapphires. A stolen heirloom of House Hogwarsh.",
+      "mechanical_effect": "Once a day, blowing the horn can manifest one of the following spell effects: Move Terrain, Petrification, Raise Dead (the latter has a 2-in-6 chance of shattering the horn, permanently destroying it).",
+      "value": "30,000gp as a magic item. Baron Hogwarsh would pay up to 10,000gp for it."
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      256
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

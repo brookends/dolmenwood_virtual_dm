@@ -1,0 +1,109 @@
+{
+  "hex_id": "0308",
+  "coordinates": [
+    3,
+    8
+  ],
+  "name": "The Face of the Drune",
+  "tagline": "Granite cliffs in eroding hillsides topped with leaning, blue-leafed pines.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Rindlewort (p430), in addition to the normal results",
+    "foraging_special": [
+      "Rindlewort (1d2 portions)"
+    ]
+  },
+  "description": "Granite cliffs in eroding hillsides topped with leaning, blue-leafed pines.",
+  "points_of_interest": [
+    {
+      "name": "The Great Stone Face",
+      "poi_type": "cave",
+      "description": "Overlooking a shady dale is a great stone face, 15′ high, carved into a sheer, granite cliff, 10′ from the ground. The crude relief depicts the scowling visage of a stern-eyed man with a great, wizardly beard. Below the beard, a green copper door is set into the rock-face.",
+      "tagline": null,
+      "entering": "The door bears the Drunic inscription, 'Render Magus.' It is sealed with a Glyph of Locking (Level 7 caster). Beyond the door is a large cave.",
+      "interior": "The cave is a dry, musty chamber, about 40′ wide and deep and 20′ high. It is dominated by the carving on its front wall—aligned with the great stone face on its other side, it depicts the interior anatomy of the front of a skull, including teeth, sinuses, and some portions of the brain, all labelled with obscure Drunic anatomical terms.",
+      "exploring": "Inspecting the face reveals that the pupils of its eyes are holes, 1′ in diameter, opening onto utter darkness. At the very back lies a forlorn, unmade bed, its wooden frame engraved with clustered brambles, and a matching chest.",
+      "leaving": null,
+      "inhabitants": "A spirit of green fire, created by Magus and named Tinekin, guards the meagre remains of its master's lair. It hides beneath the bed, observing intruders.",
+      "roll_tables": [],
+      "npcs": [
+        "tinekin"
+      ],
+      "special_features": [
+        "At night: When moonlight shines through the eyes of the stone face, a glowing, ghostly script is projected onto the cave floor. Casting Decipher on the script reveals the text of the spell Dimension Door. An arcane spell-caster who studies the script (4 hours) may copy this spell into a spell book.",
+        "Disturbing the cave: Should PCs attempt to remove any items, look under the bed, or study the cave's hidden spell, Tinekin darts out and confronts them, madly uttering threats as it capers about the chamber. If the adventurers persist, Tinekin attacks."
+      ],
+      "secrets": [
+        "History: Render Magus was a Drune of some power, now dead for many centuries, who made his home here."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "tinekin",
+      "name": "Tinekin",
+      "title": null,
+      "description": "A diminutive humanoid (3′ high) composed entirely of the green fire over which the Drune have mastery. Its flames do no damage unless it wills them to.",
+      "kindred": "Small Construct—Sentient",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Belligerent and paranoid",
+        "with an undercurrent of loneliness"
+      ],
+      "speech": "Staccato rambling in a rapid, high-pitched hiss",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "To ensure the safety of Magus's decayed, useless possessions",
+        "Craves a new master and companion (a human arcane spell-caster of at least Level 7)"
+      ],
+      "secrets": [
+        "An enchantment set by a Level 7 caster binds Tinekin to the cave, breakable by Dispel Magic"
+      ],
+      "possessions": [],
+      "location": "The Great Stone Face cave",
+      "stat_reference": "Level 2 AC 17 HP 11 Saves D12 R13 H14 B15 S16, Att 2 touches (+1, 1d4 + burning) Speed 30 Morale 8 XP 50",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Arcane Dagger",
+      "description": "Engraved with 'THORN' in Drunic",
+      "location": "Beneath the bed's verminous mattress",
+      "reference": "p412"
+    },
+    {
+      "name": "Three tattered black robes",
+      "description": "Three tattered black robes",
+      "location": "In the matching chest",
+      "reference": null
+    }
+  ],
+  "secrets": [
+    "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold.",
+    "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      221
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

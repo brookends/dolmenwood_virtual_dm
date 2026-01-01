@@ -1,0 +1,191 @@
+{
+  "hex_id": "0511",
+  "coordinates": [
+    5,
+    11
+  ],
+  "name": "The Inn of the Tankards",
+  "tagline": "Steep-sided, flat-headed hills, many topped with fluttering banners of House Ramius.",
+  "region": "High Wold",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Steep-sided, flat-headed hills, many topped with fluttering banners of House Ramius.",
+  "points_of_interest": [
+    {
+      "name": "The Inn of the Tankards",
+      "poi_type": "inn",
+      "description": "At the oft-trodden junction near the hex's centre stands an inn, its lower floor entirely obscured by old growth trees.",
+      "tagline": "A breggle arm crossing a human arm, each holding a frothing tankard.",
+      "entering": null,
+      "interior": "Large and busy, the cacophony of patrons' voices verging on harsh. Conspicuously clean, all walls freshly painted, all wooden surfaces polished to a bright sheen. The inn is owned by a shorthorn couple: Crump Elbowgen frenetically serves patrons, while his wife Nelga alternates between poring over a ledger and roaming the grounds compulsively in search of maintenance tasks.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Shorthorn and human merchants. The Elbowgens have owned it for two years; the previous owner drowned in a nearby well in an apparent drunken mishap.",
+      "roll_tables": [
+        {
+          "name": "Hauntings",
+          "die_type": "d6",
+          "description": "While in bed, 1 random party member experiences an event from the Hauntings table",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Spectral blood dripping from walls.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Oppressive sensation of being watched.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Corpse-like female elfish visage in window.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Bed levitates to the sound of mocking laughter.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Disembodied moaning under the bed, in closets, etc.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Window opens and slams shut multiple times.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "nelga_elbowgen",
+        "crump_elbowgen"
+      ],
+      "special_features": [
+        "Negative atmosphere: All Reaction Rolls suffer a –1 penalty in the inn",
+        "Sleepwalker: Watchful PCs may observe Nelga moving in a trance-like state to the basement",
+        "Secret chamber: A damp, vaulted brick chamber with drawings depicting the inn in various forms",
+        "Interrupting Nelga: The house causes a torrent of bricks to fall onto the PCs (Save Versus Hold or take 1d4 damage)",
+        "Exorcising: Using magic of curse removal or successfully turning undead against a Level 5 monster in the secret chamber causes foetid, black water to burst from the walls, and a mournful, plangent wail"
+      ],
+      "secrets": [
+        "The inn was unwittingly built with wood felled in an accursed glade",
+        "It is now a sentient, malevolent entity that instigates and feeds on terror, strife, sorrow, and murder",
+        "It delights in slowly destroying its proprietors and causing their untimely end"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "nelga_elbowgen",
+      "name": "Nelga Elbowgen",
+      "title": "Shorthorn Landlady",
+      "description": "White fur and a calico dress. She talks of nothing but the inn, in language that personifies it.",
+      "kindred": "Shorthorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Quiet yet forceful"
+      ],
+      "speech": "Direct, then trailing off. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To keep the inn utterly, painfully clean"
+      ],
+      "secrets": [
+        "Gradually becoming obsessed with the inn, treating it as if it were alive",
+        "Sleepwalks to secret chamber and sketches manically"
+      ],
+      "possessions": [],
+      "location": "The Inn of the Tankards",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "crump_elbowgen",
+      "name": "Crump Elbowgen",
+      "title": "Shorthorn Landlord",
+      "description": "Brown fur with black patches, in a crisply pressed waistcoat. Crump can feel his wife is not entirely present.",
+      "kindred": "Shorthorn",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Nervous",
+        "wary",
+        "eager to please"
+      ],
+      "speech": "Staccato rambling. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To understand his wife's state",
+        "To sell the inn"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Inn of the Tankards",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Elder tea",
+      "description": "Served in fine porcelain. 1gp per serving.",
+      "value": "1gp",
+      "location": "The Inn of the Tankards"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Services at the Inn of the Tankards: Lodgings and food of common quality (DPB).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      248
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "hex_id": "0609",
+  "coordinates": [
+    6,
+    9
+  ],
+  "name": "The Trothstone and the Owl Cave",
+  "tagline": "Steep, bracken-clad mounds with boggy pools and sluggish rivulets at their feet.",
+  "region": "High Wold",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d6 portions of Wolfsbane (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Wolfsbane (1d6 portions)"
+    ]
+  },
+  "description": "Steep, bracken-clad mounds with boggy pools and sluggish rivulets at their feet.",
+  "points_of_interest": [
+    {
+      "name": "The Trothstone",
+      "poi_type": "sacred site",
+      "description": "An old path leads north-west into the forest from the western road out of Lankshorn (hex 0710). Those who follow the path about a mile into the tangled wood come upon a pine glade.",
+      "tagline": null,
+      "entering": "Follow the old path north-west into the forest from the western road out of Lankshorn",
+      "interior": "The glade is dominated by a dark stone plinth and a pair of guardian monoliths of ancient construction. The plinth is known to locals as the Trothstone, and it is traditionally here that weddings of longhorn nobles take place.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Dark stone plinth",
+        "Pair of guardian monoliths of ancient construction",
+        "Traditional wedding site for longhorn nobles"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Owl Cave",
+      "poi_type": "cave",
+      "description": "Those who venture beyond the Trothstone into the deep wood come within the territory of a group of 4 witch owls (DMB) that make their lair in a stalactite-hung cave.",
+      "tagline": null,
+      "entering": "Venture beyond the Trothstone into the deep wood",
+      "interior": "A stalactite-hung cave. At the rear of the cave stands a 5′ high statue of roughly human form, rimed with a sparkling crust of mineral deposits.",
+      "exploring": "Chipping away the statue's outer coating reveals an effigy of Saint Nuncy which was stolen from a neighbouring land some centuries ago and hidden in this cave by its thieves (a band of delinquent friars). It is of great value to the Pluritine Church (5,000gp).",
+      "leaving": null,
+      "inhabitants": "4 witch owls (DMB)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Stalactite-hung cave",
+        "Encrusted statue of Saint Nuncy worth 5,000gp to Pluritine Church"
+      ],
+      "secrets": [
+        "The statue was stolen by a band of delinquent friars centuries ago"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Effigy of Saint Nuncy",
+      "description": "A 5′ high statue of roughly human form, originally rimed with a sparkling crust of mineral deposits. When cleaned, reveals an effigy of Saint Nuncy stolen from a neighbouring land centuries ago.",
+      "value": "5,000gp to the Pluritine Church",
+      "location": "Owl Cave"
+    }
+  ],
+  "secrets": [
+    "The effigy of Saint Nuncy was stolen by delinquent friars centuries ago"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Western road out of Lankshorn (hex 0710)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      258
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

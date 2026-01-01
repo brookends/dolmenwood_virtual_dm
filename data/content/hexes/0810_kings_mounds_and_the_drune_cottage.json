@@ -1,0 +1,146 @@
+{
+  "hex_id": "0810",
+  "coordinates": [
+    8,
+    10
+  ],
+  "name": "King's Mounds and the Drune Cottage",
+  "tagline": "An undulating terrain of birch copses, chestnut glades, and bramble thickets.",
+  "region": "High Wold",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": null,
+    "encounter_notes": "Daytime encounters are 2-in-6 likely to be with the Braithmaid Pollith Bonewort, roaming the woods singing haunting, magical songs. Nighttime encounters are 2-in-6 likely to be with the barrowbogey Thrattlewhit, creeping to the Drune Cottage to catch a glimpse of his beloved Pollith.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "An undulating terrain of birch copses, chestnut glades, and bramble thickets.",
+  "points_of_interest": [
+    {
+      "name": "Ancient Burial Mounds",
+      "poi_type": "burial mounds",
+      "description": "In the decrepit old woodland close to the north of the hex lies a series of long, low mounds, of human construction. These are burial mounds, housing the remains of ancient warrior-chieftains interred over the span of a century some 1,800 years ago. Locals scrupulously avoid the mounds, believing them to be haunted.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "What locals have mistaken for restless spirits are in fact fairies. The mounds are now home to 24 barrowbogeys (DMB)—led by one named Thrattlewhit—who dwell among the tombs of the dead.",
+      "roll_tables": [],
+      "npcs": [
+        "thrattlewhit"
+      ],
+      "special_features": [
+        "The barrow lairs contain the bogeys' treasures, buried in jugs and urns in the sandy soil: 985cp, a platinum ring set with a ruby (1,500gp), a pair of elf-bone bracelets inlaid with unicorns in fairy silver (800gp each), a jasper necklace (900gp), and a heavy gold amulet in the shape of a bull's head with emeralds for eyes (2,500gp)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Drune Cottage",
+      "poi_type": "cottage",
+      "description": "The Audrune Aethogrym (see 0910) maintains a compact cottage in the east of the hex, in a dreamy glade wherein spring always reigns and blossom drifts through the air.",
+      "tagline": null,
+      "entering": "The path to the cottage is enchanted such that it cannot be found unaided; only by following one who knows the secret way can the cottage be located.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Aethogrym is often absent, wandering the ways of the forest and the leys in 0910, while Maedred (Drune—Drunewife, DMB) remains in the cottage, weaving, singing, and potting. Their daughter Pollith (Drune—Braithmaid, DMB) roams the woods by day.",
+      "roll_tables": [],
+      "npcs": [
+        "pollith_bonewort"
+      ],
+      "special_features": [
+        "3 kilnlings (1 sneak, 2 defenders; see Drune—Drunewife, DMB) created by Aethogrym's wife, Maedred, also guard the path and the cottage.",
+        "Magically concealed"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "thrattlewhit",
+      "name": "Thrattlewhit",
+      "title": "Chief Barrowbogey",
+      "description": "A hunched bogey whose diminutive stature is made up for by the unusually tall brass jug upon his shoulders. Dresses in decaying burial rags.",
+      "kindred": "Barrowbogey",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Mercurial",
+        "veers between gleeful capering and suspicious questioning",
+        "Stumbles and sways, as if intoxicated"
+      ],
+      "speech": "High and tinny as any barrowbogey's, but punctuated with strained attempts at a more baritone, authoritative register. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Would give anything for the hand of the Braithmaid Pollith, whom he loves and spies upon at night"
+      ],
+      "secrets": [],
+      "possessions": [
+        "The sword Alfhame, which he brandishes two-handed in battle"
+      ],
+      "location": "Ancient Burial Mounds",
+      "stat_reference": "Barrowbogey (DMB) with 24 Hit Points",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "pollith_bonewort",
+      "name": "Pollith Bonewort",
+      "title": "Braithmaid",
+      "description": "A petite young human woman with cropped black hair, chestnut brown eyes, and a freckled nose. Wears simple white gowns and an apron embroidered with intricate fungal and floral motifs.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cocky",
+        "independent"
+      ],
+      "speech": "Melodious, impudent. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Contact with the witches of Dolmenwood",
+        "To see the frozen spires of Hoarblight Keep (0505)",
+        "To be rid of the unwanted attentions of the barrowbogey Thrattlewhit"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Drune Cottage",
+      "stat_reference": "Drune—Braithmaid (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "item_id": "alfhame",
+      "name": "Alfhame",
+      "type": "Magic Longsword",
+      "description": "A wide-bladed, antique Holy Longsword (Undead Bane, Drunken, p412) engraved with seven magical runes. Decipher shows that they spell the name 'Alfhame.'",
+      "mechanical_effect": "The sword is psychically tainted by the fate of its original owner, who was made drunken and assassinated by a treacherous rival. Anyone who possesses the sword takes on an intoxicated and suspicious air.",
+      "value": null,
+      "location": "Possessed by Thrattlewhit"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      283
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

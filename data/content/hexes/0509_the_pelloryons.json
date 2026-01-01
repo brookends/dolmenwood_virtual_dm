@@ -1,0 +1,152 @@
+{
+  "hex_id": "0509",
+  "coordinates": [
+    5,
+    9
+  ],
+  "name": "The Pelloryons",
+  "tagline": "Balmy clearings of towering sunflowers and dazzling poppies. Summer reigns year round.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The arcane energies of the nodal known as the Pelloryons, which lies at the centre of this hex, keep the surrounding woods trapped in nigh-perpetual summer. Bees buzz here, often and loudly, with a slow, almost hypnotic drone.",
+  "points_of_interest": [
+    {
+      "name": "Woods of Perpetual Summer",
+      "poi_type": "magical woods",
+      "description": "The arcane energies of the nodal known as the Pelloryons, which lies at the centre of this hex, keep the surrounding woods trapped in nigh-perpetual summer.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Bees buzz here, often and loudly, with a slow, almost hypnotic drone.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Distracting drone from bees"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Warding Maze",
+      "poi_type": "magical ward",
+      "description": "From the safety of a hidden fastness among the roots of the woods, the Pelloryons' guardian, the Audrune Cadraigaunt, oversees and maintains a series of wards to confound wanderers and destroy intruders.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Common travellers walk about three miles into the hex before realizing they have ended up back at whatever edge they entered from. Those who seek the Pelloryons feel the woods slowly closing in on them, eventually transforming into a twilit, phantasmagoric labyrinth haunted by gibbering spirits and mocking, human-faced trees.",
+      "exploring": "Characters must Save Versus Spell. Should all in the party succeed, the labyrinth vanishes; otherwise, the interlopers are attacked by 3 invisible stalkers. The maze evaporates if the stalkers are defeated.",
+      "leaving": null,
+      "inhabitants": "3 invisible stalkers (if Save Versus Spell fails)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Confounds common travellers",
+        "Transforms into labyrinth for those seeking the Pelloryons"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Pelloryons",
+      "poi_type": "standing stones",
+      "description": "Beyond all the wards, in a glade nestled between hills at the hex's centre, stand the Pelloryons (the 'three sisters'). They comprise the most crucial node of the warding ring.",
+      "tagline": null,
+      "entering": "Should intruders reach this point, the Audrune Cadraigaunt immediately arrives to dispatch them.",
+      "interior": "The Pelloryons consists of three towering pillars of chalky limestone, approximately 10′ around and 18′ in height. Each is carved with figures representing members of the Triple Compact.",
+      "exploring": "The stones' surfaces are warm and balmy to the touch, while the areas around the figures' eyes and mouths are unearthly cold. Drunic runes around the stones' base describe the arcane spell Invisible Stalker.",
+      "leaving": null,
+      "inhabitants": "The Audrune Cadraigaunt (guardian)",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_cadraigaunt"
+      ],
+      "special_features": [
+        "King stone: Carved on one side to resemble an ancient king and on its reverse to resemble a crone holding a chalice",
+        "Friar stone: Engraved on one side with a gaunt friar holding a flaming Chapes holy symbol, and on the other with a screaming elfin form locked in eternal torment",
+        "Drune stone: Carved in the crude likeness of a Drune's hood, while on its reverse is the sculpted form of the stag-headed Wood God Howawi",
+        "Inscribed spell: Drunic runes around the stones' base describe the arcane spell Invisible Stalker",
+        "Toppling them by brute force brings about the disastrous consequences detailed under The Ring of Chell"
+      ],
+      "secrets": [
+        "Learning the Invisible Stalker spell from the runes"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_cadraigaunt",
+      "name": "The Audrune Cadraigaunt",
+      "title": "Guardian of the Pelloryons",
+      "description": "An ancient, hunchbacked Audrune who has guarded the Pelloryons for nigh five centuries, clinging to life by sheer force of purpose. An eye-like flame burns beneath his cowl and bees flit menacingly around him.",
+      "kindred": "Audrune",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Ruthless",
+        "joyless",
+        "single-minded",
+        "gleeful in hunting and destroying those who trespass on his lands",
+        "The cruellest of the Drune"
+      ],
+      "speech": "A sinister rasp, underpinned by the eerie buzzing of insects",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Drunic",
+        "Liturgic"
+      ],
+      "desires": [
+        "Above all, to maintain the secrecy of the Pelloryons",
+        "To wrest the soul of his friend Hemlack (former guardian of Sargstone) from the clutches of Atanuwë"
+      ],
+      "secrets": [
+        "Has guarded the Pelloryons for five centuries",
+        "Friend of Hemlack, former guardian of Sargstone"
+      ],
+      "possessions": [
+        "Staff of Mellification (worth 35,000gp)",
+        "Symbiotic insect swarm of bees and stinging insects"
+      ],
+      "location": "The Pelloryons",
+      "stat_reference": "Audrune (DMB) with additional spells: Dweomerlight, Polymorph, Dweomerfire, Geas, Word of Doom",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Staff of Mellification",
+      "description": "A gnarled staff oozing with honey. A victim hit must Save Versus Doom (with a +2 bonus) or collapse into an oozing, honey-filled husk.",
+      "value": "35,000gp",
+      "mechanical_effect": "Save Versus Doom (+2 bonus) or collapse into honey-filled husk"
+    }
+  ],
+  "secrets": [
+    "The Pelloryons are the most crucial node of the warding ring",
+    "Drunic runes around the stones describe the Invisible Stalker spell",
+    "Toppling the stones brings disastrous consequences under The Ring of Chell"
+  ],
+  "dm_notes": "Ley line crossing Chell/Ywyr: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. The energies of the Ywyr are siphoned into Chell at this nexus, so visitors feel no additional effects from its presence. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      246
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

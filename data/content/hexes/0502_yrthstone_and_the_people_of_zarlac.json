@@ -1,0 +1,130 @@
+{
+  "hex_id": "0502",
+  "coordinates": [
+    5,
+    2
+  ],
+  "name": "Yrthstone and the People of Zarlac",
+  "tagline": "Black-barked firs seem almost aware, quietly glowering at would-be intruders.",
+  "region": "Northern Scratch",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Black-barked firs seem almost aware, quietly glowering at would-be intruders. Arcane spell-casters perceive the feeling of having just awoken from a dream due to the ley line Hoad.",
+  "points_of_interest": [
+    {
+      "name": "The People of Zarlac",
+      "poi_type": "settlement",
+      "description": "In a small glade near the centre of the hex stands a cluster of mud huts. 13 humans (10 men and 3 women), as well as 12 green-skinned children (see Children of Yrthstone), eke out a precarious living here, subsisting on foraged nuts and berries and the yields of paltry vegetable patches. They are an odd mix of folk, but all dress alike, with shaven heads, white cassocks, and a Z-shaped rune branded on their foreheads.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The people wish to be left alone and request that visitors move along. They have no wish to discuss themselves or matters of the wider world.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "13 humans and 12 green-skinned children who are mind-bound to Zarlac through repeated sucklings at his breast.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Z-shaped rune branded on foreheads",
+        "Mind-bound to Zarlac"
+      ],
+      "secrets": [
+        "The people are wanderers who met Zarlac by chance and accepted him as their spiritual master"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Nodal Yrthstone",
+      "poi_type": "standing stone",
+      "description": "In a grove of fir trees adjacent to the hamlet stands a 13′ high slab of white granite; this is Yrthstone, known as the Teeming Stone. Standing alongside the slab is the Audrune Zarlac, who greets visitors with an affable bellow.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Drunic runes describe the arcane spell Cannibalise. Anyone who touches Yrthstone must Save Versus Spell or be afflicted with a curse of disintegrating flesh.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Guarded by the Audrune Zarlac",
+      "roll_tables": [],
+      "npcs": [
+        "zarlac"
+      ],
+      "special_features": [
+        "Inscribed with Cannibalise spell",
+        "Curse of disintegrating flesh",
+        "Ley line Hoad"
+      ],
+      "secrets": [
+        "Dropped chunks of flesh fester for 1 day before turning green and crawling back to create Children of Yrthstone"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "zarlac",
+      "name": "Zarlac",
+      "title": "The Audrune",
+      "description": "A rotund human man with a long, thin nose jutting out from a black cowl. Zarlac welcomes all to sit in Yrthstone's shadow, if he believes they may be a source of knowledge. He invites visitors to suckle from his ample bosom, promising enlightenment.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Kindly megalomaniac",
+        "Overly cordial for a Drune",
+        "Loquacious yet evasive"
+      ],
+      "speech": "Loud, ebullient",
+      "languages": [
+        "Woldish",
+        "Drunic",
+        "Sylvan"
+      ],
+      "desires": [
+        "To protect Yrthstone at all costs",
+        "To meet interesting, useful people and make thralls of them",
+        "To conceal his growing community of followers from the Drune Aegis"
+      ],
+      "secrets": [
+        "His milk charms those who partake",
+        "Creates thralls through his milk"
+      ],
+      "possessions": [
+        "An Astrolabe of the Aegis",
+        "Two dead mice with their tails braided together"
+      ],
+      "location": "The Nodal Yrthstone",
+      "stat_reference": "Audrune (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Astrolabe of the Aegis",
+      "description": "Magical astrolabe possessed by Zarlac",
+      "value": null,
+      "special_properties": null
+    }
+  ],
+  "secrets": [
+    "Zarlac's milk causes charm effect - Save Versus Spell or become charmed for 4d6 days",
+    "Children of Yrthstone are magically summoned on 1st of Symswald for annual pilgrimage"
+  ],
+  "dm_notes": "Ley line Hoad: Arcane spell-casters perceive the feeling of having just awoken from a dream. Touching Yrthstone: Save Versus Spell or curse of disintegrating flesh (1 pound per day, fatal in 10 days unless Remove Curse). Zarlac's milk: Save Versus Spell or charmed 4d6 days (Ingratiate spell effect).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      239
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

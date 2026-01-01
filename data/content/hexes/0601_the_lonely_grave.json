@@ -1,0 +1,126 @@
+{
+  "hex_id": "0601",
+  "coordinates": [
+    6,
+    1
+  ],
+  "name": "The Lonely Grave",
+  "tagline": "Dotted with ancient earth-workings: mounds, ridges, and rings.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Dotted with ancient earth-workings: mounds, ridges, and rings. As characters travel along the bleak ridge of the Table Downs, the moaning of the wind takes on a voice-like quality, as if carrying shouted warnings from afar.",
+  "points_of_interest": [
+    {
+      "name": "Moaning Wind",
+      "poi_type": "atmospheric",
+      "description": "As characters travel along the bleak ridge of the Table Downs, the moaning of the wind takes on a voice-like quality, as if carrying shouted warnings from afar.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "If PCs stop to listen: They catch the name of the character with the highest Wisdom in the erratic, ominous wailing.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Wind carries name of PC with highest Wisdom"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lonely Grave",
+      "poi_type": "grave",
+      "description": "A simple, weatherworn headstone is visible beneath the eaves of a serene copse at the base of a hill.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Inscription: The name of the PC with the highest Wisdom is inexplicably carved onto the gravestone, along with the epitaph \"Lord of the Wild.\" Examining: The stone appears to be many centuries old. The ground around is overgrown and undisturbed. Unearthing: A decaying coffin is buried 3′ down. Inside is a skeleton of the same physical proportions as the PC whose name the headstone bears. Its skull is smashed in. Two objects lie on its breast (see Grave Treasures).",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Grave Treasures",
+          "die_type": null,
+          "description": "Two objects found on the skeleton's breast",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Silver knife",
+              "description": "Engraved with Liturgic script only visible in moonlight. The script read \"For the glory of God.\" The knife is actually a Holy Longsword (Shrinking, p412). The Liturgic inscription, if uttered by a Lawful character, causes the blade to grow or shrink.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Holy Longsword (Shrinking)"
+              ],
+              "mechanical_effect": "Liturgic inscription causes blade to grow or shrink when uttered by Lawful character"
+            },
+            {
+              "roll": 2,
+              "title": "Brass ring",
+              "description": "Inscribed with very fine lines in the shape of frost patterns. It is a Ring of Energy Resistance (Cold, p410) of fairy make. A mortal who possesses it also comes under a glamour causing them to giggle ominously in their sleep, disturbing the rest of any nearby.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Ring of Energy Resistance (Cold)"
+              ],
+              "mechanical_effect": "Mortal possessor giggles ominously in sleep, disturbing nearby rest"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Headstone bears name of PC with highest Wisdom",
+        "Skeleton matches proportions of named PC",
+        "Cursed if disturbed"
+      ],
+      "secrets": [
+        "If skeleton or objects are taken, named PC is cursed with nightmare spectre attack"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Holy Longsword (Shrinking)",
+      "description": "Silver knife engraved with Liturgic script only visible in moonlight. The script reads \"For the glory of God.\" The Liturgic inscription, if uttered by a Lawful character, causes the blade to grow or shrink.",
+      "mechanical_effect": "Grows or shrinks when Liturgic inscription uttered by Lawful character",
+      "value": null,
+      "location": "The Lonely Grave"
+    },
+    {
+      "name": "Ring of Energy Resistance (Cold)",
+      "description": "Brass ring inscribed with very fine lines in the shape of frost patterns. Of fairy make.",
+      "mechanical_effect": "Energy resistance to cold. Mortal possessor giggles ominously in sleep, disturbing nearby rest",
+      "value": null,
+      "location": "The Lonely Grave"
+    }
+  ],
+  "secrets": [
+    "Cursed: If the skeleton or the objects are taken from this place, the PC whose name is engraved on the headstone comes under a curse. The next time they sleep in a house or inn, they experience a nightmare wherein they are attacked by a spectre whispering \"Lord of the Wild.\" If the PC is defeated, their companions discover them in the morning, dead, with their head smashed in."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      250
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

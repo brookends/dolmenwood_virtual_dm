@@ -1,0 +1,191 @@
+{
+  "hex_id": "0711",
+  "coordinates": [
+    7,
+    11
+  ],
+  "name": "King Pusskin's Road",
+  "tagline": "Quiet country lanes wind among farmers' fields and windswept hilltops.",
+  "region": "High Wold",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Quiet country lanes wind among farmers' fields and windswept hilltops.",
+  "points_of_interest": [
+    {
+      "name": "The Quivering Doily",
+      "poi_type": "inn",
+      "description": "A cute, thatched-roof cottage stands amid apple orchards at a crossroads where Swinescombe Road and several farm tracks meet the Swallop Road.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Common room: Floor strewn with straw, bales as seats, barrels for tables. The landlady, Agnel Chudrow, mingles congenially with guests. Her pet goat, Mable, roams freely. Portrait: In a place of prominence near the fireplace hangs a portrait of a fluffy pussy cat wearing a plush crown. Guests: Rustic farm folk telling tall tales, playing lively fiddle music, and goggling at travellers.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The landlady, Agnel Chudrow, mingles congenially with guests. Her pet goat, Mable, roams freely.",
+      "roll_tables": [],
+      "npcs": [
+        "agnel_chudrow"
+      ],
+      "special_features": [
+        "Sign: A lady's gloved hand holding a doily whose lacework hints at a smirking face"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Roadside Shrine",
+      "poi_type": "shrine",
+      "description": "In the north-east of this hex, close to the eaves of Dolmenwood, a gloomy shrine stands beside the winding, well-used Swallop Road beneath a weather-beaten wooden roof.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Pussy cat portrait: Inside can be found an old lacquered portrait of a fluffy pussy cat wearing a plush crown (identical to the one at the inn, though more weathered). Inscription: The portrait bears an inscription: 'King Pusskin's Road—travellers upon the road must leave tribute in the form of milk or mice.' Beneath the portrait: A small table houses an array of mouse skeletons and chipped china saucers (also enamelled with images of the regal cat).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Not leaving a tribute: Although travellers often scoff at the shrine, dismissing it as rustic nonsense, the power of King Pusskin (see p33) is very real. Anyone passing along the road without leaving a fitting tribute in the shrine displeases King Pusskin, manifesting upon awakening the following morning (see King Pusskin's Displeasure)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Moggle Door",
+      "poi_type": "fairy_portal",
+      "description": "Just under the eaves of Dolmenwood, in the far east of this hex, is a quiet glade with a circle of mouse skulls at its centre.",
+      "tagline": null,
+      "entering": "Stepping into the ring: Whisks one away to the fairy road Skipping-a-Derry (see Fairy Roads, p26).",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Grimalkin: There is a 1-in-6 chance of a grimalkin (DMB) entering or emerging from the Moggle Door as PCs arrive.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "King Pusskin's Displeasure",
+      "die_type": "d6",
+      "description": "Roll when awakening after not leaving tribute at the shrine",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "Feverish dreams of being trapped in giant cats' claws.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "A dead mouse discovered on the pillow.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "Cat-scratches on hands and arms.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "An item of clothing shredded by cat claws.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "Coughs up furballs.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "Attacked by any dogs encountered this day.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Attacked by any dogs encountered this day"
+        }
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "agnel_chudrow",
+      "name": "Agnel Chudrow",
+      "title": "Quivering Doily Proprietor",
+      "description": "A tiny (4′5″), quick-footed human woman in her middle years, white apron always pristine and brown hair tied in a long braid down her back.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Kindly",
+        "motherly",
+        "scolds the disorderly"
+      ],
+      "speech": "Breathless. Broad rustic accent. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Fairy wines",
+        "To visit a fairy carnival"
+      ],
+      "secrets": [
+        "Family: Husband (Lanklow) is an orchard man and cider brewer. Children are grown up and moved to High-Hankle.",
+        "Knowledge: If questioned about the pussy cat portrait, Agnel beams with pride and says: 'That's our protector there: King Pusskin. When he's happy, we're safe.' She discloses nothing else about it."
+      ],
+      "possessions": [],
+      "location": "The Quivering Doily",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Services at the Quivering Doily: Lodgings and food: Of common quality (DPB). Only one private room is available. Cider ('Lanklow's'): The landlord's bowel-blasting scrumpy is the locals' favoured drink. 1sp a mug. Mead: Is always in stock. 12sp a glass.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Swinescombe Road",
+    "Swallop Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      272
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

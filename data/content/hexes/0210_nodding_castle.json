@@ -1,0 +1,92 @@
+{
+  "hex_id": "0210",
+  "coordinates": [
+    2,
+    10
+  ],
+  "name": "Nodding Castle",
+  "tagline": "Gloomy, dripping copses, drenched in cool mist and an unending drizzle.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Gloomy, dripping copses, drenched in cool mist and an unending drizzle.",
+  "points_of_interest": [
+    {
+      "name": "Nodding Castle",
+      "poi_type": "castle",
+      "description": "The decaying Nodding Castle, ancestral home of Lord Nodlock (p61), stands upon a hill at the forest's edge. The castle is built of grey stone, with three crumbling towers. The walls drip with damp and mould.",
+      "tagline": null,
+      "entering": "Those who are not welcome can easily gain entrance posing as entertainers or servants.",
+      "interior": "A haphazard procession of cluttered hallways, disorderly studies, debauched feasting halls, and slovenly boudoirs. Lord Nodlock's long-suffering domestic staff periodically scurry through, attempting to restore order after their liege's bouts of excess.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Lord Nodlock resides here, attended by a retinue of advisors who oversee the castle and borders during their Lord's alcohol-induced slumbers (of which there are many). A frequent attendant to Nodlock's binges is his wine taster, a wronguncle (DMB) called Tasper.",
+      "roll_tables": [],
+      "npcs": [
+        "tasper_crymehump"
+      ],
+      "special_features": [
+        "Defensive palisade: A series of thorny trees grown and woven into a latticework palisade rings the castle. The thick palisade gates are decorated with horn and sport the heraldic shield of Lord Nodlock when the gates are closed. They are manned by a surly and listless group of 8 guards (Level 1 fighters—DMB).",
+        "Moat of the dead: The castle itself is further surrounded by a moat which is home to 7 bog corpses (DMB), headless and perpetually attempting to claw their way up the steep, slippery sides, then slumping back into the putrid water. Lord Nodlock has pushed a deceitful advisor into the moat on a number of occasions.",
+        "Barracks: A poorly trained garrison of 28 soldiers (Level 1 fighters—DMB) is quartered in decaying barracks at the castle's rear.",
+        "Visitors: The guest suites at Nodding Castle are seldom vacant. Lord Nodlock welcomes visitors of noble stock, hedonistic bent, or martial prowess, in addition to hordes of jugglers, dancers, musicians, and fortune tellers."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "tasper_crymehump",
+      "name": "Tasper Crymehump",
+      "title": "Wronguncle Wine Taster",
+      "description": "A red-capped, 5′-tall humanoid mushroom that grew on the corpse of Lord Nodlock's former wine taster, who was lost in the forest a year ago. Upon wandering to the castle, the mushroom was welcomed back into the role of wine taster, possessing all the skill and memories of its deceased progenitor. The castle's inhabitants regard it with curiosity and affection.",
+      "kindred": "Wronguncle",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Genial and lighthearted",
+        "Becomes murderous and conspiratorial at any mention of the castle's cook"
+      ],
+      "speech": "Merry, squeaking banter",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To locate and murder its loved one, Grymelda, the castle's head cook"
+      ],
+      "secrets": [
+        "Unknown to Tasper, Grymelda was recently killed by Lord Nodlock's pack of hunting dogs",
+        "The castle's inhabitants are under strict instructions to string Tasper along",
+        "As long as it believes Grymelda lives, it cheerfully serves as head wine taster"
+      ],
+      "possessions": [],
+      "location": "Nodding Castle",
+      "stat_reference": "wronguncle (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      212
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

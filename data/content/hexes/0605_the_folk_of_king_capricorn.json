@@ -1,0 +1,96 @@
+{
+  "hex_id": "0605",
+  "coordinates": [
+    6,
+    5
+  ],
+  "name": "The Folk of King Capricorn",
+  "tagline": "Murky waters, 50′ deep, dotted with patches of purple-flowering lilies and tangled weeds.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "aquatic",
+  "terrain_description": "Aquatic, Dwelmfurgh",
+  "terrain_difficulty": null,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with Big Chook",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Murky waters, 50′ deep, dotted with patches of purple-flowering lilies and tangled weeds. Those who sail the waters of this hex during the day are sure to encounter the folk of King Capricorn—the merfauns who dwell in the lakebed here. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "The Palace of King Capricorn",
+      "poi_type": "underwater palace",
+      "description": "The lake bed is riddled with a complex of natural, water-filled caves, which have been expanded by the merfauns. 90 merfauns inhabit this complex.",
+      "tagline": null,
+      "entering": "Four entrances to the open water exist, gated with rusty metal bars. Each is guarded by 1d3 merfauns.",
+      "interior": "The entrances lead to a central cavern lit by glowing clam shells. Debauched feasts of pondweed and lake fish are served here, to the music of great drums and aquatic pipes, presided over approvingly by King Capricorn himself. 3 giant catfish are chained here and can be commanded to attack intruders. Smaller tunnels lead from the great hall into the private chambers of the merfauns, decorated with shells and stone carvings, with beds of soft weeds. The King's chambers are guarded by 2 elite merfauns (16 Hit Points), the king keeps a harem of three honoured merfauns and three human men.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "90 merfauns inhabit this complex, including King Capricorn, 2 elite merfauns guarding the king's chambers, and 3 giant catfish chained in the great hall.",
+      "roll_tables": [],
+      "npcs": [
+        "king_capricorn"
+      ],
+      "special_features": [
+        "Call of the Merfauns: Merfauns call out to passing boats, merrily inquiring after exotic land-goods such as cheeses and ale, which they gladly trade for fish or silver coins stamped with the head of their liege, King Capricorn"
+      ],
+      "secrets": [
+        "A hoard of 850pp, 1,200gp, and 2,400sp is kept by the merfauns, along with 20 pearls (500gp each)"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "king_capricorn",
+      "name": "King Capricorn",
+      "title": "King",
+      "description": "An ancient, barrel-bodied merfaun man with huge, spiralling horns and a green beard as long as his tail.",
+      "kindred": "Merfaun",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jovial",
+        "brash",
+        "regal"
+      ],
+      "speech": "Bombastic, punctuated with rollicking roars",
+      "languages": [
+        "Woldish",
+        "Merfolk",
+        "Sylvan"
+      ],
+      "desires": [
+        "To be rid of the menace of Big Chook",
+        "Uninterested in the political concerns of the wider world"
+      ],
+      "secrets": [
+        "Fondly recalls swimming alongside Gheillough, the noble, magnificent silver-scaled water dragon that once embodied all the magicks of the Mere",
+        "Notes Gheillough vanished some 400 years ago; since then, the waters turned, and Big Chook first started appearing",
+        "Knows of an awful, eel-infested mound on the lake bottom in hex 0606"
+      ],
+      "possessions": [
+        "A Fairy Trident—1d6+2 damage—that inflicts an additional 2d6 electrical damage to Chaotic targets on a successful hit. Worth 7,000gp",
+        "Reward horn: whelk-encrusted horn which summons a giant catfish for 1 hour, to aid one who blows the horn underwater. The horn can be blown once per week and works in any large body of water. Worth 8,000gp"
+      ],
+      "location": "The Palace of King Capricorn",
+      "stat_reference": "Merfaun (DMB), with 40 Hit Points and a +4 bonus to Attack Rolls and Saving Throws",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      254
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

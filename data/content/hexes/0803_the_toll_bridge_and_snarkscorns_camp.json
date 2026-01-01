@@ -1,0 +1,135 @@
+{
+  "hex_id": "0803",
+  "coordinates": [
+    8,
+    3
+  ],
+  "name": "The Toll Bridge and Snarkscorn's Camp",
+  "tagline": "Trees blackened, twisted, and dripping with ochre slimes, becoming more severe in the south-east of the hex.",
+  "region": "Nagwood",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Nagwood",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Random encounters here are 3-in-6 likely to be with 2d4 crookhorns (DMB) under the command of Captain Snarkscorn",
+    "foraging_results": "Successful foraging yields 1d2 portions of Woodpurse (p430), in addition to the normal results",
+    "foraging_special": [
+      "Woodpurse (1d2 portions)"
+    ]
+  },
+  "description": "Trees blackened, twisted, and dripping with ochre slimes, becoming more severe in the south-east of the hex.",
+  "points_of_interest": [
+    {
+      "name": "The Toll Bridge",
+      "poi_type": "bridge",
+      "description": "An arched wooden bridge, 6′ wide and 20′ long, spans the slippery banks of Quogg's Creek. The bridge is aged and covered in moss, but stable. Locals call it Griswold Bridge.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "During the day, 1d12 crookhorns (DMB) guard the bridge. These bridge-wards are under the command of Captain Snarkscorn (p46), returning to his encampment at night.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "River toll: Boats are required to moor at the south bank, where tree trunks have been driven into the mud, or be attacked with bows and slings. They are not allowed to depart until a \"docking charge\" of 2d20sp per crew member is paid to the crookhorns.",
+        "Bridge toll: Foot travellers wishing to traverse the bridge are also taxed, at 2d20sp per head. The crookhorns attempt to rob travellers whom they clearly outnumber."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Camp of Captain Snarkscorn",
+      "poi_type": "camp",
+      "description": "300 yards to the south of the bridge is an unruly encampment of 60 crookhorns (DMB)—soldiers under the command of the brute Captain Snarkscorn (p46).",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "60 crookhorns (DMB) under the command of Captain Snarkscorn",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "During the day: Most of the camp's inhabitants may be found sprawled in net-hammocks and beds of reed-straw.",
+        "At night: The crookhorns dance and cavort around great bonfires, drinking caustic brews of mugwort and fishbone and tormenting any humans that they have seized (2-in-6 chance of having 1d6 prisoners in their clutches).",
+        "The pavilion: In the centre of the encampment is a whitish, blood-stained pavilion where the Captain makes his lair. It is guarded at all times by 4 of the toughest crookhorns (maximum Hit Points)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Captain's Pavilion",
+      "poi_type": "pavilion",
+      "description": "In the centre of the encampment is a whitish, blood-stained pavilion where the Captain makes his lair. It is guarded at all times by 4 of the toughest crookhorns (maximum Hit Points).",
+      "tagline": null,
+      "entering": null,
+      "interior": "Prisoner: A human woman, gagged and chained to the tentpole. She is a witch—Eye of Ertta (DMB), named Maydrid, whom Snarkscorn plans to bring before his master for questioning and corruption. Writing desk: Stacked with plans and maps. Four-poster bed: Plush but filthy. Under the bed, concealed in a pit beneath a rug, is a chest containing an angry adder (DMB—make a Surprise Roll) and the Captain's Hoard.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Captain Snarkscorn, Maydrid (Eye of Ertta witch)",
+      "roll_tables": [],
+      "npcs": [
+        "maydrid"
+      ],
+      "special_features": [],
+      "secrets": [
+        "Under the bed, concealed in a pit beneath a rug, is a chest containing an angry adder (DMB—make a Surprise Roll) and the Captain's Hoard"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "maydrid",
+      "name": "Maydrid",
+      "title": null,
+      "description": "A human woman, gagged and chained to the tentpole. She is a witch—Eye of Ertta (DMB), whom Snarkscorn plans to bring before his master for questioning and corruption.",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Captain's Pavilion",
+      "stat_reference": "Eye of Ertta (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Fist-sized aquamarine",
+      "description": "A fist-sized aquamarine",
+      "value": "5,500gp",
+      "location": "The Captain's Hoard"
+    },
+    {
+      "name": "Spiralling black horn",
+      "description": "Slick with a stinking oil. Licking the oil brings on a trance lasting 1d4 hours, wherein one may communicate with the Nag-Lord, Atanuwë (p45). Those who are not under Atanuwë's direct command must Save Versus Spell or be cursed: they become Chaotic, and their Intelligence and Wisdom are reduced to 3.",
+      "value": "3,000gp",
+      "location": "The Captain's Hoard"
+    }
+  ],
+  "secrets": [
+    "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream.",
+    "The Captain's Hoard contains: 1,784gp, 984sp, 2,321cp, a fist-sized aquamarine (5,500gp), and a spiralling black horn (3,000gp)"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      276
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

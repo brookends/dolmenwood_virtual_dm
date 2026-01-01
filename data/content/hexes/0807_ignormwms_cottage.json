@@ -1,0 +1,114 @@
+{
+  "hex_id": "0807",
+  "coordinates": [
+    8,
+    7
+  ],
+  "name": "Ignormwm's Cottage",
+  "tagline": "Thick banks of reeds and stands of gangly willows, amid a maze of stinking waterways. Solid ground is rare.",
+  "region": "Dwelmfurgh / Hag's Addle",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Dwelmfurgh / Hag's Addle",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Bosun's Balm (DPB) and 1d3 portions of Lankswith (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Bosun's Balm (1d2 portions)",
+      "Lankswith (1d3 portions)"
+    ]
+  },
+  "description": "Thick banks of reeds and stands of gangly willows, amid a maze of stinking waterways. Solid ground is rare. Ley line crossing Chell/Ywyr: Arcane spell-casters perceive a throbbing warmth from the earth and the chilling cries of gigantic ravens. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Ignormwm's Cottage",
+      "poi_type": "cottage",
+      "description": "In the far north-west of this hex, a rickety, turf-roofed cottage stands on the south bank of the Hameth. Its small windows are occluded by grubby red drapes.",
+      "tagline": null,
+      "entering": "The door bears a crude painting of a busty maiden and the message \"respite for weary fishermen.\"",
+      "interior": "A single, cluttered room with an iron stove, a table, several stools, and an ample, fur-decked bed curtained off in one corner. Dozens of fish hang from the ceiling, drying above the fireplace. Beneath a bearskin rug is a locked trapdoor to the cellar.",
+      "exploring": "If surprised, there is a 4-in-6 chance of encountering Ignormwm in her hag form. The monster attempts to slay any who witness her thus. Visitors may occasionally perceive muffled moans through the floorboards.",
+      "leaving": null,
+      "inhabitants": "The Atacorn Ignormwm, habitually in her human form (and going by the name of Agnel) in the presence of others.",
+      "roll_tables": [],
+      "npcs": [
+        "ignormwm"
+      ],
+      "special_features": [
+        "Cellar: A low-roofed space near to collapse. 23 spawn of Ignormwm lurk miserably in the dark, listlessly gnawing on fish bones. A locked chest hidden in a corner contains 159gp, 223sp, a jar of Mawbarg's Jam, and a blue velvet Bag of Holding (stuffed with dried fish, with 5 blue spinels stashed at the bottom—500gp each)."
+      ],
+      "secrets": [
+        "Subterranean moans: Visitors may occasionally perceive muffled moans through the floorboards. If asked, Agnel blames mating swamp sloths."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "ignormwm",
+      "name": "Ignormwm",
+      "title": "\"Agnel\"—Atacorn",
+      "description": "A horrid monster with the ability to switch between two forms: a tall woman of lithe frame and bronze complexion, with lustrous red curls and enchanting green eyes / a stick-thin, 8′ tall hag with hairy red skin, staring, lidless eyes, and a flaking, crooked horn in the centre of her forehead. Both forms dress in a rustic hessian shift with a goat-skin waistcoat. Ignormwm is a child of the Nag-Lord, sent out into the world to spread discord and woe.",
+      "kindred": "Atacorn",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Merry, licentious (human form)",
+        "sullen, brutal (hag form)",
+        "Obsessively scratches behind the ears (in both forms)"
+      ],
+      "speech": "Gentle crooning (human form) / violent stammering (hag form). Woldish, Gaffe, Caprice.",
+      "languages": [
+        "Woldish",
+        "Gaffe",
+        "Caprice"
+      ],
+      "desires": [
+        "To mate with mortals and enlarge her brood",
+        "To attack Lankshorn, once her brood is large enough"
+      ],
+      "secrets": [
+        "Following copulation with a male humanoid, Ignormwm undergoes an accelerated pregnancy lasting only 1 week, giving birth to a new spawn of Ignormwm"
+      ],
+      "possessions": [
+        "159gp",
+        "223sp",
+        "jar of Mawbarg's Jam",
+        "blue velvet Bag of Holding with dried fish and 5 blue spinels (500gp each)"
+      ],
+      "location": "Ignormwm's Cottage",
+      "stat_reference": "Medium Mortal—Sentient—Chaotic, Level 6 AC 14 HP 32 Saves D9 R10 H11 B12 S13, Att 2 fists (+5, 1d6+2) or horn (+5, 1d6 + paralysis), Speed 30 Morale 8 XP 520",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Mawbarg's Jam",
+      "description": "A jar of Mawbarg's Jam",
+      "location": "Hidden chest in cellar"
+    },
+    {
+      "name": "Bag of Holding",
+      "description": "A blue velvet Bag of Holding stuffed with dried fish, with 5 blue spinels stashed at the bottom (500gp each)",
+      "location": "Hidden chest in cellar"
+    }
+  ],
+  "secrets": [
+    "23 spawn of Ignormwm lurk in the cellar",
+    "Hidden chest contains treasure worth over 4000gp",
+    "Agnel blames mating swamp sloths for the moans from below"
+  ],
+  "dm_notes": "Visitors: Agnel gladly entertains guests, offering bitter marsh-herb teas and dried fish. Male guests may be suggestively invited to stay the night and led, following a nightcap of home-brewed eggnog, to Agnel's bed. She appreciates payment in the morning, in coin or fresh fish, but does not scorn those who are remiss.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      280
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

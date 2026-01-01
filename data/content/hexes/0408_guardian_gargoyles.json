@@ -1,0 +1,162 @@
+{
+  "hex_id": "0408",
+  "coordinates": [
+    4,
+    8
+  ],
+  "name": "Guardian Gargoyles",
+  "tagline": "Paths wind among flower-filled dells between steep, bracken-clad hillocks.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Paths wind among flower-filled dells between steep, bracken-clad hillocks.",
+  "points_of_interest": [
+    {
+      "name": "The Sinking Chapel",
+      "poi_type": "chapel",
+      "description": "The green-streaked ruins of an old chapel sit sunken about 3′ in mud at the bottom of a dark glen.",
+      "tagline": null,
+      "entering": "The door is blocked by the mud, but PCs may enter through one of the shattered, stained-glass lancet windows on the chapel's sides.",
+      "interior": "Flooded with 2′ of murky water and boot-sucking muck. Leafy creepers form bushes in the corners of the room and climb the walls, and mould abounds. An altar is barely visible above the flooding.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Two old gargoyles (DMB), Lucianus and Nicodemus, make their home in the steeple. They immediately fly down to challenge any visitors. They are servants of the Church, bound by magic to guard the chapel until the last brick crumbles to dust. The magic prevents them from going farther than 100 yards from the chapel.",
+      "roll_tables": [
+        {
+          "name": "The Gargoyles' Questions",
+          "die_type": null,
+          "description": "Questions posed by the gargoyles to servants of the Pluritine Church",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "To which saint is the bell tower of the Abbey of St Clewyd dedicated? (St Woad.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Which saint stands beside Follyegg Road as it leaves Odd? (St Hamfast.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Which saint gazes over the Valley of Wise Beasts? (St Vinicus, in hex 0905.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "nicodemus",
+        "lucianus"
+      ],
+      "special_features": [
+        "Altar: Holds a saintly icon weathered beyond recognition. The altar has a keyhole in its side that, when unlocked, causes the altar to slide backwards, revealing a staircase into The Flooded Crypt.",
+        "Trial: The gargoyles cryptically state that they guard this site for the worthy. If any servants of the Pluritine Church are in the party, the gargoyles pose a series of questions relating to the Church in Dolmenwood. If characters can successfully answer all of them, the gargoyles open the altar and grant the party access to the crypt below.",
+        "Treasure: The gargoyles' possessions are kept at the top of the steeple: 1,200sp, a golden Chapes holy symbol (150gp), and a silver ring with a carnelian setting shaped like a flower (300gp).",
+        "Flooded crypt: The crypt is entirely flooded with dark water. The floor is covered in 4′ of muddy slime. 1d3 Turns of underwater searching of the muck uncovers an oversized reliquary bust in the likeness of St Sedge. Inside is the long-lost Helm of St Sedge."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "nicodemus",
+      "name": "Nicodemus",
+      "title": "Guardian Gargoyle",
+      "description": "A gargoyle with a lion's body and a long neck. His head is that of a beaked dragon, with a goat's beard and a flicking, forked tongue.",
+      "kindred": "Gargoyle",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Dutiful",
+        "proud",
+        "Keeps the posture of a proper gargoyle at all times"
+      ],
+      "speech": "Eloquent, prone to sprinkling in passages of scripture",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To fulfil his duty as a guardian"
+      ],
+      "secrets": [],
+      "possessions": [
+        "The key to the Flooded Crypt is his tongue, which he can temporarily detach"
+      ],
+      "location": "The Sinking Chapel",
+      "stat_reference": "gargoyle (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "lucianus",
+      "name": "Lucianus",
+      "title": "Guardian Gargoyle",
+      "description": "A gargoyle shaped like a spiky-haired dog with a short wrinkled face and bulging eyes.",
+      "kindred": "Gargoyle",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Slovenly",
+        "crotchety",
+        "Mutters surreptitiously about Nicodemus's \"holy guardian act.\""
+      ],
+      "speech": "Marble-mouthed, snorting",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To be released from his binding"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Sinking Chapel",
+      "stat_reference": "gargoyle (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Helm of St Sedge",
+      "description": "A helm of silvery-white metal styled to resemble a roaring lion. The tresses of its mane are accented with gold and its eyes are glittering rubies. Worth 8,000gp.",
+      "value": "8,000gp",
+      "magical_properties": [
+        "Commanding power: Once a day, the wearer can cast Command (p454) on a Chaotic subject.",
+        "Compulsive candour: Anyone who dons the helmet finds themself unable to tell a lie, though they can remove the helmet at any time."
+      ]
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      233
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

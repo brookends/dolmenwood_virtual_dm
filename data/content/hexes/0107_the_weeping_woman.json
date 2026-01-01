@@ -1,0 +1,81 @@
+{
+  "hex_id": "0107",
+  "coordinates": [
+    1,
+    7
+  ],
+  "name": "The Weeping Woman",
+  "tagline": "Faint, otherworldly pipe music drifts sporadically on the breeze.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Wolfsbane (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Wolfsbane (1d3 portions)"
+    ]
+  },
+  "description": "Near the verge of the forest stands a tall outcropping of lichen-pocked grey stone surrounded by boulders and scattered rubble. The 40′-tall central outcropping—while clearly a natural rock formation—resembles a cloaked female figure, kneeling and facing westward. The figure is known to locals as the Weeping Woman.",
+  "points_of_interest": [
+    {
+      "name": "The Weeping Woman",
+      "poi_type": "natural formation",
+      "description": "A 40′-tall natural rock outcropping that resembles a cloaked female figure, kneeling and facing westward. From dark recesses in the figure's face trickle twin rivulets of cold water that roll down her body and form a stream beneath her. This stream flows north, through part of Dolmenwood, eventually spilling into the dank fens of the Northern Scratch.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        {
+          "name": "The Woman's tears",
+          "description": "From dark recesses in the figure's face trickle twin rivulets of cold water that roll down her body and form a stream beneath her. This stream flows north, through part of Dolmenwood, eventually spilling into the dank fens of the Northern Scratch."
+        },
+        {
+          "name": "Drinking the waters",
+          "description": "The water is deliciously cold and refreshing, with a faint blossomy note. Those who imbibe must Save Versus Spell or begin to perceive faint, piping music of a singularly enchanting nature. The source of the music is unclear, but it seems to drift from the Woman's eyes, along with the water, emanating from an aquifer deep below the world.",
+          "mechanical_effect": "Save Versus Spell or perceive enchanting piping music"
+        },
+        {
+          "name": "Hearing the music",
+          "description": "Those who hear the music of the deeps fall into an enchanted reverie wherein they are compelled to dance and caper at the feet of the Weeping Woman. Dancers perceive elves, fauns, sylphs, and nymphs emerging from the forest to join them in celebration of starlight and moonlight. (Those not affected by the water and the music cannot see these creatures—indeed, they may be purely imaginary, at the Referee's discretion.) They dance into the night and until dawn, when the music fades.",
+          "mechanical_effect": "Compelled to dance until dawn"
+        },
+        {
+          "name": "After the music",
+          "description": "When dawn comes, dancers fall into a slumber at the feet of the Weeping Woman and sleep for 8 hours, magically protected from the elements. If undisturbed, they heal 1d6 Hit Points.",
+          "mechanical_effect": "Sleep 8 hours, heal 1d6 Hit Points if undisturbed"
+        },
+        {
+          "name": "Long-term effects of the music",
+          "description": "All who have danced to the enchanting music dream sporadically, over the next 6 months, of odd, sly-faced elves demanding they \"return the music stolen from the fairy lord of Neveryon.\" (Neveryon is not counted among the fairy realms known to those who study such matters.)",
+          "mechanical_effect": "Dreams for 6 months of elves demanding return of stolen music"
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      198
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

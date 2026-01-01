@@ -1,0 +1,84 @@
+{
+  "hex_id": "0307",
+  "coordinates": [
+    3,
+    7
+  ],
+  "name": "Fungal Forms and the Ascension Stone",
+  "tagline": "Overgrown paths in nonsensical routes, criss-crossing, doubling back, and spiralling into dead ends.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Overgrown paths in nonsensical routes, criss-crossing, doubling back, and spiralling into dead ends. Throughout the hex, lumpy, vibrantly hued fungus grows in unmistakably humanoid shapes, reclining on mossy tussocks among the damp dales. The fungi vary in size from dainty, hand-sized manikins to sprawling, 12′ giants.",
+  "points_of_interest": [
+    {
+      "name": "Humanoid Fungus",
+      "poi_type": "natural feature",
+      "description": "Throughout the hex, lumpy, vibrantly hued fungus grows in unmistakably humanoid shapes, reclining on mossy tussocks among the damp dales. The fungi vary in size from dainty, hand-sized manikins to sprawling, 12′ giants.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Eating: The fungus tastes bland and has no nutritive or special qualities. At night: As dusk falls, mouths bloom open upon the fungi's heads, and begin puffing whispering sighs of coloured spores. PCs who stop to observe hear scattered words among the sighs, relating to their current quest or mission. At the Referee's discretion, the fungi may relay brief words of oracular advice.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "At night, mouths bloom open and puff whispering sighs of coloured spores",
+        "May relay oracular advice related to current quest"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Ascension Stone",
+      "poi_type": "monument",
+      "description": "At the heart of the hex's byzantine labyrinth of paths is a treeless hill. At its summit stands a smooth-sided boulder of black stone, about human height. On its eastern face is a carving of serene, praying woman being lifted into the clouds by a pair of angels. On the western face, the name \"ABYGAIL\" is carved.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Holy spell-casters: Who make an Intelligence Check realise this is the lost site of the legendary Ascension of Abygail, sought by the Pluritine Church. Prayer: Characters praying hear a young woman's voice, asking them to report the stone's location to the current Bishop of Brackenwold.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden at heart of labyrinthine paths",
+        "Intelligence Check for holy spell-casters to recognize significance",
+        "Prayer allows hearing young woman's voice"
+      ],
+      "secrets": [
+        "Lost site of legendary Ascension of Abygail",
+        "150 years ago, Abygail Grynn ascended into heaven from this spot",
+        "Site veiled by influence of Atanuwë"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "Sainthood: Should an official Pluritine Church delegation visit the site and bear witness of its existence to Bishop Sanguine, Abygail will be accepted into the host of saints. The Ascension Stone then becomes a site of pilgrimage and may gain the powers of a shrine with a new holy spell associated with Abygail."
+  ],
+  "dm_notes": "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      220
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "hex_id": "0801",
+  "coordinates": [
+    8,
+    1
+  ],
+  "name": "The Caves of Clan Shaggytree",
+  "tagline": "Rocky crags and barren hills, almost devoid of grass. Strange laughter echoes half-heard on the wind.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d4 cannibals, attempting to capture travellers and drag them back to their lair",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Rocky crags and barren hills, almost devoid of grass. Strange laughter echoes half-heard on the wind.",
+  "points_of_interest": [
+    {
+      "name": "Profane Effigies",
+      "poi_type": "landmark",
+      "description": "Amongst the parched, dusty crags loom scattered figures that, from a distance, look like malformed giants. Each is a gruesome effigy, about 8′ tall—a macabre amalgam composed of the bones of dozens of humans, lashed together with poorly tanned leather strips, topped by a single human skull with an eyeless gaze directed downward.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The effigies psychically alert the cannibals of Clan Shaggytree to the presence of intruders. Clan members watch the intruders through the eyes of the effigies.",
+        "Removing an effigy's skull blinds it, but the vandal must Save Versus Spell or develop a bizarre mutation—a hideously chortling mouth opens somewhere on their body. The mouth can be removed only by magic or by the destruction of the Idol of Atanuwë, in the caves."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Caves of Clan Shaggytree",
+      "poi_type": "cave",
+      "description": "Deep in a maze of rocky defiles and ravines lies the stinking, maw-like entrance to the caves of Clan Shaggytree.",
+      "tagline": null,
+      "entering": "Hidden",
+      "interior": "An endless labyrinth of winding, maddeningly narrow tunnels, echoing constantly with a maniacal laughter. A dank, charnel humidity pervades all.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A family of 50 cannibals, presided over by its progenitors, Sandy and Agnes Shaggytree.",
+      "roll_tables": [],
+      "npcs": [
+        "sandy_shaggytree",
+        "agnes_shaggytree"
+      ],
+      "special_features": [
+        "The clan hall: Some way into the caves sprawls the squalid central cavern of the clan, its walls adorned with the fleshy tapestries of dozens of flayed skins, its floor carpeted with gnawed bones. At any time, 3d6 cannibals lurk here, eating, sleeping, tanning leather, or fashioning spears from bones or wood. 45gp and 6,400sp, gleaned from the cannibals' victims, are scattered about.",
+        "The larder: Dangling from the ceiling of this long, malodorous hallway are the carcasses of hundreds of animals and about a dozen humans, curing with salt harvested from the depths of the caverns.",
+        "The shrine of Atanuwë: In the deepest part of the caves lies a stalactite-encrusted cavern dedicated to the worship of the Nag-Lord, dominated by a massive Idol of Atanuwë. Sandy and Agnes Shaggytree and some 2d4 cannibals supplicate here and provide sacrifices of human carrion to the idol, which whispers darkly in their minds. The offerings disappear when unobserved."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Idol of Atanuwë",
+      "poi_type": "shrine",
+      "description": "A nine-legged monstrosity of primeval stone. Drool issues from the idol's sneering lips in a languid flow, pooling around its stone hooves.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Drinking the drool: Those who drink of the foetid liquid dribbling from the idol must Save Versus Spell or begin to develop strange growths and mutations, while also becoming attuned to the Profane Effigies.",
+        "Destroying the idol: The idol can only be destroyed with magic or blunt magical weapons. Its destruction reverses all mutations caused by the idol or effigies, destroys all psychic links to the effigies, and reveals a compartment beneath containing 3 large, magenta-streaked emeralds (1,500gp each) stolen from the Nag-Lord by the shrine's builders."
+      ],
+      "secrets": [
+        "Contains 3 large, magenta-streaked emeralds (1,500gp each) stolen from the Nag-Lord"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "sandy_shaggytree",
+      "name": "Sandy Shaggytree",
+      "title": "Progenitor of Clan Shaggytree",
+      "description": "One of the parents of all the other cannibals, a criminal runaway who fled the law some decades past and discovered the refuge of the caves and the strange shrine within.",
+      "kindred": "Human (Mutated)",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Maniacal",
+        "voracious",
+        "unwholesomely mirthful"
+      ],
+      "speech": "Guttural snatches of Woldish intermingled with a constant chuckling in a curious cadence that seems to help the cannibals navigate the black tunnels",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Sentient flesh to feast upon and to offer to the idol of their master, Atanuwë"
+      ],
+      "secrets": [
+        "Criminal runaway who discovered the caves and shrine decades ago"
+      ],
+      "possessions": [],
+      "location": "The Caves of Clan Shaggytree",
+      "stat_reference": "cannibal (enhanced)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "agnes_shaggytree",
+      "name": "Agnes Shaggytree",
+      "title": "Progenitor of Clan Shaggytree",
+      "description": "One of the parents of all the other cannibals, a criminal runaway who fled the law some decades past and discovered the refuge of the caves and the strange shrine within.",
+      "kindred": "Human (Mutated)",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Maniacal",
+        "voracious",
+        "unwholesomely mirthful"
+      ],
+      "speech": "Guttural snatches of Woldish intermingled with a constant chuckling in a curious cadence that seems to help the cannibals navigate the black tunnels",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Sentient flesh to feast upon and to offer to the idol of their master, Atanuwë"
+      ],
+      "secrets": [
+        "Criminal runaway who discovered the caves and shrine decades ago"
+      ],
+      "possessions": [],
+      "location": "The Caves of Clan Shaggytree",
+      "stat_reference": "cannibal (enhanced)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Magenta-streaked emeralds",
+      "description": "3 large, magenta-streaked emeralds stolen from the Nag-Lord",
+      "value": "1,500gp each",
+      "location": "Hidden compartment beneath the Idol of Atanuwë"
+    }
+  ],
+  "secrets": [
+    "The Idol of Atanuwë contains 3 large emeralds worth 1,500gp each, stolen from the Nag-Lord"
+  ],
+  "dm_notes": "Cannibals: Medium Mortal—Sentient—Chaotic, Level 2 AC 12 HP 2d8 (9) Saves D12 R13 H14 B15 S16, Att Spear (+1, 1d6, range 20′ / 40′ / 60′) or bite (+1, 1d3), Speed 30 Morale 7 XP 20, Dark sight: Can see normally without light. Fell beings twisted into scuttling, slithering, spindly, half-human forms by the mad caprice of their master, the Nag-Lord. Some possess multiple heads, while others sprout clusters of semi-humanoid arms.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      274
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

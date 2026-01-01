@@ -1,0 +1,130 @@
+{
+  "hex_id": "0102",
+  "coordinates": [
+    1,
+    2
+  ],
+  "name": "Reedwall",
+  "tagline": "Banks of tall reeds and thickets of gnarled bog willow form a natural labyrinth. Passage is laborious.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Sage Toe (p430), in addition to the normal results",
+    "foraging_special": [
+      "Sage Toe (1d3 portions)"
+    ]
+  },
+  "description": "Among the great walls of reeds and willows (6′ tall and often 20′ or more thick), this hex is dotted with slurping pools of thick, black mud.",
+  "points_of_interest": [
+    {
+      "name": "Bones in the mud",
+      "poi_type": "treasure_site",
+      "description": "The remains of unfortunates who perished here are visible in some of the mud pools. Searching these may reveal small treasures: 3d6cp, 1d6sp, and a random item (see Leavings in the Mud) or human or woodgrue trinket (DPB).",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Searching may reveal small treasures: 3d6cp, 1d6sp, and a random item or human or woodgrue trinket",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Leavings in the Mud",
+          "die_type": "d6",
+          "description": "Each item can be found only once. Re-roll duplicates if players search repeatedly.",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "A finely detailed 8″ wooden figurine of a barrowbogey (DMB) worth 2gp. The jug head is removable, revealing a compartment containing three bunches of human hair, each tightly bound in catgut.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "wooden barrowbogey figurine"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "A mini-cask of Cobsworth Pale Ale (DPB, 4gp / 8 pints). Surprisingly, it is unspoiled. Sadly, it is unlabelled.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "mini-cask of Cobsworth Pale Ale"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "A pair of rotting, putrid, severed human lower legs, held together at the ankles with rusting manacles. The manacles bear the crest of House Murkin.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "manacles with House Murkin crest"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "A leather scroll tube sealed with wax. Inside is a crude map of the region around the Upper Hameth. There is an \"X\" drawn at a point corresponding to hex 0202, with the Liturgic word \"Sedge\" next to it. (This indicates the location of the lost Shrine to St Sedge.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "map to Shrine to St Sedge"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "A pair of professionally carved ivory dice. Rolling them repeatedly shows them to be loaded: one favouring 6, the other favouring 1. (If one of the dice is thrown, roll 1d8, with 1–6 indicating the rolled result, and 7 or 8 indicating the favoured number.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "loaded ivory dice"
+              ],
+              "mechanical_effect": "Roll 1d8: 1-6 = rolled result, 7-8 = favoured number"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "A delicate porcelain doll of an elf, one arm missing. An hour after being cleaned off, the doll stands up, appraises her surroundings, curtsies to the PCs, and with a wry and playful look, vanishes. She reappears clad in finery, smiling and with arm intact, for 1d3 nights in a random PC's dreams.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "magical porcelain elf doll"
+              ],
+              "mechanical_effect": "Appears in random PC's dreams for 1d3 nights"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Getting lost: Characters who get lost in this hex spend the day wandering in circles, unable to find a way out of the maze. They remain lost in the hex until their daily check for losing direction does not indicate getting lost again. At night: At night, wisps of mauve, indigo, and orange mist drift from the mire. Characters who fall asleep here must Save Versus Doom or be stricken with a state of dreamlessness lasting for 2d6 days. Effects of Dreamlessness: Wisdom loss: –1 Wisdom every second day. A character reaching 0 Wisdom becomes utterly vacant, lost in a world of phantasms. Once dreams return, lost Wisdom is recovered at a rate of 1 point per night's rest. Difficulty memorising illusions: A character attempting to memorise a spell of illusion (e.g. Phantasm, Invisibility, etc.) must make a Save Versus Spell or fail to memorise it—the spell memorisation slot remains empty.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      193
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

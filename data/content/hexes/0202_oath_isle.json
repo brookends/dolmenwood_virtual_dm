@@ -1,0 +1,131 @@
+{
+  "hex_id": "0202",
+  "coordinates": [
+    2,
+    2
+  ],
+  "name": "Oath Isle",
+  "tagline": "Countless pools, streams, and rivulets draining into the Upper Hameth. Moss-covered willows pervade.",
+  "region": "Northern Scratch",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Northern Scratch",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Countless pools, streams, and rivulets draining into the Upper Hameth. Moss-covered willows pervade.",
+  "points_of_interest": [
+    {
+      "name": "Oath Isle",
+      "poi_type": "isle",
+      "description": "A small isle—little more than a heaping of mossy stones, 100 yards across—sits amid the wide shallows of the Upper Hameth as the river seeps through the swamp. A grove of dark, broken-limbed pines clings to the isle, creaking in the breeze.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The lost knight Sir Tegwyn the Disloyal lives a forlorn existence in the rude hut.",
+      "roll_tables": [],
+      "npcs": [
+        "sir_tegwyn_the_disloyal"
+      ],
+      "special_features": [
+        "Signs of habitation: A building of rough stone is visible through the trees. See The Knight's Abode."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Knight's Abode",
+      "poi_type": "hut",
+      "description": "A squat, skewed hut constructed of the same moss-covered stones as the isle on which it stands. Appears to be a partial ruin, shored up and made once more habitable by recent work. A meagre smoke drifts from the chimney.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A single, dingy room, 15′ square, with a bed of reeds, tables and chairs of stacked river stones, and racks of drying fish. Opposite the fireplace hang a gleaming suit of armour and sword (see Sir Tegwyn's possessions).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The lost knight Sir Tegwyn the Disloyal lives a forlorn existence in the rude hut.",
+      "roll_tables": [],
+      "npcs": [
+        "sir_tegwyn_the_disloyal"
+      ],
+      "special_features": [
+        "Visitors: Sir Tegwyn desperately welcomes any visitors to his forsaken isle, offering them a humble meal of marsh fish and reed tea."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Sedge",
+      "poi_type": "shrine",
+      "description": "The lost wayside shrine to St Sedge lies submerged in the swamp in the far north of the hex, only the tiled ridge of its roof still visible.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Statue of St Sedge: Austere stone, 3′ high, depicting St Sedge dressed in knightly armour with a sword.",
+        "Prayer: If the shrine is extracted from the mud and cleaned, characters praying may receive the blessing of St Sedge: the ability to cast Bless Weapon. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "sir_tegwyn_the_disloyal",
+      "name": "Sir Tegwyn the Disloyal",
+      "title": "Level 3 Knight",
+      "description": "A scrawny, once handsome human man with distant grey eyes and raggedly trimmed silver beard and hair. Appears to be in his late middle years. Dresses in the threadbare remnants of once fine garb. Regular bathing in the Hameth keeps him clean, despite his rude circumstances. Served in Fort Vulgar (hex 0604) 100 years ago, but is now cursed to remain on Oath Isle and age but never die (see Curse).",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Noble bearing belies his ragged appearance",
+        "Crazed, desperate look in his eyes"
+      ],
+      "speech": "Scattered, faltering. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Longs for a magical means to escape Oath Isle"
+      ],
+      "secrets": [
+        "Tegwyn sought the Lady of Spring Unending (hex 0402), wishing to behold her fabled beauty. The fey Lady fell in love with the young knight, but cursed him upon discovering his unfaithfulness with several of her maids. Banished to Oath Isle and cursed with immortality, he has dwelt alone here since, unable to leave and unable to die. His curse can be ended only via magic or by convincing the Lady to lift it."
+      ],
+      "possessions": [
+        "A Holy Longsword (Undead Bane, p412), inlaid with Old Woldish script: \"Talleghon, bane of the deathless.\" (Tegwyn dwells on the strange fate of such a weapon accompanying his own deathless existence.)"
+      ],
+      "location": "The Knight's Abode",
+      "stat_reference": "Level 3 Knight",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Rewards: Would loyally serve any who could release him from his curse (see Curse).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      204
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

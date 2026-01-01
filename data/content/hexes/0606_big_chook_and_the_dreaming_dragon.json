@@ -1,0 +1,155 @@
+{
+  "hex_id": "0606",
+  "coordinates": [
+    6,
+    6
+  ],
+  "name": "Big Chook and the Dreaming Dragon",
+  "tagline": "Cold, choppy waters, 300′ deep, wracked with chaotic winds.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "aquatic",
+  "terrain_description": "Aquatic / craggy forest, Dwelmfurgh",
+  "terrain_difficulty": null,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Aquatic encounters are 3-in-6 likely to be with Big Chook",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Cold, choppy waters, 300′ deep, wracked with chaotic winds. Those who brave the choppy waters of this hex occasionally hear a demented, cockerel-like wailing echoing across the lake. This is the cry of the abominable lake monster known as Big Chook. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Big Chook's Lair",
+      "poi_type": "lair",
+      "description": "In the north-eastern reaches of the hex, voyagers notice a curious eddying in the lake's waters. Explorers with water-breathing ability who follow the eddy downwards arrive at a whirling vortex of sludge at the lakebed, some 300′ below the surface. Those entering the vortex are drawn into the dream-lair of the Big Chook.",
+      "tagline": null,
+      "entering": "Explorers with water-breathing ability who follow the eddy downwards arrive at a whirling vortex of sludge at the lakebed, some 300′ below the surface. Those entering the vortex are drawn into the dream-lair of the Big Chook.",
+      "interior": "A great aquatic cavern hung with scintillating stalactites and carpeted with groping fronds of purple seaweed as long as horses. Schools of orange, cyclops-eyed fish dart among the weeds, gazing at intruders.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Big Chook (3-in-6 chance of being at home) plus its mates: 3 giant pikes (DMB), hiding in the seaweed. Opposing side has a 3-in-6 chance of being surprised.",
+      "roll_tables": [],
+      "npcs": [
+        "big_chook"
+      ],
+      "special_features": [
+        "Treasure: Piled at one side of the cavern are hundreds of slime covered, fish-eaten corpses—the remains of the Chook's victims. Among them can be found 329pp, 8,394gp, 5,667sp, 9,400cp, 50 × 250gp value gems, a shimmering black suit of Fairy Chainmail (p400), a thorn-like Arcane Spear (p412), a red-bladed Holy Shortsword (Treacherous, p412), a Fairy Jar (p420), and a magically-waterproofed scroll, written in High Elfish, with clear directions to the secret entrance to the hidden embassy of the Cold Prince at the Falls of Naon (hex 0504)."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Dreaming Dragon",
+      "poi_type": "hidden",
+      "description": "Buried within a 50′ wide mound of mud that seethes with eels at the lakebed is the water-dragon Gheillough (p37). The Wood God lies in a dream-wracked torpor, poisoned by the noxious emanations of Atanuwë (p45).",
+      "tagline": null,
+      "entering": "Digging into the mud: Reveals the Wood God's coiled, comatose form—a silver-scaled water-dragon, 80′ long, with lolling orange tongue and teeth like crystal shards.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Gheillough, the water-dragon Wood God",
+      "roll_tables": [],
+      "npcs": [
+        "gheillough"
+      ],
+      "special_features": [
+        "Scrying: Veiled by the emanations of Atanuwë, Gheillough is invisible to scrying magic.",
+        "Awakening: While Big Chook is manifest, Gheillough cannot be awoken. If Big Chook is slain, powerful magic (e.g. a wish, a Staff of Cancellation, or Dispel Magic versus a Level 24 caster) can weaken Atanuwë's hold on Gheillough enough to awaken it.",
+        "Slaying: The comatose Wood God can be slain with a single blow from a magical, bladed weapon.",
+        "If slain or awoken: See Gheillough, p37 for details on the effects this would have on Dolmenwood as a whole."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "big_chook",
+      "name": "Big Chook",
+      "title": null,
+      "description": "An awful chimera, 30′ long, with the body of a pike and three cockerel's heads on the end of scaly, sinuous necks. The monster's whole body is covered in pink, orange, and rust scales, dotted with horrid barbs and blind, weeping eyes. Although it manifests as a physical being, the Big Chook is in truth an emanation of the nightmares of the sleeping Wood God Gheillough.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Chaotic",
+      "demeanor": [],
+      "speech": "Demented, cockerel-like wailing",
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "In truth an emanation of the nightmares of the sleeping Wood God Gheillough"
+      ],
+      "possessions": [],
+      "location": "Big Chook's Lair",
+      "stat_reference": "Level 14 AC 17 HP 100 Saves D4 R5 H6 B7 S8, Att [3 bites (+10, 1d8+2) and 2 claws (+10, 2d6)] or wail (mind melt) Speed 20 Swim 60 Morale 10 XP 4,550",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "gheillough",
+      "name": "Gheillough",
+      "title": "Wood God",
+      "description": "A silver-scaled water-dragon, 80′ long, with lolling orange tongue and teeth like crystal shards. The Wood God lies in a dream-wracked torpor, poisoned by the noxious emanations of Atanuwë.",
+      "kindred": "Water-dragon",
+      "alignment": null,
+      "demeanor": [
+        "Comatose",
+        "dream-wracked"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "Poisoned by the noxious emanations of Atanuwë"
+      ],
+      "possessions": [],
+      "location": "The Dreaming Dragon",
+      "stat_reference": "See Gheillough, p37",
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Fairy Chainmail",
+      "description": "A shimmering black suit of Fairy Chainmail",
+      "value": null,
+      "reference": "p400"
+    },
+    {
+      "name": "Arcane Spear",
+      "description": "A thorn-like Arcane Spear",
+      "value": null,
+      "reference": "p412"
+    },
+    {
+      "name": "Holy Shortsword",
+      "description": "A red-bladed Holy Shortsword (Treacherous)",
+      "value": null,
+      "reference": "p412"
+    },
+    {
+      "name": "Fairy Jar",
+      "description": "A Fairy Jar",
+      "value": null,
+      "reference": "p420"
+    },
+    {
+      "name": "Scroll to Cold Prince Embassy",
+      "description": "A magically-waterproofed scroll, written in High Elfish, with clear directions to the secret entrance to the hidden embassy of the Cold Prince at the Falls of Naon (hex 0504)",
+      "value": null,
+      "reference": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Effect of hearing Big Chook's wail: Up close (240′ or closer), the wail of Big Chook has magical effect (see Mind Melt under Big Chook combat stats). At greater distance it is merely unnerving. Mind melt: All within 240′ who hear the cockerel-like wailing of the Chook must Save Versus Spell. Those who fail are stricken with fear and flee for 1 Turn. Those within 90′ additionally lose 1d6 points of Wisdom and 1d6 points of Intelligence, permanently. If killed: As a dream emanation, Big Chook cannot be truly slain. If reduced to 0 HP, it dissipates in a noisome purple cloud, which drifts to the location of Gheillough. The Chook then reappears upon the next night of the full moon.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      255
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

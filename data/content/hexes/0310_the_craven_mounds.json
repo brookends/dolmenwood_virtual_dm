@@ -1,0 +1,79 @@
+{
+  "hex_id": "0310",
+  "coordinates": [
+    3,
+    10
+  ],
+  "name": "The Craven Mounds",
+  "tagline": "Eerie silence. The loose soil seethes with carnivorous beetles.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with an insect swarm (DMB)—the flesh-eating beetles that swarm this hex",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Scattered throughout the hex are earthen mounds, some up to 10′ high, devoid of any vegetation or fungi. They are topped with clusters of large boulders. Every boulder has a side covered by a carved face, invariably a visage depicting at once torment and wickedness. The stone is not of local origin. Chiselled in ancient days by the Drune, these boulders were carved in effigy of woods-folk chiefs who bowed to the Cold Prince and refused to join the Triple Compact. By use of most horrendous ritual the Drune pulled the souls from these chieftains and their heirs and bound them within the stones to scream silently until the sun grows cold. The Drune dub this prison the 'Craven Mounds.'",
+  "points_of_interest": [
+    {
+      "name": "Mounds and Boulders",
+      "poi_type": "cursed site",
+      "description": "Scattered throughout the hex are earthen mounds, some up to 10′ high, devoid of any vegetation or fungi. They are topped with clusters of large boulders. Every boulder has a side covered by a carved face, invariably a visage depicting at once torment and wickedness. Those who have spent time in the hills and crags of the High Wold may notice that the stone is not of local origin.",
+      "tagline": null,
+      "entering": null,
+      "interior": "When night falls, the tormented spirits of the fallen chiefs begin to drip from the maws and eyes of the effigies. They seep down into the cold, loose earth in hopes of finding mortal bodies to infest and use as temporary hosts with which to take out their fury on the Drune. Most have little luck beyond parleying with the petty minds of beetles.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Tormented spirits of fallen chiefs bound within the stones",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Any mortal or demi-fey foolish enough to rest here must Save Versus Doom. Those who succeed retch up the gruesome spirits attempting to possess them; those unfortunate souls who fail become thralls to the liquid slithering shadows until dawn or until dragged from this hex"
+      ],
+      "secrets": [
+        "History: Chiselled in ancient days by the Drune, these boulders were carved in effigy of woods-folk chiefs who bowed to the Cold Prince and refused to join the Triple Compact. By use of most horrendous ritual the Drune pulled the souls from these chieftains and their heirs and bound them within the stones to scream silently until the sun grows cold"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Elsa",
+      "poi_type": "shrine",
+      "description": "The point of a tiled roof is all the remains visible of the lost shrine to St Elsa, submerged beneath a mound of loose soil, writhing with carnivorous beetles. A simple wayside shrine with wooden sides and a tiled roof. A wooden carving depicting St Elsa atop a tall tower, gazing up to heaven.",
+      "tagline": "Hidden",
+      "entering": "Clearing the shrine: Treat the swarming beetles as an insect swarm (DMB)",
+      "interior": "Structure: A simple wayside shrine with wooden sides and a tiled roof. Statue of St Elsa: A wooden carving depicting St Elsa atop a tall tower, gazing up to heaven.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Carnivorous beetles (insect swarm)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the shrine is cleared, characters praying may receive the blessing of St Elsa: the ability to cast Communion. See Shrines, p22"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead"
+  ],
+  "dm_notes": "Shadow's Thralls: Those possessed by the dripping shadows are drained of colour, and appear as amalgams of spectral and rotten flesh. Size, Type, Intelligence as Original—Chaotic. Level 2 AC 14 HP 2d8 (9) Saves D12 R13 H14 B15 S16. Att Touch (+1, 1d6 + chill) Speed 30 Morale 12 XP 35. Possessed: Despite its appearance, a shadow's thrall is possessed, not undead, and cannot be turned. Chill touch: Victims lose 1 Strength per hit, with death at 0 Strength. Lost Strength recovers at dawn. Dawn light: The touch of the light of dawn exorcises and defeats a shadow, ending the possession and returning the thrall to their normal state. Dragging from hex 0310: Dragging a shadow's thrall from this hex also ends the possession.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      223
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

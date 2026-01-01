@@ -1,0 +1,79 @@
+{
+  "hex_id": "0612",
+  "coordinates": [
+    6,
+    12
+  ],
+  "name": "The Staring Stones",
+  "tagline": "Rugged, tussocky grasses and prodigious thistle patches. Rabbits roam in great numbers.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Moonhaw (DPB), in addition to the normal results. The berries only have their magical effect if harvested at night, under the light of the moon.",
+    "foraging_special": [
+      "Moonhaw (1d3 portions, only effective if harvested at night under moonlight)"
+    ]
+  },
+  "description": "The sloping expanses of wild grassland in this hex are dotted with hundreds of boulders, ranging from 10′ to 50′ tall.",
+  "points_of_interest": [
+    {
+      "name": "Stony Faces",
+      "poi_type": "natural formation",
+      "description": "The sloping expanses of wild grassland in this hex are dotted with hundreds of boulders, ranging from 10′ to 50′ tall.",
+      "tagline": null,
+      "entering": "Viewed up close, many of the boulders bear a vague resemblance to humanoid faces, some staring at travellers, proudly upright, others toppled and reclining in the grass, their eyes gazing at the heavens.",
+      "interior": null,
+      "exploring": "The boulders appear to be natural formations, showing no signs of having been carved or worked.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Staring Stones",
+      "poi_type": "stone circle",
+      "description": "Concealed in an overgrown dell in the gentle slope of the meadows is a ring of six oblong stones, standing 8′ high, each formed into the visage of a specific animal: a spider, a bird, a cat, a dog, a goat, a cow.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Standing before one of the animal statues and gazing into its eyes, a character must Save Versus Hold or be transformed into an animal of that type, along with all clothing and equipment, until the following dawn. (A character who knows the effects of the stones may willingly fail the Saving Throw.)",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Transformation stones - each depicts a specific animal (spider, bird, cat, dog, goat, cow)",
+        "Transformed characters retain their own wits, but cannot speak or use any Class skills or magical capabilities",
+        "2-in-6 chance of taking on behavioural trait of the animal for the following week after transformation ends"
+      ],
+      "secrets": [
+        "Hidden in an overgrown dell"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      261
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

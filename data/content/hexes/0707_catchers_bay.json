@@ -1,0 +1,109 @@
+{
+  "hex_id": "0707",
+  "coordinates": [
+    7,
+    7
+  ],
+  "name": "Catcher's Bay",
+  "tagline": "Cloudy shallows, 50′ deep, choked with rotting branches and teeming with fish.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "aquatic/tangled forest",
+  "terrain_description": "Aquatic / tangled forest, Dwelmfurgh",
+  "terrain_difficulty": null,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Aquatic or lakeshore encounters are 2-in-6 likely to be with Big Chook",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "The shore of Lake Longmere forms a wide, sandy beach called Catcher's Bay, frequented by the special breed of angler who dares ply their trade under the enchanted eaves of Dolmenwood. Visitors to the bay include shorthorns from neighbouring Shagsend (hex 0708), and other folk from further afield, all willing to brave the boggin hazard for the chance to net rare squids and other catches. The waters here are famed as the singular location in which the squids known as maids-o'-the-lake lurk and may be caught. Characters exploring the shores of this hex have a 2-in-6 chance of attracting the attention of 1d6 boggins. The area is feared as a favoured prowling spot of these water monsters.",
+  "points_of_interest": [
+    {
+      "name": "Submerged Manse of the Boggins",
+      "poi_type": "submerged manse",
+      "description": "Some 300 yards into the lake, a submerged manse of domes and twisted spires is visible beneath the lake surface.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Cramped, weed-choked chambers alternating with expansive galleries. In the cellars is a locked room containing the manse's treasures, as well as a tunnel that winds below the lakebed into a claustrophobic series of rough-hewn, sludgy, aquatic caverns. These caves, illuminated by slow-moving bioluminescent fish, are a large ore mine.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "20 boggins and 20 human captives. The captives' despondent faces are smeared with the foetid, greenish boggin vomit that allows them to breath underwater. Most of them work in the mine.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Trading with the boggins: The boggins are always eager to obtain new mining implements to replace those lost or damaged. In return, they offer like-valued amounts of metals, as well as succulent live eels which they vehemently insist taste better than maids-o'-the-lake.",
+        "The boggins fiercely deter visitors, though insistent and respectful conversation can convince them to offer barter to adventurers."
+      ],
+      "secrets": [
+        "The manse was once the home of a great sorcerer, known in legends as Hysanth the Amphibious, who accidentally created the boggins in a magical mishap. The magician is long dead, but the hateful boggins have multiplied and spread throughout Dolmenwood.",
+        "The eels are birthed in an unceasing stream from a nameless magical 'giant' who lies slumbering in deep mud somewhere in the lake to the north-west. (The 'giant' is Gheillough, sleeping in hex 0606, though the boggins do not know this.)"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Rumours from Fisherfolk",
+      "die_type": "d3",
+      "description": "Conversing with the bored, loquacious fisherfolk, adventurers may hear about",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "The danger from the boggins.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "The presence of the maids-o'-the-lake.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "The allure of 'good times' (said with a wink) with one Agnel ('definitely not a maid-o'-the-lake'), who lives in a cottage a little way east around the lake, beside the Hameth (hex 0807).",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Boggins' Hoard",
+      "description": "A great store of rare ores of zinc and marsh-copper (worth 5,000 gp—valued by alchemists and arcane spell-casters), a Crystal Ball, a pearl Amulet of Breath, and a damaged metal-and-glass contraption that appears to be a derelict subaquatic single passenger vehicle (an arcane spell-caster may offer up to 2,500gp for it).",
+      "value": "7,500+ gp",
+      "location": "Locked room in cellars of Submerged Manse"
+    }
+  ],
+  "secrets": [
+    "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure."
+  ],
+  "dm_notes": "Characters exploring the shores have a 2-in-6 chance of attracting 1d6 boggins. Maids-o'-the-lake can be caught here.",
+  "adjacent_hexes": [
+    "0606",
+    "0606",
+    "0708",
+    "0807"
+  ],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      268
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

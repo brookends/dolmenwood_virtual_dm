@@ -1,0 +1,77 @@
+{
+  "hex_id": "0610",
+  "coordinates": [
+    6,
+    10
+  ],
+  "name": "Lankston Pool",
+  "tagline": "Gently rolling hills populated mostly by sheep and dotted with shepherds' bothies.",
+  "region": "High Wold",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Gently rolling hills populated mostly by sheep and dotted with shepherds' bothies. Under the eaves of the wood lies a region of marshland centred around a large, murky pool.",
+  "points_of_interest": [
+    {
+      "name": "Lankston Pool",
+      "poi_type": "marshland",
+      "description": "Under the eaves of the wood lies a region of marshland centred around a large, murky pool. This is the former site of the town of Lankston, now wholly submerged in the sludge of the pool. Lankston Pool is shunned by local folk, being regarded as haunted—and, in this respect, the locals are very much correct. The former inhabitants of the town exist in a deathless state, lying in a dreamless sleep amongst the reeds and slime of the pool.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A rotting, slime-filled cluster of wooden dwellings lies at the bed of the pool, 20′ below the surface. Adventurers with a penchant for aquatic exploration may be able to extract small trinkets from the sunken town, although most of the objects possessed of old by the inhabitants of Lankston are now reduced to sludge.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The former inhabitants of the town exist in a deathless state, lying in a dreamless sleep amongst the reeds and slime of the pool. At night, under the pale glow of strange fires, the bodies in the pool rise as bog corpses (2d6 on any given night) and emerge, shambling through the woods in search of the living.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Moss-covered sign: A dilapidated, moss-covered sign bearing the inscription \"Lankston\" stands close to the south edge of the pool.",
+        "Spire: The only hint of the lost town, apart from the signpost, is a slime-covered stone spire rising out of the murk at the centre of the pool—the steeple of the sunken church.",
+        "At night: Strange fires flicker over the waters. Under the pale glow of the fires, the bodies in the pool rise as bog corpses (2d6 on any given night) and emerge, shambling through the woods in search of the living. Victims are dragged into the pool, increasing the \"population\" of the submerged town.",
+        "Sunken church: The eerily throbbing left hand of Saint Howarth the Accursed lies, perfectly preserved, in the reliquary of the sunken church. The miserable fate of this town was brought about by the presence of this relic; the original owner's fall from grace caused an immediate reversal in the miracles associated with him."
+      ],
+      "secrets": [
+        "Removing the hand from the pool: The curse on Lankston is lifted, allowing the undead inhabitants to finally rest in death."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The Hand of St Howarth",
+      "description": "An eerily throbbing, mummified left hand, preserved in a striking semblance of life. Scars on the palm depict a Chapes holy symbol, bleeding as if freshly incised.",
+      "location": "Sunken church reliquary",
+      "value": "20,000gp",
+      "magical_properties": [
+        "Cursed: Jealously possessive of the hand, cannot discard it, and attempts to hide it from others.",
+        "Chaos speech: Can speak with all Chaotic creatures.",
+        "Insidious lies: Once a day, can convince a single person of the absolute veracity of a statement made. Such lies cannot be detected by magic.",
+        "Grafting: The owner may cut off their own hand and attach the relic. Doing so causes a permanent loss of 1d4 Hit Points and bestows the ability to make a paralysing touch attack thrice a day (Save Versus Hold or be paralysed for 6 Turns: aware but unable to move or act)."
+      ]
+    }
+  ],
+  "secrets": [
+    "The miserable fate of this town was brought about by the presence of the Hand of Saint Howarth the Accursed; the original owner's fall from grace caused an immediate reversal in the miracles associated with him.",
+    "Removing the hand from the pool lifts the curse on Lankston, allowing the undead inhabitants to finally rest in death."
+  ],
+  "dm_notes": "At night, 2d6 bog corpses rise from the pool and shamble through the woods seeking the living. Victims are dragged into the pool, increasing the population of the submerged town.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      259
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "hex_id": "0505",
+  "coordinates": [
+    5,
+    5
+  ],
+  "name": "Hoarblight Keep and the Isle of Yeth",
+  "tagline": "High grounds beside the lake, clad with misty pine woods. The air here is motionless and chill.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Goatsweed (p430), in addition to the normal results",
+    "foraging_special": [
+      "Goatsweed (1d2 portions)"
+    ]
+  },
+  "description": "High grounds beside the lake, clad with misty pine woods. The air here is motionless and chill. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Hoarblight Keep",
+      "poi_type": "keep",
+      "description": "High upon an outcropping of stone, a fearsome castle surveys the waters of Longmere. Clad in shimmering frost, centuries old, but pristine as the first snow of winter.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The contents of the keep are beyond the scope of this book, but may be elaborated in a future publication (or by the Referee).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Cliffs: Sheer chalk cliffs, 150′ high, riddled with lichens and patches of sickly violet fungus",
+        "Stairway: A stair is carved into the cliff side, winding its way up from the banks of Longmere to the woods before the outer walls of the keep",
+        "Outer walls: The extent of the keep's grounds is bounded by a sturdy brick wall, overgrown with ivy. Many gates and secret doors pierce the wall; most are warded with tricksome fairy magic",
+        "Gardens: Within the wall, one finds a fantastic and vast array of gardens, hedge mazes, follies, grottoes, lodges, and plazas. Many of these places are haunted with strange presences that have lingered since ages long past",
+        "Lingering fairy magic: Though the Cold Prince and his allies are banished from Dolmenwood, some of his magic lingers in Hoarblight Keep and its grounds"
+      ],
+      "secrets": [
+        "History: The keep was the seat of the Cold Prince's dominion in Dolmenwood, whence he ruled for centuries unknown, before the coming of mortal folk to the Wood"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Isle of Yeth",
+      "poi_type": "island",
+      "description": "The cliff-sided Isle of Yeth bisects the lake here for nigh 3 miles. The steep, chalky, guano-streaked cliffs rise to a height of 200′ above the waters of the lake.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Dense and utterly untamed forest, without path or glade. Few animals live here, but bats and birds are numerous.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Hundreds of hairbats roost here",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Caves in the cliffs: The sides of the cliffs are riddled with delvings, some leading to caves of substantial size. Hundreds of hairbats roost here"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Ruined Tower",
+      "poi_type": "tower",
+      "description": "At the northern tip of the Isle of Yeth, a wide, square tower pierces the canopy of the woods. Even when viewed from the shore, it is obvious that the tower is little more than a shell.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "At night: An eerie, green glow hangs above the tower"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Locus of Ertta",
+      "poi_type": "locus",
+      "description": "On Windswept Nights: The distant raging of the Falls of Naon (hex 0504) and the keening of the air stimulate the manifestation of the Locus of Ertta the Devouring Mother (see Witches, p72).",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "When the locus is manifest, 2d6 witches—eyes of Ertta (DMB) fly to the locus and gather in the green glow above the tower",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The Locus of Ertta: Manifests as a 30-yard-diameter, misty green glow wavering above the summit of the ruined tower",
+        "Witches: When the locus is manifest, 2d6 witches—eyes of Ertta (DMB) fly to the locus and gather in the green glow above the tower. They stand in mid air, as if the luminescence is solidified, and conduct their rites of communion with the Gwyrigon who has dominion over age, death, and decay"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Hairbats: Giant bats with 3′ wingspans, ugly, snarling visages, and great, floppy mops of green or orange hair upon their heads. They are harmless if left alone. Small Animal—Animal Intelligence—Neutral Level 1 AC 13 HP 1d8 (4) Saves D12 R13 H14 B15 S16 Att Bite (+0, 1d3) Fly 60 Morale 6 XP 10",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      242
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

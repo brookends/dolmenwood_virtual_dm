@@ -1,0 +1,98 @@
+{
+  "hex_id": "0312",
+  "coordinates": [
+    3,
+    12
+  ],
+  "name": "Mother Goat's Place",
+  "tagline": "Placid grasslands dotted with cave-riddled sandstone outcroppings.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Daytime encounters are 1-in-6 likely to be with 1d3+2 bandits (Level 1 thieves—DMB) and 1d3+2 shorthorns (DMB)—members of the gang based in hex 0311. Opposing side has a 3-in-6 chance of being surprised, due to bandits hiding in the woods. Nighttime encounters are 3-in-6 likely to be with 1d4+2 wolves (DMB), who taunt PCs in growled Woldish and attack if they outnumber the party.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Placid grasslands dotted with cave-riddled sandstone outcroppings. Bove's Road is a well-frequented roadway skirting the edge of Dolmenwood. South of the road, open meadows and plains stretch as far as the eye can see, while to the north, a gentle upward slope climbs for about a mile until it reaches the eaves of the ancient wood.",
+  "points_of_interest": [
+    {
+      "name": "Mother Goat's Place",
+      "poi_type": "inn",
+      "description": "At a bend in the road near the north-western corner of the hex is a sprawling, ramshackle inn maintained by a shorthorn woman (DMB), Mother Goat, and her 7 kids.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Shouting, laughter, and bleating contrast with the silence of the lands outside. Mother Goat is always at the centre of things, telling bawdy jokes or chastising rowdy patrons. The interior stinks of goatish sweat.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Mother Goat and her 7 kids. Most of the inn's visitors are shorthorn and human merchants travelling between Nodding Castle (hex 0210) and the High Wold settlements to the east, but intrepid hunters, adventurers, and even the occasional longhorn sometimes make their way here.",
+      "roll_tables": [],
+      "npcs": [
+        "mother_goat"
+      ],
+      "special_features": [
+        "Sign: A goat and wolf head facing each other in profile, a steaming tureen beneath them.",
+        "Wolf visitors: Shortly after sundown, 1d4+2 wolves (DMB) scratch at the inn's doors and windows. Mother Goat and regular guests are untroubled by the sounds. At times the innkeeper may be seen conversing in hushed tones through a window with the creatures, which speak surprisingly eloquent Woldish, in gravelly tones. The wolves are friendly with Mother Goat and her kids, and would fight to protect them.",
+        "Mother Goat's wolf: In the wee hours, bestial moaning sometimes can be heard from Mother Goat's room as she entertains her favourite wolf.",
+        "Rumours and intrigue: The establishment lies within the territory of Lord Ramius (p65), who is indifferent to activities at the inn to the point of sometimes forgetting its existence. Patrons thus speak freely, making the inn a hub of gossip about goings-on in the High Wold (see High-Hankle Rumours, p447 and Lankshorn Rumours, p448).",
+        "Services: Lodgings and food of common quality (DPB). Mother Goat insists upon payment in exact change; those without exact change must wash dishes. 'Mother's Surprise': A dish of stewed game meats served on a choucroute of field grasses, at 1sp per small helping. The types of meat are a 'special secret,' according to Mother Goat; in truth they are muskrat, vole, and shrew, from kills delivered to her doorstep in the jaws of her lupine paramour as tokens of his affection."
+      ],
+      "secrets": [
+        "Treasure: Mother Goat keeps two chests in her room: one with 1,375cp and one with 1,925sp. She also has a golden chalice worth 130gp (obtained from someone who didn't have exact change and didn't want to wash dishes)."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mother_goat",
+      "name": "Mother Goat",
+      "title": "Shorthorn Landlady",
+      "description": "A youthful, lithe-limbed shorthorn woman with coarse brown fur with yellow spots. Wears colourful patchwork dresses and always has a mop close at hand.",
+      "kindred": "Shorthorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Merry",
+        "ribald"
+      ],
+      "speech": "Shrill vibrato. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Unusual cheeses of all kinds",
+        "Wishes to set up a cheese manufactory alongside the inn"
+      ],
+      "secrets": [
+        "Has heard rumour of a creature made of cheese deep in the woods of Dwelmfurgh. (Hex 0405.)"
+      ],
+      "possessions": [
+        "Two chests: one with 1,375cp and one with 1,925sp",
+        "Golden chalice worth 130gp"
+      ],
+      "location": "Mother Goat's Place",
+      "stat_reference": "shorthorn woman (DMB)",
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Bove's Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      225
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

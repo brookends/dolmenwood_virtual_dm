@@ -1,0 +1,152 @@
+{
+  "hex_id": "0805",
+  "coordinates": [
+    8,
+    5
+  ],
+  "name": "Prigmarinn Hill",
+  "tagline": "Elegant silver birches in chalky soil. An occasional tall hill punctuates the flat terrain.",
+  "region": "Aldweald / Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Nighttime encounters on the road are 2-in-6 likely to be with the ghost of Dewidort of Smerne (see hex 0607)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Elegant silver birches in chalky soil. An occasional tall hill punctuates the flat terrain.",
+  "points_of_interest": [
+    {
+      "name": "Mallowheart's Repose",
+      "poi_type": "inn",
+      "description": "A decrepit manor house with a peculiar turret at one end stands upon a hill overlooking Lake Longmere. The place now functions as an inn.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A high-ceilinged hall lined with dented wooden panels. The landlord, Sedgewick Ulmer, serves drinks from what appear to be bookshelves. The atmosphere is usually subdued and folk keep themselves to themselves, for it is said that Drune spies frequent the inn.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Way-weary merchants, guards, and soldiers, travelling between Fort Vulgar and Castle Brackenwold.",
+      "roll_tables": [],
+      "npcs": [
+        "sedgewick_ulmer"
+      ],
+      "special_features": [
+        "Sign: A blue-skinned, pointed-eared fop (supposedly the fairy Prince Mallowheart, see p34) recoiling as a door is slammed in his face",
+        "Turret rooms: Fancy suites overlooking the lake. 5gp a night",
+        "Lodgings of common quality, food of fancy quality"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Prigmarinn Hill and The Pillar of Ambule",
+      "poi_type": "hill",
+      "description": "The Fort Road passes the southern side of a low hill, some half a mile in diameter, known to locals as Prigmarinn Hill. A stairway of protruding, rough-hewn blocks of slate ascends from the road.",
+      "tagline": null,
+      "entering": "A stairway of protruding, rough-hewn blocks of slate ascends from the road",
+      "interior": "Reveals a wide, flat, treeless plateau. At its centre stands a 20′ tall column of roughly hewn chalk.",
+      "exploring": "Approaching the column causes a brisk wind to pick up, blotting out any sounds from the wood below. Many hundreds of names—both exotic and utterly mundane—are carved into the chalk.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Carving one's name: The character promises their soul, wittingly or unwittingly, to the forgotten Wood God Ambule",
+        "Carving another's name: Has no effect. The same is true for defacing or removing names from the chalk"
+      ],
+      "secrets": [
+        "Wood God Ambule lies sleeping in the chalky chasms beneath the hill"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Gawyn's Bridge",
+      "poi_type": "bridge",
+      "description": "A slender, covered bridge that crosses the chaos-tainted River Shub. Noisome black foam collects about its pilings, glowing purple at nighttime. Further downstream, great encrusted floes of foam can be spied, dissolving into the waters of Lake Longmere.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Purple glowing foam at nighttime"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Chaffer Bridge",
+      "poi_type": "bridge",
+      "description": "A bridge of crumbling stone that spans the River Shiver. Its end posts are carved with Green Man visages and Chapes holy symbols.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Green Man visages and Chapes holy symbols carved on end posts"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "sedgewick_ulmer",
+      "name": "Sedgewick Ulmer",
+      "title": "Mallowheart's Repose Proprietor",
+      "description": "A fresh-faced human bachelor with curly, blond locks and a habit of dressing in extravagant violet lace. Recently inherited the inn from his uncle.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Hurried",
+        "somewhat confused",
+        "Habitually wipes sweat from his brow"
+      ],
+      "speech": "Country manners. Rushes off before finishing sentences. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To find a partner (business or romantic) who knows how to run an inn"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Mallowheart's Repose",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley Line Chell: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold",
+    "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure",
+    "Consequences of Pledging to Ambule: Remove curse (nullification of one curse or baleful enchantment), Save bonus (+2 permanent bonus to Saving Throws against curses), Nightly dreams of being chained to the chalk column and consumed by mosses and lichens, Upon death the character's spirit is summoned to this place and bound to eternal servitude"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Fort Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      278
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

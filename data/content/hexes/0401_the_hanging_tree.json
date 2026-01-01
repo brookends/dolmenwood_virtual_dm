@@ -1,0 +1,75 @@
+{
+  "hex_id": "0401",
+  "coordinates": [
+    4,
+    1
+  ],
+  "name": "The Hanging Tree",
+  "tagline": "Sodden ground with heaps of decaying plant matter. Twisting wisps of yellowish mist grasp at travellers.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Sodden ground with heaps of decaying plant matter. Twisting wisps of yellowish mist grasp at travellers.",
+  "points_of_interest": [
+    {
+      "name": "Wisp Lake",
+      "poi_type": "lake",
+      "description": "A broad, shallow expanse of brackish, yellowish water, shunned by all living creatures. Wisps of mist dance and twirl above the lake's surface at all times.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Roiling fog: An unholy sympathy exists between the eerie waters of Wisp Lake and the gallowgeist spirits that haunt the Hanging Tree on its shore. While gallowgeists pursue adventurers, a thick fog rolls off the lake, making navigation difficult. The chance of getting lost rises to 4-in-6."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Hanging Tree",
+      "poi_type": "tree",
+      "description": "Near the western shore of Wisp Lake, a great tree stands gnarled and dead amidst a small copse of willows. 5 corpses dangle unmistakably from its twisted branches like macabre fruit.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Inspecting the corpses: Reveals them to be identical to the bodies of up to five of the PCs, down to the smallest scar or blemish. Carved into the flesh of each corpse is a word or short phrase describing the worst crime or vice of the person mimicked (e.g. \"murder,\" \"theft,\" or \"greed\") in the course of their travels in Dolmenwood.",
+      "leaving": "Departing: The hanging corpses are gallowgeists and pursue once the party is out of sight, accompanied by a roiling fog (see Wisp Lake).",
+      "inhabitants": "Gallowgeists",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "History: Many years past, the now-abandoned village of Smerne (hex 0301) used the tree for hanging accused criminals—both the guilty and the innocent. The spirits of the hanged inhabit the tree, with several manifesting as the gallowgeists."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      226
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

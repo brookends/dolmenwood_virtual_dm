@@ -1,0 +1,69 @@
+{
+  "hex_id": "0706",
+  "coordinates": [
+    7,
+    6
+  ],
+  "name": "Phantom Isle",
+  "tagline": "Cold, clear waters, 200′ deep, abounding with drifting islets of tangled pondweed.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "aquatic",
+  "terrain_description": "Aquatic, Dwelmfurgh",
+  "terrain_difficulty": null,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Shimmering mirage-like above the waters of Lake Longmere, 2 miles from the shore, can be seen the apparition of a small, low island clad with dark, mournful cypresses surrounding a pillared mausoleum. At midnight: The isle becomes real for 1 hour and may be landed upon. At other times: The isle wavers and vanishes if a living soul approaches within 100 yards.",
+  "points_of_interest": [
+    {
+      "name": "The Mausoleum",
+      "poi_type": "mausoleum",
+      "description": "In the centre of the isle is a crumbling mausoleum fronted with grey marble pillars clad with ivy and carved with stark likenesses of elfish knights.",
+      "tagline": null,
+      "entering": "Great double doors of black wood, in the shadow of the pillars. A Glyph of Locking (Level 5 caster) and brass lock in the form of a skull seal the doors. The key is kept in the Drune Lodge (0507).",
+      "interior": "Stairs lead down to a 120′ long, pillared hall, lined with burial niches. In each niche is a human skeleton wrapped in black silk. At the far end of the hall stands a powerful Drune artefact: the Mirror of Canticorl.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A basilisk (DMB) is chained in the middle of the hall, in the pitch darkness, hungry for flesh. It is trained to ignore living creatures if presented with fresh meat.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Mirror of Canticorl"
+      ],
+      "secrets": [
+        "Originally a tomb for elf knights who died honourably serving the Cold Prince, the structure has been commandeered by the Drune as a vault to secure the Mirror. It still holds honourable dead: in this case, past Drune minders of the vault, interred here with their charge after death."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The Mirror of Canticorl",
+      "type": "artifact",
+      "description": "A 4′ high oval mirror of glimmering black crystal, set in a frame of filigreed fairy silver, depicting antlered skulls. The mirror is an ancient Drune artefact, a window into a dimensional prison in which a powerful astral entity known as Canticorl is trapped.",
+      "value": "30,000gp",
+      "magical_properties": "Approaching within 5′: Summons Canticorl, manifesting in the mirror's surface as a plaintive face of purple and blue mist. Canticorl can dredge knowledge from unspeakable dimensions. Each week, it may give a truthful yes/no answer to a single question. Subsequent questions within a week receive no answer and the questioner must Save Versus Hold or be turned to stone.",
+      "special_notes": "The mirror can only be harmed by magic, and takes 75 HP of damage before shattering. Destroying the mirror instantly destroys Canticorl and the dimensional prison in a cataclysm of fire and brimstone, permanently vaporising the island and killing all creatures in a 3-mile radius. Successfully spiriting the mirror from the island enrages the Drune, who use all their resources to track down and recover it."
+    }
+  ],
+  "secrets": [
+    "Each night, there is a 1-in-6 chance of 1d4 Drune cottagers (DMB) rowing to the isle. They wear Lenses of Reflection (p404) to counteract the gaze of the basilisk that guards The Mausoleum, and bring sacks of fresh meat to feed it."
+  ],
+  "dm_notes": "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      267
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

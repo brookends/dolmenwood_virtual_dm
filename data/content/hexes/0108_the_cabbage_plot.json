@@ -1,0 +1,101 @@
+{
+  "hex_id": "0108",
+  "coordinates": [
+    1,
+    8
+  ],
+  "name": "The Cabbage Plot",
+  "tagline": "Field after field of turnip, leek, radish, and rye. A hint of rotting cabbage drifts on the breeze.",
+  "region": "High Wold",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely to be with a gang of Murkin's Soldiers",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "A patchwork of fields, country lanes, farms, and little clusters of dwellings crowds this hex in the domain of the cruel Lord Murkin. Blackened, rotting cabbages with an unusual crown-like shape notably fill a number of fields bordering the West Road. The common folk of this area, angered by Lord Murkin's petty laws and crippling taxes, are on the verge of revolt. Timilda Brumble has led a secret plot to destroy this year's harvest of crown cabbages, in an attempt to draw the duke's attention to Lord Murkin's tyranny.",
+  "points_of_interest": [
+    {
+      "name": "The Crimson Bath",
+      "poi_type": "inn",
+      "description": "Two miles from the gates of Kolstoke Keep (0208), the West Road passes through a cluster of dwellings and outbuildings known as the hamlet of Shrivelbyne. At the centre of the hamlet is a tall, wonky inn.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A poky, smoke-filled room lit only by the grate opposite the entrance. Miniature portraits of bears dressed as nobility dot the walls. Timilda Brumble and her husband Grerg—a human from Dreg—serve from a tree-trunk bar. An acrid reek occasionally wafts up from the cellar, when the door is opened.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Rowdy farmhands, a mix of humans and shorthorns. The mood veers between tomfoolery, raucous jigs, conspiratorial whispering, and drunken screeds against Murkin. A gang of Murkin's Soldiers drops by to harass the inn's patrons most evenings.",
+      "roll_tables": [],
+      "npcs": [
+        "timilda_brumble"
+      ],
+      "special_features": [
+        "Sign: A portly longhorn gentleman relaxing in a bath of red wine. The gentleman depicted is the previous Lord Murkin (the current Lord Murkin's father).",
+        "The cellar: Concealed behind a stack of barrels is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot.",
+        "Services: Lodgings and food of poor quality. Bedrooms lean noticeably and creak disconcertingly. Poodden pie: Timilda's speciality: a pie of blackberries, apple, and custard. Significantly surpasses the quality of all other food available here. 2sp a serving."
+      ],
+      "secrets": [
+        "Concealed behind a stack of barrels is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "timilda_brumble",
+      "name": "Timilda Brumble",
+      "title": "Crimson Bath Proprietor",
+      "description": "An elderly shorthorn woman with tan fur, a silver nose, and missing front teeth. Dresses in layers of woollen shawls and skirts. A respected community elder, Timilda is also the secret leader of the plots against Lord Murkin.",
+      "kindred": "Shorthorn",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Mild-mannered",
+        "sweetly smiles",
+        "Shrewd",
+        "scheming"
+      ],
+      "speech": "Slow, rustic lilt",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "The dethronement of Lord Murkin, preferably to be replaced by his cousin Lady Borrid (0109)",
+        "To keep the plots against Murkin from deteriorating into violence"
+      ],
+      "secrets": [
+        "Secret leader of the plots against Lord Murkin",
+        "Brews vegetable poison for the Cabbage Plot"
+      ],
+      "possessions": [
+        "Vat of acrid, black liquid—a vegetable poison"
+      ],
+      "location": "The Crimson Bath inn",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "The cabbages have been secretly poisoned by locals rebelling against Murkin's tyranny",
+    "Natives of the High Wold recognise these as 'crown cabbages,' a highly prized export of the region, especially beloved by Duke Brackenwold"
+  ],
+  "dm_notes": "Investigating the cabbages: If PCs linger, there is a 2-in-6 chance of a gang of Murkin's Soldiers arriving to harass them on suspicion of destroying the valuable crops. Murkin's Soldiers: Unruly gangs composed of 1d4 humans (Level 1 fighters—DMB) and 1d4 shorthorns (DMB). Tasked with recruitment (press-gang working class youths) and rooting out rebels (capture those responsible for the Cabbage Plot). Any successfully recruited are taken to the camp in hex 0109.",
+  "adjacent_hexes": [],
+  "roads": [
+    "West Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      199
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

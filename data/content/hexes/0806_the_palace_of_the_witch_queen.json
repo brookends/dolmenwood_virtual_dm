@@ -1,0 +1,134 @@
+{
+  "hex_id": "0806",
+  "coordinates": [
+    8,
+    6
+  ],
+  "name": "The Palace of the Witch Queen",
+  "tagline": "Gently rising and falling beech woods beside cold, clear waters, 200′ deep.",
+  "region": "Aldweald / Dwelmfurgh",
+  "terrain_type": "aquatic / tang. forest",
+  "terrain_description": "Aquatic / tang. forest, Aldweald / Dwelmfurgh",
+  "terrain_difficulty": null,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Aquatic encounters are 2-in-6 likely to be with Big Chook (p253)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Gently rising and falling beech woods beside cold, clear waters, 200′ deep. A sheet of ephemeral, white flame traces the course of Chell in this hex, forming a barrier separating the lakeshore and adjoining woods from the lands to the east. Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Wall of White Flame",
+      "poi_type": "barrier",
+      "description": "A sheet of ephemeral, white flame traces the course of Chell in this hex, forming a barrier separating the lakeshore and adjoining woods from the lands to the east.",
+      "tagline": null,
+      "entering": "Touching the flame is harmless and does not burn. Characters must Save Versus Doom (fairies at a –4 penalty) or experience paranoid visions of watching faces until leaving this hex.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Afflicted characters suffer a –2 penalty to saves against magic and are automatically surprised in encounters"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Eastern Shore of Lake Longmere",
+      "poi_type": "lakeshore",
+      "description": "A few feet from the shoreline, sheer underwater cliffs abruptly descend 200′ to the lakebed. Fronds of indigo kelp line the cliffs, waving in the currents.",
+      "tagline": null,
+      "entering": "The eels serve the Queen of All Witches (p75), alerting her of intruders in these waters.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Swarms of silvery eels dart among the kelp",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "At the base of the cliffs, a secret door sealed with a Glyph of Locking (Level 12 caster) among the kelp leads to a water-filled tunnel to the Grotto and gateway"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Palace of the Witch Queen",
+      "poi_type": "palace",
+      "description": "Hidden palace accessible through underwater tunnel and grotto.",
+      "tagline": null,
+      "entering": "The underwater tunnel ends at the bottom of a murky, 10′ deep pool. Swimming to the fog-wreathed surface, visitors find themselves in a tall grotto lined with scintillating crystals of azure, violet, and pearl. At the far end of the grotto looms a great stone gateway into the palace proper, guarded by the Belwycht.",
+      "interior": "Rounded tunnels and domed chambers carved into living bedrock, lit by white flames that flicker within violet geodes. Elegant suites are furnished with pearl-studded divans, silk-draped beds, exquisite watercolours of otherworldly landscapes, and obsidian statuettes of the Gwyrigons. The art objects are worth 40,000gp total.",
+      "exploring": "Intruders are charmed and interrogated, then drowned in the pool of the Belwycht.",
+      "leaving": null,
+      "inhabitants": "Celenia, the Queen of All Witches (p75) and 6 witches (DMB—2 Eyes of each Gwyrigon)",
+      "roll_tables": [],
+      "npcs": [
+        "the_belwycht"
+      ],
+      "special_features": [
+        "Library: Behind an alabaster door, a ring of domed chambers contains a great trove of witch history and lore, as well as a set of black mirrors that allow one to magically view the lake and the woods in this hex. All spells known to the witches can be located here.",
+        "Celenia's chambers: Accessible only by passing through illusory walls. Celenia dwells amid statues of the Witch Queens of old. The Selenite Mirror hovers 20′ above the floor, rotating slowly in mid-air."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_belwycht",
+      "name": "The Belwycht",
+      "title": null,
+      "description": "A 15′ tall stag-headed humanoid cloaked in violet mist, holding a graven copper bell. This creature of ancient magic is tasked with guarding the Queen of the Witches, and allows entry to none but those in her service.",
+      "kindred": "Ancient Magic Creature",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Grim",
+        "unswayable"
+      ],
+      "speech": "Stern whispering. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Guard the Queen of the Witches"
+      ],
+      "secrets": [],
+      "possessions": [
+        "The Wyrdbell—may be rung once a day, producing the arcane spell Word of Doom. The bell is worth 15,000gp as a magic item."
+      ],
+      "location": "The Palace of the Witch Queen",
+      "stat_reference": "As mugwudge (DMB) with 45 HP, immune to non-magical damage",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Selenite Mirror",
+      "description": "A lambent, milky mirror wrought of selenite. This is one of the Mirrors of Embala (see p75).",
+      "value": null,
+      "magical": true,
+      "powers": "The true appearance of all things reflected in the selenite mirror is revealed. Illusions and invisibility are stripped away. Magic and Alignment are revealed as coloured auras. The true form of shape-changed creatures is exhibited.",
+      "curse": "After looking into the mirror, a character's sleep for 7 nights is wracked with feverish dreams of diving into the unfathomable darkness of the Groaning Loch, drowning in the embrace of a great serpent."
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      279
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

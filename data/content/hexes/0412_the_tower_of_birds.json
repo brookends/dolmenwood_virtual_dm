@@ -1,0 +1,96 @@
+{
+  "hex_id": "0412",
+  "coordinates": [
+    4,
+    12
+  ],
+  "name": "The Tower of Birds",
+  "tagline": "Wild grassland dotted with isolated farmsteads and the odd ruined fortification.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Wild grassland dotted with isolated farmsteads and the odd ruined fortification.",
+  "points_of_interest": [
+    {
+      "name": "The Tower of Birds",
+      "poi_type": "tower",
+      "description": "A tower of dark stone clad with climbing roses stands amid an expanse of rolling, arable fields. Crows and ravens wheel about its summit, their cawing drifting on the wind. The tower is the base of the ancient Order of Warffles.",
+      "tagline": null,
+      "entering": "A high brick wall, overgrown with ivy, rings the four acres around the tower. A narrow portcullis, guarded by 4 shorthorns (DMB), allows entry.",
+      "interior": "Four storeys of warm, wood-floored passages, drawing rooms, dining halls, and bedchambers, arranged to a circular layout. Decorated with ancient heraldic tapestries and antique, embroidered furnishings.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Commander Fannigrew Lockelope, 3 human Warffles (Level 3 fighters—DMB) and 5 longhorn Warffles, and a small staff of shorthorn servants. The atmosphere is hushed, as the Lady lives in mourning.",
+      "roll_tables": [],
+      "npcs": [
+        "fannigrew_lockelope"
+      ],
+      "special_features": [
+        "Wall and gate: A high brick wall, overgrown with ivy, rings the four acres around the tower. A narrow portcullis, guarded by 4 shorthorns (DMB), allows entry.",
+        "Gardens: The grounds within the wall are beautifully laid out gardens, burgeoning with aromatic herbs and flowers. Twittering songbirds observe strangers quizzically. A winding, gravelled path leads to the tower door.",
+        "Pond: A family of swans glides across a placid pond at the rear of the tower.",
+        "The inner garden: An ancient, low door opens to a magical interior garden—seemingly wider than the tower itself—wet with dew and lit by a scintillating, golden glow. Ferns, rambling roses, and honeysuckle thrive here. At the centre is a 6′ marble statue of a frore gryphus (see 0105)—a long-necked hawk, clad in frost, with its wings spread wide. An archaic Caprice inscription at the base reads 'The Gryphus serves the tower's lords as its brethren serve the Prince.' The statue magically draws birds to the tower."
+      ],
+      "secrets": [
+        "History: The tower is an ancient fairy stronghold, captured by the order in the wars with the Cold Prince."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "fannigrew_lockelope",
+      "name": "Fannigrew Lockelope",
+      "title": "Commander Warffle",
+      "description": "A longhorn woman in her 30s with a long, slender face, ebony horns, and dark brown fur streaked with white. Lockelope is the sole survivor of a disastrous attempt, several years prior, to capture the monstrous Bicorne (0510) at the behest of Lord Ramius (p65). She is still in mourning for her elder sister Hrobe, who was among those slain by the monster. She remains salty toward Ramius, but does not blame him.",
+      "kindred": "Longhorn",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Sombre",
+        "distant"
+      ],
+      "speech": "Reserved, enunciated",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "The death of the Bicorne",
+        "The recovery of her sister's remains from its lair, including the locket that was an heirloom of their Order",
+        "Honouring and maintaining the Order's traditions"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A serrated Arcane Longsword (p412)",
+        "A ruby pendant (2,000gp)",
+        "A shining, horned suit of Fairy Plate Mail (p400)"
+      ],
+      "location": "The Tower of Birds",
+      "stat_reference": "Level 6 Knight",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Visitors: Politely refused, unless they bring news relating to High Wold politics or the Bicorne (0510). Reward: May grant honorary membership of the Order of Warffles—including a sash and the right to dwell in the tower—for the return of her sister's remains and the locket. Such honourees must also agree to carry out occasional missions for the Order. Knowledge: Detailed information about the Bicorne, including its lair, treasure hoard, and paralysing breath.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      237
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

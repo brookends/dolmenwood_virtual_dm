@@ -1,0 +1,106 @@
+{
+  "hex_id": "0207",
+  "coordinates": [
+    2,
+    7
+  ],
+  "name": "The Summerstone Radhd",
+  "tagline": "A dense, shadow-oppressed maze of trees. The air is utterly still and coagulates with the gloom.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A dense, shadow-oppressed maze of trees. The air is utterly still and coagulates with the gloom. The woods around the Summerstone Radhd are under a Drune enchantment that causes light to dwindle and falter.",
+  "points_of_interest": [
+    {
+      "name": "The Shadowed Bower",
+      "poi_type": "enchanted forest",
+      "description": "The woods around the Summerstone Radhd are under a Drune enchantment that causes light to dwindle and falter.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Heavy, sluggish air: Breathing here is laboured and sound is muted. Darkness: As characters journey deeper into the hex, a dusk-like darkness settles in. Without a light source or dark sight, the gloom incurs a –1 penalty to Attack Rolls. Flames: Subdued and sputtering. The radius of light cast by lanterns and torches is reduced by 50%. Shades: Characters perceive spectral forms, as if of hooded men, observing them disapprovingly. The forms are illusory and disappear if attacked. These apparitions are a manifestation of the presence of the Audrune Grebglin, who wards the nodal Radhd.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Audrune Grebglin wards the nodal Radhd",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_grebglin"
+      ],
+      "special_features": [
+        "Heavy, sluggish air - breathing laboured, sound muted",
+        "Darkness incurs -1 penalty to Attack Rolls without light",
+        "Light radius reduced by 50%",
+        "Illusory hooded shades observe disapprovingly"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Summerstone Radhd",
+      "poi_type": "standing stone",
+      "description": "The Summerstone Radhd, also known as the Stone of Law, is a ragged shard of basalt (15′ high, 8′ around) lost in a pathless tangle of hawthorn.",
+      "tagline": "Hidden",
+      "entering": "Within 60 yards triggers the protective wrath of the Audrune Grebglin, the stone-ward. 3 werephasms are conjured into existence to stalk those who dare come near to the Stone of Law.",
+      "interior": "Balmy stillness: The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer. Inscribed spell: Drunic runes describe the arcane spell Geas. Touching: While touching the stone, lies can be detected without fail and oaths that are sworn are enforced via a Geas (per the arcane spell).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Guarded by the Audrune Grebglin",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_grebglin"
+      ],
+      "special_features": [
+        "120-yard radius of balmy warmth and stillness",
+        "Inscribed with Geas spell in Drunic runes",
+        "Touching allows lie detection and enforces sworn oaths via Geas"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_grebglin",
+      "name": "The Audrune Grebglin",
+      "title": "Stone-ward",
+      "description": "Grebglin has abandoned his physical form and now exists solely within the flow of the ley energies around the stone Radhd. His body lies in temporal stasis, ritually interred in the crypts of the Drune Lodge (hex 0507).",
+      "kindred": "Drune",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Protect the Summerstone Radhd"
+      ],
+      "secrets": [
+        "Physical body lies in temporal stasis in Drune Lodge crypts (hex 0507)"
+      ],
+      "possessions": [],
+      "location": "The Summerstone Radhd",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      209
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

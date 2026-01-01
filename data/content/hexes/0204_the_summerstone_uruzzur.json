@@ -1,0 +1,138 @@
+{
+  "hex_id": "0204",
+  "coordinates": [
+    2,
+    4
+  ],
+  "name": "The Summerstone Uruzzur",
+  "tagline": "Squelching mud punctuated with clumps of purple-leafed reeds and granite spires and boulders.",
+  "region": "Northern Scratch / Dwelmfurgh",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Squelching mud punctuated with clumps of purple-leafed reeds and granite spires and boulders. Close to the centre of the hex, the boggy ground dips and forms a 100-yard-wide, sludge-bottomed basin, 10′ deep at its centre. At the very centre of the basin, raised upon an 11′-high column of white marble, is a 15′-high shard of basalt—the Summerstone Uruzzur.",
+  "points_of_interest": [
+    {
+      "name": "Mud Basin",
+      "poi_type": "basin",
+      "description": "A 100-yard-wide, sludge-bottomed basin, 10′ deep at its centre. At the very centre of the basin, raised upon an 11′-high column of white marble, is a 15′-high shard of basalt—the Summerstone Uruzzur.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer. Though the basin appears empty, it is in fact filled with magically invisible water secreted by the Summerstone. Anyone entering experiences the odd sensation of splashing, wetness, and water pressure, without any visual sign of the liquid.",
+      "exploring": "At the base of the column (submerged in the invisible water) lie four human skeletons, some armoured, reaching towards the column as if desperately trying to climb it. Swimming alerts the stone-ward—the Audrune Mestmord—to the presence of intruders. Unless they come on Drune business, the Audrune summons the 3 frost fiends guarding the invisible waters.",
+      "leaving": null,
+      "inhabitants": "The Audrune Mestmord guards the stone, and 3 frost fiends protect the invisible waters.",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_mestmord"
+      ],
+      "special_features": [
+        "Balmy stillness: The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air",
+        "Invisible water: Basin filled with magically invisible water",
+        "Skeletons: Four human skeletons at base of column",
+        "Swimming alerts the Audrune Mestmord",
+        "Searching skeletons yields treasure"
+      ],
+      "secrets": [
+        "Adventurers able to swim to the bottom of the pool and search the skeletons find an iridescent black suit of Fairy Chainmail, a silver, winged Helm of Realignment, a quiver of 10 crystal-tipped Arcane Arrows, and 350gp"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Summerstone Uruzzur",
+      "poi_type": "standing_stone",
+      "description": "A ragged shard of basalt (15′ high, 8′ around). The column upon which it rests keeps it 1′ above the basin's invisible waterline. Also known as the Wetstone.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Drunic runes describe the arcane spell Water Breathing.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Inscribed spell: Drunic runes describe the arcane spell Water Breathing",
+        "Touching grants water breathing ability and +4 bonus to Saving Throws against fire for 1d3 days"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_mestmord",
+      "name": "The Audrune Mestmord",
+      "title": "Audrune",
+      "description": "Mestmord has abandoned his physical form and now exists solely within the flow of the ley energies around the stone Uruzzur. His body lies in temporal stasis, ritually interred in the crypts of the Drune Lodge (hex 0507).",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Protect the Summerstone Uruzzur"
+      ],
+      "secrets": [
+        "His physical body lies in temporal stasis in the crypts of the Drune Lodge (hex 0507)"
+      ],
+      "possessions": [],
+      "location": "The Summerstone Uruzzur",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Fairy Chainmail",
+      "description": "Iridescent black suit of Fairy Chainmail",
+      "location": "Skeletons at base of column",
+      "value": null,
+      "reference": "p400"
+    },
+    {
+      "name": "Helm of Realignment",
+      "description": "Silver, winged Helm of Realignment",
+      "location": "Skeletons at base of column",
+      "value": null,
+      "reference": "p406"
+    },
+    {
+      "name": "Arcane Arrows",
+      "description": "Quiver of 10 crystal-tipped Arcane Arrows",
+      "location": "Skeletons at base of column",
+      "value": null,
+      "reference": "p412"
+    },
+    {
+      "name": "Gold",
+      "description": "350gp",
+      "location": "Skeletons at base of column",
+      "value": "350gp",
+      "reference": null
+    }
+  ],
+  "secrets": [
+    "Ley Line Chell: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold",
+    "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure"
+  ],
+  "dm_notes": "Frost Fiends: Evil spirits of frost bound by Drune magic to protect the pool around Uruzzur. Though the water of the pool from which they form is invisible, the frost fiends are visible as jagged, serpent-like extrusions of ice with malevolent human faces. Medium Monstrosity—Semi-Intelligent—Chaotic. Level 3 AC 15 HP 3d8 (13) Saves D11 R12 H13 B14 S15. Att Strike (+2, grab) Speed 40 Morale 9 XP 90. Formation: Take 2 Rounds to form. Grab: The victim must Save Versus Hold or be dragged underwater. Each Round in this state, they suffer 1d4 damage and must Save Versus Doom or become unconscious. Unless the frost fiend is killed, an unconscious victim dies after 3 Rounds. Immunities: Only suffer 1 point of damage from sharp weapons. Vulnerabilities: Double damage from fire attacks. Return from death: If killed (0 HP), they reform with full HP in 2 Rounds. Can only be killed permanently by holy magic (e.g. Holy Fire, Purify Food and Drink). Water-bound: Must remain in water.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      206
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

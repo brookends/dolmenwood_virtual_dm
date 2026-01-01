@@ -1,0 +1,142 @@
+{
+  "hex_id": "0211",
+  "coordinates": [
+    2,
+    11
+  ],
+  "name": "The Tea Tent and the Dreaming Snail",
+  "tagline": "Wild, rolling meadows of knee-high grass inhabited by legions of curious rabbits.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6 (2-in-6 at night)",
+    "encounter_notes": "Encounters are 1-in-6 likely (2-in-6 likely at night) to be with 1d3+2 bandits (Level 1 thieves—DMB) and 1d3+2 shorthorns (DMB)—members of the gang based in hex 0311. Opposing side has a 3-in-6 chance of being surprised, due to bandits hiding in the woods.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Wild, rolling meadows of knee-high grass inhabited by legions of curious rabbits. Along Bove's Road is a well-frequented roadway skirting the edge of Dolmenwood. To the south, there are endless leagues of windswept meadows, while the north offers only the brooding, sentient presence of the ancient wood. In winter: Frequent gusts blowing unimpeded over the rolling plains chill travellers to the bone. In summer: Exposed in the open with no shade, the summer sun beats down on travellers with thirst and prickling sweat. Psychic snail emanations: Those with some degree of psychic sensitivity (arcane spell-casters or the psionically gifted) may experience flash images of snail-covered bodies when traversing this stretch of road. These emanate from the giant psionic snail (DMB) that lies in a century-long slumber, curled in its moss-covered shell, resting in a ditch beneath the forest eaves to the north.",
+  "points_of_interest": [
+    {
+      "name": "The Tea Tent",
+      "poi_type": "tent",
+      "description": "Alongside the road, about halfway across the hex, a bright pink, conical tent is erected. A snail-emblazoned banner flaps outside and smoke chuffs merrily from a stovepipe. During clement weather, wooden stools and benches may be seen arrayed near the entrance.",
+      "tagline": null,
+      "entering": "One encounters the proprietor, a man who calls himself Smalding Borotrope, as well as 1d6 other visiting travellers.",
+      "interior": "In copper vessels atop a cast iron stove, Smalding cooks up a refreshing brew of tea, which he offers at 2cp a mug.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Smalding Borotrope and 1d6 other visiting travellers",
+      "roll_tables": [],
+      "npcs": [
+        "smalding_borotrope"
+      ],
+      "special_features": [
+        "Tea time: Smalding's hot tea proves to be just the thing to beat back the chill from the grassland gales of winter, and his iced tea is the perfect antidote to the thirst of summer road travel. In any season, staying, resting a while, and enjoying at least two mugs of the tea has a remarkably recuperative effect upon weary travellers (heal 1 HP).",
+        "More emanations of the snail: The tent and its proprietor, while they appear real to those who encounter them, are psychic projections of the giant snail.",
+        "Detecting and dispelling: Spells such as Dweomerlight reveal the quasi-real nature of the tea tent. Casting Dispel Magic causes the scene to vanish and the snail to awaken."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Dreaming Snail",
+      "poi_type": "hidden",
+      "description": "In a damp depression amid a thicket of ferns in the woods north of the road lies a giant psionic snail (DMB), deep in slumber.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Moss-coated shell: The snail is concealed beneath a thick carpet of Mind-Moss (p430). Carefully harvesting a portion requires a Dexterity Check. Failing the check awakens the snail.",
+      "leaving": null,
+      "inhabitants": "Giant Psionic Snail",
+      "roll_tables": [],
+      "npcs": [
+        "giant_psionic_snail"
+      ],
+      "special_features": [
+        "Mind-Moss covering"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "smalding_borotrope",
+      "name": "Smalding Borotrope",
+      "title": null,
+      "description": "The psionic snail usually interacts with the world via its projected dream avatar: a rotund human man with slimy skin, a wiry moustache, and a preposterous hat.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Garrulous",
+        "cordial",
+        "a bit nosey"
+      ],
+      "speech": "Loquacious, prone to odd non-idiomatic phrases. Strangely-accented Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Invariably delighted to chat with travellers, offer them a cup of refreshing brew, and hear stories"
+      ],
+      "secrets": [
+        "Is a psychic projection of the giant psionic snail"
+      ],
+      "possessions": [
+        "Tea brewing equipment",
+        "copper vessels",
+        "cast iron stove"
+      ],
+      "location": "The Tea Tent",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "giant_psionic_snail",
+      "name": "Giant Psionic Snail",
+      "title": null,
+      "description": "10′-round, deep purple shell, covered in moss. The snail's body is orange and its curious eyes are golden.",
+      "kindred": "Giant Psionic Snail",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Surprised and disgruntled at being awoken"
+      ],
+      "speech": "Sagacious, obtuse. Telepathic projection.",
+      "languages": [
+        "Telepathic"
+      ],
+      "desires": [
+        "If friendly, asks for feedback on Borotrope's verisimilitude; otherwise wishes only to be left alone and return to slumber and projection"
+      ],
+      "secrets": [
+        "Projects the dream avatar Smalding Borotrope and the Tea Tent"
+      ],
+      "possessions": [
+        "Mind-Moss covering"
+      ],
+      "location": "The Dreaming Snail (Hidden)",
+      "stat_reference": "giant psionic snail (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Make a Reaction Roll (see Encounters—DPB), modified by any previous interactions with Borotrope when the snail is awakened.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Bove's Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      213
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

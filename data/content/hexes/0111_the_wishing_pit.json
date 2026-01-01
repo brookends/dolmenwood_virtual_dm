@@ -1,0 +1,173 @@
+{
+  "hex_id": "0111",
+  "coordinates": [
+    1,
+    11
+  ],
+  "name": "The Wishing Pit",
+  "tagline": "Scrubby grassland dotted with fern-capped knolls. Old hedgerows and walls demarcate disused arable fields.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Scrubby grassland dotted with fern-capped knolls. Old hedgerows and walls demarcate disused arable fields. About four miles west of Nodding Castle (hex 0210), travellers along the West Road notice makeshift hand-painted signs and carvings, with prominent arrows pointing southward along trails to the 'Wishing Pit.'",
+  "points_of_interest": [
+    {
+      "name": "Roadside Signs and Trails",
+      "poi_type": "trail",
+      "description": "About four miles west of Nodding Castle (hex 0210), travellers along the West Road notice makeshift hand-painted signs and carvings, with prominent arrows pointing southward along trails to the 'Wishing Pit.'",
+      "tagline": null,
+      "entering": "Following the trails: The trails seem blazed by visitors' feet, pack animal hooves, and wagon wheels. They end near a low hill, topped by a ruin, a small encampment at its base.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Encampment",
+      "poi_type": "camp",
+      "description": "Rough tents and wagons circle small campfires. Encamped here are 2d10+10 assorted pilgrims and merchants.",
+      "tagline": null,
+      "entering": "The party is immediately approached by obvious tricksters and crooks, selling fake Church tokens of luck and protection costing 1d3sp each.",
+      "interior": "Excited locals regale the party with accounts of miracles granted by the pit atop the hill.",
+      "exploring": "Searching: The area around the earthwork reveals wagon tracks leading to and from the hill's southern slope, concealed by mud-coated rugs. Searching the thorny brush here reveals the hidden entrance to the Smugglers' Cave.",
+      "leaving": null,
+      "inhabitants": "2d10+10 assorted pilgrims and merchants, charlatans selling fake tokens",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden entrance to Smugglers' Cave"
+      ],
+      "secrets": [
+        "Wagon tracks concealed by mud-coated rugs",
+        "Hidden entrance to Smugglers' Cave in thorny brush"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Wishing Pit Complex",
+      "poi_type": "shrine",
+      "description": "Atop the hill is an ancient cobblestone parade ground hung with Chapes holy symbol banners. Fallen walls coated in moss lean on each other like standing stones around the perimeter. At its centre stands a decaying, round tower of rough hewn grey stone, its roof collapsed.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Wishing Pit: At the east end of the parade ground is a trapdoor with crank lift system to lower items into the Wishing Pit: a fire pit chamber below. Smoke scented with sage, pine and incense issues from a large grate next to the pit. Stone megaphone: Visiting wishers are addressed by Praephator Lenore via a stone amplification sculpture shaped like a megaphone, mounted near the pit. Round tower: This small, single-story structure contains a single drab chamber with a narrow staircase leading to the crank room in the cave below. 3 shrine staff guard the stair.",
+      "exploring": "To make a wish: One states their wish to Praephator Lenore and offers an item of great personal or financial value.",
+      "leaving": null,
+      "inhabitants": "Praephator Lenore and 8 shrine staff—they appear to the PCs as clergy, but are in fact common thieves",
+      "roll_tables": [],
+      "npcs": [
+        "praephator_lenore"
+      ],
+      "special_features": [
+        "Stone megaphone amplification sculpture",
+        "Crank lift system",
+        "Fire pit chamber"
+      ],
+      "secrets": [
+        "The scam: The shrine staff pretend to burn the items in sacrifice, but actually sell them to travelling merchants and smugglers, with whom they have an accord"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    },
+    {
+      "name": "The Smugglers' Cave",
+      "poi_type": "cave",
+      "description": "The cave beneath the hill is accessible via the stairs from the round tower to the crank room, or via a hidden entrance concealed by thorny bushes in the southern slope.",
+      "tagline": null,
+      "entering": "Hidden entrance: Leads to a guard station, where a single shrine staff member sleeps in a chair leaning against the wall, a large keyring (includes key to storage room) at his waist belt.",
+      "interior": "Crank room: Contains an enormous smouldering fire pit, the crank lift system from the parade ground, and carts to transport the 'sacrifices.' Storage room (locked): An assortment of belongings of varying degrees of personal or commercial value on sagging wooden shelves, worth 180gp altogether.",
+      "exploring": "Weapons hang neatly on hooks or stuck in barrels. A large bell hangs on the wall—if rung, all staff and Praephator Lenore arrive in 1d3 Rounds.",
+      "leaving": null,
+      "inhabitants": "Single shrine staff member at guard station",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Enormous smouldering fire pit",
+        "Crank lift system",
+        "Large bell alarm system"
+      ],
+      "secrets": [
+        "Hidden entrance concealed by thorny bushes",
+        "Storage room contains stolen 'sacrifices' worth 180gp"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "praephator_lenore",
+      "name": "Praephator Lenore",
+      "title": "False Oracle",
+      "description": "A tall human woman with waves of long black hair with a shock of white at the temples. She dresses like a religious hermit with long, overly dramatic grey robes, embroidered with silver Chapes holy symbols.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Elevated and mysterious",
+        "warm and welcoming tone",
+        "Otherworldly"
+      ],
+      "speech": "Imperious with elongated vowels. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To successfully run this grift without drawing authorities' attention",
+        "She hopes the wishes come true"
+      ],
+      "secrets": [
+        "Running a scam where items are sold instead of burned"
+      ],
+      "possessions": [
+        "Stone megaphone amplification sculpture"
+      ],
+      "location": "Wishing Pit Complex",
+      "stat_reference": null,
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Fake Church tokens",
+      "description": "Fake Church tokens of luck and protection",
+      "value": "1d3sp each",
+      "location": "Encampment"
+    },
+    {
+      "name": "Stolen belongings",
+      "description": "An assortment of belongings of varying degrees of personal or commercial value",
+      "value": "180gp altogether",
+      "location": "Storage room in Smugglers' Cave"
+    }
+  ],
+  "secrets": [
+    "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead"
+  ],
+  "dm_notes": "Shrine Staff: Level 1 thieves (DMB) disguised in altar robes, affecting miens of exaggerated gravity and solemnity. They pretend to have taken a vow of silence, but can be provoked to break it by shock or opportunity.",
+  "adjacent_hexes": [],
+  "roads": [
+    "West Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      202
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

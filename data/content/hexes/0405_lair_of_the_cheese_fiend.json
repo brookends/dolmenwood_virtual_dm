@@ -1,0 +1,123 @@
+{
+  "hex_id": "0405",
+  "coordinates": [
+    4,
+    5
+  ],
+  "name": "Lair of the Cheese-Fiend",
+  "tagline": "Dense, gloomy, moss-carpeted woods of birch, yew, and elm. Stagnant puddles abound.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Dense, gloomy, moss-carpeted woods of birch, yew, and elm. Stagnant puddles abound. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Blood-Cheese Sacs",
+      "poi_type": "site",
+      "description": "A region where the skins of various large creatures—including breggles and humans—hang among the trees. The skins are carefully sealed into sacs, bloated and distended with their strange contents: a reddish black, cheese-like substance made from blood rather than milk. The stuff has many forms (slimy, runny, stringy, hard), but smells and tastes like cheese.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Inside the skins: The skins are carefully sealed into sacs, bloated and distended with their strange contents: a reddish black, cheese-like substance made from blood rather than milk.",
+      "exploring": "If players spend time investigating the skins, there is a 2-in-6 chance of the cheese-fiend wandering nearby, checking the state of the skins.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "2-in-6 chance of cheese-fiend appearing when investigating"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Giant Hut",
+      "poi_type": "structure",
+      "description": "A ramshackle hut of giant proportions (15′ high), cobbled together from stone, thatch, and branch. Small, odd-shaped windows allow a peek inside. 10′ high door of roughly nailed planks, eminently creaky. An acrid stench of strong cheese emanates from the hut, to a near vomit-inducing potency.",
+      "tagline": null,
+      "entering": "Door: 10′ high, of roughly nailed planks, eminently creaky.",
+      "interior": "The hut consists of a single room, unlit. There is a 4-in-6 chance of the cheese-fiend being present in the hut, either dozing or skinning a corpse. The odour of strong cheese is overwhelming here; characters must Save Versus Doom or suffer a –1 penalty to Attack Rolls for 1d4 Rounds. Dangling from the rafters is a grisly collection of fresh corpses and drying skins. In a corner, a rusty metal tank filled with guts and bones. A great, oaken worktable and cleavers. A bed of dried leaves.",
+      "exploring": "Searching: A pouch with eighteen kunzites (100gp each) lies forgotten in a dark corner. One of the hanging corpses still wears a copper, knot-work engraved bracelet (200gp) and matching ring (a Ring of Water Walking).",
+      "leaving": null,
+      "inhabitants": "There is a 4-in-6 chance of the cheese-fiend being present in the hut, either dozing or skinning a corpse.",
+      "roll_tables": [],
+      "npcs": [
+        "cheese_fiend"
+      ],
+      "special_features": [
+        "Save Versus Doom or suffer –1 penalty to Attack Rolls for 1d4 Rounds due to overwhelming cheese odor"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "cheese_fiend",
+      "name": "The Cheese-Fiend",
+      "title": null,
+      "description": "A giant woman of obese, lumpy form, 10′ tall, formed entirely of different kinds of cheese: eyes oozing, rubbery, bouncy flesh, hairy regions of fuzzy mould, an oozing Swiss-cheese air-pocket mouth.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Lumbering",
+        "Hungry",
+        "Views intruders as potential prey"
+      ],
+      "speech": "Booming vibrato. Basic, stammering Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Driven only by the urge to hunt and gorge herself on cheese",
+        "Treasures real cheese or milk (only has access to the blood-cheese that she produces)"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Giant Hut",
+      "stat_reference": "Level 9 AC 12 HP 50 Saves D7 R8 H9 B10 S11, Att 2 fists (+7, 2d6) or molten cheese vomit (4d6), Speed 40 Morale 9 XP 1,350",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Eighteen Kunzites",
+      "description": "100gp each",
+      "value": "1800gp total",
+      "location": "Giant Hut, forgotten in dark corner"
+    },
+    {
+      "name": "Copper Knot-work Bracelet",
+      "description": "Copper, knot-work engraved bracelet",
+      "value": "200gp",
+      "location": "Giant Hut, on hanging corpse"
+    },
+    {
+      "name": "Ring of Water Walking",
+      "description": "Matching ring to the bracelet",
+      "value": "Magic item",
+      "location": "Giant Hut, on hanging corpse"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Immunities: Bludgeoning weapons bounce off the cheese-fiend's rubbery flesh, inflicting half damage. Molten cheese vomit (thrice a day): Affects all characters in a 10′ radius area in front of the fiend's mouth. Save Versus Blast for half damage. Treasure: The creature's body, if sliced into reasonably sized portions could be sold to a discerning cheesemonger for up to 2,000gp.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      230
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

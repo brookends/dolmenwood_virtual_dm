@@ -1,0 +1,140 @@
+{
+  "hex_id": "0712",
+  "coordinates": [
+    7,
+    12
+  ],
+  "name": "The Derelict Windmill",
+  "tagline": "Rugged hillsides criss-crossed with sheep paths. The clanking of cowbells echoes.",
+  "region": "High Wold",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Rugged hillsides criss-crossed with sheep paths. The clanking of cowbells echoes.",
+  "points_of_interest": [
+    {
+      "name": "The Derelict Windmill",
+      "poi_type": "windmill",
+      "description": "An old, three-storey windmill, its sails in tatters and its roof caved in, stands atop a high, desolate hill. The flapping shreds of sail produce an eerie chuckling sound audible from some distance away.",
+      "tagline": null,
+      "entering": "The door is blocked shut from the inside by fallen beams. Windows on all storeys are open and large enough for a slim person to slip through.",
+      "interior": "The ground floor is filled with the debris of the collapsed upper floors, including the millstones. A stone trapdoor to the Cellar can be spied amid the chaos. All that remains of the upper floors is a hollow interior space criss-crossed with broken beams and jagged islands of flooring.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Coiled among the uppermost rafters are Bharhgda (black bile wyrm—DMB) and her brood of 4 black bile wyrmlings.",
+      "roll_tables": [],
+      "npcs": [
+        "bharhgda"
+      ],
+      "special_features": [
+        {
+          "name": "The Cellar",
+          "description": "Conspicuous boot prints lead down a frosty stair to a door of ice, standing slightly ajar. A crystalline key sits abandoned in its lock. Beyond the door is a frigid, circular chamber whose walls, floor, and ceiling are clad in thick ice. The place is chilled like a deep, silent winter.",
+          "features": [
+            {
+              "name": "Ritual circle",
+              "description": "A circle of runes, 10′ across, is carved into the ice at the centre of the room. Decipher reveals a ritual invoking the power of the Cold Prince."
+            },
+            {
+              "name": "Frozen magician",
+              "description": "A block of ice stands at the centre of the ritual circle. The frozen form of an old woman can be seen within, dressed in black robes with her arms raised up. Many centuries ago, she created this laboratory and was killed during a magical experiment. If thawed, her body rots away to sludge in a matter of minutes."
+            },
+            {
+              "name": "Icy plinths",
+              "description": "Five ritual objects float above 4′ high blocks of jagged ice surrounding the circle: an ice-shard Fairy Dagger (Frost-Rimed, p412), a helm of fairy silver (2,000gp), a Wand of Lightning Bolts (11 charges), a glass chalice filled with a vaporous blue liquid (2 doses of Vaporous Spirits—p414), and a platinum sceptre tipped with a cluster of 4 peridots (3,000gp).",
+              "mechanical_effect": "The ritual objects are magically frozen in time and space, and can only be unfrozen and removed by means of Dispel Magic (against a Level 10 caster). Anyone touching a frozen object must Save Versus Spell or also be frozen (can be released with Dispel Magic)."
+            },
+            {
+              "name": "Frozen thief",
+              "description": "A lithe man clad in leather armour and fancy doublet stands frozen, arm extended towards the floating sceptre. His face bears a permanent expression of wonder. If freed (with Dispel Magic), he reveals his name as Simeone Waylord of High-Hankle. He is a Level 3 thief and associate of Bagsley Corundum (p153), who may be grateful for PCs having freed him."
+            }
+          ]
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "bharhgda",
+      "name": "Bharhgda",
+      "title": null,
+      "description": "A mature black bile wyrm with golden eyes and a full mane of dark purple feathers.",
+      "kindred": "Black Bile Wyrm",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Defensive",
+        "hungry"
+      ],
+      "speech": "Monosyllabic snarls",
+      "languages": [
+        "Woldish",
+        "Wyrm",
+        "the tongue of serpents"
+      ],
+      "desires": [
+        "Fresh flesh for herself and her young",
+        "The magic items she believes lie in the cellar, out of her reach"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Derelict Windmill",
+      "stat_reference": "black bile wyrm (DMB)",
+      "is_combatant": true,
+      "special_notes": "The wyrm mother is protective of her young, and is quick to repel any intruders detected. If gifted with food sufficient for her and her young (e.g. a fat cow), she may mention the 'cold magic' that she can smell in the cellar. Unable to pass through the trapdoor herself, she proposes a deal to share whatever PCs can retrieve (but betrays those she views as weak enough to vanquish). Vulnerability: Gold-plated weapons."
+    }
+  ],
+  "items": [
+    {
+      "name": "Ice-shard Fairy Dagger",
+      "description": "Frost-Rimed",
+      "value": null,
+      "location": "Cellar icy plinths"
+    },
+    {
+      "name": "Helm of fairy silver",
+      "description": null,
+      "value": "2,000gp",
+      "location": "Cellar icy plinths"
+    },
+    {
+      "name": "Wand of Lightning Bolts",
+      "description": "11 charges",
+      "value": null,
+      "location": "Cellar icy plinths"
+    },
+    {
+      "name": "Glass chalice with vaporous blue liquid",
+      "description": "2 doses of Vaporous Spirits",
+      "value": null,
+      "location": "Cellar icy plinths"
+    },
+    {
+      "name": "Platinum sceptre",
+      "description": "Tipped with a cluster of 4 peridots",
+      "value": "3,000gp",
+      "location": "Cellar icy plinths"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      273
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

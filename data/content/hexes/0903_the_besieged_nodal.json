@@ -1,0 +1,131 @@
+{
+  "hex_id": "0903",
+  "coordinates": [
+    9,
+    3
+  ],
+  "name": "The Besieged Nodal",
+  "tagline": "Boggy woods of wind-bent pine, riddled with small streams and islets. A purplish tinge pervades the air.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d4 Shub Eggs (p430), in addition to the normal results",
+    "foraging_special": [
+      "Shub Eggs (1d4)"
+    ]
+  },
+  "description": "Boggy woods of wind-bent pine, riddled with small streams and islets. A purplish tinge pervades the air.",
+  "points_of_interest": [
+    {
+      "name": "Tenkystone",
+      "poi_type": "nodal stone",
+      "description": "At the centre of a sodden hollow, in a glade ringed with elder, the nodal Tenkystone stands. Tenkystone is an obelisk of white, sandy stone, 15′ tall, inlaid with silvery runes.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Audrune Jhaelloch and his wicker giant guard Tenkystone.",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_jhaelloch"
+      ],
+      "special_features": [
+        "Inscribed spell: Drunic runes describe the arcane spell Word of Doom",
+        "Touching the stone: Summons forth its power: a white mist rises from the soil, enveloping all within 10′. All in the mist must Save Versus Doom or perish. Any who survive may ask a question about the future.",
+        "The siege: The Audrune and the stone are currently under siege by a horde sent by the Nag-Lord two weeks ago. The stone is attacked approximately one night in three."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Nag-Lord's Horde",
+      "poi_type": "enemy encampment",
+      "description": "Lurking in the periphery of Tenkystone, harrying the Audrune.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Daytime: 1d4 harpies (DMB) and 2d4 crookhorns (DMB) lounging in the branches. Nighttime: Creeping towards the nodal stone are 1d4 harpies (DMB), 3d4 crookhorns (DMB), and 1d4 harridans (DMB).",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Aim: To slay or drive away the Audrune and his wicker giant, then to perform a binding ritual on Tenkystone, bringing it under Atanuwë's yoke."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Giant Trident",
+      "poi_type": "magical artifact",
+      "description": "The harridans have speared a great seven-pronged trident of pockmarked meteoric iron into the earth along the course of Lamm, 200 yards south of Tenkystone.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Bleeding earth: Black ooze seeps from the 'wound.'",
+        "Astral interference: The trident stymies Jhaelloch's magic."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_jhaelloch",
+      "name": "The Audrune Jhaelloch",
+      "title": "Audrune",
+      "description": "A small, scrawny human man with greyish, wrinkled skin, hawkish nose, and wan blue eyes. He dresses in the traditional night-black cloak and hood of his order. Currently wears a woollen scarf around his ears, to block out the song of the harpies that assail him.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Agitated",
+        "suspicious",
+        "Usually taciturn, but will respond if engaged in conversation, owing to his current predicament"
+      ],
+      "speech": "Penetrating rasp. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "To break the siege on Tenkystone",
+        "To contact his brethren for aid"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Tenkystone",
+      "stat_reference": "Audrune (DMB). Spells 50% likely to fail when cast and unable to use ley travel (due to astral interference from the Giant Trident).",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Bargain: Promises the gratitude of the Drune to any who will help him defeat the horde or inform his brethren of his plight. (Directs PCs to the Audrune Hermanach in hex 0804.)",
+  "adjacent_hexes": [],
+  "roads": [
+    "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence."
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      288
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

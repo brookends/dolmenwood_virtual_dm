@@ -1,0 +1,177 @@
+{
+  "hex_id": "0103",
+  "coordinates": [
+    1,
+    3
+  ],
+  "name": "The Golden Goose",
+  "tagline": "A vastness containing nothing but carpets of red, orange, and ochre moss. The wind howls.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A vastness containing nothing but carpets of red, orange, and ochre moss. The wind howls.",
+  "points_of_interest": [
+    {
+      "name": "Sidney's Company",
+      "poi_type": "encounter",
+      "description": "Roaming the featureless bogland is a small band of humans, miserable but determined.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Members: Sidney Tew, 4 minor nobles, and 4 ruffians (Level 1 thieves—DMB) on the hunt for a \"golden goose that lays golden eggs.\"",
+      "exploring": "The hunt: Two weeks ago, a scavenger from Fort Vulgar sighted a \"golden goose\" here and found one of its golden eggs. He sold his egg and story to Sidney Tew, whose gang of second-son minor nobles and hangers-on headed out to find it before anyone else. The party is now (unknowingly) only a day away from discovering Crocus's Cave.",
+      "leaving": null,
+      "inhabitants": "Sidney Tew, 4 minor nobles, and 4 ruffians",
+      "roll_tables": [],
+      "npcs": [
+        "sidney_tew"
+      ],
+      "special_features": [
+        "Approaching: Sidney is suspicious but outwardly welcoming. He cannot help but brag about his search and shows the golden egg to those who doubt his claims."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Crocus's Cave",
+      "poi_type": "cave",
+      "description": "A large but obscured opening in the moss carpet leads downward into a sodden, high-ceilinged stone cave, filled with piles of reeds, bones, and shiny objects.",
+      "tagline": null,
+      "entering": "Hidden",
+      "interior": "A sodden, high-ceilinged stone cave, filled with piles of reeds, bones, and shiny objects.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The monstrous Crocus lies in wait here. She is accompanied by the Golden Goose, who is bound by a silver chain (100gp) and gagged with a cloth.",
+      "roll_tables": [],
+      "npcs": [
+        "crocus",
+        "the_golden_goose"
+      ],
+      "special_features": [
+        "Treasure hoard: Amongst a collection of broken glass, polished metal, and worthless trinkets is 673cp, 432sp, 925gp, four golden eggs, and a pewter Talisman of Non-Detection (p398) shaped like a bisected eye."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "crocus",
+      "name": "Crocus",
+      "title": null,
+      "description": "A 10′ tall ogre-like fairy. She has no skin, just exposed muscle and patches of scab-like scales. Her lipless mouth is set in a permanent smile. Her fingers are tipped by teeth instead of nails. Until recently, avoiding her betrayed mistress Thorn-Rosy (p32) was her highest priority. Having finally grown too bored of hiding in a cave and eating wildlife, she now deliberately allows travellers to sight the goose, attracting greedy mortals to feed upon.",
+      "kindred": "Fairy",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Crude and brutish"
+      ],
+      "speech": "Guttural growls and grunts. Basic Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To feed and be amused",
+        "to avoid the wrath of Thorn-Rosy",
+        "and to be surrounded by shiny things"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Crocus's Cave",
+      "stat_reference": "Ogre (DMB). As a fairy, suffers 1 extra point of damage when hit with cold iron weapons.",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "sidney_tew",
+      "name": "Sidney Tew",
+      "title": null,
+      "description": "A handsome human man in his 30s, with dashing blonde hair and sharp eyes, hailing originally from Prigwort. Dresses like a travelling noble, though his clothes are well-worn. Introduces himself as a cousin of the Lady Harrowmoor (p60)—this is true, though he is only a third cousin, once removed.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Friendly and charming",
+        "but always looking for an angle",
+        "Will use a person, then feel bad about it to feel better about it"
+      ],
+      "speech": "Feigned noble affect. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To find the golden goose",
+        "To assume a place of proper nobility and be recognised as a man of worth",
+        "He has engaged in innumerable failed schemes to do so, this goose venture being only the latest",
+        "If he survives, he will soon attempt another"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A silver longsword engraved with the Tew name (110gp)"
+      ],
+      "location": "Sidney's Company",
+      "stat_reference": "Level 3 fighter (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "the_golden_goose",
+      "name": "The Golden Goose",
+      "title": null,
+      "description": "An immortal goose with golden plumage. If its gag is removed, it repeatedly honks \"Mother Rosy.\" It is otherwise unable to speak.",
+      "kindred": "Magical Creature",
+      "alignment": null,
+      "demeanor": [],
+      "speech": "If its gag is removed, it repeatedly honks \"Mother Rosy.\" It is otherwise unable to speak.",
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "The Golden Goose was once the prized possession of the fairy noble, the Hag Thorn-Rosy (p32), until her servitor Crocus stole it and fled to the mortal world",
+        "Thorn-Rosy bestows a significant reward upon whomever returns it, just as she would severely punish whomever keeps it from her"
+      ],
+      "possessions": [],
+      "location": "Crocus's Cave",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Golden Eggs",
+      "description": "Every 1d4 days, it lays a golden egg worth 40gp that induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust.",
+      "value": "40gp",
+      "mechanical_effect": "Induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust."
+    },
+    {
+      "name": "Silver Chain",
+      "description": "Silver chain binding the Golden Goose",
+      "value": "100gp",
+      "mechanical_effect": null
+    },
+    {
+      "name": "Talisman of Non-Detection",
+      "description": "A pewter Talisman of Non-Detection (p398) shaped like a bisected eye",
+      "value": null,
+      "mechanical_effect": "Non-Detection"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Rewards: Promises a future payment in golden eggs in exchange for the PCs' assistance in obtaining the goose.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      194
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "hex_id": "0705",
+  "coordinates": [
+    7,
+    5
+  ],
+  "name": "The Scrabey Who Forgot Her Name",
+  "tagline": "A rolling wood of hillocks and small streams. Trees are skewed, their roots grasping at the air.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Nighttime encounters on the road are 2-in-6 likely to be with the ghost of Dewidort of Smerne (see hex 0607)",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "A rolling wood of hillocks and small streams. Trees are skewed, their roots grasping at the air. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Buzzing Tree",
+      "poi_type": "landmark",
+      "description": "Travellers on the Fort Road may be distracted from the sweeping views of Lake Longmere by a persistent, insectoid buzzing sound. If investigated, its source proves to be a great oak, twisted and gnarly in its old age.",
+      "tagline": null,
+      "entering": "Holes among roots: Many small holes and tunnels (1′ wide) are visible among the roots. Several of the tunnels lead into a sandy, underground burrow.",
+      "interior": "Bees and wasps: A profusion of these insects buzz around the tree, their nests high in the branches.",
+      "exploring": "Listening at the tunnels: A single voice can be heard muttering to itself in a subterranean space. PCs who speak Sylvan may understand snatches of perplexed speech such as 'Now where did I put that confounded...,' 'It must be time for supper, or is it breakfast?'",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Fort Road views of Lake Longmere",
+        "Insectoid buzzing sound"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Scrabey's Lair",
+      "poi_type": "lair",
+      "description": "A scrabey merchant makes her home in a warm, sandy burrow beneath the tree, consisting of a cramped living chamber and a dozen store rooms.",
+      "tagline": null,
+      "entering": "Access: The scrabey, in her worm form, can come and go via the small tunnels under the tree roots. Larger passages lead from the lair into the tunnels of the subterranean realm of the scrabies.",
+      "interior": "Living chamber: Unremarkable, sparse, and compact. Contains a bedroll, a small iron stove, and a chamber pot. Store rooms: Crammed with neglected, dusty barrels and crates containing the scrabey's treasure and goods.",
+      "exploring": "There is a 3-in-6 chance that she is present when PCs visit; otherwise a 2-in-6 chance per Turn that she returns home.",
+      "leaving": null,
+      "inhabitants": "A scrabey merchant who has forgotten her name due to a curse",
+      "roll_tables": [],
+      "npcs": [
+        "horticule"
+      ],
+      "special_features": [
+        "Desk and ledgers: In one store room, a desk built from an eclectic assembly of broken furniture pieces sits partially hidden behind a teetering wall of empty crates. Beneath it lie four bulging ledgers, each secured by leather straps and partially gnawed upon by vermin. For every Turn the reader spends with them, they have a 2-in-6 chance of discerning the scrabey's name: Horticule.",
+        "Cocoon and prisoner: On the floor in the corner of another storeroom lies a 5′-long silk cocoon. Within it, a young human woman named Amande Heape lies in an enchanted sleep. If fully unwrapped from the cocoon, she awakens after 1d6 Turns."
+      ],
+      "secrets": [
+        "The Kidnapping Plot: The young woman in the cocoon is the wife of a human merchant named Alfolonious Heape. The scrabey kidnapped her after Heape attempted to swindle her in a business transaction. The scrabey had planned to extort a ransom from the unscrupulous merchant, but these plans were scuppered when she lost her memory."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "horticule",
+      "name": "Horticule",
+      "title": "The Scrabey Who Forgot Her Name",
+      "description": "A tiny (3′ tall) scrabey with ears so long their tips droop below her jowls. Dresses in oversized, damp woollens and an oiled leather overcoat. Once a thriving merchant, she is now under the effects of a curse of amnesia placed by the witch Lady Haeroth in order to keep the origins of her magical tea set secret.",
+      "kindred": "Scrabey",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Desperately trying to conceal her disorientation",
+        "By turns aggressive and obsequious"
+      ],
+      "speech": "Veers from confused rambling to shrewd mercantile banter. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Should she regain her memory, the scrabey resumes her extortion plot"
+      ],
+      "secrets": [
+        "Once procured a magical tea set for Lady Haeroth",
+        "Has kidnapped Amande Heape for ransom but forgot due to curse"
+      ],
+      "possessions": [
+        "A bent butter knife—a Knife of Separation. The scrabey has forgotten its command word, but vaguely recalls its importance",
+        "152gp, 233cp, 2,500′ of good rope, 50 flasks of oil, 200lbs of coal, a barrel of Old Doby (20gp, 500 smokes), a keg of Buckston Fizz (100gp, 100 glasses), 5 doses each of Gillywort, Marshwick, and Smottlebread"
+      ],
+      "location": "The Scrabey's Lair",
+      "stat_reference": "scrabey (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Knife of Separation",
+      "description": "A bent butter knife",
+      "value": null,
+      "location": "Possessed by Horticule",
+      "magical": true,
+      "notes": "The scrabey has forgotten its command word, but vaguely recalls its importance"
+    }
+  ],
+  "secrets": [
+    "The curse was placed by Lady Haeroth to keep the origins of her magical tea set secret",
+    "Amande Heape is being held for ransom but the scrabey forgot her plan"
+  ],
+  "dm_notes": "Curse effects: No memory of anything beyond the last hour, including all details about her past and even her own name (Horticule). If her name is returned to her, the curse breaks and her other memories, including that of the kidnapped woman, also return.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Fort Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      266
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

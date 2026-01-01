@@ -1,0 +1,70 @@
+{
+  "hex_id": "0206",
+  "coordinates": [
+    2,
+    6
+  ],
+  "name": "Maidenhead Priory",
+  "tagline": "Decrepit woodland, the ground littered with fallen trees and rotting branches. Many insects creep and tickle.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Decrepit woodland, the ground littered with fallen trees and rotting branches. Many insects creep and tickle.",
+  "points_of_interest": [
+    {
+      "name": "Maidenhead Priory",
+      "poi_type": "ruins",
+      "description": "Just under the eaves of the wood at the northern border of the hex lies the crumbling ruin of a small priory. The place is known to locals as Maidenhead Priory, owing to the great feminine bust half-buried near its entrance (the remnant of a larger statue of St Gretchen). From a distance, the structure appears to pulse and undulate, as if alive.",
+      "tagline": null,
+      "entering": "If PCs approach or enter the priory, the insects begin a terrible, incessant shrilling that inflicts 1 HP damage per Turn spent in the ruins.",
+      "interior": "The crumbling stone innards of the priory are bare save for the intrusions of nature—an endless carpet of moss blankets the walls and drifts of dead leaves carpet the floors. A debris-strewn stairway leads down to the Defiled Crypt. Concealed behind a cascade of moss hangs the magnificent Banner of St Lillibeth, magically preserved.",
+      "leaving": null,
+      "exploring": "Fire, smoke, and other noxious fumes cause the beetles to retreat, but they return as soon as the irritant is no longer present.",
+      "inhabitants": "The prior's restless spirit lingers, invisible, in the crypt, its torment drawing the beetles to the priory.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Blanket of Beetles - Coming closer, it becomes clear that the creeping movement comes from the twitching blanket of black beetles that envelops the crumbling walls",
+        "Defiled Crypt - A low-ceilinged chamber, crawling with screeching beetles. At the centre of the chamber lies a stained marble coffin, its lid broken in half",
+        "Sealing the coffin - If the lid's two fragments are placed together to seal the coffin, they emanate a soft glow of light as they fuse, and the beetles depart the priory in quiet droves"
+      ],
+      "secrets": [
+        "Hidden tapestry: Concealed behind a cascade of moss hangs the magnificent Banner of St Lillibeth, magically preserved. It is very difficult to find without knowing its location",
+        "Holy spell-casters are filled with an overwhelming sense of awe and inspiration and receive a vision revealing the location of the Banner of St Lillibeth, upstairs"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Banner of St Lillibeth",
+      "description": "A beautifully woven tapestry, embroidered with six doves (the doves of Saint Lillibeth). Worth 30,000gp.",
+      "mechanical_effect": "Six times per day (once per dove), a Lawful character can touch one of the doves to recover 1d6+1 HP, but only if it is hung, unfurled, on holy ground.",
+      "value": "30,000gp"
+    }
+  ],
+  "secrets": [
+    "History: The priory was established here in an ultimately vain attempt to bring piety and civilisation to the wretched fens of Northern Scratch. With the rise of Atanuwë, the priory was wracked by hauntings and was abandoned 80 years ago"
+  ],
+  "dm_notes": "Ley Line Chell: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      208
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

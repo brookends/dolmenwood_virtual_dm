@@ -1,0 +1,144 @@
+{
+  "hex_id": "0203",
+  "coordinates": [
+    2,
+    3
+  ],
+  "name": "The Moss Garden",
+  "tagline": "A drear, pathless expanse of black pools, mud beds, and copses of rotting trees.",
+  "region": "Northern Scratch",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Northern Scratch",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with Brawg or Agnes",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "A drear, pathless expanse of black pools, mud beds, and copses of rotting trees.",
+  "points_of_interest": [
+    {
+      "name": "The Moss Garden",
+      "poi_type": "garden",
+      "description": "In a particularly foetid corner of the bleak mire, the stink of decaying corpses mingles with the peaty reek of bog moss. Cadavers—their heads crushed, bellies clawed open, and spines broken—bob like macabre buoys in the black water, festooned with sickeningly vivid green moss.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The moss garden is owned by trolls (DMB) Brawg and Agnes, who prize the succulent moss they diligently nurture on the corpses of their victims. Adventurers have a 3-in-6 chance of encountering one of the trolls in the garden. Should this happen, there is an additional 3-in-6 chance that the other appears and contests their right to the PCs, leading to a surreal argument over who can kill the travellers and cultivate moss on their bodies.",
+      "roll_tables": [],
+      "npcs": [
+        "brawg",
+        "agnes"
+      ],
+      "special_features": [
+        "Marital dispute: Brawg and Agnes used to be a mated pair, but recently they have been squabbling and divided their moss farm between the two of them. The trolls bicker endlessly over where the border of one troll-spouse's territory ends and the other begins."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Troll-Hole",
+      "poi_type": "lair",
+      "description": "The two trolls share a lair near the middle of the swamp, a dank grotto accessible via a narrow, flooded passage. This can only be found through extensive searching or by following one of the trolls.",
+      "tagline": null,
+      "entering": "This can only be found through extensive searching or by following one of the trolls.",
+      "interior": "Slick, slimy walls and floor. Like everything else, the cave is ruthlessly divided by the former troll-mates. Brawg's side: A pile of broken wooden furniture, a filthy mat of swamp grass, and a wooden cage containing three well-fed, meticulously-groomed songbirds. Agnes's side: A clean grass mat and a neatly ordered collection of steel carving implements.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Brawg and Agnes",
+      "roll_tables": [],
+      "npcs": [
+        "brawg",
+        "agnes"
+      ],
+      "special_features": [
+        "Hidden"
+      ],
+      "secrets": [
+        "Treasure: On both sides of the cave are identical crude wooden boxes, each containing half of the following: four portions of Snogglebeard (p430), 20,000sp, 5,000gp, two bloodstones (50gp each), and two beryls (500gp each)."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "brawg",
+      "name": "Brawg",
+      "title": null,
+      "description": "A pot-bellied troll, covered in warts and boils, with the greasy remains of a once-resplendent mane of hair matted about his bald head.",
+      "kindred": "Troll",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Lazy",
+        "self-indulgent",
+        "lecherous",
+        "Curiously gentle with small animals"
+      ],
+      "speech": "Grumpy, peevish. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Brawg desperately wishes to be reunited with his former mate, Agnes, but he is stubborn and unwilling to admit his faults, too proud to apologise. If he can be coaxed into meeting Agnes's demands and apologizing for his behaviour, the two trolls might reconcile. However, he insists that Agnes make the first move."
+      ],
+      "secrets": [],
+      "possessions": [
+        "three well-fed, meticulously-groomed songbirds",
+        "half of treasure hoard"
+      ],
+      "location": "The Moss Garden / Troll-Hole",
+      "stat_reference": "troll (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "agnes",
+      "name": "Agnes",
+      "title": null,
+      "description": "A thin, long-limbed troll with enormous yellow eyes and long, dark hair who delights in swimming through the wetlands and ambushing potential victims, making them fodder for the moss-farm.",
+      "kindred": "Troll",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Fastidious",
+        "irritable",
+        "judgmental",
+        "Fond of flowers"
+      ],
+      "speech": "Sharp-tongued, clever. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Agnes has a long list of complaints against Brawg. She wishes he would help clean the troll-hole, assist in his share of moss-harvesting, stop squeezing his boils in their lair, and bring her swamp-flowers the way he used to. She has grudging affection for her former mate but finds his indolence and inattentiveness off-putting."
+      ],
+      "secrets": [],
+      "possessions": [
+        "steel carving implements",
+        "half of treasure hoard"
+      ],
+      "location": "The Moss Garden / Troll-Hole",
+      "stat_reference": "troll (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      205
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

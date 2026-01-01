@@ -1,0 +1,139 @@
+{
+  "hex_id": "0403",
+  "coordinates": [
+    4,
+    3
+  ],
+  "name": "Queen Arda's Demesne",
+  "tagline": "A multitude of tiny brooks trickle down to join the Hameth. Wafts of heady nectar drift on the breeze.",
+  "region": "Northern Scratch/Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Northern Scr./Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely to be with 1d4 × 10 purple sprites from the Sprite Mound",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A multitude of tiny brooks trickle down to join the Hameth. Wafts of heady nectar drift on the breeze. Ley Line Chell: Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Gigantic Flowers",
+      "poi_type": "natural feature",
+      "description": "Around the banks of the Hameth, bounteous clusters of massive flowers (10′ tall) bloom: white and yellow lilies, reddish-pink peonies, and dark blue hibiscuses. Their deep green stalks and lurid petals create a grotesquely gorgeous tableau.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The air is humid and heavy with the flowers' powerful, aromatic scents, evoking strong emotions in travellers. Lilies entice with the perfume of forbidden love; peonies soothe with the half-forgotten idyll of a childhood afternoon; hibiscuses reek of mortal terror.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Soporific smell",
+        "Sprite attack",
+        "Petals for sleep draught"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Shambles",
+      "poi_type": "abattoir",
+      "description": "At the centre of this hex is a glade where a charnel stench overwhelms even the powerful scents of the giant flowers.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Carrion, bones, and rotted entrails are scattered throughout the glade. Five human corpses hang from trees, their blood dripping into tiny bowls. Gut-spattered tables the size of playing cards and various miniature carving implements lie nearby.",
+      "exploring": "Characters who watch secretly may observe 1d4 × 5 purple sprites butchering their kills and transporting the constituent parts to the Sprite Mound: meat and organs bound for the sprites' kitchens, bones for the crafting workshops, and skulls planted with seeds to nourish new flowers.",
+      "leaving": null,
+      "inhabitants": "1d4 × 5 purple sprites",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Open-air abattoir",
+        "Observing"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Sprite Mound",
+      "poi_type": "mound",
+      "description": "Not far from the Shambles stands a 10′-high mound of clay that might be mistaken for nothing more than a hillock of earth. Hidden doorways lie at its base, concealed by the thick grass.",
+      "tagline": null,
+      "entering": "Hidden doorways lie at its base, concealed by the thick grass.",
+      "interior": "An impossibly labyrinthine complex of intricate tunnels and fanciful chambers, including living quarters, armouries, workshops, kitchens for the preparation of humanoid flesh, and baroque dining halls.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "200 purple sprites with a murderous, carnivorous nature instilled by Queen Arda",
+      "roll_tables": [],
+      "npcs": [
+        "queen_arda"
+      ],
+      "special_features": [
+        "Hidden"
+      ],
+      "secrets": [
+        "Behind a tiny locked door at the heart of the mound is Arda's treasure chamber, containing three rubies of increasing sizes (50gp, 100gp, 500gp), a human-sized necklace of fairy silver, bearing the Harrowmoor family crest (1,200gp), and 450 tiny platinum coins stamped with Queen Arda's dour visage (each worth 5sp)"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "queen_arda",
+      "name": "Queen Arda",
+      "title": "Sprite Ruler",
+      "description": "A purple sprite woman with orange, insectoid eyes and drifting hair of pure white. A tyrant obsessed with her prophetic dreams of ruling all Dolmenwood. Tells her subjects that \"big folk\" are marauding giants who must be slain for the sake of the realm.",
+      "kindred": "Purple Sprite",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Bloodthirsty",
+        "dour",
+        "decadent"
+      ],
+      "speech": "Warbling, imperious squeaking",
+      "languages": [
+        "Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "Worship",
+        "Secrets of magic"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Fairy silver crown of leaves (200gp)",
+        "A tiny (2″) brass Wand of Confusion (3 charges)"
+      ],
+      "location": "Sprite Mound",
+      "stat_reference": "Purple sprite (DMB) with the ability to cast the following arcane spells once a day each: Glyph of Sealing, Vapours of Dream, Ventriloquism",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Giant Flower Petals",
+      "description": "If a giant flower petal is placed in boiling water within 1 day of being picked, the resulting tea becomes a sleep draught with the same effect as the flower's scent",
+      "mechanical_effect": "Sleep draught: Save Versus Doom or fall into deep, uninterruptible sleep for 4d4 Turns"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "If the party lingers: Mortals must Save Versus Doom or fall into a deep, uninterruptible sleep for 4d4 Turns, during which they are haunted by dreams flavoured with the feelings evoked by the flowers. Sprite attack: A party deemed sufficiently weakened by the flowers is ambushed by 30 purple sprites from the Sprite Mound.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      228
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

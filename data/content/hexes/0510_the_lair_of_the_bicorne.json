@@ -1,0 +1,86 @@
+{
+  "hex_id": "0510",
+  "coordinates": [
+    5,
+    10
+  ],
+  "name": "The Lair of the Bicorne",
+  "tagline": "Rugged, broken ground choked with brambles and smashed trunks. Ruined buildings collapsed into ditches.",
+  "region": "High Wold",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "At night, there is a 2-in-6 chance of encountering a hunting party of 2d4 sleepwalking shorthorns",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Rugged, broken ground choked with brambles and smashed trunks. Ruined buildings collapsed into ditches.",
+  "points_of_interest": [
+    {
+      "name": "The Pit",
+      "poi_type": "lair",
+      "description": "Near the north-west corner of the hex is a redwood tree that appears to have been ripped from the earth by giant hands. Beneath it is a great deep pit that reeks of blood and carrion. Within the pit lairs an ancient monster known as the Bicorne, stirring from its fitful dreams of late.",
+      "tagline": null,
+      "entering": "The pit itself is sheer-sided and 70′ deep. Each character entering the pit has a 1-in-6 chance of waking the Bicorne.",
+      "interior": "The base of the pit is carpeted with Speckled Sporange and Purple Nightcap mushrooms. At one side, a rough, 50′ long chamber is burrowed out, most of which is filled with old bones. The Bicorne lies in this chamber in a nearly dormant state, belching forth contagion and nightmares.",
+      "exploring": "2d20 decent specimens of each mushroom type can be gathered. Treasure hoard is buried among the bones and detritus of the lair.",
+      "leaving": null,
+      "inhabitants": "The Bicorne lairs within the chamber. At night, sleepwalking shorthorns hunt for sentient beings to capture and bring to the lair.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Speckled Sporange mushrooms (2d20 specimens)",
+        "Purple Nightcap mushrooms (2d20 specimens)",
+        "Treasure hoard: 5,676gp, 6,332sp, 10,099cp, three mouldy spell books, Holy Shield, bronze casket, silver locket"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Mouldy Spell Books",
+      "description": "Set of three mouldy spell books with half of the spells still readable: Rank 1 Floating Disc, Glyph of Sealing, Rank 2 Mind Crystal, Rank 3 Haste",
+      "type": "spell books",
+      "value": null
+    },
+    {
+      "name": "Holy Shield",
+      "description": "Shiny silver Holy Shield, somewhat dented, engraved with narwhals. The wielder gains the ability to speak with whales.",
+      "type": "shield",
+      "value": null
+    },
+    {
+      "name": "Bronze Casket",
+      "description": "Bronze casket studded with citrine",
+      "type": "treasure",
+      "value": "1,500gp"
+    },
+    {
+      "name": "Silver Locket",
+      "description": "Silver locket with a portrait of a longhorn noblewoman wearing a saffron sash. Belonged to the sister of Commander Lockelope.",
+      "type": "jewelry",
+      "value": "1,000gp"
+    }
+  ],
+  "secrets": [
+    "The sleepwalking shorthorns are summoned from Galblight (hex 0409) by the Bicorne's enchanted whisper",
+    "Captured sacrifices are tossed into the Bicorne's pit, where the beast shreds them in psychic agony"
+  ],
+  "dm_notes": "The Bicorne is a Large Monstrosity with Level 10, AC 17, HP 68. It has immunity to mundane weapons (suffers only 1 damage), but cold iron weapons inflict normal damage. It can use cloud breath thrice a day, causing paralysis for 9 Turns on failed Save Versus Blast.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      247
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

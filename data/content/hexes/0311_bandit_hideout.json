@@ -1,0 +1,95 @@
+{
+  "hex_id": "0311",
+  "coordinates": [
+    3,
+    11
+  ],
+  "name": "Bandit Hideout",
+  "tagline": "A seldom-trod woodland of tangled oak and elm, littered with decaying branches and mouse nests.",
+  "region": "High wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Daytime encounters are 1-in-6 likely to be with 1d3+2 bandits (Level 1 thieves—DMB) and 1d3+2 shorthorns (DMB)—members of the gang based in this hex. Opposing side has a 3-in-6 chance of being surprised, due to bandits hiding in the woods.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The southern half of this hex is the territory of a band of human and shorthorn bandits. Led by the notorious Red Gwen, this gang strikes merchant caravans along an 18 mile stretch of Bove's Road to the south of here (hexes 0211, 0312, 0411), fading into the safety of the Dolmenwood with their plunder. Net traps: Those who traverse this region have a 3-in-6 chance of triggering a net trap. Each party member must then Save Versus Hold or be hoisted 20′ off ground and ensnared (treat as a Web spell). A patrol of 1d3+2 bandits (Level 1 thieves—DMB) and 1d3+2 shorthorns (DMB) arrives in 1d4 Turns to capture the prisoners and lead them, bound and blindfolded, to the Treehouse.",
+  "points_of_interest": [
+    {
+      "name": "Treehouse",
+      "poi_type": "hideout",
+      "description": "At the heart of the bandits' territory is their hidden headquarters: an elaborate, heavily camouflaged treehouse consisting of multiple platforms and eclectic, bough-hugging domiciles, connected by hanging bridges, ladders, and ropes. It spans four adjacent, ancient elm trees. Two retractable rope ladders and a cargo winch provide access.",
+      "tagline": null,
+      "entering": "Two retractable rope ladders and a cargo winch provide access.",
+      "interior": "Common area: A 20′-diameter platform where the bandits muster for their forays, count their spoils, and idly drink, gamble, and engage in ribaldry. A thick branch bisects the space, upon which Red Gwen sits and holds court. Treasury: A locked hut near the common area contains: 6,500gp, 12,500sp, a large assortment of furs (300gp), 6 barrels of Cobsworth Pale Ale (DPB, 62gp / 124 pints each), 20 bottles of Prigwort Pure (DPB, 35sp / 5 glasses each), 10 bottles of Lord Oberon's Ambrosial (DPB, 5gp / 5 glasses each), 20 crates of Dusty Abbot and Westling's Weed (DPB, 10gp / 50 smokes each), and a pair of woollen trousers crafted by Mannog that magically transform the wearer's appearance to that of a woodgrue (200gp, see hex 0411).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "12 shorthorns (DMB), 10 bandits (Level 1 thieves—DMB), and their leader, Red Gwen.",
+      "roll_tables": [],
+      "npcs": [
+        "red_gwen"
+      ],
+      "special_features": [
+        "Net traps with 3-in-6 chance of triggering"
+      ],
+      "secrets": [
+        "Hidden headquarters"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "red_gwen",
+      "name": "Red Gwen",
+      "title": "Bandit Leader (Level 4 Fighter)",
+      "description": "A tall, lithe half-breggle, half-human woman dressed in chainmail and a black tunic. Her thick, tightly curled, flaming red hair frames a pointed, shrewd face and twinkling, goat-like eyes. Gwen's hold over her gang stems from her tactical brilliance, and from the carefully cultivated tale of her origins—namely, that she is the exiled younger sister of Lord Murkin (p65), whose title she will one day usurp. In truth, Gwen grew up as an urchin on the streets of High-Hankle. The longhorn nobles find her claims an amusing sideshow to their own more deadly political intrigues.",
+      "kindred": "Half-breggle, half-human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Charming",
+        "energetic",
+        "droll"
+      ],
+      "speech": "Dramatic, littered with swashbuckling clichés like \"stand and deliver.\" Affected Gaffe accent.",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "To continue her exhilarating career of adventure and thievery",
+        "To build her myth of breggle nobility without actually confronting Murkin",
+        "To rob the longhorn mercenary Garnack the Horse (hex 0309), who owes Gwen an unpaid gambling debt"
+      ],
+      "secrets": [
+        "In truth, Gwen grew up as an urchin on the streets of High-Hankle"
+      ],
+      "possessions": [
+        "Holy Dagger (p412) engraved with howling skulls",
+        "The key to the Treasury"
+      ],
+      "location": "Treehouse",
+      "stat_reference": "Level 4 Fighter",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Visitors: The fate of prisoners depends on their knowledge of the treehouse's location, whether they have harmed the bandits, their potential profit as hostages, and Red Gwen's mood. One can expect anything from ransoming to execution, though the most likely fate is to be deposited at the edge of the wood, stripped of all but clothes. Adventurers who impress Gwen may gain a peaceful audience with her.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      224
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

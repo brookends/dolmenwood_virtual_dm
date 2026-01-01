@@ -1,0 +1,187 @@
+{
+  "hex_id": "0808",
+  "coordinates": [
+    8,
+    8
+  ],
+  "name": "The House of Merridwyn Scymes",
+  "tagline": "Precarious paths wind around sandstone cliffs, avoiding the boggy ditches and reeking fens below.",
+  "region": "High Wold",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), High Wold",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Daytime encounters are 2-in-6 likely to be with a Lankshorn town guard bringing provisions to Merridwyn Scymes's cottage",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Precarious paths wind around sandstone cliffs, avoiding the boggy ditches and reeking fens below.",
+  "points_of_interest": [
+    {
+      "name": "Shuttered Cottage",
+      "poi_type": "cottage",
+      "description": "In a small wooded dell in the south-west of this hex, a simple, one-storey, thatched cottage stands beside a cheery stream. Its windows are shuttered and the little herb gardens and rockeries that surround it show signs of neglect. The door is unlocked.",
+      "tagline": null,
+      "entering": "The door is unlocked.",
+      "interior": "Contains living room, bedroom, and laboratory. Following a gruesome magical accident, the magician's body has been split into three separate entities—her viscera, skeleton, and skin—the last of which killed her husband.",
+      "exploring": "Crushed, strangled corpses of small animals litter the dell. An odd, choked moaning can be heard within the cottage.",
+      "leaving": null,
+      "inhabitants": "The magician Merridwyn Scymes and her husband Arb. Following a gruesome magical accident, the magician's body has been split into three separate entities—her viscera, skeleton, and skin—the last of which killed her husband.",
+      "roll_tables": [],
+      "npcs": [
+        "merridwyn_scymes_viscera",
+        "merridwyn_scymes_skin",
+        "merridwyn_scymes_skeleton"
+      ],
+      "special_features": [
+        {
+          "name": "Living room",
+          "description": "Cosy chairs by the hearth. A great oaken table laden with bread, cheese, preserves, and five leather pouches (100gp in each). 1 Turn after entry, the skin barges in from the woods and attacks."
+        },
+        {
+          "name": "Bedroom",
+          "description": "Arb's strangled corpse lies peacefully in bed, preserved by magic. Beside the bed stands a copper bath tub of warm salt water, in which the magician's moaning viscera spends most of its time submerged, tended by the ministrations of the skeleton. A plush jewellery box, hidden beneath the bed, contains an amber necklace (2,000gp) and a vial of Prismatic Elixir."
+        },
+        {
+          "name": "Laboratory",
+          "description": "Shelves toppled, specimen jars smashed on the tiled floor. Hidden among the disarray are a scroll of Shield of Force and Knock, a vial of Bottled Light, and Scymes's spell books. Strewn about are incomplete research notes for the spell Split Personality. An arcane spell-caster could complete the spell with 1d6 week's further research."
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "merridwyn_scymes_viscera",
+      "name": "Merridwyn Scymes—Viscera",
+      "title": null,
+      "description": "The magician's nerves, muscles, blood vessels, internal organs, and brain, together in an amorphous mass.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "In constant agony",
+        "Distraught at her husband's death",
+        "Desperate for aid"
+      ],
+      "speech": "Bubbling, rasping whine",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To have her body restored or, failing that, a merciful end to her suffering"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Spells: Rank 1 Decay, Vapours of Dream, Rank 2 Transparency, Web, Rank 3 Cannibalise"
+      ],
+      "location": "Shuttered Cottage",
+      "stat_reference": "Medium Monstrosity—Sentient—Neutral, Level 5 AC 10 HP 7 Saves D13 R13 H12 B15 S13, Att Spell Speed 3 Morale 6 XP 360",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "merridwyn_scymes_skin",
+      "name": "Merridwyn Scymes—Skin",
+      "title": null,
+      "description": "The naked, flayed skin of the magician. Moves by creeping along the ground with uncanny speed, wrapping its flapping limbs around objects to propel itself through the air, its mop of red hair dragging behind it. It is mindless but filled with hatred for the living.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Mindless",
+        "Filled with hatred for the living"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "Shuttered Cottage",
+      "stat_reference": "Medium Monstrosity—Mindless—Chaotic, Level 3 AC 10 HP 17 Saves D11 R12 H13 B14 S15, Att Grab (+2, 1d4 + wrap) Speed 40 Morale 8 XP 65. Wrap: On a successful attack, the skin wraps around the victim, causing a –4 penalty to AC and Attack Rolls. Attacking the skin when it is wrapped around someone has a 3-in-6 chance of damaging the victim instead.",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "merridwyn_scymes_skeleton",
+      "name": "Merridwyn Scymes—Skeleton",
+      "title": null,
+      "description": "The magician's blood-caked skeleton mindlessly obeys the viscera, defending against the skin's attacks.",
+      "kindred": "Undead",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Mindless",
+        "Obedient to viscera"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "Shuttered Cottage",
+      "stat_reference": "Skeleton (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Five leather pouches",
+      "description": "100gp in each",
+      "value": "500gp total",
+      "location": "Living room"
+    },
+    {
+      "name": "Amber necklace",
+      "description": "Hidden in jewellery box beneath bed",
+      "value": "2,000gp",
+      "location": "Bedroom"
+    },
+    {
+      "name": "Vial of Prismatic Elixir",
+      "description": "Hidden in jewellery box beneath bed",
+      "value": null,
+      "location": "Bedroom"
+    },
+    {
+      "name": "Scroll of Shield of Force and Knock",
+      "description": "Hidden among laboratory disarray",
+      "value": null,
+      "location": "Laboratory"
+    },
+    {
+      "name": "Vial of Bottled Light",
+      "description": "Hidden among laboratory disarray",
+      "value": null,
+      "location": "Laboratory"
+    },
+    {
+      "name": "Scymes's spell books",
+      "description": "Contains spells listed in viscera combat stats",
+      "value": null,
+      "location": "Laboratory"
+    },
+    {
+      "name": "Incomplete research notes for Split Personality spell",
+      "description": "An arcane spell-caster could complete the spell with 1d6 week's further research",
+      "value": null,
+      "location": "Laboratory"
+    }
+  ],
+  "secrets": [
+    "Several months ago, Berkmaster Baldricke of Lankshorn, harbouring his fugitive grandson, commissioned the magician to attempt to cure the boy's curse. Scymes believes the curse causes aspects of the boy's personality to manifest as physical transformations, and that he can be cured by splitting his personality into separate physical forms.",
+    "A research mishap resulted in the magician herself splitting into the three entities that inhabit the hex today.",
+    "Scymes's patron, the Berkmaster of Lankshorn, is aware of 'delays' in the magician's research, though not their true nature, and continues to support her with deliveries of food and gold."
+  ],
+  "dm_notes": "A Magical Miscalculation: Merridwyn Scymes lives an isolated existence, dominated by her research into matters of mutation and transformation. The magician's research into splitting personalities resulted in her own body being split into three separate entities.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      281
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "hex_id": "0602",
+  "coordinates": [
+    6,
+    2
+  ],
+  "name": "The Hall of the Fomorian",
+  "tagline": "Looming fir trees, surrounded with a weird, pink luminescence. Jagged, mutant cones litter the ground.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 Shub Eggs, in addition to the normal results",
+    "foraging_special": [
+      "Shub Eggs (1d2)"
+    ]
+  },
+  "description": "At the very bottom of a steep, fir-wooded dingle, a 30′ high wall looms abruptly into view. Composed of gargantuan marble flagstones smoothed to a mirror-like lustre, it proves to be the side of a 500′ square massive stone platform. A stairwell on each side leads to the top.",
+  "points_of_interest": [
+    {
+      "name": "The Hall of the Fomorian",
+      "poi_type": "hall",
+      "description": "A massive stone platform with a domed hall at its center. The platform is 500′ square and 30′ high, with stairwells on each side leading to the top.",
+      "tagline": null,
+      "entering": "A stairwell on each side leads to the top of the platform. The domed hall has an arched doorway on its eastern face.",
+      "interior": "A dry, musty, cavernous space, barely illuminated by reddish light filtered through the glass pyramid above. A mass of broken statuary draped with ancient, mouldering rugs fills much of the room. Atop this heap sits the Scrying Globe, a giant figure—the Fomorian—leaning over it, peering into it with concentration.",
+      "exploring": "The Fomorian guards the Scrying Globe and forbids any to approach it, resorting to deadly force should PCs persist. A character need only don an emerald green cloak and announce that they are 'Jack-the-Emerald-Cloaked' to satisfy the Fomorian of Jack's arrival.",
+      "leaving": "Characters exiting Buttercup Lane in this hex appear outside the domed hall atop the massive platform.",
+      "inhabitants": "The Fomorian, an immortal guardian from the 'World Below'",
+      "roll_tables": [],
+      "npcs": [
+        "the_fomorian"
+      ],
+      "special_features": [
+        {
+          "name": "Massive Platform",
+          "description": "Platform top: A bare, cracked expanse, its monotony broken only by small tussocks of grass, occasional flocks of birds, and a structure at its very centre: the Domed Hall."
+        },
+        {
+          "name": "Domed Hall",
+          "description": "A purple-veined half-bubble of stone, 30′ tall and 80′ in diameter. A pyramid of scarlet glass sits at its peak."
+        },
+        {
+          "name": "The Scrying Globe",
+          "description": "A great, glowing orb. Should a character peer into the globe—after satisfying, defeating, or otherwise evading the Fomorian—they perceive the Emerald Door within."
+        },
+        {
+          "name": "The Emerald Door",
+          "description": "Visible within the Scrying Globe is a door of scintillating emerald, surrounded by dense, bluish mist. Touching the globe whisks one away to the fairy road Buttercup Lane."
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_fomorian",
+      "name": "The Fomorian",
+      "title": null,
+      "description": "A blue-skinned giant standing roughly 15′ tall, wearing a grey wool tunic, bracers of black metal, and a thick belt of cracked brown leather. A grim helm of raw black iron partially covers a beard of pale, finger-thick earthworms that wriggle constantly. The helmet's visor covers a writhing, black smudge in place of eyes.",
+      "kindred": "Fomorian",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Solemn",
+        "placid",
+        "mournful"
+      ],
+      "speech": "Slow, calm, deep boom",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "To be relieved of his vigil by the (imaginary) 'Jack-the-Emerald-Cloaked'"
+      ],
+      "secrets": [
+        "A guardian placed here by the fairy trickster Lord Gladhand to toy with mortals wishing to enter the Emerald Door"
+      ],
+      "possessions": [],
+      "location": "Inside the Domed Hall",
+      "stat_reference": "Large Monstrosity—Sentient—Neutral, Level 16 AC 15 HP 64 Saves D2 R3 H4 B5 S6, Att 2 fists (+11, 2d6) or gaze (glassify) Speed 60, Morale 11 XP 4,250",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley line Hoad: Arcane spell-casters perceive the feeling of having just awoken from a dream.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      251
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "hex_id": "0603",
+  "coordinates": [
+    6,
+    3
+  ],
+  "name": "The Ruined Cottage",
+  "tagline": "Choked with thickets of brittle, barbed bushes. The wind whistles with almost voice-like susurrations.",
+  "region": "Dwelmfurgh / Northern Scratch",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Dwelmfurgh / Northern Scr.",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Choked with thickets of brittle, barbed bushes. The wind whistles with almost voice-like susurrations.",
+  "points_of_interest": [
+    {
+      "name": "Charred Cottage",
+      "poi_type": "ruin",
+      "description": "Beside a sluggishly flowing stream, in a clearing ringed by ancient and rotting firs, sit the charred remains of a cottage. Its burnt timbers lie scattered within the roughly square frame of its foundation stones. Tall grasses now occupy its dirt floors, swaying in a gentle breeze.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "At night: Voices murmur near the ruin, muffled and frantic as if in heated debate. This is the sound of 1d3+1 muttering phantoms congregating and exchanging secrets. They manifest among the trees and drift to the cottage's broken doorstep, where they hover for the remainder of the night.",
+      "roll_tables": [
+        {
+          "name": "Secrets of the Phantoms",
+          "die_type": "d6",
+          "description": "Secrets the phantoms are willing to share once per week in exchange for a non-trivial secret of equal value",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "The Big Chook (hex 0606) is in sooth a psychic emanation of a nightmare-plagued dragon slumbering in the lakebed.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "There are still frost elves living in Dwelmfurgh, in a place hidden behind the Falls of Naon (hex 0504).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "The Drune guard a magical mirror of great power upon the Phantom Isle (hex 0706).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "The legendary robber Dewidort of Smerne hid his treasure horde close to Wight Falls (hex 0607).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "The being called the Hag was once a fairy princess; her hut can be found by searching in the central regions of Hag's Addle (hex 0908).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "The lost tower of the renegade Drune called the Aubrathon is on an isle in the Brinemere (hex 1103).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "muttering_phantoms"
+      ],
+      "special_features": [
+        "Approaching the phantoms: If approached with proper deference, they converse warily with the living; if provoked, or if any Drunes are with the party, they attack."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "muttering_phantoms",
+      "name": "Muttering Phantoms",
+      "title": null,
+      "description": "Humanoid figures composed of tendrils of mist and eddies of dead leaves, which combine into larger vortices when the phantoms gather. These minor ghosts are created when a mortal dies clinging to a perilous secret. In death, they value secrets above all else, trading them as a form of currency.",
+      "kindred": "Undead",
+      "alignment": "Any Alignment",
+      "demeanor": [
+        "Curious",
+        "suspicious",
+        "argumentative"
+      ],
+      "speech": "Urgent, barely intelligible murmurs, which become clearer when conversing with the living",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "some Drunic"
+      ],
+      "desires": [
+        "To collect and trade secrets",
+        "To cause mischief for the Drune, whom they dislike and fear"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Ruined Cottage",
+      "stat_reference": "Medium Undead—Sentient—Any Alignment, Level 4 AC 16 HP 4d8 (18) Saves D10 R11 H12 B13 S14, Att Touch (+3, 1d3 + slow death) Speed 40 Morale 9 XP 180",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      252
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

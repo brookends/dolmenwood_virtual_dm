@@ -1,0 +1,121 @@
+{
+  "hex_id": "0201",
+  "coordinates": [
+    2,
+    1
+  ],
+  "name": "Grave of the Aubrathon and Helath Tor",
+  "tagline": "Rusty brown bog riddled with sluggish waterways. Clumps of raised, drier ground dotted with cairns.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d2 portions of Blushing Mandrake (p430), in addition to the normal results",
+    "foraging_special": [
+      "Blushing Mandrake (1d2 portions)"
+    ]
+  },
+  "description": "Rusty brown bog riddled with sluggish waterways. Clumps of raised, drier ground dotted with cairns.",
+  "points_of_interest": [
+    {
+      "name": "The Grave of the Aubrathon",
+      "poi_type": "monument",
+      "description": "The gloomy monotony of a tract of tussocky heath is interrupted by a 7′-tall obelisk of black stone, veined with orange. This is a lonely memorial to the renegade arch-Drune known as the Aubrathon (see p55).",
+      "tagline": null,
+      "entering": null,
+      "interior": "Drunic inscription: \"Aubrathon—Mightiest of the sons of Drune—Dissident heart, indomitable mind, adamant spirit—Wherever thou tarriest may thy bones one day honour the Lodge.\"",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Touching the stone: Causes 1d6 damage to Lawful and Chaotic characters, and heals 1d3 HP to Neutral characters (once a day per character)"
+      ],
+      "secrets": [
+        "The cenotaph was erected 500 years past, when the controversial deeds of the Aubrathon were reappraised by some within the Drune. The monument marks the site of the Aubrathon's final discourse with his acolyte Cylaeth, before he strode north into the bog and vanished without trace."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Helath Tor",
+      "poi_type": "cave",
+      "description": "A high, rocky hill composed of huge, leaning slabs of heather-patched granite stands in the far north of this hex. At its base, a cave mouth can be spied.",
+      "tagline": null,
+      "entering": "The boggy ground outside the cave mouth is dotted with small cairns topped with animal skulls. A foul, animalistic reek emanates from within.",
+      "interior": "A dank cavern, clad with a tapestry of moulds and slimy, black fungi. Water drips from the ceiling into a brackish pool in which bundles of marsh vegetables pickle. Piles of reeds serve as beds.",
+      "exploring": null,
+      "leaving": "Visitors: Are expelled with feigned, exaggerated menace. Those showing an allegiance with the Pluritine Church may be cautiously welcomed.",
+      "inhabitants": "The exiled harridan Nanna Wortgrew lives here along with a domesticated menagerie of lame and wounded bog animals—sheep, swamp sloths, merrimans, crows, and woads. The animals are loyal to Wortgrew, who nurses them to health. Animals who fail to recover are lovingly interred in the skull-adorned cairns outside.",
+      "roll_tables": [],
+      "npcs": [
+        "nanna_wortgrew"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "nanna_wortgrew",
+      "name": "Nanna Wortgrew",
+      "title": "Harridan",
+      "description": "A hulking, hunched ogress, 8′ tall, with pallid, violet skin, sodden black hair, and bulging eyes of livid scarlet. Dresses in rags of velvet and lace, and wears a crystal amulet. Formerly a servant of Atanuwë (p45), she went into self-imposed exile upon being forcibly changed to Lawful Alignment after mockingly donning the amulet (a saintly relic—the Amulet of St Hamfast—captured from slain Pluritine Church pilgrims).",
+      "kindred": "Ogress",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Tender",
+        "suspicious",
+        "Head and limbs twitch involuntarily"
+      ],
+      "speech": "Spluttering and drooling. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To remain hidden from Atanuwë and its minions",
+        "To die human"
+      ],
+      "secrets": [
+        "Has a vague recollection of her former life, before being corrupted by Atanuwë. A quest to a holy site could restore her human form.",
+        "The powers of Atanuwë",
+        "The location and structure of the Court of the Nag-Lord (hex 0904), as well as a secret way from the thorn wall directly into the throne room"
+      ],
+      "possessions": [
+        "The Amulet of St Hamfast"
+      ],
+      "location": "Helath Tor",
+      "stat_reference": "harridan",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Amulet of St Hamfast",
+      "description": "A 2″ crystal, engraved with a Chapes holy symbol and set in a chunk of polished sandalwood. Worth 10,000gp.",
+      "mechanical_effect": "Laying on hands: The wearer can heal 4 Hit Points per day by laying their hands on wounded characters. Speak with animals: The wearer can communicate with normal animals of any species. Alignment change: A non-Lawful character who dons the amulet becomes Lawful and is cursed. The curse is such that the wearer cannot remove the amulet, once in place, and resists attempts to remove it. The curse can be removed by magic or (at the Referee's option) by performing a special quest.",
+      "value": "10,000gp",
+      "location": "Worn by Nanna Wortgrew"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      203
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

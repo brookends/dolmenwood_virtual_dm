@@ -1,0 +1,98 @@
+{
+  "hex_id": "0409",
+  "coordinates": [
+    4,
+    9
+  ],
+  "name": "The Hamlet of Galblight",
+  "tagline": "Scents of onion and garlic. Whorled ash trees sway over a rugged, fern-infested forest floor.",
+  "region": "High Wold",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "At night there is a 2-in-6 chance of encountering a hunting party of 2d4 sleepwalking shorthorns in the woods of this hex or in Galblight",
+    "foraging_results": "Successful foraging yields 1d2 portions of Parson's Gobble, in addition to the normal results",
+    "foraging_special": [
+      "Parson's Gobble (1d2 portions)"
+    ]
+  },
+  "description": "The breggle hamlet of Galblight lies upon the old stone High Road in the south-eastern corner of this hex. The hamlet is little more than a toll-house and an old inn, with a few farmhands' cottages attached. North of the hamlet: Onion, garlic, and turnip fields, and a vineyard specializing in bitter white grapes. Shorthorn peasants toil in these farms daily.",
+  "points_of_interest": [
+    {
+      "name": "The Hamlet of Galblight",
+      "poi_type": "hamlet",
+      "description": "The breggle hamlet of Galblight lies upon the old stone High Road in the south-eastern corner of this hex. The hamlet is little more than a toll-house and an old inn, with a few farmhands' cottages attached.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Inhabitants: 40 shorthorns (30 unarmed villagers, 10 soldiers), ruled over by Captain Lockehorn, a retainer of Lord Ramius.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "40 shorthorns (30 unarmed villagers, 10 soldiers), ruled over by Captain Lockehorn",
+      "roll_tables": [],
+      "npcs": [
+        "captain_cabruc_lockehorn"
+      ],
+      "special_features": [
+        "Toll-house: A dilapidated gatehouse straddles the road. In the daytime, 1d4 shorthorn soldiers demand a toll of 1sp per traveller and 1gp per wagon. At night the gate is closed.",
+        "The Mannish Miser (inn): A former gaol, now converted into a wayside inn. The sign depicts a sour-faced human merchant quibbling over coppers with a longhorn knight. The interior is cramped and low-roofed, with a meagre fire in the grate. In the evenings, most of the hamlet's folk crowd around, cackling and crooning. The establishment is run by a spirited young shorthorn woman named Harryp, who is said to be able to drink anyone beneath the table.",
+        "Barracks: At the rear of the hamlet, hidden in a copse of firs, stands a squat, shale-roofed building of dark stone. Cabruc and her troop of 10 soldiers dwell here in spartan quarters."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "captain_cabruc_lockehorn",
+      "name": "Captain Cabruc Lockehorn",
+      "title": "Ruler of Galblight",
+      "description": "A towering, bearded longhorn woman with a single glowering eye (the other was lost in battle). Wears pompous military dress uniform and an eyepatch. A cunning leader and veteran of many military campaigns. Unwaveringly loyal to Lord Ramius. She is troubled by her master's desire to tame and control the Bicorne, believing Ramius's plan to be both unachievable and a danger to the region.",
+      "kindred": "Longhorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Considered",
+        "taciturn",
+        "Leans with one fist clenched on a table or door frame"
+      ],
+      "speech": "Curt barking. Woldish, Caprice, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "The return of nighttime serenity to Galblight, either by the death or pacification of the Bicorne",
+        "Become Ramius' right-hand woman and live in fancy rooms in Castle Everdusk"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A spiked Arcane Mace with a haft of bone"
+      ],
+      "location": "The Hamlet of Galblight",
+      "stat_reference": "longhorn (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Sleepwalkers: The somnambulant shorthorns are hunting for sentient beings to capture and bring to the lair of the Bicorne (hex 0510), having been roused by the enchanted whisper of that monstrosity",
+    "Captured sacrifices: Are brought to the Bicorne's lair to meet their fate (see hex 0510)"
+  ],
+  "dm_notes": "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead. Services at the Mannish Miser: Lodgings and food of common quality. Accommodation is in former gaol cells, complete with barred windows. Badgers' tongues: A local delicacy: badgers' tongues pickled in bitter garlic butter. 3sp a serving. Utterly terrible wine: 3sp per glass. Stabling and fodder: 2sp per night at the farms, 3sp per night in a protected courtyard.",
+  "adjacent_hexes": [],
+  "roads": [
+    "High Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      234
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

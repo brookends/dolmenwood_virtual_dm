@@ -1,0 +1,130 @@
+{
+  "hex_id": "0802",
+  "coordinates": [
+    8,
+    2
+  ],
+  "name": "Avernal Lake",
+  "tagline": "Gnarled old elms and oaks with twisted, eye-like whorls and branches groping like greedy fingers.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d4 cannibals (see hex 0801), attempting to capture travellers and drag them back to their lair",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Shrouded in mists, close to the northern borders of Dolmenwood, Avernal Lake is placid, deep, and mysterious. River trade: Barges bearing goods between Fort Vulgar and the realm to the north stick close to the northern and western banks of the lake as they make their way to Quogg's Creek, fearing the open waters and the southern banks in particular. Disused dock: The trade barges sometimes halt at an old dock on the lake's northern shore. Passage to Fort Vulgar: The barges may sometimes accept passengers for a fee of 1gp each to Fort Vulgar (the journey takes eight hours, from this point).",
+  "points_of_interest": [
+    {
+      "name": "The Sunken Keep",
+      "poi_type": "ruin",
+      "description": "The partially submerged ruin of a small keep of human origin is visible 100 yards offshore, half a mile east of the mouth of Quogg's Creek. It appears to be unoccupied. The barge pilots have good reason to eschew the southern banks of the lake: Sowynder (phlegm wyrm—DMB) lairs in the ruin.",
+      "tagline": null,
+      "entering": "Adventurers walking on the southern shoreline have a 2-in-6 chance of encountering the wyrm as it bathes and suns itself in the shallows.",
+      "interior": "The wyrm dwells in a flooded courtyard surrounded by crumbling 30′ walls; at the base of one of them is a large jagged opening onto the lake.",
+      "exploring": "PCs have a 3-in-6 chance of attracting the wyrm's attention when exploring the ruin, and automatically do so when they enter its courtyard.",
+      "leaving": null,
+      "inhabitants": "Sowynder (phlegm wyrm) lairs in the ruin.",
+      "roll_tables": [],
+      "npcs": [
+        "sowynder"
+      ],
+      "special_features": [
+        "Treasure: In one corner of the courtyard rests a portion of the battlement that has collapsed from above and now protrudes above the waterline. Under the top layer of broken stone debris, the wyrm has stored 1,500gp and a necklace of rose quartz and carnelian (1,100gp)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Days of the New Moon",
+      "poi_type": "ritual site",
+      "description": "2d4 witches (DMB) from the local area make their way here at dawn on days of the new moon to commune with the wyrm. The summoning: The witches row out onto the lake upon barges and summon the wyrm with haunting music. The harvest: The wyrm hovers dreamily above the water, eyes half-shut. As the serenade continues, a small group of witches in a skiff approach its flank to milk a magical fluid from the flesh between its scales. The fluid is a poison that the witches use in their rituals.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "2d4 witches from the local area",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Intruding at peril: Neither the witches nor the wyrm take kindly to any intrusions on the ceremony, and react accordingly. They ignore those watching from a safe distance."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Nights of the Full Moon",
+      "poi_type": "fairy city",
+      "description": "On nights of the full moon, the fairy city of the Lady of Midnight (p33), Tainglass, glitters in the depths of the lake.",
+      "tagline": null,
+      "entering": "One who descends into Avernal's depths and swims towards this vision might, at the Referee's option, gain entry to Tainglass, though they lose consciousness in the process, awakening washed up on the shores of another misty lake that lies in the city's crypts.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The fairies of Tainglass",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Lost to this world: The fairies of Tainglass pity such castaways from the mortal world, for their memories are void and seldom return."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "sowynder",
+      "name": "Sowynder",
+      "title": "Phlegm Wyrm",
+      "description": "A juvenile phlegm wyrm with 5 golden eyes and a bifurcated tail which she lashes when excited.",
+      "kindred": "Phlegm Wyrm",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Languid",
+        "sweetly amicable",
+        "Feigns loneliness to put potential victims off guard"
+      ],
+      "speech": "Whining, whistling, gurgling",
+      "languages": [
+        "Woldish",
+        "Wyrm"
+      ],
+      "desires": [
+        "The flesh of sentients, favouring the sweet meat of grimalkins",
+        "The ecstasy of beautiful music",
+        "Finely crafted jewels"
+      ],
+      "secrets": [],
+      "possessions": [
+        "1,500gp",
+        "necklace of rose quartz and carnelian (1,100gp)"
+      ],
+      "location": "The Sunken Keep",
+      "stat_reference": "phlegm wyrm (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Vulnerability: Roses"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      275
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

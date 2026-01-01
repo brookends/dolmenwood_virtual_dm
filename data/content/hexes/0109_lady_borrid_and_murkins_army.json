@@ -1,0 +1,150 @@
+{
+  "hex_id": "0109",
+  "coordinates": [
+    1,
+    9
+  ],
+  "name": "Lady Borrid and Murkin's Army",
+  "tagline": "Ancient coppices of hazel and chestnut. North-south paths are trampled with bootprints.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Ancient coppices of hazel and chestnut. North-south paths are trampled with bootprints.",
+  "points_of_interest": [
+    {
+      "name": "Lady Borrid's Hunting Lodge",
+      "poi_type": "lodge",
+      "description": "Among the thickets of blackthorn in the north of the hex is a small, high-gabled brick manor, replete with pointed turrets and balconies surveying the woods.",
+      "tagline": null,
+      "entering": "An unlocked front door engraved with hunting motifs leads to a wood-panelled hall, at the far end of which hangs a mighty moose head. Entering without permission causes the moose head to bellow, alerting all within to the intrusion.",
+      "interior": "Feasting hall with plush, ivy-carved wooden furnishings and decked with the taxidermied heads, horns, and antlers of a multitude of fearsome beasts, including a manticore's head, an antler wraith's antlers, and a 5′ wide wyrm's skull with the inscription 'The Wyrm of Odd.' Upper floor has bedroom suites furnished in a luxurious but modest style.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Lady Borrid, her animal companion Brynne—a white-furred giant weasel (DMB—unfailingly loyal to Lady Borrid, does not check Morale), and 1d6 hunting companions (Level 1 hunters—DMB).",
+      "roll_tables": [],
+      "npcs": [
+        "lady_amonie_borrid"
+      ],
+      "special_features": [
+        "Horn of Blasting concealed among trophies",
+        "Secret chamber in cellars with vault containing chalices and jewels worth 8,000gp, a Fairy Shortbow carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane)"
+      ],
+      "secrets": [
+        "Secret door in the cellars leads to a vault containing chalices and jewels worth 8,000gp, a Fairy Shortbow (p412) carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane, p412)"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Murkin's Army",
+      "poi_type": "military camp",
+      "description": "In a secluded dell in the south of the hex, a mile into the woods, can be found a ring of canvas tents, sloppily camouflaged with sprays of bracken and oak. Clustered to one side are tables, log stools, barrels of pickled turnips and eggs, and racks of hanging squirrels and rabbits.",
+      "tagline": null,
+      "entering": "Visitors are brought before Snidebleat for questioning, then brusquely told to move along.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "18 shorthorns (DMB) and 22 humans (Level 1 fighters—DMB) under the command of the longhorn Sergeant Snidebleat. The troops' morale is low, many of them having been press-ganged into service.",
+      "roll_tables": [],
+      "npcs": [
+        "sergeant_crewwin_snidebleat"
+      ],
+      "special_features": [
+        "Pike training",
+        "Marching in formation",
+        "Constantly steaming pot of stew"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_amonie_borrid",
+      "name": "Lady Amonie Borrid",
+      "title": "Level 9 Hunter",
+      "description": "A limber human woman in her 50s, with arched brows, chestnut eyes, and a blonde braid down her back. Dresses in a green woollen tunic and brown leather breeches. While she spent her youth roaming the deep woods, avoiding political matters, Borrid now follows the manoeuvrings of the High Wold noble houses with concern. She is famed throughout Dolmenwood for having slain a mighty blood wyrm that terrorised Odd.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Quiet vigilance",
+        "broken with gentle laughter"
+      ],
+      "speech": "Precise, considered. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "To turn back the tides of war in the High Wold",
+        "Views Lord Ramius (p65) as potential peacemaker"
+      ],
+      "secrets": [
+        "Maternal cousin of Lord Murkin (p65)"
+      ],
+      "possessions": [
+        "A cloak of autumnal leaves (grants +2 AC)",
+        "A Bag of Holding (p420) containing 2,000gp"
+      ],
+      "location": "Lady Borrid's Hunting Lodge",
+      "stat_reference": "Level 9 Hunter",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "sergeant_crewwin_snidebleat",
+      "name": "Sergeant Crewwin Snidebleat",
+      "title": "Level 4 Knight",
+      "description": "A longhorn woman with russet fur, amber eyes, and 2′-long, outward curving horns. Dresses in burnished plate mail with a full visor helm. Snidebleat is a member of Lord Murkin's (p65) knightly retinue, the Horns of Kolstoke. Her loyalty is bought—she loathes Murkin and his pompous schemes.",
+      "kindred": "Longhorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Air of refinement",
+        "enjoys humiliating her lessers"
+      ],
+      "speech": "Eloquent, husky. Woldish, Caprice, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "To see Murkin ridiculed",
+        "Glory in easily-won skirmishes",
+        "Ascent to a position of aristocracy and wealth",
+        "Assistance in brokering a potential alliance with Red Gwen (hex 0311) to accomplish said goals"
+      ],
+      "secrets": [
+        "She loathes Murkin and his pompous schemes"
+      ],
+      "possessions": [
+        "A Ring of Energy Resistance (Fire, p410), searing to the touch",
+        "A pouch of 20 onyxes (50gp each)"
+      ],
+      "location": "Murkin's Army",
+      "stat_reference": "Level 4 Knight",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Making ready for the hunt: Borrid and her companions are preparing to venture north to hunt down the cheese monstrosity rumoured to lair in central Dwelmfurgh (see hex 0405). Friendly PCs may be invited to join the hunt. Activities at Murkin's Army: Mustering for war against House Nodlock (see Human Nobility, p56). For now, this consists mainly of pike training, marching in formation, and furtive swilling of ale.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      200
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "hex_id": "0702",
+  "coordinates": [
+    7,
+    2
+  ],
+  "name": "Drigbolton and the Oath House",
+  "tagline": "Patches of sodden heathland cling between hills crowned with flaming heather.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d4 cannibals (see hex 0801), attempting to capture travellers and drag them back to their lair",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Patches of sodden heathland cling between hills crowned with flaming heather.",
+  "points_of_interest": [
+    {
+      "name": "The Hamlet of Drigbolton",
+      "poi_type": "hamlet",
+      "description": "Clinging onto existence in the borderlands just beyond the Duchy of Brackenwold's northern border, Drigbolton consists of a cluster of rude cottages and barns and an old wooden church. It is home to a few dozen goatherds.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A few dozen goatherds",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Ancient crossroads: Drigbolton sits a few miles south of the junction of two forgotten roads: the ancient trade road that crosses the Downs and an abandoned road that once led to Fort Vulgar (hex 0604)",
+        "The King Deer (inn): A cramped place with three round tables and stools for fifteen. The horns of prize goats are displayed on wooden plaques behind the bar. The inn is run by a tall, elegant, middle-aged woman named Frey, a thickset, red-haired man named Limber, and Frey's two adult sons from her former marriage—Wiggyl and Brag",
+        "Church of St Gretchen: A dour, cone-roofed, windowless structure of rough-hewn cedar boards. A red carnelian idol depicts the saint carrying a bucket, with a goat at her side. Characters praying may receive the blessing of St Gretchen: the ability to cast Purify Food and Drink",
+        "Repast rooms: Remnants of ancient ancestor-worship survive in Drigbolton. Each dwelling (including the inn) possesses a locked chamber called a repast room, wherein the mummified corpses of a family's ancestors are propped up at a table in a gesture of prayer and have food and drink placed in their mouths at dusk each day. The villagers consider it taboo to discuss these rooms"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Oath House",
+      "poi_type": "manor",
+      "description": "Nestled in a valley in the chalk downs in the north of the hex stands a small manor known locally as the Oath House.",
+      "tagline": null,
+      "entering": "Cracked granite steps lead up to a tiled porch containing solid, black-lacquered double doors with a brass door knob and a knocker in the form of a mermaid.",
+      "interior": "Cheerlessly clean, sparsely furnished halls, with cosy and much-used libraries, studies, and smoking rooms. Central tower: A tall, stone room plastered with maps and charts of the cosmos, dominated by an elaborate, brass star-viewing apparatus.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Laird Alhoyle Spinnewith IV—the local lord and a sage of small renown—and Godfried Whelm, manservant, cook, butler, and groundsman. Traditionally, Drigbolton's headman pays fealty to the laird, though the latter takes no direct role in the governing of the hamlet.",
+      "roll_tables": [],
+      "npcs": [
+        "laird_alhoyle_spinnewith_iv"
+      ],
+      "special_features": [
+        "Appearance: The manor is some centuries old but is well maintained, with rows of tidily clipped hedges and neat garden borders surrounding it. Architecturally, the manor is noteworthy for its single central tower, directly above the main entrance",
+        "Visitors: May be welcomed out of curiosity, if they seem well-mannered and erudite"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "laird_alhoyle_spinnewith_iv",
+      "name": "Laird Alhoyle Spinnewith IV",
+      "title": "Sage",
+      "description": "A pale, delicate human man in his fifties, with a sensitive gaze, clear grey eyes, enormous grey sideburns, and dazzlingly perfect teeth (revealed when he smiles—seldom). He dresses in quality but well-worn silks and linens, typically sporting a smoking jacket to accompany the pipe on which he constantly puffs. The laird is unmarried and set to be the last of his line—he has devoted his life to esoteric study and has little time for romance.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Vacillates between regally standoffish and enthusiastically familiar"
+      ],
+      "speech": "Excessively upper-class. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "The secrets of the stars",
+        "Books of occult lore"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A rare copy of the notorious Black Book of Llareggub (worth 2,500gp), describing, among other demonic summonings, dangerous rituals for communion with the daemons that inhabit stars"
+      ],
+      "location": "The Oath House",
+      "stat_reference": null,
+      "is_combatant": false,
+      "knowledge": "Specialises in astronomy, astrology, and ley lines. Apply the standard rules for hiring a sage (DPB)."
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Services at the King Deer - Lodgings and food: Of poor quality (DPB). Crabber: Bitter crab apple scrumpy, 8cp a mug.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Ancient trade road that crosses the Downs",
+    "Abandoned road that once led to Fort Vulgar (hex 0604)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      263
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

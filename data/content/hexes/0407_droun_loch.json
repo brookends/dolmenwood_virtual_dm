@@ -1,0 +1,122 @@
+{
+  "hex_id": "0407",
+  "coordinates": [
+    4,
+    7
+  ],
+  "name": "Droun Loch",
+  "tagline": "A befuddling maze of boulders and crumbling cliffs. Pale owls stare down from quiet, dark pines.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters by the lakeside are 2-in-6 likely (3-in-6 likely at night) to be with Red Henry or The Girl With Blue Lips",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "This lonely, forsaken lake, nearly 3 miles across, is circled by tall hills that often end in abrupt, pine-clad cliffs overlooking the placid waters. Abnormally quiet: Sound is muted, as if something in the water is drinking it out of the air. Drune markings: Many of the surrounding trees are scratched with owl sigils—markings of Drune presence. Trapped souls: The dark waters of the Loch seethe with gaping phantoms, visible just beneath the surface. These are the souls of those who cast themselves from the cliffs, called here by insidious dreams promising occult power in the afterlife. Random screams: Adventurers exploring the shores have a 1-in-6 chance of hearing a disembodied scream, followed by a profound splash.",
+  "points_of_interest": [
+    {
+      "name": "Droun Loch",
+      "poi_type": "lake",
+      "description": "This lonely, forsaken lake, nearly 3 miles across, is circled by tall hills that often end in abrupt, pine-clad cliffs overlooking the placid waters.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "At Dawn and Dusk: Adventurers may spot 1d4 Drune cottagers (DMB) in a rowing boat, skimming the lake surface with glowing nets. These men are collecting luckless souls to bring back to the Drune Lodge (hex 0507), where they power the Drune's thaumaturgic engine.",
+      "leaving": null,
+      "inhabitants": "The Girl with Blue Lips and Red Henry haunt the shores. The dark waters seethe with gaping phantoms of trapped souls.",
+      "roll_tables": [],
+      "npcs": [
+        "the_girl_with_blue_lips",
+        "red_henry"
+      ],
+      "special_features": [
+        "Abnormally quiet - sound is muted",
+        "Drune markings on trees",
+        "Trapped souls visible beneath surface",
+        "1-in-6 chance of hearing disembodied scream followed by splash"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_girl_with_blue_lips",
+      "name": "The Girl With Blue Lips",
+      "title": "Lake Phantom",
+      "description": "A spectral little human girl who hides amongst the rocks and brush along the shore, her skin pale and her lips oxygen-deprivation blue. She is the daughter of a woodsman who threw himself from the tallest of the cliffs, many years ago. She tragically drowned while looking for her father's body. Now she roams the perimeter of the lake searching for his soul.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Constant shivering",
+        "Terrified of Red Henry, whom she calls 'Red Eyes'"
+      ],
+      "speech": "Meek whining. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To find her lost father",
+        "To make 'Red Eyes' go away",
+        "To warm up"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A family heirloom necklace (150gp) secreted near the base of the cliff from which her father leapt"
+      ],
+      "location": "Droun Loch shores",
+      "stat_reference": "Spectre (DMB) with 6 Hit Points",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "red_henry",
+      "name": "Red Henry",
+      "title": "Lake Phantom",
+      "description": "The flickering apparition of a haggard human soldier, with glowing red eyes and skin stretched so tight as to reveal the outline of his skull. In his mortal life, Henry was a sadistic mercenary who was summoned here by the insidious dreams of the Loch.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Jittery",
+        "brash",
+        "Face bears a fixed, unnatural grin"
+      ],
+      "speech": "Crazed shrieking and cackling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Blood, mayhem, death",
+        "To torment the souls imprisoned in the lake's waters",
+        "To imprison The Girl with Blue Lips with them, because her morose presence is just ruining his fun"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Victims' remains, hidden in a small cave: 58gp, 2,100sp, a pearl ring (800gp), a flanged Arcane Mace (Bloodthirsty, p412)"
+      ],
+      "location": "Droun Loch shores",
+      "stat_reference": "Spectre (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      232
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "hex_id": "0501",
+  "coordinates": [
+    5,
+    1
+  ],
+  "name": "The Bog Hermit",
+  "tagline": "A foul, cloying mist drifts around, rising from stagnant pools. Remnants of ancient walls dot the landscape.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A foul, cloying mist drifts around, rising from stagnant pools. Remnants of ancient walls dot the landscape.",
+  "points_of_interest": [
+    {
+      "name": "Downs Road",
+      "poi_type": "road",
+      "description": "The ancient road that runs along the ridge of the Table Downs descends from the slope of the last hill in hex 0601 and disappears without trace in the fens of this hex.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Sickening Stone",
+      "poi_type": "monolith",
+      "description": "A short monolith of black stone (3′ wide and 5′ tall), patched with lichen, can be spied amid a copse of twisted, wind-swept trees.",
+      "tagline": null,
+      "entering": "The wind goes still and all who enter must Save Versus Doom or be sickened for the rest of the day (–1 penalty to Attack Rolls and Saving Throws).",
+      "interior": null,
+      "exploring": "Beneath the lichen are magical runes. If deciphered (e.g. with Decipher), the runes reveal the spell Fear (see Uncommon Spells, p454). An arcane spell-caster who studies the runes (1 hour) may copy this spell into a spell book.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Save Versus Doom or be sickened for the rest of the day (–1 penalty to Attack Rolls and Saving Throws)",
+        "Runes reveal Fear spell if deciphered",
+        "Arcane spell-caster can copy Fear spell after 1 hour study"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Witch's Hut",
+      "poi_type": "hut",
+      "description": "In the south of the hex, close to the eaves of Dolmenwood, lie the ruins of an ancient settlement, utterly lost to history and now almost subsumed in the slime and creepers of the bog. A single, decrepit hut stands amid the ruins, smoke rising from its tin chimney.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A clutter of rustic furnishings, fishing nets, and pungent dried fish. A violet fire burns in the hearth.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The witch (DMB) Helligora Ambe lives as a hermit, along with her lamb familiar, Whipple.",
+      "roll_tables": [],
+      "npcs": [
+        "helligora_ambe",
+        "whipple"
+      ],
+      "special_features": [
+        "Those who have travelled the Table Downs are enthusiastically welcomed, if they agree to tell of what they have seen there. Others are shunned."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "helligora_ambe",
+      "name": "Helligora Ambe",
+      "title": "Witch—Eye of Hasturiel",
+      "description": "A tall, frail human woman of youthful mien (seemingly in her 20s, but actually 45 years old), with straight white hair to her waist, dull grey eyes, and several teeth missing. Her bones creak as she moves. Dresses in rough woollens, thickly layered against the cold and damp.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jittery",
+        "Terrified of the \"Flayed Queen,\" an undead being whose power in the Table Downs is waxing, or so she believes"
+      ],
+      "speech": "Cracking, jittery. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Information pertaining to the movements of the Flayed Queen and her undead servants in the Table Downs (see hex 0701)",
+        "To unravel the riddle of the ring and parchment she possesses"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Smerne's Ring (a red soapstone Ring of Encystment—p410)",
+        "Smerne's Riddle"
+      ],
+      "location": "The Witch's Hut",
+      "stat_reference": "witch (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "whipple",
+      "name": "Whipple",
+      "title": null,
+      "description": "A young, capering lamb with thick, black wool. It weeps tears of blood.",
+      "kindred": "Small Animal",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Capering"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "If killed: The lamb's spirit rises as a smoky form, attacking as a spectre (DMB)"
+      ],
+      "possessions": [],
+      "location": "The Witch's Hut",
+      "stat_reference": "Level 1 AC 11 HP 2 Saves D12 R13 H14 B15 S16",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Smerne's Ring",
+      "description": "A red soapstone Ring of Encystment",
+      "type": "magic item",
+      "reference": "p410"
+    },
+    {
+      "name": "Smerne's Riddle",
+      "description": "A frayed scrap of parchment with the following riddle: Margarette, now yours, My last fortune endures, The wolf of Smerne wards it. Locked within willing stone, As the cleft rock is known, To the Drune who defend it.",
+      "type": "document",
+      "reference": null
+    }
+  ],
+  "secrets": [
+    "The riddle refers to Smerne's hoard, hidden using the ring's magic inside the Willingstone in hex 0607. The command word to release the hoard is \"Egrydgenn\"—the name engraved at the base of the great wolf statue in the ruined village of Smerne (hex 0301)."
+  ],
+  "dm_notes": "Helligora Ambe knows that both items are inherited from her ancestor, the infamous highwayman Dewidort of Smerne (see hex 0607), but does not understand their significance. Whipple has special ability: Secret name of Hasturiel (once a day): The lamb can bleat the secret name of Hasturiel, causing beings of Level 6 or lower within 20′ to flee in terror for 2 Turns (Save Versus Hold to resist).",
+  "adjacent_hexes": [],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      238
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "hex_id": "0812",
+  "coordinates": [
+    8,
+    12
+  ],
+  "name": "The Shadow Revel",
+  "tagline": "Wild, tussocky grassland dotted with copses of oak, each trunk featuring a whorl alike to a suspicious eye.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Wild, tussocky grassland dotted with copses of oak, each trunk featuring a whorl alike to a suspicious eye.",
+  "points_of_interest": [
+    {
+      "name": "The Shadow Revel",
+      "poi_type": "monolith",
+      "description": "A gigantic sandstone monolith, 30′ tall and 10′ across, stands alone in a field of thistles. Those who study the stones of Dolmenwood know it as Twolgstone. Plant life in a 60′ radius area around the stone is flattened, as if a mighty wind had blasted out from the stone.",
+      "tagline": null,
+      "entering": "If any living person approaches the revelry, one of the shadowy dancers reaches out their hand. A whispering voice, carried on the wind, invites: \"come and join the dance.\"",
+      "interior": "If shadows are visible (depending on lighting conditions), a strange revelry can be seen in the flattened area surrounding the stone. Dozens of dancing shadows silently move in procession, projected on the ground around the monolith, prancing and waving their arms in a rising and falling rhythm.",
+      "exploring": "Every 30 minutes or so, the dance reaches a lull and the shadows may be conversed with.",
+      "leaving": "Once mingled among the dancers, a person's shadow can be retrieved only if it is replaced with another shadow. Using magic of curse removal, cast in this location, is also effective.",
+      "inhabitants": "Dancing shadows of all shapes and sizes, some seemingly dressed in elaborate costumes, with broad-brimmed hats, flailing wigs, and masks visible.",
+      "roll_tables": [],
+      "npcs": [
+        "dancing_shadows"
+      ],
+      "special_features": [
+        "Taking a shadow's hand: The person's own shadow slips away from their body and joins the dance, quickly getting lost in the throng.",
+        "Effects of Losing One's Shadow: Someone whose shadow has absconded does not notice any immediate change, other than the uncanny experience of not casting a shadow. In lighting conditions where shadows are visible, the character suffers a –2 penalty to Reaction Rolls with everyday folk and normal animals, who are unnerved by a person unaccompanied by their shadow."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "dancing_shadows",
+      "name": "Dancing Shadows",
+      "title": null,
+      "description": "Humanoid shadows of all shapes and sizes, some seemingly dressed in elaborate costumes, with broad-brimmed hats, flailing wigs, and masks visible. The shadows move with a life of their own but are projected on the ground and other surfaces, lengthening and contracting as normal shadows, according to the prevailing light.",
+      "kindred": "Shadow",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Merry",
+        "elegant",
+        "Peaceful",
+        "vanish if attacked"
+      ],
+      "speech": "Soft whispering, carried on the wind",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Live music played by an accomplished musician",
+        "More shadows to dance with"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Shadow Revel",
+      "stat_reference": "Shadow, DMB",
+      "is_combatant": true,
+      "rewards": "The shadows reward anyone whose shadow has joined their number, or who has entertained them with music, granting the ability to cast Summon Shadow once. If an arcane spell-caster brings six or more shadows to join the dance, the shadows reveal the secrets of the Summon Shadow spell. The character may then copy this spell into a spell book."
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      285
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

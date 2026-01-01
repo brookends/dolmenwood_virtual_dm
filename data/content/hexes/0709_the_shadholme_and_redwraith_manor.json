@@ -1,0 +1,128 @@
+{
+  "hex_id": "0709",
+  "coordinates": [
+    7,
+    9
+  ],
+  "name": "The Shadholme and Redwraith Manor",
+  "tagline": "Dense, foreboding shadows. A sense of being observed is exacerbated by the unnatural echoing of sound.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Dense, foreboding shadows. A sense of being observed is exacerbated by the unnatural echoing of sound.",
+  "points_of_interest": [
+    {
+      "name": "The Shadholme",
+      "poi_type": "tomb complex",
+      "description": "In the far south of the hex, Manor Road passes by the Malbleat family tomb complex known as the Shadholme.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Lodge: A ceremonial lodge marking the entrance to the tombs. Guarded by 10 shorthorn guards. Crypts: Beneath the lodge lie the crypts of the Malbleat family, where many generations of longhorns are interred. The Black Tomb: In the depths of the crypts lies an obsidian coffer housing the mortal remains of the great longhorn sorcerer, Lord Gnarlgruff. Malbleat, obsessed with the mage's arcane secrets, visits often, contemplating rituals to raise Gnarlgruff from the dead.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "10 shorthorn guards at the lodge",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Secret tunnel (hidden): A concealed trapdoor in the forest floor close to the Shadholme leads down to a damp tunnel that emerges in the Church of St Pastery in Lankshorn. Father Dobey uses this tunnel to secretly come and go from Lankshorn."
+      ],
+      "secrets": [
+        "Hidden tunnel to Church of St Pastery in Lankshorn"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Redwraith Manor",
+      "poi_type": "manor",
+      "description": "The Manor Road from Lankshorn winds through tangled woods to the gates of the estate of Lord Malbleat.",
+      "tagline": null,
+      "entering": "Iron gates, wrought into the shape of two goats butting heads, are secured with a thick chain and padlock and warded by 1d4 shorthorns. Only those bearing an official invite or occult secrets are admitted for an audience with Lord Malbleat.",
+      "interior": "Creaky halls and chambers of maroon-varnished wood, clad with ancient portraits, maps, ceremonial shields, and exquisite artworks. Rushed staff struggle to maintain the luxurious, refined furnishings in pristine condition.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Lord Malbleat, his 2 longhorn wives (Gerytrud and Hrend), his 5 human wives (including Bronywyn Baldricke, daughter of Berkmaster Baldricke), a dozen children who roam the halls at will, a small staff of servants (shorthorns and humans), 3 longhorn sorcerers and alchemists who assist Malbleat in his eldritch pursuits, and 15 shorthorn guards.",
+      "roll_tables": [],
+      "npcs": [
+        "lord_malbleat"
+      ],
+      "special_features": [
+        "Wall: An ancient stone wall, festooned with ferns and moss and topped with iron spikes, rings the estate.",
+        "Grounds: Within the wall is a rambling and overgrown series of tiered gardens, fish-ponds, fountains, and small hedge mazes. 2 Lankston mastiffs may be released to see off intruders.",
+        "Hothouse: At the rear of the manor, a dome of glass panes houses a steamy tangle of vines, flowers, and creepers, buzzing with flesh-eating flies.",
+        "Drawing room: Richly appointed with fine oak furniture, crystal chandeliers, and goose feather cushions. An imposing portrait of a black-horned longhorn dressed in sable robes and holding a crooked oak staff hangs above the fireplace, glaring at visitors. The inscription in the golden frame reads: 'Lord Gnarlgruff.'",
+        "Library: Protected by a magically warded door and 4 animated suits of armour (as gargoyles). Ancient, superbly crafted shelves house hundreds of volumes on history, poetry, and the occult. Atop a carved walnut pedestal sits a locked glass case, containing Malbleat's necromantic tome and an ornate bronze page turner."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lord_malbleat",
+      "name": "Lord Malbleat",
+      "title": "Lord",
+      "description": null,
+      "kindred": "Longhorn",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Raising Lord Gnarlgruff from the dead",
+        "Arcane secrets"
+      ],
+      "secrets": [
+        "Obsessed with the mage's arcane secrets",
+        "Visits the Black Tomb often, contemplating rituals to raise Gnarlgruff from the dead"
+      ],
+      "possessions": [
+        "Necromantic tome (in locked glass case in library)"
+      ],
+      "location": "Redwraith Manor",
+      "stat_reference": "p64",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Necromantic tome",
+      "description": "Malbleat's necromantic tome in locked glass case",
+      "location": "Library in Redwraith Manor",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Ornate bronze page turner",
+      "description": "An ornate bronze page turner in the locked glass case",
+      "location": "Library in Redwraith Manor",
+      "value": null,
+      "magical": false
+    }
+  ],
+  "secrets": [
+    "Hidden tunnel from Shadholme to Church of St Pastery in Lankshorn"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Manor Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      270
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

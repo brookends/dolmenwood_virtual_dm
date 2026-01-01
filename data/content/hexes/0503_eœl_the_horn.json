@@ -1,0 +1,123 @@
+{
+  "hex_id": "0503",
+  "coordinates": [
+    5,
+    3
+  ],
+  "name": "Eœl \"The Horn\"",
+  "tagline": "Chill, mist-filled depressions. Wicked thorn trees, in whose gnarled bark morose faces seem to leer.",
+  "region": "Dwelmfurgh / Northern Scratch",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Dwelmfurgh / Northern Scr.",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 4-in-6 likely to be with the Audrune Morgodh and 1d6 bramblings (DMB)",
+    "foraging_results": "Successful foraging yields 1d2 portions of Rindlewort (p430), in addition to the normal results",
+    "foraging_special": [
+      "Rindlewort (1d2 portions)"
+    ]
+  },
+  "description": "Domain of the Destroyer. All who enter this hex come under the debilitating influence of the Summerstone Eœl and trespass in the domain of the Audrune Morgodh, fell guardian of the stone. Debilitating energy: Eœl exudes a powerful debilitating energy, nauseating all within this hex: –2 penalty to Attack Rolls and Saving Throws, and spells have a 3-in-6 chance of failure. The interference with spell-casting makes this place especially dangerous to the Drune, who only come here when absolutely necessary. Morgodh's wrath: Morgodh is aware of all who enter this hex, and tracks them down and attacks them without mercy.",
+  "points_of_interest": [
+    {
+      "name": "Morgodh's Cottage",
+      "poi_type": "cottage",
+      "description": "This hovel is formed entirely from a dense weave of thorn bushes, and is barely distinguishable from the briar patch in which it nestles.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Sparsely furnished with a rough wicker cot and two tables covered with an assortment of odd items (worth up to 100gp if sold to an apothecary): animal skins, dried mushrooms, rodent organs, and powdered dung.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Cellar: Concealed behind stacks of twisted roots are 200pp, a pouch of Mogglemoss (DPB—15 smokes), a silver casket engraved with an elf maiden bathing in moonlight (200gp, contains 6 portions of Dust of Extinguished Ghosts)."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Summerstone Eœl",
+      "poi_type": "standing stone",
+      "description": "The Summerstone Eœl lies at the heart of an especially tangled and thorny part of the woods. The basalt slab (15′ high, 8′ around) is partly overgrown by the briar bushes surrounding it. It is known to the Drune as the Horn, due to its positioning as the northernmost of the warding stones.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Guardian: The Audrune Morgodh.",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_morgodh"
+      ],
+      "special_features": [
+        "Balmy stillness: The stone is surrounded by a 120-yard radius of hazy warmth and balmy stillness of the air, reminiscent of the intoxicating days of high summer.",
+        "Inscribed spell: Drunic runes describe the arcane spell Dispel Magic. See Ley Lines and Standing Stones, p18 for details on learning this spell.",
+        "Touching: Anyone who touches Eœl continues to suffer its effects (see Debilitating energy) for 1d3 days after leaving this hex. However, if they strike an opponent in combat during that time, the debilitating effects are transferred to the opponent.",
+        "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold.",
+        "Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_morgodh",
+      "name": "The Audrune Morgodh",
+      "title": "The Destroyer",
+      "description": "A hulking human man cloaked in black and wreathed in a sickly purple mist. Known to his fellow Drune as \"the Destroyer,\" due to his legendary ruthlessness towards those who would interfere with Eœl. Morgodh's features are inscrutable beneath his black cowl.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Single-minded",
+        "bestial fervour"
+      ],
+      "speech": "Rasping, violent ranting",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Actually welcomes trespassers, as he takes singular joy in dispatching them"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A charred Arcane Staff (Impact, p412)",
+        "A flame-wreathed Ring of Charming (Humans, p410)"
+      ],
+      "location": "The Summerstone Eœl",
+      "stat_reference": "Audrune (DMB) with 48 Hit Points",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Dust of Extinguished Ghosts",
+      "description": "A semi-transparent, floury powder. Each portion is worth 4,000gp.",
+      "mechanical_effect": "Throwing: A portion forms a 10′ cloud when thrown in the air. Everything it coats is rendered visible for 2d10 Turns, negating magic of invisibility, camouflage, displacement, and mirror imaging.",
+      "value": "4,000gp per portion"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      240
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "hex_id": "0504",
+  "coordinates": [
+    5,
+    4
+  ],
+  "name": "The Falls of Naon and the Embassy",
+  "tagline": "The falls can be heard throughout this hex. Cool spray and mist can be felt up to a mile distant.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The falls can be heard throughout this hex. Cool spray and mist can be felt up to a mile distant. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "The Falls of Naon",
+      "poi_type": "waterfall",
+      "description": "The river Hameth plummets over a stony cliff, 200′ high, and crashes down upon the rocks below in a booming cacophony.",
+      "tagline": null,
+      "entering": "The waters of the Hameth narrow, accelerate, and plummet over the falls.",
+      "interior": "The banks of the river and the summit of the falls are slick with mud and spray. A stairway, carved into the rock, winds down the cliff face on the western side of the falls to the wooded slopes at the base.",
+      "exploring": "Anyone moving carelessly (e.g. in melee) must make a Dexterity Check once every 2 Rounds or fall. Half way down the steps, a platform and an open door—both concealed by fairy glamours—lead into a series of hidden caverns.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Slippery banks and summit",
+        "Carved stone steps down western cliff face",
+        "Secret door concealed by fairy glamours"
+      ],
+      "secrets": [
+        "Secret entrance to hidden caverns visible to those who can detect magic or the invisible"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Embassy in the Hidden Caverns",
+      "poi_type": "embassy",
+      "description": "A small retinue of frost elves lives in isolation in the secret caverns behind the torrent of the falls. By ancient, uncircumventable decree, the Cold Prince's embassy to mortal folk was excluded from the ban of Chell.",
+      "tagline": null,
+      "entering": "A 12′ high, arched gate of polished black fairy wood. Pillars on each side are carved in the form of trees whose branches meet and intertwine above the door. The door is locked by magic, but knocking summons a butler.",
+      "interior": "Several hundred yards of winding tunnels and icicle-clad grottoes, all lit with a lambent blue light of unknown origin. A series of baroquely appointed reception rooms, legal libraries, and guest suites, arranged around a central banquet hall decked with taxidermied unicorns' heads.",
+      "exploring": "No guest has visited the embassy for centuries. The inhabitants are so bored that they welcome anyone who knocks on their door, giving them the full royal treatment.",
+      "leaving": null,
+      "inhabitants": "The frost elf Ambassador presides over the embassy, treating with any and all visitors. His staff includes six ambassadorial aides, three chefs, three butlers, and four maids.",
+      "roll_tables": [],
+      "npcs": [
+        "frost_elf_ambassador"
+      ],
+      "special_features": [
+        "Ice caverns lit with lambent blue light",
+        "Magical door lock",
+        "Baroquely appointed rooms",
+        "Central banquet hall with taxidermied unicorns' heads"
+      ],
+      "secrets": [
+        "Contains a fortune of rich, antique furnishings",
+        "Magical pantry with wines from mortal cultures long forgotten",
+        "Fairy victuals stocks are dwindling"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Base of the Falls",
+      "poi_type": "guard post",
+      "description": "1d3 Drune cottagers watch from a hidden vantage point on the wooded slopes beside the falls. They fight without quarter if attacked or if adventurers appear to be assisting frost elves in escape.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Hidden vantage point on the wooded slopes beside the falls.",
+      "exploring": "The Drune carefully guard this site, ensuring that no frost elf may come or go. Attempts to leave the embassy have occurred in the past, but have always been prevented.",
+      "leaving": null,
+      "inhabitants": "1d3 Drune cottagers",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden vantage point"
+      ],
+      "secrets": [
+        "The Drune watchmen share a Lens of Penetration"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "frost_elf_ambassador",
+      "name": "Frost Elf Ambassador",
+      "title": "Ambassador",
+      "description": "The frost elf Ambassador presides over the embassy, treating with any and all visitors.",
+      "kindred": "Frost Elf",
+      "alignment": null,
+      "demeanor": [
+        "Melancholic",
+        "desperate",
+        "bored"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": [
+        "Return of the Cold Prince",
+        "Preservation of fairy victuals",
+        "Escape from isolation"
+      ],
+      "secrets": [
+        "Stocks of fairy victuals are dwindling",
+        "Fears the touch of the mortal world will turn them to dust"
+      ],
+      "possessions": [
+        "Rich antique furnishings",
+        "Magical pantry with ancient wines"
+      ],
+      "location": "The Embassy in the Hidden Caverns",
+      "stat_reference": "frost elf Ambassador (p50)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Lens of Penetration",
+      "description": "Shared by the Drune watchmen",
+      "page_reference": "p404"
+    }
+  ],
+  "secrets": [
+    "Secret entrance to embassy concealed by fairy glamours",
+    "Embassy contains fortune in antique furnishings and ancient wines",
+    "Drune guard the site to prevent frost elf escape"
+  ],
+  "dm_notes": "Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      241
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

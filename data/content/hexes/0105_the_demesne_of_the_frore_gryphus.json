@@ -1,0 +1,141 @@
+{
+  "hex_id": "0105",
+  "coordinates": [
+    1,
+    5
+  ],
+  "name": "The Demesne of the Frore Gryphus",
+  "tagline": "Long, blue-green grass mixed with wild coneflower and goldenrod. Unnatural silence fills the area.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with the frore gryphus residing in this hex, soaring high above the grasslands in search of prey",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Long, blue-green grass mixed with wild coneflower and goldenrod. Unnatural silence fills the area.",
+  "points_of_interest": [
+    {
+      "name": "Frozen Battleground",
+      "poi_type": "battleground",
+      "description": "No matter the season, wide, frost-covered patches of hard earth dot the centre of this hex, ice cracking in web-like patterns. The patches radiate magic and wintry cold.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Searching the field: Soon reveals the remnants of an ancient battle: arrowheads marked with High Elfish frost-runes, broken blades of swords ranging from the crude to the fanciful, and decayed pennants of forgotten heraldry. The fallen giant: In a particularly desolate portion of the battleground, a dead frost giant lies prone, limbs sprawled wide, marbled blue eyes staring skyward. Alongside him, two ice-coated soldiers, man and frost elf, stand frozen in conflict, swords permanently crossed.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Frost-covered patches radiate magic and wintry cold",
+        "Dead frost giant with frozen soldiers"
+      ],
+      "secrets": [
+        "This field was the site of a major battle in the war between humans and the armies of the Cold Prince nearly 900 years ago. The frost-magicks unleashed by the fairy army linger here still."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Shepherd Encampment",
+      "poi_type": "encampment",
+      "description": "At the southern edge of the hex stands a gentle hill dotted with small tree groves, leaves green and yellow. Wandering the slopes are many sheep, with sleepy sheep dogs pacing and watching for predators. The hill is crowned by a rough semicircle of irregular boulders, and in their shadow sits a cluster of rough canvas tents stained by weather, surrounding a cooking fire.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "12 shepherds focused on caring for their flocks, squabbling over wool prices, and debating how to protect their sheep from the winged beast that preys upon them—a fairy creature, according to local legend, called a frore gryphus. The shepherds' unofficial leader is Aegnyth Cormick.",
+      "roll_tables": [],
+      "npcs": [
+        "aegnyth_cormick"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Nest of the Frore Gryphus",
+      "poi_type": "nest",
+      "description": "Scattered copses of trees dot the northern edge of the hex. Concealed within one of them is an enormous nest of broken boughs and uprooted shrubbery.",
+      "tagline": "(Hidden)",
+      "entering": null,
+      "interior": "Brood of 5 frost-rimed frore gryphlings (stats as hawks, DMB) noisily peck at one another. There is 3-in-6 chance that their mother, the frore gryphus who terrorises this hex, is in the nest; if not, she arrives in 1 Turn.",
+      "exploring": "Searching the nest: Takes 1 Turn and reveals, wedged amongst the crushed foliage, a Fairy Longsword (Mortal Bane, p412) of frost elf origin, and a necklace of ice-like crystals (650gp)—both leftover relics from the Frozen Battlefield.",
+      "leaving": null,
+      "inhabitants": "Brood of 5 frost-rimed frore gryphlings and their mother, the frore gryphus",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "3-in-6 chance frore gryphus is present, otherwise arrives in 1 Turn"
+      ],
+      "secrets": [
+        "A survivor of the ancient battle, this frore gryphus lay frozen for centuries and has only recently awoken and laid her clutch of eggs."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "aegnyth_cormick",
+      "name": "Aegnyth Cormick",
+      "title": "Shepherd Leader",
+      "description": "A tall, broad-shouldered human woman with weathered olive brown skin and long black hair in a tight, practical braid. Garbed in shepherd's robes, fraying and stained with weather.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Sturdy and solemn",
+        "magnetism that causes humans and sheep alike to feel secure",
+        "Deeply pragmatic",
+        "an authority respected by both sheep and shepherd"
+      ],
+      "speech": "Slow drawl, lovingly enunciating every syllable and consonant. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "News from Shrivelbyne (0108)",
+        "Safety for her flock",
+        "The defeat or banishment of the frore gryphus"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Shepherd Encampment",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Fairy Longsword",
+      "description": "Fairy Longsword (Mortal Bane, p412) of frost elf origin",
+      "location": "The Nest of the Frore Gryphus",
+      "value": null
+    },
+    {
+      "name": "Necklace of ice-like crystals",
+      "description": "A necklace of ice-like crystals",
+      "location": "The Nest of the Frore Gryphus",
+      "value": "650gp"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      196
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

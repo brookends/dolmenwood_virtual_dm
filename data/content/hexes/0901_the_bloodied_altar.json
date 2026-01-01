@@ -1,0 +1,122 @@
+{
+  "hex_id": "0901",
+  "coordinates": [
+    9,
+    1
+  ],
+  "name": "The Bloodied Altar",
+  "tagline": "Steep hills, scree slopes, cliffs, and jagged boulders streaked with what appears to be bloodstains.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Sentient folk encountered within the ring of the Mysterious Cairns are trapped. Some may have read The Inscription, and seek to free themselves by sacrificing others.",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Steep hills, scree slopes, cliffs, and jagged boulders streaked with what appears to be bloodstains.",
+  "points_of_interest": [
+    {
+      "name": "Mysterious Cairns",
+      "poi_type": "magical_trap",
+      "description": "Visible from a distance, a large area near the centre of this hex is clearly circumscribed by a series of cairns. These assemblies of carefully arranged flat stones, many over 10′ high, cast jagged shadows on the surrounding hillsides.",
+      "tagline": null,
+      "entering": "Anyone who crosses the invisible threshold demarcated by the ancient cairns becomes trapped within the area they describe. Attempts to leave are futile: paths loop back on themselves, and even the hills seem to shift to cut off escape. Nothing short of powerful magic or the Rite of Escape allows for egress.",
+      "interior": "The area is circumscribed by ancient cairns over 10′ high that cast jagged shadows.",
+      "exploring": null,
+      "leaving": "Only powerful magic or the Rite of Escape allows for egress.",
+      "inhabitants": "Trapped sentient folk who may seek to sacrifice others for freedom.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Attempting to dismantle the cairns is fruitless. If disturbed, a cairn reassembles itself when unobserved; permanently removing one is impossible."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Bloodied Altar",
+      "poi_type": "altar",
+      "description": "At the centre of the cairn-delimited region lies a deep cleft in the earth, and on its brink stands an ancient stone altar. The altar is covered in dark stains, and a crude bone knife lies atop the rough-hewn slab. Graven upon the altar's side is a series of elaborate glyphs.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The altar is covered in dark stains with a crude bone knife on top. Elaborate glyphs are graven on the altar's side.",
+      "exploring": "Reading the glyphs: The odd shapes twist and writhe when viewed, magically imparting their meaning into the mind of the reader. Descending into the cleft: Clambering down into the ravine reveals that it is choked with broken bones. Mixed in with the bones are coins thrown in as unsuccessful offerings by past prisoners (381gp and 1,583sp).",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The Inscription",
+        "The Rite of Escape"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Hermit's Cave",
+      "poi_type": "cave",
+      "description": "At the base of a rocky crag within the ring of cairns lies a small cave, concealed by brush. Within are a series of natural chambers. The remnants of a fire pit sit near the entrance; deeper within, furs, tanned hides, and tools fashioned from bone and wood can be found, as well as a small arsenal of crude bone arrows and spears.",
+      "tagline": null,
+      "entering": "Concealed by brush at the base of a rocky crag.",
+      "interior": "A series of natural chambers with remnants of a fire pit near the entrance, furs, tanned hides, bone and wood tools, and crude bone arrows and spears.",
+      "exploring": "Writing: Marks on the walls appear to track the slow passage of time, stretching for many years. Hymns of the Pluritine Church are scrawled alongside. Corpse: In the final chamber, swathed in furs on a makeshift bed, reclines the slowly decaying corpse of a bearded, elderly man. In his bony hands, he clasps a Chapes holy symbol. His mouth is filled with congealed blood.",
+      "leaving": null,
+      "inhabitants": "Corpse of elderly bearded man with Chapes holy symbol",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden location",
+        "Time tracking marks on walls",
+        "Pluritine Church hymns"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Crude bone knife",
+      "description": "A crude bone knife lying atop the bloodied altar",
+      "location": "The Bloodied Altar",
+      "value": null,
+      "magical": false
+    },
+    {
+      "name": "Coins in the cleft",
+      "description": "381gp and 1,583sp mixed in with bones, thrown as unsuccessful offerings by past prisoners",
+      "location": "The cleft beneath the altar",
+      "value": "381gp and 1,583sp",
+      "magical": false
+    },
+    {
+      "name": "Chapes holy symbol",
+      "description": "Holy symbol clasped in the hands of the corpse in the hermit's cave",
+      "location": "Hermit's Cave",
+      "value": null,
+      "magical": false
+    }
+  ],
+  "secrets": [
+    "The Rite of Escape: A group may only leave the region if they daub the altar with blood, and cast a humanoid corpse into the cleft. However, despite the allusions, the corpse need not be freshly killed and the blood need not be drawn from the same corpse.",
+    "The Inscription: The hunger of the hills is great, And one of you its greed must sate. Now take this hallowed knife in hand, If 'tis your wish to leave this land. Turn selfsame blade on mortal kin, And then perchance your freedom win. With blood this sacred stone besmear, And bow your head in sacred fear. Then cast the corpse into the pit, And then this region you may quit."
+  ],
+  "dm_notes": "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      286
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

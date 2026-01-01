@@ -1,0 +1,115 @@
+{
+  "hex_id": "0604",
+  "coordinates": [
+    6,
+    4
+  ],
+  "name": "Fort Vulgar and the Galoshers' Pool",
+  "tagline": "Tangled woods of holly and hawthorn, riddled with muddy mires and ponds ringed with thorny reeds.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d3 galoshers in the vicinity of a pond",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Tangled woods of holly and hawthorn, riddled with muddy mires and ponds ringed with thorny reeds. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Fort Vulgar",
+      "poi_type": "settlement",
+      "description": "An old stone keep overlooks a village and ramshackle dock, where barge-folk and merchants congregate to trade. Few folk permanently reside here.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Barge-folk and merchants",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Chappily bridge: Spans Quogg's Creek at Fort Vulgar",
+        "Big Chook: Fort Vulgar lives in the shadow of the lake monster known as Big Chook, whose mind-wrenching wails can be heard from the settlement",
+        "Full settlement description: See p146"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Galoshers' Pool",
+      "poi_type": "pool",
+      "description": "In the briar-choked western reaches of this hex lies a shallow pool of muddy, black water, 100 yards across, rimmed with frothing green scum.",
+      "tagline": null,
+      "entering": "Coming near to the shore attracts the attention of the 6 galoshers (DMB) that dwell in the mud. Initially a single monster emerges, but the others soon arrive if commotion ensues.",
+      "interior": "Submerged in the mud around the shore are a multitude of humanoid bones, the partially preserved corpses of 3 travellers (each with 1d100gp), and the still-living Gherigew Thorncripe, in suspended animation and surrounded by a swarm of feeding galosher lampreys.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "6 galoshers, Gherigew Thorncripe (in suspended animation)",
+      "roll_tables": [],
+      "npcs": [
+        "gherigew_thorncripe"
+      ],
+      "special_features": [
+        "Bodies in the mud contain treasure and Gherigew Thorncripe"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "gherigew_thorncripe",
+      "name": "Gherigew Thorncripe",
+      "title": "Level 6 Bard",
+      "description": "A dashing human man in his early 30s, with twirled moustache, pointy beard, curly chestnut hair, and twinkling grey eyes. Dresses in leather woodland garb, a crimson cape, and a green bycocket hat. Soaked, filthy, and delirious after being submerged in the Galoshers' Pool for months.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Merry",
+        "sentimental",
+        "vain",
+        "Preens his moustache"
+      ],
+      "speech": "Eloquent and poetic",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "butchered Sylvan"
+      ],
+      "desires": [
+        "To behold the fabled beauty of the Lady of Spring Unending (0402)",
+        "To hunt with Duke Mai-Fleur (p30)",
+        "If rescued: to explain his long absence to his lover in Prigwort, Maydrid Hydball (p178), with an epic song detailing his imprisonment (which he has already begun composing)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A gold-inlaid lute (500gp)",
+        "an emerald-pommelled Fairy Shortsword (p412)",
+        "a sealed tube containing arcane scrolls of Levitate and Paralysation",
+        "a bronze and violet garnet brooch in the form of an ivy leaf (1,000gp)"
+      ],
+      "location": "The Galoshers' Pool",
+      "stat_reference": "Level 6 Bard",
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Reward: If rescued, Thorncripe offers his eternal gratitude and service to the PCs (though is likely to be distracted by his own quests before long).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      253
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

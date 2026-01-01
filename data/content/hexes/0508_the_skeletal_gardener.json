@@ -1,0 +1,137 @@
+{
+  "hex_id": "0508",
+  "coordinates": [
+    5,
+    8
+  ],
+  "name": "The Skeletal Gardener",
+  "tagline": "Tiers of rugged cliffs, sloping steeply to the east. Moss and mould thrive in dank, lightless recesses.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Tiers of rugged cliffs, sloping steeply to the east. Moss and mould thrive in dank, lightless recesses. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Fungal Organs",
+      "poi_type": "natural feature",
+      "description": "Skull Creek, where it winds through this hex, cascades through a series of gurgling pools and falls. The slick rock faces beside these pools are home to a rare species of scarlet fungus named Numblings, bearing an eerie resemblance to various organs of the human body—fungal mockeries of brains, hearts, eyeballs, tongues, lungs, fingers, and noses may all be found here.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "While these odd mushrooms are naturally occurring, their profusion here is due to the care and attention of their warden—Colly, a sentient skeleton who spends her ageless life tending these fungal miracles.",
+      "roll_tables": [],
+      "npcs": [
+        "colly"
+      ],
+      "special_features": [
+        "Numblings fungus"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Ruined Manse",
+      "poi_type": "ruin",
+      "description": "Deep in a ravine overgrown with tangled hawthorn stands the ruin of a once-grand manse, now reduced to roofless heaps of tumbled stone and rotted beams.",
+      "tagline": null,
+      "entering": "A single door of iridescent black wood stands intact in its arch amid the ruins, leading to nowhere. The door is sealed with a Glyph of Locking (Level 9 caster).",
+      "interior": "A 20′ square chamber of chill, white marble. The central area is sequestered with white drapes, concealing the grossly swollen (but still fresh) corpse of a raven-haired woman laid upon a solid steel, rune-etched slab. Bone-trimmed cupboards by the walls contain hundreds of embalmed organs in jars, knives and saws of all sizes.",
+      "exploring": "The symbol of a serpent writhing through the mouth and eye sockets of a human skull (the sigil of the manse's former owner) appears on a number of fallen keystones.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden",
+        "Extra-dimensional laboratory"
+      ],
+      "secrets": [
+        "Many centuries ago, the necromancer Leelandra Umberwold dwelt in the manse with her two sons and dozens of undead servitors (including Colly—the last remaining). The body in the laboratory is her failed attempt at cloning herself to escape death."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "colly",
+      "name": "Colly",
+      "title": "Sentient Skeleton",
+      "description": "A 5′4″ tall female human skeleton in pristine, gleaming white condition, her forehead subtly engraved with magical runes.",
+      "kindred": "Undead",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Single-minded",
+        "Happy to converse with those who approach her in peace"
+      ],
+      "speech": "Whistling between the teeth. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To care for and nurture this unique mycological paradise",
+        "To prevent anyone from tampering with it, especially eating of it"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Fungal Organs",
+      "stat_reference": "sentient skeleton (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Collection of treatises on necromancy",
+      "description": "Collection of treatises on necromancy",
+      "value": "2,000gp",
+      "location": "The Ruined Manse - extra-dimensional laboratory"
+    },
+    {
+      "name": "Skeleton Keys",
+      "description": "A set of five Skeleton Keys",
+      "value": null,
+      "location": "The Ruined Manse - extra-dimensional laboratory"
+    },
+    {
+      "name": "Arcane Eye scroll",
+      "description": "Arcane scroll of Arcane Eye",
+      "value": null,
+      "location": "The Ruined Manse - extra-dimensional laboratory"
+    },
+    {
+      "name": "Animate Dead scroll",
+      "description": "Arcane scroll of Animate Dead",
+      "value": null,
+      "location": "The Ruined Manse - extra-dimensional laboratory"
+    },
+    {
+      "name": "Essence of Springtime",
+      "description": "A crystal flask of Essence of Springtime",
+      "value": null,
+      "location": "The Ruined Manse - extra-dimensional laboratory"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Knowledge: Does not remember how she was created or who tasked her with the protection of the garden, but has vague memories of once living in a grand manor to the south.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      245
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

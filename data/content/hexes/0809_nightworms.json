@@ -1,0 +1,220 @@
+{
+  "hex_id": "0809",
+  "coordinates": [
+    8,
+    9
+  ],
+  "name": "Nightworms",
+  "tagline": "A sandy beech wood, echoing with birdsong. Red, eyeless worms teem in the undergrowth.",
+  "region": "High Wold",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "After dark, encounters are 3-in-6 likely. Nighttime encounters are 4-in-6 likely to be with 1d8 nightworms.",
+    "foraging_results": "Successful foraging yields 1d3 portions of Smottlebread (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Smottlebread (1d3 portions)"
+    ]
+  },
+  "description": "A sandy beech wood, echoing with birdsong. Red, eyeless worms teem in the undergrowth.",
+  "points_of_interest": [
+    {
+      "name": "The Ditchway",
+      "poi_type": "road",
+      "description": "The well-trodden path between Lankshorn and Dreg, known locally as the Ditchway, makes its winding way through a broad channel with sandy banks on either side.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Red worms: Every half-mile or so, the sandy soil around the road is riddled with 6″ long, red, eyeless worms, burrowing and writhing. These are immature nightworm spawn. At dusk: The worms slither from the sand banks in great droves, writhing across the road and around the feet of any travellers abroad at this hour.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Red worms every half-mile",
+        "Worms emerge at dusk"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Nightworms' Brood Lair",
+      "poi_type": "lair",
+      "description": "A 5′ round tunnel is bored into a sandstone promontory in the northern reaches of this hex. The tunnel leads down to a network of chambers and passageways where the nightworms that plague this hex make their lair.",
+      "tagline": null,
+      "entering": "A 5′ round tunnel is bored into a sandstone promontory",
+      "interior": "A network of chambers and passageways",
+      "exploring": "Roll on the Chambers table for each chamber entered. Each chamber connects to 1d4–1 others, via twisting passageways.",
+      "leaving": null,
+      "inhabitants": "Nightworms and their brood-mother",
+      "roll_tables": [
+        {
+          "name": "Chambers",
+          "die_type": "d8",
+          "description": "Roll for each chamber entered",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "1d4 nightworms devour the corpse of a horse.",
+              "monsters": [
+                "nightworm"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Walls, floor, and ceiling carpeted with 2″, scarlet eggs. Inside each, a hatchling nightworm is visible. They squirm if examined closely. Walking through the chamber inevitably results in crushing dozens.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Walking through crushes dozens of eggs"
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "A twitching humanoid corpse. Examination reveals that the corpse is riddled with hundreds of 6″-long nightworm hatchlings, devouring it from the inside. The corpse has basic travelling gear, 2d12sp, and a random human or breggle trinket (DPB).",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "basic travelling gear",
+                "2d12sp",
+                "random human or breggle trinket"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Heaps of bones—humanoid and animal. Among the remains are 1d100gp, 2d100sp, 4d100cp, a gem worth 250gp, and 2 random breggle trinkets (DPB).",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "1d100gp",
+                "2d100sp",
+                "4d100cp",
+                "gem worth 250gp",
+                "2 random breggle trinkets"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Piles of rust-red moulted nightworm skins.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Heaps of bones—humanoid and animal. Hidden among the remains are sleeping 1d3 nightworms. Rooting around in the bones awakens them.",
+              "monsters": [
+                "nightworm"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Rooting around awakens sleeping nightworms"
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "A Drune cottager (DMB), unconscious and barely alive, being dragged and throttled by 1d4 nightworms. The Drune has an Arcane Dagger (p412) of bone and scrolls of Invisibility, Glyph of Locking, and Haste on his person. This chamber can only be encountered once—re-roll subsequent results of 7.",
+              "monsters": [
+                "nightworm"
+              ],
+              "npcs": [
+                "drune_cottager"
+              ],
+              "items": [
+                "Arcane Dagger of bone",
+                "scroll of Invisibility",
+                "scroll of Glyph of Locking",
+                "scroll of Haste"
+              ],
+              "mechanical_effect": "Can only be encountered once"
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "The gigantic 30′ long, 4′ diameter brood-mother nightworm, whose bulbous, eyeless, human-like head sways and moans for fresh blood. Her abdomen is lined with two dozen stunted arms, groping wretchedly at the 2d3 nightworms coiled around her body in a mating frenzy. Her lair is piled with bones and partially devoured corpses. Among the remains are 20pp, 542gp, 223sp, 432cp, a single diamond earring (800gp), a Bag of Devouring (p420), a Cloak of Displacement (p406), and a holy scroll of Bless, Find Traps, and Locate Object. This chamber can only be encountered once—re-roll subsequent results of 8.",
+              "monsters": [
+                "brood-mother nightworm",
+                "nightworm"
+              ],
+              "npcs": [],
+              "items": [
+                "20pp",
+                "542gp",
+                "223sp",
+                "432cp",
+                "diamond earring (800gp)",
+                "Bag of Devouring",
+                "Cloak of Displacement",
+                "holy scroll of Bless",
+                "holy scroll of Find Traps",
+                "holy scroll of Locate Object"
+              ],
+              "mechanical_effect": "Can only be encountered once"
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "drune_cottager"
+      ],
+      "special_features": [
+        "Hidden entrance"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "drune_cottager",
+      "name": "Drune cottager",
+      "title": null,
+      "description": "Unconscious and barely alive, being dragged and throttled by nightworms",
+      "kindred": "Drune",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [
+        "Arcane Dagger of bone",
+        "scrolls of Invisibility, Glyph of Locking, and Haste"
+      ],
+      "location": "Nightworms' Brood Lair",
+      "stat_reference": "Drune cottager (DMB)",
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Nightworms: 8′–10′ long, eyeless red worms, about 10″ in diameter, with rubbery, ribbed, muscular bodies and tooth-filled maws. They lair in underground chambers bored out by their brood-mother. When abroad, they burrow into mud and sludge to sleep during the day, emerging at night to stalk warm-blooded prey. They drag fresh kills back to their brood lair, being especially fond of the flesh of humanoids and horses.",
+  "adjacent_hexes": [],
+  "roads": [
+    "The Ditchway"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      282
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

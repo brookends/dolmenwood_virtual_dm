@@ -1,0 +1,105 @@
+{
+  "hex_id": "0208",
+  "coordinates": [
+    2,
+    8
+  ],
+  "name": "Kolstoke Keep and Illpuke Barrows",
+  "tagline": "Rugged woods dotted with sodden ditches and ant-mounds. A low thrumming pervades.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Rugged woods dotted with sodden ditches and ant-mounds. A low thrumming pervades.",
+  "points_of_interest": [
+    {
+      "name": "Kolstoke Keep",
+      "poi_type": "keep",
+      "description": "Within a clear area, surrounded by looming forest on three sides, stands the blocky, dark stone keep of Lord Murkin: Kolstoke Keep.",
+      "tagline": null,
+      "entering": "A wide drawbridge may be lowered over the ditch, leading to a single, intimidating gatehouse that pierces the wall.",
+      "interior": "Austere and militaristic. Cold stone halls are lined with maps, banners, and antique weapons. The sound of marching feet echoes throughout.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The keep is the home of Lord Murkin and his retinue of 12 longhorn knights, \"the Horns of Kolstoke\" (use longhorn breggle stats—DMB). A troop of 20 soldiers (Level 1 fighters—DMB, a mix of shorthorns and humans) acts as guards and household servants.",
+      "roll_tables": [],
+      "npcs": [
+        "lord_murkin"
+      ],
+      "special_features": [
+        "Ditch, wall, and motte: The keep is perched awkwardly atop a giddying motte of earth and encircled with a crenelated stone wall. At the base of the wall is a ditch lined with sharp spikes.",
+        "Visitors: Are unwelcome, though Lord Murkin may grant an audience to those bearing gifts or sharing secrets beneficial in his campaigns against the other lords of the High Wold (in particular Lord Harald Nodlock).",
+        "Dungeons: Lady Mirilda Murkin (Murkin's mother), a human woman now in her seventies, is imprisoned in the keep's dungeons, after contradicting her son's word one too many times."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Illpuke Barrows",
+      "poi_type": "barrows",
+      "description": "A few miles inside the dense canopy of the wood, south of the keep, are a series of mounds known to the locals as Illpuke Barrows. There are thirteen mounds in total: a circle of twelve with one at the centre.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Capstones: Each mound is topped with a smooth round stone, 20′ in diameter. The stones are covered in mosses, lichens, and rampant vines.",
+        "Thrumming: The thrumming sound that permeates this hex emanates from the mounds.",
+        "A queasiness of stomach: Stepping inside the circle of mounds, one feels a faint queasiness, becoming stronger the longer one remains.",
+        "Beneath the capstones: A jumble of humanoid bones is buried, carved with magical script (runes of divination and balancing). Examination reveals that the bones are elfish."
+      ],
+      "secrets": [
+        "True purpose: The mounds are not actually barrows, but were built for the sole purpose of supporting the curious stones, which radiate a faint magical signal. Together, these stones form an ancient device used to measure power and deviations in the Witching Ring. This purpose and the operation of the device are long-forgotten, though the Drune know of the place and wish to reclaim it."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lord_murkin",
+      "name": "Lord Murkin",
+      "title": "Lord",
+      "description": null,
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "Kolstoke Keep",
+      "stat_reference": "p65",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "The Domain of Lord Murkin: The rule of House Murkin extends several leagues to the west and north, encompassing a rambling collection of hamlets and farmsteads. Both humans and breggles live in this domain.",
+    "Revolt is brewing: Tired and angered by their Lord's petty laws and taxes, Murkin's subjects grow belligerent. Revolt is close at hand."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      210
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

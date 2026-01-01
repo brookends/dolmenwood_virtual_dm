@@ -1,0 +1,88 @@
+{
+  "hex_id": "0110",
+  "coordinates": [
+    1,
+    10
+  ],
+  "name": "The Shadow of Lord Gnarlgruff",
+  "tagline": "Shadowy woods of holly and hawthorn. Life here is creeping and vigilant, as if avoiding some looming terror.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d3 devil goats (DMB)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Shadowy woods of holly and hawthorn. Life here is creeping and vigilant, as if avoiding some looming terror.",
+  "points_of_interest": [
+    {
+      "name": "Devil Goats' Glade",
+      "poi_type": "glade",
+      "description": "An awful charnel stench permeates a large section of the wood. Following it to its source leads to a shadowy glade ringed with sighing, black-leafed poplars. At the centre of the glade stands a blackened, roughly shaped monolith, draped with rotting entrails, amid a mound of bones.",
+      "tagline": null,
+      "entering": "The devil goats suffer none but longhorn breggles to enter the glade.",
+      "interior": "2d4 devil goats (DMB) mill about the glade, devouring corpses among the pile of bones, rearing up to drape fresh entrails over the monolith, and licking the gore that streaks the stone's surface.",
+      "exploring": "Examining the bones: Scattered among the remains of shorthorns, humans, and forest animals can be found 15gp, 155sp, a silver dagger, a silver necklace with a single grey ioun (250gp, p394), a gold ring with a red garnet engraved with the letter E (400gp), and a hip flask containing a dose of Philtre of Wondrous Vitality (p414). Examining the monolith: Its crumbling surface is carved with ancient Caprice script, now only partially legible. The following intact fragments can be deciphered by any who can read Caprice: \"I bind my spirit to this stone\" … \"wander restless through benighted realms\" … \"to manifest when the full moon rises.\"",
+      "leaving": null,
+      "inhabitants": "2d4 devil goats (DMB) mill about the glade",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        {
+          "name": "Nights of the Full Moon",
+          "description": "On nights of the full moon, the monolith is wreathed with a flickering, violet aura and a faint, moaning voice can be heard on the wind. The voice rants in disjointed Caprice of an ancient mode. Any who understand Caprice can pick out the following snippets: \"in time I shall return\" … \"the workings of Malbleat, scion of House Gnarlgruff\" … \"the Book of Foul Wonders.\"",
+          "mechanical_effect": "Voice can be heard on full moon nights"
+        }
+      ],
+      "secrets": [
+        "The monolith is all that remains of the razed laboratory of Lord Gnarlgruff, an ancient longhorn necromancer and ancestor of Lords Malbleat (p64) and Ramius (p65). A fragment of his spirit lingers still in this place where he practiced dire sorcery.",
+        "Lord Gnarlgruff seeks to live once more, hoping that his descendant, Lord Malbleat, resurrects his remains that lie beneath the Shadholme (0709). The Book of Foul Wonders—an ancient, near-mythical tome of longhorn necromancy (named \"Ghrehraird frengl Llaindr\" in Caprice)—may contain the key. The book is believed to have been stolen, following Gnarlgruff's demise, by a rival sorcerer to the east of Dolmenwood."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Silver dagger",
+      "description": "Found among the bones in Devil Goats' Glade",
+      "value": null,
+      "location": "Devil Goats' Glade"
+    },
+    {
+      "name": "Silver necklace with grey ioun",
+      "description": "A silver necklace with a single grey ioun",
+      "value": "250gp",
+      "location": "Devil Goats' Glade"
+    },
+    {
+      "name": "Gold ring with red garnet",
+      "description": "A gold ring with a red garnet engraved with the letter E",
+      "value": "400gp",
+      "location": "Devil Goats' Glade"
+    },
+    {
+      "name": "Hip flask with Philtre of Wondrous Vitality",
+      "description": "A hip flask containing a dose of Philtre of Wondrous Vitality",
+      "value": null,
+      "location": "Devil Goats' Glade"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      201
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

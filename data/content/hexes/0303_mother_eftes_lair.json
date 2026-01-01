@@ -1,0 +1,114 @@
+{
+  "hex_id": "0303",
+  "coordinates": [
+    3,
+    3
+  ],
+  "name": "Mother Efte's Lair",
+  "tagline": "Perpetual drizzle. Festering pools and animal skeletons. Crows circle overhead, seeking carrion.",
+  "region": "Northern Scratch",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Northern Scratch",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d4 portions of Lilywhite (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Lilywhite (1d4 portions)"
+    ]
+  },
+  "description": "Whatever the prevailing weather conditions elsewhere, this hex is wreathed in an interminable drizzle. The rain becomes heavier toward the centre of the hex, where Mother Efte's Lair is located. The Hameth and its environs here are fraught with danger, for this is the hunting ground of the numerous madtoms who dwell in Mother Efte's Lair.",
+  "points_of_interest": [
+    {
+      "name": "Mother Efte's Lair",
+      "poi_type": "lair",
+      "description": "Coalesced beside the sluggish crawl of the Upper Hameth is a 100-yard-wide pool of black, muddy water, ringed with collapsing willows and spiny teasels, reflecting the dreary, rainy sky. Mother Efte reclines in the pool, gaping mouth pointed skywards, guzzling the perpetual rain. Her servants—30 madtoms (DMB)—loll in psychedelic ecstasy, under the effects of their mistress's pus.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A dais of lichen-chewed flagstones is located in the mud at one side of the pool. Upon the dais stands a white marble podium, stylised with carvings of fruiting vines. Crystal clear water rests in the bowl-like top of the podium. The water is pure and good to drink, and can never be exhausted.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Mother Efte and 30 madtoms",
+      "roll_tables": [],
+      "npcs": [
+        "mother_efte"
+      ],
+      "special_features": [
+        "Perpetual Rain: Whatever the prevailing weather conditions elsewhere, this hex is wreathed in an interminable drizzle",
+        "Riverside Traps: Travellers walking along the riverbank or navigating small vessels have a 3-in-6 chance of encountering one of the madtoms' traps. Anyone falling prey is attacked by 2d8 madtoms, leaping from the river",
+        "Rain making: The dais has the power to conjure rains, even violent storms, in the Northern Scratch. Mother Efte knows the ancient command words that control this magic",
+        "If threatened: Mother Efte croaks out command words that cause the dais's magic to conjure a shroud of fog around the pool, reducing visibility to 10′"
+      ],
+      "secrets": [
+        "The madtoms' ill-gotten gains, buried in sacks at the pool's bottom: 3,300gp, 2,450cp, 4 snake-shaped silver brooches (200gp each), 5 small diamonds (250gp each)"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mother_efte",
+      "name": "Mother Efte",
+      "title": null,
+      "description": "A 12′ long giant newt with pink eyes, indigo skin, feathery, purple gills, and patches of oozing, orange warts along her back. Mother Efte was once human—an apprentice of the witch Lady Haeroth who stole her mistress's jade necklace by swallowing it. After fleeing the lady's manor, a curse upon the jewels transformed Efte into a newt. Decades later, she has forgotten her past life, save her festering hatred of Lady Haeroth.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Lethargic",
+        "slow-witted",
+        "Greedily eyes characters she suspects may have magic"
+      ],
+      "speech": "Languorous belching. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To gorge on magic",
+        "grow ever greater",
+        "one day wreak vengeance upon Lady Haeroth",
+        "Would pay up to 500gp per spell or item fed to her, but initially offers only 100gp"
+      ],
+      "secrets": [
+        "Was once human—an apprentice of the witch Lady Haeroth",
+        "Stole her mistress's jade necklace by swallowing it",
+        "A curse upon the jewels transformed Efte into a newt"
+      ],
+      "possessions": [
+        "The stolen jade necklace (worth 2,000gp—or 3,000gp if returned to Lady Haeroth) is still lodged in Efte's belly"
+      ],
+      "location": "Mother Efte's Lair",
+      "stat_reference": "Level 8 AC 15 HP 44 Saves D8 R9 H10 B11 S12",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Jade Necklace",
+      "description": "The stolen jade necklace worth 2,000gp—or 3,000gp if returned to Lady Haeroth, still lodged in Efte's belly",
+      "value": "2,000gp (3,000gp if returned to Lady Haeroth)",
+      "location": "Inside Mother Efte's belly"
+    },
+    {
+      "name": "Wart Pus",
+      "description": "The warts on Efte's back ooze a milky pus. Consuming has the effects of Sclubber's Twist",
+      "mechanical_effect": "Effects of Sclubber's Twist",
+      "location": "Mother Efte's warts"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Eat magic: Eats magic items or spells cast into her mouth, growing and gaining 1 HP per serving. Gulps down other spells cast at her, if she makes the save. Swallow whole: On a natural 19–20 Attack Roll, a Small or Medium victim is swallowed. In Efte's belly: 1d6 damage / Round (until Efte dies); may attack with sharp weapons at –2 Attack; body digested 6 Turns after death. Surviving being swallowed: The victim emerges with the stolen jade necklace.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      216
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

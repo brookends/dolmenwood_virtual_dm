@@ -1,0 +1,129 @@
+{
+  "hex_id": "0306",
+  "coordinates": [
+    3,
+    6
+  ],
+  "name": "Walker's Void and the Blue Monolith",
+  "tagline": "Great thickets of brambles and bracken, criss-crossed by disused, overgrown paths.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Dwelmfurgh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Great thickets of brambles and bracken, criss-crossed by disused, overgrown paths. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Walker's Void",
+      "poi_type": "pit",
+      "description": "In a clearing, a perfectly circular, 10′-diameter pit in the ground opens into a shaft containing an impenetrable black void. Ringing the hole are a set of ropes secured to stakes; several ropes are tautly attached to something in the pit. Wooden beams and planks are stacked about the clearing, and the ground is scattered with nails, sawdust, and other signs of carpentry. Nearby stands a simple shack.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The taut ropes are attached to the top of a rickety ladder, suspended in the abyss of the pit. The ladder dangles precipitously and stretches out of sight. It is of shoddy construction, composed of varying types of wood, with many of its rungs oddly angled.",
+      "exploring": "The ladder descends 200′, then ends abruptly with no shaft bottom in sight. For every 10′ traversed, there is a 1% chance that the entire structure fails and plummets into the shaft below, taking anyone on the ladder with it, and earning Walker's enmity.",
+      "leaving": null,
+      "inhabitants": "There is a 3-in-6 chance that the clearing's inhabitant, Walker, is present, preparing to add a new section of rungs to the top of the ladder and lower the extended structure into the pit. Otherwise, she returns in 1d10 Turns.",
+      "roll_tables": [],
+      "npcs": [
+        "walker_the_mad_ladderer"
+      ],
+      "special_features": [
+        "Treasure cache: 25′ down the ladder, a chunk of cork plugs a hole containing 287sp, 75gp, a silver Ring of Mortality with a Drunic owl signet, and a handwritten letter. Walker fights to the death to protect this treasure.",
+        "The pit has no bottom. Anything or anyone that falls in simply falls forever."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Blue Vorpal Monolith",
+      "poi_type": "monolith",
+      "description": "In the east of this hex, a 20′-high spectral monolith of azure light hovers in a tangled dell. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood. In summer, autumn, and winter, the monolith is a mere shimmering figment. In spring, it becomes semi-corporeal.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Viewing: All who behold the monolith in the spring must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Those who fail change to a random Alignment immediately and upon awakening every subsequent day.",
+        "Touching: In its springtime manifestation, the monolith's partially tangible surface feels like warm honey. Spells of healing cast while touching the monolith are doubled in potency. In other seasons, a PC touching the monolith's diaphanous outline temporarily experiences the pleasant, agreeable balm of a mild spring day."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "walker_the_mad_ladderer",
+      "name": "Walker the Mad Ladderer",
+      "title": null,
+      "description": "A human woman in her late 50s, with long white hair, dark eyes, and numerous scars. Dresses in threadbare forest garb. Lives as a hermit, consumed by her obsession with finding the bottom of the hole.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Wary and unfriendly",
+        "but warms to anyone who agrees with the worthiness of her perilous, idiosyncratic goal of reaching the pit bottom"
+      ],
+      "speech": "Well-spoken though vague. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To build the ladder until it reaches the bottom of the hole",
+        "Solitude"
+      ],
+      "secrets": [
+        "Former name was Melisse",
+        "Had a romantic relationship with someone called Allendra that ended"
+      ],
+      "possessions": [
+        "small hammer (1d4 damage)",
+        "handwritten letter from Allendra",
+        "287sp",
+        "75gp",
+        "silver Ring of Mortality with a Drunic owl signet"
+      ],
+      "location": "Walker's Void",
+      "stat_reference": "Level 1 hunter—DMB",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Ring of Mortality",
+      "description": "A silver ring with a Drunic owl signet",
+      "location": "Treasure cache in Walker's Void",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Letter from Allendra",
+      "description": "Handwritten letter addressed to 'Melisse' (Walker's former name), from a person called 'Allendra,' ending their romantic relationship. Worn from touch and faintly perfumed.",
+      "location": "Treasure cache in Walker's Void",
+      "value": null,
+      "magical": false
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Walker fights to the death to protect the treasure cache. The pit has no bottom - anything that falls in simply falls forever.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      219
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

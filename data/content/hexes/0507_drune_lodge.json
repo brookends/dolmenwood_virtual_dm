@@ -1,0 +1,115 @@
+{
+  "hex_id": "0507",
+  "coordinates": [
+    5,
+    7
+  ],
+  "name": "Drune Lodge",
+  "tagline": "Calcified, skull-like rock formations. Dripping, moss-clad cliffs descend eastward in tiers.",
+  "region": "Dwelmfurgh",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Dwelmfurgh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "This hex is woven with the deepest of Drune magic, warping the fabric of reality itself. The Referee should secretly roll a Save Versus Spell for all non-Drunes entering this hex. If any in a party fail, all are unwittingly transported to the next hex in their direction of travel, continuing their journey there. Within the Ring of Chell: True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "points_of_interest": [
+    {
+      "name": "Doors to Drune Lodge",
+      "poi_type": "entrance",
+      "description": "The northern banks of Skull Creek are dotted with mighty, black-barked pines with trunks 15′ thick.",
+      "tagline": null,
+      "entering": "Those who can perceive a door and bypass its Glyph of Locking (Level 5 caster) find a timeworn wooden stairway spiralling down into the Drune Lodge.",
+      "interior": "Each great pine has an arched door at its base, concealed by illusion and visible only to Drunes.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Concealed doors visible only to Drunes",
+        "Glyph of Locking (Level 5 caster)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Drune Lodge",
+      "poi_type": "underground complex",
+      "description": "Chilly, subterranean halls of stone, lit by green flames flickering in the suspended skulls of stags and great owls, echoing with the distant howl of the thaumaturgic engine. Doors of black oak ward cramped living quarters, larders, and kitchens. Pillared galleries overlook gloomy studies and ritual chambers. Stairways and corridors wind and sweep, bewildering those not familiar with their paths.",
+      "tagline": null,
+      "entering": "Through concealed doors in the great pines via timeworn wooden stairway.",
+      "interior": "Chilly, subterranean halls of stone, lit by green flames flickering in the suspended skulls of stags and great owls, echoing with the distant howl of the thaumaturgic engine.",
+      "exploring": "Stairways and corridors wind and sweep, bewildering those not familiar with their paths.",
+      "leaving": null,
+      "inhabitants": "15 Aegis members (treat as Drune cottagers, DMB), 18 archivists, scribes, and assistants (Drune cottagers, DMB), 22 Drunewives (DMB), 24 children (including 8 Braithmaids, DMB), 5 charmed servants, and the Elder Phanatarch.",
+      "roll_tables": [],
+      "npcs": [
+        "elder_phanatarch"
+      ],
+      "special_features": [
+        "The Aegis hall: A vaulted hall of polished, russet wood, ringed with owl-carved benches, where the Drune council assembles. At one side sits the austere granite throne of the Elder Phanatarch, flanked by two great bells—one of iron and one of silver—rung to pronounce judgement or doom.",
+        "Library and vaults: Winding caverns, lined with towering bookshelves containing the sum of Drune lore (including all arcane spells). Sigil-warded vaults hold coins and jewels (worth 50,000gp), potions, scrolls, and all manner of magical artefacts, including a Staff of Cancellation, a Staff of Wizardry, and a Helm of Teleportation.",
+        "The thaumaturgic engine: A domed chamber housing a hovering, 20′ wide sphere of utter blackness, wreathed in blue lightning and emitting a horrid howl as it slowly rotates. The engine, fed by souls dredged from Droun Loch (0407), maintains the enchantments that veil Drune Lodge.",
+        "Ossuary: The bones of all deceased Drunes—etched with the summation of each individual's deeds and the names of their forebears—are interred within niches in the vast, labyrinthine ossuary.",
+        "Audrune crypts: The bodies of the Audrunes Grebglin, Haygral, and Mestmord lie in stasis in hidden ossuary crypts. Each is interred with a Talisman of Protection From Scrying and guarded by 3 shadows.",
+        "Palace of the Phanatarch: Deep below the ossuary, the Elder Phanatarch dwells in pillared halls of sepulchral black marble. All furnishings are of bone, owl-feather, and wolf-fur."
+      ],
+      "secrets": [
+        "Hidden ossuary crypts containing the Audrunes"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "elder_phanatarch",
+      "name": "Elder Phanatarch",
+      "title": "Elder Phanatarch",
+      "description": "The Elder Phanatarch dwells in pillared halls of sepulchral black marble. All furnishings are of bone, owl-feather, and wolf-fur.",
+      "kindred": "Drune",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [
+        "Crystal Ball"
+      ],
+      "location": "Palace of the Phanatarch, deep below the ossuary",
+      "stat_reference": "p55",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    "Staff of Cancellation",
+    "Staff of Wizardry",
+    "Helm of Teleportation",
+    "Talisman of Protection From Scrying",
+    "Crystal Ball"
+  ],
+  "secrets": [
+    "Intruders are exterminated. 12 giant stone owls (as gargoyles) animate to see off intruders.",
+    "If threatened, the Phanatarch can summon 12 shadows.",
+    "The Phanatarch consults with Auldweathe—the spirits of 9 Braithmaids who in the ancient days of Drunedom sacrificed themselves to serve their king eternally (as spectres)."
+  ],
+  "dm_notes": "The Referee should secretly roll a Save Versus Spell for all non-Drunes entering this hex. If any in a party fail, all are unwittingly transported to the next hex in their direction of travel.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      244
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

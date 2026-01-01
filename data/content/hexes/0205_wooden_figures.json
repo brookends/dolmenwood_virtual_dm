@@ -1,0 +1,148 @@
+{
+  "hex_id": "0205",
+  "coordinates": [
+    2,
+    5
+  ],
+  "name": "Wooden Figures",
+  "tagline": "Quiet grasslands sparsely populated by leafless trees. Songbirds flit through the air.",
+  "region": "High Wold / Dwelmfurgh",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold / Dwelmfurgh",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Quiet grasslands sparsely populated by leafless trees. Songbirds flit through the air.",
+  "points_of_interest": [
+    {
+      "name": "The Woodcarver's House",
+      "poi_type": "cottage",
+      "description": "In the south-east corner of the hex, nestled in the eaves of Dolmenwood, is a picturesque wooden cottage with a thatched roof. Its front door hangs off its hinges.",
+      "tagline": null,
+      "entering": "The front door hangs off its hinges.",
+      "interior": "A large room in disarray, its quaint furnishings rummaged through and torn apart. A large, ornate wooden doll's house lies in pieces on the floor. An open door leads to the Workshop.",
+      "exploring": "Workshop: Filled with quality woodcarving tools (150gp), staring wooden dolls, and carved statuettes. Six broken dolls—two boys, two girls, a horse, and a dog—have been carefully placed atop a workbench. These are the magical doll children killed by the bandits. An open trapdoor leads Under the House. Backyard: Atop a mound of firewood are four decomposing naked corpses of human men—the bandits bludgeoned to death by Minch. Four sets of bloody clothing, as well as four shortswords, are neatly arranged beside the pile.",
+      "leaving": null,
+      "inhabitants": "The woodcarver Ellery Lumley and her 7 magical doll children. Six of the dolls are now slain (see Workshop). The seventh, Minch, now keeps Ellery prisoner (see Under the House).",
+      "roll_tables": [],
+      "npcs": [
+        "ellery_lumley",
+        "minch"
+      ],
+      "special_features": [
+        "Recent bandit attack: Several days ago, bandits attacked the cottage, destroying the dolls and injuring Ellery. Minch slew the bandits, but became mentally unhinged, traumatised by the concept of death."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Under the House",
+      "poi_type": "underground_cavern",
+      "description": "The trapdoor ladder in the workshop descends into a dirt corridor. This passageway slopes downward until reaching a 30′ wide, 20′ tall underground cavern.",
+      "tagline": null,
+      "entering": "The trapdoor ladder in the workshop descends into a dirt corridor.",
+      "interior": "This passageway slopes downward until reaching a 30′ wide, 20′ tall underground cavern. The oak: Dominating the cavern is an enormous, ancient oak, its branches brushing the stone ceiling, its acorns glowing with a faint silvery light. The prisoner: Lashed to the tree is the dishevelled, barely conscious Ellery Lumley. She is starving and delirious. The puppet: Slumped in a rocky recess is a life-sized wooden puppet: Lumley's creation, Minch. He at first seems absolutely motionless, but sporadically explodes into uncontrollable sobbing.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Ellery Lumley (prisoner) and Minch (animated puppet)",
+      "roll_tables": [],
+      "npcs": [
+        "ellery_lumley",
+        "minch"
+      ],
+      "special_features": [
+        "Damaging the tree: If cut, the tree immediately heals, growing back lost branches.",
+        "Life-giving wood: If wood from the tree is fashioned into the form of a living creature, it becomes an animate being, with a nature determined by the carver. This is how Minch was created."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "minch",
+      "name": "Minch",
+      "title": "Animated Puppet",
+      "description": "A 6′ tall wooden puppet, created by Ellery, carved in the shape of a young man. The mouth on his rounded, innocent face moves when he speaks, but his painted-on eyes do not. He wears a simple outfit sewn from red and green bed sheets. If the PCs attempt to reason with him, he willingly explains his motivations.",
+      "kindred": "Animated Puppet",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Normally merry and jocular, now distressed and angry",
+        "Naïve, he sometimes makes strange leaps of logic"
+      ],
+      "speech": "Halting, childish. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To avenge his dead siblings",
+        "To punish Ellery for making him and his defenceless siblings (he now believes it cruel to create new life)",
+        "To rob the oak of its life-giving magic. He hopes that starving Ellery to death beside the tree achieves this, but he does not actually know if this will work and keeps giving Ellery water"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Under the House",
+      "stat_reference": "manikin (DMB), with 15 HP",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "ellery_lumley",
+      "name": "Ellery Lumley",
+      "title": "Woodcarver",
+      "description": "A large, comely human woman in her late 30s. Thick red hair cascades down her back. Dressed in humble clothes and a smock, she sports a black eye and broken arm. A skilled woodcarver, she sought out the oak after reading stories of its life-giving powers. She has so far made Minch and the six now-destroyed dolls in the workshop.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Motherly",
+        "quick to obsess"
+      ],
+      "speech": "Soft, breathy. Woldish, basic Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan (basic)"
+      ],
+      "desires": [
+        "To master the secrets of the ancient oak",
+        "For Minch to come to terms with death and release her"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Under the House (prisoner)",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Quality woodcarving tools",
+      "description": "Filled with quality woodcarving tools",
+      "value": "150gp",
+      "location": "Workshop"
+    },
+    {
+      "name": "Four shortswords",
+      "description": "Four shortswords from the dead bandits",
+      "value": null,
+      "location": "Backyard"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley Line Chell (p18): Arcane spell-casters perceive the curious dual sensation of balmy heat and biting cold. Within the Ring of Chell (p20): True fairies are afflicted with a spiritual malaise; teleportation and summoning are ineffectual; magic of illusion or charm has a 2-in-6 chance of failure.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      207
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
