@@ -56,8 +56,23 @@ from src.data_models import (
 from src.settlement.settlement_content_models import SettlementData
 from src.settlement.settlement_registry import SettlementRegistry
 
+# Import RunLog for settlement event logging
+try:
+    from src.observability.run_log import get_run_log
+except ImportError:
+    get_run_log = None  # type: ignore
+
 
 logger = logging.getLogger(__name__)
+
+
+def _log_settlement_event(event_type: str, details: dict) -> None:
+    """Log a settlement event if RunLog is available."""
+    if get_run_log is not None:
+        try:
+            get_run_log().log_custom(f"settlement:{event_type}", details)
+        except Exception:
+            pass  # Silently ignore logging failures
 
 
 class SettlementSize(str, Enum):
@@ -585,9 +600,26 @@ class SettlementEngine:
         self._current_location_number = location_number
         self._visited_locations.add(location_number)
 
+        # Log the visit event
+        _log_settlement_event("visit_location", {
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "location_number": location_number,
+            "location_name": location.name,
+            "location_type": location.location_type,
+        })
+
         # Build location details
         services = [{"name": s.name, "cost": s.cost, "description": s.description} for s in location.services]
-        npcs = location.npcs  # NPC IDs
+
+        # Get NPCs - both from location.npcs and by matching npc.location_id
+        npc_map = settlement.npc_by_id()
+        npc_ids_set = set(location.npcs)
+        # Also find NPCs whose location_id matches this location
+        for npc in settlement.npcs:
+            if npc.location_id and str(npc.location_id) == str(location_number):
+                npc_ids_set.add(npc.npc_id)
+        npcs = list(npc_ids_set)
 
         return {
             "success": True,
@@ -611,7 +643,7 @@ class SettlementEngine:
         }
 
     # =========================================================================
-    # ACTION HANDLERS (Phase 2: Services + NPCs - Stubs for now)
+    # ACTION HANDLERS (Phase 2: Services + NPCs)
     # =========================================================================
 
     def _action_list_services(self, params: dict[str, Any]) -> dict[str, Any]:
@@ -664,11 +696,12 @@ class SettlementEngine:
         }
 
     def _action_use_service(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Use a service (stub - Phase 2 will implement fully)."""
-        from src.settlement.settlement_services import SettlementServiceExecutor
+        """Use a service at the current location."""
+        from src.settlement.settlement_services import SettlementServiceExecutor, parse_cost_text
 
         service_name = params.get("service_name", "")
         location = self.get_current_location()
+        settlement = self.get_active_settlement()
 
         if not location:
             return {
@@ -677,29 +710,47 @@ class SettlementEngine:
                 "action": "settlement:use_service",
             }
 
-        # Find matching service
+        # Find matching service (try exact match first, then partial)
         matched = None
         for svc in location.services:
-            if service_name.lower() in svc.name.lower():
+            if svc.name.lower() == service_name.lower():
                 matched = svc
                 break
+        if not matched:
+            for svc in location.services:
+                if service_name.lower() in svc.name.lower():
+                    matched = svc
+                    break
 
         if not matched:
+            available = [s.name for s in location.services]
             return {
                 "success": False,
                 "message": f"Service '{service_name}' not found at {location.name}.",
                 "action": "settlement:use_service",
+                "available_services": available,
             }
 
         # Execute service
         executor = SettlementServiceExecutor()
         result = executor.use(matched, params)
 
+        # Log the service use event
+        _log_settlement_event("use_service", {
+            "settlement_id": settlement.settlement_id if settlement else None,
+            "location_name": location.name,
+            "location_number": location.number,
+            "service_name": result.service_name,
+            "cost_text": result.cost_text,
+            "cost_estimate": result.cost_estimate.__dict__ if result.cost_estimate else None,
+        })
+
         return {
             "success": True,
             "message": f"Using {result.service_name}...",
             "action": "settlement:use_service",
             "service_result": result.to_dict(),
+            "location_name": location.name,
         }
 
     def _action_list_npcs(self, params: dict[str, Any]) -> dict[str, Any]:
@@ -716,15 +767,38 @@ class SettlementEngine:
         npc_map = settlement.npc_by_id()
 
         if location:
-            # NPCs at this location
+            # Get NPCs at this location from both sources:
+            # 1. location.npcs list
+            # 2. NPCs whose location_id matches this location number
+            seen_ids = set()
             npcs = []
+
+            # From location.npcs
             for npc_id in location.npcs:
+                if npc_id in seen_ids:
+                    continue
                 npc = npc_map.get(npc_id)
                 if npc:
+                    seen_ids.add(npc_id)
                     npcs.append({
                         "npc_id": npc.npc_id,
                         "name": npc.name,
                         "title": npc.title,
+                        "kindred": npc.kindred,
+                        "description": npc.description[:100] + "..." if len(npc.description) > 100 else npc.description,
+                    })
+
+            # From NPCs with matching location_id
+            for npc in settlement.npcs:
+                if npc.npc_id in seen_ids:
+                    continue
+                if npc.location_id and str(npc.location_id) == str(location.number):
+                    seen_ids.add(npc.npc_id)
+                    npcs.append({
+                        "npc_id": npc.npc_id,
+                        "name": npc.name,
+                        "title": npc.title,
+                        "kindred": npc.kindred,
                         "description": npc.description[:100] + "..." if len(npc.description) > 100 else npc.description,
                     })
 
@@ -733,29 +807,40 @@ class SettlementEngine:
                 "message": f"Notable people at {location.name}:" if npcs else f"No notable NPCs at {location.name}.",
                 "action": "settlement:list_npcs",
                 "location_name": location.name,
+                "location_number": location.number,
                 "npcs": npcs,
             }
 
         # All NPCs in settlement
         npcs = []
         for npc in settlement.npcs:
+            # Try to find location name for this NPC
+            loc_name = None
+            if npc.location_id:
+                loc_map = settlement.location_by_number()
+                loc = loc_map.get(int(npc.location_id)) if npc.location_id.isdigit() else None
+                loc_name = loc.name if loc else None
+
             npcs.append({
                 "npc_id": npc.npc_id,
                 "name": npc.name,
                 "title": npc.title,
+                "kindred": npc.kindred,
                 "occupation": npc.occupation,
                 "location_id": npc.location_id,
+                "location_name": loc_name,
             })
 
         return {
             "success": True,
             "message": f"Notable people in {settlement.name}:",
             "action": "settlement:list_npcs",
+            "settlement_name": settlement.name,
             "npcs": npcs,
         }
 
     def _action_talk_to_npc(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Talk to an NPC (narration-only stub for Phase 2)."""
+        """Talk to an NPC - provides NPC details for narration."""
         settlement = self.get_active_settlement()
         if not settlement:
             return {
@@ -765,21 +850,51 @@ class SettlementEngine:
             }
 
         npc_name = params.get("npc_name", "")
-        npc_map = settlement.npc_by_id()
+        npc_id = params.get("npc_id")  # Allow lookup by ID too
 
-        # Find NPC by name
+        # Find NPC by ID first, then by name
         matched = None
-        for npc in settlement.npcs:
-            if npc_name.lower() in npc.name.lower():
-                matched = npc
-                break
+        if npc_id:
+            npc_map = settlement.npc_by_id()
+            matched = npc_map.get(npc_id)
 
         if not matched:
+            # Try exact name match first
+            for npc in settlement.npcs:
+                if npc.name.lower() == npc_name.lower():
+                    matched = npc
+                    break
+            # Then try partial match
+            if not matched:
+                for npc in settlement.npcs:
+                    if npc_name.lower() in npc.name.lower():
+                        matched = npc
+                        break
+
+        if not matched:
+            # Suggest available NPCs
+            available = [npc.name for npc in settlement.npcs]
             return {
                 "success": False,
                 "message": f"Could not find '{npc_name}' in {settlement.name}.",
                 "action": "settlement:talk",
+                "available_npcs": available[:5],  # Limit suggestions
             }
+
+        # Log the talk event
+        _log_settlement_event("talk_to_npc", {
+            "settlement_id": settlement.settlement_id,
+            "npc_id": matched.npc_id,
+            "npc_name": matched.name,
+            "location_number": self._current_location_number,
+        })
+
+        # Get NPC's location name if available
+        npc_location_name = None
+        if matched.location_id:
+            loc_map = settlement.location_by_number()
+            loc = loc_map.get(int(matched.location_id)) if matched.location_id.isdigit() else None
+            npc_location_name = loc.name if loc else None
 
         return {
             "success": True,
@@ -791,11 +906,16 @@ class SettlementEngine:
                 "title": matched.title,
                 "description": matched.description,
                 "kindred": matched.kindred,
+                "alignment": matched.alignment,
                 "demeanor": matched.demeanor,
                 "mannerisms": matched.mannerisms,
                 "speech": matched.speech,
+                "languages": matched.languages,
+                "desires": matched.desires,
+                "secrets": matched.secrets,
+                "occupation": matched.occupation,
+                "location_name": npc_location_name,
             },
-            "note": "Full conversation system will be implemented in Phase 2.",
         }
 
     def _action_ask_directions(self, params: dict[str, Any]) -> dict[str, Any]:
