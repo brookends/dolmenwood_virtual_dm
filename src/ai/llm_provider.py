@@ -30,6 +30,7 @@ class LLMProvider(str, Enum):
 
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
+    OLLAMA = "ollama"  # Local models via Ollama
     MOCK = "mock"  # For testing
 
 
@@ -73,6 +74,9 @@ class LLMConfig:
     max_tokens: int = 1024
     temperature: float = 0.7
     api_key: Optional[str] = None
+
+    # Ollama-specific settings
+    ollama_host: Optional[str] = None  # Default: http://localhost:11434
 
     # Rate limiting
     max_retries: int = 3
@@ -283,6 +287,190 @@ class OpenAIClient(BaseLLMClient):
         )
 
 
+class OllamaClient(BaseLLMClient):
+    """
+    Client for Ollama local LLM server.
+
+    Ollama provides a simple way to run LLMs locally. This client connects
+    to a local Ollama server (default: http://localhost:11434) and uses
+    the chat API for completions.
+
+    Recommended models for Dolmenwood DM:
+    - mistral:7b - Good balance of speed and quality
+    - llama3:8b - Strong instruction following
+    - mixtral:8x7b - Higher quality, needs more RAM
+    - llama3:70b - Best quality, requires significant hardware
+
+    Usage:
+        config = LLMConfig(
+            provider=LLMProvider.OLLAMA,
+            model="mistral:7b",  # or any model you have pulled
+            ollama_host="http://localhost:11434",  # optional
+        )
+    """
+
+    def __init__(self, config: LLMConfig):
+        super().__init__(config)
+        self._client = None
+        self._host = config.ollama_host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        self._initialize_client()
+
+    def _initialize_client(self) -> None:
+        """Initialize the Ollama client."""
+        try:
+            import ollama
+
+            # Test connection by listing models
+            self._client = ollama.Client(host=self._host)
+            # Verify server is reachable
+            try:
+                self._client.list()
+                logger.info(f"Connected to Ollama server at {self._host}")
+            except Exception as e:
+                logger.warning(f"Ollama server not reachable at {self._host}: {e}")
+                self._client = None
+        except ImportError:
+            logger.warning(
+                "ollama package not installed. "
+                "Install with: pip install ollama"
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize Ollama client: {e}")
+
+    def is_available(self) -> bool:
+        """Check if Ollama server is available."""
+        if not self._client:
+            return False
+        try:
+            self._client.list()
+            return True
+        except Exception:
+            return False
+
+    def _check_model_available(self) -> bool:
+        """Check if the configured model is available locally."""
+        if not self._client:
+            return False
+        try:
+            models = self._client.list()
+            model_names = [m.get("name", "") for m in models.get("models", [])]
+            # Check for exact match or partial match (e.g., "mistral:7b" matches "mistral:7b-instruct")
+            return any(
+                self.config.model in name or name.startswith(self.config.model.split(":")[0])
+                for name in model_names
+            )
+        except Exception:
+            return False
+
+    def complete(
+        self,
+        messages: list[LLMMessage],
+        system_prompt: Optional[str] = None,
+    ) -> LLMResponse:
+        """Generate completion using Ollama."""
+        if not self._client:
+            return LLMResponse(
+                content="[Ollama unavailable - server not running or not reachable]",
+                model=self.config.model,
+                provider=LLMProvider.OLLAMA,
+                authority_violations=["client_unavailable"],
+            )
+
+        # Convert messages to Ollama format
+        ollama_messages = []
+        if system_prompt:
+            ollama_messages.append({"role": "system", "content": system_prompt})
+
+        for msg in messages:
+            ollama_messages.append(
+                {
+                    "role": msg.role.value,
+                    "content": msg.content,
+                }
+            )
+
+        for attempt in range(self.config.max_retries):
+            try:
+                response = self._client.chat(
+                    model=self.config.model,
+                    messages=ollama_messages,
+                    options={
+                        "temperature": self.config.temperature,
+                        "num_predict": self.config.max_tokens,
+                    },
+                )
+
+                content = response.get("message", {}).get("content", "")
+
+                # Extract token usage if available
+                usage = {}
+                if "eval_count" in response:
+                    usage["output_tokens"] = response["eval_count"]
+                if "prompt_eval_count" in response:
+                    usage["input_tokens"] = response["prompt_eval_count"]
+
+                return LLMResponse(
+                    content=content,
+                    model=self.config.model,
+                    provider=LLMProvider.OLLAMA,
+                    usage=usage,
+                    raw_response=response,
+                )
+            except Exception as e:
+                error_msg = str(e)
+                logger.warning(f"Ollama API attempt {attempt + 1} failed: {e}")
+
+                # Check for common errors
+                if "model" in error_msg.lower() and "not found" in error_msg.lower():
+                    return LLMResponse(
+                        content=f"[Model '{self.config.model}' not found. Run: ollama pull {self.config.model}]",
+                        model=self.config.model,
+                        provider=LLMProvider.OLLAMA,
+                        authority_violations=["model_not_found"],
+                    )
+
+                if attempt < self.config.max_retries - 1:
+                    time.sleep(self.config.retry_delay * (attempt + 1))
+
+        return LLMResponse(
+            content="[Ollama request failed after retries]",
+            model=self.config.model,
+            provider=LLMProvider.OLLAMA,
+            authority_violations=["request_failed"],
+        )
+
+    def list_models(self) -> list[str]:
+        """List available models on the Ollama server."""
+        if not self._client:
+            return []
+        try:
+            models = self._client.list()
+            return [m.get("name", "") for m in models.get("models", [])]
+        except Exception:
+            return []
+
+    def pull_model(self, model_name: str) -> bool:
+        """
+        Pull a model from the Ollama library.
+
+        Args:
+            model_name: Model to pull (e.g., "mistral:7b", "llama3:8b")
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._client:
+            return False
+        try:
+            logger.info(f"Pulling model {model_name}... (this may take a while)")
+            self._client.pull(model_name)
+            logger.info(f"Successfully pulled {model_name}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to pull model {model_name}: {e}")
+            return False
+
+
 class MockLLMClient(BaseLLMClient):
     """Mock LLM client for testing."""
 
@@ -399,6 +587,8 @@ class LLMManager:
             # Could add OpenAI as fallback
         elif self.config.provider == LLMProvider.OPENAI:
             self._client = OpenAIClient(self.config)
+        elif self.config.provider == LLMProvider.OLLAMA:
+            self._client = OllamaClient(self.config)
         elif self.config.provider == LLMProvider.MOCK:
             self._client = MockLLMClient(self.config)
 
