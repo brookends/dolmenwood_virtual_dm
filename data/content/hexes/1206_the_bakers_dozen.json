@@ -1,0 +1,133 @@
+{
+  "hex_id": "1206",
+  "coordinates": [
+    12,
+    6
+  ],
+  "name": "The Baker's Dozen",
+  "tagline": "Dense, forbidding woods of twisted elm and hawthorn. Many paths lead to gloomy dead-ends.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Nighttime encounters on the road are 2-in-6 likely to be with the ghost of Dewidort of Smerne (see hex 0607)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Dense, forbidding woods of twisted elm and hawthorn. Many paths lead to gloomy dead-ends.",
+  "points_of_interest": [
+    {
+      "name": "The Bakery",
+      "poi_type": "cottage",
+      "description": "A charming, thatched cottage lies nestled in a glade half a mile south of Horse-Eye Road. Mouthwatering scents of cinnamon and gingerbread waft from the dwelling.",
+      "tagline": null,
+      "entering": "Visitors are greeted cordially, though gently but firmly prevented from exploring inside the house. Delicious, freshly-baked pastries are available for 2sp each.",
+      "interior": "Main room: Spacious, dominated by a massive oaken table. Cats leap and play in the rafters above. Shelves are laden with homely crockery and chinaware. Kitchen: The heat and bulk of an enormous brick oven dominate the kitchen. Higgledy-piggledy shelves line the walls, brimming with jars of biscuits, flour, herbs, and spices. One jar contains 12 Chocolate Chip Healing Cookies (eating one heals 1d6 HP, worth 800gp each). Another, hidden at the back of a shelf, contains 17pp, 214gp, 112sp. Back door: Opening from the kitchen to a small herb garden and a path leading to the Dough Pool. Mother's bedroom: Dark and cosy. Lined with shelves crammed with cookbooks, with several treatises on sorcery and enchantment in more hidden corners. Beneath a floorboard are Mother's spell books. Beneath the bed's mattress is a jewellery box with 16 ametrines (100gp each) and a diamond hat-pin (600gp). Daughters' bedrooms: Each has her own bedroom on either the ground floor or the upper floor. In several hang needlepoint samplers featuring Sylvan names and phrases.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A baker (and, secretly, magician) known only as Mother and her 12 daughters spend their days baking all manner of tantalising pastries and tarts. The daughters vary greatly in appearance, and range from ages 7 to 21. The older daughters operate a popular market stall in Prigwort (p176), and the family also produces commissioned specialties for local nobles and gentry (magically enhanced, for the most exclusive clients).",
+      "roll_tables": [],
+      "npcs": [
+        "mother"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Dough Pool",
+      "poi_type": "pool",
+      "description": "A 60′ wide pool of yeasty, frothing dough belches and bubbles at the rear of the bakery.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Wardens: 6 gingerbread servitors (6′ tall, treat as manikins—DMB) mindlessly stir the pool, their sugar icing faces grinning vacantly at onlookers. They periodically spoon finished dough into wheelbarrows for delivery to the kitchen. Each servitor contains the charred skeleton of a rogue who crossed Mother or her daughters, captured by the family and baked alive in gingerbread dough. Tool shed: Contains wheelbarrows and a variety of tools for working the dough pool (long ladles, shovels, spoons). Tumbledown cottage: The gingerbread servitors sleep here at night in cosy beds.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "6 gingerbread servitors (6′ tall, treat as manikins—DMB) mindlessly stir the pool",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "Each servitor contains the charred skeleton of a rogue who crossed Mother or her daughters, captured by the family and baked alive in gingerbread dough"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mother",
+      "name": "Mother",
+      "title": "Level 5 Magician",
+      "description": "A plump, middle-aged human woman, with unruly curls, a rolling pin in hand, a floured apron, and a twinkle in her eye. She is always referred to simply as \"Mother\" and will not reveal any other name.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jolly",
+        "secretive",
+        "fanatically protective of her daughters",
+        "Habitually rubs her hands together, brushing off clouds of flour"
+      ],
+      "speech": "Charmingly rustic. Addresses strangers as \"deary.\"",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To support her family and protect the secrets of her enterprise",
+        "Lover's Gasp mushrooms (p428), required for an extravagant, enchanted wedding gateau commissioned by the Earl of Yellow (p32). She knows only that the mushrooms can be found \"in the vicinity of cliffs in the High Wold\" (in fact, hex 0811)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Wields a rolling pin (1d4 damage)",
+        "A plain silver Ring of Vanishing (p410, command word \"MIGRAMANALANAX\")",
+        "A Wand of Polymorph (12 charges), which her daughters stole from the witch Bragwen Hoad in hex 1108, required for the enchanted gateau she is preparing to bake for the Earl of Yellow"
+      ],
+      "location": "The Bakery",
+      "stat_reference": "Level 5 Magician",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Chocolate Chip Healing Cookies",
+      "description": "eating one heals 1d6 HP, worth 800gp each",
+      "quantity": 12,
+      "value": "800gp each"
+    },
+    {
+      "name": "Ametrines",
+      "description": "16 ametrines",
+      "quantity": 16,
+      "value": "100gp each"
+    },
+    {
+      "name": "Diamond hat-pin",
+      "description": "diamond hat-pin",
+      "quantity": 1,
+      "value": "600gp"
+    }
+  ],
+  "secrets": [
+    "200gp reward for 12 portions of Lover's Gasp",
+    "Mother commands the gingerbread servitors that work the Dough Pool and can summon them to aid in 1d4 Rounds",
+    "Spells: Rank 1 Gingerbread Charm, Yeast Growth, Rank 2 En Croute, Mirror Image, Rank 3 Ginger Snap"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Horse-Eye Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      327
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

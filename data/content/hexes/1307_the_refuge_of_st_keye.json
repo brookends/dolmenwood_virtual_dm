@@ -1,0 +1,104 @@
+{
+  "hex_id": "1307",
+  "coordinates": [
+    13,
+    7
+  ],
+  "name": "The Refuge of St Keye",
+  "tagline": "Spacious glades of majestic beech and oak. A profusion of songbirds, cheery twitterings fill the air.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Spacious glades of majestic beech and oak. A profusion of songbirds, cheery twitterings fill the air.",
+  "points_of_interest": [
+    {
+      "name": "Wayside Monastery",
+      "poi_type": "monastery",
+      "description": "Two miles from the edge of the forest, an old stone building stands by the wayside. The building is fastidiously maintained, but with a touch of austerity about it.",
+      "tagline": null,
+      "entering": "Above an arched oak door hangs a sign announcing (in beautifully painted red calligraphy) \"The Refuge of St Keye—Pilgrims Welcome.\" The door opens into the Common Room.",
+      "interior": "This is the only active monastery remaining within Dolmenwood's bounds. The Refuge is a popular stop along the way between Castle Brackenwold and Prigwort, serving as an inn for those travellers who can stomach a little religion with their evening repast. The Refuge was originally established as a monastery and rest stop for pilgrims on the way to the abbey of St Clewyd.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Abbot Wiston Spatulard and a team of monks",
+      "roll_tables": [],
+      "npcs": [
+        "abbot_wiston_spatulard"
+      ],
+      "special_features": [
+        {
+          "name": "Common Room",
+          "description": "A wide taproom and refectory, filled with wooden benches and trestle tables. Of an evening, the place is teeming with travellers stopping here for the night. Huge casks of ale line one wall, where a team of monks catch the seemingly endless flow in stone tankards. Above the cask wall hangs an oaken image—twice life size—of St Keye the chronicler, bearing his tome and quill, and looking down across the guests with a beneficent but somewhat reprimanding gaze. Every evening at six, Abbot Spatulard holds a brief mass in the refectory, blessing travellers on their way and reading an extract from the vast chronicles of their patron saint. Supper is then served from the monastery kitchen."
+        },
+        {
+          "name": "Chapel of St Keye",
+          "description": "A narrow pilgrims' chapel, lit by night with hundreds of slim, yellow candles. The stones of the walls are etched, in tiny Liturgic script, with the entire text of the second chronicle of St Keye. Characters praying in the chapel may receive the blessing of St Keye: the ability to cast Locate Object. A locked trapdoor leads down to the crypts, where (it is said) relics of the saint are kept."
+        }
+      ],
+      "secrets": [
+        "Relics of St Keye are kept in the crypts below the chapel"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "abbot_wiston_spatulard",
+      "name": "Abbot Wiston Spatulard",
+      "title": "Abbot",
+      "description": "A wisp-haired human man in his 60s, clad in rolls of fat from a sedentary life spent drinking ale.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Apathetic moralising",
+        "Desperate to talk to someone new",
+        "Can't keep a secret"
+      ],
+      "speech": "Interminable burbling. Sudden bursts of laughter",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "The secrets of the brewmasters of Prigwort",
+        "To go back in time, marry his childhood sweetheart, and forgo the monastic life"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Refuge of St Keye",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Keye's Balm",
+      "type": "ale",
+      "description": "Monastery ale",
+      "cost": "1sp a pint",
+      "mechanical_effect": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Services at the Refuge: Lodgings and food of common quality. Only private rooms are available (spartan monastic cells on the upper floor, 2sp a night). Meals are always served with freshly baked caraway buns. Dinner is seldom available later than eight in the evening.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      340
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

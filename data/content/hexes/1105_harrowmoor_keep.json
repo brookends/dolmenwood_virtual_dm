@@ -1,0 +1,146 @@
+{
+  "hex_id": "1105",
+  "coordinates": [
+    11,
+    5
+  ],
+  "name": "Harrowmoor Keep",
+  "tagline": "Gloomy, rugged woods dotted with jagged fingers of dark granite. A groaning wind blows from the Loch.",
+  "region": "Aldweald",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Gloomy, rugged woods dotted with jagged fingers of dark granite. A groaning wind blows from the Loch.",
+  "points_of_interest": [
+    {
+      "name": "The Groaning Loch",
+      "poi_type": "loch",
+      "description": "Dangerous waters: Fathomless, cold, and unquiet. Unpredictable currents, whirlpools, and the presence of kelpies make navigation of the loch's waters a perilous undertaking; few boats are ever seen upon it.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Cliffs: The Loch is bounded by forbidding, granite cliffs, 200 yards high. Bays: In places, the waves of the Loch lap against forlorn beaches of black shingle.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "kelpies",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Dangerous waters with unpredictable currents and whirlpools",
+        "Granite cliffs 200 yards high",
+        "Black shingle beaches"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Harrowmoor Keep",
+      "poi_type": "keep",
+      "description": "Perched upon the high, granite cliffs that verge the southern extent of the loch is the hereditary seat of the Harrowmoor family, who have lordship (under the Duke of Brackenwold) over this region of Dolmenwood.",
+      "tagline": null,
+      "entering": "Its gates face southward, opening onto the bend where the Harrow Road from Prigwort turns and becomes Lochsbreth Road.",
+      "interior": "Chilly halls of echoing stone, starkly decorated with ancient tapestries, ancestral suits of armour, and ornamental polearms. The lower chambers of the keep are dug within the cliff itself. Among them is an ancient library, where dusty tomes of philosophy and history rest upon oaken shelves in dim candlelight.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The people of House Harrowmoor, presided over by Lady Theatrice Harrowmoor, and consisting of her family, guards, servants, and cats.",
+      "roll_tables": [],
+      "npcs": [
+        "lady_theatrice_harrowmoor"
+      ],
+      "special_features": [
+        "Tall and heavily fortified with steeply-roofed turrets",
+        "Inhabited by cawing flocks of rooks",
+        "Appears carved from same granite as cliffs",
+        "Ancient library in lower chambers"
+      ],
+      "secrets": [
+        "Behind one bookcase, a secret door leads to a steep stair carved into the granite of the cliffs, which winds its way downward to the Cove of the Forroth"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Cove of the Forroth",
+      "poi_type": "cove",
+      "description": "A desolate, stony cove beside the loch. A steep stair runs from the cove to a secret door in the cliffs, leading to the library of Harrowmoor Keep.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Summoning the Forroth: At this site, at midnight on a moonless night, one who performs beautiful, mournful songs on the magical flute in the Harrowmoor family's possession may summon a monstrous entity known to the Harrowmoor family as the Forroth.",
+      "leaving": null,
+      "inhabitants": "The Forroth (when summoned)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Secret stair to Harrowmoor Keep library",
+        "Summoning site for the Forroth"
+      ],
+      "secrets": [
+        "Consultation of the Forroth in times of trouble is a tradition among the lords and ladies of House Harrowmoor"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_theatrice_harrowmoor",
+      "name": "Lady Theatrice Harrowmoor",
+      "title": "Lady",
+      "description": "Presides over House Harrowmoor and the people of the keep.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [
+        "distant",
+        "unwelcoming",
+        "severe"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "Has access to magical flute that can summon the Forroth"
+      ],
+      "possessions": [
+        "magical flute"
+      ],
+      "location": "Harrowmoor Keep",
+      "stat_reference": "p60",
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "The Forroth",
+      "type": "entity",
+      "description": "A gargantuan, jelly-like monstrosity which lurks in the abyss of the loch. Its form is a roughly spherical mass, sprawling with luminescent green tentacles.",
+      "mechanical_effect": "Once summoned, the Forroth enters into a telepathic communion with all present in the cove, drawing them into a dream of the black, watery chasm in which it dwells. This fugue lasts until dawn. The after-effects are 1d3 days of exhaustion plus an insight into a puzzle or problem that plagues one's mind.",
+      "value": null,
+      "location": "The Cove of the Forroth"
+    }
+  ],
+  "secrets": [
+    "Over-frequent contact with the Forroth caused several people in the Harrowmoor line to succumb to delusions and waking nightmares"
+  ],
+  "dm_notes": "Ley line Hoad: Arcane spell-casters perceive the feeling of having just awoken from a dream.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Harrow Road",
+    "Lochsbreth Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      314
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

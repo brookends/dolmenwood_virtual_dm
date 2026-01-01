@@ -1,0 +1,114 @@
+{
+  "hex_id": "0904",
+  "coordinates": [
+    9,
+    4
+  ],
+  "name": "The Court of the Nag-Lord",
+  "tagline": "Decrepit firs and twisted thorn trees, dripping with pink ooze. Clawed roots writhe and grasp at travellers.",
+  "region": "Nagwood",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Nagwood",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d10 vampire bats (DMB), bred by the Nag-Lord to plague its domain",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Decrepit firs and twisted thorn trees, dripping with pink ooze. Clawed roots writhe and grasp at travellers.",
+  "points_of_interest": [
+    {
+      "name": "The Court of the Nag-Lord",
+      "poi_type": "court",
+      "description": "Perched on the steep northern shore of the rank, sluggish River Shub sits the court of the Nag-Lord, Atanuwë. It takes the form of a great, oozing dome of black slime, quivering like a bubble drifting on water. A contorted, glistening tower ascends 100′ from its centre, topped with a cluster of gristly horns. A wall of venom-dripping thorns, 15′ high and 15′ deep, rings the court.",
+      "tagline": null,
+      "entering": "The thorn wall parts for any who bow low and proclaim their servitude to Atanuwë, granting entrance to the court.",
+      "interior": "Within the slime dome, rubbery, black membranes form intestine-like passages and womb-like chambers. The only light is from the luminous secretions that weep from pustules dotting the walls. Cries of anguish, the scents of gore and sickly, otherworldly perfumes, and wicked, cackling laughter pervade.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Nag-Lord, Atanuwë (p45), 75 crookhorns (DMB), 12 harpies (DMB), 7 harridans (DMB), and 5 corrupt unicorns (DMB) are typically resident.",
+      "roll_tables": [],
+      "npcs": [
+        "atanuwe"
+      ],
+      "special_features": [
+        "Putrescent flow: A putrid, frothing liquid—black and purple and horrid pink—drains from the base of the wall of thorns and oozes into the River Shub. This is Atanuwë's corruption, which flows into Lake Longmere and thence into the waters of all Dolmenwood.",
+        "Thorn wall: The wall is impenetrable and immune to mundane damage. Scaling it is perilous: 2d8 damage plus Save Versus Doom or die of poison.",
+        "Throne room: A giant throne of pale, twisted wood stands before the captured nodal Sargstone, surrounded by feasting tables piled with entrails, rotting fruits, and roasted children's flesh. The Head of the Stag Lord hangs above the throne and the antlered staff the Drune call the Awlflame (an Arcane Staff / Staff of Dominion (Humans)) lies on a table nearby—used by Atanuwë as a toothpick.",
+        "Sargstone: Sargstone—known as the Weirdstone—is a 15′ tall obsidian pyramid, its surface flickering with maelstroms of purple energy. Amid the energy, the agonised visage of a man can be seen (the trapped spirit of the Audrune Hemlack—the stone's former guardian). Touching Sargstone is deadly: Save Versus Doom or disintegrate.",
+        "Ballroom: A 100′ wide disc of solidified darkness floating at the top of the dome. Harpies, corrupted woodgrues, and crookhorns play a continuous, maddening din. The skulls of four saints drift around, wailing sanctimoniously (much to the amusement of Atanuwë and its minions).",
+        "Cellars and pantries: Beneath the court, an endless maze of frigid chambers houses an exquisite selection of crushed-sprite wines, human children, and other prisoners whose destiny awaits on the Nag-Lord's feasting tables.",
+        "Atanuwë's chambers: A stair of human bone ascends the central tower to Atanuwë's private chambers, overlooking the Valley of Wise Beasts. Amid heaps of offal and silk cushions can be found jewels to the value of 20,000gp, depraved statues and art objects to the value of 20,000gp, a shimmering pool of liquid gold (20,000gp worth, if solidified), and an assortment of discarded magical playthings: Belt of Might (p406), Horn of Blasting (p408), Talisman of Protection From Hexes (p398), a suit of Holy Chainmail (p400), and an Arcane Shield (Freezing, p400)."
+      ],
+      "secrets": [
+        "Inscribed spell: Drunic runes describe the arcane spell Dweomerfire. See Ley Lines and Standing Stones, p18 for details on learning this spell.",
+        "Freeing the trapped Audrune: The spirit of Hemlack can be released into another vessel by magic of soul transference such as Trap the Soul (p457)."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Head of the Stag Lord",
+      "poi_type": "artifact",
+      "description": "The decapitated head of the Wood God Yorghan (see p39 and hex 1305), with antlers spanning 8′, its great tongue drooling and its eyes rolling vacantly.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Drool: Consuming the head's frothy drool cures 1d6+1 HP. (Once per day per character.)",
+        "Gaze: Speaking the Stag Lord's name (Yorghan) causes the eyes to focus briefly. One who meets its gaze must Save Versus Doom or dissolve into a pool of plasma and evaporate in 1d6 Rounds. A character who makes the save is cured of all curses and diseases afflicting them and gains 1d4 Constitution. (Once ever per character.)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "atanuwe",
+      "name": "Atanuwë",
+      "title": "The Nag-Lord",
+      "description": null,
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Court of the Nag-Lord",
+      "stat_reference": "p45",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    "Belt of Might",
+    "Horn of Blasting",
+    "Talisman of Protection From Hexes",
+    "Holy Chainmail",
+    "Arcane Shield (Freezing)",
+    "Awlflame (Arcane Staff / Staff of Dominion)"
+  ],
+  "secrets": [
+    "Ley line crossing Hoad/Lamm: Arcane spell-casters perceive the feeling of desperately awakening from a nightmare. (See p18.)"
+  ],
+  "dm_notes": "Visitors: Are likely to be imprisoned, tormented, and eaten alive.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      289
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

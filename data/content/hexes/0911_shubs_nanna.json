@@ -1,0 +1,121 @@
+{
+  "hex_id": "0911",
+  "coordinates": [
+    9,
+    11
+  ],
+  "name": "Shub's Nanna",
+  "tagline": "Round, moss-covered, waist-high boulders, like a chain of islands in a verdant sea.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Round, moss-covered, waist-high boulders, like a chain of islands in a verdant sea.",
+  "points_of_interest": [
+    {
+      "name": "The Crooked Cottage",
+      "poi_type": "cottage",
+      "description": "Beside a rushing brook of dark water is an ancient cottage of moss-covered brick. The one-and-a-half-storey structure is an assemblage of crooked angles, jutting gables, oddly-placed cupolas, and grimy, opaque windows. It is the dwelling of the longhorn crone known in local folklore as Shub's Nanna and her henchfolk.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A quaint, rustic kitchen and living room, stuffed with drying herbs, pickle jars, baskets of root vegetables, and human bones. Concealed behind a loose hearthstone are a pouch of 1,560sp, a Wand of Fear, a vial of Philtre of the Winds, and 2 unicorn horn bracelets (1,000gp each).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Nanna's servants—7 silver goblins—dozing in hammocks in the attic. There is a 3-in-6 chance of Nanna herself being at home (otherwise she is foraging in the woods of this hex).",
+      "roll_tables": [],
+      "npcs": [
+        "shubs_nanna"
+      ],
+      "special_features": [
+        "Sleigh: Beside the cottage is an unoccupied sleigh, bedecked with deerskins. If touched by one other than its mistress, the sleigh shakes and screams.",
+        "Goats: 5 silver-eyed she-goats graze the bracken of the surrounding woods. Shub's Nanna uses these animals to drive the sleigh."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Thorm",
+      "poi_type": "shrine",
+      "description": "In the south of the hex stands a ruined church surrounded by a pile of crusted black filth that resembles a slime mould. The church is overgrown with ivy and home to a venerable colony of rooks, whose caws can be heard from some distance away.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The icon and relics in the chapel are missing, but the epithets (in Liturgic) carved around the doorway indicate that this place was once dedicated to St Thorm \"faith-smith.\"",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A venerable colony of rooks",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Consuming the filth: Non-humanoid mammals permanently gain human-like sentience after 1d3 days. (Animals in these parts instinctively avoid the substance.) Mortals, fairies, and demi-fey enjoy the substance's delectable taste but must immediately Save Versus Spell. Those who fail fall into a coma for 1d3 days, during which they dream incessantly of talking animals tormenting them with degrading insults.",
+        "Prayer: If the shrine is re-sanctified by placing a holy symbol upon the altar, characters praying may receive the blessing of St Thorm: the ability to cast Detect Magic."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "shubs_nanna",
+      "name": "Shub's Nanna",
+      "title": "The longhorn crone",
+      "description": "The longhorn crone known in local folklore as Shub's Nanna",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [
+        "Sleigh with special powers",
+        "5 silver-eyed she-goats"
+      ],
+      "location": "The Crooked Cottage",
+      "stat_reference": "p47",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Wand of Fear",
+      "description": "Hidden behind loose hearthstone",
+      "value": null,
+      "location": "The Crooked Cottage"
+    },
+    {
+      "name": "Philtre of the Winds",
+      "description": "Vial hidden behind loose hearthstone",
+      "value": null,
+      "location": "The Crooked Cottage"
+    },
+    {
+      "name": "Unicorn horn bracelets",
+      "description": "2 bracelets hidden behind loose hearthstone",
+      "value": "1,000gp each",
+      "location": "The Crooked Cottage"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      296
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "hex_id": "1606",
+  "coordinates": [
+    16,
+    6
+  ],
+  "name": "The Whispering Caves",
+  "tagline": "A pleasant beech wood dotted with heaps, mounds, and spires of sandstone.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A pleasant beech wood dotted with heaps, mounds, and spires of sandstone.",
+  "points_of_interest": [
+    {
+      "name": "The Whispering Caves",
+      "poi_type": "caves",
+      "description": "In the side of a hillock at the heart of the hex can be found the entrance to a series of caves, bored into the stone by the waters of ages past.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The caves are uninhabited, yet are filled with an echoing, sibilant mockery of the sounds of human habitation. Employing magical detection reveals an unfathomable sorcery at work here. The echoes heard in the caves reproduce what may currently be heard in the chambers of Castle Brackenwold.",
+      "exploring": "If PCs spend time wandering through the caves, listening, they may catch snippets of a conversation of note. The identity of speakers is not obvious unless the PCs have encountered them previously.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Whispers in the Caves",
+          "die_type": "d6",
+          "description": "Roll when listening in the caves",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "A noblewoman (cousin of the duke), in discussing her niece with a woman with a common accent (servant), says that she \"shows promise,\" and should be \"introduced to the library\" (see The Witches' Library, p130). The second woman warns of the rise of witch-hunting under Bishop Sanguine (p69).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "An elderly man with a grave, admonishing tone (Bishop Sanguine—p69) mentions \"the oubliette\" (p130) to a middle-aged, regal man (Duke Thespian—p58), who then begins to sob.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "A gruff man (Captain Merriman Bogle—p131) confides to a deferential man (soldier) his belief that the \"atrocities\" of harsh longhorn rule in Lankshorn (p156) make war \"unavoidable,\" and thus Lord Malbleat (p64) will be \"neutralised.\" The other man agrees, addressing the gruff man as \"captain.\"",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "A soft-spoken man (Abbot Hargle—p69) tells a nervous man (acolyte) that Bishop Sanguine's zeal to destroy the Drune is \"perhaps wrong-headed, possibly tragic,\" based on his research of \"ancient, mutual obligations\" (i.e. the Triple Compact) between the Drune and the Church. The nervous man counsels caution, addressing the soft-spoken man as \"father.\"",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "A matronly woman recounts the tale of \"poor Lady Persimone\" (the firstborn child of the duke and duchess), who died of terror as a girl following a visitation by the banshee that haunts the castle. A gaggle of serving girls gasp. (False. Persimone was, in truth, a victim of the curse of the oubliette—p130.)",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "A noble-accented breggle (emissary of Lord Ramius—p65) presenting a gift to a young noblewoman (the Lady Zoemina—daughter of the duke), \"from milady's humble admirer in the High Wold, with the hope that it pleases her.\" The lady murmurs appreciatively.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Whispers from Brackenwold"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Burned-Out Hut",
+      "poi_type": "ruins",
+      "description": "Half a mile to the south of the whispering caves, the blackened remnants of a small, burned-out hut stand in a glade of horse chestnuts.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Appears to have been razed within the last six months. Its interior is overrun with freshly sprouted nettles. Buried in the ashes is a sealed tin box containing a 6″ tall corn dolly with a lock of black hair braided into it.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Moss corpse",
+        "Corn dolly"
+      ],
+      "secrets": [
+        "The witch Joab Elfwit dwelt here until recently. She knew the secret of the whispering caves and used the overheard whispers to blackmail Sanctus Primus. Clerics of St Faxis were sent to eradicate her, unknowingly slaying her doppelgänger. She is now in hiding in hex 1707."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Whispers in the Caves",
+      "die_type": "d6",
+      "description": "Roll when listening in the caves",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "A noblewoman (cousin of the duke), in discussing her niece with a woman with a common accent (servant), says that she \"shows promise,\" and should be \"introduced to the library\" (see The Witches' Library, p130). The second woman warns of the rise of witch-hunting under Bishop Sanguine (p69).",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "An elderly man with a grave, admonishing tone (Bishop Sanguine—p69) mentions \"the oubliette\" (p130) to a middle-aged, regal man (Duke Thespian—p58), who then begins to sob.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "A gruff man (Captain Merriman Bogle—p131) confides to a deferential man (soldier) his belief that the \"atrocities\" of harsh longhorn rule in Lankshorn (p156) make war \"unavoidable,\" and thus Lord Malbleat (p64) will be \"neutralised.\" The other man agrees, addressing the gruff man as \"captain.\"",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "A soft-spoken man (Abbot Hargle—p69) tells a nervous man (acolyte) that Bishop Sanguine's zeal to destroy the Drune is \"perhaps wrong-headed, possibly tragic,\" based on his research of \"ancient, mutual obligations\" (i.e. the Triple Compact) between the Drune and the Church. The nervous man counsels caution, addressing the soft-spoken man as \"father.\"",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "A matronly woman recounts the tale of \"poor Lady Persimone\" (the firstborn child of the duke and duchess), who died of terror as a girl following a visitation by the banshee that haunts the castle. A gaggle of serving girls gasp. (False. Persimone was, in truth, a victim of the curse of the oubliette—p130.)",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "A noble-accented breggle (emissary of Lord Ramius—p65) presenting a gift to a young noblewoman (the Lady Zoemina—daughter of the duke), \"from milady's humble admirer in the High Wold, with the hope that it pleases her.\" The lady murmurs appreciatively.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Corn Dolly",
+      "description": "A 6″ tall corn dolly with a lock of black hair braided into it. If released from the box, the dolly wails \"mistress!\" in a faint, shrill voice. If placed upon the ground, it finds its way to the location of its mistress in hex 1707 (though its tiny legs can only carry it at a rate of 1 mile per day).",
+      "value": null,
+      "magical": true
+    }
+  ],
+  "secrets": [
+    "The witch Joab Elfwit used the overheard whispers to blackmail Sanctus Primus",
+    "Clerics of St Faxis unknowingly slayed Joab Elfwit's doppelgänger, she is now hiding in hex 1707"
+  ],
+  "dm_notes": "History: The witch Joab Elfwit dwelt here until recently. She knew the secret of the whispering caves and used the overheard whispers to blackmail Sanctus Primus (p71). Clerics of St Faxis were sent to eradicate her, unknowingly slaying her doppelgänger. She is now in hiding in hex 1707.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      370
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

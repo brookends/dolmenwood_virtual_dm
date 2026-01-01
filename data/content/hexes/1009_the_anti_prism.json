@@ -1,0 +1,137 @@
+{
+  "hex_id": "1009",
+  "coordinates": [
+    10,
+    9
+  ],
+  "name": "The Anti-Prism",
+  "tagline": "Patches of grey bushes, flowers, and skeletal trees stand out against the otherwise verdant forest.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encountered creatures or people are 3-in-6 likely to be afflicted with the Grey Blight",
+    "foraging_results": "Successful foraging yields 1d3 portions of Parson's Gobble (p430), in addition to the normal results",
+    "foraging_special": [
+      "Parson's Gobble (1d3 portions)"
+    ]
+  },
+  "description": "Patches of grey bushes, flowers, and skeletal trees stand out against the otherwise verdant forest.",
+  "points_of_interest": [
+    {
+      "name": "The Anti-Prism",
+      "poi_type": "crystal",
+      "description": "In the north-west of this hex, Harrid's Path passes through a region, half a mile in diameter, where all the colours of the forest bleed away into monochrome. Trees are bare and undergrowth is wilted. All sounds of nature are silenced, save a low, pulsing hum.",
+      "tagline": null,
+      "entering": null,
+      "interior": "At the centre of the greyness, a giant, transparent crystal juts 20′ from the earth. A psychedelic mixture of colours swirls inside it, undulating like ink in water.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Coloured Heart",
+          "die_type": "d6",
+          "description": "Roll when struck by a beam from the Anti-Prism",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Red—Anger",
+              "description": "Infuriated by even the most minor inconvenience. Any time the character is slighted in any way, they must make a Charisma Check or turn violent.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Must make Charisma Check or turn violent when slighted"
+            },
+            {
+              "roll": 2,
+              "title": "Orange—Overconfidence",
+              "description": "Rushes headlong into any danger that presents itself.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Rushes headlong into danger"
+            },
+            {
+              "roll": 3,
+              "title": "Yellow—Happiness",
+              "description": "Filled with joy. Permanent uncanny smile and laughter at inappropriate times.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Permanent uncanny smile and inappropriate laughter"
+            },
+            {
+              "roll": 4,
+              "title": "Green—Disgust",
+              "description": "Always feels sickened and is visibly off put by anything unusual. Must make a Save Versus Hold to keep any food down.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Versus Hold to keep food down"
+            },
+            {
+              "roll": 5,
+              "title": "Blue—Sadness",
+              "description": "The character only sees the worst in any situation. Their followers must make daily Morale Checks or depart.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Followers make daily Morale Checks or depart"
+            },
+            {
+              "roll": 6,
+              "title": "Violet—Fear",
+              "description": "Paranoid. The character automatically fails any Morale Checks or Saving Throws against fear.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Automatically fails Morale Checks and Saving Throws against fear"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        {
+          "name": "Touching the prism",
+          "description": "A character who touches the prism must Save Versus Spell or contract the Grey Blight. An arcane spell-caster who successfully saves gains an arcane insight into the very nature of colour and the body, and may copy the spell Transparency (p457) into a spell book."
+        },
+        {
+          "name": "Striking the prism",
+          "description": "Beams of colour flash out towards the attacker. They and anyone within 10′ of them must Save Versus Ray or be struck by a beam and be afflicted with a Coloured Heart."
+        },
+        {
+          "name": "The Grey Blight",
+          "description": "Victims of the colour-sapping powers of the Anti-Prism have all colour drained from their bodies. They are dull, emotionless husks of their former selves, unable to act of their own will and easily suggestible. Afflicted people have their entire bodies (including clothing and possessions) grey and are listless zombies, unwilling to speak, unable to do more than sigh. Afflicted animals and monsters have completely grey furs, feathers, or skins and appear lethargic and depressed. Cure: Magic of curse removal, immersing the victim in a rainbow, or afflicting them with a Coloured Heart."
+        },
+        {
+          "name": "The Coloured Heart",
+          "description": "The opposite of the Grey Blight, this much rarer condition alters a victim's personality based on the colour of the beam that strikes them. Cure: Magic of curse removal, keeping the victim in complete darkness for 24 uninterrupted hours, or afflicting them with the Grey Blight."
+        }
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Harrid's Path"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      306
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

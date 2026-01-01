@@ -1,0 +1,106 @@
+{
+  "hex_id": "1311",
+  "coordinates": [
+    13,
+    11
+  ],
+  "name": "The Wolfweald",
+  "tagline": "Placid rolling meadows, punctuated by groves of dark pines and damp hollows.",
+  "region": "Tithelands",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters at night are 4-in-6 likely to be with the Moonlit Maw",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "These green hills and golden meadows are placid and beautiful by day. Sheep graze in the shallow folds, tended by the handful of weather-beaten shepherds who inhabit the area. When night descends, the darkness seems especially fearsome and opaque, shadows lengthening like tenebrous fangs. An eerie mist seeps from Dolmenwood to pool in the region's vales and hollows. From sunset to sunrise, the fields echo with unearthly howls, seemingly from some gigantic beast.",
+  "points_of_interest": [
+    {
+      "name": "Grave of the Moonlit Maw",
+      "poi_type": "grave",
+      "description": "Atop a lonely hillock near the border of Dolmenwood stands a plain wooden stele, emblazoned with a crudely gouged X.",
+      "tagline": null,
+      "entering": null,
+      "interior": "5′ beneath the earth lies a headless wolf skeleton, its rib cage filled with stones. Tucked between the dead wolf's feet is a rotting sack containing 400sp, 1,411gp, a key to the kitchen door in Bogwitt Manor (hex 1210), and a Sylvan Bracelet.",
+      "exploring": "Digging up the grave reveals the treasure hoard.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden location"
+      ],
+      "secrets": [
+        "Should adventurers claim any of the treasure, every night until the Maw is defeated, a random party member has horrifying, realistic dreams of being torn to pieces by the beast. They suffer a –2 penalty to Attack Rolls on the following day."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "moonlit_maw",
+      "name": "The Moonlit Maw",
+      "title": null,
+      "description": "This horror manifests as the spectral image of a ghastly patchwork of flesh and fur, neither man nor wolf. Unable to satisfy its hunger for flesh, the beast instead gorges itself on the spirits of its prey. Their anguished faces are clearly visible in its grotesquely swollen stomach, where they swirl in a ceaseless vortex, screaming silently.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Hungry",
+        "Spectral"
+      ],
+      "speech": "Unearthly howls",
+      "languages": [],
+      "desires": [
+        "To feed on spirits"
+      ],
+      "secrets": [
+        "The ghost of a werewolf slain by Granny Wolfsbane",
+        "Can only be permanently destroyed by burning its corpse: the skeleton interred in the Grave of the Moonlit Maw and the severed head hanging in Granny Wolfsbane's cottage"
+      ],
+      "possessions": [],
+      "location": "The Wolfweald (hunts here and in hexes 1209 and 1210)",
+      "stat_reference": "Medium Undead—Animal Intelligence—Chaotic, Level 5 AC 16 HP 34 Saves D10 R11 H12 B13 S14, Att Bite (+4, 2d4 + life drain + swallow) or howl (fear), Speed 60 Morale 12 XP 560",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Sylvan Bracelet",
+      "description": "Found in the Moonlit Maw's grave",
+      "value": null,
+      "reference": "p420"
+    },
+    {
+      "name": "Key to Bogwitt Manor kitchen door",
+      "description": "Key to the kitchen door in Bogwitt Manor (hex 1210)",
+      "value": null,
+      "reference": null
+    }
+  ],
+  "secrets": [
+    "Scattered corpses of animals or travellers with expressions of terror, shunned by worms and flies, decaying very slowly - victims of the Moonlit Maw",
+    "Shepherds fearfully refuse to discuss the corpses, stating only that PCs should go and tell Granny Wolfsbane in hex 1310",
+    "At night, shepherds lock themselves and their sheep tightly away, some place corn doll effigies of Princess Andromethia on doors for protection"
+  ],
+  "dm_notes": "The Moonlit Maw hunts at night and can only be permanently destroyed by burning both its skeleton (in the grave) and its severed head (at Granny Wolfsbane's cottage in hex 1310). If treasure is taken from the grave, party members suffer nightmares and -2 attack penalty until the Maw is defeated.",
+  "adjacent_hexes": [
+    "1210",
+    "1209",
+    "1310",
+    "1312"
+  ],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      344
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "hex_id": "1211",
+  "coordinates": [
+    12,
+    11
+  ],
+  "name": "The Webs of Old Aunt Spindel",
+  "tagline": "Sticky, silken cobwebs clot the woods, hung with decaying animals. A rank carrion fetor fills the air.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 4-in-6 likely to be with 1d3 giant spinning spiders (DMB)",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "The hex is a cat's cradle of rope-like spiders' webs. Gloom is perpetual, and travel slow. Characters may navigate around the webs, but doing so increases all Travel Point costs (e.g. to search or leave the hex) by 1. Otherwise, each character must Save Versus Hold or become entangled in the rope-like webs. When a character is trapped, there is a 3-in-6 chance that 1d3 giant spinning spiders (DMB) arrive in 1d3 Rounds.",
+  "points_of_interest": [
+    {
+      "name": "Macabre Marionettes",
+      "poi_type": "encounter site",
+      "description": "In a web-swathed glade that reeks of carrion, the PCs come upon a bizarre, macabre tableau: a group of people, some moving stiffly and talking loudly and awkwardly, others sitting and watching. Their clothes are threadbare, their expressions blank and vacant, their skin of an almost moribund pallor. They are actually 12 marionettes of the hex's arachnid mistress, Old Aunt Spindel.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The humans are acting out some sort of play (comedy, tragedy, history, etc.). Concealed in a tree, Old Aunt Spindel uses her little hands to twist and pull at strands of webs connected to the marionettes. She takes great delight in the rigid cavorting of these putrid servitors, and frequently forces them to put on plays of her own devising, ventriloquising every part.",
+      "exploring": "The marionettes attack the PCs if the show is interrupted, while Spindel attempts to remain hidden. Should they be defeated, she herself attacks.",
+      "leaving": null,
+      "inhabitants": "Old Aunt Spindel and 12 marionettes",
+      "roll_tables": [],
+      "npcs": [
+        "old_aunt_spindel"
+      ],
+      "special_features": [
+        "Treasure horde: Stuffed in a sack in Spindel's tree are 1,436cp, 802sp, 303gp, a fairy-silver necklace studded with jet (1,400gp), a platinum ring bearing the Pollard family crest (800gp—see hex 1209), and a Ring of Control (Fungi, p410)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "old_aunt_spindel",
+      "name": "Old Aunt Spindel",
+      "title": null,
+      "description": "Resembling a gigantic spider, Old Aunt Spindel has the twisted face of a human woman, but in place of a lower jaw, a pair of slender, childish arms extend, chelicerae-like. Her swollen bulk belies the predatory grace of her movements.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "At turns gleeful and morose",
+        "Clearly mad"
+      ],
+      "speech": "Compulsively varying voices and tones. Can throw her voice up to 60′. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To feed",
+        "To enact and re-enact her sick performances",
+        "To become human once more"
+      ],
+      "secrets": [
+        "Old Aunt Spindel was once a travelling puppeteer, cursed to take this form by the capricious Prince Mallowheart (p34) after one of her shows offended the fairy lord",
+        "As part of her curse, she spontaneously produces eggs, some of which hatch into giant spiders that roam the hex"
+      ],
+      "possessions": [
+        "Treasure horde in tree"
+      ],
+      "location": "The Webs of Old Aunt Spindel",
+      "stat_reference": "Large Monstrosity—Sentient—Chaotic, Level 8 AC 14 HP 45 Saves D8 R9 H10 B11 S12, Att Bite (+7, 1d8+2 + poison) Speed 20 Webs 40, Morale 9 XP 1,040",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Fairy-silver necklace studded with jet",
+      "value": "1,400gp",
+      "description": null
+    },
+    {
+      "name": "Platinum ring bearing the Pollard family crest",
+      "value": "800gp",
+      "description": "See hex 1209"
+    },
+    {
+      "name": "Ring of Control",
+      "value": null,
+      "description": "Fungi, p410"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "If the characters are sufficiently silver-tongued, she might spare their lives if they promise to seek a way to reverse the curse. Marionettes are hollowed corpses, their delectable organs consumed, body-cavities stuffed with eggs, limbs lashed with webs to make them cadaverous puppets. Most are luckless staff of Bogwitt Manor (hex 1210) who mistakenly wandered this way. If Old Aunt Spindel is killed, marionettes perish.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      332
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

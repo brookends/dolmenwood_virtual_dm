@@ -1,0 +1,225 @@
+{
+  "hex_id": "1008",
+  "coordinates": [
+    10,
+    8
+  ],
+  "name": "The Flotsam Pools",
+  "tagline": "Willows hang over dreary swampland. The occasional sound of waves, as if an ocean were nearby.",
+  "region": "Hag's Addle",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Hag's Addle",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Daytime encounters are 1-in-6 likely to be with Tekwell Onehorn",
+    "foraging_results": "Successful foraging yields 1d3 portions of Hag's Tears and 1d2 portions of Marshwick, in addition to the normal results",
+    "foraging_special": [
+      "Hag's Tears (1d3 portions)",
+      "Marshwick (1d2 portions)"
+    ]
+  },
+  "description": "Willows hang over dreary swampland. The occasional sound of waves, as if an ocean were nearby.",
+  "points_of_interest": [
+    {
+      "name": "Flotsam Pools",
+      "poi_type": "pools",
+      "description": "Scattered throughout this section of the swamp are small pools of dark, brackish water. No apparent bottom to these pools can be seen.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Chance of flooding: The pools are always swollen after heavy rain; otherwise there is a 2-in-6 chance that they are flooding when the PCs encounter them. When flooded: A random PC must make a Dexterity Check or plunge into one of the pools with a loud splash. Roll for a random encounter, attracted by the noise. Flotsam: When the pools flood, strange objects and unknown species of fish (among them—inexplicably—oceanic ones) sometimes wash up on the muddy banks. Their true provenance is unknown.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Flooding chance: 2-in-6",
+        "Dexterity Check or fall in when flooded",
+        "Strange oceanic flotsam appears"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Tekwell's Hut",
+      "poi_type": "hut",
+      "description": "A rickety stilt house constructed from willow wood and thatching stands alone in the south-east corner of the hex.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A sparse single room with mismatched wooden walls and floors, where rot and water damage have been cut away. Its furniture appears fashioned by someone of below-average skill. Next to a reed bed is a large trunk containing 380sp, 185cp, and dozens of small trinkets made of semi-precious metals, all aquatic-themed (200gp total).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Tekwell Onehorn, who has a 3-in-6 chance of being present. If not, he is out travelling the swamp.",
+      "roll_tables": [
+        {
+          "name": "Tekwell's Wares",
+          "die_type": "d12",
+          "description": "For sale: Tekwell has an assortment of oddities dredged from the pools, which he is willing to sell. Roll up to 4 times, ignoring duplicate results over 8.",
+          "entries": [
+            {
+              "roll": "1-4",
+              "title": null,
+              "description": "A thin, leathery fish with enormous teeth. Technically edible. (1gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "leathery fish"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "A brown, bulbous anglerfish. While its light gland is submerged in water, it produces a 10′ radius glow. (10gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "anglerfish"
+              ],
+              "mechanical_effect": "Produces 10′ radius glow when submerged"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "A 3′-long eel with a thin body and an enormous head. Delicious if cooked properly. (10gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "giant-headed eel"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "A sealed jar of water containing a bloated red fish that explodes harmlessly if removed. (20gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "jar with exploding fish"
+              ],
+              "mechanical_effect": "Explodes harmlessly if removed from water"
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "A tiny octopus with a golden ring pattern. Lethal if consumed (Save Versus Doom). (10gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "golden octopus"
+              ],
+              "mechanical_effect": "Save Versus Doom if consumed or die"
+            },
+            {
+              "roll": 9,
+              "title": null,
+              "description": "An empty stone bowl. If lifted to one's lips, the holder experiences the sensation of drinking fresh water. (50gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "stone bowl"
+              ],
+              "mechanical_effect": "Provides sensation of drinking fresh water"
+            },
+            {
+              "roll": 10,
+              "title": null,
+              "description": "A tightly sealed copper locket stylised as a fish eye. If pried open, it contains a lock of hair matching the colour and texture of one of the PCs. (10gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "copper locket"
+              ],
+              "mechanical_effect": "Contains hair matching a PC"
+            },
+            {
+              "roll": 11,
+              "title": null,
+              "description": "A cursed bronze Ring of Water Walking in the shape of a mermaid holding her own tail. If the wearer is ever submerged in water, they must Save Versus Spell or be compelled to stop moving and let themselves drown. (100gp)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "cursed Ring of Water Walking"
+              ],
+              "mechanical_effect": "Water walking; Save Versus Spell when submerged or compelled to drown"
+            },
+            {
+              "roll": 12,
+              "title": null,
+              "description": "A small leather case, swollen shut. Inside is a set of eight hematite statuettes of fish-headed humanoids (worth 50gp each). (20gp for the closed case)",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "leather case with hematite statuettes"
+              ],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "tekwell_onehorn"
+      ],
+      "special_features": [
+        "Treasure: 380sp, 185cp, aquatic trinkets worth 200gp"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "tekwell_onehorn",
+      "name": "Tekwell Onehorn",
+      "title": null,
+      "description": "An elderly longhorn fisherman with dirty white fur and sickly yellow eyes. Wears a wide-brimmed straw hat with a single large hole cut out for his left horn. The right horn was broken off near the base and refuses to regrow. Once a knight to the previous Lord Murkin, he was banished years ago by the current Lord Murkin for a perceived lack of loyalty.",
+      "kindred": "Longhorn",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cautious but agreeable if approached respectfully",
+        "Has the social grace of someone who speaks with real people only a few times a year",
+        "Doffs and dons his hat frequently"
+      ],
+      "speech": "Friendly drawl",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Gaffe"
+      ],
+      "desires": [
+        "Useful and entertaining trinkets",
+        "To only have short, pleasant interactions with people",
+        "For visitors to stop asking if he's secretly a banished prince",
+        "To avoid The Hag (hex 0908)"
+      ],
+      "secrets": [
+        "Once a knight to the previous Lord Murkin",
+        "Banished by current Lord Murkin for perceived lack of loyalty"
+      ],
+      "possessions": [
+        "Assortment of oddities dredged from the pools"
+      ],
+      "location": "Tekwell's Hut",
+      "stat_reference": "longhorn (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      305
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

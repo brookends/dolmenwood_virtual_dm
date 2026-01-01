@@ -1,0 +1,135 @@
+{
+  "hex_id": "1508",
+  "coordinates": [
+    15,
+    8
+  ],
+  "name": "Castle Brackenwold and Monarch's Hill",
+  "tagline": "Tilled fields dotted with farms and little hamlets. Ancient stones with faded way-markings flank the roads.",
+  "region": "Tithelands",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Tilled fields dotted with farms and little hamlets. Ancient stones with faded way-markings flank the roads.",
+  "points_of_interest": [
+    {
+      "name": "Castle Brackenwold",
+      "poi_type": "castle",
+      "description": "The fortified castle and keep of the Dukes of Brackenwold watch over the southern eaves of Dolmenwood from atop a steep, rocky hill, a great town sprawled below.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Town walls: An outer wall girds the town's lower class quarters, while a second wall wards the Inner City, home to great markets, traders' districts, courts of law, and public institutions of learning. Seat of the Duchy: The town is the capital of the Duchy of Brackenwold, and the Duke of Brackenwold (p58), his family, and court dwell within the castle. Seat of the bishop: The Bishop of Brackenwold (p69) also dwells within the castle, beside the Seminary of 100 Martyrs, where priests of the Pluritine Church are trained.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Duke of Brackenwold, his family, and court dwell within the castle. The Bishop of Brackenwold also dwells within the castle.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Full settlement description: See p128"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Monarch's Hill and Erligstone",
+      "poi_type": "hill",
+      "description": "A mile south of the town, a wide hill rises up from the surrounding fields, its sides clad with oak woods and heather. As ducal property (at least notionally), the hill is untilled, though flocks of sheep roam and graze here.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Summit: Locals avoid the top of the hill, where there stands a ring of twelve ancient barrows with a standing stone—Erligstone—at their centre. Barrows: Low, grassy mounds, 20′ long and 10′ wide, each with a crumbling, stone-lintelled entrance. All are empty, save the northernmost—see The Grey King's Barrow. Erligstone: A 15′ high obelisk of rough granite, inscribed with Old Woldish runes around the base: \"Majesty. Fidelity. Humility. Wisdom.\"",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Lawful characters who touch the stone are flushed with boldness and gain a +1 bonus to Attack Rolls for the next 24 hours. Chaotic characters are bowed with cowardice and suffer a –1 penalty to Attack Rolls for the next 24 hours."
+      ],
+      "secrets": [
+        "History: In the days of the Kingdom of Brackenwold (see History, p14), monarchs were crowned upon the hill before the Erligstone and were buried in the barrows surrounding it. The site is now unused, and the early monarchs' remains long ago relocated to the crypts of Castle Brackenwold."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Grey King's Barrow",
+      "poi_type": "barrow",
+      "description": "Of the twelve barrows atop Monarch's Hill, the northernmost is by far the oldest, having been constructed by fairies in ancient days beyond the reckoning of mortals.",
+      "tagline": null,
+      "entering": "The barrow is warded by a shade known as the Grey King, who manifests out of swirling dust if any attempt entry.",
+      "interior": "A musty, low-roofed chamber, 10′ long. A cracked, full-length mirror stands at the far end, framed with delicate filigreed unicorns.",
+      "exploring": "Visitors: The Grey King bars further passage, demanding all who approach to present the sigil of Duke Mai-Fleur. A copy of the fairy duke's holly-wreathed sigil suffices, for example discovered in hex 1502 or by consulting the sage Gemrand Soliquant (p153) in High-Hankle. Those with the sigil: Are deferentially granted access to the barrow, including the mirror within. Those without the sigil: Are barred from access, though the shade is open to polite conversation.",
+      "leaving": null,
+      "inhabitants": "The barrow is warded by a shade known as the Grey King.",
+      "roll_tables": [],
+      "npcs": [
+        "the_grey_king"
+      ],
+      "special_features": [
+        "Touching the mirror: The mirror is a fairy door. Touching it whisks one away to the fairy road Duke Mai-Fleur's Road (see Fairy Roads, p26)."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_grey_king",
+      "name": "The Grey King",
+      "title": null,
+      "description": "The pale white shade of an aged human man, crowned and with a beard to his belly. The shade was once a mortal king and adept hunter, who befriended the fairy Duke Mai-Fleur (p30) and was granted eternal life (of a lingering sort) as warden of the entrance to the fairy road. He has long forgotten his true name, but is known in local folklore as the Grey King.",
+      "kindred": "Shade",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Placid",
+        "well-mannered",
+        "Welcomes discussion",
+        "but earnestly defends the barrow—including with violence—if crossed"
+      ],
+      "speech": "Feeble wafting. Old Woldish, Woldish, Liturgic, basic Sylvan.",
+      "languages": [
+        "Old Woldish",
+        "Woldish",
+        "Liturgic",
+        "basic Sylvan"
+      ],
+      "desires": [
+        "To ward the fairy door",
+        "News and rumour of the mortal world",
+        "especially relating to the nobles of Dolmenwood"
+      ],
+      "secrets": [
+        "Once a mortal king and adept hunter",
+        "befriended the fairy Duke Mai-Fleur",
+        "was granted eternal life as warden of the entrance to the fairy road",
+        "has long forgotten his true name"
+      ],
+      "possessions": [],
+      "location": "The Grey King's Barrow",
+      "stat_reference": "Spectre (DMB). Bound to the barrow by ancient fairy magic, the Grey King cannot be permanently destroyed. If killed or banished, he reappears the following dawn.",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      363
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

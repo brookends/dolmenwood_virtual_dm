@@ -1,0 +1,79 @@
+{
+  "hex_id": "1006",
+  "coordinates": [
+    10,
+    6
+  ],
+  "name": "The Witch Glade",
+  "tagline": "Paths navigate a series of granite outcroppings, with choked ravines below.",
+  "region": "Aldweald",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 witches (eyes of Limwdd—DMB) making their way to the sacred glade",
+    "foraging_results": "Successful foraging yields 1d3 portions of Lambent Stinkhorn (p428), in addition to the normal results",
+    "foraging_special": [
+      "Lambent Stinkhorn (1d3 portions)"
+    ]
+  },
+  "description": "Paths navigate a series of granite outcroppings, with choked ravines below. The paths that lead to the centre of this hex are enchanted such that only women may follow them to the end.",
+  "points_of_interest": [
+    {
+      "name": "Where Men Dare Not Tread",
+      "poi_type": "enchanted paths",
+      "description": "The paths that lead to the centre of this hex are enchanted such that only women may follow them to the end.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Men who come this way: Experience a feeling of unease, as if being watched from the trees, growing to a palpable dread accompanied by an uncomfortable itching upon the face. Male holy spell-casters also hear laughter that grows from a titter to a contemptuous cackle as they proceed. Women who come this way: Perceive a deep thrum which, after some time, may be intuited as the actual sound of the growth of trees and plants.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Gender-restricted enchanted paths"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Sacred Glade",
+      "poi_type": "sacred site",
+      "description": "Close to the centre of this hex, along the path of the ley line Ywyr, lies a peaceful glade surrounded by silvery-leafed sycamores. The glade is sacred to the witches of Dolmenwood.",
+      "tagline": null,
+      "entering": "Men who set foot in the glade must Save Versus Hold or be permanently transformed into a limbless, misshapen worm-like creature of animalistic intelligence. Even if the save is successful, the man's flesh agonisingly wells up into great lumps, causing a permanent disfiguration on the face. Witches or powerful holy magic (e.g. Remove Curse) can reverse these afflictions.",
+      "interior": "At the glade's edge: The sense of dread among male party members culminates in a wave of abject terror—they must Save Versus Hold or flee for 1d6 Turns.",
+      "exploring": "The witches, upon occasion, commune with the Gwyrigon here. A PC versed in the rites of the witches—or other magicks of invocation or communion—may be able to do the same.",
+      "leaving": "Upon departing the glade, the female PC with the highest Wisdom finds that any scars or blemishes on her body have vanished.",
+      "inhabitants": "The Gwyrigon Limwdd the Quiet Brother (p38) resides here, its giant body lying a mile beneath the earth, like a seed awaiting the spring.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Locus of Limwdd",
+        "Healing gift for women",
+        "Transformation curse for men"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      303
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

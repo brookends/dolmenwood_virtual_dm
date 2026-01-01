@@ -1,0 +1,139 @@
+{
+  "hex_id": "1707",
+  "coordinates": [
+    17,
+    7
+  ],
+  "name": "The Fugitive Witch",
+  "tagline": "Serene, profusely fern-filled glades. Ancient oak copses draped with spongy, hanging lichen.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d6 giant ants (DMB) from the nest at The Shrine to St Benester",
+    "foraging_results": "Successful foraging yields 1d2 portions of Frondhelm (p430), in addition to the normal results",
+    "foraging_special": [
+      "Frondhelm (1d2 portions)"
+    ]
+  },
+  "description": "Serene, profusely fern-filled glades. Ancient oak copses draped with spongy, hanging lichen.",
+  "points_of_interest": [
+    {
+      "name": "The Rainbow Pool",
+      "poi_type": "lake",
+      "description": "A small lake, encircled with susurrant reed-beds and wide beaches of inky clay. The waters glitter with darting rainbows and teem with leaping fish and quacking birds.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Examining the clay: Barefoot human prints can be found, leading to the Chestnut Dell. Peering into the water: The black clay extends to the lakebed, where it is streaked with swathes of crimson, ochre, azure, and fuchsia. Drinking: The water is magically nourishing. Drinking a pint has the same effect as eating a day's rations.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Magical nourishing water - drinking a pint equals a day's rations"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Chestnut Dell",
+      "poi_type": "dell",
+      "description": "A verdant dell in the vicinity of the Rainbow Pool, its slopes clad with chestnut trees. Hunks of crumbled, mossy stone protrude from the sea of ferns filling the hollow.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Examining the stones: They appear to be the remnants of a chapel, long collapsed and overgrown. The beneficent, leafy visage of the Wood God Cwrnus (p36) is graven into several larger chunks.",
+      "leaving": null,
+      "inhabitants": "The witch Joab Elfwit—an Eye of Limwdd (DMB)—is melded into the earth, able to observe goings on here. After travellers have departed, she may emerge from hiding and call out to them, pretending to be lost, a victim of fairy magic. She may request aid in \"returning\" to Prigwort (whence she intends to travel alone to the Locus of Limwdd in 1006), promising a reward.",
+      "roll_tables": [],
+      "npcs": [
+        "joab_elfwit"
+      ],
+      "special_features": [
+        "Escorting Joab: She refuses to pass through Castle Brackenwold, claiming her vengeful sisters live there. Should the group visit an inn or settlement on the journey, there is a daily 2-in-6 chance thereafter that the party is ambushed by 7 clerics of St Faxis (Level 1 clerics—DMB) seeking Joab's capture. At the journey's end, Joab rewards the party as agreed and disappears at the first opportunity."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Benester",
+      "poi_type": "shrine",
+      "description": "A marble shrine, formed like an elegant mausoleum, now buried in a 20-yard-diameter mound of branches, only the base of one of the entrance pillars visible. The mound is the nest of 50 giant ants (DMB), who swarm around the area hunting living creatures and gathering wood.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Shrine room: Squirming giant ant eggs glued to a marble diorama of St Benester and seventeen archangels. Semi-humanoid sculptures formed of bones, armour, and equipment of the ants' victims, including 2,000gp.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "50 giant ants (DMB)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the shrine is cleared of the anthill, characters praying may receive the blessing of St Benester: the ability to cast Mantle of Protection. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "joab_elfwit",
+      "name": "Joab Elfwit",
+      "title": "Witch (Eye of Limwdd)",
+      "description": "A tall, willow-slender human woman of age 50, with dense black ringlets, chestnut eyes, and a crooked nose. Bedraggled and mud-streaked, having been melded into the earth (see Witch, Eye of Limwdd powers—DMB) for months. Formerly dwelt in 1606, where she used the whispers of the magic caves to blackmail Sanctus Primus (p71). Fled here when her hut was razed by clerics of St Faxis. Alienated from her coven and fearful for her life.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Disoriented and drowsy from having been melded into the earth for so long",
+        "Wary",
+        "tricksome"
+      ],
+      "speech": "Slurred, well-to-do. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Communion with Limwdd in 1006",
+        "Her coven's forgiveness for bringing them into peril through her blackmailing of Sanctus Primus"
+      ],
+      "secrets": [
+        "Formerly dwelt in 1606, where she used the whispers of the magic caves to blackmail Sanctus Primus",
+        "Fled here when her hut was razed by clerics of St Faxis",
+        "Alienated from her coven and fearful for her life"
+      ],
+      "possessions": [
+        "10pp",
+        "50gp",
+        "25sp",
+        "Vials of Sandor's Phantasmal Elixir (p414)",
+        "Wyrmsblood Elixir (p414)",
+        "A coral pendant carved in the shape of a unicorn (250gp)"
+      ],
+      "location": "The Chestnut Dell",
+      "stat_reference": "Eye of Limwdd (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Reward: May give any of her possessions to those who aid her, but tries to minimise the reward.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      379
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

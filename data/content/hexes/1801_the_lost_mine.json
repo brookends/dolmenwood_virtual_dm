@@ -1,0 +1,123 @@
+{
+  "hex_id": "1801",
+  "coordinates": [
+    18,
+    1
+  ],
+  "name": "The Lost Mine",
+  "tagline": "Overgrown piles of stone dot the woods, ruined remnants of ancient settlement.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Overgrown piles of stone dot the woods, ruined remnants of ancient settlement.",
+  "points_of_interest": [
+    {
+      "name": "Blighted Hillside",
+      "poi_type": "blighted area",
+      "description": "A half-mile square expanse of sloping hillside forested only by ancient tree stumps and twisted dwarf trees. The place seems forsaken—no bird can be heard and no beast spotted. Much of the hillside is mud with pools of water, orange-brown or oxidised green, sitting stagnant amongst the tree stumps.",
+      "tagline": null,
+      "entering": "The path of the Downs Road passes by this forsaken hillside.",
+      "interior": "Acrid, coppery stench permeates the air, irritating the throat and leaving a coppery aftertaste. The mud and pools are infused with a stew of lead, mercury, sulphur, and arsenic, leached from the discarded tailings of the copper mine destroyed here nearly two millennia ago.",
+      "exploring": "PCs exploring the hillside must Save Versus Doom or suffer 1d4 damage (chemical burns around feet). Drinking the toxic water is lethal.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Smelting pit: A shallow pit, filled with ancient, toxic-smelling ash and rock, sits at the base of the hill. Characters with a knowledge of mining or alchemy recognise it as a primitive site for extraction of copper from ore.",
+        "Mine entrances: There are four mine entrances at various levels of the hillside. All but one are blocked with rubble."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lost Mine",
+      "poi_type": "mine",
+      "description": "The single unblocked mine entrance leads down a tunnel reinforced with wooden beams. After passing several collapsed side tunnels, the passage ends at a downward vertical shaft with an orange glow emanating from its depths.",
+      "tagline": null,
+      "entering": "The single unblocked mine entrance leads down a tunnel reinforced with wooden beams.",
+      "interior": "Shards of bone litter the path, often snapped cleanly with apparently great force. The passage ends at a downward vertical shaft, 90′ down, requiring climbing or ropes to descend.",
+      "exploring": "Descent to the base requires climbing or ropes.",
+      "leaving": null,
+      "inhabitants": "Orsath, the corrupted Wood God",
+      "roll_tables": [],
+      "npcs": [
+        "orsath"
+      ],
+      "special_features": [
+        "The Bottom Chamber: A high, vaulted chamber, crudely hewn from the earth. The chamber walls are shot through with veins of pure copper, pulsing with bright liquid amber light as if alive. Discarded primitive mining tools and broken bones carpet the floor.",
+        "Awful protuberances: Sharp conical things protrude from the ceiling and walls, akin to stalactites, yet blighted with a patchwork of Orsath's dark brown fur and honey-coloured, crystallised ichor. A terrible fusion of stone and flesh, they glow in unison with the copper veins."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "orsath",
+      "name": "Orsath",
+      "title": "Former Wood God",
+      "description": "A massive, burly, ursine creature, 14′ tall, its fur an alloyed carpet of delicate, glittering copper-infused needles. Its face is all animalistic hatred and agony, its mind completely gone in a fog of arsenic-induced dementia.",
+      "kindred": "Large Monstrosity—Animal",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Animalistic hatred",
+        "agony",
+        "arsenic-induced dementia"
+      ],
+      "speech": "Pain-filled roars",
+      "languages": [],
+      "desires": [
+        "To annihilate intruders"
+      ],
+      "secrets": [
+        "Once a Wood God, now corrupted by toxic mining"
+      ],
+      "possessions": [
+        "Glowing claws that can be crafted into weapons",
+        "Wall spikes infused with essence"
+      ],
+      "location": "The Bottom Chamber of The Lost Mine",
+      "stat_reference": "Level 15 AC 17 HP 71 Saves D3 R4 H5 B6 S7",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Orsath's Claws",
+      "description": "Glowing claws that can be crafted into two weapons (1d8 + arsenic haze)",
+      "value": "Part of 7,000gp total for Wood God's remains",
+      "mechanical_effect": "1d8 damage + arsenic haze (Save Versus Doom or suffer –2 penalty to Attack Rolls for 1d6 Rounds)"
+    },
+    {
+      "name": "Wall Spikes",
+      "description": "Salvageable spikes from the chamber walls and ceiling",
+      "value": "1,000gp each (eight are salvageable)",
+      "mechanical_effect": "1d8 damage, range 20′/40′/60′"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Orsath can attack with 2 claws (+10, 2d4 + arsenic haze) and bite (+10, 2d6) or 3 wall spikes (+10, 1d8, range 20′/40′/60′). Only harmed by magic or magic weapons. Morale 10, XP 3,900.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      380
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

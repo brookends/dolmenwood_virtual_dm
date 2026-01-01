@@ -1,0 +1,131 @@
+{
+  "hex_id": "1310",
+  "coordinates": [
+    13,
+    10
+  ],
+  "name": "The Lodge of Granny Wolfsbane",
+  "tagline": "Bleached animal skulls nailed to trunks. Eerie quiet, as if the beasts and birds were all holding their breath.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "If the d8 roll for encounter type indicates a Monster encounter, roll again.",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Bleached animal skulls nailed to trunks. Eerie quiet, as if the beasts and birds were all holding their breath.",
+  "points_of_interest": [
+    {
+      "name": "Wooden Lodge",
+      "poi_type": "lodge",
+      "description": "A cosy, cheerfully painted one-storey cabin, with neat flowerbeds flanking a short flagstone path to the door, smoke rising steadily from a chimney, and an odour of toothsome food in preparation. The structure is clearly solidly built and its windows and doors are heavily barred.",
+      "tagline": null,
+      "entering": "Granny Wolfsbane greets visitors with a crossbow in hand, and pipe smouldering between her teeth. She treats adventurers warily, especially arcane spell-casters, but if convinced of the party's good intentions, invites them inside for a meal.",
+      "interior": "A kitchen with food on the stove, a sleeping area, and the stuffed, mounted heads of Granny Wolfsbane's many kills—crookhorns, a few trolls, two wyrm skulls, and many wolves, their ferocious heads bristling from the walls by the dozen. One of these belongs to the werewolf ghost—the Moonlit Maw—in hex 1311. A large wooden rack holds weapons of every kind, especially iron and silver blades. On a shelf above the rack sit four dried bunches of Wolfsbane (DPB).",
+      "exploring": "Granny Wolfsbane does not allow visitors to the back room. Should adventurers gain access, they find a small stove over which a potion is brewing. Any spell-caster can recognise the odour of Writhing Mandrake (p430), which Granny Wolfsbane uses to control her lycanthropic transformations. Six uncooked portions of Writhing Mandrake can be found in a pot beneath the stove. In a locked box next to the pot are 1,218gp and a gold ring (450gp) bearing the crest of a wealthy Brackenwold merchant family.",
+      "leaving": null,
+      "inhabitants": "Lodge owner and retired monster-hunter, Granny Wolfsbane.",
+      "roll_tables": [],
+      "npcs": [
+        "granny_wolfsbane"
+      ],
+      "special_features": [
+        "Back room with brewing potion",
+        "Weapon rack with iron and silver blades",
+        "Mounted monster heads including werewolf head from hex 1311"
+      ],
+      "secrets": [
+        "Hidden treasure in locked box in back room",
+        "Granny Wolfsbane's lycanthropy secret"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "granny_wolfsbane",
+      "name": "Granny Wolfsbane",
+      "title": "Werewolf (Level 4 Hunter)",
+      "description": "A scarred, sinewy human woman of 70 years, her white hair draped behind her like a soldier's flag. Horses and other animals seem to dislike her scent. Granny Wolfsbane is a monster-hunter, an occupation she took up after a wolf devoured her granddaughter.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Cheerful and even ribald at times",
+        "turns deadly serious when discussing monsters"
+      ],
+      "speech": "Gruff yet oddly genteel. Woldish, some Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To defeat Old Aunt Spindel (hex 1211), whom she (incorrectly) believes to be a rogue witch",
+        "To investigate rumours that a werewolf she slew long ago in hex 1311 is now a ghost that locals call the Moonlit Maw",
+        "To ensure no one is harmed by her own lycanthropy"
+      ],
+      "secrets": [
+        "Though Granny claims to be 'retired' due to age, her inactivity is in fact due to lycanthropy, acquired during her last hunt",
+        "She dares not leave her lodge for fear of harming those she once protected",
+        "Her Writhing Mandrake potions help control her transformations",
+        "She sleeps with a silver bolt beneath her pillow, prepared to use it on herself should her blood-lust grow too strong"
+      ],
+      "possessions": [
+        "Crossbow",
+        "Leather armour (AC 12)",
+        "Silver bolt",
+        "Writhing Mandrake potions"
+      ],
+      "location": "Wooden Lodge",
+      "stat_reference": "Werewolf (DMB). In human form, wears leather armour (AC 12) and wields a crossbow.",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Wolfsbane",
+      "description": "Four dried bunches of Wolfsbane (DPB)",
+      "location": "On shelf above weapon rack"
+    },
+    {
+      "name": "Writhing Mandrake",
+      "description": "Six uncooked portions of Writhing Mandrake",
+      "location": "In pot beneath stove in back room"
+    },
+    {
+      "name": "Gold and Ring",
+      "description": "1,218gp and a gold ring (450gp) bearing the crest of a wealthy Brackenwold merchant family",
+      "location": "In locked box in back room"
+    },
+    {
+      "name": "Werewolf Head",
+      "description": "Mounted head belonging to the werewolf ghost—the Moonlit Maw—in hex 1311",
+      "location": "Among mounted heads on wall"
+    }
+  ],
+  "secrets": [
+    "Granny Wolfsbane is secretly a werewolf",
+    "Hidden treasure in back room",
+    "Connection to Moonlit Maw ghost in hex 1311"
+  ],
+  "dm_notes": "If the rumoured ghost is discussed, she points adventurers to the werewolf's grave in 1311, though she warns it contains a 'cursed' treasure. She proudly admits to killing the beast and allows PCs to take its head from her collection if they request it.",
+  "adjacent_hexes": [
+    "1309",
+    "1311",
+    "1410",
+    "1209"
+  ],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      343
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

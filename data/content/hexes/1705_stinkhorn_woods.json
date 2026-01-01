@@ -1,0 +1,165 @@
+{
+  "hex_id": "1705",
+  "coordinates": [
+    17,
+    5
+  ],
+  "name": "Stinkhorn Woods",
+  "tagline": "Gargantuan, phallic, brown-and-cream fungi. Flies buzz. The place stinks of carrion.",
+  "region": "Mulchgrove",
+  "terrain_type": "fungal forest",
+  "terrain_description": "Fungal forest (2), Mulchgrove",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with 2d10 giant blood-sucking flies (as stirges—DMB) or 1d8 giant burrowing beetles (DMB)",
+    "foraging_results": "Successful foraging yields 1d4 portions of Blood Canker (DPB) or Puck's Ear (p428), in addition to the normal results, which are always fungi",
+    "foraging_special": [
+      "Blood Canker (1d4 portions)",
+      "Puck's Ear (1d4 portions)"
+    ]
+  },
+  "description": "As characters travel through this hex, they notice a sighing coming from the tops of the stinkhorns, gradually increasing in frequency and volume. After an hour of travel, the sighing exhibits a definitive melody, with Woldish words soon becoming recognisable. Soon, the stinkhorns throughout the hex are singing a faint, breezy lullaby in unison.",
+  "points_of_interest": [
+    {
+      "name": "The Shrine to St Jorrael",
+      "poi_type": "shrine",
+      "description": "Subsumed beneath a slimy mound of rotting, collapsed stinkhorn trunks is the lost shrine to St Jorrael.",
+      "tagline": null,
+      "entering": "The door is stuck (see Doors, DPB)",
+      "interior": "A white marble mausoleum whose exquisitely carved pillars depict a righteous peasant horde rising up against their wicked liege. A once beautiful marble statue lies in pieces, shattered on the floor. The saint's plaintive visage looks directly up at those who enter, her eyes seeming to twinkle in the light.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "If a suitable icon is placed on the altar, characters praying may receive the blessing of St Jorrael: the ability to cast Rally"
+      ],
+      "secrets": [
+        "Hidden beneath collapsed stinkhorn trunks"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Buried Reliquary",
+      "poi_type": "treasure",
+      "description": "Near the middle of the hex, there stands a gigantic oak tree. A plain black chest containing three relics of St Jorrael is buried among its roots, 5′ beneath the earth.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Map Required - The tree and the buried reliquary can only be found by characters who know of its precise location, for example via the map lost in the hoard of the great wyrm Chasobrithe (see hex 1107)"
+      ],
+      "secrets": [
+        "Contains three relics of St Jorrael"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Fungal Lullabies",
+      "die_type": "d6",
+      "description": "Songs of the Stinkhorns - roll when characters travel through the hex",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "A lament for the imminent deaths of the party, each individual mentioned by name.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "A maddening, rasping taunt of \"Babes in the woods!\" The party's leader or navigator must Save Versus Spell. If the save fails, the party becomes lost.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Party's leader or navigator must Save Versus Spell or party becomes lost"
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "Lyrics describing shadows rising up from the dank earth, seeking to destroy the party. All characters must Save Versus Spell. For each save that fails, a shadow (DMB) manifests, stalking the party for a time before attacking.",
+          "monsters": [
+            "shadow"
+          ],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "All characters must Save Versus Spell. For each failed save, a shadow manifests"
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "A sweet melody lulls characters into a drowsy, dream-like state. All must Save Versus Spell or fall asleep on the slimy earth, waking the following morning (unless disturbed).",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "All must Save Versus Spell or fall asleep until morning"
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "A sinister chant foretells the dominion of fungus over humanoid life in Dolmenwood, with the whispered refrain \"The Myconom desires you, westward lies the font.\"",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "A canticle recounts the deeds of St Jorrael, whereby the saint's holy words emboldened oppressed villagers to rise up against a despot baron and bring him and his knights to justice.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The Cap of St Jorrael",
+      "description": "This plain black cap cloaks its wearer in anonymity; anyone trying to recall their face when not in their presence is unable to.",
+      "value": "8,000gp",
+      "location": "Buried Reliquary"
+    },
+    {
+      "name": "The Skull of St Jorrael",
+      "description": "If its eyes are pointed at an object, it whispers the object's value in a hoarse, sepulchral voice.",
+      "value": "2,000gp",
+      "location": "Buried Reliquary"
+    },
+    {
+      "name": "The Shoe of St Jorrael",
+      "description": "Ensures a light tread. The wearer never activates the pressure plates of traps and cannot be tripped up by slippery surfaces, such as rain-slicked roof-tiles, mossy rocks, ice, or similar obstacles.",
+      "value": "9,000gp",
+      "location": "Buried Reliquary"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      377
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

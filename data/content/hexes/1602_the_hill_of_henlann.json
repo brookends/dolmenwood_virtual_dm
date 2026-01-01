@@ -1,0 +1,93 @@
+{
+  "hex_id": "1602",
+  "coordinates": [
+    16,
+    2
+  ],
+  "name": "The Hill of Henlann",
+  "tagline": "Paths wind around, up, and down a series of rugged hills dotted with wonky cairns.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with 1d3 witches—eyes of Hasturiel (DMB) on pilgrimage here",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Paths wind around, up, and down a series of rugged hills dotted with wonky cairns.",
+  "points_of_interest": [
+    {
+      "name": "The Sacred Hill",
+      "poi_type": "sacred site",
+      "description": "A low hill surrounded by dense thorn trees is situated close to the centre of this hex. Witches consider this a sacred site, calling it the Hill of Henlann. While the hill lies within the hunting grounds of the fairy Duke Mai-Fleur (p30), the duke and the witches pay one another scant attention.",
+      "tagline": null,
+      "entering": "Ascending the hill: Males feel their throats dry and contract; speech is hoarse and stammering.",
+      "interior": "At the crest of the hill stands a massive white marble urn, surrounded by a grisly collection of skulls.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The skulls are actually those of thirty-five corpses, each buried up to its neck.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Males ascending feel throats dry and contract; speech becomes hoarse and stammering",
+        "Massive white marble urn at crest",
+        "Thirty-five skulls surrounding the urn",
+        "Skulls are heavily weathered and bleached white",
+        "Most skulls missing jaws, some attached by leather ligaments or green copper wire",
+        "Skull crowns smeared with red clay cryptic symbols",
+        "Looking at symbols causes vision of being burned alive",
+        "Dead can observe events throughout Dolmenwood and answer questions",
+        "Dead speak in unison as rasping chorus of whispers",
+        "Service requires offering of at least 800gp value in marble urn",
+        "Offerings dissolve into green haze swept away by wind",
+        "Hasturiel itself may be contacted, 1-in-6 chance to respond to non-devotees"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Rosy Gate",
+      "poi_type": "fairy gate",
+      "description": "A tangle of wild roses grows around a yawning cave mouth at the base of a gentle valley. Shimmering motes and rays of light play around the cave mouth.",
+      "tagline": null,
+      "entering": "Pushing through the briars to the entrance, PCs notice the summery scent of wildflowers and the cheery sound of birdsong emanating from the cave.",
+      "interior": "Stepping over the threshold whisks one away to the fairy road Buttercup Lane (see Fairy Roads, p26).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden location",
+        "Wild roses tangle around cave mouth",
+        "Shimmering motes and rays of light around entrance",
+        "Summery scent of wildflowers from cave",
+        "Cheery birdsong from cave",
+        "Entering transports to Buttercup Lane fairy road"
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      366
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

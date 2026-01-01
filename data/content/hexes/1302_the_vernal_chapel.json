@@ -1,0 +1,150 @@
+{
+  "hex_id": "1302",
+  "coordinates": [
+    13,
+    2
+  ],
+  "name": "The Vernal Chapel",
+  "tagline": "Colonies of doves roost in groves of silver birch, cooing psalm-like, communal melodies.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Worm-Mallow (p430), in addition to the normal results",
+    "foraging_special": [
+      "Worm-Mallow (1d3 portions)"
+    ]
+  },
+  "description": "Colonies of doves roost in groves of silver birch, cooing psalm-like, communal melodies.",
+  "points_of_interest": [
+    {
+      "name": "Ruined Chapel",
+      "poi_type": "chapel",
+      "description": "At the centre of a fern-decked glade stands the forsaken ruin of a chapel, its spire toppled in a heap of stones.",
+      "tagline": null,
+      "entering": "An ancient oaken door is held ajar by a thicket of ground creepers. Its exterior is pitted with numerous old, humanoid claw marks.",
+      "interior": "Smashed pews and floral columns, overwhelmed with ivy and mould. Queen Incantral (blood wyrm—DMB) lairs here, coiled around the altar, protecting her eggs—five blood-red sacs glued to the altar.",
+      "exploring": "A sturdy, locked door behind the altar—cleared of ivy—leads to a narrow stair to the Chapel Crypt.",
+      "leaving": null,
+      "inhabitants": "Queen Incantral (blood wyrm) lairs here, protecting her eggs. 3 Level 1 hunters hide in the trees around the glade.",
+      "roll_tables": [],
+      "npcs": [
+        "queen_incantral"
+      ],
+      "special_features": [
+        "Charmed hunters ambush trespassers (3-in-6 chance of surprise)",
+        "Five blood-red egg sacs glued to altar",
+        "Cleared door leads to Chapel Crypt"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    },
+    {
+      "name": "Chapel Crypt",
+      "poi_type": "crypt",
+      "description": "A dank space, streaked with mould. Against the far wall sits an altar, surrounded by the mounded hoard of Incantral. Lying pristine atop the altar is the lost Sword of St Sedge.",
+      "tagline": null,
+      "entering": "Accessed via narrow stair from cleared door behind altar in Ruined Chapel",
+      "interior": "A dank space, streaked with mould. Against the far wall sits an altar, surrounded by the mounded hoard of Incantral.",
+      "exploring": "7 ghouls stand paralysed at the crypt's perimeter, poised to strike the altar. They are paralysed by the sword's magic, but could be awoken by Dispel Magic.",
+      "leaving": null,
+      "inhabitants": "7 ghouls (paralysed by sword's magic)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The Wyrm's Hoard",
+        "Sword of St Sedge on altar",
+        "7 frozen ghouls paralysed by sword magic"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "queen_incantral",
+      "name": "Queen Incantral",
+      "title": "Lady of the Table Downs",
+      "description": "A mature blood wyrm with a regal visage of great beauty and humanity, aside from bulbous cerulean eyes, faceted like diamonds. Rows of purple blisters pulsate upon her belly.",
+      "kindred": "Blood Wyrm",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Boastful",
+        "protectiveness can flare to ferocious violence"
+      ],
+      "speech": "Silky baritone, absolutely human",
+      "languages": [
+        "Woldish",
+        "Wyrm",
+        "Sylvan",
+        "tongue of serpents"
+      ],
+      "desires": [
+        "To protect her clutch of eggs",
+        "To charm more powerful servants"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Key to the Chapel Crypt, hung on a neck-antler"
+      ],
+      "location": "Ruined Chapel",
+      "stat_reference": "blood wyrm (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Sword of St Sedge",
+      "type": "Holy Longsword",
+      "description": "A gleaming Holy Longsword (Holy Radiance, p412) imbued with sentience. Decorated with a scintillating chrysoberyl on the pommel and raindrop engravings along the blade.",
+      "value": "15,000gp",
+      "magical": true,
+      "sentient": true,
+      "alignment": "Lawful",
+      "demeanor": [
+        "Passionate",
+        "devout",
+        "obsessed with the myths of St Sedge"
+      ],
+      "speech": "Strident, metallic ringing",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To be reunited with the lost shield and helm of St Sedge"
+      ],
+      "mechanical_effect": "Non-Lawful creatures suffer 1d6 damage per Round when touching. Lawful character who possesses must Save Versus Spell or come under Holy Quest to achieve sword's desires",
+      "location": "Chapel Crypt altar"
+    },
+    {
+      "name": "The Wyrm's Hoard",
+      "type": "treasure hoard",
+      "description": "Coins: 20,225gp, 958pp. 2 arcane scrolls: One of Ingratiate, Web, and Teleport. A second of Shield of Force and Perceive the Invisible. Magic items: A dented brass Ring of Energy Resistance (Fire, p410). A vial of Philtre of the Winds (p414). An Arcane Shortsword (Werebane, p412) with a wolf's head pommel and a wolf-fur sheath.",
+      "value": null,
+      "magical": true,
+      "location": "Chapel Crypt"
+    }
+  ],
+  "secrets": [
+    "History of the Sword of St Sedge: Taking vows of peace and poverty in his retirement, Sedge bequeathed his magic sword to the keeping of the nuns of the Vernal Chapel. Many years later, a horde of undead descended from the nearby Table Downs, sacked the chapel, and slew the nuns. A young nun, Gryselde, guarded the sword with her life. Her spirit lives on in the blade, granting it sentience."
+  ],
+  "dm_notes": "Queen Incantral has vulnerability to water. The helm of St Sedge is in hex 0408 and the shield may be placed by the Referee as desired.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      335
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

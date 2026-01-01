@@ -1,0 +1,113 @@
+{
+  "hex_id": "1007",
+  "coordinates": [
+    10,
+    7
+  ],
+  "name": "The Tower of Frost",
+  "tagline": "Pastoral woods of willow and elm. Golden motes drift in the air, leading travellers south to the swamp.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Pastoral woods of willow and elm. Golden motes drift in the air, leading travellers south to the swamp.",
+  "points_of_interest": [
+    {
+      "name": "The Tower of Frost",
+      "poi_type": "tower",
+      "description": "A slender, partially collapsed tower stands in a glade of twisted beech trees, encased in a scintillating rime which seemingly holds the ruin in place. The windows of the upper floor are entirely covered by sheets of ice.",
+      "tagline": null,
+      "entering": "Double doors of elegantly carved white willow wood lead into a wide hall of cold, white stone. The servants admit PCs for an audience with the Lady if she is present (3-in-6 chance); otherwise they refuse entry.",
+      "interior": "Ground floor: Wide hall of cold, white stone with doors leading to dining room, kitchen, larder, spartan servants' quarters, and stairway to second floor. First floor: Entirely empty and in ruins; windblown by an unceasing gust through a large hole in the wall. Stairway blocked by illusory ice hunks. Second floor: Windows occluded by ice sheets, minimal contents including ice slab with white furs, High Elfish books, coffer with treasure, white clothing.",
+      "exploring": "During the day, 1d4 servants remain in the tower while others are abroad. The Lady receives visitors in the dining room and attempts to charm mortals seeking information on the Ring of Chell.",
+      "leaving": null,
+      "inhabitants": "Lady Misthraine (disguised elf courtier) and 4 charmed human servants (Level 1 thieves, each carries 2d20pp).",
+      "roll_tables": [],
+      "npcs": [
+        "lady_misthraine"
+      ],
+      "special_features": [
+        "Illusory ice blocks on stairway",
+        "Golden motes leading south"
+      ],
+      "secrets": [
+        "Lady Misthraine is actually Lady Frost-Dust-Shadow, an elf courtier",
+        "Servants are charmed and unaware of mistress's true nature"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 3
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_misthraine",
+      "name": "Lady Misthraine",
+      "title": "Lady Frost-Dust-Shadow",
+      "description": "A young woman, tall and slender, clad in white, with eyes of cold blue and hair of silver. Fairy magic completely disguises her as human, though animals are sometimes (2-in-6) nervous in her presence. Presents herself as Lady Misthraine, a human sorceress from a distant realm, come to Dolmenwood to study its ley lines. A trusted agent of the Cold Prince, she was sent here via perilous, long-forgotten ways, to uncover the means by which her liege's kingdom is exiled.",
+      "kindred": "Elf",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Dislikes mortals but tries to act genial",
+        "Unsure of the social norms of Dolmenwood"
+      ],
+      "speech": "Stilted, circuitous",
+      "languages": [
+        "Woldish (with a noble foreign accent)",
+        "High Elfish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To discover the locations of the standing stones around Dwelmfurgh (the Summerstones)",
+        "To find any weaknesses in the warding ring"
+      ],
+      "secrets": [
+        "True name is Lady Frost-Dust-Shadow",
+        "Is an elf courtier disguised by fairy magic",
+        "Agent of the Cold Prince sent to uncover exile methods"
+      ],
+      "possessions": [
+        "Fairy silver Talisman of Spell Reflection (6 charges remaining)"
+      ],
+      "location": "The Tower of Frost",
+      "stat_reference": "elf courtier (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Frosty quartz crystals",
+      "description": "Sixteen frosty quartz crystals",
+      "value": "50gp each",
+      "location": "Tower second floor coffer"
+    },
+    {
+      "name": "Platinum pieces",
+      "description": "100 platinum pieces",
+      "value": "100pp",
+      "location": "Tower second floor coffer"
+    }
+  ],
+  "secrets": [
+    "Lady Misthraine is actually an elf courtier in disguise",
+    "The servants are charmed humans unaware of their mistress's true nature",
+    "She seeks information about the Ring of Chell and the Summerstones"
+  ],
+  "dm_notes": "Animals are 2-in-6 nervous around Lady Misthraine. Lady present 3-in-6 chance. PCs with no useful information are sent away.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      304
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

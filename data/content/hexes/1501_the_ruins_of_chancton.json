@@ -1,0 +1,101 @@
+{
+  "hex_id": "1501",
+  "coordinates": [
+    15,
+    1
+  ],
+  "name": "The Ruins of Chancton",
+  "tagline": "Barely discernible remnants of pathway crisscross the hills—signs of ancient habitation here.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Barely discernible remnants of pathway crisscross the hills—signs of ancient habitation here.",
+  "points_of_interest": [
+    {
+      "name": "Wretching Bridge",
+      "poi_type": "bridge",
+      "description": "A dilapidated bridge spans Kewen's Creek. It rocks and groans when crossed, but remains intact.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Ruined Hamlet",
+      "poi_type": "ruins",
+      "description": "The Downs Road descends a gently sloping hillside and passes through a small cluster of ruined buildings centred around a rocky pool (see Healing Spring).",
+      "tagline": null,
+      "entering": null,
+      "interior": "Rude homes, barns, and workshops, their stone walls crumbling and wind howling through their gaping orifices. The place has lain in ruins for over 1,000 years—interior furnishings are long decayed. Religious characters may note that there is no sign of a church or graveyard among the ruins. The ruins are littered with the intact skeletons of the hamlet's former human inhabitants, posed in the midst of day-to-day activities: pushing a wheelbarrow, digging turnips, tiling a roof, fetching water from the pool, weaving woollen yarn, and so on.",
+      "exploring": "If anyone speaks within the hamlet, the skeletons animate. (See The Dead Rise.)",
+      "leaving": "Whenever PCs decide to leave the hamlet, the skeletons wistfully bid them farewell, return to their regular tasks (digging, building, weaving, etc.), and eventually stand once more still in death.",
+      "inhabitants": "30 skeletons of former human inhabitants",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The Dead Rise",
+        "Healing Spring"
+      ],
+      "secrets": [
+        "No church or graveyard among the ruins",
+        "Skeletons have no idea they are dead"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Healing Spring",
+      "poi_type": "spring",
+      "description": "In the centre of the hamlet, a spring bubbles up, forms a shallow pool ringed with boulders, then flows in a small stream to join with Kewen's Creek to the south.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "The hamlet has no church or graveyard among the ruins",
+    "The skeletons have no idea that they are dead and no memory of their fate",
+    "The hamlet was called 'Chancton' by its inhabitants",
+    "The place has lain in ruins for over 1,000 years"
+  ],
+  "dm_notes": "When awakened by speech, the deceased inhabitants (30 skeletons—DMB) unfreeze from their poses, dust off their decaying rags, and haltingly approach living visitors. They welcome visitors to their hamlet, which they refer to as 'Chancton.' They ask visitors where they hail from and invite them for refreshments in the tavern and a barn dance later that evening. Lawful characters who bathe in the healing spring are blessed with either the curing of a disease (including magical diseases) or the healing of 1d6+1 Hit Points. Non-Lawful characters are not affected; nor, sadly, are the dead.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      356
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "hex_id": "1502",
+  "coordinates": [
+    15,
+    2
+  ],
+  "name": "Duke Mai-Fleur's Hunting Lodge",
+  "tagline": "Rugged knolls dense with holly. Blasts of hunting horns echo on the wind.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely (2-in-6 likely at night) to be with a Wild Hunt mustering in the woods around the lodge",
+    "foraging_results": "Successful foraging yields 1d4 portions of Gillywort (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Gillywort (1d4 portions)"
+    ]
+  },
+  "description": "Rugged knolls dense with holly. Blasts of hunting horns echo on the wind.",
+  "points_of_interest": [
+    {
+      "name": "The Unicorn Gate",
+      "poi_type": "gate",
+      "description": "A pair of great oak trees stands atop a tall hill. Into the living trunk of each tree is carved the likeness of a rearing unicorn. They face one another.",
+      "tagline": null,
+      "entering": "Blowing a horn causes a brisk wind to pick up and a shimmering blue mist to fill the space between the two trees.",
+      "interior": "Entering the mist whisks one away to the fairy road Duke Mai-Fleur's Road (see Fairy Roads, p26).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Fairy road portal"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Duke Mai-Fleur's Hunting Lodge",
+      "poi_type": "lodge",
+      "description": "A two-storey wooden lodge, camouflaged by the trailing moss that blankets it. Even the windows are obscured.",
+      "tagline": "(Hidden)",
+      "entering": "Stepping onto the front porch causes the moss to peel back, revealing a polished black door, carved with scenes of unicorn hunting and the holly-wreath sigil of Duke Mai-Fleur. The door is sealed with a Glyph of Locking (Level 14 caster).",
+      "interior": "Passages, drinking halls, and three bed chambers, spartanly furnished but replete with hunting trophies, including three great black bears and two majestic unicorns. Blue candles in wall sconces magically kindle.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Any who enter without permission are attacked by animated stuffed animals: 3 bears (DMB) and 2 blessed unicorns (DMB). As magical constructs, the creatures have Morale 12 and are immune to poison and mind-affecting magic (e.g. Ingratiate, Vapours of Dream).",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Mai-Fleur's Drinking Horn: At the centre of a drinking hall table is a 2′-long horn of fairy silver, studded with pale blue ice jewels. Once a day, water poured into the horn is transmuted into exquisite, sparkling wine. Worth 5,000gp."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "The Wild Hunt",
+      "die_type": "special",
+      "description": "A raucous train of fairies gleefully charging through the forest after prey",
+      "entries": [
+        {
+          "roll": "Leader",
+          "title": null,
+          "description": "3-in-6 chance that the hunt is led by Duke Mai-Fleur himself, otherwise by an elf knight (DMB) loyal to the Duke.",
+          "monsters": [
+            "elf knight"
+          ],
+          "npcs": [
+            "duke_mai_fleur"
+          ],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": "Retinue",
+          "title": null,
+          "description": "4d6 fairy hounds (stats as wolves), 2d10 elf wanderers (DMB) on foot, 2d10 elf wanderers (DMB) mounted on fairy horses (DMB), 1d6 woodgrues (DMB—horn-blowers), 1d6 sylvan centaurs (DMB).",
+          "monsters": [
+            "fairy hounds",
+            "elf wanderers",
+            "fairy horses",
+            "woodgrues",
+            "sylvan centaurs"
+          ],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": "Interference",
+          "title": null,
+          "description": "The fairies do not discriminate between their intended quarry and PCs who get in their way.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "duke_mai_fleur",
+      "name": "Duke Mai-Fleur",
+      "title": "Duke",
+      "description": "A lithesome half-elf / half-human lord with ashen complexion and flowing raven locks. The light of a blazing sunset shines in his eyes. Dresses as a hunter, crowned with holly and ivy. Mai-Fleur is renowned as the most accomplished hunter in all Dolmenwood.",
+      "kindred": "Half-elf/Half-human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Wild-spirited",
+        "mercurial",
+        "Dreadful anger and heartening laughter are ever imminent"
+      ],
+      "speech": "Commanding, indignant",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "High Elfish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To locate game worthy of a fairy lord (e.g. the Stag Lord in hex 1305, the Bicorne in hex 0510)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Dusk Bow (Fairy Longbow)",
+        "Silver Sword (Fairy Longsword of fairy silver)"
+      ],
+      "location": "Duke Mai-Fleur's Hunting Lodge",
+      "stat_reference": "Medium Fairy—Genius—Neutral, Level 14 AC 19 HP 75 Saves D4 R5 H6 B7 S8",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Mai-Fleur's Drinking Horn",
+      "description": "A 2′-long horn of fairy silver, studded with pale blue ice jewels. Once a day, water poured into the horn is transmuted into exquisite, sparkling wine.",
+      "value": "5,000gp",
+      "magical": true
+    },
+    {
+      "name": "Magical Hunting Horn",
+      "description": "A magical hunting horn which, if blown, summons a Wild Hunt to their command. This may be used once only and works like the mighty fairy rune Summon Wild Hunt—DPB.",
+      "value": "5,000gp",
+      "magical": true
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "See p30 for more details on the duke and his domain.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      357
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "hex_id": "1212",
+  "coordinates": [
+    12,
+    12
+  ],
+  "name": "The Balm Fields",
+  "tagline": "Lush meadows infused with the warmth of summer and the scent of blossom, even in deepest winter.",
+  "region": "Tithelands",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Tom-A-Merry (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Tom-A-Merry (1d3 portions)"
+    ]
+  },
+  "description": "The last straggling copses of Dolmenwood open out onto the flat, lush grasslands known to locals as the \"Balm Fields,\" renowned for their vibrant populations of bees and hares. Herds of cows, sheep, and their owners also roam this region.",
+  "points_of_interest": [
+    {
+      "name": "Picnicking Herds",
+      "poi_type": "encounter_area",
+      "description": "Those who wander among the meadows on clear, dewy mornings or drowsy summer afternoons may chance upon an odd sight: the cows and sheep sometimes don hoods and bonnets and sit together, breakfasting on pickled eggs and ham or drinking tea. Travellers who witness this curious spectacle may also encounter the flummoxed owners of the precocious livestock, invariably attempting to disrupt the proceedings. (They claim that such unseemly behaviour among beasts brings ill luck.)",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Questioning the owners as to how sheep and cattle come by bonnets, eggs, and ham—let alone full china tea sets—elicits shrugs of befuddlement and frustration. Those able to speak with animals may question the animals about how they obtained such civilised viands. This leads to roundabout, nonsensical conversations, tinged with annoyance at the adventurers' intrusion. Occasionally, the beasts allude playfully to \"the wee folk,\" about whom they decline to elaborate.",
+      "leaving": null,
+      "inhabitants": "Herds of cows, sheep, and their owners",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Animals wear hoods and bonnets",
+        "Animals breakfast on pickled eggs and ham",
+        "Animals drink tea from china tea sets"
+      ],
+      "secrets": [
+        "Animals allude to \"the wee folk\""
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Golden Gazebo",
+      "poi_type": "gazebo",
+      "description": "Amid the gently swaying grasses and pretty wildflowers in the eastern reaches of this hex stands a solitary structure of artificial construction: a small, octagonal, radiant gold gazebo.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A dog-eared visitors' book lies on an octagonal table alongside a quill and ink. Benches around the edges of the gazebo provide seating for twelve. A sense of contentment washes over any who sit within the shelter.",
+      "exploring": "Page after page of questions, written in numerous hands and covering a wide range of topics (from the sincere to the flippant). Beneath each question is a response, in gold ink, all written by the same hand and signed with the initial \"A\" (the correspondent being Andromethia herself). The responses take the form of snippets of whimsical poetry, vaguely alluding to the query.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Roof adorned with spiralling seashells and goats' horns",
+        "Mark of fairy Princess Andromethia",
+        "Coexistent with the Blossom Fields fairy realm",
+        "Sense of contentment for those who sit within"
+      ],
+      "secrets": [
+        "Answers appear at midnight",
+        "Positive Reaction Roll indicates marginally helpful answer",
+        "Answers only provide information within Andromethia's knowledge"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Visitors' Book",
+      "description": "A dog-eared visitors' book with questions and answers in gold ink signed with \"A\"",
+      "mechanical_effect": "An answer to any question posed magically appears at midnight. A positive Reaction Roll indicates a marginally helpful answer; otherwise the answer is entirely abstruse. If removed from the gazebo, the book magically disappears at midnight, returning to its rightful place on the table."
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      333
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

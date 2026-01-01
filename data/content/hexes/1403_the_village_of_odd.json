@@ -1,0 +1,249 @@
+{
+  "hex_id": "1403",
+  "coordinates": [
+    14,
+    3
+  ],
+  "name": "The Village of Odd",
+  "tagline": "Trees festooned with dainty, glowing flowers of ochre, lilac, and mauve.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Trees festooned with dainty, glowing flowers of ochre, lilac, and mauve.",
+  "points_of_interest": [
+    {
+      "name": "The Village of Odd",
+      "poi_type": "village",
+      "description": "A small cluster of thatched huts and animal pens nestled in a glade, a low grassy knoll at its centre. Some 90 folk dwell here, under the domain of House Guillefer (see hex 1304).",
+      "tagline": null,
+      "entering": null,
+      "interior": "Fur and game: Odd is renowned for the fine furs and rare game sold by its rustic inhabitants. Full settlement description: See p166.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Some 90 folk dwell here, under the domain of House Guillefer",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Renowned for fine furs and rare game"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Grand Gupple Tree",
+      "poi_type": "sprite lair",
+      "description": "An exceptionally broad black poplar tree. Minuscule huts festoon its branches. 80 black sprites live here, lounging among the huts. They are a plain-spoken, assertive lot.",
+      "tagline": null,
+      "entering": "PCs who follow the black sprites arrive at the base of an exceptionally broad black poplar tree.",
+      "interior": "Minuscule huts festoon its branches. 80 black sprites live here, lounging among the huts.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "80 black sprites",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Home to Grand Gupple tribe"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Timeless Twook Tree",
+      "poi_type": "sprite lair",
+      "description": "A tall, blue poplar tree. Homes made from floating puffball fungi cling to its upper reaches. 70 blue sprites dally among the puffballs. Their demeanour is dreamy but vaguely sinister.",
+      "tagline": null,
+      "entering": "PCs who follow the blue sprites come upon a tall, blue poplar tree.",
+      "interior": "Homes made from floating puffball fungi cling to its upper reaches. 70 blue sprites dally among the puffballs.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "70 blue sprites",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Home to Timeless Twook tribe"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Slumbering Bridge",
+      "poi_type": "bridge",
+      "description": "An old, creaky bridge overhung by sighing willows, crossing Kewen's Creek. A track diverges and leads to the Hall of Sleep (1304).",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Leads to Hall of Sleep (1304)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Indignities and Insults",
+      "die_type": "d6",
+      "description": "The other tribe… (roll 1d6 on the table below).",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "Pelted them with foul dung!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "Delivered bold lies about them to their neighbours!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "Mocked their queen's dignity by making her belch!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "Caused a small thundercloud to rain upon them!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "Stole away with a mortal child in their care!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "Insulted their mostly adequate endowments!",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The ancestral sword of a deorling stag",
+      "type": "weapon",
+      "description": "The ancestral sword of a deorling stag!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "The ruby earrings of The Hag of Hag's Addle",
+      "type": "jewelry",
+      "description": "The ruby earrings of The Hag of Hag's Addle (p82)!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "The knuckle-bone of St Lowery",
+      "type": "relic",
+      "description": "The knuckle-bone of St Lowery!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "The silver mirror of the Queen of Witches",
+      "type": "mirror",
+      "description": "The silver mirror of the Queen of Witches (p75)!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "Ring of Invisibility",
+      "type": "ring",
+      "description": "A Ring of Invisibility once owned by an elf courtier!",
+      "value": null,
+      "magical": true,
+      "properties": [
+        "Invisibility"
+      ]
+    },
+    {
+      "name": "Rainmaker",
+      "type": "weapon",
+      "description": "The fabled black sword Rainmaker!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "The crown of an old king of Brackenwold",
+      "type": "crown",
+      "description": "The crown of an old king of Brackenwold!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    },
+    {
+      "name": "The sceptre of the Cold Prince",
+      "type": "sceptre",
+      "description": "The sceptre of the Cold Prince (p51)!",
+      "value": null,
+      "magical": true,
+      "properties": []
+    }
+  ],
+  "secrets": [
+    "Each sprite killed performs exaggerated death throes and vanishes. The conquered lair has no treasure. PCs returning to the tree of their patrons to claim their prize find it to have completely disappeared and hear a faint tittering in the breeze. Later, they spot members of both tribes, alive and well, fluttering above and taunting them."
+  ],
+  "dm_notes": "The War of the Sprites: The two sprite tribes claim to have been at war for as long as they can recall (in reality, it has only been three weeks). Each tribe complains about the Indignities and Insults visited upon them by their enemies. The sprites entreat PCs to dispatch the opposite tribe once and for all, directing them to the enemy's lair. They offer Fantastical Treasures as reward, but refuse to produce it until the party returns with proof of their conquest. This pattern repeats with each encounter, the promised rewards growing more fantastic as counteroffer after counteroffer is deployed.",
+  "adjacent_hexes": [
+    "1304"
+  ],
+  "roads": [
+    "Lochsbreth Road",
+    "Follyegg Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      348
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

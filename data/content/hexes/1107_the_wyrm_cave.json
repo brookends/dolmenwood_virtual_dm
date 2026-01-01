@@ -1,0 +1,113 @@
+{
+  "hex_id": "1107",
+  "coordinates": [
+    11,
+    7
+  ],
+  "name": "The Wyrm Cave",
+  "tagline": "Paths crossed by many small rivulets, feeding a network of clear, still pools.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Paths crossed by many small rivulets, feeding a network of clear, still pools.",
+  "points_of_interest": [
+    {
+      "name": "Chasm and Lair",
+      "poi_type": "lair",
+      "description": "A great tangle of overgrown hazels and holly in the southern reaches of this hex conceals a 60′ deep chasm, long forgotten.",
+      "tagline": null,
+      "entering": "The chasm bottom—nearly lightless in the shade of the brush overhead—narrows to a cave-like passage at one end, from which a small stream trickles.",
+      "interior": "The passage descends for nearly half a mile, then opens onto a cavern, 200 yards across. It is here that Chasobrithe (yellow bile wyrm—DMB) makes its lair, slumbering atop a mound of treasure and the skeletal remains and rusted armaments of some sixteen knights.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Chasobrithe (yellow bile wyrm) makes its lair here.",
+      "roll_tables": [],
+      "npcs": [
+        "chasobrithe"
+      ],
+      "special_features": [
+        "The Wyrm's Hoard"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "chasobrithe",
+      "name": "Chasobrithe",
+      "title": "Yellow Bile Wyrm",
+      "description": "A yellow bile wyrm with a second, snake-necked cockerel's head growing from a scar that nearly encircles his neck.",
+      "kindred": "Yellow Bile Wyrm",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Lethargy quickly evaporating to calculating fury"
+      ],
+      "speech": "Drawn-out rasping. Woldish, Wyrm, Caprice, Sylvan, the tongue of serpents.",
+      "languages": [
+        "Woldish",
+        "Wyrm",
+        "Caprice",
+        "Sylvan",
+        "tongue of serpents"
+      ],
+      "desires": [
+        "To remain undisturbed",
+        "To gather information from intruders, then eat them"
+      ],
+      "secrets": [
+        "Has lived in the region of Prigwort for many years",
+        "Brought great terror upon the local folk in olden times",
+        "Has lain in slumber for the past two centuries, believed dead after Sir Windlass almost decapitated him",
+        "The cockerel head grew from the near-fatal neck wound during his long repose"
+      ],
+      "possessions": [
+        "The Wyrm's Hoard"
+      ],
+      "location": "The Wyrm Cave lair",
+      "stat_reference": "yellow bile wyrm (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Shield of Sir Windlass",
+      "description": "A 5′ tall, oblong Holy Shield (Truthful, p400) of shining steel, emblazoned with the Brackenwold coat of arms and blessed by the hand of St Willofrith. The wielder may cast the holy spell Light once per day.",
+      "value": null,
+      "location": "The Wyrm's Hoard"
+    },
+    {
+      "name": "Sword of Sir Windlass",
+      "description": "A broad-bladed Fairy Longsword (Mirthful, p412) forged of a golden metal, inlaid with zigzag patterns in fairy silver.",
+      "value": null,
+      "location": "The Wyrm's Hoard"
+    },
+    {
+      "name": "Ivory casket",
+      "description": "Engraved with an angelic choir. Contains a vial of Distillation of Hoarfrost (p414) and a map—annotated in Liturgic—denoting the location of the lost relics of St Jorrael (see hex 1705).",
+      "value": "200gp",
+      "location": "The Wyrm's Hoard"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Intruding into the lair awakens the wyrm. Chasobrithe's cockerel head makes a bite attack each Round, inflicting 1d6 damage and petrifying any who fail a Save Versus Hold. Vulnerability: Sunlight. The Wyrm's Hoard contains: 198,033cp, 44,290sp, 12,522gp, 1,051pp; 7 hematites (10gp each), 5 bloodstones (50gp each), 5 tourmalines (100gp each), 3 blue spinels (500gp each), 4 star sapphires (1,000gp each).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      316
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "hex_id": "0905",
+  "coordinates": [
+    9,
+    5
+  ],
+  "name": "The Mouse Shrine and the Hermitage",
+  "tagline": "Broken boughs and carelessly felled trunks. Crookhorn hoof-prints traipse throughout.",
+  "region": "Valley of Wise Beasts",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Valley of Wise Beasts",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with a patrol of 2d6 crookhorns (DMB) from the garrison at Baron Fragglehorn's tower (hex 1004). They patrol down into the Valley from the tower, meting out terrible and anarchic justice. They attempt to arrest outsiders and bring them before the Baron.",
+    "foraging_results": "Successful foraging yields 1d4 portions of Worm-Mallow (p430), in addition to the normal results",
+    "foraging_special": [
+      "Worm-Mallow (1d4 portions)"
+    ]
+  },
+  "description": "A mile wide here, the Valley of Wise Beasts dwindles away toward the south-west of this hex, the cliffs that bound it gradually diminishing in height. The western end of the Valley, in this hex, is composed of wild forest and is scantly inhabited.",
+  "points_of_interest": [
+    {
+      "name": "The Shrine to St Vinicus",
+      "poi_type": "shrine",
+      "description": "Upon the verge of the southern cliffs, a well-maintained, miniature church, complete with steeple, sits overlooking the Valley of Wise Beasts. Next to it is a pathway along the cliff edge, leading to the Hermitage.",
+      "tagline": null,
+      "entering": "The building's oaken door is beautifully carved with a diorama of mice and shrews floating on barges around a flooded church. It is locked.",
+      "interior": "Rear windows reveal a picturesque view of the valley below. Between them stands a statue of a man smiling benevolently—Saint Vinicus, patron saint of mice and beggars. Three separate nooses hang about his neck. Upon the altar at his feet stands a foot-high, silver Chapes holy symbol (500gp).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Characters praying may receive the blessing of St Vinicus: the ability to cast Animal Growth. See Shrines, p22."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Hermitage",
+      "poi_type": "hermitage",
+      "description": "A tidy pathway beside the shrine leads 100 yards along the cliff edge to a clearing containing a thatch-roofed hut and a pile of neatly stacked firewood. Atop the hut is a grisly sight: a decapitated human head rests at the roof's apex, its blood staining the thatch.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The entire space inside the hut is occupied by the bulk of a mogglewomp (DMB). This creature slew the owner of the hut, a friar who lived here as a hermit and had restored the shrine.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "mogglewomp",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "If the beast can be dislodged from its appropriated lair, the friar's possessions can be retrieved, including the key to the shrine, a set of antique religious books (200gp), and a map of Lake Longmere with \"Lost shrine to Saint Galaunt?\" annotated in red, close to the south-western bank."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Silver Chapes holy symbol",
+      "description": "A foot-high, silver Chapes holy symbol",
+      "value": "500gp",
+      "location": "The Shrine to St Vinicus"
+    },
+    {
+      "name": "Key to the shrine",
+      "description": "Key to the shrine",
+      "value": null,
+      "location": "Hermitage"
+    },
+    {
+      "name": "Antique religious books",
+      "description": "A set of antique religious books",
+      "value": "200gp",
+      "location": "Hermitage"
+    },
+    {
+      "name": "Map of Lake Longmere",
+      "description": "A map of Lake Longmere with \"Lost shrine to Saint Galaunt?\" annotated in red, close to the south-western bank",
+      "value": null,
+      "location": "Hermitage"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      290
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

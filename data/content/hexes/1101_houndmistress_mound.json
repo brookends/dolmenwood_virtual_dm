@@ -1,0 +1,116 @@
+{
+  "hex_id": "1101",
+  "coordinates": [
+    11,
+    1
+  ],
+  "name": "Houndmistress Mound",
+  "tagline": "Tangled, twisted trees press in close, their shades of green and brown almost painfully vivid.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 labourers and 1 guard (Level 1 fighter—DMB) from the expedition based in hex 1201, surveying the exterior of the Houndmistress Mound",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Tangled, twisted trees press in close, their shades of green and brown almost painfully vivid.",
+  "points_of_interest": [
+    {
+      "name": "Fentifey Bridge",
+      "poi_type": "bridge",
+      "description": "A wonky, decaying bridge spans Quaking Creek at a narrow point beside a swirling pool.",
+      "tagline": null,
+      "entering": "People and mounts can cross the bridge safely. Vehicles have a 3-in-6 chance of collapsing it.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Crossing: People and mounts can cross the bridge safely. Vehicles have a 3-in-6 chance of collapsing it."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Houndmistress Mound",
+      "poi_type": "burial mound",
+      "description": "A burial mound sits in a large clearing at the south-eastern edge of hex, in the shadow of gloomy, windswept hills of the Table Downs. The mound is 60′ in diameter, composed of dirt and stone, and covered in a black ivy that has a peculiar, oily sheen. It has a single stone entrance, partially obscured by the ivy, above which is carved the snarling visage of a bear—PCs versed in Wood God lore recognise it as that of Orsath (p39), the ancient guardian of the dead. The entrance is extremely narrow and requires characters to turn side-on to enter the Reception Chamber.",
+      "tagline": null,
+      "entering": "The entrance is extremely narrow and requires characters to turn side-on to enter the Reception Chamber.",
+      "interior": "The mound entrance leads to a reception chamber with walls of stone. The chamber takes up half of the mound. The walls are covered with carved images of dogs leaping up at a nighttime sky. Some dogs appear to be tearing away chunks of the sky in their jaws, while others bury the chunks, which seem to bleed starlight. A tall, smooth stone blocks the entrance to the Burial Chamber.",
+      "exploring": "Opening the door to the Burial Chamber requires a combined Strength of 30 or more. As soon as the stone is dislodged, any dogs or wolves accompanying the party suddenly become berserk and attack the PCs for 1d6 Rounds. The burial chamber takes up the other half of the mound. At the chamber's centre is a stone slab; carved on either side of it are images of two hounds, facing one another and baying. On the slab lies a partially mummified corpse clad in the rich robes of a noblewoman. In its right hand, the corpse clutches a whip, set with thorns. Curled near the foot of the slab are the skeletons of several large dogs. The corpse rises as a wight wielding the thorny whip (1d6 damage, 10′ range) and the dog skeletons rise as 4 skeletal dogs. They attack the tomb's defilers and pursue any who flee up to the edge of the hex.",
+      "leaving": null,
+      "inhabitants": "Wight (corpse of noblewoman) and 4 skeletal dogs",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Dogs become restless: As the party approaches the mound, any dogs or wolves accompanying the PCs begin to act strangely: sniffing, whining, and ignoring commands.",
+        "Opening the burial chamber door causes accompanying dogs/wolves to become berserk and attack PCs for 1d6 rounds"
+      ],
+      "secrets": [
+        "The mound is one of several created by prehistoric inhabitants of the Table Downs. This one, a tomb of one of their chieftains, has been corrupted by the energies of the Nagwood."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Thorny Whip",
+      "description": "A whip set with thorns",
+      "mechanical_effect": "1d6 damage, 10′ range",
+      "value": null,
+      "location": "Houndmistress Mound burial chamber"
+    },
+    {
+      "name": "Bronze Shortswords",
+      "description": "12 bronze shortswords engraved with images of hounds and crowns",
+      "mechanical_effect": null,
+      "value": "negligible worth",
+      "location": "Houndmistress Mound burial chamber"
+    },
+    {
+      "name": "Silver Dishes",
+      "description": "12 silver dishes engraved with images of hounds and crowns",
+      "mechanical_effect": null,
+      "value": "50gp each",
+      "location": "Houndmistress Mound burial chamber"
+    },
+    {
+      "name": "Gold Bowls",
+      "description": "12 gold bowls engraved with images of hounds and crowns",
+      "mechanical_effect": null,
+      "value": "100gp each",
+      "location": "Houndmistress Mound burial chamber"
+    },
+    {
+      "name": "Ring of Control (Animals)",
+      "description": "A copper ring engraved with wolf-like eyes, in a sealed earthen jar",
+      "mechanical_effect": "Ring of Control (Animals, p410)",
+      "value": null,
+      "location": "Houndmistress Mound burial chamber"
+    }
+  ],
+  "secrets": [
+    "The mound is one of several created by prehistoric inhabitants of the Table Downs (see also hexes 1201 and 1202). This one, a tomb of one of their chieftains, has been corrupted by the energies of the Nagwood."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      310
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

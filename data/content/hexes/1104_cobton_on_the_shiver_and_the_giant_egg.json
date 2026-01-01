@@ -1,0 +1,136 @@
+{
+  "hex_id": "1104",
+  "coordinates": [
+    11,
+    4
+  ],
+  "name": "Cobton-on-the-Shiver and the Giant Egg",
+  "tagline": "The wide, central region of the Valley of Wise Beasts. Woodland glades dotted with little Cobbin farms.",
+  "region": "Valley of Wise Beasts",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Valley of Wise Beasts",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with a patrol of 2d6 crookhorns (DMB) from the garrison at the Baron's tower (hex 1004). They patrol down into the Valley from the tower, meting out terrible and anarchic justice. They attempt to arrest outsiders and bring them before the Baron.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The wide, central region of the Valley of Wise Beasts. Woodland glades dotted with little Cobbin farms.",
+  "points_of_interest": [
+    {
+      "name": "The Village of Cobton-on-the-Shiver",
+      "poi_type": "village",
+      "description": "Beside a bend in the River Shiver sits a quaint, idyllic-seeming village of painted wooden houses, half human size. The village is populated by Cobbins (DMB) of many different species, industriously going about their business and scuttering from house to house. Larger, stone buildings: Human-sized, can be seen in the village square. Crookhorn soldiers: Surly crookhorns swagger around the village, cackling and bullying the Cobbins.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Cobbins (DMB) of many different species, surly crookhorns",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Full settlement description: See p136"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Giant Egg",
+      "poi_type": "farm",
+      "description": "A curious farm is located in a broad glade a mile west of Cobton. Much of the glade is partitioned into fenced animal pens, where geese, domesticated quails, and miniature pigs honk and squeal. At one side stands a Cobbin-sized cottage with a giant egg perched atop its thatched roof, propped up with poles.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A family of badger Cobbins: Chumbra Burrowflop, her husband Mollow, and their five cubs",
+      "roll_tables": [],
+      "npcs": [
+        "chumbra_burrowflop",
+        "chrysais"
+      ],
+      "special_features": [
+        "The egg: 5′ wide, creamy white with speckles of blue. It first appeared ten years ago, the size of a duck's egg, and has grown progressively since. Unbeknown to those who observe it, the egg is now close to hatching. In 1d6 days, a giant black cygnet—Chrysaïs—will emerge.",
+        "The Cobbins believe they are blessed by the Nag-Lord and that a wondrous serpent-unicorn grows inside the egg.",
+        "Crookhorn patrols: There is a 3-in-6 chance of 1d6 crookhorns being present, eyeing the giant egg suspiciously. Baron Fragglehorn (p46) takes great interest in the egg, presuming it to be either a weapon or treasure of some kind. They do not tamper with it, for the time being.",
+        "Visitors: Are welcomed by the Cobbins, encouraged to view the marvellous egg, then hurried away before they are spotted by crookhorns."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "chumbra_burrowflop",
+      "name": "Chumbra Burrowflop",
+      "title": "Cobbin (Badger)",
+      "description": "A youthful female badger with an unusual red stripe on her nose. Wears a frayed, checked dress with a wide-brimmed straw hat and copper hoop earrings.",
+      "kindred": "Cobbin (Badger)",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Frolicsome",
+        "excitable"
+      ],
+      "speech": "Shrill growling",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Baron Fragglehorn's praise for her devoted raising of the giant egg",
+        "Magical means of peering inside the giant egg"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Giant Egg",
+      "stat_reference": "Cobbin (DMB)",
+      "is_combatant": false
+    },
+    {
+      "npc_id": "chrysais",
+      "name": "Chrysaïs",
+      "title": "Giant Cygnet",
+      "description": "A giant black cygnet, 10′ tall, with eyes and wing tips of bronze. Claims to be a prophet of the Pluritine Church sent to battle the forces of Chaos in Dolmenwood.",
+      "kindred": "Giant Cygnet",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Gentle",
+        "beatific",
+        "otherworldly"
+      ],
+      "speech": "Melodious, noble",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To root out corruption",
+        "bring justice to the downtrodden",
+        "vanquish the forces of Chaos"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Giant Egg",
+      "stat_reference": "Giant hawk (DMB). Will continue to grow, in time reaching truly gargantuan proportions (Level 24, with 24d8 HP)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      313
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

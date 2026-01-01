@@ -1,0 +1,139 @@
+{
+  "hex_id": "1203",
+  "coordinates": [
+    12,
+    3
+  ],
+  "name": "The Elder Willows",
+  "tagline": "Tangled willow woods, thick with vines and ditches filled with mounds of decaying leaves.",
+  "region": "Valley of Wise Beasts",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Valley of Wise Beasts",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Tangled willow woods, thick with vines and ditches filled with mounds of decaying leaves. The River Shiver plunges down into the Valley of Wise Beasts, over a set of sheer-walled, 100′ sandstone cliffs. Following the south-westerly course of the River Shiver, the Valley of Wise Beasts widens from 100 yards across at the base of Longshanks Falls to half a mile across. The eastern end of the Valley, in this hex, is composed of wild forest and is scantly inhabited.",
+  "points_of_interest": [
+    {
+      "name": "Longshanks Falls",
+      "poi_type": "waterfall",
+      "description": "The River Shiver plunges down into the Valley of Wise Beasts, over a set of sheer-walled, 100′ sandstone cliffs.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Small caves pockmark the sides of the cliffs. In one of them, two fugitives from the rule of the Nag-Lord have made their home.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Scruff and Stripe live in one of the caves",
+      "roll_tables": [],
+      "npcs": [
+        "scruff_gobshyte",
+        "barney_stripe_mcgrew"
+      ],
+      "special_features": [
+        "Small caves in cliff sides",
+        "100′ sandstone cliffs"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Elder Willows",
+      "poi_type": "ancient trees",
+      "description": "A cluster of seven gargantuan (350′ tall), ancient willow trees looms above the top of Longshanks Falls. The local Cobbins call them the Elder Willows.",
+      "tagline": null,
+      "entering": "Several clusters of roots descend from the willows alongside the falls to the base of the Valley below. These can be used as a kind of ladder to ascend or descend the cliffs, and to reach some of the caves.",
+      "interior": "The high branches of the trees are home to colonies of gelatinous apes and sprites of all kinds. The upper boughs are crusted with patches of fuzzy, lilac moss known as Sclubber's Twist.",
+      "exploring": "Characters who make the 300′ climb may harvest 1d6 portions of the moss per hour.",
+      "leaving": null,
+      "inhabitants": "Colonies of gelatinous apes and sprites of all kinds",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Seven 350′ tall ancient willow trees",
+        "Root ladders to cliff base",
+        "Lilac moss (Sclubber's Twist) in upper boughs"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "scruff_gobshyte",
+      "name": "Scruff Gobshyte",
+      "title": null,
+      "description": "This low-ranking crookhorn woman's crime was being unable to correctly state whether her master, Baron Fragglehorn, was 'wickedly handsome' or 'handsomely wicked.'",
+      "kindred": "Crookhorn",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Stubborn",
+        "irritable",
+        "foolishly brave",
+        "Secretly protective towards Stripe, whom she believes to be physically weaker"
+      ],
+      "speech": "Growling and impatient. Gaffe, halting Woldish.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Wavers between wanting to overthrow Fragglehorn and wanting to leave the Valley"
+      ],
+      "secrets": [
+        "The location of the shrine beneath Baron Fragglehorn's tower (1004)"
+      ],
+      "possessions": [],
+      "location": "Cave near Longshanks Falls",
+      "stat_reference": "crookhorn (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "barney_stripe_mcgrew",
+      "name": "Barney \"Stripe\" McGrew",
+      "title": null,
+      "description": "Arrested after bragging (falsely) of his membership in the Grey League, Stripe is really just a failed con artist and ne'er-do-well.",
+      "kindred": "Cobbin (Polecat)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Fast-talking",
+        "with a veneer of confidence masking deep fearfulness",
+        "Secretly protective towards Scruff, whom he believes to be not too bright"
+      ],
+      "speech": "Riddled with flowery malapropisms. Woldish, Gaffe.",
+      "languages": [
+        "Woldish",
+        "Gaffe"
+      ],
+      "desires": [
+        "Unsure of his next move, but cannot imagine life outside the Valley"
+      ],
+      "secrets": [
+        "The existence of the Grey League, and their meeting location"
+      ],
+      "possessions": [],
+      "location": "Cave near Longshanks Falls",
+      "stat_reference": "polecat Cobbin (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Originally strangers, Scruff and Stripe were imprisoned several months prior in a stockade in Cobton-on-the-Shiver, where they were slated to be executed. They escaped together (each claiming sole credit for this accomplishment) and found their way to the cave. Having arrived at a sort of grudging accommodation, they now cooperate as unlikely (and highly quarrelsome) roommates.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      324
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

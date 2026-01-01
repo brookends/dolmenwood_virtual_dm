@@ -1,0 +1,111 @@
+{
+  "hex_id": "1305",
+  "coordinates": [
+    13,
+    5
+  ],
+  "name": "The Ravine of the Stag Lord",
+  "tagline": "Ferns grown to extraordinary heights, towering above the heads of explorers.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Deep in the trackless woods of the east of this hex, deer paths lead to a secluded ravine. A winding series of ledges creates a route to the bottom, where the folded strata of the rock form a natural amphitheatre.",
+  "points_of_interest": [
+    {
+      "name": "Ravine of the Stag Lord",
+      "poi_type": "ravine",
+      "description": "Deep in the trackless woods of the east of this hex, deer paths lead to a secluded ravine. A winding series of ledges creates a route to the bottom, where the folded strata of the rock form a natural amphitheatre.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The amphitheatre faces a large grotto lined with sparkling mineral formations. Much of the grotto's floor is occupied by a wide and shallow pool. Detection of magic shows both the pool and the grotto enveloped in a spiritual aura. A multitude of hoof prints can be seen in the mud around the pool. Most of the prints are those of large stags, but the occasional giant, web-toed humanoid footprint can also be spotted.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "On black nights of the new moon, 3d6 stags (red deer) trace the winding forest ways and make their way to the chasm floor. There is a 2-in-6 chance they are accompanied by 1d4 deorlings. The gigantic, headless Stag Lord manifests, emerging from the waters of the shallow pool in the grotto.",
+      "roll_tables": [],
+      "npcs": [
+        "yorghan_the_stag_lord"
+      ],
+      "special_features": [
+        "Those who touch the pool experience an icy chill and must Save Versus Hold or the touching limb is paralysed for 1d3 days",
+        "On new moon nights, stags gather and bellow in unison to summon the Stag Lord",
+        "During the procession, the stags' antlers emanate an ultraviolet glow. Severed antlers function as a Arcane Longsword for one day before losing their power",
+        "Interrupting the Stag Lord during cavorting requires a Reaction Roll - if positive, the Stag Lord halts to converse; otherwise, stags attack for 1d4 Rounds"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Willow Gate",
+      "poi_type": "portal",
+      "description": "A natural archway formed of intertwined willow branches, swaying gently in a cool otherworldly breeze, can be found in an isolated part of this hex.",
+      "tagline": null,
+      "entering": "Stepping through the archway, one is whisked away to the fairy road Skipping-a-Derry",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Portal to fairy road Skipping-a-Derry"
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "yorghan_the_stag_lord",
+      "name": "Yorghan—The Stag Lord",
+      "title": "Wood God",
+      "description": "A 30′ tall, lumbering humanoid with toad-like skin and hands and great fronds of shaggy fur hanging between its arms and torso. Its head is missing, causing the Wood God to stagger and lurch.",
+      "kindred": "Wood God",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Slow",
+        "out of touch with the modern world"
+      ],
+      "speech": "Gentle booming. Can communicate with all sentient beings through psychic projection.",
+      "languages": [
+        "Psychic projection to all sentient beings"
+      ],
+      "desires": [
+        "To maintain the wilds of Dolmenwood and the dominion of the stags",
+        "To retrieve its head from the clutches of Atanuwë (hex 0904)"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Ravine of the Stag Lord",
+      "stat_reference": "Large Monstrosity—Sentient—Neutral, Level 20 AC 16 HP 102 Saves D2 R2 H2 B3 S4, Att 2 stamps / fists (+13, 2d6 + evaporation) Speed 50 Morale 10 XP 4,050",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "The retinue of stags would enthusiastically join any who proposed a mission to retrieve the head",
+    "Any who return the Stag Lord's head are blessed with a set of magic antlers upon their crown—treat as an Arcane Longsword—and granted the undying friendship of all stags in Dolmenwood, as well as the ability to speak their secret language"
+  ],
+  "dm_notes": "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      338
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

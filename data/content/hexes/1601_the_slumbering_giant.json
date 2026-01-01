@@ -1,0 +1,141 @@
+{
+  "hex_id": "1601",
+  "coordinates": [
+    16,
+    1
+  ],
+  "name": "The Slumbering Giant",
+  "tagline": "Steep, bramble-clad hills interspersed with tranquil pools where woodland animals sup contentedly.",
+  "region": "Aldweald",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Steep, bramble-clad hills interspersed with tranquil pools where woodland animals sup contentedly. In the hilly north-eastern reaches of the hex, the mossy earth quivers, and a rank, whistling, halitotic wind sways trees and stirs leaves.",
+  "points_of_interest": [
+    {
+      "name": "The Slumbering Giant",
+      "poi_type": "giant",
+      "description": "The recumbent body of a gigantic (200′ tall) humanoid: Fergus the Famished. The last true giant in all Dolmenwood, he has lain here in deep slumber for several centuries.",
+      "tagline": null,
+      "entering": "Pursuing the source of the wind and stench leads to the recumbent body of a gigantic (200′ tall) humanoid.",
+      "interior": "Lain upon his back, with limbs splayed out and great head resting upon the mighty trunk of a fallen oak. Moss and lichen cover his body, and small trees sprout upon the summit of his belly, which rises and falls in a slow, snoring rhythm. His hair sprawls across the forest floor in a tangled mass, slowly writhing with an eerie life of its own.",
+      "exploring": "Those coming within 10′ of the nose's noisome exhalations must Save Versus Blast or become physically ill and unable to act for 1d6 Turns. Climbing upon the giant or damaging him has a 2-in-6 chance of awakening him.",
+      "leaving": "If awoken: Fergus furiously shakes off his blanket of vegetation in 1d3 Rounds and rears up to his full height. He pursues any fleeing characters for 1d4 Rounds.",
+      "inhabitants": "Fergus the Famished sleeps here.",
+      "roll_tables": [
+        {
+          "name": "Harvesting Risk",
+          "die_type": "d6",
+          "description": "Each attempt to harvest from the sleeping giant",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Fergus awakes",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Fergus awakens"
+            },
+            {
+              "roll": "2-3",
+              "title": null,
+              "description": "Fergus sleepily swats/kicks at the character",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll a stamp/fist attack"
+            },
+            {
+              "roll": "4-6",
+              "title": null,
+              "description": "Nothing happens",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "fergus_the_famished"
+      ],
+      "special_features": [
+        "Hair functions as Rope of Climbing for one week",
+        "Fingernail fungus (Shaggy Sage) grows beneath nails",
+        "Toe cheese contains Mawbarg's Jam"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "fergus_the_famished",
+      "name": "Fergus the Famished",
+      "title": null,
+      "description": "An ancient giant of gargantuan proportions (200′ tall), with shaggy, greenish hair, muscular, thickset frame, and a prodigious pot belly. Fergus is naked but for the curly hair that covers his entire body.",
+      "kindred": "Giant",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Frustrated rage",
+        "fuelled in equal parts by indignation and gnawing hunger"
+      ],
+      "speech": "A stream of bellowed, barely articulate threats",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To avenge himself on those who dared awaken him prematurely",
+        "To fill his insatiable gullet",
+        "To take care of both needs at the same time"
+      ],
+      "secrets": [
+        "The last true giant in all Dolmenwood",
+        "Has lain in deep slumber for several centuries"
+      ],
+      "possessions": [],
+      "location": "The Slumbering Giant",
+      "stat_reference": "Level 24 AC 14 HP 110 Saves D2 R2 H2 B2 S2, Att Stamp/fist (+14, 3d6) or tree trunk (+14, 4d8), Speed 80 Morale 9 XP 5,050",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Giant's Hair",
+      "description": "Extremely strong, immune to fire and mundane weapons, functions as a Rope of Climbing for one week"
+    },
+    {
+      "name": "Shaggy Sage",
+      "description": "A pungent, yellow fungus that grows beneath the giant's ragged, crooked nails"
+    },
+    {
+      "name": "Mawbarg's Jam",
+      "description": "Grey clods of stinking sludge accumulated between Fergus's toes, large deposits of the rare substance"
+    }
+  ],
+  "secrets": [
+    "In ages long past, Dolmenwood was home to giants so great that the trees of the forest merely brushed their knees (300–400′ tall). Fergus the Famished is their last remaining descendent—a mere stunted dwarf compared with his titanic forebears."
+  ],
+  "dm_notes": "Damage reduction: Suffers half damage from area effects (e.g. Fireball), one-quarter damage from directly targeted magic (e.g. Ioun Shard), and but a single point of damage from petty, human-sized weapons, which are little more than a nuisance (2 points of damage for magic weapons).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      365
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

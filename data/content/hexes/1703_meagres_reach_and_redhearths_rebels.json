@@ -1,0 +1,112 @@
+{
+  "hex_id": "1703",
+  "coordinates": [
+    17,
+    3
+  ],
+  "name": "Meagre's Reach and Redhearth's Rebels",
+  "tagline": "Serene pools overgrown with algae and lilies. Time seems to dawdle. A satisfied lethargy seeps into travellers.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Serene pools overgrown with algae and lilies. Time seems to dawdle. A satisfied lethargy seeps into travellers. Those who travel in this hex note a sense of ennui, gradually increasing the longer they remain within the hex. Fairies and arcane spell-casters realise that this area is swaddled in deep magic, warping the fabric of time. The people of Meagre's Reach and any others born and raised in this hex do not notice the ennui.",
+  "points_of_interest": [
+    {
+      "name": "The Village of Meagre's Reach",
+      "poi_type": "village",
+      "description": "A bustling village of antique, brick buildings, glazed in a multitude of shining hues. The elderly outnumber the young in Meagre's Reach. Odd, long-outmoded forms of speech and dress are still current in the village. Located in the vicinity of several rich clay beds, the village thrives on clay mining and brickmaking.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Old-fashioned ways",
+        "Clay and bricks"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Redhearth's Rebels Encampment",
+      "poi_type": "encampment",
+      "description": "A group of dissidents known as Redhearth's Rebels has established a makeshift encampment in the woods to the west of the village. The gang members believe Ygraine keeps Meagre's Reach under her spell as a plaything, entrapping its people for her own wicked ends. A sorry-looking cluster of sodden tents, erected on lumpy, root-riddled slopes to avoid boggy ground. Gang members typically convene around a fire pit, skinning game, cooking stews in a cauldron, and practising archery.",
+      "tagline": null,
+      "entering": "Visitors are initially treated cautiously, under the suspicion that they may be spies or ruffians sent by Reynold Barhaim—the village's leading citizen and primary Ygraine loyalist—to disrupt the gang's plans.",
+      "interior": "If convinced that this is not the case, the gang welcome outsiders, evangelising their cause and asking for aid in the form of weapons, equipment, or intelligence on Chateau Mauvesse and the doings of Ygraine.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The gang's deputy, Gemyme Grange, and 2d6 rebels (Level 1 thieves—DMB). There is a 2-in-6 chance that the leader, Benedict Redhearth, is present.",
+      "roll_tables": [],
+      "npcs": [
+        "gemyme_grange"
+      ],
+      "special_features": [
+        "Equipment stashes: Hoisted into the branches of nearby trees are several tarpaulins of equipment: ropes, tools, shortswords, leather armour"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "gemyme_grange",
+      "name": "Gemyme Grange",
+      "title": "Gang Deputy",
+      "description": "A limber, fox-faced human woman of 18, with ice blue eyes, cropped blonde hair, and a silver ring through her nose. Dresses in soggy leathers and an oversized bearskin cloak.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Suspicious",
+        "domineering",
+        "bored"
+      ],
+      "speech": "Snide. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Adventure and derring-do",
+        "Knowledge of the secret used by Barhaim and his sons to safely leave the vicinity of Meagre's Reach",
+        "Yearns to escape the confines of this hex and explore the wider world"
+      ],
+      "secrets": [
+        "Has witnessed Lope Barhaim (son of Reynold) furtively leaving Meagre's Reach, seemingly on his way to Chateau Mauvesse",
+        "Aware that all others who venture beyond this hex never return"
+      ],
+      "possessions": [],
+      "location": "Redhearth's Rebels Encampment",
+      "stat_reference": "Level 1 Fighter",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Creeping Ennui affects all travellers except locals",
+    "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead"
+  ],
+  "dm_notes": "Gemyme seeks to push the gang to action, despite their lack of training, preparation, and concrete plans. While currently devoted to Redhearth, she could easily be swayed to another cause if promised excitement and danger. Full settlement description: See p162. Redhearth's Rebels: See p164. Benedict Redhearth: See p164. Ygraine: See p84. Reynold Barhaim: See p162.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      375
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

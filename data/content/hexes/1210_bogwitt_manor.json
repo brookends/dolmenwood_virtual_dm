@@ -1,0 +1,137 @@
+{
+  "hex_id": "1210",
+  "coordinates": [
+    12,
+    10
+  ],
+  "name": "Bogwitt Manor",
+  "tagline": "Sodden, mossy ground, riddled with tickly centipedes.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters at night are 1-in-6 likely to be with the Moonlit Maw (hex 1311)",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Sodden, mossy ground, riddled with tickly centipedes. A little-used path leads from the Woodcutters' Encampment (hex 1109) to Bogwitt Manor, ancestral seat of House Mulbreck.",
+  "points_of_interest": [
+    {
+      "name": "Bogwitt Manor",
+      "poi_type": "manor",
+      "description": "The ornate resplendence of the manor is now obscured by slow decay. Its elaborate cupolas, turrets, and domes are increasingly covered by a vivid fungal infestation: a burgeoning profusion of colourful mycelia devouring wood and cracking stone.",
+      "tagline": null,
+      "entering": "The manor is generally not amenable to visitors without invitations. The manor is protected by a low wall with four guard towers, manned by 14 house guards (Level 1 fighters—DMB).",
+      "interior": "Musty chambers crammed with eclectic, sumptuous furnishings, mostly ruined by the mildew and mushrooms blooming riotously throughout. Prominent in the rot are Mottlecap, Devil's Grease, and Witch's Purple (see Rare Fungi, p428). The humid, stifling air is suffused with spores, inducing bouts of coughing and sneezing.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Lady Pulsephine Mulbreck (p61) and her guards, servants, and 8 sons (see The Mycological Family).",
+      "roll_tables": [],
+      "npcs": [
+        "lady_pulsephine_mulbreck"
+      ],
+      "special_features": [
+        "Kitchen door to tunnels: Behind a locked door in the manse's dim, shabby kitchen lies a staircase, slick with black lichen, leading into the manor's cellar and depths beyond (see The Tunnels). Lady Mulbreck and Mrs. Baine, the housekeeper, possess the door's only keys."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Tunnels",
+      "poi_type": "tunnels",
+      "description": "The saprophytic putrescence overtaking the manor flows from deep within the tunnels and cellars that lie beneath.",
+      "tagline": null,
+      "entering": "Accessed through a locked door in the manor's kitchen, down a staircase slick with black lichen.",
+      "interior": "In the teeming, fruiting dark, long-lost servants moan, slowly digested by the creeping infestation.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Lost servants and Lord Mulbreck imprisoned in the lowest depths.",
+      "roll_tables": [],
+      "npcs": [
+        "lord_mulbreck"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lady_pulsephine_mulbreck",
+      "name": "Lady Pulsephine Mulbreck",
+      "title": "Lady",
+      "description": "Lady Mulbreck has become infested with the spores of the manor's all-pervasive fungi. Mycelial filaments spread slowly throughout her body, gradually degrading her physique, accentuating the already latent malevolence of her mind, and instilling a compulsion to consume the fruits of her rot.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [
+        "Drifts from mouldy room to mouldy room",
+        "nibbling on decadent delicacies"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": [
+        "To consume the fruits of rot"
+      ],
+      "secrets": [
+        "Infested with fungal spores",
+        "Possesses key to kitchen door leading to tunnels"
+      ],
+      "possessions": [
+        "Key to kitchen door"
+      ],
+      "location": "Bogwitt Manor",
+      "stat_reference": "p61",
+      "is_combatant": false
+    },
+    {
+      "npc_id": "lord_mulbreck",
+      "name": "Lord Mulbreck",
+      "title": "Lord",
+      "description": "Imprisoned in the lowest depths is the addled Lord Mulbreck, his body so wholly consumed by fungi that he is scarcely recognizable: a shambolic lunatic, his limbs bloated, his torso glowing with bioluminescent toadstools. He is so slow, so large, and so riddled with fungus that he would have difficulty leaving even if freed.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [
+        "Addled",
+        "shambolic lunatic"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": null,
+      "secrets": [
+        "The constant fungal influences on his body and mind have made him a frequent conduit of the Myconom (p38)"
+      ],
+      "possessions": [],
+      "location": "The Tunnels (lowest depths)",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Several servants have mysteriously vanished over the past few years",
+    "The mycological family consists of eight sons born in four sets of identical twins",
+    "Lady Mulbreck and her four eldest sons are infected with fungal spores"
+  ],
+  "dm_notes": "The Mycological Family: Lady Mulbreck has eight sons—Lionel, Arthur, Treeve, Jowan, Wymond, Daubeney, Edwin, and Francois—who range in age from 22 to 12 and were born in four sets of identical twins. While Lionel & Arthur and Treeve & Jowan occasionally leave the manor, the rest almost never step outside. Family servants appear inured to the grotesque state of affairs but are secretly terrified.",
+  "adjacent_hexes": [
+    "1109",
+    "1110",
+    "1311"
+  ],
+  "roads": [
+    "Path to Woodcutters' Encampment (hex 1109)"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      331
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

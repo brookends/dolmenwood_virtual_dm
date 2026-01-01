@@ -1,0 +1,110 @@
+{
+  "hex_id": "1002",
+  "coordinates": [
+    10,
+    2
+  ],
+  "name": "The Belching Pools and Brinemere",
+  "tagline": "Rotting reeds; stinking, tarry pools. Drifting, yellowish fog. Belching periodically breaks the silence.",
+  "region": "Fever Marsh",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Fever Marsh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Marshwick (DPB) or Horridwort (p430), in addition to the normal results",
+    "foraging_special": [
+      "Marshwick (1d3 portions)",
+      "Horridwort (1d3 portions)"
+    ]
+  },
+  "description": "This hex is dotted with hot pools, bubbling yellow with sulphur. The mud banks that surround them are prone to belching, as gases rise from the earth. The south-eastern corner of the hex is carpeted up to knee-height with a scrub of wiry, black-stemmed bushes covered in vicious thorns. Passage is laborious and painful. The air is filled with the wretched cawing of the hundreds of carrion storks that nest at the western edge of Brinemere, protected by the thorn scrubs behind.",
+  "points_of_interest": [
+    {
+      "name": "The Belching Pools",
+      "poi_type": "natural feature",
+      "description": "This hex is dotted with hot pools, bubbling yellow with sulphur. The mud banks that surround them are prone to belching, as gases rise from the earth.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hot sulphur pools",
+        "Belching mud banks"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Thorny Scrub",
+      "poi_type": "natural feature",
+      "description": "The south-eastern corner of the hex is carpeted up to knee-height with a scrub of wiry, black-stemmed bushes covered in vicious thorns. Passage is laborious and painful.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Carrion storks nest here, protected by the thorn scrubs",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Vicious thorns",
+        "Carrion stork nests",
+        "Lichen nests clad with violet lichen known as Horridwort"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Brinemere",
+      "poi_type": "lake",
+      "description": "At the centre of the thorny region lies the salt-sludge of Brinemere. The surface of the lake is patched with a crust of pure white salt crystals; its grey waters are lifeless and offensively salty.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Pure white salt crystal crust",
+        "Lifeless grey waters",
+        "Offensively salty"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Horridwort",
+      "description": "Violet lichen found in carrion stork nests",
+      "location": "Lichen nests in thorny scrub",
+      "acquisition": "Collecting a portion requires fighting off 1d4 carrion storks",
+      "reference": "p430"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Carrion storks are 4′ tall, ragged, black-feathered storks that feed on carrion, favouring succulent eyeballs. Except when defending their nests, they are fearful of humanoids, but may attack the vulnerable-looking, tempted by fresh eyeballs. Small Animal—Animal Intelligence—Neutral, Level 1 AC 12 HP 1d8 (4) Saves D12 R13 H14 B15 S16, Att Beak (+0, 1d4 + eye peck) Speed 20 Fly 40, Morale 7 XP 15. Eye peck: On a natural 20 Attack Roll, the stork pecks out and guzzles down an eyeball. Unless cured, a one-eyed victim suffers a –1 penalty to missile Attack Rolls.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      299
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

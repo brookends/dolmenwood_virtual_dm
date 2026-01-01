@@ -1,0 +1,105 @@
+{
+  "hex_id": "1308",
+  "coordinates": [
+    13,
+    8
+  ],
+  "name": "Scoyfe's Mire",
+  "tagline": "Trees are shaggy with yellow, hanging mosses. Visibility is low, with vapours hanging at head level.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Trees are shaggy with yellow, hanging mosses. Visibility is low, with vapours hanging at head level.",
+  "points_of_interest": [
+    {
+      "name": "Noisome Pond",
+      "poi_type": "pond",
+      "description": "In the north of this hex, the ground slopes downward to a waterlogged region of puddles and tussocks. In a dim and damp glade sits a pond, about 35′ across, completely covered in lily pads. Around its edges are many diseased-looking orange flowers, all facing into the centre of the water.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Rising Scoyfe: Anyone dallying at the pond soon sees a bizarre pair of figures arise slowly from the centre, known in local legend as The Scoyfe. The pair bellow in anger and attack intruders, pursuing them for up to a mile if they flee. Treasure horde: Scattered about the bottom of the pond is 1,000gp, mostly near a submerged, rotten, burst sack.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Scoyfe",
+      "roll_tables": [],
+      "npcs": [
+        "the_scoyfe"
+      ],
+      "special_features": [
+        "Treasure horde: 1,000gp scattered on pond bottom"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Hoary Gate",
+      "poi_type": "gate",
+      "description": "At the centre of this hex stand two 10′ pillars of glistening ice, crackling with hoarfrost. The 5′ aperture between the pillars is filled with a swirling, chill mist.",
+      "tagline": null,
+      "entering": "Stepping between the pillars: Whisks one away to the Prince's Road (see Fairy Roads, p26).",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Portal to Prince's Road"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_scoyfe",
+      "name": "The Scoyfe",
+      "title": null,
+      "description": "A pair of corpse-like men, one riding on the other's back, both draped in lilies and foul mire water. Though the two appear to be in conflict, they act in unison.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Eternally grudging",
+        "conflicted"
+      ],
+      "speech": "Bellowing in anger",
+      "languages": [],
+      "desires": [
+        "To attack intruders",
+        "To fight each other over gold"
+      ],
+      "secrets": [
+        "In life, the two were bandits who killed each other arguing over a sack of gold"
+      ],
+      "possessions": [
+        "Rusty knife (Upper Being)"
+      ],
+      "location": "Noisome Pond",
+      "stat_reference": "Upper Being: Level 3 AC 13 HP 15, Lower Being: Level 5 AC 13 HP 26",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Undead: Immune to biological effects (e.g. disease, poison) and mind-affecting spells (e.g. Vapours of Dream, Paralysation, Dominate). Immunities: Only harmed by magic, silver weapons, or magic weapons. Eternal grudge: 1-in-6 chance per Round that the two fall to attacking each other, vanishing in a puff of stringy ectoplasm. Return from death: Can only be permanently defeated if the corpses of both beings are incinerated. Otherwise, both re-manifest in the pond at midnight.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      341
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

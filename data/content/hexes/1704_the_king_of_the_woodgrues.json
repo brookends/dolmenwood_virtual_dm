@@ -1,0 +1,120 @@
+{
+  "hex_id": "1704",
+  "coordinates": [
+    17,
+    4
+  ],
+  "name": "The King of the Woodgrues",
+  "tagline": "Sandstone crags protrude from stinking, fly-infested bogs.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Sandstone crags protrude from stinking, fly-infested bogs. Eccentric pipe music drifts on the wind in the central regions of this hex. Long beards of moss drape the trees and seem to sway in unison with it. During the daytime, gentle, curlicued lullabies. At night, wild, up-tempo warbling and screeching. The music emanates from the yawning mouth of a cavern in the steep side of a crag of rock that juts from the bog.",
+  "points_of_interest": [
+    {
+      "name": "The King's Grotto",
+      "poi_type": "cavern",
+      "description": "A vault-like cavern with a 40′ high, layered ceiling, decked with giant stalactites. Troupes of capering woodgrue pipers play music day and night. Vats of steaming, spiced mead and mounds of furs line the walls. The place reeks of guano, sweat, and honey.",
+      "tagline": null,
+      "entering": null,
+      "interior": "King Ogglewoop—self-styled 'king of all woodgrues'—perches upon a throne of artfully arranged stalactites and massive quartz chunks (5,000gp), gleefully observing the merrymaking. A madcap gaggle of 2d3 × 10 woodgrues, prancing, imbibing, and whooping by night, lounging and snoring by day. Half the guests are zealous followers of Ogglewoop and most others are indifferent to his claims, merely wishing to carouse. A few are spies sent by the woodgrue elders to discredit this supposed 'king.'",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "King Ogglewoop and 2d3 × 10 woodgrues. Non-woodgrues are welcomed, as long as they do not spoil the fun.",
+      "roll_tables": [],
+      "npcs": [
+        "king_ogglewoop"
+      ],
+      "special_features": [
+        "Food: Of poor quality. All dishes served with a sprinkling of powdered moth wings.",
+        "Spiced mead: 1gp a mug.",
+        "Lodgings: A flop space can usually be found (free of charge) on the mounds of furs at the sides of the grotto, though privacy is impossible and decent rest is hard to come by."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Whittery",
+      "poi_type": "shrine",
+      "description": "A white marble hand in a gesture of benediction protrudes from the jumbled roots of a large oak.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Examination reveals that the hand is part of a statue, apparently buried among the roots. Six hours of digging and cutting away the roots unearths a wooden wayside shrine with a lifesize marble statue of St Whittery, depicted as a beatific youth holding an ornate chamberstick.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "Hidden shrine buried among oak roots"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "king_ogglewoop",
+      "name": "King Ogglewoop",
+      "title": "Self-styled king of all woodgrues",
+      "description": "A hefty (5′ tall) woodgrue man with a giant pot-belly, floppy jowls, thick orange fur, and pupilless eyes of pure white. Dresses in a snakeskin cape, a bent brass crown, and a codpiece in the shape of a shocked gargoyle's visage. Ogglewoop claims to be an emissary of the Goblin King with leave to rule over woodgrues in the mortal world. He is a fraud and has in fact never visited Fairy.",
+      "kindred": "Woodgrue",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Mirthful",
+        "mercurial",
+        "Affected and bombastic majesty"
+      ],
+      "speech": "Brash whooping, uproarious laughter",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To avoid the attention of genuine kings, dukes, etc. (including, of course, the Goblin King)",
+        "The adoration of all",
+        "Schemes to bring the Embalmed (hex 1603) into his service by livening up their tedious existence with raucous festivities"
+      ],
+      "secrets": [
+        "Claims to be an emissary of the Goblin King but is a fraud and has never visited Fairy"
+      ],
+      "possessions": [
+        "A Fairy Sling",
+        "10 bejewelled rings: one a Ring of Invisibility, the others mundane (though valuable—worth 1,000gp each)",
+        "A Talisman of Spell Reflection (5 charges left)"
+      ],
+      "location": "The King's Grotto",
+      "stat_reference": "Level 7 Fighter",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Blessing of St Whittery",
+      "description": "If the shrine is unearthed, characters praying may receive the blessing of St Whittery: the ability to cast Detect Evil.",
+      "mechanical_effect": "Grants ability to cast Detect Evil"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      376
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

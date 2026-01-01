@@ -1,0 +1,116 @@
+{
+  "hex_id": "1802",
+  "coordinates": [
+    18,
+    2
+  ],
+  "name": "Chateau Mauvesse and the Dark Mirror",
+  "tagline": "Dreary, teal-leafed willow trees, their great, sweeping boughs drifting in a gentle breeze.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Dreary, teal-leafed willow trees, their great, sweeping boughs drifting in a gentle breeze. The trail from Meagre's Reach wends its way through marshes, climbs a rocky incline, and ultimately leads to a sprawling, antiquated, manorial estate of many tiers, overlooking the Dark Mirror.",
+  "points_of_interest": [
+    {
+      "name": "Chateau Mauvesse",
+      "poi_type": "chateau",
+      "description": "A sprawling, antiquated, manorial estate of many tiers, overlooking the Dark Mirror. This is the home of Ygraine Mordlin. The chateau's violet masonry shimmers as though always cast in the light of an unobscured sunset, falling into darkness only when the moon is high.",
+      "tagline": null,
+      "entering": "A great brick wall, overgrown with ivy, surrounds the chateau's grounds. The iron gates, wrought in serpentine forms, magically swing open, allowing entrance to any who dare. The front door is polished, greenish wood with a brass, imp-faced doorknob. The doorknob speaks, bidding visitors welcome as the door swings open.",
+      "interior": "The interior is lavish—fine carpets over marble and granite flags—but the atmosphere is subdued. Courtly music and sounds of merrymaking echo through the halls, though their source is hard to locate.",
+      "exploring": "The chateau contains multiple floors with guest rooms, libraries, cloisters, studios, and various halls. The chambers of Ygraine are accessible via a spiral staircase leading to the highest tower.",
+      "leaving": null,
+      "inhabitants": "Fairy courtiers and emissaries, visiting Ygraine. A small number of servants (possibly of fairy origin) tend to guests' needs. Rugs and furnishings seem to move and clean themselves. The Lady Ygraine is invariably indisposed, playing host to a continuous and fatiguing array of eminent fairies.",
+      "roll_tables": [],
+      "npcs": [
+        "ygraine_mordlin"
+      ],
+      "special_features": [
+        "Fungal gardens: The manor's gardens have fallen out of use and have become overgrown with brilliant, phosphorescent bracket mushrooms.",
+        "The great hall: Many frescos of foreign lands line the walls, depicting images of deserts, jungles, and strange arctic skies. At the end of the great hall sits a dais and a throne upon it, where the Lady Ygraine holds her court.",
+        "The dining hall: Adjacent to the main hall is a grand dining hall with a large round table of fairy make. At the table sit twenty chairs of faintly glimmering fairy wood, each carved with the likeness of an important fairy personage.",
+        "The nodal crypt: In a secret crypt amid the chateau's foundations stands the obsidian obelisk called Phandrwyl—the hidden fifth nodal of the ley line Ywyr. The crypt is warded by such dread magic that even the Drune cannot perceive the stone's existence. Ygraine draws much of her power hence.",
+        "Guest rooms, libraries, cloisters: Half a dozen floors filled with guest rooms and amenities for those staying in the chateau, a few private libraries, and a small set of cloisters for deities of multiple religions.",
+        "Studios: An art studio of half-finished portraits and a small museum dedicated to the pottery of ancient breggles.",
+        "Postern gate: Manned by speaking owls, leading to a sharp drop over the Dark Mirror.",
+        "The chambers of Ygraine: Above this all, and accessible to few, is the spiral staircase that leads into the highest tower of the chateau. Overlooking the Dark Mirror, the Sorceress Ygraine dwells within."
+      ],
+      "secrets": [
+        "The nodal crypt contains Phandrwyl, the hidden fifth nodal of the ley line Ywyr, warded by dread magic"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Dark Mirror",
+      "poi_type": "lake",
+      "description": "Below Chateau Mauvesse runs the Dark Mirror. The lake's blackened waters are illuminated by the glamour of starlight, and perpetually reveal a reflection of a benighted sky, even in the day. The lake is part of the mortal dominion of the Duke Who Cherishes Dreams, a fairy noble and sometime ally of Ygraine.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "At night, there is a 3-in-6 chance that several of the Duke's pale, swan-like ships slowly take form on the lake.",
+      "leaving": null,
+      "inhabitants": "The ships' fairy sailors dredge the lake, collecting the dreams of the mortal folk of Dolmenwood that pool here. They now carry only spies and diplomats, due to the current unease between the Duke and Ygraine.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The Dark Mirror At Night: There is a 3-in-6 chance that several of the Duke's pale, swan-like ships slowly take form on the lake.",
+        "Dredging of dreams: The ships' fairy sailors dredge the lake, collecting the dreams of the mortal folk of Dolmenwood that pool here, for inclusion in the Duke's libraries.",
+        "Passengers and cargo: While once the ships ferried the Duke's courtiers, tribute, and gifts of friendship to the chateau, and at times even the Duke himself, they now carry only spies and diplomats, due to the current unease between the Duke and Ygraine.",
+        "Entry to Fairy: Those boarding the ships are, at the Referee's option, transported to Hypnagogia, the Fairy domain of the Duke Who Cherishes Dreams."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "ygraine_mordlin",
+      "name": "Ygraine Mordlin",
+      "title": "Lady",
+      "description": "The Sorceress Ygraine dwells within the highest tower of the chateau, overlooking the Dark Mirror.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [
+        "Indisposed",
+        "fatigued by hosting eminent fairies"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "To consult on matters occult"
+      ],
+      "secrets": [
+        "Draws much of her power from Phandrwyl, the hidden fifth nodal of the ley line Ywyr"
+      ],
+      "possessions": [],
+      "location": "Chateau Mauvesse",
+      "stat_reference": "p84",
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead"
+  ],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      381
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

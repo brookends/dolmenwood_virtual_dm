@@ -1,0 +1,146 @@
+{
+  "hex_id": "1608",
+  "coordinates": [
+    16,
+    8
+  ],
+  "name": "The Bad Apples",
+  "tagline": "Windmills, wheat fields, coppiced lanes, and duckponds.",
+  "region": "Tithelands",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Windmills, wheat fields, coppiced lanes, and duckponds. A side-road branches from King's Road to the southeast with apple orchards and farmhouses, leading to the Titheland Cidery where workers burn apple yields to purge a magical blight.",
+  "points_of_interest": [
+    {
+      "name": "Cidery Road",
+      "poi_type": "road",
+      "description": "A side-road branches from King's Road to the south-east. Next to it is a sign of weather-beaten wood, reading: 'CIDERY ROAD—Home to the Famed and Esteemed Titheland Cider.'",
+      "tagline": null,
+      "entering": "Following the road: Cidery Road wends its way for several miles past apple orchards and farmhouses.",
+      "interior": "Apple orchards: Low, closely planted trees in sinuous rows wade in mounds of rotting apples. No workers can be seen. After 2 miles, the party sees a column of smoke rising in the distance, and smells a sweet, apple-scented odour.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Eating an apple: The apples are small, oxblood-red, and syrupy sweet. Mortals must Save Versus Doom—those who fail die at dawn after sweet dreams; those who succeed suffer an evening of nightmares."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Titheland Cidery",
+      "poi_type": "cidery",
+      "description": "The road ends at a two-storey cidery of stone and thick timber. Before it is the source of the smoke: piles of burning apples, stoked and fed by listless, dejected workers. Alongside are several pens of pigs, feeding on apple scraps.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Speaking to the workers: They relate that last year, most of the orchard workers who sampled the inaugural batch of Titheland Cider (DPB) suffered screaming nightmares, while a few enjoyed pleasant dreams before dying at dawn. The workers now burn their orchards' yields, hoping to purge the trees of the blight that seems to infect them.",
+      "exploring": "Examining the pig pens: The pigs become increasingly agitated as the day gets later. At night, after the workers depart, the pigs leap from their pens, one after another, to merrily trot about the orchards.",
+      "leaving": null,
+      "inhabitants": "Workers who burn apple yields",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Reward: The cidermasters offer 1,000gp to adventurers who can discover and eliminate the cause of the blight.",
+        "Following the pigs: Ultimately leads to a clearing that glitters with fairy-light. There, the pigs gather around elf courtier (DMB) Demozel Hazel, who holds court solemnly."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "demozel_hazel",
+      "name": "Demozel Hazel",
+      "title": "Elf Courtier",
+      "description": "Tall and plump, with long silver hair and a prominent chin. Wears a necklace of pigs' teeth, given as gifts by the pigs themselves. She wears it to please the pigs, of whom she is quite fond.",
+      "kindred": "Elf",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Upright posture and frequent pointing"
+      ],
+      "speech": "Precise, forceful, and erudite. Woldish, Sylvan, High Elfish.",
+      "languages": [
+        "Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "To enjoy the scent of nightmares on a brisk night",
+        "To discuss philosophy with local pigs"
+      ],
+      "secrets": [
+        "Former lady-in-waiting to the Lady of Spring Unending",
+        "Instills the apples with a magical horror",
+        "Genuinely shocked if told of the deaths"
+      ],
+      "possessions": [
+        "A rose gold and pearl ring (900gp)",
+        "Necklace of pigs' teeth"
+      ],
+      "location": "Clearing that glitters with fairy-light in the orchards",
+      "stat_reference": "elf courtier (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "demozel_olive",
+      "name": "Demozel Olive",
+      "title": "Elf Courtier",
+      "description": "Tall and slender, with short golden curls. Wears a coronet of human teeth, extracted from local graves. She wears it to put any humans she may encounter at ease.",
+      "kindred": "Elf",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Charming, warm, kindly"
+      ],
+      "speech": "Full of tsks and tuts. Woldish, Sylvan, High Elfish.",
+      "languages": [
+        "Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "Kindly disposed towards humans, her chief desire is to put them out of their misery, poor dears, and into a nice dark grave"
+      ],
+      "secrets": [
+        "Former lady-in-waiting to the Lady of Spring Unending",
+        "Removes the magical horror from the apples and replaces it with deadly poison",
+        "Genuinely shocked that anyone would object to this"
+      ],
+      "possessions": [
+        "A moonstone necklace (1,000gp)",
+        "Coronet of human teeth"
+      ],
+      "location": "A grove where she reclines serenely on a bed of fallen, rotten apples",
+      "stat_reference": "elf courtier (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "The elf sisters can only be evicted by force, or by providing them with very convincing, specific knowledge of better fun that can be had elsewhere. If either sister is attacked, the other comes to her aid immediately."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Cidery Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      372
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

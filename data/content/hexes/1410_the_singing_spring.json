@@ -1,0 +1,181 @@
+{
+  "hex_id": "1410",
+  "coordinates": [
+    14,
+    10
+  ],
+  "name": "The Singing Spring",
+  "tagline": "Rugged, gently sloping meadows of rough, knee-high grass, crawling with insects.",
+  "region": "Tithelands",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 cockatrices (DMB) from the Cockatrice Nest",
+    "foraging_results": "Successful foraging yields 1d2 portions of Writhing Mandrake (p430), in addition to the normal results",
+    "foraging_special": [
+      "Writhing Mandrake (1d2 portions)"
+    ]
+  },
+  "description": "Rugged, gently sloping meadows of rough, knee-high grass, crawling with insects.",
+  "points_of_interest": [
+    {
+      "name": "Buzzing Wetlands",
+      "poi_type": "wetlands",
+      "description": "In the north-west of this hex, close to the forest's edge, is a damp-earthed region riddled with little brooks, alive with croaking frogs and buzzing mosquitoes.",
+      "tagline": null,
+      "entering": null,
+      "interior": "As travellers wander through this region, they become aware of a choral crooning drifting on the wind.",
+      "exploring": "Following the song leads to the Singing Spring.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Choral crooning drifting on the wind"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Singing Spring",
+      "poi_type": "spring",
+      "description": "At the middle of the wetlands, a spring bubbles up from the ground amid a cluster of boulders. A group of 2d4 cockatrices (DMB) perch atop the boulders, singing jaunty songs and occasionally pausing to slake their thirst at the spring or returning to the nearby Cockatrice Nest in shifts.",
+      "tagline": null,
+      "entering": "The cockatrices play up to an audience, springing and bobbing in rhythm with their songs.",
+      "interior": null,
+      "exploring": "After each song, there is a 1-in-4 chance of the monsters suddenly turning on anyone present (make a Surprise Roll). Should the party clap or otherwise express appreciation, this chance is reduced to 1-in-6. Despite their singing talents, they cannot speak or understand language.",
+      "leaving": null,
+      "inhabitants": "A group of 2d4 cockatrices",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Drinking the spring water grants a beautiful singing voice and inspires the imbiber to sing merrily (Save Versus Spell to resist). Even normally mute creatures gain the ability to sing in eloquent Woldish. Effects last for one day.",
+        "Objects immersed in the spring water likewise begin to sing. Effects last for 1d6 Turns."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Cockatrice Nest",
+      "poi_type": "nest",
+      "description": "A group of 20 cockatrices (DMB) nest in a copse of twisted old hazel trees. Broken up chunks of petrified victims (shepherds, travellers, deer, sheep) dot the copse, surrounding a cluster of six nests in the middle.",
+      "tagline": null,
+      "entering": null,
+      "interior": "2d6 cockatrices are typically present, the others out hunting or playing at the Singing Spring.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A group of 20 cockatrices (2d6 typically present)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "8 cockatrice eggs sit in the nests (each worth up to 400gp to the right buyer), along with scattered trinkets gathered from victims: 600gp, 2,100sp, a vivid violet Scholar's Cap (p406), and a topaz-knuckled gauntlet (3,000gp)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Cockatrice Songs",
+      "die_type": "d6",
+      "description": "Songs sung by the cockatrices at the Singing Spring",
+      "entries": [
+        {
+          "roll": 1,
+          "title": "By the Meadow Begot",
+          "description": "The wistful tale of one who spends her days seeking her fairy father.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": "Chancton Lads and Lasses",
+          "description": "An uproarious dance number relating the carousing antics of the town of Chancton. (See 1501.)",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": "Merrye Be Met",
+          "description": "The romantic tale of a wandering bard and her suitors, including a knight, a grimalkin, and a speaking goose (the last of whom wins her hand).",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 4,
+          "title": "Old Longsniver",
+          "description": "The sinister account of a long-nosed ghost who haunts the newly married.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 5,
+          "title": "Spindel's Luck",
+          "description": "The tragic tale of a puppeteer cursed by Prince Mallowheart (p34) and transformed into a spider. (See 1211.)",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": "Waltzing With the Scoyfe",
+          "description": "The absurd story of two waltzing bandits who murdered each other over a sack of stolen gold. (See 1308.)",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Scholar's Cap",
+      "description": "A vivid violet Scholar's Cap",
+      "value": null,
+      "location": "The Cockatrice Nest",
+      "reference": "p406"
+    },
+    {
+      "name": "Topaz-knuckled gauntlet",
+      "description": "A topaz-knuckled gauntlet",
+      "value": "3,000gp",
+      "location": "The Cockatrice Nest",
+      "reference": null
+    },
+    {
+      "name": "Cockatrice eggs",
+      "description": "8 cockatrice eggs",
+      "value": "up to 400gp each",
+      "location": "The Cockatrice Nest",
+      "reference": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      355
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "hex_id": "1503",
+  "coordinates": [
+    15,
+    3
+  ],
+  "name": "Mai-Fleur's Fox-Hunting Grounds",
+  "tagline": "Tree trunks covered with whorls and holes having the unsettling appearance of eyes and mouths.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely (2-in-6 likely at night) to be with a Wild Hunt (see 1502) in pursuit of 2d6 fairy foxes",
+    "foraging_results": "Successful foraging yields 1d3 portions of Oddy Sorrel (p430), in addition to the normal results",
+    "foraging_special": [
+      "Oddy Sorrel (1d3 portions)"
+    ]
+  },
+  "description": "The fairy Duke Mai-Fleur (p30) keeps this region of his mortal hunting grounds stocked with a dangerous species of game: a breed of intelligent, anthropomorphic fairy fox, some 100 in total. The cunning fairy foxes attempt to confound the hunters by strewing the forest with traps.",
+  "points_of_interest": [
+    {
+      "name": "Fairy Fox Dens",
+      "poi_type": "hidden dens",
+      "description": "The entire hex is riddled with cunningly hidden burrows where the fairy foxes lair.",
+      "tagline": null,
+      "entering": "Only creatures of 3′ tall or less can squeeze down the tunnels that lead to the fairy foxes' dens.",
+      "interior": "Each den is home to 2d4 fairy foxes, dwelling in a network of long, sandy tunnels, cosy lounges with wood-crafted furnishings, little bedchambers with straw nests, and larders stocked with hanging pheasants and rabbits.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "2d4 fairy foxes per den",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden treasures: 1d6 gems (50gp each), 1d100gp, 1d100pp, and 1d4 elf trinkets (DPB)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Traps",
+      "die_type": "d6",
+      "description": "When PCs move through this hex",
+      "entries": [
+        {
+          "roll": "1-3",
+          "title": null,
+          "description": "A random PC must Save Versus Hold or be caught in a trap",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Save Versus Hold or be caught in trap - snared in net or by ankle and yanked 20′ into air, 1d6 fairy foxes emerge to ambush"
+        },
+        {
+          "roll": "4-5",
+          "title": null,
+          "description": "No traps encountered",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "The party spots a trap",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": "Characters aware of traps may navigate around them but increases all Travel Point costs by 1"
+        }
+      ]
+    }
+  ],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Characters aware of the presence of traps here may navigate around them, but doing so increases all Travel Point costs (e.g. to search or leave the hex) by 1.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      358
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

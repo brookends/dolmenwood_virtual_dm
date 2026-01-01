@@ -1,0 +1,82 @@
+{
+  "hex_id": "1803",
+  "coordinates": [
+    18,
+    3
+  ],
+  "name": "The Lonely Tree",
+  "tagline": "A low fog rises from the sodden earth. Trees ooze silvery sap and fungi thrive on rotting trunks.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters with humanoids are 3-in-6 likely to be with delirious, elderly individuals fleeing the area",
+    "foraging_results": "The chance of foraging is increased by 1-in-6 in this hex. Successful foraging yields 2d6 fresh rations of edible fungi",
+    "foraging_special": [
+      "edible fungi (2d6 fresh rations)"
+    ]
+  },
+  "description": "A low fog rises from the sodden earth. Trees ooze silvery sap and fungi thrive on rotting trunks. The abundance of edible mushrooms and sap-rich trees should attract civilization or its enterprises, yet these woods remain scarcely trod.",
+  "points_of_interest": [
+    {
+      "name": "Forsaken Forest",
+      "poi_type": "forest",
+      "description": "The abundance of edible mushrooms and sap-rich trees should attract civilization or its enterprises, yet these woods remain scarcely trod.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Abandoned campsites: Many abandoned camps can be found on the edges of deer trails, some recent, some old.",
+        "Carrion birds in trees: A careful eye might notice, in the upper boughs of the forest, many a bloated carrion crow and magpie waiting with a hungry glint in its eyes."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lonely Tree",
+      "poi_type": "magical tree",
+      "description": "In the northern fringe of the hex is a hill ringed with bristle thickets and bogs. Atop it, a mighty apple tree stands as tall as a tower, adorned with dozens of gnarled, rosy fruits.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "There is a 3-in-6 chance that 1d8 dishevelled wanderers—wood tramps, vagabonds, lepers, and wayward pilgrims—are gathered at this hill, reciting strange legends and consuming bitter crab apples from the tree in an odd state of torpor.",
+      "leaving": null,
+      "inhabitants": "Wayward thralls who refer to the tree as the 'Lonely Tree' and feel the need to stay in its presence to keep it company",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Eating the apples: Those who consume the apples must Save Versus Spell or fall under an enchantment compelling them to remain in the tree's presence overnight, relaxing, telling tall tales heard in childhood, and consuming more apples. Once per subsequent day, they can attempt to escape the enchantment with a save, continuing in this state until they succeed or perish.",
+        "Effects of remaining: An individual loses 1d6 Constitution and ages 3d6 years for each week they spend in the tree's thrall. Those who die near the tree are dragged beneath the soil by its roots. Those who die further away are devoured by carrion birds.",
+        "Nature of the tree: The Lonely Tree itself is an intelligent entity, though it is unable to attack or directly influence anyone who does not consume its fruits. Not outrightly malevolent, it is an intelligence consumed by ennui and a desire for company."
+      ],
+      "secrets": [
+        "Unbeknownst to all (including itself), the tree was created 150 years ago by the sorceress Ygraine Mordlin (p84), as an early experiment with the temporal magicks she would eventually use to wrest nearby Meagre's Reach (hex 1703) from the past."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      382
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

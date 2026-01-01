@@ -1,0 +1,560 @@
+{
+  "hex_id": "1504",
+  "coordinates": [
+    15,
+    4
+  ],
+  "name": "The Barrow Bog",
+  "tagline": "Sodden ground, stunted, twisted trees. Wreathed in perpetual mist and an eerie silence.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Use the Table Downs regional encounter table in place of the Aldweald table",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Sodden ground, stunted, twisted trees. Wreathed in perpetual mist and an eerie silence. This hex is dotted with scores of barrows—ancient burial mounds dating back more than 1,200 years. Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "points_of_interest": [
+    {
+      "name": "Ancient Burial Mounds",
+      "poi_type": "burial mounds",
+      "description": "This hex is dotted with scores of barrows—ancient burial mounds dating back more than 1,200 years.",
+      "tagline": null,
+      "entering": "Shifting mists and boggy earth reveal different mounds each time PCs visit.",
+      "interior": "Beyond the entrance, a stairway descends to the tomb proper.",
+      "exploring": "For each mound explored, roll to determine the Mound Entrance. Roll to determine the Tomb Layout and Tomb Features. The layout indicates the number of crypts. For each crypt, roll to determine the Crypt Contents and follow instructions in entry.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Mound Entrance",
+          "die_type": "d6",
+          "description": "Roll to determine entrance type",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Fallen slab; open.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Stone slab. 3 Turns to open (requires sledgehammers).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "3 Turns to open (requires sledgehammers)"
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Buried. 3 hours to unearth (requires shovels).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "3 hours to unearth (requires shovels)"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Rune-carved slab. Glyph of Locking (Level 3 caster).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Glyph of Locking (Level 3 caster)"
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Rotting wooden door.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Rusted portcullis. Combined Strength 30+ to raise.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Combined Strength 30+ to raise"
+            }
+          ]
+        },
+        {
+          "name": "Tomb Layout",
+          "die_type": "d6",
+          "description": "Roll to determine tomb layout",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Single circular crypt.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Entrance hall plus 2 crypts, one on each side.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Large circular chamber plus 3 small side crypts.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Hallway with 4 side crypts.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Entrance hall with 2 collapsed crypts (inaccessible).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Looping passage with 3 side crypts.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Tomb Features",
+          "die_type": "d12",
+          "description": "Roll to determine tomb features",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Flooded with cold water, 1d6 feet deep.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Wooden crypt doors swollen stuck.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Insects and worms writhe over walls and surfaces.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Riddled with roots or fibrous, white mycelia.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Dripping with black slime.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "One crypt concealed behind a secret door.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "Clay urns, decorated with eyes, skulls, snakes, or owls.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "clay urns"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "Frescoes of battle, blood sacrifice, or antler wraiths.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 9,
+              "title": null,
+              "description": "Ritual pools, may heal, remove curses, or harm.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "May heal, remove curses, or harm"
+            },
+            {
+              "roll": 10,
+              "title": null,
+              "description": "Ossuary, walls lined with mortal skulls and bones.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 11,
+              "title": null,
+              "description": "Statues of warriors, maidens, boar-men, or breggles.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 12,
+              "title": null,
+              "description": "Ragged shrouds hang from ceilings.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Crypt Contents",
+          "die_type": "d6",
+          "description": "Roll for each crypt",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Empty.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Treasure (1d100gp): old coins, bronze jewellery.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "old coins",
+                "bronze jewellery"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Roll on Traps.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll on Traps"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Roll on Traps + treasure types C1 + R1.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll on Traps + treasure types C1 + R1"
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Roll on Monsters.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll on Monsters"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Roll on Monsters + treasure type C3 + R3 + M3.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll on Monsters + treasure type C3 + R3 + M3"
+            }
+          ]
+        },
+        {
+          "name": "Traps",
+          "die_type": "d6",
+          "description": "Roll when indicated by Crypt Contents",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Collapsing ceiling. Save Vs. Hold or 2d6 damage.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Vs. Hold or 2d6 damage"
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Open pit (not concealed). 1d3 × 10′ deep.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Concealed pit. 10′ deep, spikes inflict 1d6 damage.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "1d6 damage from spikes"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Runes. Save Vs. Spell or blinded until next new moon.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Vs. Spell or blinded until next new moon"
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Poison gas. 10′ radius, Save Vs. Blast or 3d6 damage.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "10′ radius, Save Vs. Blast or 3d6 damage"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Spear trap. Attack Roll: Attack +2, 1d8 damage.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Attack +2, 1d8 damage"
+            }
+          ]
+        },
+        {
+          "name": "Monsters",
+          "die_type": "d12",
+          "description": "Roll when indicated by Crypt Contents",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "2d4 barrow bogies (DMB). Caper on sealed coffers.",
+              "monsters": [
+                "barrow bogies"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "1d8 bog corpses (DMB). Lurch from flooded coffers.",
+              "monsters": [
+                "bog corpses"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "1d4 gargoyles (DMB). Owl, boar, or toad heads.",
+              "monsters": [
+                "gargoyles"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "1d8 ghouls (DMB). Risen from the grave, lurking.",
+              "monsters": [
+                "ghouls"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "2d4 ghouls (DMB). In coffers, rise if disturbed.",
+              "monsters": [
+                "ghouls"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Rise if disturbed"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "2d6 giant centipedes (DMB). Lurk in dark corners.",
+              "monsters": [
+                "giant centipedes"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "3d6 giant rats (DMB). Burrows riddle the tomb.",
+              "monsters": [
+                "giant rats"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "1 redslob (DMB). Dripping from crypt roof.",
+              "monsters": [
+                "redslob"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 9,
+              "title": null,
+              "description": "1d4 shadows (DMB). Disturbed by light.",
+              "monsters": [
+                "shadows"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Disturbed by light"
+            },
+            {
+              "roll": 10,
+              "title": null,
+              "description": "2d6 skeletons (DMB). Bones in niches reanimate.",
+              "monsters": [
+                "skeletons"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Bones in niches reanimate"
+            },
+            {
+              "roll": 11,
+              "title": null,
+              "description": "1d4 spectres (DMB). Manifest if crypt is defiled.",
+              "monsters": [
+                "spectres"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Manifest if crypt is defiled"
+            },
+            {
+              "roll": 12,
+              "title": null,
+              "description": "1d4 wights (DMB). In coffers, rise if disturbed.",
+              "monsters": [
+                "wights"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Rise if disturbed"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Ley line Ywyr"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      359
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

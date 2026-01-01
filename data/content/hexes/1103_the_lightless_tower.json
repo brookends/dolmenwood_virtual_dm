@@ -1,0 +1,125 @@
+{
+  "hex_id": "1103",
+  "coordinates": [
+    11,
+    3
+  ],
+  "name": "The Lightless Tower",
+  "tagline": "Sludge-choked pools, sluggish rivulets, and sodden fens with little dry ground. The air feels thick and ailing.",
+  "region": "Fever Marsh",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Fever Marsh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Sludge-choked pools, sluggish rivulets, and sodden fens with little dry ground. The air feels thick and ailing. The northern stretches of this hex take on an especially forlorn character. Wiry, black-stemmed bushes covered in vicious thorns carpet the ground up to knee-height, making passage laborious and painful.",
+  "points_of_interest": [
+    {
+      "name": "Thorny Scrub",
+      "poi_type": "terrain_feature",
+      "description": "The northern stretches of this hex take on an especially forlorn character. Wiry, black-stemmed bushes covered in vicious thorns carpet the ground up to knee-height, making passage laborious and painful.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Brinemere",
+      "poi_type": "lake",
+      "description": "At the centre of the thorny region lies the salt-sludge of Brinemere. The surface of the lake is patched with a crust of pure white salt crystals; its grey waters are lifeless and offensively salty.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Chantery Isle",
+      "poi_type": "island",
+      "description": "A low, flat island of salty mud can be seen in the middle of Brinemere, formed around a rocky outcropping half a mile from the southern shore. At the centre of the island, where the land rises up slightly, a cluster of cypress trees looms conspicuously. The stand is cloaked with a sinister gloom and a deathly quiet.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lightless Tower",
+      "poi_type": "tower",
+      "description": "Amid the gloomy copse of cypress trees upon Chantery Isle stands a windowless, circular tower of polished, jet-black stone, three storeys tall.",
+      "tagline": null,
+      "entering": "A single portal—a yawning maw of blackness—grants access to its insides.",
+      "interior": "Gloom: Both magical and mundane lights dim and falter. Ground floor: Empty apart from a narrow stairway winding around the wall. Middle floor: Also empty. The stairway ends at a trapdoor, barring entry to the upper floor. Upper floor: Filled with a deadly, blue vapour that falls out of the trapdoor when opened.",
+      "exploring": "The tower has three floors connected by a narrow stairway. The upper floor is sealed by a trapdoor with a Glyph of Locking.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Proof against scrying: The tower and its contents are invisible to all forms of scrying and locating magic.",
+        "Trapdoor: Dark wood, hermetically sealed with red wax around its sides, and sealed with a Glyph of Locking (by a Level 12 caster). Magical runes glow faintly on its surface. If deciphered, they read 'Sealed by the Will of the Aubrathon. Within lies Death.'",
+        "Upper floor deadly vapour: Save Versus Doom with a –2 penalty or die when trapdoor is opened."
+      ],
+      "secrets": [
+        "The tower upon Chantery Isle was constructed by the renegade Drune known as the Aubrathon."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 3
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "item_id": "onyx_mirror",
+      "name": "The Onyx Mirror",
+      "type": "artifact",
+      "description": "A dark, scintillating mirror wrought of black onyx. This is one of the long-lost Mirrors of Embala.",
+      "location": "Upper floor of The Lightless Tower, upon a basalt plinth",
+      "mechanical_effect": "One who gazes into the onyx mirror alone at night sees an idealised vision of themselves, stripped of all self-criticism or overreaching bravado, at the prime of their power and beauty. The character's Charisma increases by 3 points for the following 24 hours.",
+      "curse": "After using the mirror, a character's sleep for 7 nights is wracked with feverish dreams of diving into the unfathomable darkness of the Groaning Loch, drowning in the embrace of a great serpent.",
+      "value": null
+    }
+  ],
+  "secrets": [
+    "The tower was constructed by the renegade Drune known as the Aubrathon.",
+    "The Onyx Mirror is one of the long-lost Mirrors of Embala."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      312
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

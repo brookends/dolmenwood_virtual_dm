@@ -1,0 +1,140 @@
+{
+  "hex_id": "0910",
+  "coordinates": [
+    9,
+    10
+  ],
+  "name": "Golokstone",
+  "tagline": "Old, thick-boled trees creak and groan. The soil is orange, as if soaked with blood.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Off-road encounters are 2-in-6 likely to be with 1d3+1 bramblings patrolling the region",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Old, thick-boled trees creak and groan. The soil is orange, as if soaked with blood.",
+  "points_of_interest": [
+    {
+      "name": "The Jaunty Horn",
+      "poi_type": "inn",
+      "description": "A high-gabled inn that spans the Ditchway, bridge-like. At the rear, a wide yard and stables bustle with caravans.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A broad, low-beamed space rammed with round tables, with hundreds of horseshoes cladding the walls. The proprietor Jesibelle Nag and her husband Mollish serve tables while their 7 children run and play. A 6′-long drinking horn hangs above the bar—downing a whole horn is a challenge the locals use to settle disputes.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Common travellers, merchants, and surly guards. Jesibelle Nag and her husband Mollish serve tables while their 7 children run and play.",
+      "roll_tables": [],
+      "npcs": [
+        "jesibelle_nag"
+      ],
+      "special_features": [
+        "Sign: A curled bugle with a portrait of Lord Ramius (p65) engraved at its head. (The folk of the inn are Ramius loyalists, proudly retaining his portrait on the sign.)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Golokstone",
+      "poi_type": "standing stone",
+      "description": "A 10′ square slab of yellow sandstone, split down the middle, lies at the centre of a glade of lofty silver birches, surrounded by a maze of circuitous paths.",
+      "tagline": null,
+      "entering": "Dense patches of scarlet, 2′ high toadstools encircle the stone; they release a 20′ diameter cloud of spores if anyone approaches. All within must Save Versus Blast or experience vivid, religiously-tinged hallucinations for 1d6 Turns (–4 penalty to Attack Rolls and cannot cast spells). Aethogrym and his bramblings arrive after 1 Turn to evict the intruders.",
+      "interior": null,
+      "exploring": "Peering into the split slab: Reveals an impossibly fathomless vista of swirling black and purple mists dotted with glinting points of silver, like stars. Scrying: Casting Crystal Vision or Arcane Eye while gazing into the vista brings about a trance, lasting for 1 Turn, wherein the spell-caster has a vision of Dolmenwood in its entirety and may choose to zoom into any one hex, gaining an insight into the hidden features there. Drunic speech: Uttering Drunic words into the vista opens a channel of communion to the Drune Aegis (p54).",
+      "leaving": null,
+      "inhabitants": "The Audrune Aethogrym, along with 7 bramblings (DMB) that roam the hex.",
+      "roll_tables": [],
+      "npcs": [
+        "the_audrune_aethogrym"
+      ],
+      "special_features": [
+        "Inscriptions: Drunic runes describe the arcane spell Arcane Eye in addition to the inscription \"Scry, Drune, all Dolmenwood spread wide. Speak, Drune, voice of the Aegis.\"",
+        "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "jesibelle_nag",
+      "name": "Jesibelle Nag",
+      "title": "Jaunty Horn Proprietor",
+      "description": "A stout, muscular human woman in her late thirties, with a knotted brow and a wide, gurning face. Dresses in sheepskin jerkins, striped pantaloons, and purple felt boots, always leaving her heavily bangled arms bare. Jesibelle is a retired fighter who bought the Jaunty Horn with the profits from her adventures.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Boastful and belligerent",
+        "but unerringly loyal to those who earn her respect"
+      ],
+      "speech": "Brash. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To best tough-looking warrior types in bouts of arm-wrestling or drinking contests",
+        "To experience the thrill of adventure \"one last time.\""
+      ],
+      "secrets": [],
+      "possessions": [
+        "Purple felt Boots of Weft-Striding (p406)",
+        "A golden Holy Mace (p412) concealed behind the bar"
+      ],
+      "location": "The Jaunty Horn",
+      "stat_reference": "Level 4 Fighter",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "the_audrune_aethogrym",
+      "name": "The Audrune Aethogrym",
+      "title": null,
+      "description": "A towering (6′6″) human man of robust build, with shaven head and staring eyes as pale as moonlight. Wears a brass ring through his nose and dresses in the traditional night-black cloak and hood of his order. As guardian of Golokstone, Aethogrym is charged with deterring intruders, but favours words over violence.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Temperate",
+        "genial but stern"
+      ],
+      "speech": "Slow, hearty rumble. Woldish, Caprice, Drunic.",
+      "languages": [
+        "Woldish",
+        "Caprice",
+        "Drunic"
+      ],
+      "desires": [
+        "To defend Golokstone at all costs",
+        "To track down the fairy who spies on his daughter Pollith (see 0810) and ensure that he does not continue to do so"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A bone bracelet, carved with mushrooms, which allows him to sense intruders at Golokstone and teleport to the vicinity"
+      ],
+      "location": "Golokstone",
+      "stat_reference": "Audrune (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Ditchway"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      295
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

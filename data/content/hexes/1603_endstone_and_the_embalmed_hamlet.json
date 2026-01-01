@@ -1,0 +1,154 @@
+{
+  "hex_id": "1603",
+  "coordinates": [
+    16,
+    3
+  ],
+  "name": "Endstone and the Embalmed Hamlet",
+  "tagline": "Soft, pungent ground, littered with blight-mottled leaves. Sickly boughs heavy with swollen fungi.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Soft, pungent ground, littered with blight-mottled leaves. Sickly boughs heavy with swollen fungi.",
+  "points_of_interest": [
+    {
+      "name": "The Hamlet of the Embalmed",
+      "poi_type": "hamlet",
+      "description": "About a mile north of Follyegg Road, a cluster of rickety buildings sits on stilts above a bog, covered in moss and lichens. Shadows stir in the darkness of the tiny hamlet.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The Embalmed have a crude distillery made from bits and pieces bartered from travellers. They make a heavily peated whiskey which carries a necromantic effect: if a bottle is poured down the throat of a corpse, the corpse revives sufficiently to speak for 1 minute. A bottle is worth 400gp. The Embalmed will trade a bottle per week for goods of equivalent value, particularly fine fur garments from Odd (p166), of which they've heard rumour. The Embalmed sustain their decaying forms by bathing in peat bogs on the outskirts of the hamlet.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "21 Embalmed make their home here, led by one who calls herself Bertha Bogborn. She runs the hamlet's distillery.",
+      "roll_tables": [],
+      "npcs": [
+        "bertha_bogborn"
+      ],
+      "special_features": [
+        "The Distillery",
+        "Peat baths"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Endstone",
+      "poi_type": "monolith",
+      "description": "Endstone is a 15′ high monolith of greyish-green rock, veined with vivid crimson. It lies in a brush-choked part of the wood, half a mile from the hamlet.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Audrune Mathonwy guards this stone.",
+      "roll_tables": [],
+      "npcs": [
+        "the_audrune_mathonwy"
+      ],
+      "special_features": [
+        "Necromantic aura",
+        "Inscribed spell"
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "bertha_bogborn",
+      "name": "Bertha Bogborn",
+      "title": null,
+      "description": "A hulking Embalmed woman, some 500 years old, with blackened skin, acid-bleached hair, and ossified eyeballs with a tendency to fall out. Reeks of whiskey.",
+      "kindred": "Embalmed",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Gruff but congenial",
+        "Beleaguered by the quirky, ancient personalities of the motley crew she oversees"
+      ],
+      "speech": "Hearty, gurgling rumble. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To be rid of the Audrune Mathonwy, who periodically sends lackeys to (unsuccessfully) destroy her hamlet",
+        "She offers a party two bottles of her enchanted whiskey to permanently slay him (only possible outside the area of Endstone's influence)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Enchanted whiskey"
+      ],
+      "location": "The Hamlet of the Embalmed",
+      "stat_reference": "Embalmed",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "the_audrune_mathonwy",
+      "name": "The Audrune Mathonwy",
+      "title": null,
+      "description": "A tall, gaunt human man in a tattered black cloak and garments of matted badger-fur. Protruding from his rancid body are knives and the hafts of broken spears. He has been slain many times during his vigil over Endstone, but always revives, often to slay his own killers (they, too, rise—some now reside in the hamlet).",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Sardonic",
+        "patronising",
+        "sadistic"
+      ],
+      "speech": "Low, nasal hiss. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "To protect Endstone at all costs",
+        "Consumed with self-hatred for what Endstone has made him, Mathonwy wishes to eradicate all other Embalmed",
+        "He cannot leave his post, but may attempt to hire the party to permanently incinerate the hamlet and its people, promising treasure"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A blazing, inextinguishable torch"
+      ],
+      "location": "Endstone",
+      "stat_reference": "Audrune (DMB), with Embalmed immunity and undead traits",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Necromantic Whiskey",
+      "description": "A heavily peated whiskey which carries a necromantic effect: if a bottle is poured down the throat of a corpse, the corpse revives sufficiently to speak for 1 minute",
+      "value": "400gp",
+      "location": "The Distillery"
+    }
+  ],
+  "secrets": [
+    "Endstone is hidden in a brush-choked part of the wood",
+    "Anyone who dies within a mile of the stone rises again as one of the Embalmed",
+    "Drunic runes describe the arcane spell Animate Dead"
+  ],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead. The Embalmed can never leave this hex, or they return to lifeless carrion.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Follyegg Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      367
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "hex_id": "1001",
+  "coordinates": [
+    10,
+    1
+  ],
+  "name": "The Bogenwood",
+  "tagline": "A rubbery, black weed, clustered with squeaking bladders, carpets the ground.",
+  "region": "Nagwood",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Nagwood",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely (4-in-6 likely if travelling on Quaking Creek) to be with 1d2 bogen",
+    "foraging_results": "Successful foraging yields 1d3 portions of Foolscap, in addition to the normal results",
+    "foraging_special": [
+      "Foolscap (1d3 portions)"
+    ]
+  },
+  "description": "Many fallen, battered, and bent timbers litter the slopes above Quaking Creek, which bisects this hex. Barge-folk travelling the creek know these wood piles to be the territorial markings of the bogen, hirsute, giant-like creatures who dwell in mounds beneath the brush. The mariners refer to this area as the Bogenwood. Visitors are often startled by the distant, shrill whistles of the bogen, meant to keep away intruders. Beleaguered by Atanuwë's fell influence and murderous minions, the bogen loathe all outsiders. They take particular frustrated pleasure in hurling rocks at boats travelling the creek.",
+  "points_of_interest": [
+    {
+      "name": "Blood-Daubed Stakes",
+      "poi_type": "landmark",
+      "description": "As adventurers traverse the southern portion of the hex, they encounter trees with images of braying unicorn heads and nine-pointed stars—symbols of Atanuwë—daubed upon them in blood. At the centre of this region is the Burial Pit.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Trees marked with unicorn heads and nine-pointed stars in blood"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Burial Pit",
+      "poi_type": "pit",
+      "description": "A glade carpeted with tree stumps and mulch, at the centre of which is a natural, limestone pit, half-filled with brackish water. Once a burial site where the bogen would throw the bones of their dead, the pit has been appropriated by servants of the Nag-Lord.",
+      "tagline": null,
+      "entering": null,
+      "interior": "2d4 crookhorns, clad in filthy hooded robes, prowl the edge of the pit, agitating the dark water with long staves. They are assisting in the gradual conjuration of a horrible new servant—the Huorglein—weaving flesh around centuries of bogen remains.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "2d4 crookhorns",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "One crookhorn's staff is encrusted with rubies, cut in odd shapes that seem to change when viewed (worth 500gp)"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Ruby-encrusted staff",
+      "description": "A staff encrusted with rubies, cut in odd shapes that seem to change when viewed",
+      "value": "500gp",
+      "location": "Burial Pit",
+      "mechanical_effect": null
+    }
+  ],
+  "secrets": [
+    "Awakening the Huorglein: Any corpse falling into the pit triggers the Huorglein's premature awakening, and its hulking, scarlet form emerges from the depths in a rage. The Huorglein cuts a bloody swath towards the court of its master (hex 0904), littering the branches and boughs of Dolmenwood with the entrails of those whom it destroys."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Quaking Creek"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      298
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

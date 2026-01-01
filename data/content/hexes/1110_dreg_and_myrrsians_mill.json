@@ -1,0 +1,115 @@
+{
+  "hex_id": "1110",
+  "coordinates": [
+    11,
+    10
+  ],
+  "name": "Dreg and Myrrsian's Mill",
+  "tagline": "Little streams meander through idyllic glades of lantern elms, their seeds like lambent paper lanterns.",
+  "region": "High Wold / Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold / Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d4 portions of young lantern elm roots, used to brew Ofteritch (DPB), in addition to the normal results",
+    "foraging_special": [
+      "young lantern elm roots (1d4 portions)"
+    ]
+  },
+  "description": "Little streams meander through idyllic glades of lantern elms, their seeds like lambent paper lanterns.",
+  "points_of_interest": [
+    {
+      "name": "Dreg and Shantywood Isle",
+      "poi_type": "settlement",
+      "description": "Sitting at the widest point of the River Hameth is the port and fishing village of Dreg, a major stopping point on the river trade that connects the High Wold, Castle Brackenwold, and the lands to the south of Dolmenwood.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Seedy reputation: Dreg has a reputation as a haunt for thieves, charlatans, and rascals of all stripes. Its many inns and taverns cater to the bawdy tastes of such folk.",
+        "Shantywood Isle: Opposite Dreg, the notorious pleasure isle of Shantywood sits amid the rushing waters of the Hameth.",
+        "Full settlement description: See p140."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Myrrsian's Mill",
+      "poi_type": "mill",
+      "description": "A rustic, two-storey, timber-framed watermill stands on the banks of the Hameth in the north-east corner of this hex, its paddles producing a cheery splashing that can be heard from some way off.",
+      "tagline": null,
+      "entering": "A circular wooden door, painted purple, inlaid with thorn and leaf patterns in brass, with a brass knocker in the form of a smirking imp. The door is sealed with a Glyph of Locking (by a Level 6 caster).",
+      "interior": "Cosy gloom. Homely woodwork painted with floral designs. A jumble of pots, pans, pestles and mortars, and drying herbs strewn over all surfaces. Crystals hang from low beams, refracting shafts of forest sunlight.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The magician Myrrsian the Mutable and 3 sprites (DMB)—a pink sprite named Tollowook, a blue sprite named Lillyshill, and a red sprite named Brigadoone—who act as servants and guest-wranglers, chittering and giggling in Sylvan.",
+      "roll_tables": [],
+      "npcs": [
+        "myrrsian_the_mutable"
+      ],
+      "special_features": [
+        "Dark glazed windows: The mill has four windows (two on each level), with panes of dark green glass, virtually opaque from the outside. All are sealed with a Glyph of Locking (by a Level 6 caster).",
+        "Grinding sound: A low, grinding sound drones continuously, seemingly from below ground. The mill's inhabitants (if asked) confirm that the sound emanates from the grinding mill mechanisms in the cellar, which, they insist, are \"purely decorative.\"",
+        "Secret trapdoor: The trapdoor to the cellar is concealed beneath a carpet and is sealed with a Glyph of Locking (by a Level 6 caster).",
+        "Cellar: Gears and axles slowly turn glowing pink millstones, wreathed in arcs of pale blue electricity. Sinister black forms periodically appear in the lightning. Myrrsian's research focuses on using this device to open a dimensional portal to a shadowy plane of existence."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "myrrsian_the_mutable",
+      "name": "Myrrsian the Mutable",
+      "title": "Level 6 Magician",
+      "description": "A youthful human magician who switches between two forms (equal chance of either when encountered): a dashing young man with profound blue eyes and impressive red moustaches / a dainty young woman with fine, silver hair and eyes of chestnut. Both forms are clad in robes of green velvet embroidered with golden primroses.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Convivial but tricksome",
+        "enjoys leaving the room, changing form, then claiming to be \"Myrrsian's sibling Vyridan,\" upon returning"
+      ],
+      "speech": "Melodious, eloquent. Woldish, Sylvan, a smattering of Mewl.",
+      "languages": [
+        "Woldish",
+        "Sylvan",
+        "Mewl"
+      ],
+      "desires": [
+        "Magical crystals of all kinds, to act as fodder for the mill—willing to pay a handsome price. (Myrrsian believes that an exact balance of different types will open the portal.)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A twisted brass Ring of Duomorph (p410)",
+        "An elf-bone Wand of Fear (6 charges)",
+        "Scrolls of Web and Confusion"
+      ],
+      "location": "Myrrsian's Mill",
+      "stat_reference": "Level 6 Magician",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      319
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

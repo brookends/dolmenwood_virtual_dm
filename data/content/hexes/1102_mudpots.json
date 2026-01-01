@@ -1,0 +1,117 @@
+{
+  "hex_id": "1102",
+  "coordinates": [
+    11,
+    2
+  ],
+  "name": "Mudpots",
+  "tagline": "The lingering odour of rotting eggs and sporadic slurping of mud.",
+  "region": "Fever Marsh",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Fever Marsh",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with Old Ned",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Craters filled with pools of bubbling mud pockmark this section of Fever Marsh. Most of the crater rims are only a few feet tall, but some reach a height of 10′ or greater, resembling cylindrical chimneys. Mud: A viscous, bubbling grey slurry, streaked red and pink. Its temperature can vary from a relaxing warmth to a skin-stripping heat (1d3 damage if touched). Eruption: Build-up causes the mudpots to unpredictably erupt. Once per day, there is a 3-in-6 chance of an eruption close to the PCs: all characters must Save Versus Blast or be splattered with searing mud (1d4 damage). Salamanders: Scurrying between the hot mudpots and the cooler bog are striped salamanders.",
+  "points_of_interest": [
+    {
+      "name": "The Witch's Cottage",
+      "poi_type": "cottage",
+      "description": "A cottage fashioned from stone and packed dirt stands amid a maze of towering mudpots, partially buried in falling mud. The sparkle of light on glass betrays its location.",
+      "tagline": null,
+      "entering": "There is a 1-in-6 chance that Old Ned is lounging half-asleep at the cottage door.",
+      "interior": "Crowded with cooking and alchemical equipment. Lit by 2d3 fire beetles (DMB) crawling on the walls. A cot rests in a corner, beside an offal-strewn dissection table. Greenhouse: A side chamber topped with a glass roof acts as a greenhouse for an eclectic mix of plants and fungi. At any time, 1d4 rations of edible plants and 1d4 rations of edible fungi (see Foraging, p118) are ripe.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The hermit witch Deidre Loam, her pet giant salamander Old Ned, and a colony of semi-domesticated, foot-long fire beetles living underneath.",
+      "roll_tables": [],
+      "npcs": [
+        "deidre_loam",
+        "old_ned"
+      ],
+      "special_features": [
+        "Visitors: Vexed and irritated, Deidre demands the party depart at once, threatening to sic Old Ned on them. However, successful negotiation reveals that she is willing to trade for Horridwort (p430) from hex 1002. In return, she allows the party to gather the valuable striped salamanders, untroubled by Old Ned, for one day.",
+        "Treasure: A search of the cottage's mess reveals 128gp, 34sp, 87cp, a collection of eight silver rings (10gp each), and three unlabelled bottles: Distillation of Hoarfrost, Philtre of Delusion, Vaporous Spirits."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "deidre_loam",
+      "name": "Deidre Loam",
+      "title": "Witch (Eye of Hasturiel)",
+      "description": "A grim, lean human woman in her late 50s, with short grey hair and pinprick eyes. Always wears a smock splattered with mud, juices, and viscera. Her scent is dizzying. Deidre spends most of her time engaged in her sole pursuit: experimenting with alchemical concoctions and food recipes.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Anti-social and put upon",
+        "Prefers simple, transactional relationships"
+      ],
+      "speech": "Like gravel. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Rare and interesting ingredients (plants, fungi, or magical creatures)",
+        "For interlopers to go away and stop stealing \"her\" salamanders"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Earrings fashioned from salamander eyes encased in glass, which make the wearer immune to heat (per the holy spell Flame Ward)"
+      ],
+      "location": "The Witch's Cottage",
+      "stat_reference": "Witch (Eye of Hasturiel)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "old_ned",
+      "name": "Old Ned",
+      "title": "Giant Salamander",
+      "description": "A mutant salamander the size of a small horse. Its scaled coat is a dull red colour, with black scarring across its left flank. Shrewd for an animal. Treats Deidre with affection. When foraging amongst the mudpots, it views anyone it encounters as prey, but is pacified if large amounts of food are offered. If followed, Old Ned eventually returns to the Witch's Cottage.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Semi-Intelligent",
+        "Shrewd for an animal",
+        "Treats Deidre with affection"
+      ],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "Mudpots/The Witch's Cottage",
+      "stat_reference": "Level 6 AC 17 HP 30 Saves D9 R10 H11 B12 S13, Att 2 claws (+5, 1d4) and bite (+5, 1d8) Speed 40 Swim 40 Morale 8 XP 520, Immunities: Unharmed by fire, Heat aura: 1d8 damage per Round to all within 20′",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Striped Salamanders",
+      "description": "Small, dark red amphibians that radiate an intense heat. Capturing: The salamanders are extremely quick and nimble; a day spent on attempted captures yields only 1d6. Unless Deidre calls Old Ned off, such efforts arouse its wrath, and it attacks would-be gatherers soon after they begin. Value: Prized as an alchemical ingredient, they are worth 50gp each to the right buyer.",
+      "value": "50gp each",
+      "mechanical_effect": "Day of capturing yields 1d6 salamanders"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      311
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

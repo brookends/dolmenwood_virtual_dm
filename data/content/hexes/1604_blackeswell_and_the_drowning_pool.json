@@ -1,0 +1,118 @@
+{
+  "hex_id": "1604",
+  "coordinates": [
+    16,
+    4
+  ],
+  "name": "Blackeswell and the Drowning Pool",
+  "tagline": "Dismal grey trees drip sullenly in the mist. Giant white toadstools encroach from the south.",
+  "region": "Mulchgrove",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Mulchgrove",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d8 toad-children wandering abroad",
+    "foraging_results": "Successful foraging yields 1d4 portions of Witch's Purple (p428), in addition to the normal results",
+    "foraging_special": [
+      "Witch's Purple (1d4 portions)"
+    ]
+  },
+  "description": "Dismal grey trees drip sullenly in the mist. Giant white toadstools encroach from the south.",
+  "points_of_interest": [
+    {
+      "name": "The Village of Blackeswell",
+      "poi_type": "village",
+      "description": "An isolated and near-forgotten village, now subsumed in the rapidly expanding fungal forest of Mulchgrove.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The stench of the Blacke: Situated beside a stinking, green pool known as the Blacke, the village has an awful stench that visitors cannot ignore. Former riches: Once a thriving mining town, Blackeswell now stands forgotten and half derelict, with only a few stubborn inhabitants remaining.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Only a few stubborn inhabitants remaining",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Full settlement description: See p124"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Drowning Pool",
+      "poi_type": "pool",
+      "description": "A black pool clotted with putrid grey-green scum festers in the north-western corner of this gloomy hex, 100 yards east of Armsheath's Road. The place is shunned by locals, who fear its sinister powers and rumoured undead inhabitants.",
+      "tagline": null,
+      "entering": "Save Versus Hold or become unable to move for 1d6 Turns. Unless aided, this results in drowning.",
+      "interior": "The scum-splashed trunk of a bent old tree juts out of the water at the centre of the pool, 50′ from the shore. Among its gnarled, blackened branches shine 3 magical apples of solid gold (500gp each).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "11 toad-children crawl and hop about the pool's periphery. Grey Mayble lurks just beneath the water's surface.",
+      "roll_tables": [],
+      "npcs": [
+        "grey_mayble"
+      ],
+      "special_features": [
+        "Golden apples: If used as a pommel stone, an apple endows a weapon with a +1 bonus to attack and damage. If worn as a talisman, an apple functions as a Talisman of Protection From Hexes (p398).",
+        "Drinking the water: A mere sip of the festering water incurs a Save Versus Doom to avoid becoming violently ill: –2 penalty to Attack Rolls for 24 hours."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "grey_mayble",
+      "name": "Grey Mayble",
+      "title": null,
+      "description": "A wretched crone with grey, bloated skin, sodden, algae-ridden hair, black teeth, and bulging eyes. She frequently suckles a toad-child at her breast. Over a century ago, Mayble was a Blackeswell woman who fell in love with a priest and, after being spurned, drowned herself in the pool. The weird magic of the place transformed her into a revenant.",
+      "kindred": "Undead",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jittery",
+        "Torn between her craving for mortal flesh and her lingering compassion for mortals"
+      ],
+      "speech": "Gurgling, hissing, articulate. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "The return of one of her ghoulish toad-children who has wandered off towards Endstone (hex 1603)"
+      ],
+      "secrets": [
+        "Over a century ago, Mayble was a Blackeswell woman who fell in love with a priest and, after being spurned, drowned herself in the pool"
+      ],
+      "possessions": [
+        "Golden apples (rewards one if toad-child is returned)"
+      ],
+      "location": "The Drowning Pool",
+      "stat_reference": "Medium Undead—Sentient—Neutral, Level 5 AC 12 HP 24 Saves D10 R11 H12 B13 S14, Att 2 claws (+4, 1d6 + paralysis) Speed 30 Morale 9 XP 260",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Golden Apples",
+      "description": "3 magical apples of solid gold (500gp each). If used as a pommel stone, an apple endows a weapon with a +1 bonus to attack and damage. If worn as a talisman, an apple functions as a Talisman of Protection From Hexes.",
+      "location": "The Drowning Pool",
+      "value": "500gp each"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Attacks if her toad-children are threatened or if she sees a holy symbol of the Pluritine Church—she loathes priests. Water-bound: Mayble must remain within 60′ of the Drowning Pool.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Armsheath's Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      368
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

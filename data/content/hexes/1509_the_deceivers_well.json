@@ -1,0 +1,281 @@
+{
+  "hex_id": "1509",
+  "coordinates": [
+    15,
+    9
+  ],
+  "name": "The Deceiver's Well",
+  "tagline": "Agricultural land, alive with the chatter of milkmaids and the braying of animals.",
+  "region": "Tithelands",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Agricultural land, alive with the chatter of milkmaids and the braying of animals.",
+  "points_of_interest": [
+    {
+      "name": "Shankswell Cross",
+      "poi_type": "market",
+      "description": "At a major crossroads amid the farms and thorps of this hex is a lively, cobblestoned market square. The place bustles with local folk, trading, gossiping, and drinking to a soundtrack of barnyard squawks and bleats. An especially large crowd gathers around the dilapidated stone well that stands at the centre of the square.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Stalls: Farm produce of all kinds (fresh rations), poultry and livestock, local cider (1sp a pint), basic tools and equipment (e.g. backpacks, bedrolls, candles, chisels, cooking pots, fishing rods, lanterns, oil flasks, ropes, sacks, torches). Rumours: Travellers browsing the stalls or speaking with the locals hear the outlandish rumour of the day—see Rumours at the Well. If asked about the source of these rumours, locals simply say that they \"heard it at the well.\" In truth, these rumours originate with the whisperings of the Atacorn Hawalyeer, secretly lurking in the well.",
+      "exploring": "The well: Rusty rungs lead down 50′ to Hawalyeer's Cave. If a crowd is present, PCs may directly hear a rumour from Hawalyeer, though it appears to come from the crowd. At night: Hawalyeer creeps out to stalk the fields in search of carrion.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Rumours at the Well",
+          "die_type": "d8",
+          "description": "All are utterly false and unfounded.",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Duchess Ophelia (p59) is on her deathbed and needs the rare Groaning Mandrake (p430) to be cured.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "The monks of the ruined abbey of St Clewyd, deep in Dolmenwood, were buried along with gold pendants that lie untouched beneath the soil.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Sir Waverly \"the Orange\" (p152) seeks bold companions to quest with him into Hag's Addle to kill the Hag.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "A secret passage in the library of Harrowmoor Keep leads to a profane cove beside the Groaning Loch, where Lady Harrowmoor (p60) sacrificed her daughter in return for dark powers.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Captain Bogle (p131) seeks live unicorns for use in a spectacular jousting contest planned for the duke's tourney at Castle Brackenwold next midsummer.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "A secret vault in the cellars of the Castle Brackenwold Magicians' College contains relics magically purloined from nobles, including the Hanglehorn, long sought by Baron Hogwarsh (p60).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "The Bishop of Brackenwold (p69) has come under the spell of the Cold Prince and connives to summon the wicked fairy back to Dolmenwood via an alliance with the sinister Drune.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "The first King of Brackenwold was interred in the northernmost barrow atop Monarch's hill. Relics of his splendour remain there, including his sapphire crown, buried somewhere in the tomb.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Hawalyeer's Cave",
+      "poi_type": "cave",
+      "description": "The well shaft pierces the roof of a natural cave, half-filled with water. The Atacorn Hawalyeer lurks here on dry, rocky ledges at the sides, among her obsessively arranged collection of animal bones and broken toys.",
+      "tagline": null,
+      "entering": "Rusty rungs lead down 50′ from the well",
+      "interior": "Half-filled with water, dry rocky ledges at the sides with obsessively arranged collection of animal bones and broken toys.",
+      "exploring": "Treasures: Hidden in a nook are 32 bloodstones (50gp each) and a rusty, serrated Arcane Dagger (Lying, p412). Escape route: The cave connects with an underground waterway that runs through deep caverns beneath Dolmenwood. If threatened, Hawalyeer may dive into the pool to escape.",
+      "leaving": null,
+      "inhabitants": "Hawalyeer—Atacorn",
+      "roll_tables": [],
+      "npcs": [
+        "hawalyeer"
+      ],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [
+    {
+      "name": "Rumours at the Well",
+      "die_type": "d8",
+      "description": "All are utterly false and unfounded.",
+      "entries": [
+        {
+          "roll": 1,
+          "title": null,
+          "description": "Duchess Ophelia (p59) is on her deathbed and needs the rare Groaning Mandrake (p430) to be cured.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 2,
+          "title": null,
+          "description": "The monks of the ruined abbey of St Clewyd, deep in Dolmenwood, were buried along with gold pendants that lie untouched beneath the soil.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 3,
+          "title": null,
+          "description": "Sir Waverly \"the Orange\" (p152) seeks bold companions to quest with him into Hag's Addle to kill the Hag.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 4,
+          "title": null,
+          "description": "A secret passage in the library of Harrowmoor Keep leads to a profane cove beside the Groaning Loch, where Lady Harrowmoor (p60) sacrificed her daughter in return for dark powers.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 5,
+          "title": null,
+          "description": "Captain Bogle (p131) seeks live unicorns for use in a spectacular jousting contest planned for the duke's tourney at Castle Brackenwold next midsummer.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 6,
+          "title": null,
+          "description": "A secret vault in the cellars of the Castle Brackenwold Magicians' College contains relics magically purloined from nobles, including the Hanglehorn, long sought by Baron Hogwarsh (p60).",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 7,
+          "title": null,
+          "description": "The Bishop of Brackenwold (p69) has come under the spell of the Cold Prince and connives to summon the wicked fairy back to Dolmenwood via an alliance with the sinister Drune.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        },
+        {
+          "roll": 8,
+          "title": null,
+          "description": "The first King of Brackenwold was interred in the northernmost barrow atop Monarch's hill. Relics of his splendour remain there, including his sapphire crown, buried somewhere in the tomb.",
+          "monsters": [],
+          "npcs": [],
+          "items": [],
+          "mechanical_effect": null
+        }
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "npc_id": "hawalyeer",
+      "name": "Hawalyeer",
+      "title": "Atacorn",
+      "description": "A scrawny, pallid monster, with a waifish maiden's body and the head of a donkey, topped with three ichor-dripping horns. Her eyes are milky white, as if blind, and her shaggy ears droop to her shoulders. Wears a muddy white dress and oversized hobnail boots. Hawalyeer is a child of the Nag-Lord (p45), sent out into the world to spread discord and woe.",
+      "kindred": "Atacorn",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Falsely innocent",
+        "spiteful",
+        "deranged",
+        "Stares expressionlessly"
+      ],
+      "speech": "Can mimic any voice, but favours the sweet giggling of a young girl. Woldish, Gaffe, Caprice.",
+      "languages": [
+        "Woldish",
+        "Gaffe",
+        "Caprice"
+      ],
+      "desires": [
+        "Toys",
+        "games",
+        "and jokes",
+        "To spread bafflement"
+      ],
+      "secrets": [
+        "Child of the Nag-Lord",
+        "sent out into the world to spread discord and woe"
+      ],
+      "possessions": [
+        "A twisted Ring of Amphibious Breath"
+      ],
+      "location": "Hawalyeer's Cave",
+      "stat_reference": "Medium Mortal—Sentient—Chaotic Level 5 AC 13 HP 19 Saves D10 R11 H12 B13 S14 Att Gore (+4, 2d4 + poison) Speed 40 Morale 7 XP 360 Poison: Save Versus Doom or lose 1d3 HP each dawn for the next twelve days. Charming voice (twice a day): Effects per Ingratiate.",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "32 bloodstones",
+      "description": "50gp each",
+      "location": "Hidden in a nook in Hawalyeer's Cave"
+    },
+    {
+      "name": "Arcane Dagger",
+      "description": "rusty, serrated Arcane Dagger (Lying, p412)",
+      "location": "Hidden in a nook in Hawalyeer's Cave"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      364
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

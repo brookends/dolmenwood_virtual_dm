@@ -1,0 +1,185 @@
+{
+  "hex_id": "1303",
+  "coordinates": [
+    13,
+    3
+  ],
+  "name": "The Woodwind Trees",
+  "tagline": "Drifting melodies harmonise with the placid babbling of the River Shiver.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "This section of the wood is dominated by trees with vibrant leaves ranging from bright pink to a reddish-violet. Their trunks and branches are honeycombed with small 1″ holes. When the wind blows through the holes, they create sonorous melodies. Animals flock to the trees, each singing along in their own way. Songbirds twitter in their branches, crickets chirp, frogs croak, and even flies buzz in tune.",
+  "points_of_interest": [
+    {
+      "name": "Woodwind Trees",
+      "poi_type": "magical forest",
+      "description": "Trees with vibrant leaves ranging from bright pink to a reddish-violet. Their trunks and branches are honeycombed with small 1″ holes that create sonorous melodies when wind blows through them.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Animals flock to the trees, each singing along in their own way. The incessant music makes it impossible for parties to rest here. The music also disrupts magical incantations: spells have a 3-in-6 chance of failing when cast.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Protected by woodgrues who dwell in the Treehouse.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Music disrupts rest - impossible to rest here",
+        "Spells have 3-in-6 chance of failing when cast",
+        "Wood is magical and can be made into Magical Instruments",
+        "If trees are harmed, song stops and 2d4 woodgrues arrive in 1d4 Turns"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Treehouse",
+      "poi_type": "dwelling",
+      "description": "The largest woodwind tree lies at the centre of the hex. 5′ wicker spheres hang down from its branches like giant fruits, each connected by a lattice of rickety rope bridges.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Each wicker sphere is the dwelling of several woodgrues, furnished with a nest of furs and leaves. A central platform 20′ wide is built into the boughs of the tree, covered by a roof of violet leaves and illuminated by jars of twinkling fireflies. At night the woodgrues come here to play their songs.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A band of 20 woodgrues, led by Threeble Pidderpat.",
+      "roll_tables": [
+        {
+          "name": "Magical Instruments",
+          "die_type": "d6",
+          "description": "Random magical instrument from Threeble's workshop",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Crumhorn",
+              "description": "Disembodied choral accompaniment",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Crumhorn"
+              ],
+              "mechanical_effect": "Disembodied choral accompaniment"
+            },
+            {
+              "roll": 2,
+              "title": "Doodlepipe",
+              "description": "Attracts insects",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Doodlepipe"
+              ],
+              "mechanical_effect": "Attracts insects"
+            },
+            {
+              "roll": 3,
+              "title": "Flute",
+              "description": "Causes flowers to bloom",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Flute"
+              ],
+              "mechanical_effect": "Causes flowers to bloom"
+            },
+            {
+              "roll": 4,
+              "title": "Recorder",
+              "description": "Conjures motes of light",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Recorder"
+              ],
+              "mechanical_effect": "Conjures motes of light"
+            },
+            {
+              "roll": 5,
+              "title": "Shawm",
+              "description": "Elicits giggles",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Shawm"
+              ],
+              "mechanical_effect": "Elicits giggles"
+            },
+            {
+              "roll": 6,
+              "title": "Squamp",
+              "description": "Soothes animals",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "Squamp"
+              ],
+              "mechanical_effect": "Soothes animals"
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "threeble_pidderpat"
+      ],
+      "special_features": [
+        "Threeble's woodwind workshop - wicker cone above common area",
+        "Sells Magical Instruments for 200gp each to those who prove musical talent"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "threeble_pidderpat",
+      "name": "Threeble Pidderpat",
+      "title": "Level 4 Bard",
+      "description": "A woodgrue woman with wiry white fur, sleepy eyes, and pale yellow ears. Wears a striped sock hat and an oversized shirt with long puffy sleeves she keeps rolled up. She is devoted to the trees that support her callings as a musician and instrument-crafter. She believes the trees speak to her through their songs.",
+      "kindred": "Woodgrue",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Easygoing",
+        "but quickly angered if the trees are threatened"
+      ],
+      "speech": "Sing-song, peppered with flowery words she doesn't actually understand. Often waxes poetic about nature's beauty.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "To discover the best song in the world",
+        "to create the best instrument in the world",
+        "to protect the Woodwind Trees"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A wyrm-bone Flute of Revelry"
+      ],
+      "location": "Treehouse",
+      "stat_reference": "Level 4 Bard",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      336
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

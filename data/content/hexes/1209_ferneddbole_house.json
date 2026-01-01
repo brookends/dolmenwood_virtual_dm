@@ -1,0 +1,103 @@
+{
+  "hex_id": "1209",
+  "coordinates": [
+    12,
+    9
+  ],
+  "name": "Ferneddbole House",
+  "tagline": "The whinnying of ponies, the clapping of loose shutters, and occasional disembodied giggling.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters at night are 1-in-6 likely to be with the Moonlit Maw (hex 1311)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "At the end of a short path from the main road sits a rambling pile of a three storey, timbered mansion, indistinct in outline due to the sheer volume of mosses it sports. This is the home of Jollie Oistace Pollard, the hereditary chieftain of the Woodcutters' Encampment (hex 1109). The grounds echo with the whinnying of just under a score of pure-bred dwarf ponies—an affected hobby of Pollard's, who calls them his 'Lovely Oafs.'",
+  "points_of_interest": [
+    {
+      "name": "Ferneddbole House",
+      "poi_type": "moss-coated manse",
+      "description": "A rambling pile of a three storey, timbered mansion, indistinct in outline due to the sheer volume of mosses it sports.",
+      "tagline": "Moss-Coated Manse",
+      "entering": null,
+      "interior": "The interior of the mansion is cramped and illogical in layout, with great halls sitting side-by-side with cramped single-file wood panelled passages. Neglect is rife, with some rooms actually having the limbs of trees or vegetation growing through broken window-panes or loose stones.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Jollie Oistace Pollard and his servants, including hapless head manservant Mudmurloe, who is usually engaged in perilous tasks at Fog Lake (hex 1207).",
+      "roll_tables": [],
+      "npcs": [
+        "jollie_oistace_landriman_pollard"
+      ],
+      "special_features": [
+        "Manor grounds with just under a score of pure-bred dwarf ponies",
+        "The Mornblade: An ancient blue-green sword hangs above the doorway to the feasting hall. Unbeknown to Pollard, it is a Fairy Longsword (Slumbering, p412). Its slumbering effect is only active during the autumn and winter.",
+        "Hall of hand sculptures: A very long corridor is lined with glass cases that feature wooden sculptures of the right hands of Woodcutters of lore, memorialising the calluses and scars of their craft.",
+        "Portrait gallery: Another gallery features oil portraits of past members of the Pollard line, depicted in settings of wild woodsiness. Drunic symbolism can be spotted in the oldest paintings by those familiar with such lore.",
+        "After dinner: As the PCs prepare to retire, the air shimmers and a snickering cluster of 1d6+4 astral leapers appear. Pollard looks on in an indifferent trance as the leapers throw dinner scraps and cutlery at the party."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "jollie_oistace_landriman_pollard",
+      "name": "Jollie Oistace Landriman Pollard",
+      "title": "Jollie Oistace (hereditary title among the Woodcutters, akin to a minor lord)",
+      "description": "A middle-aged human man, clad in the trappings of his office—tight breeches with lace tracery in forest shades, and fine shirt bedecked with buckles. His face has a fine bone structure buried by the fat of a sedentary life. He is a near-continuous inhaler of the smoke of Azoth (p426); his mental extra-planar excursions induced by the drug have loosened his grip on this plane.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Distracted",
+        "impatient",
+        "melancholy",
+        "superficial"
+      ],
+      "speech": "Courtly, with unintentional rustic idioms",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic",
+        "Caprice"
+      ],
+      "desires": [
+        "Azoth",
+        "Discussion of extra-planar realms",
+        "To avoid discussing Woodcutter matters"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Azoth pipe"
+      ],
+      "location": "Ferneddbole House",
+      "stat_reference": "Everyday mortal (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "The Mornblade",
+      "type": "weapon",
+      "description": "An ancient blue-green sword hangs above the doorway to the feasting hall. Unbeknown to Pollard, it is a Fairy Longsword (Slumbering, p412). Its slumbering effect is only active during the autumn and winter.",
+      "mechanical_effect": "Fairy Longsword (Slumbering) - effect only active during autumn and winter"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Pollard welcomes guests, reluctantly putting aside a lit pipe of the drug Azoth from which he regularly partakes, and offering extremely strong sherry to break the ice. Despite his apparent sociability, his enquiries about the stories of visitors are feigned politeness. As evening draws on, his mood often drifts from expansive to rather spiteful. Discussion of the Woodcutters' craft immediately sends him into a sulk.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      330
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

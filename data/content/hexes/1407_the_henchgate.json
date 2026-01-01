@@ -1,0 +1,77 @@
+{
+  "hex_id": "1407",
+  "coordinates": [
+    14,
+    7
+  ],
+  "name": "The Henchgate",
+  "tagline": "Clouds of black midges buzz overhead, making periodic dive attacks.",
+  "region": "Tithelands",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The flat plains and farmlands that surround Castle Brackenwold (visible upon a hill to the south-east) give way to the great forest of Dolmenwood.",
+  "points_of_interest": [
+    {
+      "name": "Horse-Eye Road",
+      "poi_type": "road",
+      "description": "A major trade route in and out of the wood. Follows the edge of the forest before plunging into its depths at the very north-west corner of this hex.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Henchgate",
+      "poi_type": "landmark",
+      "description": "At the point where the road enters the forest, a curious landmark—a natural gateway, known as the \"Henchgate\"—stands astride the road. The gate is formed of the living trunks and branches of dozens of trees, woven and melded together to create a natural arched tunnel (about 30′ high, wide, and long) above the road. It is here that many newcomers to Dolmenwood are granted their first taste of the queer atmosphere that haunts the place.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Graffiti: The lower portions of the trees that form the gate have been carved, over centuries, with the names, initials, and love declarations of hundreds of passers-by.",
+        "Wooden faces: Above the scrawl, a profusion of quizzical wooden faces peer down at travellers.",
+        "Greetings: It is common for the faces of the Henchgate to speak, addressing travellers with their own names, in the common Woldish tongue, and wishing them well beneath the eaves of the forest. They are willing to make pleasant small talk about the weather and such, but merely smile quizzically if asked any questions."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Horse-Eye Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      352
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

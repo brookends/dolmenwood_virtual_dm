@@ -1,0 +1,122 @@
+{
+  "hex_id": "1201",
+  "coordinates": [
+    12,
+    1
+  ],
+  "name": "Ancient Evil",
+  "tagline": "Relentless moaning wind. The sky seems vast and malevolent.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Relentless moaning wind. The sky seems vast and malevolent.",
+  "points_of_interest": [
+    {
+      "name": "The Excavation",
+      "poi_type": "excavation",
+      "description": "A recently-trafficked trail branches south from the Downs Road, leading to a large mound ringed by a series of concentric ridges (the widest 300 yards across). An encampment of tents and wagons squats amid the ancient earthworks.",
+      "tagline": null,
+      "entering": "If PCs are spotted, they are warily hailed and allowed into the encampment.",
+      "interior": "Pursuing Helmwhit's obsession with the ancient civilisations of the Table Downs, the expedition is digging into the earthworks and has also dispatched teams to two smaller mounds nearby (hexes 1101 and 1202). So far, they have unearthed sundry artefacts (pottery fragments, wood carvings, etc.) and have reached a layer of carved stone, which they are working to break through.",
+      "exploring": "The day after PCs arrive: The workers penetrate the stone barrier, unearthing the tomb of a powerful and malevolent priestess—Kul—who was magically bound and buried here in prehistoric times. Exposure to sun and air causes her wicker-crowned corpse to disintegrate, and her spirit erupts from the ground as a terrible swirling vortex of screams, attacking all present.",
+      "leaving": null,
+      "inhabitants": "10 labourers, pack animals, and 3 guards (Level 1 fighters—DMB), led by the adventuring sage Archibald Helmwhit. The group arrived here three days ago after a long and treacherous journey from Castle Brackenwold.",
+      "roll_tables": [],
+      "npcs": [
+        "archibald_helmwhit"
+      ],
+      "special_features": [
+        "Several of the workers have had nightmares in which the mound shakes, the sky boils, and a demented, spiteful shrieking fills the air. Helmwhit remains unperturbed and oblivious.",
+        "Grave artefacts: Atop the dust of Kul's corpse lie six heavy bars of intricately carved, polished petrified wood (1,000gp each) that held Kul in place. Searching beneath the bars also reveals a desiccated severed finger; on it is a Ring of Charming (Humans, p410)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Glammering Gate",
+      "poi_type": "portal",
+      "description": "On the side of a low mound in the south-east of the hex, a pale mist roils within a stone-lintelled portal.",
+      "tagline": null,
+      "entering": "Touching the mist: Mortals must Save Versus Spell or be overcome with light-hearted gaiety lasting 1d6 days. Stepping through the portal: One is whisked away to the fairy road the White Way (see Fairy Roads, p26).",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "archibald_helmwhit",
+      "name": "Archibald Helmwhit",
+      "title": "Sage",
+      "description": "A squat, elderly human man, sporting a neatly trimmed beard, blue robes, and an embroidered red smoking cap.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "As forgetful and unwitting as he is self-assured and condescending"
+      ],
+      "speech": "Precise but repetitive. Woldish, Old Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To unearth the 'great treasures' he believes to be buried here. He welcomes assistance with the excavation, offering 5gp per PC to assist in the digging, and 15gp to check on the teams sent to hex 1101 or 1202."
+      ],
+      "secrets": [],
+      "possessions": [
+        "400gp in purse"
+      ],
+      "location": "The Excavation",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Six bars of petrified wood",
+      "description": "Six heavy bars of intricately carved, polished petrified wood that held Kul in place",
+      "value": "1,000gp each"
+    },
+    {
+      "name": "Ring of Charming",
+      "description": "Found on a desiccated severed finger beneath the bars",
+      "value": null
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Spirit of Kul: A seething, 25′ tall, turquoise gyre of spectral energy, emitting mindless howls of malice from a multitude of gaping mouths. Deeper wards prevent the spirit from leaving the ancient earthworks, and it does not pursue targets past that boundary. Large Undead—Mindless—Chaotic Level 12 AC 19 HP 50 Saves D5 R6 H7 B8 S9 Att Whirlwind (+9, 2d8) Fly 120 Morale 10 XP 3,800",
+  "adjacent_hexes": [
+    "1101",
+    "1202"
+  ],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      322
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

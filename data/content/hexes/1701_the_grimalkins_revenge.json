@@ -1,0 +1,164 @@
+{
+  "hex_id": "1701",
+  "coordinates": [
+    17,
+    1
+  ],
+  "name": "The Grimalkin's Revenge",
+  "tagline": "Grinning faces seem to manifest in tussocks, clouds, and puddles, vanishing when looked at directly.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with Hilda, furtively travelling between the Ogre Lair and the Secret Cave",
+    "foraging_results": "Successful foraging yields 1d6 portions of Groaning Mandrake (p430), in addition to the normal results",
+    "foraging_special": [
+      "Groaning Mandrake (1d6 portions)"
+    ]
+  },
+  "description": "After some travel along Downs Road, the party encounters the grimalkin Prissy Longtail, pacing in a circle and mumbling to herself. Grinning faces seem to manifest in tussocks, clouds, and puddles, vanishing when looked at directly.",
+  "points_of_interest": [
+    {
+      "name": "The Ogre Lair",
+      "poi_type": "lair",
+      "description": "In a bare hillside overlooking the road looms the mouth of a foul, bone-choked cave. A stubby chimney sits atop the hill.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A clan of 7 ogres inhabit this cave: an enormous, cruel matriarch named Aldheid (maximum HP, +1 bonus to Attack and Damage Rolls), 5 loutish and cantankerous sons, and a gentle-natured human daughter, Hilda.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A clan of 7 ogres (DMB): an enormous, cruel matriarch named Aldheid (maximum HP, +1 bonus to Attack and Damage Rolls), 5 loutish and cantankerous sons, and a gentle-natured human daughter, Hilda. All are present except possibly Hilda, who has a 3-in-6 chance of being in the Secret Cave, from which she returns in 1d3 Turns.",
+      "roll_tables": [],
+      "npcs": [
+        "hilda"
+      ],
+      "special_features": [
+        "Under a pile of filthy, maggoty furs is a crude hole in the cave floor"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Secret Cave",
+      "poi_type": "cave",
+      "description": "A mile away from the ogres' lair is another cave. Unknown to all, Hilda saved one of Prissy's kittens, and has brought it here to grow up far from the slavering jaws of the ogre family.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Some canisters of dead mice and some crude wooden toys.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A single grimalkin kitten, which Hilda calls Tommy Fluffkin. There is a 3-in-6 chance that Hilda is here, feeding the kitten and cleaning the cave.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden location"
+      ],
+      "secrets": [
+        "Contains Tommy Fluffkin, the surviving grimalkin kitten"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "prissy_longtail",
+      "name": "Prissy Longtail",
+      "title": "Level 4 Thief",
+      "description": "A chubby, sprightly, white-furred grimalkin woman with goggling blue eyes. Witlessly pacing the hills of this hex since the loss of her children, her fur is matted, her dress rumpled and torn, and her armour ragged.",
+      "kindred": "Grimalkin",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Manic",
+        "alternates between mournful, vengeful, and calculating"
+      ],
+      "speech": "Rapid and distracted. Woldish, Mewl.",
+      "languages": [
+        "Woldish",
+        "Mewl"
+      ],
+      "desires": [
+        "Utterly committed to the destruction of the ogres, to the point of bloodthirsty obsession"
+      ],
+      "secrets": [
+        "Her litter were all killed and eaten by a clan of ogres",
+        "Has taken terrible oaths and sworn vengeance on the ogres"
+      ],
+      "possessions": [
+        "Cloak of Darkness (DPB)"
+      ],
+      "location": "Pacing in a circle along Downs Road",
+      "stat_reference": "Level 4 Thief",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "hilda",
+      "name": "Hilda",
+      "title": null,
+      "description": "A 6′ tall, beautiful, golden-haired young human woman. Should PCs attack her clan, Hilda does not protect her family, but cries and grieves over their deaths. Given a chance, she tells Prissy about her remaining child, if the crazed grimalkin doesn't kill her first. She also freely offers the family's treasure to Prissy as wergild.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Taciturn",
+        "distant",
+        "glum",
+        "Gentle disposition, unlike the rest of her family"
+      ],
+      "speech": "Calm and firm. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To protect the grimalkin kitten",
+        "To guide her family away from its brutal ways, or at least find a way of living her own life"
+      ],
+      "secrets": [
+        "Saved one of Prissy's kittens and hides it in the Secret Cave"
+      ],
+      "possessions": [],
+      "location": "The Ogre Lair or The Secret Cave",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Golden locket",
+      "description": "Contains a perfect cloisonné image of Chateau Mauvesse",
+      "value": "1,300gp",
+      "location": "Under pile of filthy, maggoty furs in crude hole in cave floor"
+    },
+    {
+      "name": "Sapphires",
+      "description": "3 sapphires",
+      "value": "1,000gp each",
+      "location": "Under pile of filthy, maggoty furs in crude hole in cave floor"
+    },
+    {
+      "name": "Gold pieces",
+      "description": "650gp",
+      "value": "650gp",
+      "location": "Under pile of filthy, maggoty furs in crude hole in cave floor"
+    }
+  ],
+  "secrets": [
+    "Tommy Fluffkin, the surviving grimalkin kitten, is hidden in the Secret Cave"
+  ],
+  "dm_notes": "Prissy's plan: She accurately describes the lair as a cave in a nearby hill. She says the party need only distract the ogres, so that she can enter the lair via its chimney and strike from the rear. The party is free to keep all the ogres' treasure. If the party follows her plan, Prissy proceeds to the chimney, but reneges on her promise to attack, waiting first to see how the adventurers fare. Only if PCs slay at least four of the ogres does she join in.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      373
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

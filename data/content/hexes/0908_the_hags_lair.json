@@ -1,0 +1,135 @@
+{
+  "hex_id": "0908",
+  "coordinates": [
+    9,
+    8
+  ],
+  "name": "The Hag's Lair",
+  "tagline": "A confusing tangle of marshy waterways, peat bogs, and mud holes. Weirdly babbling bog-lights flicker.",
+  "region": "Hag's Addle",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Hag's Addle",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Nighttime encounters are 2-in-6 likely to be with the Hag (p82)",
+    "foraging_results": "Successful foraging yields 1d6 portions of Bloodcap (p428) or 1d4 portions of Grinning Jenny (p428), in addition to the normal results",
+    "foraging_special": [
+      "Bloodcap (1d6 portions)",
+      "Grinning Jenny (1d4 portions)"
+    ]
+  },
+  "description": "A confusing tangle of marshy waterways, peat bogs, and mud holes. Weirdly babbling bog-lights flicker.",
+  "points_of_interest": [
+    {
+      "name": "The Soul Pond",
+      "poi_type": "pond",
+      "description": "Close to the northern edge of this hex, amid the maze of streams and rivulets seeping into the River Hameth, is a broad, marshy pool veiled in a chill, greenish mist. The pool's waters are oily black whorled with vivid mauve.",
+      "tagline": null,
+      "entering": "If PCs approach, grisly heads and grasping hands form in the mist, gliding above the waters towards intruders. They brush against characters' cheeks and dissipate harmlessly.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Phantoms that brush against characters harmlessly",
+        "Bathing grants levitation for 1d6 hours"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Hag's Hut",
+      "poi_type": "hut",
+      "description": "In the deeps of the swamps on the southern banks, travellers may come across a simple reed-thatched wooden shack with a single door and no windows. This is the home of the Hag (p82).",
+      "tagline": null,
+      "entering": "The door is not locked. The Hag gains an immediate awareness of intruders and, if elsewhere, rushes back to the hut, arriving within 1 Turn.",
+      "interior": "Characters entering unbidden find the hut bare and unoccupied. Only those invited by the Hag (or those who can see through illusions) perceive the hut's true interior: a jumble of rude baskets, jars, and pots, with drying herbs hanging from the rafters and gnarled candles sputtering upon every surface. Green and orange flames flicker in a fireplace at one side, heating a great cauldron. In a corner, a reeking bundle of furs and rags serves as a bed.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The Hag broods in the hut during the day, fulfilling her accursed duty of guarding the Door to Fairy. At night, she wanders the marsh, foraging for herbs or victims. 5 large black cats (actually grimalkins charmed to remain forever in chester) lurk in the rafters, eyeing guests greedily.",
+      "roll_tables": [],
+      "npcs": [
+        "the_hag"
+      ],
+      "special_features": [
+        "Hut vanishes and reappears at dawn each day, moving from place to place",
+        "By day: sits astride a hummock amid swampy pool",
+        "By night: floats 10' above the surface",
+        "Cauldron contains stew of questionable meats",
+        "Candles show anguished faces in twisted wax",
+        "5 grimalkin guards in rafters"
+      ],
+      "secrets": [
+        "Fireplace is a Door to Fairy during the day"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    },
+    {
+      "name": "Door to Fairy",
+      "poi_type": "portal",
+      "description": "During the day, the Hag's fireplace acts as a door to Absynthe, Fairy domain of her sister, the Queen of Blackbirds (p35). The Hag is eternally bound as guardian to this door, even though she herself cannot cross its threshold.",
+      "tagline": null,
+      "entering": "Adventurers with an invitation from the Queen of Blackbirds may step past the cauldron, through the flames (which are harmless), and be transported to the fairy realm of Absynthe. The door allows entrance; there is no way back.",
+      "interior": "Characters appear amid a copse of forlorn pines upon an island in a gloomy lake. Ravens' calls pierce the frigid air, bringing word to the Queen that intruders have stepped through the Hag's portal.",
+      "exploring": null,
+      "leaving": "There is no way back through the door",
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "One-way portal to Absynthe",
+        "Only works during the day",
+        "Requires invitation from Queen of Blackbirds (normally)"
+      ],
+      "secrets": [
+        "The Hag may have knowledge of other routes of escape from her sister's realm"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_hag",
+      "name": "The Hag",
+      "title": null,
+      "description": "Guardian of the Door to Fairy, eternally bound to protect the portal to her sister's realm",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "Eternally bound as guardian to the Door to Fairy",
+        "Cannot cross the threshold herself",
+        "Has knowledge of other routes of escape from her sister's realm"
+      ],
+      "possessions": [],
+      "location": "The Hag's Hut",
+      "stat_reference": "p82",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence"
+  ],
+  "dm_notes": "Referees wishing to expand play into the realm of Absynthe may allow adventurers to enter the Hag's portal without an invitation. This requires the Referee to develop adventure locales of their own in Absynthe.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      293
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

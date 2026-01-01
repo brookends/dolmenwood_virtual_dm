@@ -1,0 +1,115 @@
+{
+  "hex_id": "1312",
+  "coordinates": [
+    13,
+    12
+  ],
+  "name": "Andromethia's Blossom Fields",
+  "tagline": "Acres of wildflower form broad swathes of colour, in contrast to the dark and shadowy forest to the north-west.",
+  "region": "Tithelands",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A cheerful hill-scape of meadows carpeted in thriving wildflowers: pendulous bluebell, daisies of the purest white and yellow, powder-blue harebell, bright magenta corncockle intermingled with spindly cow parsley, and bracken leavened with pink and white foxglove. The air is fresh and sweet with the flowers' delightful essence. Pathways: The seemingly wild fields are often bisected by pathways, clearly carefully and recently maintained. Fairy shimmer: Fairies and demi-fey notice an occasional but persistent shimmering at the edge of their vision and recognise this as an overlapping fairy reality.",
+  "points_of_interest": [
+    {
+      "name": "A Century of Slumber",
+      "poi_type": "enchanted_area",
+      "description": "The meadows of this hex are partially coexistent with the fairy domain of Princess Andromethia and are under her enchantment.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A contented tiredness: PCs who have exerted themselves this day (e.g. by combat or long travels) must Save Versus Spell (fairies and demi-fey gain a +4 bonus) or find themselves compelled to stop and rest among the flowers. Those who rest: Soon drift off to a serene and dreamy slumber, unless unaffected characters forcibly keep them awake. Those who do fall asleep cannot be awakened (short of the use of extremely powerful magic, at the Referee's discretion) for at least a century. Princess Andromethia: Surreptitiously appears alongside the party 1d3 Turns after any PC is ensorcelled in this way. She awakens any sleepers and casts Geas on them, tasking them with a quest (see Desires). Should they fail, they return to slumbering in the fields.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Princess Andromethia",
+      "roll_tables": [],
+      "npcs": [
+        "princess_andromethia"
+      ],
+      "special_features": [
+        "Fairy shimmer visible to fairies and demi-fey",
+        "Enchanted slumber effect",
+        "Pathways carefully maintained"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "In Summertime",
+      "poi_type": "seasonal_encounter",
+      "description": "In the high days of summer, there is a 3-in-6 chance that adventurers come upon Princess Andromethia and her fancifully clad entourage of 1d6+2 attendants (stats as elf wanderers—DMB), taking sumptuous meals and playing games.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Greetings: Andromethia's courtiers announce her title in tones of exaggerated reverence as she modestly protests. She greets the PCs warmly and invites them to join in the festivities. Bountiful hampers: Those who partake of Andromethia's picnic hampers find the food endless and exquisite beyond any previously experienced. Farewell: As dusk approaches, Andromethia and the elves begin to vanish, unnoticed, one at a time, till all have gone.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Princess Andromethia and 1d6+2 elf wanderer attendants",
+      "roll_tables": [],
+      "npcs": [
+        "princess_andromethia"
+      ],
+      "special_features": [
+        "3-in-6 chance encounter in summer",
+        "Endless exquisite food",
+        "Courtiers vanish at dusk"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "princess_andromethia",
+      "name": "Princess Andromethia",
+      "title": "Princess",
+      "description": "An eternally youthful, half-elfish / half-satyr lady with a single spiralling horn above her left ear and the hoof of a goat in place of her right foot.",
+      "kindred": "Medium Fairy",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Kindly",
+        "tricksome",
+        "judicious"
+      ],
+      "speech": "Soft, languid. Enjoys addressing people in fairy languages they cannot comprehend, before tiring of the game and switching to Woldish.",
+      "languages": [
+        "Woldish",
+        "Sylvan",
+        "High Elfish"
+      ],
+      "desires": [
+        "The recovery of her most cherished handkerchief, which she believes to be in the possession of her wicked half-sister, the Lady of Spring Unending (hex 0402)",
+        "The delivery of a note to the Ambassador of the Cold Prince (hex 0504—she can give directions but does not know how to locate or enter the embassy). The note, written in High Elfish, consists of banal pleasantries with a few double entendres sprinkled in. Oddly, it is dated with a human calendar date, some 200 years past."
+      ],
+      "secrets": [],
+      "possessions": [
+        "Staff",
+        "Note written in High Elfish dated 200 years past"
+      ],
+      "location": "Andromethia's Blossom Fields",
+      "stat_reference": "Medium Fairy—Genius—Neutral Level 14 AC 19 HP 75 Saves D4 R5 H6 B7 S8 Att Staff (+10, 1d6) or touch (+10, slumber) or magic Speed 40 Morale 9 XP 7,550",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Reward: Andromethia awakens any sleeping party members, and gives adventurers the exact location of one fairy door (see Fairy Doors, p25). Immunities: Only harmed by magic or magic weapons. Magic Resistance: +4 bonus to Saving Throws against effects of magical origin. Slumber: Save Versus Spell or fall deeply asleep for 1d6 Turns—may be forcibly awakened (e.g. by slapping). Fairy magic: Glamours Beguilement, Conjure Treats, Disguise Object, Forgetting, Moon Sight, Seeming, Subtle Sight, Lesser runes (thrice a day) all, Greater runes (once a day) all, Mighty runes (once a day) Eternal Slumber. The Lady can also cast the arcane spell Vapours of Dream without limit, Geas once a day, and the holy spell Create Food once a day.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      345
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

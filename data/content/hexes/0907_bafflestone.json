@@ -1,0 +1,63 @@
+{
+  "hex_id": "0907",
+  "coordinates": [
+    9,
+    7
+  ],
+  "name": "Bafflestone",
+  "tagline": "Dismal, pathless woods; knotted roots and tangled boughs. Grisly, rasping moans punctuate the silence.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with 2d10 wandering Bafflestone Thralls",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Dismal, pathless woods; knotted roots and tangled boughs. Grisly, rasping moans punctuate the silence. Travellers within this hex are assailed by nausea, confusion, and unease, emanating from a malignant presence that can be sensed at the centre of the hex.",
+  "points_of_interest": [
+    {
+      "name": "Bafflestone",
+      "poi_type": "nodal stone",
+      "description": "Those who arrive at the centre of the hex enter a shadowy, silent glade, wherein an ancient and forbidding nodal stone looms over dead grass. It is known to the Drune, its creators, as Bafflestone.",
+      "tagline": null,
+      "entering": "The source of the emanations—the broken nodal Bafflestone—can easily be located by heading towards the sensed malignant presence.",
+      "interior": "The stone is an irregular, blocky prism of deepest red carnelian, about 8′ tall and 3′ wide, with a smoke-like vein of black crystal residing at its core. Close examination of Bafflestone's surface reveals minutely carved Drunic sigils, repeating the phrase: 'Bafflestone, Hand of Drune, Nexus of Lamm and Ywyr.' Drunic runes describe the arcane spell Glyph of Locking.",
+      "exploring": null,
+      "leaving": "Unless dragged, pulled, or otherwise coerced at least 1 mile away from the stone within 8 hours, those enthralled wither and die, remaining on this plane as morose and disconsolate undead wanderers: Bafflestone Thralls.",
+      "inhabitants": "Bafflestone Thralls patrol the environs without rest, seeking to drag outsiders to the site of the stone.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Enfeebling Emanations: Living creatures suffer a –1 penalty to Attack Rolls and Saving Throws while in this hex",
+        "All who view Bafflestone: Must Save Versus Spell or fall under its thrall",
+        "Inscribed spell: Drunic runes describe the arcane spell Glyph of Locking",
+        "Ley line crossing Lamm/Ywyr: Arcane spell-casters perceive an incessant, spiralling wailing, as if a gateway to the realm of the dead were nearby"
+      ],
+      "secrets": [
+        "Bafflestone was irrevocably warped by a pernicious ley resonance set up by Atanuwë, emanating from the captured nodal Sargstone. The stone's inner magical structure erupted with a grievous and invisible wound that the Drune—much to their shame—were unable to staunch."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "Consequences of Bafflestone Exposure: Those who fail to resist the Bafflestone's power become sympathetic to the stone's deep malignity. Initial symptoms: Unable to sleep, unwilling to leave the stone's presence without physical coercion, and unwilling to eat or drink, despite hunger and thirst."
+  ],
+  "dm_notes": "Bafflestone Thralls: Medium Undead—Mindless—Chaotic, Level 2 AC 11 HP 2d8 (9) Saves D12 R13 H14 B15 S16, Att Claw (+1, 1d4 + grasp) Speed 30 Morale 12 XP 35. Undead: Silent before attacking. Immune to biological effects and mind-affecting spells. Gang up: Groups of 3–4 thralls attempt to surround an individual victim to subdue them and drag them to Bafflestone. Grasp: The thrall grabs onto the victim and only lets go if killed. The victim suffers a –2 penalty to Attack Rolls and AC. This penalty is cumulative if multiple thralls grasp the same victim. A victim grappled by 3 or more thralls is helpless and is dragged towards Bafflestone.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      292
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

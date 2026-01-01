@@ -1,0 +1,203 @@
+{
+  "hex_id": "1401",
+  "coordinates": [
+    14,
+    1
+  ],
+  "name": "Fresh Graves",
+  "tagline": "A weak wind carries the low, mournful cries of distant wolves.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Nighttime encounters are 3-in-6 likely to be with Grinstead, accompanied by 1d6 wolves (DMB)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A weak wind carries the low, mournful cries of distant wolves.",
+  "points_of_interest": [
+    {
+      "name": "Graveyard",
+      "poi_type": "graveyard",
+      "description": "Visible a mile south of the Downs Road is a lonely graveyard, surrounded by crumbling stone walls.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Ten graves lie inside the stone perimeter, the earth of each freshly churned. The tombstones are crudely carved with religious scripture, but no names.",
+      "exploring": "Only one grave contains a body: a young man, freshly killed.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Ten freshly churned graves with crude tombstones"
+      ],
+      "secrets": [
+        "Only one grave contains a body: a young man, freshly killed"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Parr's Ruin",
+      "poi_type": "ruin",
+      "description": "The collapsed remains of an ancient farmhouse. A single room remains intact, with a wooden door and shutters recently installed.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Sparsely furnished with camping gear and candles. A small bundle of religious texts lies beside a bedroll. A door, obscured by debris, leads to a stairway down to the Cellar.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Sister Parr leads a solitary, miserable existence here.",
+      "roll_tables": [],
+      "npcs": [
+        "sister_wilfrinda_parr"
+      ],
+      "special_features": [
+        "Door to cellar obscured by debris"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    },
+    {
+      "name": "Cellar",
+      "poi_type": "cellar",
+      "description": "A small stone room, stinking of rot and death. Dried blood spatters the walls and floor. A jagged opening in one wall leads to a warren of tunnels and wolf dens, with exits among the surrounding hills.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A small stone room, stinking of rot and death. Dried blood spatters the walls and floor.",
+      "exploring": "A jagged opening in one wall leads to a warren of tunnels and wolf dens, with exits among the surrounding hills.",
+      "leaving": null,
+      "inhabitants": "By day, the revenant Grinstead lurks here; by night, he roams the nearby road, in search of victims.",
+      "roll_tables": [],
+      "npcs": [
+        "grinstead"
+      ],
+      "special_features": [
+        "Jagged opening to tunnel warren"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Tunnels",
+      "poi_type": "tunnels",
+      "description": "A warren of tunnels and wolf dens, with exits among the surrounding hills.",
+      "tagline": null,
+      "entering": null,
+      "interior": "In one den sits a chest (locked—Grinstead has the key) guarded by 1d6+1 wolves (DMB).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "1d6+1 wolves guard the chest",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Locked chest guarded by wolves"
+      ],
+      "secrets": [
+        "Chest contains 360gp, 494sp, 283cp, a sapphire ring (1,200gp), and a vial of Wyrmsblood Elixir"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "grinstead",
+      "name": "Grinstead",
+      "title": "Necrophage",
+      "description": "An undead revenant, originally a sadistic noble who developed a taste for human flesh. Dark-haired, tall, ashen-skinned, eyes a bloody red, seemingly in his late 20s. Dresses in finery, blackened with dirt. In undeath, can feed only on corpses that have received a consecrated burial. Driven out of civilised regions, he has kidnapped the friar Sister Parr, forcing her to perform last rites on the bodies of travellers he murders.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Proud and manipulative",
+        "Long past any sense of shame or guilt for his actions"
+      ],
+      "speech": "Strong, commanding. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "Fresh human corpses for the Graveyard",
+        "Alliances with the Table Downs' fell denizens (such as the wolves, to whom he feeds his victim's mounts)"
+      ],
+      "secrets": [],
+      "possessions": [
+        "An Arcane Longsword of cold iron with 'Vilin remembers' engraved on the pommel in Old Woldish",
+        "The key to the chest in the Tunnels"
+      ],
+      "location": "Cellar (by day), roams nearby road (by night)",
+      "stat_reference": "Medium Undead—Sentient—Chaotic, Level 5 AC 15 HP 22 Saves D10 R11 H12 B13 S14",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "sister_wilfrinda_parr",
+      "name": "Sister Wilfrinda Parr",
+      "title": "Level 1 Friar",
+      "description": "A gaunt, middle-aged human woman with an ill-maintained tonsure and sunken eyes. Dressed in hessian robes. Her hands and fingernails are stained with dirt. She is a captive of Grinstead, forced to consecrate the bodies of the revenant's kills so that Grinstead may unearth and devour them. She bitterly knows he will just find another priest if she dies refusing.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Depressed and defeated"
+      ],
+      "speech": "Deliberate, weary. Woldish, Liturgic.",
+      "languages": [
+        "Woldish",
+        "Liturgic"
+      ],
+      "desires": [
+        "To find the strength to escape"
+      ],
+      "secrets": [
+        "Unable to cast spells, due to deity disfavour"
+      ],
+      "possessions": [
+        "Religious texts"
+      ],
+      "location": "Parr's Ruin",
+      "stat_reference": "Level 1 Friar",
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Arcane Longsword",
+      "description": "Cold iron longsword with 'Vilin remembers' engraved on the pommel in Old Woldish",
+      "location": "Carried by Grinstead",
+      "value": null
+    },
+    {
+      "name": "Sapphire Ring",
+      "description": "Valuable sapphire ring",
+      "location": "Locked chest in Tunnels",
+      "value": "1,200gp"
+    },
+    {
+      "name": "Wyrmsblood Elixir",
+      "description": "Vial of Wyrmsblood Elixir",
+      "location": "Locked chest in Tunnels",
+      "value": null
+    }
+  ],
+  "secrets": [
+    "Parr warns off visitors without saying why, imploring them to leave the hex before dark",
+    "Grinstead forces Sister Parr to consecrate his victims so he can feed on them"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Downs Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      346
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

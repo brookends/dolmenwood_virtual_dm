@@ -1,0 +1,130 @@
+{
+  "hex_id": "1205",
+  "coordinates": [
+    12,
+    5
+  ],
+  "name": "Gorthstone",
+  "tagline": "Elegant, golden-leafed beeches seem to caringly shield travellers from the elements.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 elf knights (DMB) in the service of the Earl of Yellow (p32), clad entirely in yellow and mounted on great golden wolves (as dire wolves, DMB).",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Elegant, golden-leafed beeches seem to caringly shield travellers from the elements. At the very centre of the hex lies a large glade, about 500′ wide, surrounding a 300′ diameter pool of clear, placid water punctuated with clusters of pale green water lilies. At the very centre of the pool is a tall, black obelisk—the Gorthstone.",
+  "points_of_interest": [
+    {
+      "name": "Haunted Pool",
+      "poi_type": "pool",
+      "description": "A large glade, about 500′ wide, surrounding a 300′ diameter pool of clear, placid water punctuated with clusters of pale green water lilies.",
+      "tagline": null,
+      "entering": null,
+      "interior": "An odd magic wraps the glade, whereby the day's prevailing weather conditions are reversed. On sunny days, the pool is veiled with fog and storms; in the deep cold of winter, a clement warmth surrounds the stone; and so forth.",
+      "exploring": "Gazing into the waters reveals the pale, shrouded form of a young woman, drifting among the lily stems: the Phantom of the Pool. Touching the waters awakens the Phantom of the Pool, who rises from the water. The person disturbing the pool must also Save Versus Spell or fall instantly into a deep slumber for 1d3 hours. Drinking the waters causes a person to instantly fall into a deep slumber for 1d3 hours, with no save.",
+      "leaving": null,
+      "inhabitants": "The Phantom of the Pool",
+      "roll_tables": [],
+      "npcs": [
+        "phantom_of_the_pool"
+      ],
+      "special_features": [
+        "Weather reversal effect"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Gorthstone",
+      "poi_type": "obelisk",
+      "description": "A 20′ wide dais of crumbling, weed-clad sandstone. Atop it stands a 15′ high obelisk of hard, black rock, veined with silver.",
+      "tagline": null,
+      "entering": "Those who successfully cross the pool arrive at the dais.",
+      "interior": "Tight bands of ancient Old Drunic script close to the base of the stone and more recent Drunic runes around the middle.",
+      "exploring": "Stepping on the dais alerts the Audrune Haygral of intruders, causing him to summon 2 Drune cottagers (DMB) and 1d4 bramblings (DMB) that arrive in 1d6 Turns.",
+      "leaving": null,
+      "inhabitants": "The Audrune Haygral (guardian)",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_haygral"
+      ],
+      "special_features": [
+        "Inscribed spell: Trap the Soul",
+        "Disenchantment ritual instructions"
+      ],
+      "secrets": [
+        "The ancient script provides instructions for a ritual that may be performed at this site to dispel even the deepest enchantments. The ritual requires the participation of three arcane spell-casters of at least Level 5 and must be performed upon the night of a solstice."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_haygral",
+      "name": "The Audrune Haygral",
+      "title": null,
+      "description": "Has abandoned his physical form and now exists solely within the flow of the ley energies around Gorthstone. His body lies in temporal stasis, ritually interred in the crypts of the Drune Lodge (hex 0507).",
+      "kindred": "Drune",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "His physical body lies in temporal stasis in the crypts of the Drune Lodge (hex 0507)"
+      ],
+      "possessions": [],
+      "location": "Gorthstone",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "phantom_of_the_pool",
+      "name": "The Phantom of the Pool",
+      "title": null,
+      "description": "A pale, spectral human woman dressed in the sodden white vestments of some long-forgotten sect. In her eyes burns an eerie blue light.",
+      "kindred": "Human (Undead)",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Despondent",
+        "hateful of the living who do not understand her plight"
+      ],
+      "speech": "Otherworldly wailing. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To be laid to rest by the reconstitution of a staff, belonging to the Church, that once imprisoned her"
+      ],
+      "secrets": [
+        "Originally a high priestess of a Gwyrae sect, the Church trapped her spirit within the Staff of the Apostle, a powerful relic. When the Drune destroyed the staff here through the disenchantment ritual engraved on Gorthstone, she was released as a demi-plasm. The Drune then bound her to the pool to act as a guardian for the stone. She can be freed by performing the disenchantment ritual on the pool itself."
+      ],
+      "possessions": [],
+      "location": "Haunted Pool",
+      "stat_reference": "Spectre (DMB). If slain, returns 7 days later.",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Ley line crossing Hoad/Ywyr: Arcane spell-casters perceive the wailing cries of infants slowly fading into the moans of the dead, repeating in an endless cycle."
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      326
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "hex_id": "1702",
+  "coordinates": [
+    17,
+    2
+  ],
+  "name": "The Balming Grove",
+  "tagline": "Milky fungal puddles and towering, lichen-coated fir trees, the bark near their bases notably shredded.",
+  "region": "Shadows of Howawi",
+  "terrain_type": "hilly forest",
+  "terrain_description": "Hilly forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with 2 deorling stags (DMB) and 1d6+1 deorling does (DMB). The stags duel each other over breeding rights with one of the does, who observes and judges the fight.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "In the perpetually fir-shaded hills of this hex gather the mysterious and fading creatures known as the deorlings. Though scarce throughout most of Dolmenwood, the creatures are drawn to this region. Amidst the hills, dales, and dense woods, they engage in complex social rituals, including bloody duels over breeding rights, and veneration of their patron deity, the Wood God Howawi (p38). Locus of Howawi: The deorlings are attracted here by the lingering presence of their god, whose essence they can sense throughout these hills. Though Howawi is no longer visible to mortal eyes, PCs feel something watching from the gloom, and hunters may glimpse the shadows of giant antlers.",
+  "points_of_interest": [
+    {
+      "name": "The Balming Grove",
+      "poi_type": "grove",
+      "description": "In the north-western region of this hex, travellers perceive a persistent chanting—low and sibilant, composed of many voices. Following the sounds to their source leads to a copse of fir trees, nestled among the hills.",
+      "tagline": null,
+      "entering": "The fir trees have off-white needles and are dotted with eternally juvenile, ochre cones, textured like an infant's soft flesh. The chanting emanates from a broad glade at the copse's centre.",
+      "interior": "On this needle-littered ground, a deorling doe matriarch (DMB), known as the Mother of Whispers, and an ever-changing choir of 25 deorling does (DMB) stand in a circle, maintaining an unending vigil of ancient prayer to Howawi. At times, one or more members enter the circle to perform an elaborate series of dancing motions and wild gesticulations.",
+      "exploring": "Visitors are immediately confronted by the matriarch and 5 attending does, while the rest of the choir continues uninterrupted. Unless interlopers offer profound apologies and a quick departure, or a tribute to Howawi, the matriarch and her attendants attack them. Those presenting a suitable tribute may be invited to return on the next new moon night for a reciprocal gift.",
+      "leaving": null,
+      "inhabitants": "A deorling doe matriarch (DMB), known as the Mother of Whispers, and an ever-changing choir of 25 deorling does (DMB)",
+      "roll_tables": [],
+      "npcs": [
+        "mother_of_whispers"
+      ],
+      "special_features": [
+        "New Moon Nights: On the coming of the new moon, the does' prayers turn to wild ululation. The worshippers produce crude iron mortars, pestles, and cauldrons. Toiling over these for several hours even as they chant ecstatically, they brew a restorative balm out of boiled bristle-cone, sap, and mould-coated needle (see Deorling Balm, p402). Invited guests each receive a dose of the balm."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Primula",
+      "poi_type": "shrine",
+      "description": "A 30′ deep sinkhole lies at the bottom of a dell tangled with fallen trees. The tumbled remnants of a pink-veined marble shrine rest at the sludgy base of the sinkhole. Beneath the pile is a beautiful (though lichen-stained) wood engraving of St Primula and a herd of oxen.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The tumbled remnants of a pink-veined marble shrine rest at the sludgy base of the sinkhole. Beneath the pile is a beautiful (though lichen-stained) wood engraving of St Primula and a herd of oxen.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the shrine is reassembled, characters praying may receive the blessing of St Primula: the ability to cast Remove Curse. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mother_of_whispers",
+      "name": "Mother of Whispers",
+      "title": "Deorling Doe Matriarch",
+      "description": "A deorling doe matriarch who leads an ever-changing choir of 25 deorling does in maintaining an unending vigil of ancient prayer to Howawi.",
+      "kindred": "Deorling",
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Maintaining the ancient vigil to Howawi",
+        "Protecting the sacred grove"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Balming Grove",
+      "stat_reference": "deorling doe matriarch (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Deorling Balm",
+      "description": "A restorative balm brewed from boiled bristle-cone, sap, and mould-coated needle",
+      "reference": "p402"
+    },
+    {
+      "name": "Wood engraving of St Primula",
+      "description": "A beautiful (though lichen-stained) wood engraving of St Primula and a herd of oxen"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      374
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

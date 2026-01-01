@@ -1,0 +1,179 @@
+{
+  "hex_id": "1010",
+  "coordinates": [
+    10,
+    10
+  ],
+  "name": "The House of the Harridwn",
+  "tagline": "Tall, sighing birches, bored with beetle holes. A profusion of busy ants and their mounds.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Tall, sighing birches, bored with beetle holes. A profusion of busy ants and their mounds.",
+  "points_of_interest": [
+    {
+      "name": "Crossroads and Signpost",
+      "poi_type": "crossroads",
+      "description": "At the crossroads of the Ditchway and Harrid's Path, an old signpost indicates: \"N: Hag's Addle, S: House of the Harridwn (Inn), E: Dreg (Ferry), W: Lankshorn (Lankston).\"",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The House of the Harridwn",
+      "poi_type": "inn",
+      "description": "About three miles along the narrow, lesser-used Harrid's Path, travellers come upon a small, homely inn standing at the side of the trail. A meagre, forlorn barn adjoins it.",
+      "tagline": "A horde of welcoming children in maroon livery.",
+      "entering": null,
+      "interior": "Cramped but cosy common room. In colder months, the small ironwork hearth holds a roaring fire. The guest rooms are situated along a winding hallway up a wonky, creaky stair. Curiously, there are dozens of guest rooms, occupying far more space than the inn's apparent size, when viewed from outside.",
+      "exploring": "The winding upper hallway ends at a stairway leading up to a blank ceiling. Knocking causes a hidden trapdoor to open, leading to the Hidden Bedroom.",
+      "leaving": null,
+      "inhabitants": "Mallowyn and Trellayde Occland serve as landladies. The inn is little frequented; it is likely that adventurers who enter are the only guests.",
+      "roll_tables": [],
+      "npcs": [
+        "mallowyn_occland",
+        "trellayde_occland"
+      ],
+      "special_features": [
+        "Bigger on the inside: The guest rooms occupy far more space than the inn's apparent size",
+        "Dead-end stair: Knocking on blank ceiling opens hidden trapdoor",
+        "Hidden bedroom: A gloomy attic space with woman's skeleton in bed with dried lavender and roses",
+        "Behind the barn: A glade of gravestones, several bear the name Occland, but graves for Tom, Mildred, and Greta Rumbelow are also present",
+        "Nightly Hauntings: Guest rooms haunted by ghosts of children"
+      ],
+      "secrets": [
+        "The inn was once the enchanted house of a powerful witch, Holstra Loom",
+        "When she died, her family interred her in the Hidden Bedroom",
+        "The Rumbelow children were slain by the witch's spirit",
+        "If the witch's skeleton is disturbed, her spirit rises as a spectre",
+        "Slaying the spirit puts an end to the inn's odd magic and the hauntings"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Ponch",
+      "poi_type": "shrine",
+      "description": "In the north-west corner of the hex, 200 yards from the Ditchway, a valley overgrown with towering nodules of slimy black fungus conceals a shrine to St Ponch the prudent, patron saint of whalers and castaways.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A simple wooden porch (now rotten and slimy) above the statue. The whole structure is submerged in the mass of fungus.",
+      "exploring": "The fungus that dominates the valley is known as Hob's Lewd. 3d6 portions of its psychoactive slime may be gathered here.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Statue of St Ponch: A 2′ high statue of white marble, depicting the saint as an old bearded man, bedraggled with sea foam and holding a whaling hook in one hand and a basket of scones in the other",
+        "Black fungus: The fungus is known as Hob's Lewd, 3d6 portions of psychoactive slime may be gathered"
+      ],
+      "secrets": [
+        "If the shrine is cleared, characters praying may receive the blessing of St Ponch: the ability to cast Create Food"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mallowyn_occland",
+      "name": "Mallowyn Occland",
+      "title": "Landlady",
+      "description": "Nigh-identical elderly human sister with bright blue eyes and flowing, silver hair. Dressed in tidy knitwear.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Welcoming but enigmatic",
+        "Eyes twinkling with youthful mischief"
+      ],
+      "speech": "Shrill, wavering, punctuated with cackles. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Love to hear new songs and tales of daring",
+        "For the witch in the Hidden Bedroom to be left in peace"
+      ],
+      "secrets": [
+        "The landladies know of the inn's History",
+        "They are descendants of the witch",
+        "If asked about the ghostly children, the landladies claim they are here with another guest, Mr Rumbelow",
+        "They wish to draw attention away from the Hidden Bedroom"
+      ],
+      "possessions": [],
+      "location": "The House of the Harridwn",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "trellayde_occland",
+      "name": "Trellayde Occland",
+      "title": "Landlady",
+      "description": "Nigh-identical elderly human sister with bright blue eyes and flowing, silver hair. Dressed in tidy knitwear.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Welcoming but enigmatic",
+        "Eyes twinkling with youthful mischief"
+      ],
+      "speech": "Shrill, wavering, punctuated with cackles. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Love to hear new songs and tales of daring",
+        "For the witch in the Hidden Bedroom to be left in peace"
+      ],
+      "secrets": [
+        "The landladies know of the inn's History",
+        "They are descendants of the witch",
+        "If asked about the ghostly children, the landladies claim they are here with another guest, Mr Rumbelow",
+        "They wish to draw attention away from the Hidden Bedroom"
+      ],
+      "possessions": [],
+      "location": "The House of the Harridwn",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Hob's Lewd",
+      "description": "Psychoactive slime from black fungus",
+      "quantity": "3d6 portions",
+      "location": "The Shrine to St Ponch"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Services at the House of the Harridwn: Lodgings and food of common quality. Only one (tiny and quaintly appointed) private room is available; all other rooms are shared. Specialities: Buttered currant buns for 3cp each; local ale (\"Hameth Foam\") for 1sp a pint.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Ditchway",
+    "Harrid's Path"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      307
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "hex_id": "1408",
+  "coordinates": [
+    14,
+    8
+  ],
+  "name": "Moriggan's Crag",
+  "tagline": "Cheery, windswept fields of crops and scarecrows. Utterly flat, aside from a single gigantic rock.",
+  "region": "Tithelands",
+  "terrain_type": "farmland",
+  "terrain_description": "Farmland (2), Tithelands",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Cheery, windswept fields of crops and scarecrows. Utterly flat, aside from a single gigantic rock.",
+  "points_of_interest": [
+    {
+      "name": "Moriggan's Crag",
+      "poi_type": "landmark",
+      "description": "An enormous boulder juts out of the flatness of the arable plain to the south of Camp Road, visible for miles around. The rock is 100 yards high and almost 200 yards across, with a flattened top and jagged sides. The sides and top support a rich jungle of ferns, mosses, and silver-leafed oaks. A stair—partly carved out of the rock, partly consisting of hanging bridges—winds around half the rock's perimeter, ending at the summit on the south side.",
+      "tagline": null,
+      "entering": "Access via stairway that winds around half the rock's perimeter",
+      "interior": "The top of the Crag is guarded by 1d6 cragwardens at any time. Contains the Drune Cottage on the northern edge.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "1d6 cragwardens guard the top at any time. The Order of the Cragwardens is a semi-secretive militia composed of folk from local farms and villages.",
+      "roll_tables": [],
+      "npcs": [
+        "cragwarden"
+      ],
+      "special_features": [
+        "Summer Solstice: Upon the eve of the summer solstice (the 18th of Chysting), local people build fires atop the Crag and dance through the night. The cragwardens' watchfulness is lax, at best, on this evening."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Drune Cottage",
+      "poi_type": "cottage",
+      "description": "Upon the northern edge of the Crag stands a quaint, round cottage of stacked stone, with a thatched roof and two chimneys, accompanied by a small, walled garden.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A single, round room containing a plump bed, a fireplace and stove, an ancient, oaken armoire, a library of curious lore (in Old Woldish), a mighty chest full of candles, and a walnut writing desk and chair. A quill, inkwell, and neatly stacked sheets of blank paper sit atop the desk. Above the desk is a window, through which can be seen the seemingly endless sweep of the Dolmenwood to the north.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The cragwardens keep the cottage clean and hospitable, but even the oldest of their number have no memory of it ever being occupied by the Elder Phanatarch.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Well-maintained herb and vegetable gardens (produce consumed in cragwardens' kitchens)",
+        "One book contains arcane spells written in Drunic: Rank 1 Ingratiate, Ioun Shard (manifests as a streak of green flame), Rank 2 Glyph of Locking"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "cragwarden",
+      "name": "Cragwarden",
+      "title": null,
+      "description": "Members of the Order of the Cragwardens, a semi-secretive militia composed of folk of an active age from among the local farms and villages. They call the Crag 'Old Mother'.",
+      "kindred": "Mortal",
+      "alignment": "Lawful",
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Guard the Crag against invasion by fairies",
+        "Maintain the cottage for the Elder Phanatarch of the Drune"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Ceremonial boar spear",
+        "Shortsword",
+        "Scarlet leggings",
+        "Pointy caps of green wool",
+        "Polished black leather cuirasses"
+      ],
+      "location": "Moriggan's Crag",
+      "stat_reference": "Medium Mortal—Sentient—Lawful, Level 1 AC 12 HP 1d8 (4) Saves D12 R13 H14 B15 S16, Att Ceremonial boar spear (+0, 1d8) or shortsword (+0, 1d6) Speed 40 Morale 8 XP 10",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Spell book",
+      "description": "One of the books of lore contains arcane spells written in Drunic: Rank 1 Ingratiate, Ioun Shard (manifests as a streak of green flame), Rank 2 Glyph of Locking",
+      "location": "The Drune Cottage"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "The Order of Cragwardens is loyal to the Dukes of Brackenwold. Their duties are antiquated and defunct for many centuries.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Camp Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      353
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

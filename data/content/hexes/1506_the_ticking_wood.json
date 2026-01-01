@@ -1,0 +1,175 @@
+{
+  "hex_id": "1506",
+  "coordinates": [
+    15,
+    6
+  ],
+  "name": "The Ticking Wood",
+  "tagline": "Great, multi-hued fungal latticeworks stretch between the branches of crooked oaks.",
+  "region": "Mulchgrove",
+  "terrain_type": "fungal forest",
+  "terrain_description": "Fungal forest (2), Mulchgrove",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d4 portions of Angel's Lament (p428) and 1d4 portions of Velvet Flounder (p428), in addition to the normal results",
+    "foraging_special": [
+      "Angel's Lament (1d4 portions)",
+      "Velvet Flounder (1d4 portions)"
+    ]
+  },
+  "description": "Great, multi-hued fungal latticeworks stretch between the branches of crooked oaks. Beneath the natural sounds of the fungal forest—the chirruping of birds and the yapping of puggles—a slow, resonant ticking, as of a clock, persists.",
+  "points_of_interest": [
+    {
+      "name": "Quiet Ticking",
+      "poi_type": "phenomenon",
+      "description": "Beneath the natural sounds of the fungal forest—the chirruping of birds and the yapping of puggles (see Animals, DMB)—a slow, resonant ticking, as of a clock, persists.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Travellers may at times feel that they are approaching the source of the ticking, and may even hear it echoing out from holes in trees or cracks between rocks. The source is, however, elusive, and seems to shift over time.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Source is elusive and seems to shift over time"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Clockwork Assembly",
+      "poi_type": "dungeon",
+      "description": "Giant, spotted mushrooms ring a steep dell, which is coated in the turquoise slime dripping from them. Built into one side of the dell is a 3′ high, slime-covered round wooden door.",
+      "tagline": "Hidden",
+      "entering": "Beyond the door, a sandy, root-lined crawlway slopes down into the earth for 50′ before opening out into a domed cavern, 100′ high, that houses the Clockwork Assembly (the source of the ticking in this hex).",
+      "interior": "A vast living machine of gears, cogs, levers, clock faces, dials, and symbol-inscribed discs, constructed entirely of polished wood, seemingly grown from great roots at the base of the cavern. Briglomb scrambles up and down the scaffold of ladders, pulleys, and rickety platforms that surrounds the assembly, laboriously polishing by the light of an oil lamp. A clangour of creaking, grinding, and ticking reverberates around the cavern, and the smell of wood polish is all-pervasive.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Briglomb the Clockworker dwells here alone, tending to the workings of the Clockwork Assembly. He has no knowledge of its function or origin, but presents his theories as fact, if questioned. Visitors are welcome, so long as they do not tamper with the Assembly.",
+      "roll_tables": [
+        {
+          "name": "Hypothesised Functions of the Clockwork Assembly",
+          "die_type": "d6",
+          "description": "Briglomb's theories about the Assembly's function",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Part of the \"vast, mechanical mind\" of the Wood God Limwdd (p38).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Countdown to the end of time.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Tallies souls passed into the afterlife.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Tracks the positions of a multitude of heavenly and chthonic bodies.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Controls the fates of all mortals within Dolmenwood.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Calculating the answer to the great question of life, the universe, and everything.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "briglomb_the_clockworker"
+      ],
+      "special_features": [
+        "Clockworker's chambers: A small side chamber, riddled with giant roots as thick as thighs, blanketed in a profusion of glowing pink mushrooms. Little areas clear of fungus house Briglomb's bed (mounds and pillows of dried moss), library (meticulous plans and notes relating to the Assembly), and pantry (jars of pickled fungus).",
+        "The Clockworker's child: A path twists through the gears and mechanisms of the assembly, down a stone stairway, and to an unlit cavern beneath. Black-leafed ivy coats the damp walls, clustering in a roughly humanoid shape of tangled creepers, breathing slowly as if asleep. Upon inspection, the form appears identical to Briglomb. It is here that the Clockworker's inheritor grows, in a manner utterly alien to normal mossling reproduction."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "briglomb_the_clockworker",
+      "name": "Briglomb the Clockworker",
+      "title": null,
+      "description": "An ancient, gnarled mossling man (4′ tall) with a face of polished wood, eyes like black conkers, a tangle of black ivy upon his head, and knotted hands like wriggling roots. Dresses in a patched leather apron and pointy clogs, with a spray-can and polishing cloth in hand at all times.",
+      "kindred": "Mossling",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Slow diligence gives way to jovial agitation when in company",
+        "Habitually polishes his nose, visitors' elbows, and shiny objects"
+      ],
+      "speech": "Muttering, chuckling, and wisecracking (to himself, when alone)",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "To peacefully carry out his duties to the \"Great Machine\"",
+        "To learn more about Mr Klepp (p127) in Blackeswell (hex 1604), who is said to share his passion for clockwork"
+      ],
+      "secrets": [],
+      "possessions": [
+        "spray-can",
+        "polishing cloth",
+        "patched leather apron",
+        "pointy clogs"
+      ],
+      "location": "The Clockwork Assembly",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      361
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

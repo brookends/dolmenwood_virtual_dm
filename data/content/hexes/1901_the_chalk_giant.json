@@ -1,0 +1,194 @@
+{
+  "hex_id": "1901",
+  "coordinates": [
+    19,
+    1
+  ],
+  "name": "The Chalk Giant",
+  "tagline": "Flocks of crows caw and wheel above rugged chalk downs. Beds of gorse and twisted blue thistle.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with a peryton",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Flocks of crows caw and wheel above rugged chalk downs. Beds of gorse and twisted blue thistle.",
+  "points_of_interest": [
+    {
+      "name": "The Chalk Giant",
+      "poi_type": "landmark",
+      "description": "A humanoid figure, 200′ high, framed by a doorway, occupies the side of a hill, carved into the chalk beneath the turf of the downs. It is visible for miles around.",
+      "tagline": null,
+      "entering": "If the giant's name—Talorch—is called, he magically animates and opens the doorway behind him, revealing a shimmering portal to the Crystal Cave.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The lost scholar: Crouched atop the hill is the Lost Scholar. He may spot PCs and wave to them excitedly.",
+      "roll_tables": [],
+      "npcs": [
+        "the_lost_scholar"
+      ],
+      "special_features": [
+        "Secret door activated by calling the name 'Talorch'"
+      ],
+      "secrets": [
+        "The giant's name is Talorch"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Perytons' Nest",
+      "poi_type": "nest",
+      "description": "In the south-western reaches of the hex stands a 100′ sheer bluff. Atop sits a massive nest of brambles and boughs.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "5 perytons (DMB). Three dead bramblings (DMB) are incorporated into the materials of the nest. One clutches a scroll sealed in a tube.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Scroll with descriptions of crystalline dream-world and drawings of Talorch"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Crystal Cave",
+      "poi_type": "cave",
+      "description": "Through the door in the Chalk Giant is a vast cave, its walls entirely encrusted in large purple and mauve crystals. An old man with the same face as the Lost Scholar appears in the reflection of the crystals, dressed in black hooded robes. He introduces himself as Alhair, a Drune.",
+      "tagline": null,
+      "entering": "Accessed through the portal opened by the Chalk Giant",
+      "interior": "Vast cave with walls entirely encrusted in large purple and mauve crystals",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Alhair appears in the reflection of the crystals",
+      "roll_tables": [],
+      "npcs": [
+        "alhair"
+      ],
+      "special_features": [
+        "Crystals with legendary powers of eternal life that forever entrap the soul"
+      ],
+      "secrets": [
+        "The crystals trap souls forever",
+        "Alhair was trapped by an experiment with the crystals"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_lost_scholar",
+      "name": "The Lost Scholar",
+      "title": "Dream Projection",
+      "description": "An old, bearded human man, hunched and weary. He wears a tattered purple and mauve hooded robe. Claims to be the last survivor of a group of scholars from the land of Wyggrabole (a place not known to the PCs), who had come to study the Chalk Giant. All but he were eaten by a flock of perytons.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Confused and distraught",
+        "cannot even remember his own name"
+      ],
+      "speech": "Old-fashioned, creaky. Woldish, Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Begs PCs to retrieve from the Perytons' Nest his notes detailing his 'extraordinary findings'",
+        "help him find his way back to Wyggrabole"
+      ],
+      "secrets": [
+        "The man is a dream projection of Alhair, the Drune trapped in the Crystal Cave",
+        "If PCs return to the spot where they met him, he has vanished"
+      ],
+      "possessions": [],
+      "location": "Atop the hill by the Chalk Giant",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "alhair",
+      "name": "Alhair",
+      "title": "Ancient Drune",
+      "description": "An ancient Drune who was alive at the creation of the Ring of Chell (p20). Appears in the reflection of the crystals, dressed in black hooded robes.",
+      "kindred": "Drune",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cheerful",
+        "content",
+        "eccentric",
+        "Eager to speak"
+      ],
+      "speech": "Calm, warm whisper, punctuated with cheerful laughter uncharacteristic of Drune. Woldish, Drunic, Old Drunic.",
+      "languages": [
+        "Woldish",
+        "Drunic",
+        "Old Drunic"
+      ],
+      "desires": [
+        "Company and conversation",
+        "He does not wish to be freed, and is happy here in his crystal dream world"
+      ],
+      "secrets": [
+        "Trapped here by an experiment involving the crystals' legendary powers of eternal life",
+        "His bramblings were tasked to bring a scroll to the Drune Lodge (hex 0507), but were waylaid by the perytons"
+      ],
+      "possessions": [],
+      "location": "The Crystal Cave",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Gold necklace",
+      "description": "Found in the Perytons' Nest",
+      "value": "1,500gp",
+      "location": "The Perytons' Nest"
+    },
+    {
+      "name": "Emeralds",
+      "description": "3 emeralds found in the Perytons' Nest",
+      "value": "1,000gp each",
+      "location": "The Perytons' Nest"
+    },
+    {
+      "name": "Silver pieces",
+      "description": "Sack of silver pieces found in the Perytons' Nest",
+      "value": "2,000sp",
+      "location": "The Perytons' Nest"
+    },
+    {
+      "name": "Scroll in sealed tube",
+      "description": "Descriptions of a crystalline dream-world of eternal life, in Drunic, as well as several drawings of the Chalk Giant, who is referred to as 'Talorch.'",
+      "value": null,
+      "location": "The Perytons' Nest"
+    }
+  ],
+  "secrets": [
+    "The giant's name is Talorch",
+    "The Lost Scholar is a dream projection of Alhair",
+    "The crystals in the Crystal Cave trap souls forever"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      386
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

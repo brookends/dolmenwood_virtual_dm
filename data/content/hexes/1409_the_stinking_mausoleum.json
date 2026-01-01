@@ -1,0 +1,103 @@
+{
+  "hex_id": "1409",
+  "coordinates": [
+    14,
+    9
+  ],
+  "name": "The Stinking Mausoleum",
+  "tagline": "Beech and hazel, the ground littered with nut husks. The stench of carrion pervades the whole hex.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Beech and hazel, the ground littered with nut husks. The stench of carrion pervades the whole hex.",
+  "points_of_interest": [
+    {
+      "name": "The Stinking Mausoleum",
+      "poi_type": "mausoleum",
+      "description": "Travellers can follow their noses to the source of the stench: a circle of collapsed stone buildings.",
+      "tagline": null,
+      "entering": "Travellers can follow their noses to the source of the stench",
+      "interior": "Inside the circle of the ruined walls and buildings, the ground is paved with white tile, now chipped and greying with age, and pocked with errant trees. A single stairway can be spied, in the middle of the courtyard, free of the rubble of the ruins. It leads down into the dark of the crypts.",
+      "exploring": "The courtyard stairway leads down to a network of cramped, dripping tunnels, buzzing with flies. The tunnels converge on a 200′ wide circular hall with a domed roof of cracked, pink porcelain.",
+      "leaving": null,
+      "inhabitants": "The Descendant sprawls across a treasure hoard in the Central Hall",
+      "roll_tables": [],
+      "npcs": [
+        "the_descendant"
+      ],
+      "special_features": [
+        "Symbol: The motif of an eye ringed with thorns is carved repeatedly into the ruined stone",
+        "Tiled courtyard: Inside the circle of the ruined walls and buildings, the ground is paved with white tile, now chipped and greying with age, and pocked with errant trees",
+        "Stairs: A single stairway can be spied, in the middle of the courtyard, free of the rubble of the ruins. It leads down into the dark of the crypts",
+        "Stench: The carrion reek intensifies. Characters who do not mask the odour somehow suffer –1 to Attack Rolls",
+        "Echoes: Gasps and moans can be heard sporadically in the tunnels, echoing from the Central Hall",
+        "Treasures: A glittering mound of coins and other treasures is piled up in the centre of the hall: 2,000sp and 3,000gp stamped with the head of the King of Brackenwold, 6 bronze torcs set with a black opal (1,200gp each), a twisted ebony Staff of Darkness"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 2
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_descendant",
+      "name": "The Descendant",
+      "title": null,
+      "description": "A 20′ tall, vaguely humanoid agglomeration of maggot-riddled corpses, animated by a lust for living flesh to meld with itself.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Gasping",
+        "lolling"
+      ],
+      "speech": "Gurgles and gasps out occasional syllables in Old Woldish (\"rend,\" \"flesh,\" \"bone\")",
+      "languages": [
+        "Old Woldish"
+      ],
+      "desires": [
+        "Living flesh to meld with itself"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Treasure hoard: 2,000sp and 3,000gp stamped with the head of the King of Brackenwold, 6 bronze torcs set with a black opal (1,200gp each), a twisted ebony Staff of Darkness"
+      ],
+      "location": "The Central Hall of The Stinking Mausoleum",
+      "stat_reference": "Large Undead—Mindless—Chaotic, Level 9 AC 13 HP 54 Saves D7 R8 H9 B10 S11, Att 2 claws (+7, 1d10) and maw (+7, 2d6) Speed 40, Morale 9 XP 1,900",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Staff of Darkness",
+      "description": "A twisted ebony Staff of Darkness",
+      "value": null,
+      "location": "Central Hall treasure hoard"
+    },
+    {
+      "name": "Bronze torcs with black opal",
+      "description": "6 bronze torcs set with a black opal",
+      "value": "1,200gp each",
+      "location": "Central Hall treasure hoard"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Characters who do not mask the carrion odour somehow suffer –1 to Attack Rolls in the crypts, –2 penalty in the presence of The Descendant",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      354
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

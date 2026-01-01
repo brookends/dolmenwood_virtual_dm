@@ -1,0 +1,163 @@
+{
+  "hex_id": "1012",
+  "coordinates": [
+    10,
+    12
+  ],
+  "name": "Ancient Worm Tunnels",
+  "tagline": "Wildflower meadows dotted with teeming ponds. A hollow moaning sound drifts on the wind.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "The wild grasslands of this hex are riddled with 20′ wide holes, leading down to a network of tunnels running for miles beneath the earth. The tunnels were excavated by gargantuan worms in ancient days lost to memory.",
+  "points_of_interest": [
+    {
+      "name": "Colossal Tunnels",
+      "poi_type": "tunnel_network",
+      "description": "The wild grasslands of this hex are riddled with 20′ wide holes, leading down to a network of tunnels running for miles beneath the earth.",
+      "tagline": null,
+      "entering": "The holes descend at a steep angle before levelling off, each leading to a winding, 20′ wide, circular tunnel. The entrances are lined with grass, ferns, and mosses, where sunlight penetrates.",
+      "interior": "The warm, echoing tunnels run for miles, providing a means to traverse the whole hex below ground. Deeper below, the tunnels are bare, dug into the hard, clay soil. Signs of impromptu travellers' campsites can be found in many of the tunnels, just below the surface.",
+      "exploring": "The warm, echoing tunnels run for miles, providing a means to traverse the whole hex below ground, should a party wish to. PCs exploring the tunnels are likely to come to the Grand Arboretum. The Referee may also roll for one or more subterranean encounters, as PCs explore.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Encounters in the Tunnels",
+          "die_type": "d6",
+          "description": "Roll for encounters while exploring the tunnels",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "3d10 bandits (Level 1 thieves—DMB) hiding in a rough camp in the tunnels with stolen loot (1d8 × 100gp).",
+              "monsters": [
+                "bandit"
+              ],
+              "npcs": [],
+              "items": [
+                "stolen loot"
+              ],
+              "mechanical_effect": "1d8 × 100gp treasure"
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "1d2 purple worms (DMB) in search of prey, burrowed up from deeper subterranean realms.",
+              "monsters": [
+                "purple worm"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "1d4 root things (DMB) emerging from the earth, disturbed by travellers' footsteps.",
+              "monsters": [
+                "root thing"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "1d3 mutant giant snails (DMB) slithering along walls and ceiling.",
+              "monsters": [
+                "mutant giant snail"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "1d6 scrabies (DMB) foraging for fungi.",
+              "monsters": [
+                "scrabie"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "1d4 owlbears (DMB) nesting in a side cavern, with 1d6 eggs each.",
+              "monsters": [
+                "owlbear"
+              ],
+              "npcs": [],
+              "items": [
+                "owlbear eggs"
+              ],
+              "mechanical_effect": "1d6 eggs per owlbear"
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Campsites: Signs of impromptu travellers' campsites can be found in many of the tunnels, just below the surface"
+      ],
+      "secrets": [
+        "Origins: The tunnels were excavated by gargantuan worms in ancient days lost to memory"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Grand Arboretum",
+      "poi_type": "sinkhole",
+      "description": "A 100′ deep sinkhole where the earth has collapsed into the giant tunnels below, forming a cavern open to the surface. At the base of the sinkhole, dense copses of trees grow in the scintillating light, thriving on the black soil, rich with ancient vermicast.",
+      "tagline": null,
+      "entering": "The sinkhole's sides are sheer, requiring specialised climbing equipment or skill.",
+      "interior": "Dense copses of trees grow in the scintillating light, thriving on the black soil, rich with ancient vermicast. Great, rambling specimens with waxy, heart-shaped leaves of emerald and midnight blue, and long, bean-like seed pods. They are unlike any common species that grows in Dolmenwood.",
+      "exploring": "Characters foraging here can collect 1d4 fresh rations from the brown beans inside the pods, which have a flavour akin to waxy almonds. One very short pod contains 1d6 Bronze Beans.",
+      "leaving": "Tunnels lead into the wider network beneath this hex.",
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Trees with waxy, heart-shaped leaves of emerald and midnight blue",
+        "Bean-like seed pods with edible brown beans"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Bronze Beans",
+      "description": "1″ tree beans with wrinkled skin of shimmering bronze. Worth 100gp each. The Shadow House in Castle Brackenwold has long sought these beans, and pays for any retrieved. They pay 1,000gp for their location.",
+      "value": "100gp each",
+      "mechanical_effect": "If eaten: Save Versus Doom or suffer 1d4 damage and vomit violently for 1d6 Turns (unable to move or act). If planted: A tree like those in the Grand Arboretum sprouts from the earth and grows to full maturity over the space of 1 Turn. There is a 1-in-6 chance of the tree being sentient (as a treowere—DMB)."
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      309
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

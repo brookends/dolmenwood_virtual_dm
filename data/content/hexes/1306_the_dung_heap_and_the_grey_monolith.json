@@ -1,0 +1,143 @@
+{
+  "hex_id": "1306",
+  "coordinates": [
+    13,
+    6
+  ],
+  "name": "The Dung Heap and the Grey Monolith",
+  "tagline": "Ancient, moss-grown way-stones stand beside paths at regular intervals.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with either 1d6 woodgrues (DMB) making their way to the dung heap or with 1d4 elf knights (DMB) in the service of the Earl of Yellow (p32), clad entirely in yellow and mounted on great golden wolves (as dire wolves, DMB).",
+    "foraging_results": "Successful foraging yields 1d2 portions of Arrowhame (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Arrowhame (1d2 portions)"
+    ],
+    "ley_line_effect": "Arcane spell-casters perceive the feeling of having just awoken from a dream."
+  },
+  "description": "Ancient, moss-grown way-stones stand beside paths at regular intervals.",
+  "points_of_interest": [
+    {
+      "name": "Woodgrue Dung Heap",
+      "poi_type": "landmark",
+      "description": "A great mound of guano, 50 yards across, created by the woodgrues of this region of Dolmenwood, who travel from miles around to relieve themselves on the communal heap.",
+      "tagline": "Adventurers travelling through this hex notice an acidic stench drifting on the wind.",
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Woodgrues seeking relief: There is a 3-in-6 chance of encountering 1d4 woodgrues (DMB) nearby. At night: There is also a 1-in-4 chance of a woodgrue revelry (2d6 individuals) taking place here.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Woodgrue PCs: Recognise this landmark and its purpose"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Grey Vorpal Monolith",
+      "poi_type": "monolith",
+      "description": "A 20′-high spectral monolith of dusky, grey light hovers amid a small area of bog-land. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood. In autumn, winter, and spring, the monolith is a mere shimmering figment. In summertime, it becomes semi-corporeal.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Delusions",
+          "die_type": "d6",
+          "description": "One who is afflicted by the monolith's curse:",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Believes they are the chosen one.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Insists they are a close friend of Baron Hogwarsh (or another randomly selected noble).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Fervently claims the Duke of Brackenwold is a devil.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Insists they are a saint of the Pluritine Church.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Believes they are the favoured scion of a fairy noble.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null,
+              "sub_table": "Roll 1d6: 1. The Cold Prince, 2. Duke Mai-Fleur, 3. The Earl of Yellow, 4. Prince Mallowheart, 5. Princess Andromethia, 6. The Queen of Blackbirds."
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Believes they are invisible.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Viewing: All who behold the monolith in the summer must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Those who fail are afflicted with a curse of delusion and cannot be convinced that the fantasy they are experiencing is not real.",
+        "Touching: In its summertime manifestation, the monolith's partially tangible surface feels like cool glass. Spells of illusion cast while touching the monolith are made real. There is a 2-in-6 chance of creatures created in this way being hateful of the one who summoned them to reality.",
+        "In other seasons, a PC touching the monolith's diaphanous outline temporarily experiences the warmth, humidity, and brightness of a hot summer's day."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      339
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "hex_id": "1004",
+  "coordinates": [
+    10,
+    4
+  ],
+  "name": "Baron Fragglehorn's Tower",
+  "tagline": "The wide, central region of the Valley of Wise Beasts. A region of rolling, wooded hillocks and springy grass.",
+  "region": "Valley of Wise Beasts",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Valley of Wise Beasts",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 3-in-6 likely to be with a patrol of 2d6 crookhorns (DMB) from the garrison at the Baron's tower. They patrol down into the Valley from the tower, meting out terrible and anarchic justice. They attempt to arrest outsiders and bring them before the Baron.",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The wide, central region of the Valley of Wise Beasts. A region of rolling, wooded hillocks and springy grass.",
+  "points_of_interest": [
+    {
+      "name": "The River Shiver",
+      "poi_type": "river",
+      "description": "A broad, shallow river that trickles lazily over its bed of pebbles.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Baron Fragglehorn's Tower",
+      "poi_type": "tower",
+      "description": "A crooked tower stands atop a sandstone crag at the north side of the Valley, looming over the river valley like a hawk gazing down upon bunnies at play. This is the tower of Baron Fragglehorn (p46), crookhorn warlord and sheriff.",
+      "tagline": null,
+      "entering": "A stair, carved into the sandstone cliffs, leads up to the foot of the tower. At the summit of the stairway, a lopsided iron gate bars the way. It is guarded by 1d4 crookhorns (DMB). The tower's great, oaken front door is shielded by a bent, slate-roofed porch. It is guarded by 1d4 crookhorns (DMB).",
+      "interior": "Construction: A mishmash of styles: solid cut stone at the wide base, stacked river rocks in the midsection, two wooden turrets at the top. (The middle and upper floors were piggybacked on top of the disused Shrine to St Goodenough.)",
+      "exploring": "Ground floor: The dwelling place of the 30 crookhorns under the Baron's command. A stinking, dishevelled common room. A poky bed chamber packed with crookhorn excrement and hammocks. A stairway leads down to the Shrine to St Goodenough (now used as a cellar). Middle floor: The Baron's parlour. Plush leather furnishings, scratched up by unruly hooves and horns. A round feasting table strewn with roast game, wine bottles (1d6 worth 50gp each), and maps. 1d3 slovenly crookhorn women (unarmoured) lounging. Left tower: The Baron's bedchamber. Foetid opulence. Dank silks and tapestries (worth 500gp if cleaned up). Hidden in the rafters is a lead box containing 200pp and a string of ametrine carved into skulls (1,000gp). Right tower: The wives' quarters. The Baron's six crookhorn wives (see Middle Floor) sleep here, when not otherwise engaged.",
+      "leaving": null,
+      "inhabitants": "Baron Fragglehorn and 30 crookhorns under his command, plus his six crookhorn wives",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream"
+      ],
+      "secrets": [
+        "Hidden in the rafters is a lead box containing 200pp and a string of ametrine carved into skulls (1,000gp)"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Goodenough",
+      "poi_type": "shrine",
+      "description": "The stairway from the common room descends to a vaulted crypt with angelic statues along two walls.",
+      "tagline": null,
+      "entering": "The stairway from the common room descends to a vaulted crypt",
+      "interior": "Altar and statue of St Goodenough: An altar stands opposite the stairway. The cherry-wood statue of St Goodenough (a plump man cradling a corn dolly) is decked with gore and the raw pelts of various animals. Barrels: Casks of cheap ale stacked to one side. Buckets: Wooden pails covered with damp cloths litter the floor. They contain mixtures of raw meat, bones, fat, and crookhorn excrement.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the altar is cleaned up, characters praying may receive the blessing of St Goodenough: the ability to cast Holy Fire. See Shrines, p22."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Wine bottles",
+      "description": "1d6 worth 50gp each",
+      "value": "50gp each",
+      "location": "Baron's parlour"
+    },
+    {
+      "name": "Dank silks and tapestries",
+      "description": "Worth 500gp if cleaned up",
+      "value": "500gp",
+      "location": "Baron's bedchamber"
+    },
+    {
+      "name": "Lead box",
+      "description": "Contains 200pp and a string of ametrine carved into skulls (1,000gp)",
+      "value": "1,000gp + 200pp",
+      "location": "Hidden in the rafters of Baron's bedchamber"
+    }
+  ],
+  "secrets": [
+    "Hidden in the rafters is a lead box containing 200pp and a string of ametrine carved into skulls (1,000gp)"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      301
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

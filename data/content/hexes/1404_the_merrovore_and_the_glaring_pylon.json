@@ -1,0 +1,138 @@
+{
+  "hex_id": "1404",
+  "coordinates": [
+    14,
+    4
+  ],
+  "name": "The Merrovore and the Glaring Pylon",
+  "tagline": "Forlorn tracks and fern-filled glades, dotted with milk-white, climbing vines.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with the merrovore",
+    "foraging_results": "Successful foraging yields 2d6 portions of the climbing vine known as Black Clover, in addition to the normal results",
+    "foraging_special": [
+      "Black Clover (2d6 portions)"
+    ]
+  },
+  "description": "Forlorn tracks and fern-filled glades, dotted with milk-white, climbing vines. Any who wander through this hex come across piles of bloody, writhing tentacles in the shapes of people or animals. These wretched things are all that remains of those who have met the merrovore. The things seem vaguely alive, but do not move of their own accord, apart from the writhing.",
+  "points_of_interest": [
+    {
+      "name": "Tentacle Heaps",
+      "poi_type": "hazard",
+      "description": "Piles of bloody, writhing tentacles in the shapes of people or animals. These wretched things are all that remains of those who have met the merrovore. The things seem vaguely alive, but do not move of their own accord, apart from the writhing.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Victims of the merrovore"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Lair of the Merrovore",
+      "poi_type": "lair",
+      "description": "A pool of viscous, black fluid, almost completely opaque, about 20′ wide and 12′ deep. The merrovore comes to this pool to sleep, submerging itself completely in the fluid. There is a 2-in-6 chance it is present when the pool is discovered.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The merrovore guards a 2′ cube of black metal, at the bottom of the pool. If touched by an arcane spell-caster, the cube opens, revealing 72 tourmalines (100gp each), a set of three spell books (Rank 1 Firelight, Glyph of Sealing, Rank 2 Perceive the Invisible, Phantasm, Rank 3 Dispel Magic, Lightning Bolt, Rank 4 Dimension Door), and a black silk robe that acts as a Cloak of Displacement.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The merrovore",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden",
+        "2-in-6 chance merrovore is present"
+      ],
+      "secrets": [
+        "Black metal cube with treasure at bottom of pool"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Glaring Pylon",
+      "poi_type": "monument",
+      "description": "A gargantuan, granite pylon stands amid a tangle of blackthorn and brambles. The pylon is square, 100 yards high, and 10 yards across at the base. At the top of the pylon (invisible from the forest floor) are carved four horrid eyes (one per side), glaring out at the sky.",
+      "tagline": null,
+      "entering": null,
+      "interior": "This is the locus of Hasturiel Thrice-Crowned, a deity of the witches who dwells in inaccessible caverns deep beneath the pylon.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Hasturiel Thrice-Crowned (beneath), Witches (Eyes of Hasturiel)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden",
+        "2-in-6 chance of 1d6 Witches conducting ritual on any given night",
+        "On solstices and equinoxes: pylon blazes with blue flame and 4d6 Witches worship here"
+      ],
+      "secrets": [
+        "Hasturiel Thrice-Crowned dwells in caverns beneath"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_merrovore",
+      "name": "The Merrovore",
+      "title": null,
+      "description": "A lithe, deer-like body (10′ tall to the shoulder), covered in shaggy, white fur, with cat-like paws and a seven-thonged tail. In its face is a single, crazed eye—deep red—and a slavering, toothed maw. The merrovore stalks the wood in this hex, gurgling and mumbling, tracking by scent.",
+      "kindred": "Large Monstrosity",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Aggressive",
+        "Stalking",
+        "Gurgling and mumbling"
+      ],
+      "speech": "Tauntingly mimics victims' voices",
+      "languages": [],
+      "desires": [
+        "To hunt and kill"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Stalks throughout the hex",
+      "stat_reference": "Level 8 AC 14 HP 43 Saves D8 R9 H10 B11 S12, Att Bite (+7, 2d6) and 2 claws (+7, 1d6) and tail whip (+7, 1d8) Speed 60 Morale 10 XP 1,440",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Black Metal Cube Treasure",
+      "description": "72 tourmalines (100gp each), a set of three spell books (Rank 1 Firelight, Glyph of Sealing, Rank 2 Perceive the Invisible, Phantasm, Rank 3 Dispel Magic, Lightning Bolt, Rank 4 Dimension Door), and a black silk robe that acts as a Cloak of Displacement",
+      "location": "Submerged in the merrovore's pool"
+    }
+  ],
+  "secrets": [
+    "The glaring eyes at the top of the pylon cause blindness: Save Versus Spell or be struck blind for 1d6 days",
+    "Witches bound to Hasturiel are immune to the pylon's gaze",
+    "On solstices and equinoxes, touching the flaming pylon grants Polymorph ability for 24 hours",
+    "Hasturiel Thrice-Crowned dwells in inaccessible caverns deep beneath the pylon"
+  ],
+  "dm_notes": "Ley line Ywyr: Arcane spell-casters perceive the distant moaning of the dead. The merrovore attacks all it encounters except witches, whom it cannot see or smell. Anyone surprised by the merrovore automatically meets its gaze. In melee, unless averting eyes, characters meet its gaze each Round (Save Versus Hold or be transformed into writhing tentacles - fatal). Averting eyes gives -4 penalty to Attack Rolls and merrovore gains +2 bonus.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      349
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

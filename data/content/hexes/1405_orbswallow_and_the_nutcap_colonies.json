@@ -1,0 +1,172 @@
+{
+  "hex_id": "1405",
+  "coordinates": [
+    14,
+    5
+  ],
+  "name": "Orbswallow and the Nutcap Colonies",
+  "tagline": "A multi-hued jumble of giant, woody toadstools and tall, finger-like fungus.",
+  "region": "Mulchgrove",
+  "terrain_type": "fungal forest",
+  "terrain_description": "Fungal forest (2), Mulchgrove",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 2d6 nutcaps (DMB), fluttering around nest-like platforms of woven bark amid the branches of a grove of silver birch",
+    "foraging_results": "Successful foraging yields 1d4 portions of Devil's Grease (p428) and 1d4 portions of Blood Canker (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Devil's Grease (1d4 portions)",
+      "Blood Canker (1d4 portions)"
+    ]
+  },
+  "description": "A multi-hued jumble of giant, woody toadstools and tall, finger-like fungus. Multiple nutcap colonies dot the woods here around the mossling village of Orbswallow. In an ongoing and escalating conflict, the nutcaps launch aerial raids on Orbswallow, snatching the delicious fruits of the three trees. The nutcaps believe they have a right to the produce of all trees in Dolmenwood, but the mosslings disagree.",
+  "points_of_interest": [
+    {
+      "name": "The Village of Orbswallow",
+      "poi_type": "village",
+      "description": "In the far south-east of the hex, the village of Orbswallow nestles in a glade amid the fungal forest, clustered around a pair of gargantuan toadstools and three magical trees. Orbswallow is the centre of mossling culture in Dolmenwood.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Mosslings",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Full settlement description: See p170"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Botanical Laboratory",
+      "poi_type": "laboratory",
+      "description": "A cluster of great sycamores, their trunks wrapped with climbing fungus, stands close to the centre of the hex. About 50′ up the trunk of the largest tree, a 3′ diameter, perfectly circular hole can be spied.",
+      "tagline": null,
+      "entering": "The hole leads to a warm, wood-lined chamber",
+      "interior": "The hole leads to a warm, wood-lined chamber, connected by narrow shafts within the living tree to similar chambers above and below. This first chamber serves as an entrance and meeting area, with mounds of sawdust for seating, bark rugs, and dancing firefly lamps. Below is an unlit bedchamber, stuffed with dried leaves. Above is a botanical laboratory with glowing pea flowers, vats of bubbling sap, and experimental crossbred seedlings.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The nutcap priest, Creekeek, lives here alone in this arboreal laboratory.",
+      "roll_tables": [],
+      "npcs": [
+        "creekeek"
+      ],
+      "special_features": [
+        "Visitors are welcomed for a cup of sap-wine, if peaceful. Creekeek openly discusses the ongoing Conflict Between Nutcaps and Mosslings.",
+        "The Elixir of Vegetative Life: Creekeek has succeeded in combining the essences of the three trees of Orbswallow (p170) to produce an elixir of life. Four doses are hidden in the laboratory. To sentient plant-based creatures (e.g. nutcaps), it acts as a Prismatic Elixir (p414). To others (including mosslings), it extends life indefinitely by transforming the imbiber into a small tree. Each dose is worth 1,000gp."
+      ],
+      "secrets": [
+        "Four doses of Elixir of Vegetative Life hidden in the laboratory"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Fungal Grotto",
+      "poi_type": "grotto",
+      "description": "Concealed in a dell filled with rotting, purple mushroom debris is a 5′ high cave mouth.",
+      "tagline": null,
+      "entering": "Concealed in a dell filled with rotting, purple mushroom debris is a 5′ high cave mouth",
+      "interior": "A lofty cavern whose rough walls and ceiling are clad with dainty toadstools that emit a soft pink glow. In the centre is a 10′ high idol of slick red clay depicting a 5-eyed, humanoid slug (the mossling deity Mbombre).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The mould oracle (DMB) Gropoll.",
+      "roll_tables": [],
+      "npcs": [
+        "gropoll"
+      ],
+      "special_features": [
+        "Mosslings are welcomed. Others are rebuffed unless on a quest to aid mosslings.",
+        "Hidden location"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "creekeek",
+      "name": "Creekeek",
+      "title": "Nutcap Priest",
+      "description": "A creaky old nutcap (DMB) with eight fluttering wings, three sinuous arms, and head crowned with sprouting oak leaves. Creekeek acts as priest, advisor, and healer for the nutcap colonies in this hex.",
+      "kindred": "Nutcap",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Slow",
+        "contemplative",
+        "curious"
+      ],
+      "speech": "Resonant clicks. Woldish, Sylvan.",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Peace with the mosslings of Orbswallow",
+        "Wishes to raise cuttings of the three trees for nutcap use, ending the raids on Orbswallow"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Four doses of Elixir of Vegetative Life"
+      ],
+      "location": "The Botanical Laboratory",
+      "stat_reference": "nutcap (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "gropoll",
+      "name": "Gropoll",
+      "title": "Mould Oracle",
+      "description": "A venerable mossling woman with maroon eyes, hair of white mycelia, a great sentient yellow puffball atop her head, and black skin wrinkled like the shell of a walnut. Dresses in a patchwork of colourful fungus leather. Mosslings from Orbswallow often journey to consult Gropoll's oracular wisdom.",
+      "kindred": "Mossling",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Jolly",
+        "enigmatic"
+      ],
+      "speech": "Erratic warbling. Puffball occasionally grumbles in agreement. Woldish, Mulch.",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "Word of any psionic giant snails (DMB) in Dolmenwood",
+        "Seclusion in which to commune with Mbombre",
+        "Has no interest in the nutcap conflict"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Fungal Grotto",
+      "stat_reference": "mould oracle (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Elixir of Vegetative Life",
+      "description": "To sentient plant-based creatures (e.g. nutcaps), it acts as a Prismatic Elixir (p414). To others (including mosslings), it extends life indefinitely by transforming the imbiber into a small tree.",
+      "value": "1,000gp per dose",
+      "quantity": 4,
+      "location": "Hidden in the Botanical Laboratory"
+    }
+  ],
+  "secrets": [
+    "Four doses of Elixir of Vegetative Life are hidden in Creekeek's laboratory"
+  ],
+  "dm_notes": "Conflict Between Nutcaps and Mosslings: Multiple nutcap colonies dot the woods here around the mossling village of Orbswallow. In an ongoing and escalating conflict, the nutcaps launch aerial raids on Orbswallow, snatching the delicious fruits of the three trees. The nutcaps believe they have a right to the produce of all trees in Dolmenwood, but the mosslings disagree.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      350
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

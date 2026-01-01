@@ -1,0 +1,133 @@
+{
+  "hex_id": "1207",
+  "coordinates": [
+    12,
+    7
+  ],
+  "name": "Crystal Caves Around Fog Lake",
+  "tagline": "The booming croaks of bog-owls echo from the surrounding vegetation.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "The booming croaks of bog-owls echo from the surrounding vegetation.",
+  "points_of_interest": [
+    {
+      "name": "Fog Lake",
+      "poi_type": "lake",
+      "description": "Fog Lake is an obvious and apt name for this basin-shaped location, as it is usually blanketed in obscurity with thick bluish-white vapour.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Duncan Mudmurloe can often be found on the banks of the lake",
+      "roll_tables": [],
+      "npcs": [
+        "duncan_mudmurloe"
+      ],
+      "special_features": [
+        "Fog-clearing winds: Occasionally a stray gust of wind blows through from the surrounding woodlands, completely sweeping away the fog. It generally returns within half an hour.",
+        "Crystal brewer: The chief manservant of Jollie Oistace Pollard (hex 1209), Duncan Mudmurloe, can often be found on the banks of the lake, sitting cross-legged and gazing mournfully at the lake while cooking down pans of noxious crystal-sludge obtained from nearby caves. He is manufacturing the drug Azoth, which can only be made within earshot of the lake's lapping waters. This dangerous and dull job is made worse by Fog Lake being prone to flooding."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Crystal Caves",
+      "poi_type": "caves",
+      "description": "The most notable feature of the site is the so-called Crystal Caves, a series of holes in the steep gravelly declivities that lead down to the lakeshore.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Russet crystals: At the backs of the caves can sometimes be seen deep russet crystals in chaotic formations. They are actually fairly unremarkable—not shiny or numerous, and at their largest about shin-high. The rock in these caves is very soft and crumbly, and these fast growing crystals rapidly decay into slushy, gravelly mud shortly after reaching full size.",
+        "Pilgrims and visitors: As soft and unimpressive as the crystals may be, the appellation of \"Crystal Caves\" remains, and draws tourists. There is a 2-in-6 chance that 1d6 naïve urban pilgrims (everyday mortals—DMB) are in the area, seeking to touch the crystals as part of a bogus healing ritual—this despite the dangers of the surrounding Dolmenwood.",
+        "Azoth ingredient: The crystals are the main component of the drug Azoth, though this is unknown to the average pilgrim."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Mizzle Door",
+      "poi_type": "portal",
+      "description": "In a dell upon the wooded slopes to the north of Fog Lake, the persistent mist swirls and coalesces into the form of a gigantic doorway flanked by two fearsome, sword-wielding guardians.",
+      "tagline": null,
+      "entering": "The misty guardians turn their heads to observe those who approach, but otherwise remain immobile.",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Two fearsome, sword-wielding guardians made of mist",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Stepping through the door: One is whisked away to the fairy road the White Way (see Fairy Roads, p26)."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "duncan_mudmurloe",
+      "name": "Duncan Mudmurloe",
+      "title": "gentleman's gentleman",
+      "description": "A stiff, lanky human man in his mid-thirties, with dry, pallid skin and an anaemic moustache. Dresses in courtly breeches, jacket, and absurdly high, powdered wig, even when toiling beside Fog Lake. Mudmurloe is the \"gentleman's gentleman\" of Jollie Oistace Pollard (p328), and hails from High-Hankle. His duties have, of late, tended more and more to the manufacture of Azoth at Fog Lake, which his master has been consuming and demanding in ever-increasing quantities.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Haughty",
+        "beleaguered",
+        "depressed",
+        "Habitually sniffs, due to unintentional inhaling of crystal-sludge vapours"
+      ],
+      "speech": "Prissy and precise",
+      "languages": [
+        "Woldish",
+        "Old Woldish",
+        "Liturgic",
+        "Caprice"
+      ],
+      "desires": [
+        "To faithfully carry out his duties to this master, but to somehow find a way of no longer carrying them out in this perilous and forsaken place"
+      ],
+      "secrets": [],
+      "possessions": [
+        "Carries a crossbow and an oversized spoon for rock-scooping that also serves as a weapon (1d4 damage)"
+      ],
+      "location": "Fog Lake",
+      "stat_reference": null,
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      328
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

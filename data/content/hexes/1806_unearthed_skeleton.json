@@ -1,0 +1,213 @@
+{
+  "hex_id": "1806",
+  "coordinates": [
+    18,
+    6
+  ],
+  "name": "Unearthed Skeleton",
+  "tagline": "Moss-carpeted woodland. Vague scent of carrion when the wind changes.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Sprawled across the centre of the hex is the buried skeleton of a 300′-tall, humanoid giant. Some of its bones still protrude from the earth, visible amongst the trees: the fingertips of a hand (each 5′ long) and several ribs (curving up to 20′ into the air).",
+  "points_of_interest": [
+    {
+      "name": "The Skeleton",
+      "poi_type": "ruins",
+      "description": "Sprawled across the centre of the hex is the buried skeleton of a 300′-tall, humanoid giant. Some of its bones still protrude from the earth, visible amongst the trees: the fingertips of a hand (each 5′ long) and several ribs (curving up to 20′ into the air).",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Giant skeleton bones protruding from earth"
+      ],
+      "secrets": [
+        "Peligrue believes the skeleton belongs to a Wood God. In truth, it is an ancient giant, killed when the enchanted boulder was catapulted through its skull."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Peligrue's Camp",
+      "poi_type": "camp",
+      "description": "In a clearing near the hex's centre is a simple campsite of tents and wagons.",
+      "tagline": null,
+      "entering": "Peligrue eagerly invites visitors to stay the night, questioning them about their travels until inevitably getting distracted and retiring.",
+      "interior": "Peligrue's tent: A mess of maps, planning notes, and alchemical testing equipment. Numerous books on the history of Dolmenwood, all by humans.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Tithelands mage Peligrue the Perspicuous, her guards Grent and Grottle Koop, and 7 labourers directed by Senna Blore. The group has been excavating the giant skeleton for six weeks now and, with little to show for it, the atmosphere has grown increasingly tense. Sore points include missing pay and the lack of \"hidden treasures\" Peligrue accidentally promised they'd find.",
+      "roll_tables": [],
+      "npcs": [
+        "peligrue_the_perspicuous",
+        "senna_blore",
+        "grent_koop",
+        "grottle_koop"
+      ],
+      "special_features": [
+        "That evening: Senna confronts Peligrue, who lets slip she is about to run out of funds. When Senna attempts to take what she can to compensate the workers, Grent and Grottle intervene to take all the money for themselves. If the PCs are present, the Koops try to bribe them to their side, while Senna appeals to their better nature."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Dig Site",
+      "poi_type": "excavation",
+      "description": "A pit has been dug near the camp, 40′ in diameter and 15′ deep, exposing part of the giant's head. The skull is on its side facing west, with a large hole in the temple.",
+      "tagline": null,
+      "entering": "A 12′ drop through the hole leads to the dirt floor of the skull's partially excavated, cavernous interior.",
+      "interior": "Inside the skull: A dim emerald glow radiates from a large boulder with luminous green veins that sits below the hole.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Boulder: Too heavy for the labourers to move, only Peligrue knows its true power. Once per day, someone touching the stone can freely cast a memorised spell twice."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "senna_blore",
+      "name": "Senna Blore",
+      "title": "Chief Labourer",
+      "description": "A well-built human woman in her early 50s, grey streaks in her short black hair. Her calloused hands are always holding a tool or object.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Kind but serious-minded",
+        "Absolute loyalty to those she considers under her care"
+      ],
+      "speech": "Gruff, considered. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "What's best for \"her\" labourers",
+        "To provide for her family back in Castle Brackenwold"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Peligrue's Camp",
+      "stat_reference": "Level 1 Fighter",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "grent_koop",
+      "name": "Grent Koop",
+      "title": null,
+      "description": "Stout, red-headed human woman (twin) with flushed complexion. Dresses in well-worn chainmail.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Patience that borders on laziness",
+        "making their occasional turns towards brutish violence sudden and unpredictable"
+      ],
+      "speech": "Rough, straightforward. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To live well",
+        "To be accepted back into the Brackenwold soldiery"
+      ],
+      "secrets": [],
+      "possessions": [
+        "well-worn chainmail"
+      ],
+      "location": "Peligrue's Camp",
+      "stat_reference": "Level 2 Fighter",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "grottle_koop",
+      "name": "Grottle Koop",
+      "title": null,
+      "description": "Stout, red-headed human woman (twin) with flushed complexion. Dresses in well-worn chainmail.",
+      "kindred": "Human",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Patience that borders on laziness",
+        "making their occasional turns towards brutish violence sudden and unpredictable"
+      ],
+      "speech": "Rough, straightforward. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "To live well",
+        "To be accepted back into the Brackenwold soldiery"
+      ],
+      "secrets": [],
+      "possessions": [
+        "well-worn chainmail"
+      ],
+      "location": "Peligrue's Camp",
+      "stat_reference": "Level 2 Fighter",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "peligrue_the_perspicuous",
+      "name": "Peligrue the Perspicuous",
+      "title": null,
+      "description": "A wiry human woman in her late thirties, with curly, prematurely grey hair. Wears deep blue robes with a golden fringe, dirt and mud splattering the hem.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Optimistic",
+        "absent-minded",
+        "easily distracted",
+        "Singularly focuses on whatever interests her at any given moment"
+      ],
+      "speech": "Rapid. Often changes the subject multiple times a sentence, belying her self-assigned title. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To use her newly acquired inheritance to prove her worth and be remembered for a great discovery",
+        "She's convinced the labourers will understand the importance of her mission and continue to work when she eventually runs out of money"
+      ],
+      "secrets": [],
+      "possessions": [
+        "The remains of her inheritance (132gp)",
+        "An emerald Ring of Protection",
+        "Spell books: Rank 1 Decipher, Ioun Shard, Rank 2 Arcane Cypher, Mind Crystal, Rank 3 Crystal Vision"
+      ],
+      "location": "Peligrue's Camp",
+      "stat_reference": "Level 5 Magician",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      385
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

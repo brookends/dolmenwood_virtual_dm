@@ -1,0 +1,87 @@
+{
+  "hex_id": "1003",
+  "coordinates": [
+    10,
+    3
+  ],
+  "name": "An Awful Black Slime",
+  "tagline": "Everything is coated in a horrid, viscous, black slime. The place reeks of syrup.",
+  "region": "Nagwood",
+  "terrain_type": "thorny forest",
+  "terrain_description": "Thorny forest (4), Nagwood",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with black tentacles (DMB)",
+    "foraging_results": "Successful foraging yields 1d3 portions of Grue's Ear (DPB) and 1d2 portions of Goatman's Goblet (p428), in addition to the normal results",
+    "foraging_special": [
+      "Grue's Ear (1d3 portions)",
+      "Goatman's Goblet (1d2 portions)"
+    ]
+  },
+  "description": "Everything is coated in a horrid, viscous, black slime. The place reeks of syrup. The Black Slime thickly coats everything in this hex, from the muddy ground to the leaves of the twisted, thorny trees to the surface of the languid and putrid River Shub. The slime is the source of the sickly, syrupy aroma that permeates this stretch of wood. It has an awful combination of acrid and syrupy sweet taste. Only the strong of stomach can resist vomiting, after touching this stuff to the tongue. The slime is oily and hard to wash off without soap.",
+  "points_of_interest": [
+    {
+      "name": "Brain-Like Fruits",
+      "poi_type": "resource",
+      "description": "Twisted trees bearing the 6″, brain-like fruits known as Shub Eggs (p430) are numerous throughout this hex. The fruits bob and wobble, attached to the trees by rubbery cords, covered in the slick of black slime.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "The tree sighs; the cord oozes a pink goo. The brain-fruit pulses gently for an hour, then goes still. Characters can harvest as many fruits in this hex as they wish.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Shub Eggs can be harvested"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Faxis",
+      "poi_type": "shrine",
+      "description": "A pool of the black slime has gathered in a hollow, a slime-coated Chapes holy symbol protruding at the centre. The Chapes marks the summit of the erstwhile shrine to St Faxis the penitent, now submerged in the pool of slime. A round building of stacked river stones, piled to a point. The stone altar remains in the centre of the single chamber, but the relics and icons of the shrine were looted long ago.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The stone altar remains in the centre of the single chamber, but the relics and icons of the shrine were looted long ago.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden shrine",
+        "Blessing of St Faxis available"
+      ],
+      "secrets": [
+        "If the shrine is recovered from the slime and a statue of St Faxis placed upon the altar, characters praying may receive the blessing of St Faxis: the ability to cast Circle of Protection"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    "Shub Eggs",
+    "Grue's Ear",
+    "Goatman's Goblet"
+  ],
+  "secrets": [
+    "The Shrine to St Faxis is hidden beneath the black slime"
+  ],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      300
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "hex_id": "1011",
+  "coordinates": [
+    10,
+    11
+  ],
+  "name": "Brydging Ring",
+  "tagline": "Wild, pathless woods choked with brambles and knee-height, blue-flowered thistles.",
+  "region": "High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Hogscap (DPB) or Prancing Mandrake (p430), in addition to the normal results",
+    "foraging_special": [
+      "Hogscap (1d3 portions)",
+      "Prancing Mandrake (1d3 portions)"
+    ]
+  },
+  "description": "Wild, pathless woods choked with brambles and knee-height, blue-flowered thistles.",
+  "points_of_interest": [
+    {
+      "name": "Standing Stones",
+      "poi_type": "standing stones",
+      "description": "300 yards from the southern edge of this hex, through an area overgrown with brambles, stands a ring of tall stones, clad with white-leafed ivy.",
+      "tagline": null,
+      "entering": null,
+      "interior": "At the centre of the ring is a mound of human remains—primarily bones, but possibly a fresher corpse as well, rended limb from limb. No clothing or equipment is to be found. Weatherworn runes beneath the ivy are in a language lost to the utmost antiquity. If deciphered, the runes reveal litanies of praise to nameless entities, detailing awful, gruesome rituals.",
+      "exploring": "Examining the stones reveals weatherworn runes beneath the ivy. They are in a language lost to the utmost antiquity. If deciphered, the runes reveal litanies of praise to nameless entities, detailing awful, gruesome rituals.",
+      "leaving": null,
+      "inhabitants": "The remains are those of captives regularly sacrificed here by a group of 7 antler wraiths (DMB).",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Cursed place: Locals know this place as Brydging Ring and speak of it as a place accursed and bewitched"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Wraiths' Hoard",
+      "poi_type": "treasure hoard",
+      "description": "Some way to the east of the standing stones, in a shadowed glade, is an ominous boulder, under which lie buried the clothing and possessions of the victims of the 7 antler wraiths that haunt the stones.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Coins: 4,980cp, 1,023sp, 993gp. Jewellery: A silver ring engraved with a wyrm (30gp); a silver pendant shaped like a mermaid, with pearls for breasts (1,400gp); a platinum locket with a portrait of Lord Malbleat (400gp). A belt of shining fish skin: A Belt of Blending (p406).",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Digging under the boulder summons the wraiths within 1 Turn"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Nymph Pool",
+      "poi_type": "magical pool",
+      "description": "A small pool of placid, pink-tinged water, hidden in a bramble-choked dell.",
+      "tagline": null,
+      "entering": null,
+      "interior": "In spring and summer: Twelve nymph statues stand in the water at the pool's edge, depicted joyously splashing on another. In autumn and winter: Twelve nymph statues stand in the trees around the pool, depicted gazing mournfully at the ground, their eyes pointedly averted from the pool.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "In spring and summer: Bathing in the pool cures a magical affliction (e.g. a curse, Ability Score loss, energy drain)",
+        "In autumn and winter: Bathing in the pool permanently halves a random Ability Score",
+        "Each character can only be affected by the pool's magic once per season"
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Silver ring engraved with a wyrm",
+      "value": "30gp",
+      "description": null,
+      "location": "The Wraiths' Hoard"
+    },
+    {
+      "name": "Silver pendant shaped like a mermaid, with pearls for breasts",
+      "value": "1,400gp",
+      "description": null,
+      "location": "The Wraiths' Hoard"
+    },
+    {
+      "name": "Platinum locket with a portrait of Lord Malbleat",
+      "value": "400gp",
+      "description": null,
+      "location": "The Wraiths' Hoard"
+    },
+    {
+      "name": "Belt of Blending",
+      "value": null,
+      "description": "A belt of shining fish skin",
+      "location": "The Wraiths' Hoard"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      308
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

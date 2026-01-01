@@ -1,0 +1,124 @@
+{
+  "hex_id": "1805",
+  "coordinates": [
+    18,
+    5
+  ],
+  "name": "The Willow Mouth",
+  "tagline": "An airy wood of little brooks and bendy, old willow trees.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "An airy wood of little brooks and bendy, old willow trees.",
+  "points_of_interest": [
+    {
+      "name": "The Willow's Pool",
+      "poi_type": "pool",
+      "description": "Following the lay of the land and the gentle flow of the water leads down to a wide pool covered in algae and lily pads, surrounded by willows. Animals of the wood seem to shun this pool.",
+      "tagline": null,
+      "entering": null,
+      "interior": "At one end of the pool stands an enormous willow tree, unusually thick, with a gigantic (10′ tall) human mouth in the base of its trunk: the Great Willow.",
+      "exploring": "Characters who feed the willow a large animal notice that its throat leads to a cavernous area beneath the tree: the Willow's Gullet. Three white cows, standing still, undigested and fully intact, can be glimpsed in the gullet.",
+      "leaving": null,
+      "inhabitants": "The Great Willow",
+      "roll_tables": [],
+      "npcs": [
+        "the_great_willow"
+      ],
+      "special_features": [
+        "Animals of the wood shun this pool",
+        "Gigantic 10′ tall human mouth in willow trunk"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Willow's Gullet / Shrine to St Gripe",
+      "poi_type": "shrine",
+      "description": "A humid, foetid chamber. Tree roots pulse in the walls like veins. The walls and floor ripple unnervingly.",
+      "tagline": "Hidden",
+      "entering": "Characters who feed the willow a large animal can access through the willow's throat",
+      "interior": "Visitors discover that the undigested cows are in fact statues of cows, standing on a thick wooden platform. Amongst them is a fourth statue (not visible from the surface): St Gripe the forthright, depicted as a young man leading the cows, his expression wary and watchful.",
+      "exploring": "With heavy labour and some cajoling of the Great Willow to open its mouth wide, adventurers can remove the statues and platform, soothing the Willow and restoring the shrine.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Tree roots pulse in walls like veins",
+        "Walls and floor ripple unnervingly",
+        "Cow statues on wooden platform",
+        "St Gripe statue"
+      ],
+      "secrets": [
+        "The undigested cows are actually statues",
+        "Hidden shrine to St Gripe"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_great_willow",
+      "name": "The Great Willow",
+      "title": null,
+      "description": "A miraculous, magical creation of the Dolmenwood: a huge willow tree with a human mouth. The mouth emits loud moans, as if hungry.",
+      "kindred": "Magical Tree",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Ravenously hungry",
+        "eager to negotiate for food"
+      ],
+      "speech": "Loud, deep, indignant",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "The Great Willow is voraciously carnivorous, but has no way of getting food into its gullet. Due to its size, only whole sheep, deer, cattle, horses, etc. can provide the willow with a satisfying meal",
+        "The Willow also seeks relief from the indigestion caused by the white cows and allows characters to safely enter its mouth if they offer aid"
+      ],
+      "secrets": [
+        "Knows a great deal about surrounding hexes",
+        "May be able to answer obscure questions posed by adventurers"
+      ],
+      "possessions": [],
+      "location": "The Willow's Pool",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "St Gripe's Blessing",
+      "description": "After restoring the shrine, characters praying may receive the blessing of St Gripe: the ability to cast Find Traps",
+      "mechanical_effect": "Ability to cast Find Traps",
+      "location": "Shrine to St Gripe"
+    }
+  ],
+  "secrets": [
+    "The shrine to St Gripe is hidden in the Willow's Gullet",
+    "Prayer at the restored shrine grants Find Traps ability"
+  ],
+  "dm_notes": "In exchange for food or relief from the dyspepsia-inducing nuisance of the white cows, the willow mouth can offer knowledge about surrounding hexes and may answer obscure questions.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      384
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

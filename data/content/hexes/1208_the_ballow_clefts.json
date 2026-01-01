@@ -1,0 +1,143 @@
+{
+  "hex_id": "1208",
+  "coordinates": [
+    12,
+    8
+  ],
+  "name": "The Ballow-Clefts",
+  "tagline": "Boggy patches of deciduous growth punctuated by sharp black boulders.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Daytime encounters are 2-in-6 likely to be with 2d6 clueless urban pilgrims (everyday mortals—DMB) on their way to the crystal caves at Fog Lake (hex 1207)",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Boggy patches of deciduous growth punctuated by sharp black boulders.",
+  "points_of_interest": [
+    {
+      "name": "Cave Path",
+      "poi_type": "path",
+      "description": "The path from the south-east leading to Fog Lake (hex 1207) is called the \"Cave Path\" by local Woodcutter folk. It plunges into an incredibly deep rock trough, so high that the sun only touches the bottom for a few minutes at noon each day, if at all. It continues in this way for several miles.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Ravine walls: The chilly faces of the trough are streaming with rivulets of moisture, and are whorled and folded like the finger-marks of a titan. Carpet of flowers: Despite the dimness, a carpet of ankle-high plants not dissimilar to a species of pale celandine is present throughout. Gloomy clefts: At various heights from the ground, both sides of the trough feature many clefts deep and wide enough for Small characters to fit inside, though most terminate a short distance into the rock. Befuddling echoes: A traveller taken by a whim to bellow into a cleft is often surprised to hear their voice echoing back at them from some point ahead or behind of them on the path, often rendered comical or sinister by distortions. Broken musical instruments: The remains of a broken or neglected musical instrument of low make are sometimes found in the low vegetation.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Befuddling echoes from clefts",
+        "Broken musical instruments found in vegetation"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Rock Bridge",
+      "poi_type": "bridge",
+      "description": "Half way along Cave Path, a bridge of black rock arches above the road. During the day, a grimalkin bard by the name of Dandy Prisslewhiff sits atop the bridge, idly strumming her lute.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Passersby: The musical fairy greets passersby with a tip of the hat. If addressed, she may offer to aid travellers with her knowledge of the local region if they can answer her riddle or best her in a musical duel.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Dandy Prisslewhiff sits atop the bridge during the day",
+      "roll_tables": [],
+      "npcs": [
+        "dandy_prisslewhiff"
+      ],
+      "special_features": [
+        "Riddle challenge",
+        "Musical duel challenge"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Wort",
+      "poi_type": "shrine",
+      "description": "In the boggy western reaches of this hex, close to Ransom Creek, the remnants of a wayside shrine lie toppled in a ditch.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Tumbled stones: The shrine was a simple dry stone construction. The stones are now disarrayed and coated in noisome purple algae. Statue of St Wort: Amid the tumbled stones, the 2′-high yew-wood statue of St Wort (depicted naked and bound to a yew tree) is intact, if somewhat soiled.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer blessing available if shrine rebuilt"
+      ],
+      "secrets": [
+        "Hidden location"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "dandy_prisslewhiff",
+      "name": "Dandy Prisslewhiff",
+      "title": "Level 2 Bard",
+      "description": "A silver-furred, amber-eyed grimalkin woman in extravagant bard's garb, complete with billowing shirt sleeves and feather-topped hat.",
+      "kindred": "Grimalkin",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Strident",
+        "eminently honourable",
+        "Preens her ears habitually"
+      ],
+      "speech": "Eloquent drawl. Woldish, Mewl.",
+      "languages": [
+        "Woldish",
+        "Mewl"
+      ],
+      "desires": [
+        "Musical conquests",
+        "Learning new songs",
+        "Fine wines and meads"
+      ],
+      "secrets": [
+        "Secrets of this and surrounding hexes"
+      ],
+      "possessions": [
+        "A silver-stringed lute",
+        "12 portions of Kitty-Nibbles",
+        "32gp",
+        "a vial of Philtre of the Winds"
+      ],
+      "location": "The Rock Bridge",
+      "stat_reference": "Level 2 Bard",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "Riddle answer: the Drune (refers to secret fear of Woodcutters' Encampment folk)",
+    "Prayer at rebuilt shrine grants Speak With Plants blessing"
+  ],
+  "dm_notes": "Riddle: 'Oistace-kyne, tree-herd kin / Fulsome beard upon your chin / Axe, and saw, and coppice post / What is it that you fear the most?' Answer: the Drune. Musical duels: three rounds (sentimental song - Charisma Check, virtuoso song - Dexterity Check, improvisation - Wisdom Check). Prisslewhiff has Charisma 16 (+2), Dexterity 15 (+1), Wisdom 12 (+0). Loser smashes instrument on ravine walls.",
+  "adjacent_hexes": [
+    "1207"
+  ],
+  "roads": [
+    "Cave Path to hex 1207"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      329
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "hex_id": "1005",
+  "coordinates": [
+    10,
+    5
+  ],
+  "name": "Shub's Finger and Stirge Isle",
+  "tagline": "Hushed oak woods. Birds and small mammals are markedly scarce. A periodic groaning can be heard.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 stirge-owls",
+    "foraging_results": "After the night-boars have courted, their sticky, luminescent seminal fluid can be found dripping from rocks and tree trunks. Characters successfully foraging on Stirge Isle find 2d6 doses of the stuff—known as Frisk (p426)—in addition to the normal foraging results.",
+    "foraging_special": [
+      "Frisk (2d6 doses on Stirge Isle in springtime)"
+    ]
+  },
+  "description": "Hushed oak woods. Birds and small mammals are markedly scarce. A periodic groaning can be heard.",
+  "points_of_interest": [
+    {
+      "name": "Shub's Finger",
+      "poi_type": "signpost",
+      "description": "Close to the western side of this hex, a small, rustic-looking pathway forks off from Swinney Road and leads south into the woods. At the junction stands an old wooden signpost (known to local folk as \"Shub's finger\"), propped up against the stump of a dead elm.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The sign indicates a different imaginary destination each time PCs pass this way. The Referee may invent something or roll 1d6: 1. The Devil's Mill, 2. Snablesby, 3. Court of the Warbelowe, 4. Snankton-by-Water, 5. Castle Wrackenbold, 6. Little Chittering.",
+      "exploring": "Following the path: None of the indicated places exist; the path simply leads into the deep woods of hex 1006.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [
+        {
+          "name": "Odd Place Names",
+          "die_type": "d6",
+          "description": "Roll for imaginary destination shown on signpost",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "The Devil's Mill",
+              "description": "The Devil's Mill",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Snablesby",
+              "description": "Snablesby",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Court of the Warbelowe",
+              "description": "Court of the Warbelowe",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Snankton-by-Water",
+              "description": "Snankton-by-Water",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Castle Wrackenbold",
+              "description": "Castle Wrackenbold",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Little Chittering",
+              "description": "Little Chittering",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
+      "npcs": [],
+      "special_features": [
+        "Damaging the signpost: Amounts to naught; it reappears intact the following morn."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Stirge Isle",
+      "poi_type": "island",
+      "description": "The accursed isle of the stirge-owls wards the western end of the Groaning Loch, at the point where it narrows, feeding into Sinkhole Creek. 900 yards long, 100 yards wide. Steep, rocky sides, 50′ high, slick with weeds. Topped with gloomy firs.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The isle is the nesting ground of 60 stirge-owls, 2d6 of which swoop down to attack trespassers upon the isle or those who pass by at night.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "60 stirge-owls, 2d6 attack trespassers. In springtime, frequented by night-boars.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "In springtime: night-boars (stats as boars—DMB—but can only be harmed by magic or magic weapons) frequent the isle to mate",
+        "Mating calls: The bellowing of the night-boars can be heard for a mile around, at times spooking the stirge-owls",
+        "Foraging: After the night-boars have courted, their sticky, luminescent seminal fluid can be found dripping from rocks and tree trunks"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Groaning Loch",
+      "poi_type": "loch",
+      "description": "Fathomless, cold, and unquiet. Unpredictable currents, whirlpools, and the presence of kelpies make navigation of the loch's waters a perilous undertaking; few boats are ever seen upon it. The Loch is bounded by forbidding, granite cliffs, 200 yards high. The cliffs at the Loch's shallower western end are pocked with deep caves. Waves lapping in the gaping cave mouths cause the groaning sounds heard throughout this hex.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "kelpies (DMB)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Dangerous waters with unpredictable currents and whirlpools",
+        "Granite cliffs 200 yards high with deep caves"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine in the Cliffs",
+      "poi_type": "shrine",
+      "description": "As one navigates the currents of the Groaning Loch just beyond Stirge Isle, an overgrown ledge and the hint of a ruined stairway descending to it may be seen close to the summit of the southern cliff. The thorn bushes on this ledge conceal a grotto in which a shrine to St Hollyhock the jubilant is located. The dilapidated wooden shrine is utterly overrun with shrubbery, fungi, and bats, but the idol itself is intact.",
+      "tagline": null,
+      "entering": "Hidden shrine accessed via overgrown ledge and ruined stairway",
+      "interior": "Statue of St Hollyhock: 3′ tall, carved in black marble, depicts the saint in bishop's robes and mitre, smiling beneficently and holding a hearty loaf in her hands.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "bats",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the shrine is cleaned out, characters praying may receive the blessing of St Hollyhock: the ability to cast Flame Ward. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "Frisk",
+      "description": "Sticky, luminescent seminal fluid from night-boars",
+      "location": "Stirge Isle (springtime only)",
+      "quantity": "2d6 doses",
+      "reference": "p426"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Stirge-Owls: 3′ tall, white owls with wickedly curved beaks and moon-like eyes without pupils. They eat humanoid flesh, especially favouring that of children and infants. Small Monstrosity—Animal Int.—Chaotic. Level 1 AC 13 HP 1d8 (4) Saves D12 R13 H14 B15 S16. Att Beak (+0, 1d4) and 2 rending claws (+0, 1d3). Fly 60 Morale 8 XP 15. When first damaged: A stirge-owl lets out a bone-chilling screech. The one who harmed it must Save Versus Doom with a +2 bonus or be cursed: lose 1 point of Wisdom per day, becoming wild and animalistic when Wisdom reaches 2 or less. The curse can be reversed by magic of curse removal or by drinking stirge-owl blood. Devour flesh: Enter into a feeding frenzy, when left undisturbed with a fresh kill. The corpse is stripped to the bone within minutes.",
+  "adjacent_hexes": [
+    "1006"
+  ],
+  "roads": [
+    "Swinney Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      302
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

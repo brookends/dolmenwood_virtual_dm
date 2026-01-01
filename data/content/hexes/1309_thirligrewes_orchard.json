@@ -1,0 +1,155 @@
+{
+  "hex_id": "1309",
+  "coordinates": [
+    13,
+    9
+  ],
+  "name": "Thirligrewe's Orchard",
+  "tagline": "Bucolic woods decked with artfully trailing ivy. Sheep and swine happily browse the glades.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Bucolic woods decked with artfully trailing ivy. Sheep and swine happily browse the glades.",
+  "points_of_interest": [
+    {
+      "name": "Thirligrewe's Orchard",
+      "poi_type": "orchard",
+      "description": "At the forest's edge, in a clearing surrounded by a waist-high stone wall, there sits a tiny orchard. A humble two-storey cottage, leaning alarmingly sideways, adjoins it.",
+      "tagline": null,
+      "entering": null,
+      "interior": "A row of gnarled crab apple trees bearing curious mauve fruits stands at the rear of the orchard. The orchard is tended and protected by Thirligrewe Hangman, who serves Castle Brackenwold. A passionate reader, Thirligrewe has amassed a sizeable book collection whose sheer weight causes the cottage to lean toward the side dedicated to her study.",
+      "exploring": "Searching the collection for an hour yields four arcane scrolls, tucked inside a horticulture manual: Decipher, Floating Disc, Arcane Cypher, and Perceive the Invisible.",
+      "leaving": null,
+      "inhabitants": "The orchard is tended and protected by Thirligrewe Hangman, who serves Castle Brackenwold.",
+      "roll_tables": [],
+      "npcs": [
+        "thirligrewe_hangman"
+      ],
+      "special_features": [
+        "Strange apples: Cider brewed from the crab apples functions as Sandor's Phantasmal Elixir. One dose per pint consumed.",
+        "Weighty tomes: Book collection causes cottage to lean sideways"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Roost",
+      "poi_type": "inn",
+      "description": "Half a mile from the orchard, in an open glade beside Camp Road, a fantastic treehouse inn is nestled in the boughs of a trio of old beeches. The atmosphere of serenity that permeates the place is enhanced by the gentle cooing of the flocks of tame doves that perch among the inn's gables and the surrounding branches.",
+      "tagline": null,
+      "entering": "A sweeping, wooden stairway winds around the largest trunk. For the audacious, a pair of rope ladders dangle to the forest floor.",
+      "interior": "Tables and chairs densely clustered around a sweeping, circular bar. The landlady, Zoemina Ladle, serves with a gang of barmaids. On warm nights, doors are drawn back, joining the common room and the outside balcony. Genial flute music wafts.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The landlady, Zoemina Ladle, serves with a gang of barmaids. Guests: Travellers, merchants, and guards. Adventurers and nobles of romantic spirit sometimes sojourn here.",
+      "roll_tables": [],
+      "npcs": [
+        "zoemina_ladle"
+      ],
+      "special_features": [
+        "Sign: A dove contentedly nibbling hazelnuts from an open hand",
+        "Services: Lodgings and food of common quality, Attic suites for 5gp per night, Excellent stables at ground level"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "zoemina_ladle",
+      "name": "Zoemina Ladle",
+      "title": "The Roost Proprietor",
+      "description": "A strapping, energetic human woman in her late thirties, with plaited red hair and freckled complexion. Dresses in green gowns embroidered with ivy leaf motifs.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Bold",
+        "spirited",
+        "gregarious",
+        "Flits between groups, seldom finishing conversations"
+      ],
+      "speech": "Strident, almost operatic. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "The company of talented musicians",
+        "To convince her lover, Thirligrewe Hangman, to fake her own death, escape her inherited obligation to Brackenwold, and come to live at the inn in secret"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Roost",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "thirligrewe_hangman",
+      "name": "Thirligrewe Hangman",
+      "title": "Orchard Tender",
+      "description": "A quiet, mousy human woman of late youth with wispy hair and a penchant for berets. She works for the dukes of Brackenwold, tending the orchard as a result of a hereditary family punishment that passes to the eldest woman in the extended family. The nature of the crime that her ancestor committed—named pettymongery—is long since forgotten.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Rustic intellectual"
+      ],
+      "speech": "Halting, sarcastic. Woldish, Old Woldish.",
+      "languages": [
+        "Woldish",
+        "Old Woldish"
+      ],
+      "desires": [
+        "To continue her quiet job, which gives her time to read from her extensive library",
+        "To learn the ultimate destination of her apples; all she has ascertained is that they are spirited by courier to Castle Brackenwold, where they are said to be used to create small but regular quantities of cider for consumption by someone within"
+      ],
+      "secrets": [
+        "Her family serves under hereditary punishment for an ancestor's crime called 'pettymongery'"
+      ],
+      "possessions": [
+        "Extensive book collection including four arcane scrolls: Decipher, Floating Disc, Arcane Cypher, and Perceive the Invisible"
+      ],
+      "location": "Thirligrewe's Orchard",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Mauve Crab Apples",
+      "description": "Curious mauve fruits from gnarled crab apple trees. Cider brewed from these functions as Sandor's Phantasmal Elixir (one dose per pint consumed).",
+      "type": "consumable",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Arcane Scrolls",
+      "description": "Four arcane scrolls tucked inside a horticulture manual: Decipher, Floating Disc, Arcane Cypher, and Perceive the Invisible.",
+      "type": "scroll",
+      "value": null,
+      "magical": true
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Camp Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      342
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

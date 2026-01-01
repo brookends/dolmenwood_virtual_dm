@@ -1,0 +1,111 @@
+{
+  "hex_id": "1605",
+  "coordinates": [
+    16,
+    5
+  ],
+  "name": "The Fungal Chasm",
+  "tagline": "Rubbery black and deep purple antler fungi tower overhead, dripping sheets and strands of orange slime.",
+  "region": "Mulchgrove",
+  "terrain_type": "fungal forest",
+  "terrain_description": "Fungal forest (2), Mulchgrove",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": "While PCs travel in the chasm, any creatures encountered are 3-in-6 likely to be above the party, at the top of the chasm",
+    "foraging_results": "Successful foraging yields 1d3 portions of Mossmulch (p428) or Wallowmost (DPB), in addition to the normal results, which are always fungi",
+    "foraging_special": [
+      "Mossmulch (1d3 portions)",
+      "Wallowmost (1d3 portions)"
+    ]
+  },
+  "description": "Rubbery black and deep purple antler fungi tower overhead, dripping sheets and strands of orange slime. Sticky orange slime drips from the gigantic (40′ tall) antler fungi that dominate this hex. Before long, travellers are coated in the stuff.",
+  "points_of_interest": [
+    {
+      "name": "Dripping Slime",
+      "poi_type": "natural feature",
+      "description": "Sticky orange slime drips from the gigantic (40′ tall) antler fungi that dominate this hex. Before long, travellers are coated in the stuff.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Wiping off: The slime is so sticky that it is almost impossible to wipe off, except with the aid of an acidic liquid (e.g. wine, vinegar). The slime naturally rubs off over the course of several days.",
+        "Consuming: Those bold enough to taste the slime find it surprisingly tasty, with a sweet, nutty flavour. Consuming a large volume (at least a cup full) cures 1d3 Hit Points (maximum once a day), but causes the character's mouth to become so gummed up that they are unable to speak clearly for 1d4 hours (this prevents spell casting).",
+        "Harvesting: If collected, the slime loses its healing potency after 1d6 days. Each dose is worth 50gp."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Fungal Chasm",
+      "poi_type": "chasm",
+      "description": "A great chasm, 100 yards deep and nearly 4 miles long, runs north–south through the central regions of this hex. Its sheer sides are clad with hand-like fronds of cyan and violet lichen, dotted with small crevices in which tiny glow worms nest.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The base of the chasm is a lightless avenue of rich, black soil, creeping worms, and sprawling mounds of yellow and orange ear-shaped fungi.",
+      "exploring": "Following the natural path of the chasm, characters can travel north or south through this hex (to 1604 or 1606) with no chance of getting lost.",
+      "leaving": null,
+      "inhabitants": "The chasm is home to hundreds of diminutive fungal humanoids called holbies. Travellers in the chasm attract an ever-growing following of the curious creatures.",
+      "roll_tables": [],
+      "npcs": [
+        "holbies"
+      ],
+      "special_features": [
+        "Travel in the chasm: Following the natural path of the chasm, characters can travel north or south through this hex (to 1604 or 1606) with no chance of getting lost.",
+        "Eating the lichen: It tastes horribly bitter and is mildly poisonous: Save Versus Doom or suffer fits of vomiting for 1d2 hours (–2 to Attack Rolls and Saving Throws)."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "holbies",
+      "name": "Holbies",
+      "title": null,
+      "description": "1′ tall, incorporeal, translucent humanoid mushrooms that glow a lambent green or yellow. Holbies have bendy, jointless limbs and bulbous mushroom caps in place of heads.",
+      "kindred": "Small Fungus",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Curious",
+        "playful"
+      ],
+      "speech": "Silent tittering. Appear to understand Sylvan, but do not speak.",
+      "languages": [
+        "Sylvan (understand only)"
+      ],
+      "desires": [
+        "To observe travellers and witness the natural beauty of the fungal forest"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Fungal Chasm",
+      "stat_reference": "Level 1 AC 10 HP 1d4 (2) Saves D12 R13 H14 B15 S16, Att None Speed 20 Fly 20 Morale 5 XP 20",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [
+    "1604",
+    "1606"
+  ],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      369
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

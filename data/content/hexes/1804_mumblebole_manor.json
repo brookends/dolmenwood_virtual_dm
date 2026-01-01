@@ -1,0 +1,139 @@
+{
+  "hex_id": "1804",
+  "coordinates": [
+    18,
+    4
+  ],
+  "name": "Mumblebole Manor",
+  "tagline": "Uneven woodland, pocked with gullies and pools. The reek of ripe cheese wafts throughout.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d3 portions of Foolscap (p428), in addition to the normal results",
+    "foraging_special": [
+      "Foolscap (1d3 portions)"
+    ]
+  },
+  "description": "Uneven woodland, pocked with gullies and pools. The reek of ripe cheese wafts throughout.",
+  "points_of_interest": [
+    {
+      "name": "Cheese Fungus",
+      "poi_type": "natural feature",
+      "description": "In a small region in the west of this hex, ochre fungal tendrils creep across the ground and drape among the tree branches, oozing cream. Dotted among the tendrils are fruiting bodies that look and smell exactly like hunks of cheese.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Following the tendrils leads to Mumblebole Manor.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Eating: The fungal cheeses are deliciously ripe and exist in sufficient quantity for PCs to gorge themselves. (Though this brings on excessive flatulence.)",
+        "Harvesting: Once plucked from the fungal vine, the cheese hunks dissolve into mould in twelve hours."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Mumblebole Manor",
+      "poi_type": "manor",
+      "description": "At the centre of the region of cheese fungus is the base of the mossling adventurer Blumber: a squat manor formed of spongy fungal matter, its oval windows veiled with curtains of mould. Floating above is a giant puffball as large as the manor, tethered to the roof by mycelial cords.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Warm, pulsing, fleshy walls, 5′ high ceilings. Carpeted with soft moss and cluttered with rough wooden furnishings, clad with bark. Most rooms are dedicated to feasting, cooking, or sleeping.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Blumber, the mossling cheese-breeder, and her 10 mossling (DMB) assistants, tending the fungal gardens, staffing the bustling kitchens, and parading around playing sea shanties on toadstool cap tubas.",
+      "roll_tables": [],
+      "npcs": [
+        "blumber"
+      ],
+      "special_features": [
+        "Cheese gardens: The manor's grounds are occupied by row after row of neatly tended cheese fungus.",
+        "Library: A circular chamber at the heart of the manor houses a rare collection of books written in Mulch and a gallery of maps of the moon's surface.",
+        "Secret vault: A trapdoor in the library, concealed by moss, leads to a poky cellar lined with puffball skin. In locked iron chests are 5,000gp, 20,000sp, 2 Cream Horns, 3 Ashy Bishops, and 5 Lichen Yargs (see Magical Cheeses).",
+        "Visitors: Those of a cheerful nature may be invited for a slap-up feast of cheese and mushrooms. Guests may be offered Magical Cheeses for sale and hear of Blumber's plans to inflate her giant puffball sufficiently to lift her entire manor into the air, bound for the cheese fields of the moon."
+      ],
+      "secrets": [
+        "Secret vault: A trapdoor in the library, concealed by moss, leads to a poky cellar lined with puffball skin."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "blumber",
+      "name": "Blumber",
+      "title": "Level 8 Fighter",
+      "description": "A stocky mossling woman, near spherical in girth, with a mound of yellow mould in place of hair, bracket fungus ears, and spotted toadstool caps in place of eyes. Dresses in leather straps and patches of fur.",
+      "kindred": "Mossling",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Chatty",
+        "harebrained",
+        "Loves cheese above all else"
+      ],
+      "speech": "Rumbling drawl",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "The body of a yellow bile wyrm, to be boiled down to produce a potent gas to lift the puffball balloon into the air",
+        "To visit the cheese fields of the moon",
+        "Trusty adventurers to join her on this fantastic voyage"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A crusty old diary describing the journey of a group of rat-folk who descended to Dolmenwood from the moon",
+        "A thorny Arcane Club (p412)",
+        "An iron Amulet of Density (p398) graven with a leering griffon's face"
+      ],
+      "location": "Mumblebole Manor",
+      "stat_reference": "Level 8 Fighter",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Cream Horn",
+      "description": "Oozing horns of blue cheese. Acts as Dimensional Solvent, Gold (p402).",
+      "value": "3,000gp",
+      "mechanical_effect": "Acts as Dimensional Solvent, Gold"
+    },
+    {
+      "name": "Ashy Bishop",
+      "description": "Ash-coated rounds of pungent, purple brie. Acts as Distillation of Hoarfrost (p414).",
+      "value": "2,000gp",
+      "mechanical_effect": "Acts as Distillation of Hoarfrost"
+    },
+    {
+      "name": "Lichen Yarg",
+      "description": "Creamy white soft cheese wrapped in pickled lichen. Acts as Prismatic Elixir (p414).",
+      "value": "1,000gp",
+      "mechanical_effect": "Acts as Prismatic Elixir"
+    }
+  ],
+  "secrets": [
+    "Secret vault in library contains 5,000gp, 20,000sp, 2 Cream Horns, 3 Ashy Bishops, and 5 Lichen Yargs"
+  ],
+  "dm_notes": "Fungal symbiosis: Can release a 10′ cube cloud of mould spores, suffering 1d6 damage in the process. All within must Save Vs. Blast or die of choking within 6 Rounds.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      383
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

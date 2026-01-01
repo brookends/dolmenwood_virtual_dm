@@ -1,0 +1,130 @@
+{
+  "hex_id": "1607",
+  "coordinates": [
+    16,
+    7
+  ],
+  "name": "The Wandering Friars",
+  "tagline": "Ancient hazel and beech coppices, inhabited by a vast population of inquisitive squirrels.",
+  "region": "Aldweald",
+  "terrain_type": "open forest",
+  "terrain_description": "Open forest (2), Aldweald",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Ancient hazel and beech coppices, inhabited by a vast population of inquisitive squirrels.",
+  "points_of_interest": [
+    {
+      "name": "The Wandering Friars",
+      "poi_type": "encounter",
+      "description": "As the adventurers pass through this forest, they sight a group of 12 friars, arrayed in severe black, hooded robes, making their solemn and deliberate way through the trees and glades. They chant in (ungrammatical, to those who speak it) Liturgic.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "12 friars in black hooded robes",
+      "roll_tables": [],
+      "npcs": [
+        "wandering_friars"
+      ],
+      "special_features": [
+        "Hailing the friars: If the friars are spoken to, they stop, and one of their number cries out: 'You! Declare yourselves! What have you done that pleases the One True God!'",
+        "Replying to the friars: A party that replies truthfully with a sufficiently pleasing Lawful feat or accomplishment receives the Friars' Boon. A party that lies or replies with an evil deed receives the Friars' Curse. A party that replies ambiguously or insufficiently must undertake the Redeeming Quest.",
+        "Following the friars: Those granted the Friars' Boon or who have completed the Redeeming Quest may follow them down a hidden path to the Chapel of Redemption. Others watch as the friars become transparent, fade, then vanish completely.",
+        "Attacking the friars: The friars wait passively for their doom. Each is killed with a single hit. Regardless of the weapons used, no wounds appear on any bodies. The party immediately receives the Friars' Curse."
+      ],
+      "secrets": [
+        "The friars were formerly a gang of bandits who terrorised travellers on the Kings' Highway. They took up the mantle of the Church after receiving a divine vision, and embarked upon a permanent quest for redemption of self and other. The quest continues even now, centuries after their natural deaths."
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Chapel of Redemption",
+      "poi_type": "chapel",
+      "description": "Concealed in a dense bramble thicket, reachable only via a hidden path, is a small, crude stone chapel, about 10′ square. A wooden door, carved with a figure of St Clewyd, hangs slightly ajar.",
+      "tagline": null,
+      "entering": "Reachable only via a hidden path from following the friars",
+      "interior": "Overrun with brambles. The walls are filthy and the floor is covered in leaves and animal droppings. At the far side is an altar; a wooden triptych sits upon it.",
+      "exploring": "Cleaning the chapel takes about two hours, and reveals a wooden alms box, lost amidst the briars, containing 120gp.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Triptych: The first panel depicts a group of twelve bandits attacking a farmer in a wagon on a road, with Castle Brackenwold clearly recognisable in the distance. The second panel shows the bandits sitting listless and remorseful in a forest, a heavenly light shining down upon them from above. The third panel depicts twelve black-robed friars, wandering the wood.",
+        "If the party chooses to distribute the entirety of the coins to the indigent, each member gains +1 Wisdom."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "wandering_friars",
+      "name": "The Wandering Friars",
+      "title": null,
+      "description": "A group of 12 friars, arrayed in severe black, hooded robes, making their solemn and deliberate way through the trees and glades. They chant in (ungrammatical, to those who speak it) Liturgic.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Solemn",
+        "deliberate"
+      ],
+      "speech": "Chanting in ungrammatical Liturgic",
+      "languages": [
+        "Liturgic"
+      ],
+      "desires": [
+        "Redemption of self and other"
+      ],
+      "secrets": [
+        "Were formerly a gang of bandits who terrorised travellers on the Kings' Highway",
+        "Took up the mantle of the Church after receiving a divine vision",
+        "Continue their quest for redemption centuries after their natural deaths"
+      ],
+      "possessions": [],
+      "location": "Wandering through the forest",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Wooden Alms Box",
+      "description": "Contains 120gp, found in the Chapel of Redemption after cleaning",
+      "value": "120gp",
+      "special_properties": "If coins distributed entirely to indigent, each party member gains +1 Wisdom"
+    },
+    {
+      "name": "Wooden Triptych",
+      "description": "Three-panel artwork depicting the history of the friars: bandits attacking, divine vision, becoming friars",
+      "value": null,
+      "special_properties": null
+    }
+  ],
+  "secrets": [
+    "Friars' Boon: The recipients feel a calming warmth settle upon them. They gain a +1 bonus to Attack and Damage Rolls and a +1 bonus to Morale for 1 day. They can also join the friars' procession.",
+    "Friars' Curse: The victims immediately double over in searing pain. They suffer a permanent –1 penalty to Attack and Damage Rolls and a –1 penalty to Morale, until they complete the Redeeming Quest.",
+    "Redeeming Quest: Those charged are overcome with a vision in which they see themselves carving twelve names into a wooden staff planted in the graveyard of the Abbey of St Clewyd (hex 0906). They find themselves physically unable to enter any settlement until they have fulfilled this mission. The names: Ablegood, Barnabas, Chadwick, Crump, Dimothey, Effred, Guillem, Hob, Jymes, Mug, Shank, Wilfry.",
+    "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream."
+  ],
+  "dm_notes": "Completing the quest: If the adventurers complete the quest and return to this hex, they encounter the friars again (even if they were previously slain).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      371
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

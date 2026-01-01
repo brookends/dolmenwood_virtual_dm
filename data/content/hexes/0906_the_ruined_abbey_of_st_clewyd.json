@@ -1,0 +1,260 @@
+{
+  "hex_id": "0906",
+  "coordinates": [
+    9,
+    6
+  ],
+  "name": "The Ruined Abbey of St Clewyd",
+  "tagline": "Sighing wind seems to emanate from face-like formations in the sides of ragged granite peaks.",
+  "region": "Aldweald",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with the gloam (DMB) that lairs in the abbey ruins",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Close to where Swinney Road crosses the turreted Cantilope Bridge, a cobblestoned avenue diverges. Overgrown and flanked with defaced saintly statues, it leads to the shattered gate of the ruined abbey complex.",
+  "points_of_interest": [
+    {
+      "name": "The Ruined Abbey of St Clewyd",
+      "poi_type": "abbey ruins",
+      "description": "A ruined abbey complex with chaotic phenomena manifesting among the ruins: prismatic, spectral flames; iridescent lights drifting and bobbing; erratic booming from underground; twitching ears and whispering mouths sprouting from stone.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The abbey complex contains a haunted bell tower, Chapel of St Clewyd, and disturbed graveyard. Extensive crypts extend beneath the chapel.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A gloam called Mister Rag-n-Bone dwells in the bell tower with three charmed children. The western crypts house 50 monks (20 living, 30 undead) of the Order of Wardens.",
+      "roll_tables": [],
+      "npcs": [
+        "mister_rag_n_bone",
+        "bilbry_worms",
+        "willy_hodgeheg",
+        "violet_harrowmoor"
+      ],
+      "special_features": [
+        "Chaotic phenomena throughout ruins",
+        "Ley line Lamm - Arcane spell-casters feel observed by a pitiless malevolence",
+        "Chaos Rift in eastern crypts",
+        "Holy magic sustains monks and resurrects the dead"
+      ],
+      "secrets": [
+        "The 'Charge' - a wretched monstrosity formed of the amalgamation of St Clewyd and Sallowbryg is imprisoned in the crypts"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 4
+    },
+    {
+      "name": "Haunted Bell Tower",
+      "poi_type": "tower",
+      "description": "A tall, square tower stands largely undamaged, close to the toppled gate. Dark birds roost in the belfry at the tower's summit. A gloam haunts this place, dwelling with three charmed children.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Ground floor: A decaying chapel dedicated to St Woad, patron of bakers, bears, and hammersmiths. 1st floor: The home of the three charmed children. 2nd floor: Macabre dioramas of stuffed woodland creatures with human teeth. 3rd floor: Belfry with great bronze bell and the gloam.",
+      "exploring": "Disturbing the figures on the 2nd floor risks the wrath of the gloam that lurks in the belfry.",
+      "leaving": null,
+      "inhabitants": "Mister Rag-n-Bone (gloam) and three charmed children",
+      "roll_tables": [],
+      "npcs": [
+        "mister_rag_n_bone",
+        "bilbry_worms",
+        "willy_hodgeheg",
+        "violet_harrowmoor"
+      ],
+      "special_features": [
+        "Great bronze bell worth 1,500gp on 3rd floor"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 4
+    },
+    {
+      "name": "Chapel of St Clewyd",
+      "poi_type": "chapel",
+      "description": "The main chapel is damaged but largely intact. A tapestry of climbing plants conceals a series of mosaics depicting the life and deeds of St Clewyd. Twin staircases descend to the chapel's crypts.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Contains mosaics of St Clewyd's life hidden behind climbing plants. Twin staircases lead to extensive crypts below.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Hidden mosaics depicting St Clewyd's life and deeds"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Disturbed Graveyard",
+      "poi_type": "graveyard",
+      "description": "The graves of several hundred monks, surrounded by buckling, ivy-covered walls. The newest graves bear dates just over 100 years ago. Many have been carelessly dug up.",
+      "tagline": null,
+      "entering": null,
+      "interior": "2-in-6 chance of a charmed child being present here, digging.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Occasionally one of the charmed children digging for teeth",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Graves of several hundred monks",
+        "Many graves dug up for teeth"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Chapel Crypts",
+      "poi_type": "crypts",
+      "description": "An extensive series of tombs and catacombs extends beneath the chapel. The doors from the surface lead into a vast undercroft in the eastern half of the crypts.",
+      "tagline": null,
+      "entering": "Twin staircases descend from the chapel above",
+      "interior": "Eastern crypts are wracked with Chaotic energies and monsters from a dimensional rift. Western crypts house the Order of Wardens - 50 monks (20 living, 30 undead) who have magically walled themselves in.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Order of Wardens monks, chaotic monsters in eastern section, the imprisoned 'Charge'",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Chaos Rift in eastern crypts",
+        "Holy magic provides sustenance and resurrection",
+        "The 'Charge' - amalgamated monstrosity of St Clewyd and Sallowbryg"
+      ],
+      "secrets": [
+        "The monks have sworn to remain until their 'Charge' can be healed",
+        "Holy magic sometimes misfires, creating mindless undead"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "mister_rag_n_bone",
+      "name": "Mister Rag-n-Bone",
+      "title": "Gloam",
+      "description": "Flock form: A swirling, noisome gyre of shrieking, decayed crows. Humanoid form: A gangly, pulsing agglomeration of tiny, broken bones, wearing a cloak of rancid feathers.",
+      "kindred": "Gloam",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Erratic",
+        "withdrawn",
+        "obsessive"
+      ],
+      "speech": "Grating whisper, clacking of beaks. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Obsessed with creating taxidermied animals with the teeth of the devoutly religious dug up by the children in the abbey graveyard carefully sewn into their jaws",
+        "Protect and nurture the foster children"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Bell tower belfry",
+      "stat_reference": "gloam (DMB)",
+      "is_combatant": true
+    },
+    {
+      "npc_id": "bilbry_worms",
+      "name": "Bilbry Worms",
+      "title": null,
+      "description": "A waif-like, blonde boy of 5 years.",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [
+        "Charmed"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": [
+        "Digging up teeth from the graveyard for Mister Rag-n-Bone"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Bell tower, 1st floor",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "willy_hodgeheg",
+      "name": "Willy Hodgeheg",
+      "title": null,
+      "description": "A strapping lad of 8 years, whose matted black hair cascades over his glowering eyes.",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [
+        "Charmed",
+        "glowering"
+      ],
+      "speech": null,
+      "languages": null,
+      "desires": [
+        "Digging up teeth from the graveyard for Mister Rag-n-Bone"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Bell tower, 1st floor",
+      "stat_reference": null,
+      "is_combatant": false
+    },
+    {
+      "npc_id": "violet_harrowmoor",
+      "name": "Violet Harrowmoor",
+      "title": null,
+      "description": "A dark-haired girl of 6 whose dress and speech betray her aristocratic origins—she is the missing daughter of Lady Harrowmoor.",
+      "kindred": "Human",
+      "alignment": null,
+      "demeanor": [
+        "Charmed",
+        "aristocratic"
+      ],
+      "speech": "Aristocratic speech patterns",
+      "languages": null,
+      "desires": [
+        "Digging up teeth from the graveyard for Mister Rag-n-Bone"
+      ],
+      "secrets": [
+        "The gloam charmed her away from behind her mother's back on a visit to the fortifications at Prigwort"
+      ],
+      "possessions": [],
+      "location": "Bell tower, 1st floor",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Great Bronze Bell",
+      "description": "A great bronze bell in the belfry",
+      "value": "1,500gp",
+      "location": "Bell tower, 3rd floor (belfry)"
+    }
+  ],
+  "secrets": [
+    "The abbey was destroyed by a ritual that created a dimensional rift",
+    "The 'Charge' is an amalgamated monstrosity of St Clewyd and Sallowbryg",
+    "Violet Harrowmoor is the missing daughter of Lady Harrowmoor"
+  ],
+  "dm_notes": "Ley line Lamm: Arcane spell-casters feel observed by a pitiless malevolence.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Swinney Road crosses the turreted Cantilope Bridge nearby"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      291
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

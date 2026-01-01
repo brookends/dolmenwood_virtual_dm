@@ -1,0 +1,91 @@
+{
+  "hex_id": "0912",
+  "coordinates": [
+    9,
+    12
+  ],
+  "name": "The Hamlet of Swinescombe",
+  "tagline": "A bucolic idyll of green pastures and verdant orchards, dotted with old windmills and fields of oats and barley.",
+  "region": "High Wold",
+  "terrain_type": "meadow",
+  "terrain_description": "Meadow (2), High Wold",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "A bucolic idyll of green pastures and verdant orchards, dotted with old windmills and fields of oats and barley. Nestled by the forest, in the north of the hex, the inviting hamlet of Swinescombe presents a quaint image from a distance. The sound of a lively lute or fiddle often greets travellers approaching the thatched-roof farmhouses and charming crimson barns.",
+  "points_of_interest": [
+    {
+      "name": "The Hamlet of Swinescombe",
+      "poi_type": "hamlet",
+      "description": "The hamlet is home to 30 pigfolk and 30 bestial humans. Farms surround the hamlet, with large pig-pens in which fat shapes waddle with a faintly uncanny motion. As one gets closer, it becomes apparent that the creatures snuffling for food are not swine but bestial humans (30 in all), naked and mud-spattered, fattened and unshorn. Tending to the herds are pigfolk farmers.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Adventurers who try to interrupt Swinescombe's way of life are attacked by 6 pigfolk, who try to beat them unconscious and bind them. Subdued PCs awake in the pens, naked and in hog hobbles.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The hamlet is home to 30 pigfolk and 30 bestial humans.",
+      "roll_tables": [],
+      "npcs": [
+        "bartholomew_old_bart_bucksnort"
+      ],
+      "special_features": [
+        "Slaughterhouse: Human corpses hang from the rafters, dismembered body parts are strewn across work-tables, and cleaver-wielding pigfolk cheerfully disjoint cadavers.",
+        "The Pot-Bellied Boar (alehouse): The village drunk, Old Bart, habitually drowns his sorrows at the bar.",
+        "Abandoned building: Blockish, windowless. Conspicuously shunned by the pigfolk, who refer to it in quavering whispers as the 'haunted tomb of the ancestors.' The dark, cool interior proves to be a curing larder for pork sausages, which dangle from numerous hooks. Anyone fleeing here is safe from the pigfolk.",
+        "Services: Lodgings of common quality (no private rooms available). Food served at the Pot-Bellied Boar of common quality (all meat served is human)."
+      ],
+      "secrets": [
+        "The Secret of Swinescombe"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "bartholomew_old_bart_bucksnort",
+      "name": "Bartholomew \"Old Bart\" Bucksnort",
+      "title": null,
+      "description": "An old, sad-faced male boar with ale-tinted whiskers ringing a gin-blossomed snout.",
+      "kindred": "Pigfolk",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Sour",
+        "gripey"
+      ],
+      "speech": "Slow and deliberate, punctuated with meditative, mournful sighs. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Misses life as a mere pig",
+        "longs to return to the carefree days of old"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Pot-Bellied Boar alehouse",
+      "stat_reference": "pigfolk",
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [
+    "The Secret of Swinescombe: Swinescombe was originally a hamlet of pig-farming humans. By chance, a local charcutier discovered the black filth in hex 0911. Believing it magical, he fed it to the pigs, in a bid to outdo the famed bog-swine sausage of Dreg. The filth permeated the hamlet's food chain, eventually transforming its pigs into sentient, anthropomorphic pigfolk and its humans into dull-witted beasts. The pigfolk appropriated the homes and lives of the former farmers, herding the bestial humans. Having only recently seized control of Swinescombe, the pigfolk are anxious to prevent word of their situation from reaching the outside world. They bribed Baron Hogwarsh's tax collectors to let them be, but fear their inevitable return."
+  ],
+  "dm_notes": "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence. Pigfolk stats: Medium Mortal—Sentient—Any Alignment, Level 1 AC 13 HP 1d8 (4) Saves D12 R13 H14 B15 S16, Att Meat cleaver (+0, 1d4) or tusk (+0, 1d4) Speed 40 Morale 6 XP 10. Terrified of sausages: Pigfolk can be kept at bay (10′) by brandished sausages, though they repeatedly warn this will bring 'the wrath of the ancestors' down upon the entire hamlet 'any minute now.'",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      297
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

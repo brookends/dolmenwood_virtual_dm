@@ -1,0 +1,106 @@
+{
+  "hex_id": "1202",
+  "coordinates": [
+    12,
+    2
+  ],
+  "name": "Mound of the Willing Sacrifice",
+  "tagline": "A bewildering expanse of thorn trees, chest-high reeds, and stinking pools. Sound here is painfully amplified.",
+  "region": "Fever Marsh",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Fever Marsh",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely to be with the Willing Sacrifice",
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "A bewildering expanse of thorn trees, chest-high reeds, and stinking pools. Sound here is painfully amplified.",
+  "points_of_interest": [
+    {
+      "name": "The Mound",
+      "poi_type": "burial_mound",
+      "description": "A burial mound sits in the centre of a drier patch of the otherwise waterlogged swamp. The reeds of the patch are plastered flat, pointing away from the mound.",
+      "tagline": null,
+      "entering": "The entrance is extremely narrow and requires characters to turn side-on to enter the Reception Chamber.",
+      "interior": "The mound is 60′ in diameter and composed of dirt and stone. Hanging moss dapples its surface in drooping, forlorn patches. It has a single stone entrance, above which is carved the snarling visage of a bear—PCs versed in Wood God lore recognise it as that of Orsath, the ancient guardian of the dead.",
+      "exploring": "The mound contains a Reception Chamber and a Burial Chamber. Once a PC reaches the pit bottom in the Burial Chamber, the Willing Sacrifice returns to the mound and attacks.",
+      "leaving": null,
+      "inhabitants": "The reanimated corpse of a willing sacrifice roams the hex in search of mortal victims.",
+      "roll_tables": [],
+      "npcs": [
+        "the_willing_sacrifice"
+      ],
+      "special_features": [
+        {
+          "name": "Reception Chamber",
+          "description": "The mound entrance leads to a reception chamber with walls of stone. The chamber takes up one half of the mound. Sprawled about the chamber are six human bodies, only a few days dead. Their faces are rictus masks of agony, and their hands are clutched to their ears, in which dried blood is pooled. Lying among the corpses are shovels, picks, and provisioned backpacks. The stone walls are carved with a sequence of images depicting the burial of a priestess and the sacrifice that sealed her beneath the mound. The entrance to the burial chamber is open, a tall and heavy stone lying on the ground beside it."
+        },
+        {
+          "name": "Burial Chamber",
+          "description": "The burial chamber takes up the other half of the mound. The chamber walls appear to have been scratched deeply and repeatedly, over a very long time. At the far end of the chamber is a pit, 8′ in diameter and 40′ deep, surrounded by piles of loose dirt. At the bottom are four sealed earthen jars, each containing a different carved amber totem (1,000gp each)."
+        }
+      ],
+      "secrets": [
+        "The mound is one of several created by prehistoric inhabitants of the Table Downs. This one was the resting place of a tribe member buried alive as a willing sacrifice in the ritual that entombed Kul, a wicked and dangerous priestess, in the mound in hex 1201. Over the millennia, Kul's evil infected the sacrifice, whose reanimated corpse now roams the hex in search of mortal victims."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_willing_sacrifice",
+      "name": "The Willing Sacrifice",
+      "title": null,
+      "description": "A grave-blackened corpse clad in filthy ornamental robes, striding with swift preternatural grace, reeking of befouled earth. While her limbs are sinuous and lithe, her stomach is a distended bulge, and a sickly turquoise glow emanates from within it. Strapped onto her face is a cracked, wooden bear-face mask.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Silent before attacking",
+        "Swift preternatural grace"
+      ],
+      "speech": "Horrendously piercing shriek",
+      "languages": [],
+      "desires": [
+        "To find mortal victims"
+      ],
+      "secrets": [
+        "Once a willing sacrifice buried alive to seal the priestess Kul beneath a mound",
+        "Infected by Kul's evil over millennia"
+      ],
+      "possessions": [
+        "Cracked wooden bear-face mask",
+        "Filthy ornamental robes"
+      ],
+      "location": "Roams hex 1202",
+      "stat_reference": "Medium Undead—Semi-Intelligent—Chaotic, Level 7 AC 16 HP 37 Saves D8 R9 H10 B11 S12, Att Claw (+6, 1d8) or shriek (2d6) Speed 40 Morale 10 XP 1,080",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Carved Amber Totems",
+      "description": "Four sealed earthen jars, each containing a different carved amber totem",
+      "value": "1,000gp each",
+      "location": "Bottom of pit in Burial Chamber"
+    }
+  ],
+  "secrets": [
+    "The corpses in the Reception Chamber are the group sent by the expedition in hex 1201",
+    "The wall carvings depict the burial of priestess Kul and the willing sacrifice that sealed her"
+  ],
+  "dm_notes": "Once a PC reaches the pit bottom, the Willing Sacrifice returns to the mound and attacks. The Willing Sacrifice has special abilities: Undead (silent before attacking, immune to biological effects and mind-affecting spells), Immunities (only harmed by magic, silver weapons, or magic weapons), Shriek (thrice a day, 30′ cone, 2d6 damage, Save Versus Hold for half, ear protection grants automatic success).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      323
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

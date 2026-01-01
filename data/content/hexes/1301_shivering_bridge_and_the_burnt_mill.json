@@ -1,0 +1,159 @@
+{
+  "hex_id": "1301",
+  "coordinates": [
+    13,
+    1
+  ],
+  "name": "Shivering Bridge and the Burnt Mill",
+  "tagline": "The mournful sighing and shivering of the river echo among the hills, like the chattering of ghostly teeth.",
+  "region": "Table Downs",
+  "terrain_type": "hills",
+  "terrain_description": "Hills (2), Table Downs",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "The mournful sighing and shivering of the river echo among the hills, like the chattering of ghostly teeth.",
+  "points_of_interest": [
+    {
+      "name": "Shivering Bridge",
+      "poi_type": "bridge",
+      "description": "A run-down wooden bridge spans the restless and fast-moving River Shiver. Waves lap forlornly against its skewed posts, and dark, churning waters are visible through the gaps left by fallen planks. Crows perch here, observing travellers quizzically.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Crossing: People and mounts can cross the bridge safely. Vehicles have a 3-in-6 chance of collapsing it."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Burnt Mill",
+      "poi_type": "ruin",
+      "description": "The burnt-out ruin of a stone building stands upon the western riverbank, 100 yards north of the Shivering Bridge. A smashed waterwheel lies on the bank, indicating the building's former function as a mill.",
+      "tagline": null,
+      "entering": "The undead inhabitants of the ruin—a cringing, mocking gang of 6 ghouls (DMB) and their leader Jayne Turpentine, a headless rider (DMB)—emerge and advance upon travellers. All are dressed in old fashioned, decaying finery, with ruffs and lacy cuffs.",
+      "interior": "Blackened stone, tumbled walls, collapsed roof and upper floor, smashed furnishings. The dirt floor is ashen and devoid of plant life. The carrion reek of ghouls permeates the ruin.",
+      "exploring": "Trapdoor: A creaking wooden trapdoor gives access to the Cellars, via a steep stone stairway. Cupboard under the stairs: A door stands beneath the ruined stairs that once led to the mill's upper floor. Behind the door is a small closet, strewn with gnawed bones (human and animal). A decaying sack contains the ghouls' loot: 1,000sp and a silver bracelet studded with jet (1,500gp). Searching: Reveals traces of magical script on a burnt beam. Decipher indicates fragments of a necromantic mind-bondage ritual.",
+      "leaving": null,
+      "inhabitants": "6 ghouls and Jayne Turpentine (headless rider)",
+      "roll_tables": [],
+      "npcs": [
+        "jayne_turpentine"
+      ],
+      "special_features": [
+        "History: The miller was a necromancer who dwelt here with his coven of twelve apprentices. Religious zealots burned the building along with its inhabitants 1,000 years ago, but the spirit of the miller lingers in the evil tome hidden in the cellars."
+      ],
+      "secrets": [
+        "Cupboard under the stairs contains 1,000sp and a silver bracelet studded with jet (1,500gp)",
+        "Magical script on burnt beam reveals necromantic mind-bondage ritual fragments"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": [
+        "Cellars"
+      ]
+    },
+    {
+      "name": "Cellars",
+      "poi_type": "dungeon_level",
+      "description": "A putrid, low-roofed space with a floor of dank earth and walls dripping with mould. Shattered barrels are strewn about.",
+      "tagline": null,
+      "entering": "Access via trapdoor from Burnt Mill",
+      "interior": "Skeletons: The charred skeletal remains of thirteen humans lay here: one tied to a stake in the centre (the evil miller) and twelve around the edges of the room (his apprentices—each missing a finger or thumb). A golden medallion with a livid eye motif hangs around the neck of the staked skeleton. (The eye weeps blood. Wearing it grants +1 Intelligence and the ability to return from death once. The wearer's Alignment changes to Chaotic. The medallion can only be removed by magic of curse removal.)",
+      "exploring": "Secret chamber: A secret door leads to a circular, shelf-lined chamber. A weighty, black leather tome stands upon a lectern. Upon the shelves are dozens of black jars, each containing a human finger or thumb, pickled in brine.",
+      "leaving": null,
+      "inhabitants": "Trapped spirit of the miller (released if tome is touched)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The tome: A spell book with the following spells, inscribed in red ink which writhes when viewed indirectly: Knock, Speak With Dead (p457), Animate Dead.",
+        "Touching the tome: Any living creature who touches the tome releases the trapped spirit of the miller. It manifests as a writhing spectre (DMB), hissing \"I come to serve you now, O Flayed Queen.\" If able to escape, the spirit flees the mill and disappears into the hills."
+      ],
+      "secrets": [
+        "Secret chamber behind secret door contains spell tome and pickled fingers"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "jayne_turpentine",
+      "name": "Jayne Turpentine",
+      "title": "Headless Rider",
+      "description": "The hateful spirit of a highway robber, drawn to the malign influence of the miller's shade. Manifests as a pale blue phantom dressed in old fashioned finery (with a ruff and lacy cuffs), shrouded in mist, and mounted upon a spectral horse. Carries her grimacing, gore-dripping head in one hand and a bloody sabre in the other.",
+      "kindred": "Undead",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Haughty",
+        "hateful of all beings, whether living or dead—including herself",
+        "Swings her sabre brashly"
+      ],
+      "speech": "Hollow whispering. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Murder",
+        "To release the miller's spirit"
+      ],
+      "secrets": [],
+      "possessions": [
+        "bloody Arcane Longsword (Doomed, p412—the blood cannot be cleaned)",
+        "platinum medallion in the shape of a horse's head (1,000gp)",
+        "3 gold rings (100gp each)"
+      ],
+      "location": "Burnt Mill",
+      "stat_reference": "headless rider (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Golden Medallion with Livid Eye",
+      "description": "The eye weeps blood. Wearing it grants +1 Intelligence and the ability to return from death once. The wearer's Alignment changes to Chaotic. The medallion can only be removed by magic of curse removal.",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Spell Tome",
+      "description": "A weighty, black leather tome with spells inscribed in red ink which writhes when viewed indirectly: Knock, Speak With Dead, Animate Dead. Touching releases the trapped spirit of the miller.",
+      "value": null,
+      "magical": true
+    },
+    {
+      "name": "Silver Bracelet Studded with Jet",
+      "description": "Found in ghouls' loot sack",
+      "value": "1,500gp",
+      "magical": false
+    }
+  ],
+  "secrets": [
+    "Cupboard under stairs contains treasure",
+    "Secret chamber behind secret door in cellars",
+    "Magical script on burnt beam reveals necromantic ritual fragments",
+    "Miller's spirit trapped in tome"
+  ],
+  "dm_notes": "History: The miller was a necromancer who dwelt here with his coven of twelve apprentices. Religious zealots burned the building along with its inhabitants 1,000 years ago, but the spirit of the miller lingers in the evil tome hidden in the cellars.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      334
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "hex_id": "1304",
+  "coordinates": [
+    13,
+    4
+  ],
+  "name": "The Hall of Sleep",
+  "tagline": "Crags of sandstone eroded (carved?) into outré forms like gesturing hands. A cool wind blows from the Loch.",
+  "region": "Aldweald",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d6 portions of Fenob (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Fenob (1d6 portions)"
+    ]
+  },
+  "description": "Crags of sandstone eroded (carved?) into outré forms like gesturing hands. A cool wind blows from the Loch.",
+  "points_of_interest": [
+    {
+      "name": "The Groaning Loch",
+      "poi_type": "loch",
+      "description": "Waters: Fathomless, cold, and unquiet. Northern bank: The waves of the Loch lap against forlorn beaches of black shingle. Southern bank: Steep granite cliffs, 50 yards high, dwindling towards the east.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Northern bank with black shingle beaches",
+        "Southern bank with 50-yard granite cliffs"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Manor Road",
+      "poi_type": "road",
+      "description": "A narrow gravel road connects Lochsbreth Road with the Hall of Sleep. Lined with poplars: Even on the cheeriest day, the deep shadow beneath the looming trees that line the road conjures a sinister and paranoid atmosphere. Approaching the manor: The road ends at a gate in the hulking, redbrick walls that enclose the manor grounds. Through the wrought iron, one can see the manse slumbering amid its rambling gardens.",
+      "tagline": null,
+      "entering": "A written invitation is required for entry",
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The gate and the grounds are watched by 2d4 sleep-wardens",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Poplar-lined road with sinister atmosphere",
+        "Gate requiring written invitation"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Hall of Sleep",
+      "poi_type": "manor",
+      "description": "The seat of the noble House Guillefer, secluded lords of the northern reaches of central Dolmenwood.",
+      "tagline": null,
+      "entering": "Visitors are not welcomed, and constantly hushed by the servants. The lords of the Hall are reclusive and invariably indisposed.",
+      "interior": "Three floors of hushed, airy halls of polished wood. Every room features a bed. Scents of cedar and sandalwood permeate. Furnishings are sparse but luxurious. Despite a distinct lack of people, the place feels content, if somewhat melancholic.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The nobles of House Guillefer (mostly asleep). A total of 20 sleep-wardens. Seemingly, a mere handful of servants cater to the manor's needs. Among the servants is a middle-aged lady's maid, Sadewyn Gallbucket (p77), who is secretly a high priestess of the witches of Dolmenwood.",
+      "roll_tables": [],
+      "npcs": [
+        "lord_edwin_guillefer",
+        "sadewyn_gallbucket"
+      ],
+      "special_features": [
+        "Gardens of exotic, flowering shrubs, little brooks and bridges, folkloristic statuary, and dreamy idylls",
+        "The daydreaming pond: A wide, placid pool lies at the foot of the manor house, dotted with lily pads and (in warmer months) buzzing with dragonflies. Pergolas and clusters of seats surround the pond",
+        "The manse: The Hall itself is a long, low structure of red wood, overbrimming with white marble gargoyles in the form of cavorting forest spirits"
+      ],
+      "secrets": [
+        "The dozen nobles of the Hall take turns in ruling. When not thus engaged, they sleep.",
+        "Sleeping nobles: The nobles sleep on the upper floor of the Hall, in a maze of bed chambers, each guarded by a sleep-warden. Their sleep is enchanted—they slumber for decades and do not age. The servants feed them fortified mead while they dream.",
+        "Rulership shifts: Each noble rules until one of their relatives wakes up and wanders bleary-eyed into the study to relieve their duty."
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": 3
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "lord_edwin_guillefer",
+      "name": "Lord Edwin Guillefer",
+      "title": "Lord",
+      "description": "The current lord of House Guillefer",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Hall of Sleep",
+      "stat_reference": "see p59",
+      "is_combatant": false
+    },
+    {
+      "npc_id": "sadewyn_gallbucket",
+      "name": "Sadewyn Gallbucket",
+      "title": null,
+      "description": "A middle-aged lady's maid who is secretly a high priestess of the witches of Dolmenwood",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [
+        "High priestess of the witches of Dolmenwood"
+      ],
+      "possessions": [],
+      "location": "The Hall of Sleep",
+      "stat_reference": "p77",
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Wand of Vapours of Dream",
+      "description": "The watch-leader carries a Wand of Vapours of Dream (7 charges). All wardens are trained to use it.",
+      "value": "5,000gp",
+      "charges": 7,
+      "location": "Carried by sleep-warden watch-leader"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Sleep-Wardens: The honoured guard of the Hall of Sleep, clad in ornamental plate mail painted with blue flowers. Tasked to rebuff unwanted visitors and ward the sleeping nobles. Medium Mortal—Sentient—Lawful Level 1 AC 17 HP 1d8 (4) Saves D12 R13 H14 B15 S16 Att Longsword (+0, 1d8) Speed 20 Morale 9 XP 10",
+  "adjacent_hexes": [],
+  "roads": [
+    "Manor Road",
+    "Lochsbreth Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      337
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

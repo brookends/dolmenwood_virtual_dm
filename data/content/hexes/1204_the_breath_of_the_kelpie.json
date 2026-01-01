@@ -1,0 +1,155 @@
+{
+  "hex_id": "1204",
+  "coordinates": [
+    12,
+    4
+  ],
+  "name": "The Breath of the Kelpie",
+  "tagline": "Quiet, sighing woods, punctuated with crags and cliffs of granite.",
+  "region": "Aldweald",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Quiet, sighing woods, punctuated with crags and cliffs of granite.",
+  "points_of_interest": [
+    {
+      "name": "The Groaning Loch",
+      "poi_type": "loch",
+      "description": "Dangerous waters: Fathomless, cold, and unquiet. Unpredictable currents, whirlpools, and the presence of kelpies make navigating the loch's waters a perilous undertaking; few boats are ever seen upon it.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The Loch is bounded by forbidding, granite cliffs, 200 yards high. In places, the waves of the Loch lap against forlorn beaches of black shingle.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Kelpies inhabit the waters. The lost Wood God Embala slumbers feverishly in a crevice in the unfathomable deeps of the Loch.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Embala's repose: The lost Wood God Embala slumbers feverishly in a crevice in the unfathomable deeps of the Loch. The only means of awakening and contacting Embala is with the three Mirrors of Embala."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Kelpie Forest",
+      "poi_type": "underwater forest",
+      "description": "In the deeps of the Loch here grows a vast tangle of waterweed, 250 yards down.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The weed-forest is dotted with distant, twinkling lights, as if of villages and castles submerged in the deeps.",
+      "exploring": "Gazing at the forest: Elicits the odd sensation of looking down upon Dolmenwood from on high: the weed-forest has the same basic shape as the Wood, with the twinkling lights located roughly in the same positions as the towns and villages of mortal folk.",
+      "leaving": null,
+      "inhabitants": "The twinkling lights are, in fact, colonies of an aquatic form of marsh lantern, luring fish to their doom. The forest is also a favoured dreaming place of kelpies, who are none too pleased to be disturbed by land-dwellers.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Breath of the Kelpie",
+      "poi_type": "inn",
+      "description": "Clinging perilously upon the summit of the cliffs beside Lochsbreth Road is a curious inn: The Breath of the Kelpie.",
+      "tagline": null,
+      "entering": "A circular door, painted pink, with a hand-worn brass knob in the centre.",
+      "interior": "A teetering construction—taller than it is wide—of jumbled gables and stacked turrets, all of dark, lacquered wood. Common room: Cramped; packed with narrow benches and too-small tables. The bar is on a mezzanine above.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The landlord, Hallyd Ongledrome, presides watchfully. Guests: Primarily travellers along the Lochsbreth Road: merchants, pedlars, friars, bards, and mercenaries.",
+      "roll_tables": [],
+      "npcs": [
+        "hallyd_ongledrome"
+      ],
+      "special_features": [
+        "Sign: A green horse with a fish's tail, pink blossom streaming from its mouth.",
+        "Turret rooms: Private rooms overlooking the Loch, 1gp per night.",
+        "Lakeside veranda: Paying guests at the inn may step out onto the veranda at its rear—a lantern-bedecked platform hanging over the edge of the cliff. It offers spectacular and dizzying views of the Loch."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Horace",
+      "poi_type": "shrine",
+      "description": "An ornate, marble shrine leans askew against a black boulder in a muddy bay on the northern shore of the Loch, as if washed up from the deeps.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Statue of St Horace: Red marble, 2′ tall. Depicts the saint as a friar, with an adder around his neck and a mushroom upon his head.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "hallyd_ongledrome",
+      "name": "Hallyd Ongledrome",
+      "title": "Breath of the Kelpie Proprietor",
+      "description": "A human man in his late 50s, with straggly, white hair and a silver-rimmed monocle. Dresses in dapper waistcoats and silk pantaloons, with a walking cane.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Cultivates a refined and erudite air",
+        "Shrewd businessman",
+        "Treacherous"
+      ],
+      "speech": "Ingratiating, rambling. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "People's secrets, which he is happy to sell to others",
+        "Discreet liaisons with beautiful young things (gender immaterial)"
+      ],
+      "secrets": [
+        "Ongledrome is privy to the plight of Lady Harrowmoor, whose daughter Violet is missing. He is willing to divulge this information—and the fact that she would reward the girl's rescuer—for 25gp."
+      ],
+      "possessions": [
+        "Silver-rimmed monocle",
+        "Walking cane"
+      ],
+      "location": "The Breath of the Kelpie",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [
+    {
+      "name": "Blessing of St Horace",
+      "description": "If the shrine is righted, characters praying may receive the blessing of St Horace: the ability to cast Serpent Transformation.",
+      "mechanical_effect": "Ability to cast Serpent Transformation"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [
+    "Lochsbreth Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      325
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

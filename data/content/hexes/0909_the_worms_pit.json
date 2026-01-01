@@ -1,0 +1,129 @@
+{
+  "hex_id": "0909",
+  "coordinates": [
+    9,
+    9
+  ],
+  "name": "The Worm's Pit",
+  "tagline": "Blackened and charred trees. A perpetual light haze smells of smoke.",
+  "region": "High Wold",
+  "terrain_type": "craggy forest",
+  "terrain_description": "Craggy forest (4), High Wold",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "This section of the forest appears to have recently been ravaged by fire. Trees are blackened and charred, stripped of leaves. The ground is hardened dirt, with little undergrowth. A light haze with the odour of smoke fills the air, lightly obscuring one's vision. The curse: The Blistered Woods has manifested due to the presence of the Worm, slowly growing in scope each year it has resided in The Pit. Slaying the Worm causes the haze to lift and the forest to begin to heal.",
+  "points_of_interest": [
+    {
+      "name": "The Blistered Woods",
+      "poi_type": "cursed forest",
+      "description": "This section of the forest appears to have recently been ravaged by fire. Trees are blackened and charred, stripped of leaves. The ground is hardened dirt, with little undergrowth. A light haze with the odour of smoke fills the air, lightly obscuring one's vision.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The curse: The Blistered Woods has manifested due to the presence of the Worm, slowly growing in scope each year it has resided in The Pit. Slaying the Worm causes the haze to lift and the forest to begin to heal."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Pit",
+      "poi_type": "pit",
+      "description": "At the dead centre of the Blistered Woods is a clearing containing a circular pit, 30′ in diameter. Starting 10′ below its opening, the pit is immersed in a supernatural darkness. Anything thrown into the pit, including light sources, falls 10′ and then disappears. The pit is 60′ deep, with earthen walls. It does not appear to be naturally occurring. Inside, light only reaches 10′ from its source.",
+      "tagline": null,
+      "entering": "The pit is home to the Worm, who telepathically detects any who approach, while concealing itself within the darkness.",
+      "interior": "The pit is 60′ deep, with earthen walls. It does not appear to be naturally occurring. Inside, light only reaches 10′ from its source. The bottom of the pit is a mass of junk and bones, both animal and humanoid.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The pit is home to the Worm, who telepathically detects any who approach, while concealing itself within the darkness.",
+      "roll_tables": [],
+      "npcs": [
+        "the_worm"
+      ],
+      "special_features": [
+        "Darkness: Starting 10′ below its opening, the pit is immersed in a supernatural darkness. Anything thrown into the pit, including light sources, falls 10′ and then disappears.",
+        "Questions: After taking a moment to read the PCs' minds, the Worm telepathically communicates with one or more of them. It can communicate simultaneously with as many people as it wishes, depending on whom it feels will be most interesting or amusing.",
+        "Tribute: The Worm offers knowledge, but demands tribute in exchange. It cares more about the worth of the tribute to the questioner than its strict material value. It accepts sacrifices, treasure, and even important memories (which it scours from the questioner's mind).",
+        "Knowledge: The Worm only knows disconnected facts, gleaned from previous visitors and victims. It primarily relies on reading the thoughts of questioners to provide answers they want to hear. If any members of the questioning party are keeping secrets from each other, it reveals them to deliberately cause chaos."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 1
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "the_worm",
+      "name": "The Worm",
+      "title": null,
+      "description": "An enormous, 40′-long earthworm with transparent, veiny skin and a lamprey mouth full of jagged teeth.",
+      "kindred": "Large Bug",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Gruff",
+        "affecting mystery",
+        "Haughty but tries to conceal it",
+        "Demands tribute but acts as if it is always the more generous party in any exchange"
+      ],
+      "speech": "Low, confident. Communicates telepathically within 120′, in the listener's preferred language.",
+      "languages": [
+        "telepathic communication in listener's preferred language"
+      ],
+      "desires": [
+        "To amuse itself",
+        "To feel powerful",
+        "To feed",
+        "To be entertained or flattered through tribute"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Pit",
+      "stat_reference": "Level 9 AC 16 HP 40 Saves D7 R8 H9 B10 S11",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Ruby-encrusted Holy Shortsword",
+      "description": "A ruby-encrusted Holy Shortsword that can produce the effects of the holy spell Locate Object once a day when coated in blood",
+      "value": null,
+      "location": "Bottom of The Pit"
+    },
+    {
+      "name": "Silver bangles with hanging owls",
+      "description": "12 silver bangles adorned with hanging owls",
+      "value": "35gp each",
+      "location": "Bottom of The Pit"
+    },
+    {
+      "name": "Coins",
+      "description": "Scattered coins",
+      "value": "426cp, 708sp, 694gp",
+      "location": "Bottom of The Pit"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "Ley line Lamm (p18): Arcane spell-casters feel observed by a pitiless malevolence.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      294
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

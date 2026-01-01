@@ -1,0 +1,110 @@
+{
+  "hex_id": "1106",
+  "coordinates": [
+    11,
+    6
+  ],
+  "name": "Prigwort and the Swinney Tower",
+  "tagline": "Gently swaying, golden-leafed beeches sigh contentedly, eye-like whorls peering curiously at travellers.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Nighttime encounters on the road are 2-in-6 likely to be with the ghost of Dewidort of Smerne (see hex 0607)",
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "Gently swaying, golden-leafed beeches sigh contentedly, eye-like whorls peering curiously at travellers.",
+  "points_of_interest": [
+    {
+      "name": "The Town of Prigwort",
+      "poi_type": "town",
+      "description": "Nestled in a hilly clearing in the deep woods, the thriving market town of Prigwort is the largest settlement beneath the eaves of Dolmenwood.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Brewing: Prigwort is famed for its breweries and distilleries, the town council consisting of the leaders of the seven noble brewing houses. Fortification: Spurred by rumour of imminent war with the crookhorns mustering in the north, a fortified garrison is currently under construction on the edge of Prigwort.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Full settlement description: See p174"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Swinney Tower",
+      "poi_type": "tower",
+      "description": "In the west of this hex, Swinney Road passes beneath a 20′-high wooded bank. Hints of a watchtower overlooking the road can be spied, a little way back in the woods at the top of the bank. This is a recently renovated defensive fortification operated by the Order of St Sedge against the mustering crookhorn forces.",
+      "tagline": null,
+      "entering": "A narrow path hidden in the bushes slopes up to the tower's door. The tower is circular, four storeys high, and built of roughly cut stone, now timeworn and patched with moss. 1d3 soldiers (Level 1 fighters—DMB) atop the battlements aim crossbows down from at strangers and demand to know their business. A wooden door reinforced with iron bands. Each band is engraved with the Liturgic script \"Thorn, Hammer, and Grail\" (the motto of the Order of St Sedge).",
+      "interior": "Cramped chambers stuffed with arms, crates of supplies, spartan bunks, and idols of St Sedge. Everything is ordered with military precision, aside from incongruously jumbled piles of inside-out clothing (the work of the house bogle). The commander—Hilda Harrowmoor (p70)—keeps a small chamber on the third floor.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A small troop of 2d4 acolytes (Level 1 clerics—DMB) of the Order of St Sedge and 2d4 soldiers of House Harrowmoor (Level 1 fighters—DMB), commanded by Hilda Harrowmoor. A fairy known as Jilly Jump-at-the-Moon lodges in the cellars and store rooms of the tower, creeping out at night to pilfer food, hide cutlery, and turn clothes inside out. The tower inhabitants native to Dolmenwood laughingly tolerate the fairy's antics, while those from outside the Wood wish to evict the creature.",
+      "roll_tables": [],
+      "npcs": [
+        "jilly_jump_at_the_moon"
+      ],
+      "special_features": [
+        "Visitors: Those in the service of the Church, the noble houses of Dolmenwood, or the Prigwort Alegard are welcomed. Others are repelled. Watchful PCs who spend a night in the tower may observe Jilly up to her tricks."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": 4
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "jilly_jump_at_the_moon",
+      "name": "Jilly Jump-at-the-Moon",
+      "title": "House Bogle",
+      "description": "A stumpy, 1½' tall fairy with skin like knotted wood, huge, staring cat's eyes, and a gurning grin of crooked teeth. Remains invisible most of the time, but may manifest to fairy-friends.",
+      "kindred": "Fairy",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Shy",
+        "can be tempted out with food and drink"
+      ],
+      "speech": "Lethargic mewling and sighing. Basic Woldish, Sylvan.",
+      "languages": [
+        "Basic Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Milk",
+        "ale",
+        "sweet treats"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "The Swinney Tower",
+      "stat_reference": "Sprite—yellow (DMB), without flight",
+      "is_combatant": true,
+      "knowledge": [
+        "Knows of the Earl of Yellow's patronage of Prigwort, and may casually mention it as common knowledge"
+      ]
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "Ley line Ywyr (p18): Arcane spell-casters perceive the distant moaning of the dead.",
+  "adjacent_hexes": [],
+  "roads": [
+    "Swinney Road"
+  ],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      315
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

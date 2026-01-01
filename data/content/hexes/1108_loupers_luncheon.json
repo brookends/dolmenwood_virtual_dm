@@ -1,0 +1,129 @@
+{
+  "hex_id": "1108",
+  "coordinates": [
+    11,
+    8
+  ],
+  "name": "Louper's Luncheon",
+  "tagline": "Gloomy, indigo-shadowed woods teeming with croaking frogs and creeping toads.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Gloomy, indigo-shadowed woods teeming with croaking frogs and creeping toads. This hex is referred to by villagers in the Woodcutters Encampment (hex 1109) as the \"Louping Wood,\" and its uncanniness is immediately apparent to visitors: every tree of any significant age has a trunk that has grown with one complete \"loop-the-loop\" in it about halfway up its length. The lost art of louping—shaping trees in this fashion—was once one of the more exotic frunging practices of the Woodcutters' Encampment, but the old-timers who started and maintained trees in this process have long since passed away. None can say whether the tradition or the name came to the area first.",
+  "points_of_interest": [
+    {
+      "name": "The Luncheon Arch",
+      "poi_type": "magical structure",
+      "description": "Central to the hex is a clearing with a miniature unsupported arch of well-dressed, ancient stone, large enough for a crawling human or a stooped woodgrue to pass through.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The keystone of the little arch is heavily obscured by lichens, but cleaning it reveals an inscription: \"To dine overnight, will the daytime delight.\"",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Food transmutation: If foodstuffs are left under the arch and remain until dawn, they are replaced by an exquisite version of the same edibles (worth 3d6gp). Beef dripping might be replaced with a goulash spiced with cloves and vinegar, for example, while a plate of near inedible rock-cakes might be replaced with a single many-tiered chocolate marvel.",
+        "Watching overnight: Observers remaining overnight in the clearing hear a burbling voice after some time. The voice, at once bird-like and frog-like, firstly emits munching and chewing sounds, and then briefly complains about thankless tasks and gluttonous masters before the replacement dish appears."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Witch's Cave",
+      "poi_type": "cave",
+      "description": "The swamp of Hag's Addle encroaches on the south of this hex in a region of dark willows and sodden ground. A faint green glow and a strange, heady aroma emanate from a narrow cave-mouth amid a pile of great boulders here.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Three small chambers with squelching, muddy floors, lit by bobbing, green, candle-like flames. The first chamber contains boots, cloaks, satchels, and stout walking sticks; the second contains a cauldron bubbling over embers, bundles of herbs drying, and a wicker cot; in the third are jars of pickled fish, roots, and marsh-onions.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "The witch Bragwen Hoad lives hermit-like within, spending much of her time (2-in-6 chance) deep in babbling psychedelic communion with the Gwyrigon Hasturiel, and otherwise engaged in brewing potions. 3 manikins (DMB)—formed of broken chairs, varnished and painted with dainty flowers—guard the witch.",
+      "roll_tables": [],
+      "npcs": [
+        "bragwen_hoad"
+      ],
+      "special_features": [
+        "Hidden among the pickle jars are 220gp, 190sp, a silver amulet depicting a howling, banshee-like face (200gp), and an octahedral glass bottle containing 2 doses of Prismatic Elixir (p414)."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "bragwen_hoad",
+      "name": "Bragwen Hoad",
+      "title": "Witch (Eye of Hasturiel)",
+      "description": "A short, pudgy human woman in her thirties, with wide, roving eyes, cropped black hair, and flame tattoos on her face and body. She dresses in frayed, mud-spattered gowns. She reeks of onion.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Quarrelsome",
+        "dislikes being disturbed",
+        "Amenable if matters arcane are broached"
+      ],
+      "speech": "Halting, veers between booming and whispering",
+      "languages": [
+        "Woldish",
+        "Drunic"
+      ],
+      "desires": [
+        "Magic items of all kinds",
+        "The return of her wand, stolen by the baker in hex 1206"
+      ],
+      "secrets": [],
+      "possessions": [
+        "An Arcane Dagger (p412) in the form of a wicked, 12″ thorn with a leather wrapping"
+      ],
+      "location": "The Witch's Cave",
+      "stat_reference": "Witch (Eye of Hasturiel)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Silver amulet",
+      "description": "Silver amulet depicting a howling, banshee-like face",
+      "value": "200gp",
+      "location": "The Witch's Cave"
+    },
+    {
+      "name": "Prismatic Elixir",
+      "description": "Octahedral glass bottle containing 2 doses of Prismatic Elixir",
+      "value": null,
+      "location": "The Witch's Cave"
+    },
+    {
+      "name": "Arcane Dagger",
+      "description": "An Arcane Dagger in the form of a wicked, 12″ thorn with a leather wrapping",
+      "value": null,
+      "location": "Carried by Bragwen Hoad"
+    }
+  ],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      317
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

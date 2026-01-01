@@ -1,0 +1,80 @@
+{
+  "hex_id": "1109",
+  "coordinates": [
+    11,
+    9
+  ],
+  "name": "Woodcutters' Encampment and Frog Isle",
+  "tagline": "An awful expanse of black water and twisted copses, wreathed in an endless cloak of rolling mist.",
+  "region": "Hag's Addle",
+  "terrain_type": "swamp",
+  "terrain_description": "Swamp (4), Hag's Addle",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters in the swamp are 2-in-6 likely to be with Father Horsely (p185) and his dog Clewyd",
+    "foraging_results": "Successful foraging yields 1d4 portions of Snogglebeard (p430) and 1d2 portions of Witch's Oyster (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Snogglebeard (1d4 portions)",
+      "Witch's Oyster (1d2 portions)"
+    ]
+  },
+  "description": "An awful expanse of black water and twisted copses, wreathed in an endless cloak of rolling mist.",
+  "points_of_interest": [
+    {
+      "name": "The Woodcutters' Encampment",
+      "poi_type": "settlement",
+      "description": "Perched beside the Lower Hameth on the edge of Hag's Addle, the Woodcutters' Encampment is a community of once-hardy woodcrafters now grown indolent on the profits of trade. The Encampment is a major stopping point on the river trade that connects the High Wold, Castle Brackenwold, and the lands to the south of Dolmenwood.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "At night: The pale yellow flame that burns in the tower of the Church of St Foggarty is visible across the swamp, guiding lost travellers to safety",
+        "Full settlement description: See p182"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Isle of the Frogs",
+      "poi_type": "isle",
+      "description": "An islet, 50 yards across, formed of rotting trunks and decayed fungi, drifts through the mists of this hex. A haphazard chorus of croaks and grunts announces the isle's presence, before it drifts into view.",
+      "tagline": null,
+      "entering": "Approaching: The isle is seemingly held together by the root systems of the trailing mosses and 5′ high ferns that smother its sodden surface. A many-hued multitude of frogs teems around the isle and the surrounding waters. A raised bulk can be seen shrouded in mist at the isle's summit.",
+      "interior": "At the summit: The shattered remnants of a giant frog-headed statue lie toppled amid the ferns, covered in slime and bedraggled moss. The statue's head (5′ high) is intact: a leering, batrachian visage with empty eye sockets (stones long ago looted) and a tongue lolling from its gaping mouth, glistening with black slime. As characters gaze upon the fallen head, the phrase \"the tongue, the tongue\" is briefly audible in the chorus of croaks.",
+      "exploring": "Climbing onto the isle: Unless using special tools, techniques, magic, etc., characters must make a Dexterity Check to scale the isle's slippery, bobbing sides. Those who fail get drenched in slimy water and suffer a –1 penalty to Saving Throws until cleaned off on dry land.",
+      "leaving": "Re-locating: As the isle drifts in the swamp, locating it requires characters to search anew with every visit to the hex (see Travel, DPB).",
+      "inhabitants": "A many-hued multitude of frogs teems around the isle and the surrounding waters",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Licking the tongue: The slime is horribly bitter: Save Versus Doom or vomit immediately. The following day, a character who licked the tongue is cured of one ailment (e.g. curse, disease, etc.) and develops slimy skin like that of an amphibian (painful in dry conditions). Repeated lickings of the tongue have no effect.",
+        "Hidden location"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      318
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

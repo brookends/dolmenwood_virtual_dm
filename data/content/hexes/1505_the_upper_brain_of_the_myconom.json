@@ -1,0 +1,96 @@
+{
+  "hex_id": "1505",
+  "coordinates": [
+    15,
+    5
+  ],
+  "name": "The Upper Brain of the Myconom",
+  "tagline": "Enormous pallid toadstools sway eerily. Glistening fungal parasites strangle rotting trees and undergrowth.",
+  "region": "Mulchgrove",
+  "terrain_type": "fungal forest",
+  "terrain_description": "Fungal forest (2), Mulchgrove",
+  "terrain_difficulty": 2,
+  "procedural": {
+    "lost_chance": "1-in-6",
+    "encounter_chance": "1-in-6",
+    "encounter_notes": null,
+    "foraging_results": "Successful foraging yields 1d6 portions of Rotting Mazegill (p428) and 1d4 portions of Grinning Jenny (p428), in addition to the normal results, which are always fungi",
+    "foraging_special": [
+      "Rotting Mazegill (1d6 portions)",
+      "Grinning Jenny (1d4 portions)"
+    ]
+  },
+  "description": "Enormous pallid toadstools sway eerily. Glistening fungal parasites strangle rotting trees and undergrowth. As the gigantic (30′ tall) toadstools sway with an eerie rhythm, they periodically puff out clouds of spores. In the central region of this hex, fat, white tendrils like creeping worms writhe through the forest. Fungus has its dominion here, obliterating all plant life.",
+  "points_of_interest": [
+    {
+      "name": "The Upper Brain of the Myconom",
+      "poi_type": "creature",
+      "description": "At the centre of this hex throbs the Myconom's 'upper brain,' a grotesque, pulsating, faintly luminous enormity (100′ across, 50′ high) of white fungus, receiving sensory input from millions of its tendrils spread throughout the forest.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A group of 30 mosslings (DMB) dwell in the depths of the woods here, their skulls split open by translucent green mushrooms that grow from their brains. They worship the upper brain, which they call 'Queen Shlobrot,' speaking in unison in a cold, alien voice.",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Spore clouds from giant toadstools",
+        "Infested animals with fungal growths",
+        "Commands infested characters",
+        "Regenerative capacity"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Cornice",
+      "poi_type": "shrine",
+      "description": "An overgrown shrine to St Cornice can be found in the teeming depths of the region; though covered in moss and lichens, the shrine is curiously free of the Myconom's pallid fungi.",
+      "tagline": null,
+      "entering": "If an infested character enters the shrine, a swarm of holy beetles (insect swarm—DMB) seethes from the moss-covered walls of the shattered fane, attacking the intruders. The beetles are otherwise dormant.",
+      "interior": "An engraved trapdoor concealed beneath the ornate, overgrown altar reveals a small, musty space. Within can be found the Apron of St Cornice.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Holy beetles dormant in the walls",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Free of Myconom's fungi",
+        "Hidden compartment under altar",
+        "Prayer blessing available"
+      ],
+      "secrets": [
+        "Hidden compartment beneath altar contains the Apron of St Cornice"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [
+    {
+      "name": "The Apron of St Cornice",
+      "type": "relic",
+      "description": "This relic was worn by St Cornice in her days as a scullery maid. Anyone wearing it can speak with beetles of any size and gains a +1 bonus to Reaction Rolls with beetles (see Encounters, DPB). Additionally, the wearer is treated as being of Lawful Alignment for the purposes of interacting with unicorns.",
+      "value": "6,000gp",
+      "mechanical_effect": "Speak with beetles, +1 Reaction Rolls with beetles, treated as Lawful for unicorn interactions",
+      "location": "Hidden compartment in Shrine to St Cornice"
+    }
+  ],
+  "secrets": [
+    "The Shrine to St Cornice has a hidden compartment beneath the altar containing the Apron of St Cornice"
+  ],
+  "dm_notes": "Spores: Anyone entering this hex without taking precautions to avoid breathing in the spores must make a Save Versus Doom or become infested with them until leaving this hex. Characters infested with spores can be commanded by the upper brain while in its presence, and fight to protect it. The brain can only truly be harmed by extremely powerful magic or other gargantuan creatures. If destroyed, a new brain sprouts at a different location over the next millennium. Characters praying at the shrine may receive the blessing of St Cornice: the ability to cast Insect Plague.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      360
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "hex_id": "1406",
+  "coordinates": [
+    14,
+    6
+  ],
+  "name": "The Golden Wood",
+  "tagline": "By day, tiny golden sparkles drift down to the earth. At night, soft, green motes float into the sky.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with 1d4 elf knights (DMB) in the service of the Earl of Yellow (p32), clad entirely in yellow and mounted on great golden wolves (as dire wolves, DMB)",
+    "foraging_results": "Successful foraging yields 1d4 portions of Knobbled Mandrake (p430), in addition to the normal results",
+    "foraging_special": [
+      "Knobbled Mandrake (1d4 portions)"
+    ]
+  },
+  "description": "By day, tiny golden sparkles drift down to the earth. At night, soft, green motes float into the sky. The Golden Wood is a favoured haunt of fairies of all kinds, due to the seven portals to the Fairy realm of Whyforth (domain of the Earl of Yellow, p32) that exist here.",
+  "points_of_interest": [
+    {
+      "name": "Glowing Fungal Orbs",
+      "poi_type": "natural feature",
+      "description": "In the north-western half of this hex, the trees are festooned, in all seasons, with head-sized, orb-like growths of fungus. The orbs emit a soft, golden glow, day and night. It is on account of this glow that the region is known to local folk as the Golden Wood.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "At night: The ambient glow of the fungi is equivalent to the light of the full moon",
+        "Harvesting: Plucked orbs continue to glow for 24 hours"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Yellow Doors",
+      "poi_type": "portal",
+      "description": "Seven portals to the Fairy realm of Whyforth (domain of the Earl of Yellow) that exist here. The Earl's servants use these portals to come and go between Dolmenwood and Fairy. The portals are concealed by illusion, but may sometimes be spotted.",
+      "tagline": null,
+      "entering": "Adventurers with an invitation from the Earl of Yellow may open and enter the doors. Without an invitation, the doors are impassable. Whatever their apparent size in the mortal world (some appear no more than 2′ high), the portals allow the entry of creatures up to the size of a knight on horseback.",
+      "interior": "The portals in Whyforth are situated in beautiful, natural gardens of semi-sentient plants that may, at times, speak.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Detection by passion: A mortal in the throes of an extreme emotion (madly in love, religious rapture, abject terror, etc.) has a 3-in-6 chance of spotting one of the portals when travelling through this hex",
+        "Detection by fairy lineage: True fairies (that is, not demi-fey) have a 2-in-6 chance of noticing the presence of one of the portals",
+        "Detection by magic: Spells of true seeing or detection of illusions reveal the presence of the portals",
+        "Appearance: A detected portal appears as a yellow-varnished door, complete with shiny brass knob and knocker, in a natural hole or arch of some kind (a hole in the roots of a tree, beneath the intertwined branches of two willows, in a gap between two rocks, etc.)",
+        "Call of Fairy: Mortals who perceive a portal to Whyforth (whether they enter it or not) must Save Versus Spell or be forever stricken with a longing to leave the fields that we know and get lost in Fairy"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [
+    "Ley line Hoad (p18): Arcane spell-casters perceive the feeling of having just awoken from a dream"
+  ],
+  "dm_notes": "Journeys Into Fairy (Optional): Referees wishing to expand play into the realm of Whyforth may allow adventurers to enter the Yellow Doors without an invitation. This requires the Referee to develop adventure locales of their own in Whyforth.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      351
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,504 @@
+{
+  "hex_id": "1111",
+  "coordinates": [
+    11,
+    11
+  ],
+  "name": "Nyfward",
+  "tagline": "Odd spatial distortions. Trees and rocks change size when travellers blink. Already traversed paths repeat.",
+  "region": "Aldweald/High Wold",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald/High Wold",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Odd spatial distortions. Trees and rocks change size when travellers blink. Already traversed paths repeat.",
+  "points_of_interest": [
+    {
+      "name": "Nyfward",
+      "poi_type": "tower",
+      "description": "A slender, crooked, windowless tower of stone at the river bank. It impossibly ascends hundreds of yards into the sky, and yet is not visible from a distance. A yawning arch at ground level provides entry.",
+      "tagline": null,
+      "entering": "A yawning arch at ground level provides entry.",
+      "interior": "Ground floor: A marble lion-head fountain burbles. In the pool at the fountain's base, reflections of jovial, peering manticores can be seen. Upper floors: The size and contents of each floor magically change each time the tower is explored.",
+      "exploring": "A spiral stair ascends from each floor to the next. No matter how high PCs ascend, they never reach the top of the tower. Roll on the Encounters and Rooms tables for each floor entered.",
+      "leaving": null,
+      "inhabitants": "The strange tower was built by the legendary arch-wizard Nyf Nimbly, who is said to reside in a magical workshop at its (unreachable) summit.",
+      "roll_tables": [
+        {
+          "name": "Encounters",
+          "die_type": "d4",
+          "description": "Roll when entering a new floor",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "None",
+              "description": "Empty room.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Monster",
+              "description": "Roll a dungeon encounter (p98).",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Roll on the dungeon encounter table (p98), treating the tower's floor number as the dungeon level, with a maximum level of 7. Also make a Reaction Roll and roll on the Monster Activities table"
+            },
+            {
+              "roll": 3,
+              "title": "Special",
+              "description": "Roll on the Special Encounters table.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Special + monster",
+              "description": "Roll as above.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Rooms",
+          "die_type": "d6",
+          "description": "Roll for each floor entered",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Library",
+              "description": "Nonsense, obscure arcana, or erotic verse.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Study",
+              "description": "Leather couches, roaring fire, plush rugs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Banquet hall",
+              "description": "Syrupy fruits, boar heads, fine wine.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Bedroom",
+              "description": "Four-poster bed, furs, arcane tapestries.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Conservatory",
+              "description": "Jungle plants, dark soil, lambent orbs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Planetarium",
+              "description": "Alien star maps, illusory orreries.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Monster Activities",
+          "die_type": "d12",
+          "description": "Roll for monster activities",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Playing cards.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Napping.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Sipping tea.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Philosophising.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Bathing in milk.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Blowing smoke rings.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "Playing the flute.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "Nibbling biscuits.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 9,
+              "title": null,
+              "description": "Pacing nervously.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 10,
+              "title": null,
+              "description": "Preening.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 11,
+              "title": null,
+              "description": "Singing operatically.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 12,
+              "title": null,
+              "description": "Dusting.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Special Encounters",
+          "die_type": "d20",
+          "description": "These rooms contain treasure hidden among the furnishings: 1d20 × 100gp and a 2-in-6 chance of a random magic item",
+          "entries": [
+            {
+              "roll": 1,
+              "title": null,
+              "description": "Animated furniture dancing silently.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": null,
+              "description": "Jars of candy. If eaten, Save Versus Doom or die.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "jars of candy"
+              ],
+              "mechanical_effect": "If eaten, Save Versus Doom or die"
+            },
+            {
+              "roll": 3,
+              "title": null,
+              "description": "Steamy atmosphere. Potted plants. 1d3 giant, carnivorous plants (as giant leech—DMB) attack intruders.",
+              "monsters": [
+                "giant carnivorous plant"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "1d3 giant, carnivorous plants attack intruders"
+            },
+            {
+              "roll": 4,
+              "title": null,
+              "description": "Household implements (cutlery, quills, needles and thread, fire pokers, etc.) flying in formation.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": null,
+              "description": "Pink vapour blocks ascent. If traversed, Save Versus Doom or be polymorphed into a pig for 1d6 days.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "If traversed, Save Versus Doom or be polymorphed into a pig for 1d6 days"
+            },
+            {
+              "roll": 6,
+              "title": null,
+              "description": "Walls covered with manticore head carvings.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 7,
+              "title": null,
+              "description": "Stone manticore head emits a deafening roar: Save Versus Doom or be deafened for 1d6 Turns.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Versus Doom or be deafened for 1d6 Turns"
+            },
+            {
+              "roll": 8,
+              "title": null,
+              "description": "3′ brass bowls magically filled with meat and water.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "brass bowls"
+              ],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 9,
+              "title": null,
+              "description": "Raging teapot automaton (as wicker giant—DMB).",
+              "monsters": [
+                "teapot automaton"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 10,
+              "title": null,
+              "description": "1d3 manticores (DMB). Roll on Monster Activities.",
+              "monsters": [
+                "manticore"
+              ],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "1d3 manticores, roll on Monster Activities"
+            },
+            {
+              "roll": 11,
+              "title": null,
+              "description": "Copper vat of bubbling, steaming water and herbs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 12,
+              "title": null,
+              "description": "Floating rune, glowing red. Anyone entering must Save Vs. Spell or be transported to the ground floor.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Vs. Spell or be transported to the ground floor"
+            },
+            {
+              "roll": 13,
+              "title": null,
+              "description": "Vats of hybrid animals suspended in green liquid.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 14,
+              "title": null,
+              "description": "Fancy hats. If worn, Save Vs. Spell or dance for 2 hours.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "fancy hats"
+              ],
+              "mechanical_effect": "If worn, Save Vs. Spell or dance for 2 hours"
+            },
+            {
+              "roll": 15,
+              "title": null,
+              "description": "Ethereal music. Save Versus Spell or entranced for 1d4 Turns. 2-in-6 chance per Turn of a monster arriving.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Save Versus Spell or entranced for 1d4 Turns. 2-in-6 chance per Turn of a monster arriving"
+            },
+            {
+              "roll": 16,
+              "title": null,
+              "description": "1d4 levers. Roll 1d4 for each one pulled: 1. PCs transported to the ground floor, 2. PCs transported 1d6 floors higher, 3. Secret treasure cache opens (a piece of jewellery and a random magic item), 4. Gravity reverses in the tower for 1d6 Turns.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "levers"
+              ],
+              "mechanical_effect": "Roll 1d4 for each lever pulled: 1. PCs transported to ground floor, 2. PCs transported 1d6 floors higher, 3. Secret treasure cache opens, 4. Gravity reverses for 1d6 Turns"
+            },
+            {
+              "roll": 17,
+              "title": null,
+              "description": "A statue of a snake-headed woman. If touched, Save Versus Spell or become obsessed with marrying her.",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "statue of snake-headed woman"
+              ],
+              "mechanical_effect": "If touched, Save Versus Spell or become obsessed with marrying her"
+            },
+            {
+              "roll": 18,
+              "title": null,
+              "description": "Huge oil painting of Lake Longmere. Any who touch it are transported to the Isle of Yeth (hex 0505).",
+              "monsters": [],
+              "npcs": [],
+              "items": [
+                "oil painting of Lake Longmere"
+              ],
+              "mechanical_effect": "Any who touch it are transported to the Isle of Yeth (hex 0505)"
+            },
+            {
+              "roll": 19,
+              "title": null,
+              "description": "Noble portraits goad and mock PCs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 20,
+              "title": null,
+              "description": "A moustachioed woman dressed in green silk, claims to be Nyf Nimbly. Congratulates PCs, grants them one wish, then vanishes. PCs appear outside the tower. If they return, they henceforth find the tower empty.",
+              "monsters": [],
+              "npcs": [
+                "Nyf Nimbly"
+              ],
+              "items": [],
+              "mechanical_effect": "Grants one wish, then PCs appear outside tower. If they return, tower is empty"
+            }
+          ]
+        }
+      ],
+      "npcs": [
+        "nyf_nimbly"
+      ],
+      "special_features": [
+        "No matter how high PCs ascend, they never reach the top of the tower",
+        "The size and contents of each floor magically change each time the tower is explored"
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "nyf_nimbly",
+      "name": "Nyf Nimbly",
+      "title": "Arch-wizard",
+      "description": "A moustachioed woman dressed in green silk, claims to be Nyf Nimbly. The legendary arch-wizard who built the tower and is said to reside in a magical workshop at its (unreachable) summit.",
+      "kindred": null,
+      "alignment": null,
+      "demeanor": [],
+      "speech": null,
+      "languages": [],
+      "desires": [],
+      "secrets": [],
+      "possessions": [],
+      "location": "Nyfward tower",
+      "stat_reference": null,
+      "is_combatant": false
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "History: The strange tower was built by the legendary arch-wizard Nyf Nimbly, who is said to reside in a magical workshop at its (unreachable) summit.",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      320
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "hex_id": "1706",
+  "coordinates": [
+    17,
+    6
+  ],
+  "name": "Mosslings and the Yellow Monolith",
+  "tagline": "Sodden ground, impenetrable bramble thickets. Winding paths with little wooden bridges and walkways.",
+  "region": "Mulchgrove",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Mulchgrove",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": "Encounters are 2-in-6 likely to be with squirrels and raccoons attempting to pilfer small items from passersby (25% chance of success). These animals are in the service of the mosslings that dwell in this hex, who have trained them in thievery.",
+    "foraging_results": "Successful foraging yields 1d6 portions of Speckled Sporange (p428), in addition to the normal results",
+    "foraging_special": [
+      "Speckled Sporange (1d6 portions)"
+    ]
+  },
+  "description": "Sodden ground, impenetrable bramble thickets. Winding paths with little wooden bridges and walkways.",
+  "points_of_interest": [
+    {
+      "name": "Mossling Burrows",
+      "poi_type": "settlement",
+      "description": "A few dozen mossling (DMB) families make their homes in this region at the edge of Mulchgrove, living in burrows beneath the boles of ancient, moss-bearded trees.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "A few dozen mossling families, including Limbly the Master of Locks and Klimbim the Claywife",
+      "roll_tables": [],
+      "npcs": [
+        "limbly_the_master_of_locks",
+        "klimbim_the_claywife"
+      ],
+      "special_features": [
+        "Limbly's key-cutting workshops",
+        "Klimbim's root-tangled burrow of sandy chambers"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Yellow Vorpal Monolith",
+      "poi_type": "monolith",
+      "description": "In the west of this hex, a 20′-high spectral monolith of golden light hovers in a grove of moss-smothered oaks. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood (see Vorpal Monoliths, p19). In winter, spring, and summer, the monolith is a mere shimmering figment. In the autumn, it becomes semi-corporeal.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": "Viewing: All who behold the monolith in the autumn must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Those who fail are transmuted into a dragonfly for 24 hours. Touching: In its autumn manifestation, the monolith's partially tangible surface feels like tepid gel. Any charm spell cast while touching the monolith forms a permanent binding. There is a 2-in-6 chance of each creature charmed in this manner joining into telepathic contact with all others enchanted in this way and turning against those who enchanted them. In other seasons, a PC touching the monolith's diaphanous outline temporarily experiences the crisp coolness of an autumn morn.",
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Seasonal manifestation changes",
+        "Vorpal monolith properties",
+        "Ley line connection"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "limbly_the_master_of_locks",
+      "name": "Limbly the Master of Locks",
+      "title": "Master of Locks",
+      "description": "A wizened old mossling man aged over three centuries. His eyes are now blind, furred over with orange fungus. His beard of moss, home to centipedes and mice, reaches down to his toes, and his ears are grown larger than his hands.",
+      "kindred": "Mossling",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Kindly",
+        "absent-minded",
+        "Periodically falls asleep mid-conversation"
+      ],
+      "speech": "Whistling rasp. Woldish, Mulch.",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "For his middle-aged daughter to marry a magician",
+        "To drink once more in the Sombre Lamb in Orbswallow (p173), as he did in his youth"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Mossling Burrows - labyrinthine burrow with key-cutting workshops",
+      "stat_reference": "mossling (DMB)",
+      "is_combatant": false,
+      "special_abilities": [
+        "Limbly is a master lock singer. His charms can coax any lock in Dolmenwood to open."
+      ],
+      "family": [
+        "wife Griselda",
+        "sixteen children and grandchildren"
+      ]
+    },
+    {
+      "npc_id": "klimbim_the_claywife",
+      "name": "Klimbim the Claywife",
+      "title": "Claywife",
+      "description": "A hearty, rotund mossling woman in the lazy ease of her middle age. Her hair is a jumble of matted, brown fibre, her toes (she wears no shoes) are like shiny conkers, and her lips are festooned with purple bracket fungi.",
+      "kindred": "Mossling",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Wide-eyed",
+        "curious",
+        "fidgety"
+      ],
+      "speech": "Jumps between topics, unabashedly intimate. Woldish, Mulch.",
+      "languages": [
+        "Woldish",
+        "Mulch"
+      ],
+      "desires": [
+        "To learn the secret of granting sentience to her clay husbands",
+        "To locate her friend, the witch Joab, whose hut in 1606 was razed",
+        "Covets gems"
+      ],
+      "secrets": [],
+      "possessions": [
+        "eleven clay husbands (treat as manikins, DMB)"
+      ],
+      "location": "Mossling Burrows - root-tangled burrow of sandy chambers",
+      "stat_reference": "mossling (DMB)",
+      "is_combatant": false,
+      "special_abilities": [
+        "Klimbim can identify the ingredients in any herbal admixture or potion by means of a deep olfactory analysis taking 2d12 hours."
+      ]
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      378
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

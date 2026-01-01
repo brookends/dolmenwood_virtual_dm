@@ -1,0 +1,126 @@
+{
+  "hex_id": "1402",
+  "coordinates": [
+    14,
+    2
+  ],
+  "name": "Mai-Fleur's Unicorn-Hunting Grounds",
+  "tagline": "A profusion of holly trees bearing red berries in the autumn.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": "Encounters are 1-in-6 likely (2-in-6 likely at night) to be with a Wild Hunt (see hex 1502) in pursuit of 1d4 blessed unicorns (DMB)",
+    "foraging_results": "Successful foraging yields 1d3 portions of Sallow Parsley (DPB), in addition to the normal results",
+    "foraging_special": [
+      "Sallow Parsley (1d3 portions)"
+    ]
+  },
+  "description": "A profusion of holly trees bearing red berries in the autumn. Throughout this hex can be found the elegant blessed unicorns kept by the fairy Duke Mai-Fleur (p30) as stock for his Wild Hunts. The unicorns are prevented from leaving the grounds by the gamekeepers, and by the magical disabling of their natural teleportation power.",
+  "points_of_interest": [
+    {
+      "name": "The Silver Pool",
+      "poi_type": "pool",
+      "description": "Close to the centre of this hex is a serene pool of radiant, glittering water. 1d6 blessed unicorns (DMB) drink peacefully, while 1d3 gamekeepers lurk uncomfortably nearby.",
+      "tagline": null,
+      "entering": null,
+      "interior": "There is a 2-in-6 chance of 1d4 poachers (as Level 1 hunters—DMB) from the village of Odd (p166) hiding in the trees around the pool, eyeing the gamekeepers in the hope that they stray from their charges. The horns, fur, and flesh of unicorns are highly valued.",
+      "exploring": "Any who disturb this peaceful scene face the wrath of the gamekeepers.",
+      "leaving": null,
+      "inhabitants": "1d6 blessed unicorns, 1d3 gamekeepers, possible 1d4 poachers",
+      "roll_tables": [],
+      "npcs": [
+        "gamekeepers"
+      ],
+      "special_features": [
+        "Drinking from the pool: Heals 1d6+1 HP. Mortals must Save Versus Spell or change Alignment to Lawful."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Dungle-Crack",
+      "poi_type": "chasm",
+      "description": "A gloomy, 10′-wide chasm in the forest floor, whose base cannot be seen. Nearby trees lean above the chasm, their branches twisted and dripping with silvery dew.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Anything lowered into the chasm: Is whisked away to the fairy road the Narrow Way (see Fairy Roads, p26). A person who lowers part of their body (e.g. a hand) more than a foot into the chasm is wholly transported to the Narrow Way."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Shrine to St Torphia",
+      "poi_type": "shrine",
+      "description": "A simple wooden wayside shrine sits askew, 50′ up in the boughs of a great, gall-infested oak, as if the tree sprouted beneath the shrine and raised it into the air. The statue that originally sat within the shrine is nestled in the tree's upper branches, 80′ above the ground.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Statue of St Torphia: 2′ high, carved of a single piece of obsidian. Torphia is depicted kneeling in prayer, with chains around her wrists and a heaping basket of berries before her.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Prayer: If the statue is retrieved and placed in the shrine, characters praying may receive the blessing of St Torphia: the ability to cast Remove Poison. See Shrines, p22."
+      ],
+      "secrets": [
+        "Hidden"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "gamekeepers",
+      "name": "Gamekeepers",
+      "title": null,
+      "description": "Monstrous black oaks with slitted red eyes that rarely open. The gamekeepers are the most evil trees of this hex, employed by Duke Mai-Fleur to ward his prized stock of unicorns.",
+      "kindred": "Treowere",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Still and dormant",
+        "springing into action when poachers are foolish enough to interfere with their charges"
+      ],
+      "speech": "Cracking, grinding. They communicate only with their elfish masters. Sylvan.",
+      "languages": [
+        "Sylvan"
+      ],
+      "desires": [
+        "Guard the unicorns",
+        "Destroy poachers"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Throughout the hex, especially near The Silver Pool",
+      "stat_reference": "Treowere (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      347
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "hex_id": "1112",
+  "coordinates": [
+    11,
+    12
+  ],
+  "name": "The Falls of Nyf",
+  "tagline": "Paths crisscross among beds of beautiful ferns. Everything appears to be tended by some deliberate hand.",
+  "region": "Aldweald",
+  "terrain_type": "tangled forest",
+  "terrain_description": "Tangled forest (3), Aldweald",
+  "terrain_difficulty": 3,
+  "procedural": {
+    "lost_chance": "2-in-6",
+    "encounter_chance": "2-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": []
+  },
+  "description": "Paths crisscross among beds of beautiful ferns. Everything appears to be tended by some deliberate hand.",
+  "points_of_interest": [
+    {
+      "name": "The Falls",
+      "poi_type": "natural wonder",
+      "description": "The Hameth takes a thunderous drop at the legendary Falls of Nyf, where surging white waters tumble down a 100′ precipice—a majestic and spectacular sight.",
+      "tagline": null,
+      "entering": null,
+      "interior": null,
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Wondrous Ship-Conveyor",
+      "poi_type": "magical marvel",
+      "description": "The great Ship-Conveyor of Nyf. A boat approaching from the north seems bound for certain doom as it nears the vertical drop of the falls. Just as its bow crosses the foaming brink, the boat effortlessly glides, swan-like, into the air, supported by naught but magic. It then descends the abyss in a slow, stately fashion, coming to rest at a safe distance beyond the falls' base, halting at a fortified wooden gate that spans the river. A boat approaching from the south takes the opposite course, leaping skyward after it has cleared the gate, slowly and smoothly ascending the cliff, and alighting on the Hameth at a safe spot well upstream from the falls.",
+      "tagline": null,
+      "entering": null,
+      "interior": "The gate is controlled by House Mulbreck (hex 1210) and manned by 12 wardens (Level 1 fighters—DMB). They demand a toll from every boat passing through: 1sp/5sp/1gp (for small/medium/large boats). The wardens are garrisoned in a stout, two-storey guardhouse alongside the gate.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "12 wardens (Level 1 fighters)",
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "The marvellous Conveyor operates automatically. Little is known of its origins, save that it was created by the powerful sorcerer Nyf Nimbly. Control of the gate and its lucrative toll revenues are granted by the duke, with great competition and skulduggery between the lesser noble houses. House Mulbreck currently holds the contract, valid for the next seven years."
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Caves Behind the Falls",
+      "poi_type": "cave",
+      "description": "Hidden behind the Falls of Nyf is a cavern: low and broad, dripping and rancid, its walls spongy with a curious moss. Human bones clatter across the rocky cave-floor. Several corpses are impaled on stalagmites, infested with more of the verdant moss.",
+      "tagline": null,
+      "entering": "Hidden behind the Falls of Nyf",
+      "interior": "Low and broad, dripping and rancid, its walls spongy with a curious moss. Human bones clatter across the rocky cave-floor. Several corpses are impaled on stalagmites, infested with more of the verdant moss.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": "Skulp, a cunning and vicious troll",
+      "roll_tables": [],
+      "npcs": [
+        "skulp"
+      ],
+      "special_features": [
+        "Skulp once terrorised the region at night, attacking boats, wardens, and travellers. However, the wardens have now struck a deal with her, and her attacks have ceased. They provide her with any corpses they fish from the river, battered and bloated. Skulp takes these corpses and cultivates a species of delicious moss in their putrescent flesh, which she devours, leaving the corpses themselves."
+      ],
+      "secrets": [],
+      "is_dungeon": true,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "skulp",
+      "name": "Skulp",
+      "title": null,
+      "description": "An ancient, stinking, and especially cantankerous troll with a gaunt, skull-like face atop a wobbly, corpulent frame. Dresses in slimy rags and scraps of river weed.",
+      "kindred": "Troll",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Welcoming",
+        "eyes up visitors to assess their moss-worthiness",
+        "flies into a rage at the drop of a hat",
+        "Pushes her face right up close to others"
+      ],
+      "speech": "Snivelling, grumbling",
+      "languages": [
+        "Woldish",
+        "Sylvan"
+      ],
+      "desires": [
+        "Fresh corpses upon which to grow her unspeakable moss",
+        "In particular, woodgrue bodies, which Skulp says add a 'special something' to the moss's taste"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Caves Behind the Falls",
+      "stat_reference": "troll (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "dm_notes": "",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      321
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}

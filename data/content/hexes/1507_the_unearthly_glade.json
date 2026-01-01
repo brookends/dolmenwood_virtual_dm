@@ -1,0 +1,148 @@
+{
+  "hex_id": "1507",
+  "coordinates": [
+    15,
+    7
+  ],
+  "name": "The Unearthly Glade",
+  "tagline": "An infuriating profusion of watery ditches and mud-choked pathways.",
+  "region": "Aldweald",
+  "terrain_type": "boggy forest",
+  "terrain_description": "Boggy forest (4), Aldweald",
+  "terrain_difficulty": 4,
+  "procedural": {
+    "lost_chance": "3-in-6",
+    "encounter_chance": "3-in-6",
+    "encounter_notes": null,
+    "foraging_results": null,
+    "foraging_special": null
+  },
+  "description": "An infuriating profusion of watery ditches and mud-choked pathways.",
+  "points_of_interest": [
+    {
+      "name": "The Unearthly Glade",
+      "poi_type": "glade",
+      "description": "Deep in the quiet calm of the airy beech woods in this hex, a wide glade is overrun with sighing grasses. This place has an odd air, feeling dreamy, welcoming, and yet also somehow forbidding.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Arcane spell-casters and fairies sense something wrong or unnatural about this glade, as if space itself were twisted or broken here. Detection of magic, invisibility, or dimensional warping reveal a 20′ dome of magical energy at the centre of the glade. Once thus detected, the dome may be touched, revealing a shimmering, silver door that leads into a parallel dimensional space.",
+      "exploring": null,
+      "leaving": null,
+      "inhabitants": null,
+      "roll_tables": [],
+      "npcs": [],
+      "special_features": [
+        "Unnatural sensations for arcane spell-casters and fairies",
+        "20′ dome of magical energy at centre",
+        "Shimmering silver door to parallel dimension"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "The Parallel Glade",
+      "poi_type": "parallel dimension",
+      "description": "Entering the door in the invisible dome, one appears at the edge of a glade nearly identical to that in which the dome stands, with a few key differences.",
+      "tagline": null,
+      "entering": "Enter through the shimmering silver door in the dome",
+      "interior": "This glade is always veiled in night, lit by a full moon. The glade is surrounded by mists. At the glade's centre, where the invisible dome is located in the real world, stands the Norstone.",
+      "exploring": null,
+      "leaving": "Entering the mist causes one to reappear in the original glade, beside the door in the dome.",
+      "inhabitants": "The Audrune Morthgwail and his two dire wolves",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_morthgwail"
+      ],
+      "special_features": [
+        "Perpetual night with full moon",
+        "Misty boundary exit",
+        "Contains the Norstone monolith"
+      ],
+      "secrets": [],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Norstone",
+      "poi_type": "monolith",
+      "description": "A great, square monolith of red/purple-striated stone—20′ tall and 8′ to a side. It can only be seen and accessed in the parallel glade.",
+      "tagline": null,
+      "entering": null,
+      "interior": "Drunic runes describe the arcane spell Dimension Door. When touched by an arcane spell-caster of Level 7 or higher, the stone thrums, vibrates, and exudes a violet plasma in which babbling, spectral faces form.",
+      "exploring": "Anyone approaching the stone attracts the attention of the Audrune Morthgwail and his two dire wolves. There is a 3-in-6 chance of him being already present (invisible) in the glade; if not, he arrives from Dolmenwood within 1d3 Turns.",
+      "leaving": null,
+      "inhabitants": "Guarded by the Audrune Morthgwail",
+      "roll_tables": [],
+      "npcs": [
+        "audrune_morthgwail"
+      ],
+      "special_features": [
+        "Hidden - only accessible in parallel glade",
+        "Inscribed with Dimension Door spell",
+        "Spectral faces appear when touched by Level 7+ arcane caster"
+      ],
+      "secrets": [
+        "Phantoms speak in Old Drunic and reveal secret arts for manipulating space and time",
+        "Conversing with phantoms reduces research time and cost of teleportation magic by 25%"
+      ],
+      "is_dungeon": false,
+      "dungeon_levels": null
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "audrune_morthgwail",
+      "name": "The Audrune Morthgwail",
+      "title": "Stone Ward",
+      "description": "An old human man, stick thin and stooped, with missing teeth, goggling eyes, and a white beard to his belly. He dresses in the traditional night-black cloak and hood of his order. Morthgwail wanders the woods around the nodal glade, living in the wilds without domicile.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Eccentric",
+        "easily enraged",
+        "Tilts his head to one side then the other when speaking"
+      ],
+      "speech": "Toothless whistle. Veers erratically between topics.",
+      "languages": [
+        "Woldish",
+        "Drunic",
+        "Old Drunic"
+      ],
+      "desires": [
+        "To repel intruders from Norstone",
+        "To learn magic of shape-shifting"
+      ],
+      "secrets": [],
+      "possessions": [
+        "A twisted elm Staff of Dominion (Animals) with 7 charges"
+      ],
+      "location": "The Parallel Glade / Norstone area",
+      "stat_reference": "Audrune (DMB)",
+      "is_combatant": true
+    }
+  ],
+  "items": [
+    {
+      "name": "Staff of Dominion (Animals)",
+      "description": "A twisted elm staff with 7 charges",
+      "location": "Carried by Audrune Morthgwail",
+      "value": null,
+      "mechanical_effect": "Staff of Dominion (Animals, p416) with 7 charges"
+    }
+  ],
+  "secrets": [
+    "Ley line Hoad: Arcane spell-casters perceive the feeling of having just awoken from a dream"
+  ],
+  "dm_notes": "Guardian has 3-in-6 chance of being already present (invisible) in the glade; if not, he arrives from Dolmenwood within 1d3 Turns. Servants: 2 dire wolves (DMB).",
+  "adjacent_hexes": [],
+  "roads": [],
+  "_metadata": {
+    "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
+    "pages": [
+      362
+    ],
+    "extraction_note": "Review and correct this data before importing"
+  }
+}
