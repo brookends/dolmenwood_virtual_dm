@@ -410,12 +410,20 @@ class HexDataLoader:
             table = self._parse_roll_table(table_data)
             roll_tables.append(table)
 
+        # Detect hidden POIs from entering field
+        # If entering contains "Hidden" (case-insensitive), mark as hidden
+        entering = data.get("entering")
+        is_hidden = data.get("hidden", False)
+        if not is_hidden and entering and isinstance(entering, str):
+            if "hidden" in entering.lower():
+                is_hidden = True
+
         return PointOfInterest(
             name=data.get("name", "Unknown"),
             poi_type=data.get("poi_type", "general"),
             description=data.get("description", ""),
             tagline=data.get("tagline"),
-            entering=data.get("entering"),
+            entering=entering,
             interior=data.get("interior"),
             exploring=data.get("exploring"),
             leaving=data.get("leaving"),
@@ -426,6 +434,7 @@ class HexDataLoader:
             secrets=data.get("secrets", []),
             is_dungeon=data.get("is_dungeon", False),
             dungeon_levels=data.get("dungeon_levels"),
+            hidden=is_hidden,
         )
 
     def _parse_roll_table(self, data: dict[str, Any]) -> RollTable:

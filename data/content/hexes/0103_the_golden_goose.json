@@ -31,7 +31,9 @@
       "inhabitants": "Sidney Tew, 4 minor nobles, and 4 ruffians",
       "roll_tables": [],
       "npcs": [
-        "sidney_tew"
+        "sidney_tew",
+        "minor_nobles",
+        "ruffians"
       ],
       "special_features": [
         "Approaching: Sidney is suspicious but outwardly welcoming. He cannot help but brag about his search and shows the golden egg to those who doubt his claims."
@@ -58,6 +60,32 @@
       "special_features": [
         "Treasure hoard: Amongst a collection of broken glass, polished metal, and worthless trinkets is 673cp, 432sp, 925gp, four golden eggs, and a pewter Talisman of Non-Detection (p398) shaped like a bisected eye."
       ],
+      "treasure_hoard": {
+        "coins": {
+          "cp": 673,
+          "sp": 432,
+          "gp": 925
+        },
+        "items": [
+          {
+            "item_id": "0103:item:golden_egg",
+            "name": "Golden Egg",
+            "quantity": 4,
+            "value_gp": 40,
+            "notes": "Induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust."
+          },
+          {
+            "item_id": "0103:item:talisman_nondetection",
+            "name": "Talisman of Non-Detection",
+            "quantity": 1,
+            "value_gp": null,
+            "magical": true,
+            "page_reference": "p398",
+            "notes": "Pewter talisman shaped like a bisected eye"
+          }
+        ],
+        "worthless": "broken glass, polished metal, and worthless trinkets"
+      },
       "secrets": [],
       "is_dungeon": true,
       "dungeon_levels": null
@@ -89,7 +117,8 @@
       "possessions": [],
       "location": "Crocus's Cave",
       "stat_reference": "Ogre (DMB). As a fairy, suffers 1 extra point of damage when hit with cold iron weapons.",
-      "is_combatant": true
+      "is_combatant": true,
+      "cold_iron_vulnerability": true
     },
     {
       "npc_id": "sidney_tew",
@@ -116,7 +145,12 @@
       ],
       "secrets": [],
       "possessions": [
-        "A silver longsword engraved with the Tew name (110gp)"
+        {
+          "item_id": "0103:item:sidney_longsword",
+          "name": "Silver Longsword",
+          "description": "A silver longsword engraved with the Tew name",
+          "value_gp": 110
+        }
       ],
       "location": "Sidney's Company",
       "stat_reference": "Level 3 fighter (DMB)",
@@ -140,31 +174,93 @@
       "possessions": [],
       "location": "Crocus's Cave",
       "stat_reference": null,
-      "is_combatant": false
+      "is_combatant": false,
+      "bound_by": "silver_chain",
+      "gagged": true
+    },
+    {
+      "npc_id": "minor_nobles",
+      "name": "Minor Nobles",
+      "title": null,
+      "description": "Four second-son minor nobles, hangers-on who joined Sidney's expedition hoping for wealth and adventure.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Entitled but inexperienced"
+      ],
+      "speech": "Noble affect. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Wealth and recognition"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Sidney's Company",
+      "stat_reference": "Level 0 humans (DMB)",
+      "is_combatant": true,
+      "group_count": 4
+    },
+    {
+      "npc_id": "ruffians",
+      "name": "Ruffians",
+      "title": null,
+      "description": "Four hired muscle, Level 1 thieves who do Sidney's dirty work.",
+      "kindred": "Human",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Rough and opportunistic"
+      ],
+      "speech": "Common Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Payment and easy pickings"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Sidney's Company",
+      "stat_reference": "Level 1 thief (DMB)",
+      "is_combatant": true,
+      "group_count": 4
     }
   ],
   "items": [
     {
-      "name": "Golden Eggs",
-      "description": "Every 1d4 days, it lays a golden egg worth 40gp that induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust.",
+      "item_id": "0103:item:golden_egg",
+      "name": "Golden Egg",
+      "description": "A golden egg laid by the Golden Goose. Every 1d4 days, it lays a golden egg worth 40gp that induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust.",
       "value": "40gp",
-      "mechanical_effect": "Induces a subtle, covetous feeling in those who see it. After 4d6 days, the egg collapses into dust."
+      "mechanical_effect": {
+        "covetous_aura": true,
+        "decay_dice": "4d6",
+        "decay_unit": "days"
+      }
     },
     {
+      "item_id": "0103:item:silver_chain",
       "name": "Silver Chain",
       "description": "Silver chain binding the Golden Goose",
       "value": "100gp",
       "mechanical_effect": null
     },
     {
+      "item_id": "0103:item:talisman_nondetection",
       "name": "Talisman of Non-Detection",
       "description": "A pewter Talisman of Non-Detection (p398) shaped like a bisected eye",
       "value": null,
-      "mechanical_effect": "Non-Detection"
+      "magical": true,
+      "page_reference": "p398",
+      "mechanical_effect": {
+        "spell_effect": "Non-Detection",
+        "description": "Prevents magical detection"
+      }
     }
   ],
   "secrets": [],
-  "dm_notes": "Rewards: Promises a future payment in golden eggs in exchange for the PCs' assistance in obtaining the goose.",
+  "dm_notes": "Rewards: Promises a future payment in golden eggs in exchange for the PCs' assistance in obtaining the goose. Sidney's party is unknowingly a day away from discovering Crocus's Cave - this can be a timed event if the PCs don't find it first.",
   "adjacent_hexes": [],
   "roads": [],
   "_metadata": {
