@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "the_white_way",
+  "name": "The White Way",
+  "length_miles": 12,
+  "doors": [
+    {
+      "hex_id": "1201",
+      "name": "Glammering Gate",
+      "direction": "endpoint"
+    },
+    {
+      "hex_id": "1207",
+      "name": "Mizzle Door",
+      "direction": "endpoint"
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Lampwrack",
+      "requires_invitation": true
+    },
+    {
+      "name": "Tallowspire",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Colourless twilight forest; mortals’ vividness fades within minutes.",
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "Thorny white branches form an arch; beyond is a howling blackness—side-road to Lampwrack wastes.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "lampwrack",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "A crumbling mausoleum; stairs lead down to a corridor—side-road to Tallowspire catacombs.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "tallowspire",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 3,
+          "summary": "2d6 hollow husk-wolves pursue travelers (treat as dire wolves).",
+          "effects": [
+            {
+              "type": "encounter",
+              "foe": "husk_wolves",
+              "count": "2d6"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 4,
+          "summary": "Ash trees bear crystalline apples: they glow only in darkness (20' light). Save vs Spell or lose the ability to sing.",
+          "effects": [
+            {
+              "type": "item_source",
+              "item": "crystalline_apple",
+              "quantity": "1d4?",
+              "item_effect": {
+                "light_radius_ft": 20,
+                "light_condition": "darkness_only"
+              }
+            },
+            {
+              "type": "save",
+              "save_type": "Spell",
+              "on_fail": [
+                {
+                  "type": "condition",
+                  "id": "mute_song",
+                  "duration": "permanent"
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "item",
+            "curse"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "A pool of seeping yellow; a vivid phantom rises and gropes after travelers (treat as spectre).",
+          "effects": [
+            {
+              "type": "encounter",
+              "foe": "yellow_phantom",
+              "count": 1
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 6,
+          "summary": "Light fades to utter blackness for 12 hours; only magical light works.",
+          "effects": [
+            {
+              "type": "environment",
+              "effect": "supernatural_darkness",
+              "duration": "12 hours",
+              "countered_by": "magical_light"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 7,
+          "summary": "2d6 shadows observe; 1d3 may follow the party harmlessly until they leave the White Way.",
+          "effects": [
+            {
+              "type": "tag_followers",
+              "tag": "shadow_followers",
+              "count": "1d3",
+              "disposition": "harmless"
+            }
+          ],
+          "tags": [
+            "persistent"
+          ]
+        },
+        {
+          "roll": 8,
+          "summary": "White marble plaza and lion fountain; drinking heals 1d6 HP but makes the drinker forever colourless.",
+          "effects": [
+            {
+              "type": "heal",
+              "amount": "1d6",
+              "target": "single"
+            },
+            {
+              "type": "condition",
+              "id": "colourless",
+              "duration": "permanent"
+            }
+          ],
+          "tags": [
+            "boon_and_cost"
+          ]
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json"
+}

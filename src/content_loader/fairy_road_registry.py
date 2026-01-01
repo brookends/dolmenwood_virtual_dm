@@ -1,114 +1,112 @@
-"""
-Fairy road registry for Dolmenwood.
+"""Fairy Road Registry for Dolmenwood Virtual DM.
 
-Stores loaded fairy road data and provides lookup methods.
+Provides a centralized registry for fairy road lookup by:
+- road id
+- door hex id (which roads can be entered from a given hex)
+
+This mirrors the patterns used by SpellRegistry and MonsterRegistry.
 """
 
 from __future__ import annotations
 
+import logging
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
-from src.fairy_roads.fairy_road_models import FairyRoadData, FairyDoor
+from src.fairy_roads.models import FairyRoadCommon, FairyRoadDefinition, FairyRoadDoor
+
+logger = logging.getLogger(__name__)
+
+_fairy_road_registry: Optional["FairyRoadRegistry"] = None
+
+
+@dataclass
+class FairyRoadLookupResult:
+    found: bool
+    road: Optional[FairyRoadDefinition] = None
+    error: str = ""
+
+
+@dataclass
+class FairyRoadListResult:
+    roads: list[FairyRoadDefinition] = field(default_factory=list)
+    count: int = 0
+
+
+@dataclass(frozen=True)
+class DoorRef:
+    road_id: str
+    road_name: str
+    door: FairyRoadDoor
 
 
 class FairyRoadRegistry:
-    """
-    Registry for fairy roads and their doors.
+    def __init__(self):
+        self._roads_by_id: dict[str, FairyRoadDefinition] = {}
+        self._doors_by_hex: dict[str, list[DoorRef]] = {}
+        self._common: Optional[FairyRoadCommon] = None
+        self._loaded = False
 
-    Provides lookup by road ID, door ID, or hex ID (for doors).
-    """
+    @property
+    def is_loaded(self) -> bool:
+        return self._loaded
 
-    def __init__(self) -> None:
-        self._roads: dict[str, FairyRoadData] = {}
-        self._doors: dict[str, FairyDoor] = {}
-        self._doors_by_hex: dict[str, list[FairyDoor]] = {}
-        self._source_paths: dict[str, str] = {}
+    @property
+    def road_count(self) -> int:
+        return len(self._roads_by_id)
 
-    def add(self, road: FairyRoadData, source_path: str = "") -> None:
-        """Add a fairy road to the registry."""
-        self._roads[road.road_id] = road
-        if source_path:
-            self._source_paths[road.road_id] = source_path
+    @property
+    def common(self) -> Optional[FairyRoadCommon]:
+        return self._common
 
-        # Index all doors
+    def load_from_directory(self, fairy_road_directory: Optional[Path] = None) -> int:
+        from src.content_loader.fairy_road_loader import load_all_fairy_roads
+
+        result = load_all_fairy_roads(fairy_road_directory)
+        if result.errors:
+            for err in result.errors:
+                logger.error(f"Fairy road loading error: {err}")
+
+        self._common = result.common
+
+        for road in result.all_roads:
+            self.register(road)
+
+        self._loaded = True
+        logger.info(f"Loaded {self.road_count} fairy roads")
+        return self.road_count
+
+    def register(self, road: FairyRoadDefinition) -> None:
+        self._roads_by_id[road.road_id] = road
+
         for door in road.doors:
-            self._doors[door.door_id] = door
-            if door.hex_id not in self._doors_by_hex:
-                self._doors_by_hex[door.hex_id] = []
-            self._doors_by_hex[door.hex_id].append(door)
+            hex_id = door.hex_id
+            refs = self._doors_by_hex.setdefault(hex_id, [])
+            refs.append(DoorRef(road_id=road.road_id, road_name=road.name, door=door))
 
-    def get(self, road_id: str) -> Optional[FairyRoadData]:
-        """Get a fairy road by ID."""
-        return self._roads.get(road_id)
+    def get_by_id(self, road_id: str) -> FairyRoadLookupResult:
+        road = self._roads_by_id.get(road_id)
+        if road:
+            return FairyRoadLookupResult(found=True, road=road)
+        return FairyRoadLookupResult(found=False, error=f"Fairy road not found: {road_id}")
 
-    def get_door(self, door_id: str) -> Optional[FairyDoor]:
-        """Get a fairy door by ID."""
-        return self._doors.get(door_id)
+    def list_roads(self) -> FairyRoadListResult:
+        roads = list(self._roads_by_id.values())
+        roads.sort(key=lambda r: r.name)
+        return FairyRoadListResult(roads=roads, count=len(roads))
 
-    def get_doors_in_hex(self, hex_id: str) -> list[FairyDoor]:
-        """Get all fairy doors in a given hex."""
-        return self._doors_by_hex.get(hex_id, [])
-
-    def get_all_roads(self) -> list[FairyRoadData]:
-        """Get all registered fairy roads."""
-        return list(self._roads.values())
-
-    def get_all_doors(self) -> list[FairyDoor]:
-        """Get all registered fairy doors."""
-        return list(self._doors.values())
-
-    def has_road(self, road_id: str) -> bool:
-        """Check if a road is registered."""
-        return road_id in self._roads
-
-    def has_door(self, door_id: str) -> bool:
-        """Check if a door is registered."""
-        return door_id in self._doors
-
-    def hex_has_doors(self, hex_id: str) -> bool:
-        """Check if a hex has any fairy doors."""
-        return hex_id in self._doors_by_hex and len(self._doors_by_hex[hex_id]) > 0
-
-    def get_source_path(self, road_id: str) -> Optional[str]:
-        """Get the source file path for a road."""
-        return self._source_paths.get(road_id)
-
-    def count(self) -> int:
-        """Get the number of registered roads."""
-        return len(self._roads)
-
-    def door_count(self) -> int:
-        """Get the number of registered doors."""
-        return len(self._doors)
-
-    def clear(self) -> None:
-        """Clear all registered roads and doors."""
-        self._roads.clear()
-        self._doors.clear()
-        self._doors_by_hex.clear()
-        self._source_paths.clear()
-
-    def get_connected_doors(self, road_id: str) -> list[FairyDoor]:
-        """Get all doors connected to a specific road."""
-        road = self._roads.get(road_id)
-        if not road:
-            return []
-        return road.doors
-
-
-# Singleton instance
-_registry: Optional[FairyRoadRegistry] = None
+    def get_doors_at_hex(self, hex_id: str) -> list[DoorRef]:
+        return list(self._doors_by_hex.get(hex_id, []))
 
 
 def get_fairy_road_registry() -> FairyRoadRegistry:
-    """Get the global fairy road registry instance."""
-    global _registry
-    if _registry is None:
-        _registry = FairyRoadRegistry()
-    return _registry
+    global _fairy_road_registry
+    if _fairy_road_registry is None:
+        _fairy_road_registry = FairyRoadRegistry()
+    return _fairy_road_registry
 
 
 def reset_fairy_road_registry() -> None:
-    """Reset the global fairy road registry (for testing)."""
-    global _registry
-    _registry = None
+    global _fairy_road_registry
+    _fairy_road_registry = None

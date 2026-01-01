@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road",
+  "id": "buttercup_lane",
+  "name": "Buttercup Lane",
+  "length_miles": 12,
+  "doors": [
+    {
+      "hex_id": "0602",
+      "name": "Emerald Door",
+      "direction": "endpoint"
+    },
+    {
+      "hex_id": "1602",
+      "name": "Rosy Gate",
+      "direction": "endpoint"
+    }
+  ],
+  "side_roads": [
+    {
+      "name": "Blossom Fields",
+      "requires_invitation": true
+    },
+    {
+      "name": "Gladding-Gloam",
+      "requires_invitation": true
+    }
+  ],
+  "atmosphere": "Perpetual summer-afternoon haze; towering hedges; buttercup-carpeted lane.",
+  "tables": {
+    "locations_d8": {
+      "die": "1d8",
+      "entries": [
+        {
+          "roll": 1,
+          "summary": "Two giant willows form an arch; a side-road breaks through the hedge toward the Blossom Fields.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "blossom_fields",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 2,
+          "summary": "A wrought-iron gate of interwoven vines stands ajar; a rhododendron-lined side-road leads to the Gladding-Gloam.",
+          "effects": [
+            {
+              "type": "side_road",
+              "destination": "gladding_gloam",
+              "requires_invitation": true
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 3,
+          "summary": "Meadow with a pond; bathing restores 1d4 HP to the bather.",
+          "effects": [
+            {
+              "type": "heal",
+              "amount": "1d4",
+              "target": "single"
+            }
+          ],
+          "tags": [
+            "restorative"
+          ]
+        },
+        {
+          "roll": 4,
+          "summary": "Shady hazel copse; a toppled satyr statue head lies amid the trees.",
+          "effects": [],
+          "tags": [
+            "narrative_only"
+          ]
+        },
+        {
+          "roll": 5,
+          "summary": "A tree overhangs the road with ripe peaches (fairy fruit).",
+          "effects": [
+            {
+              "type": "item_source",
+              "item": "fairy_fruit",
+              "quantity": "variable"
+            }
+          ],
+          "tags": [
+            "fairy_fruit"
+          ]
+        },
+        {
+          "roll": 6,
+          "summary": "A passage through a hollow in a titanic oak; guarded by 1d6 root-things.",
+          "effects": [
+            {
+              "type": "encounter",
+              "foe": "root_things",
+              "count": "1d6"
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 7,
+          "summary": "A picnic hamper with 6 fresh rations; napkins bear a princess’s sigil.",
+          "effects": [
+            {
+              "type": "grant_resources",
+              "resource": "rations_fresh",
+              "amount": 6
+            }
+          ],
+          "tags": []
+        },
+        {
+          "roll": 8,
+          "summary": "Singing buttercups lull mortals; Save vs Spell or fall into enchanted sleep. Outside, 3d10 days pass.",
+          "effects": [
+            {
+              "type": "save",
+              "save_type": "Spell",
+              "on_fail": [
+                {
+                  "type": "mortal_time_delta",
+                  "time": "3d10 days"
+                }
+              ]
+            }
+          ],
+          "tags": [
+            "time_dilation"
+          ]
+        }
+      ]
+    }
+  },
+  "common_tables_ref": "fairy_roads_common.json"
+}

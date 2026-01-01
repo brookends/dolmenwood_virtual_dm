@@ -1,0 +1,192 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_roads_common",
+  "rules": {
+    "entering": {
+      "summary": "Fairy roads are accessed via magical doors at road endpoints. Some doors are obvious; others are warded or veiled.",
+      "doors_are_listed_in_hex_descriptions": true
+    },
+    "dont_stray_from_path": {
+      "summary": "Leaving the road causes mortals to grow faint; if they persist they pass out within 1 turn and awaken later in a random Dolmenwood hex.",
+      "mechanics": {
+        "fainting_threshold_turns": 1,
+        "on_failure": {
+          "wake_in_random_hex": true,
+          "roll_time_passed_table": true
+        }
+      }
+    },
+    "side_roads": {
+      "summary": "Side-roads lead into specific fairy domains. They are impassable without invitation; uninvited travelers are led off the road (stray rules apply).",
+      "invitation_required": true
+    },
+    "travel_procedure": {
+      "summary": "Use overland travel procedure. No chance to get lost while following the road. Roll encounter/location checks during travel.",
+      "encounter_check": {
+        "rolls_per_day_max": 3,
+        "trigger_die": "1d6",
+        "monster_on": [
+          1,
+          2
+        ],
+        "location_on": [
+          3,
+          4
+        ],
+        "no_event_on": [
+          5,
+          6
+        ],
+        "monster_table": "fairy_road_encounters_d20",
+        "location_table": "road_specific_d8"
+      }
+    },
+    "time_in_mortal_world": {
+      "summary": "On returning to the mortal world, roll 2d6 on the table to determine how much time has elapsed outside.",
+      "table_id": "time_passed_in_mortal_world_2d6"
+    }
+  },
+  "tables": {
+    "fairy_road_encounters_d20": {
+      "die": "1d20",
+      "entries": [
+        {
+          "roll": 1,
+          "name": "Adventuring Party",
+          "count": "1",
+          "notes": "Use your standard NPC party generation."
+        },
+        {
+          "roll": 2,
+          "name": "Barrowbogey",
+          "count": "2d6"
+        },
+        {
+          "roll": 3,
+          "name": "Centaur (Sylvan)",
+          "count": "2d6"
+        },
+        {
+          "roll": 4,
+          "name": "Drune (Braithmaid)",
+          "count": "1d3"
+        },
+        {
+          "roll": 5,
+          "name": "Drune (Cottager)",
+          "count": "1d3"
+        },
+        {
+          "roll": 6,
+          "name": "Elf (Courtier)",
+          "count": "1d3"
+        },
+        {
+          "roll": 7,
+          "name": "Elf (Knight)",
+          "count": "1d8"
+        },
+        {
+          "roll": 8,
+          "name": "Elf (Wanderer)",
+          "count": "1d6"
+        },
+        {
+          "roll": 9,
+          "name": "Fairy Horse",
+          "count": "1"
+        },
+        {
+          "roll": 10,
+          "name": "Goblin",
+          "count": "2d6"
+        },
+        {
+          "roll": 11,
+          "name": "Grimalkin",
+          "count": "1d4"
+        },
+        {
+          "roll": 12,
+          "name": "Lost Soul",
+          "count": "1d4",
+          "notes": "Everyday mortals tag per DMB."
+        },
+        {
+          "roll": 13,
+          "name": "Redcap",
+          "count": "2d6"
+        },
+        {
+          "roll": 14,
+          "name": "Redcap",
+          "count": "2d6"
+        },
+        {
+          "roll": 15,
+          "name": "Scrabey",
+          "count": "1d6"
+        },
+        {
+          "roll": 16,
+          "name": "Shape-Stealer",
+          "count": "1d6"
+        },
+        {
+          "roll": 17,
+          "name": "Giant Psionic Snail",
+          "count": "1"
+        },
+        {
+          "roll": 18,
+          "name": "Sprite",
+          "count": "2d6"
+        },
+        {
+          "roll": 19,
+          "name": "Witch",
+          "count": "1d6"
+        },
+        {
+          "roll": 20,
+          "name": "Woodgrue",
+          "count": "3d6"
+        }
+      ]
+    },
+    "time_passed_in_mortal_world_2d6": {
+      "die": "2d6",
+      "entries": [
+        {
+          "roll": 2,
+          "time": "1d6 minutes"
+        },
+        {
+          "roll_range": [
+            3,
+            5
+          ],
+          "time": "1d6 hours"
+        },
+        {
+          "roll_range": [
+            6,
+            8
+          ],
+          "time": "1d6 days"
+        },
+        {
+          "roll_range": [
+            9,
+            11
+          ],
+          "time": "2d6 days"
+        },
+        {
+          "roll": 12,
+          "time": "1d6 weeks"
+        }
+      ]
+    }
+  }
+}

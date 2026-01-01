@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "content_type": "fairy_road_index",
+  "roads": [
+    {
+      "id": "buttercup_lane",
+      "file": "fairy_road_buttercup_lane.json"
+    },
+    {
+      "id": "duke_mai_fleur_road",
+      "file": "fairy_road_duke_mai_fleur_road.json"
+    },
+    {
+      "id": "the_narrow_way",
+      "file": "fairy_road_the_narrow_way.json"
+    },
+    {
+      "id": "the_princes_road",
+      "file": "fairy_road_the_princes_road.json"
+    },
+    {
+      "id": "skipping_a_derry",
+      "file": "fairy_road_skipping_a_derry.json"
+    },
+    {
+      "id": "the_white_way",
+      "file": "fairy_road_the_white_way.json"
+    }
+  ],
+  "common": "fairy_roads_common.json"
+}
