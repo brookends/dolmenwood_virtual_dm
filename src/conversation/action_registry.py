@@ -890,37 +890,62 @@ def _create_default_registry() -> ActionRegistry:
                 "message": "What do you want to say? Provide text parameter.",
             }
 
-        # Get social context
+        # Get social context - properly access SocialContext dataclass
         npc_name = "the NPC"
         npc_personality = "a mysterious figure"
         disposition = "neutral"
+        social_context = None
+
         try:
-            if hasattr(dm.controller, '_social_context') and dm.controller._social_context:
-                ctx = dm.controller._social_context
-                npc_name = ctx.get("npc_name", "the NPC")
-                npc_personality = ctx.get("personality", "a mysterious figure")
-                disposition = ctx.get("disposition", "neutral")
-                # Check for npc_info which may have more details
-                npc_info = ctx.get("npc_info", {})
-                if npc_info:
-                    npc_personality = npc_info.get("personality", npc_personality)
-                    disposition = npc_info.get("disposition", disposition)
+            # Use the property accessor for clean access
+            social_context = dm.controller.social_context
+            if social_context and social_context.participants:
+                # Get primary participant (the NPC we're talking to)
+                participant = social_context.participants[0]
+                npc_name = participant.name or "the NPC"
+                # Get personality from participant or its conversation state
+                if participant.conversation:
+                    disposition = participant.conversation.current_disposition or "neutral"
+                # Get personality from known topics or default
+                if hasattr(participant, 'personality'):
+                    npc_personality = participant.personality or npc_personality
         except Exception:
             pass
 
         # Check if LLM/narrator is available and enabled
         dm_agent = getattr(dm, '_dm_agent', None) or getattr(dm, 'dm_agent', None)
+
+        # Prefer the rich context-based dialogue method
+        if dm_agent and social_context and hasattr(dm_agent, 'generate_dialogue_from_context'):
+            try:
+                # Use the rich context method for better dialogue
+                result = dm_agent.generate_dialogue_from_context(
+                    social_context=social_context,
+                    conversation_topic=text,
+                    participant_index=0,
+                )
+
+                if result and hasattr(result, 'description') and result.description:
+                    response = f"You say: \"{text}\"\n\n{result.description}"
+                    return {
+                        "success": True,
+                        "message": response,
+                        "narration": result.description,
+                    }
+                # Fall through to simpler method or oracle
+            except Exception:
+                pass  # Fall through to simpler methods
+
+        # Fallback to simple dialogue method if rich context fails
         if dm_agent and hasattr(dm_agent, 'generate_simple_npc_dialogue'):
-            # Use LLM to generate NPC dialogue
-            # Python-referee principle: LLM narrates, doesn't decide mechanics
             try:
                 result = dm_agent.generate_simple_npc_dialogue(
                     npc_name=npc_name,
                     personality=npc_personality,
-                    topic=text,  # What the player said
+                    topic=text,
                     disposition=disposition,
-                    known_info=[],  # NPC can share nothing unless specified
-                    secrets=[],  # No mechanical secrets to guard
+                    known_info=[],
+                    secrets=[],
                 )
 
                 if result and hasattr(result, 'description') and result.description:
@@ -949,16 +974,16 @@ def _create_default_registry() -> ActionRegistry:
                         f"[Narration error: {e}. Use oracle to determine NPC response.]"
                     ),
                 }
-        else:
-            # Offline mode - direct to oracle
-            return {
-                "success": True,
-                "message": (
-                    f"[Offline mode] You say to {npc_name}: \"{text}\"\n"
-                    "Use oracle:fate_check to determine NPC reaction, or "
-                    "oracle:detail_check for their response theme."
-                ),
-            }
+
+        # Offline mode - direct to oracle
+        return {
+            "success": True,
+            "message": (
+                f"[Offline mode] You say to {npc_name}: \"{text}\"\n"
+                "Use oracle:fate_check to determine NPC reaction, or "
+                "oracle:detail_check for their response theme."
+            ),
+        }
 
     def _social_end(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """End the conversation and return to previous state."""
@@ -997,11 +1022,13 @@ def _create_default_registry() -> ActionRegistry:
         if not question:
             question = "How does the NPC react?"
 
-        # Get NPC context if available
+        # Get NPC context if available - properly access SocialContext dataclass
         npc_name = "the NPC"
         try:
-            if hasattr(dm.controller, '_social_context') and dm.controller._social_context:
-                npc_name = dm.controller._social_context.get("npc_name", "the NPC")
+            social_context = dm.controller.social_context
+            if social_context and social_context.participants:
+                # Get name from primary participant
+                npc_name = social_context.participants[0].name or "the NPC"
         except Exception:
             pass
 

@@ -180,15 +180,19 @@ class TestSocialOracleQuestion:
 
     def test_oracle_question_with_npc_context(self, offline_dm):
         """Oracle question should include NPC context when available."""
+        from src.data_models import SocialContext, SocialParticipant, SocialParticipantType
+
         reset_registry()
         registry = get_default_registry()
 
-        # Set up social context with NPC name
-        offline_dm.controller._social_context = {
-            "npc_id": "test_npc",
-            "npc_name": "Old Bramble",
-            "first_meeting": True,
-        }
+        # Set up social context with proper dataclass structure
+        participant = SocialParticipant(
+            participant_id="test_npc",
+            name="Old Bramble",
+            participant_type=SocialParticipantType.NPC,
+        )
+        social_ctx = SocialContext(participants=[participant])
+        offline_dm.controller.set_social_context(social_ctx)
 
         offline_dm.controller.state_machine.force_state(
             GameState.SOCIAL_INTERACTION,
