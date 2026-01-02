@@ -1560,6 +1560,8 @@ class DMAgent:
         import time
         start_time = time.time()
         error_message = ""
+        response = None
+
         try:
             response = self._llm.complete(
                 messages=messages,
@@ -1567,24 +1569,55 @@ class DMAgent:
                 allow_narration_context=allow_narration_context,
             )
         except Exception as e:
+            # Phase 8: Handle LLM failures gracefully with fallback
             error_message = str(e)
-            raise
-        finally:
             elapsed_ms = int((time.time() - start_time) * 1000)
-            # Log to RunLog for observability (Phase 4.1)
+
+            # Log error to RunLog
             try:
                 from src.observability.run_log import get_run_log
                 get_run_log().log_llm_call(
                     call_type=schema.schema_type.value if hasattr(schema, 'schema_type') else "unknown",
                     schema_name=type(schema).__name__,
-                    success=not error_message,
+                    success=False,
                     latency_ms=elapsed_ms,
                     error_message=error_message,
                     input_summary=user_prompt[:100] + "..." if len(user_prompt) > 100 else user_prompt,
-                    output_summary=(response.content[:100] + "...") if not error_message and len(response.content) > 100 else (response.content if not error_message else ""),
+                    output_summary="",
                 )
             except (ImportError, NameError):
-                pass  # RunLog not available or response not defined
+                pass  # RunLog not available
+
+            logger.error(f"LLM call failed for {type(schema).__name__}: {error_message}")
+
+            # Return safe fallback message suggesting oracle use
+            fallback_content = (
+                "[The narrative could not be generated at this time. "
+                "Consider using the oracle (Mythic GME fate check) to determine "
+                "what happens next, or describe the scene yourself.]"
+            )
+            return DescriptionResult(
+                content=fallback_content,
+                schema_used=schema.schema_type,
+                success=False,
+                warnings=[f"LLM error: {error_message}", "oracle_suggested"],
+            )
+
+        # Log successful call
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_llm_call(
+                call_type=schema.schema_type.value if hasattr(schema, 'schema_type') else "unknown",
+                schema_name=type(schema).__name__,
+                success=True,
+                latency_ms=elapsed_ms,
+                error_message="",
+                input_summary=user_prompt[:100] + "..." if len(user_prompt) > 100 else user_prompt,
+                output_summary=response.content[:100] + "..." if len(response.content) > 100 else response.content,
+            )
+        except (ImportError, NameError):
+            pass  # RunLog not available
 
         # Build result
         result = DescriptionResult(
