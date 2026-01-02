@@ -4924,9 +4924,13 @@ class HexCrawlEngine:
                 if roll.total in unfound:
                     break
             else:
-                # Fallback: pick random unfound entry
-                import random
-                roll_value = random.choice(unfound)
+                # Fallback: pick random unfound entry using DiceRoller
+                # Roll 1d(len) to pick an index, ensuring determinism
+                idx_roll = self.dice.roll(
+                    f"1d{len(unfound)}",
+                    f"unique table fallback ({table_name})"
+                )
+                roll_value = unfound[idx_roll.total - 1]  # Convert 1-based to 0-based
                 roll = type("Roll", (), {"total": roll_value})()
         else:
             # Regular roll

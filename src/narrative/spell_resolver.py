@@ -21,8 +21,10 @@ import re
 import uuid
 
 if TYPE_CHECKING:
-    from src.data_models import CharacterState, DiceRoller
+    from src.data_models import CharacterState
     from src.game_state.global_controller import GlobalController
+
+from src.data_models import DiceRoller
 
 from src.narrative.intent_parser import SaveType
 from src.oracle.spell_adjudicator import (
@@ -1425,8 +1427,9 @@ class SpellResolver:
                 roll = dice_roller.roll("1d20", f"{effect.spell_name} recurring save")
                 roll_value = roll.total
             else:
-                import random
-                roll_value = random.randint(1, 20)
+                # Use DiceRoller static method for deterministic fallback
+                roll = DiceRoller.roll_d20(reason=f"{effect.spell_name} recurring save")
+                roll_value = roll.total
 
             # Default save target is 15 for spell effects
             save_target = 15
@@ -1656,8 +1659,9 @@ class SpellResolver:
                     roll = dice_roller.roll_percentile("Component destruction check")
                     destroyed = roll.total <= (component.destruction_chance * 100)
                 else:
-                    import random
-                    destroyed = random.random() < component.destruction_chance
+                    # Use DiceRoller static method for deterministic fallback
+                    roll = DiceRoller.roll_percentile(reason="Component destruction check")
+                    destroyed = roll.total <= (component.destruction_chance * 100)
 
                 if destroyed:
                     caster.remove_item(item.item_id, quantity=1)
@@ -4764,7 +4768,6 @@ class SpellResolver:
         """
         from src.data_models import DiceRoller as DR
         from src.oracle.mythic_gme import MythicGME, Likelihood
-        import random
 
         dice = dice_roller or DR()
 
