@@ -86,6 +86,13 @@ from src.factions.faction_wiring import (
     load_faction_state,
     get_factions_summary,
     get_party_faction_summary,
+    get_party_manager,
+)
+
+from src.factions.faction_party import (
+    FactionWorkResult,
+    JobCompletionResult,
+    FactionPartyManager,
 )
 
 __all__ = [
@@ -139,4 +146,9 @@ __all__ = [
     "load_faction_state",
     "get_factions_summary",
     "get_party_faction_summary",
+    "get_party_manager",
+    # Party interaction layer
+    "FactionWorkResult",
+    "JobCompletionResult",
+    "FactionPartyManager",
 ]

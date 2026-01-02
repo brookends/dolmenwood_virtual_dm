@@ -36,7 +36,9 @@ if TYPE_CHECKING:
 from src.factions.faction_engine import FactionEngine
 from src.factions.faction_loader import FactionLoader
 from src.factions.faction_relations import FactionRelationsLoader
+from src.factions.faction_adventurers import FactionAdventurerProfilesLoader
 from src.factions.faction_models import PartyFactionState
+from src.factions.faction_party import FactionPartyManager
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +87,22 @@ def init_faction_engine(
             for err in relations_loader.load_result.errors[:3]:
                 logger.warning(f"Relations load error: {err}")
 
+        # Load adventurer profiles (optional)
+        profiles_loader = FactionAdventurerProfilesLoader(content_dir)
+        profiles = profiles_loader.load()
+        if profiles_loader.load_result and profiles_loader.load_result.errors:
+            for err in profiles_loader.load_result.errors[:3]:
+                logger.warning(f"Profiles load error: {err}")
+
         # Create the engine
         engine = FactionEngine(
             rules=loader.rules,
             definitions=loader.definitions,
             relations=relations,
         )
+
+        # Store profiles on engine for party manager access
+        engine._adventurer_profiles = profiles
 
         # Initialize party faction state
         engine.set_party_state(PartyFactionState())
@@ -297,6 +309,23 @@ def get_party_faction_summary(engine: Optional[FactionEngine]) -> str:
             lines.append(f"  - {job.title} (from {job.faction_id}): {job.status}")
 
     return "\n".join(lines)
+
+
+def get_party_manager(engine: Optional[FactionEngine]) -> Optional[FactionPartyManager]:
+    """
+    Get a FactionPartyManager for the engine.
+
+    Args:
+        engine: The FactionEngine instance (or None)
+
+    Returns:
+        FactionPartyManager or None if engine not available
+    """
+    if not engine:
+        return None
+
+    profiles = getattr(engine, "_adventurer_profiles", None)
+    return FactionPartyManager(engine, profiles=profiles)
 
 
 def _progress_bar(progress: int, segments: int, width: int = 10) -> str:
