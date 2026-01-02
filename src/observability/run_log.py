@@ -23,8 +23,13 @@ class EventType(str, Enum):
     TABLE_LOOKUP = "table_lookup"  # Table roll/lookup
     TIME_STEP = "time_step"  # Game time advancement
     ACTION = "action"  # Player/NPC action
-    ENCOUNTER = "encounter"  # Encounter generation
+    ENCOUNTER = "encounter"  # Encounter generation/resolution
     CUSTOM = "custom"  # Custom event
+
+    # Phase 4.1: New observability event types
+    ORACLE = "oracle"  # Mythic GME fate checks, meaning rolls
+    SPELL_ADJUDICATION = "spell_adjudication"  # Spell adjudication outcomes
+    LLM_CALL = "llm_call"  # DM agent / LLM call metadata
 
 
 @dataclass
@@ -236,6 +241,237 @@ class TimeStepEvent(LogEvent):
         return f"[{self.sequence_number}] TIME {self.old_time} -> {self.new_time} (+{self.turns_advanced} turns, {self.reason})"
 
 
+# =============================================================================
+# Phase 4.1: New Event Types for Observability
+# =============================================================================
+
+
+@dataclass
+class OracleEvent(LogEvent):
+    """An oracle (Mythic GME) event - fate checks, meaning rolls, etc."""
+
+    oracle_type: str = ""  # "fate_check", "meaning_roll", "random_event"
+    question: str = ""  # For fate checks
+    likelihood: str = ""  # For fate checks (e.g., "likely", "fifty_fifty")
+    roll: int = 0  # The dice roll
+    result: str = ""  # "yes", "no", "exceptional_yes", "exceptional_no"
+    chaos_factor: int = 5
+    meaning_action: str = ""  # For meaning rolls
+    meaning_subject: str = ""  # For meaning rolls
+    random_event_triggered: bool = False
+
+    def __post_init__(self):
+        self.event_type = EventType.ORACLE
+
+    def to_dict(self) -> dict[str, Any]:
+        base = super().to_dict()
+        base.update(
+            {
+                "oracle_type": self.oracle_type,
+                "question": self.question,
+                "likelihood": self.likelihood,
+                "roll": self.roll,
+                "result": self.result,
+                "chaos_factor": self.chaos_factor,
+                "meaning_action": self.meaning_action,
+                "meaning_subject": self.meaning_subject,
+                "random_event_triggered": self.random_event_triggered,
+            }
+        )
+        return base
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "OracleEvent":
+        return cls(
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence_number=data.get("sequence_number", 0),
+            game_time=data.get("game_time"),
+            context=data.get("context", {}),
+            oracle_type=data.get("oracle_type", ""),
+            question=data.get("question", ""),
+            likelihood=data.get("likelihood", ""),
+            roll=data.get("roll", 0),
+            result=data.get("result", ""),
+            chaos_factor=data.get("chaos_factor", 5),
+            meaning_action=data.get("meaning_action", ""),
+            meaning_subject=data.get("meaning_subject", ""),
+            random_event_triggered=data.get("random_event_triggered", False),
+        )
+
+    def __str__(self) -> str:
+        if self.oracle_type == "fate_check":
+            event_str = " [EVENT!]" if self.random_event_triggered else ""
+            return (
+                f"[{self.sequence_number}] ORACLE fate_check: \"{self.question}\" "
+                f"({self.likelihood}, CF={self.chaos_factor}) -> {self.result.upper()} "
+                f"(roll: {self.roll}){event_str}"
+            )
+        elif self.oracle_type == "meaning_roll":
+            return (
+                f"[{self.sequence_number}] ORACLE meaning: "
+                f"{self.meaning_action} + {self.meaning_subject}"
+            )
+        return f"[{self.sequence_number}] ORACLE {self.oracle_type}: {self.result}"
+
+
+@dataclass
+class SpellAdjudicationEvent(LogEvent):
+    """A spell adjudication event."""
+
+    spell_name: str = ""
+    caster_id: str = ""
+    adjudication_type: str = ""  # "wish", "curse_break", "divination", etc.
+    success_level: str = ""  # "success", "failure", "exceptional_success", etc.
+    summary: str = ""
+    effects_executed: list[str] = field(default_factory=list)
+    has_complication: bool = False
+    meaning_pair: str = ""  # If meaning roll was involved
+
+    def __post_init__(self):
+        self.event_type = EventType.SPELL_ADJUDICATION
+
+    def to_dict(self) -> dict[str, Any]:
+        base = super().to_dict()
+        base.update(
+            {
+                "spell_name": self.spell_name,
+                "caster_id": self.caster_id,
+                "adjudication_type": self.adjudication_type,
+                "success_level": self.success_level,
+                "summary": self.summary,
+                "effects_executed": self.effects_executed,
+                "has_complication": self.has_complication,
+                "meaning_pair": self.meaning_pair,
+            }
+        )
+        return base
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "SpellAdjudicationEvent":
+        return cls(
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence_number=data.get("sequence_number", 0),
+            game_time=data.get("game_time"),
+            context=data.get("context", {}),
+            spell_name=data.get("spell_name", ""),
+            caster_id=data.get("caster_id", ""),
+            adjudication_type=data.get("adjudication_type", ""),
+            success_level=data.get("success_level", ""),
+            summary=data.get("summary", ""),
+            effects_executed=data.get("effects_executed", []),
+            has_complication=data.get("has_complication", False),
+            meaning_pair=data.get("meaning_pair", ""),
+        )
+
+    def __str__(self) -> str:
+        complication = " [COMPLICATION]" if self.has_complication else ""
+        effects = f" effects: {len(self.effects_executed)}" if self.effects_executed else ""
+        return (
+            f"[{self.sequence_number}] SPELL {self.spell_name} ({self.adjudication_type}): "
+            f"{self.success_level}{complication}{effects}"
+        )
+
+
+@dataclass
+class EncounterEvent(LogEvent):
+    """An encounter-related event (generation, resolution, transition)."""
+
+    encounter_type: str = ""  # "start", "resolution", "flee", "combat_start"
+    encounter_id: str = ""
+    creatures: list[str] = field(default_factory=list)
+    outcome: str = ""  # "party_victory", "parley_success", "fled", etc.
+    resolution_method: str = ""  # "combat", "parley", "flee", "evasion"
+
+    def __post_init__(self):
+        self.event_type = EventType.ENCOUNTER
+
+    def to_dict(self) -> dict[str, Any]:
+        base = super().to_dict()
+        base.update(
+            {
+                "encounter_type": self.encounter_type,
+                "encounter_id": self.encounter_id,
+                "creatures": self.creatures,
+                "outcome": self.outcome,
+                "resolution_method": self.resolution_method,
+            }
+        )
+        return base
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "EncounterEvent":
+        return cls(
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence_number=data.get("sequence_number", 0),
+            game_time=data.get("game_time"),
+            context=data.get("context", {}),
+            encounter_type=data.get("encounter_type", ""),
+            encounter_id=data.get("encounter_id", ""),
+            creatures=data.get("creatures", []),
+            outcome=data.get("outcome", ""),
+            resolution_method=data.get("resolution_method", ""),
+        )
+
+    def __str__(self) -> str:
+        creature_str = f" ({', '.join(self.creatures[:3])})" if self.creatures else ""
+        outcome_str = f" -> {self.outcome}" if self.outcome else ""
+        return (
+            f"[{self.sequence_number}] ENCOUNTER {self.encounter_type}{creature_str}{outcome_str}"
+        )
+
+
+@dataclass
+class LLMCallEvent(LogEvent):
+    """An LLM/DM agent call event (metadata only, no secrets)."""
+
+    call_type: str = ""  # "dialogue", "narration", "spell_interpretation", etc.
+    schema_name: str = ""  # Which prompt schema was used
+    success: bool = True
+    latency_ms: Optional[int] = None  # Response time if available
+    error_message: str = ""  # If failed
+    input_summary: str = ""  # Brief summary of input (no secrets)
+    output_summary: str = ""  # Brief summary of output (truncated)
+
+    def __post_init__(self):
+        self.event_type = EventType.LLM_CALL
+
+    def to_dict(self) -> dict[str, Any]:
+        base = super().to_dict()
+        base.update(
+            {
+                "call_type": self.call_type,
+                "schema_name": self.schema_name,
+                "success": self.success,
+                "latency_ms": self.latency_ms,
+                "error_message": self.error_message,
+                "input_summary": self.input_summary,
+                "output_summary": self.output_summary,
+            }
+        )
+        return base
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "LLMCallEvent":
+        return cls(
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence_number=data.get("sequence_number", 0),
+            game_time=data.get("game_time"),
+            context=data.get("context", {}),
+            call_type=data.get("call_type", ""),
+            schema_name=data.get("schema_name", ""),
+            success=data.get("success", True),
+            latency_ms=data.get("latency_ms"),
+            error_message=data.get("error_message", ""),
+            input_summary=data.get("input_summary", ""),
+            output_summary=data.get("output_summary", ""),
+        )
+
+    def __str__(self) -> str:
+        status = "OK" if self.success else f"FAILED: {self.error_message[:50]}"
+        latency = f" ({self.latency_ms}ms)" if self.latency_ms else ""
+        return f"[{self.sequence_number}] LLM {self.call_type} [{self.schema_name}]: {status}{latency}"
+
+
 class RunLog:
     """
     Central run log for all game events.
@@ -428,6 +664,112 @@ class RunLog:
         self._log_event(event)
         return event
 
+    # -------------------------------------------------------------------------
+    # Phase 4.1: New Observability Logging Methods
+    # -------------------------------------------------------------------------
+
+    def log_oracle(
+        self,
+        oracle_type: str,
+        question: str = "",
+        likelihood: str = "",
+        roll: int = 0,
+        result: str = "",
+        chaos_factor: int = 5,
+        meaning_action: str = "",
+        meaning_subject: str = "",
+        random_event_triggered: bool = False,
+        context: Optional[dict[str, Any]] = None,
+    ) -> OracleEvent:
+        """Log an oracle (Mythic GME) event."""
+        event = OracleEvent(
+            oracle_type=oracle_type,
+            question=question,
+            likelihood=likelihood,
+            roll=roll,
+            result=result,
+            chaos_factor=chaos_factor,
+            meaning_action=meaning_action,
+            meaning_subject=meaning_subject,
+            random_event_triggered=random_event_triggered,
+            context=context or {},
+        )
+        self._log_event(event)
+        return event
+
+    def log_spell_adjudication(
+        self,
+        spell_name: str,
+        caster_id: str,
+        adjudication_type: str,
+        success_level: str,
+        summary: str = "",
+        effects_executed: Optional[list[str]] = None,
+        has_complication: bool = False,
+        meaning_pair: str = "",
+        context: Optional[dict[str, Any]] = None,
+    ) -> SpellAdjudicationEvent:
+        """Log a spell adjudication event."""
+        event = SpellAdjudicationEvent(
+            spell_name=spell_name,
+            caster_id=caster_id,
+            adjudication_type=adjudication_type,
+            success_level=success_level,
+            summary=summary,
+            effects_executed=effects_executed or [],
+            has_complication=has_complication,
+            meaning_pair=meaning_pair,
+            context=context or {},
+        )
+        self._log_event(event)
+        return event
+
+    def log_encounter(
+        self,
+        encounter_type: str,
+        encounter_id: str = "",
+        creatures: Optional[list[str]] = None,
+        outcome: str = "",
+        resolution_method: str = "",
+        context: Optional[dict[str, Any]] = None,
+    ) -> EncounterEvent:
+        """Log an encounter event."""
+        event = EncounterEvent(
+            encounter_type=encounter_type,
+            encounter_id=encounter_id,
+            creatures=creatures or [],
+            outcome=outcome,
+            resolution_method=resolution_method,
+            context=context or {},
+        )
+        self._log_event(event)
+        return event
+
+    def log_llm_call(
+        self,
+        call_type: str,
+        schema_name: str = "",
+        success: bool = True,
+        latency_ms: Optional[int] = None,
+        error_message: str = "",
+        input_summary: str = "",
+        output_summary: str = "",
+        context: Optional[dict[str, Any]] = None,
+    ) -> LLMCallEvent:
+        """Log an LLM/DM agent call event."""
+        event = LLMCallEvent(
+            call_type=call_type,
+            schema_name=schema_name,
+            success=success,
+            latency_ms=latency_ms,
+            error_message=error_message,
+            input_summary=input_summary,
+            output_summary=output_summary,
+            context=context or {},
+        )
+        self._log_event(event)
+        return event
+
     def get_events(
         self,
         event_type: Optional[EventType] = None,
@@ -464,6 +806,22 @@ class RunLog:
         """Get all time step events."""
         return [e for e in self._events if isinstance(e, TimeStepEvent)]
 
+    def get_oracle_events(self) -> list[OracleEvent]:
+        """Get all oracle events."""
+        return [e for e in self._events if isinstance(e, OracleEvent)]
+
+    def get_spell_adjudications(self) -> list[SpellAdjudicationEvent]:
+        """Get all spell adjudication events."""
+        return [e for e in self._events if isinstance(e, SpellAdjudicationEvent)]
+
+    def get_encounter_events(self) -> list[EncounterEvent]:
+        """Get all encounter events."""
+        return [e for e in self._events if isinstance(e, EncounterEvent)]
+
+    def get_llm_calls(self) -> list[LLMCallEvent]:
+        """Get all LLM call events."""
+        return [e for e in self._events if isinstance(e, LLMCallEvent)]
+
     def get_roll_stream(self) -> list[dict[str, Any]]:
         """
         Get the roll stream for replay.
@@ -496,6 +854,11 @@ class RunLog:
             "transitions": len(self.get_transitions()),
             "table_lookups": len(self.get_table_lookups()),
             "time_steps": len(self.get_time_steps()),
+            # Phase 4.1: New event counts
+            "oracle_events": len(self.get_oracle_events()),
+            "spell_adjudications": len(self.get_spell_adjudications()),
+            "encounter_events": len(self.get_encounter_events()),
+            "llm_calls": len(self.get_llm_calls()),
             "last_sequence": self._sequence,
         }
 
@@ -542,6 +905,14 @@ class RunLog:
                 event = TableLookupEvent.from_dict(event_data)
             elif event_type == EventType.TIME_STEP:
                 event = TimeStepEvent.from_dict(event_data)
+            elif event_type == EventType.ORACLE:
+                event = OracleEvent.from_dict(event_data)
+            elif event_type == EventType.SPELL_ADJUDICATION:
+                event = SpellAdjudicationEvent.from_dict(event_data)
+            elif event_type == EventType.ENCOUNTER:
+                event = EncounterEvent.from_dict(event_data)
+            elif event_type == EventType.LLM_CALL:
+                event = LLMCallEvent.from_dict(event_data)
             else:
                 event = LogEvent.from_dict(event_data)
             log._events.append(event)

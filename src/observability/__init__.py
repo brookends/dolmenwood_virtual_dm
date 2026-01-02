@@ -13,6 +13,11 @@ from src.observability.run_log import (
     TransitionEvent,
     TableLookupEvent,
     TimeStepEvent,
+    # Phase 4.1: New event types
+    OracleEvent,
+    SpellAdjudicationEvent,
+    EncounterEvent,
+    LLMCallEvent,
     get_run_log,
     reset_run_log,
 )
@@ -26,6 +31,11 @@ __all__ = [
     "TransitionEvent",
     "TableLookupEvent",
     "TimeStepEvent",
+    # Phase 4.1: New event types
+    "OracleEvent",
+    "SpellAdjudicationEvent",
+    "EncounterEvent",
+    "LLMCallEvent",
     "get_run_log",
     "reset_run_log",
     "ReplaySession",

@@ -1556,12 +1556,35 @@ class DMAgent:
 
         messages = [LLMMessage(role=LLMRole.USER, content=user_prompt)]
 
-        # Get LLM response
-        response = self._llm.complete(
-            messages=messages,
-            system_prompt=system_prompt,
-            allow_narration_context=allow_narration_context,
-        )
+        # Get LLM response with timing for observability
+        import time
+        start_time = time.time()
+        error_message = ""
+        try:
+            response = self._llm.complete(
+                messages=messages,
+                system_prompt=system_prompt,
+                allow_narration_context=allow_narration_context,
+            )
+        except Exception as e:
+            error_message = str(e)
+            raise
+        finally:
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            # Log to RunLog for observability (Phase 4.1)
+            try:
+                from src.observability.run_log import get_run_log
+                get_run_log().log_llm_call(
+                    call_type=schema.schema_type.value if hasattr(schema, 'schema_type') else "unknown",
+                    schema_name=type(schema).__name__,
+                    success=not error_message,
+                    latency_ms=elapsed_ms,
+                    error_message=error_message,
+                    input_summary=user_prompt[:100] + "..." if len(user_prompt) > 100 else user_prompt,
+                    output_summary=(response.content[:100] + "...") if not error_message and len(response.content) > 100 else (response.content if not error_message else ""),
+                )
+            except (ImportError, NameError):
+                pass  # RunLog not available or response not defined
 
         # Build result
         result = DescriptionResult(

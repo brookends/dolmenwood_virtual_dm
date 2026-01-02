@@ -129,6 +129,10 @@ class GameConfig:
     # Runtime options
     verbose: bool = False
 
+    # Observability options (Phase 4.3)
+    auto_persist_run_log: bool = False  # Persist RunLog snapshot on each turn
+    run_log_persist_dir: Optional[Path] = None  # Directory for RunLog snapshots
+
     def __post_init__(self):
         """Ensure paths are Path objects."""
         if isinstance(self.data_dir, str):

@@ -5484,7 +5484,7 @@ class GlobalController:
             base_likelihood = Likelihood.FIFTY_FIFTY
             result = adjudicator.adjudicate_generic(question, context, base_likelihood)
 
-        # Log the adjudication
+        # Log the adjudication to session log
         self._log_event(
             "oracle_spell_adjudication",
             {
@@ -5496,6 +5496,25 @@ class GlobalController:
                 "has_complication": result.has_complication,
             },
         )
+
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            meaning_pair = ""
+            if result.meaning_roll:
+                meaning_pair = f"{result.meaning_roll.action} + {result.meaning_roll.subject}"
+            get_run_log().log_spell_adjudication(
+                spell_name=spell_name,
+                caster_id=caster_id,
+                adjudication_type=adj_type.value,
+                success_level=result.success_level.value,
+                summary=result.summary,
+                effects_executed=[cmd.effect_type.value for cmd in result.predetermined_effects],
+                has_complication=result.has_complication,
+                meaning_pair=meaning_pair,
+            )
+        except ImportError:
+            pass  # RunLog not available
 
         return result
 
@@ -5587,6 +5606,53 @@ class GlobalController:
             # Tick area effects at current location
             if self.party_state.location:
                 self.tick_location_effects(self.party_state.location.location_id)
+
+        # Phase 4.3: Optional RunLog snapshot persistence
+        # This is a minimal integration seam - full replay requires additional work
+        self._maybe_persist_run_log_snapshot()
+
+    def _maybe_persist_run_log_snapshot(self) -> None:
+        """
+        Optionally persist a RunLog snapshot (Phase 4.3).
+
+        This is called on each turn advance. If auto_persist_run_log is enabled
+        in config (passed via register_run_log_persistence), it saves a snapshot.
+
+        Note: Full replay functionality is not yet implemented.
+        """
+        if not getattr(self, '_run_log_persist_dir', None):
+            return  # No persistence configured
+
+        try:
+            import os
+            from datetime import datetime
+            from src.observability.run_log import get_run_log
+
+            run_log = get_run_log()
+            persist_dir = self._run_log_persist_dir
+
+            # Create directory if needed
+            os.makedirs(persist_dir, exist_ok=True)
+
+            # Save with timestamp and sequence number
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            seq = run_log._sequence
+            filename = f"run_log_snapshot_{timestamp}_seq{seq}.json"
+            filepath = os.path.join(persist_dir, filename)
+
+            run_log.save(filepath)
+        except Exception as e:
+            # Log but don't fail - persistence is optional
+            logging.warning(f"RunLog snapshot persistence failed: {e}")
+
+    def register_run_log_persistence(self, persist_dir: str) -> None:
+        """
+        Register a directory for automatic RunLog snapshot persistence.
+
+        Args:
+            persist_dir: Directory path for snapshots
+        """
+        self._run_log_persist_dir = persist_dir
 
     def _on_watch_advance(self, watches: int) -> None:
         """Called when watches advance (every 4 hours)."""

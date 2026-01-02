@@ -453,6 +453,20 @@ class MythicGME:
             exceptional_no_threshold=ex_no,
         )
 
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_oracle(
+                oracle_type="fate_check",
+                question=question,
+                likelihood=likelihood.name.lower(),
+                roll=roll,
+                result=result.value,
+                chaos_factor=self.chaos.value,
+            )
+        except ImportError:
+            pass  # RunLog not available
+
         # Check for random event
         if check_for_event:
             event = self._check_random_event(roll)
@@ -523,9 +537,24 @@ class MythicGME:
         action_idx = (action_roll - 1) % len(ACTION_MEANINGS)
         subject_idx = (subject_roll - 1) % len(SUBJECT_MEANINGS)
 
+        action = ACTION_MEANINGS[action_idx]
+        subject = SUBJECT_MEANINGS[subject_idx]
+
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_oracle(
+                oracle_type="meaning_roll",
+                meaning_action=action,
+                meaning_subject=subject,
+                chaos_factor=self.chaos.value,
+            )
+        except ImportError:
+            pass  # RunLog not available
+
         return MeaningRoll(
-            action=ACTION_MEANINGS[action_idx],
-            subject=SUBJECT_MEANINGS[subject_idx],
+            action=action,
+            subject=subject,
             action_roll=action_roll,
             subject_roll=subject_roll,
         )
