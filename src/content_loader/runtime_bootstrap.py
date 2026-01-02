@@ -50,7 +50,10 @@ class RuntimeContent:
         spells: List of SpellData objects (for SpellResolver registration)
         monsters_loaded: Whether monsters were loaded into the registry
         items_loaded: Whether items were loaded into the catalog
+        monster_registry: The loaded MonsterRegistry instance (if monsters loaded)
+        item_catalog: The loaded ItemCatalog instance (if items loaded)
         warnings: List of non-fatal warnings during loading
+        errors: List of critical errors that should cause fail-fast
         stats: Load statistics
     """
 
@@ -58,7 +61,10 @@ class RuntimeContent:
     spells: list[Any] = field(default_factory=list)  # SpellData objects
     monsters_loaded: bool = False
     items_loaded: bool = False
+    monster_registry: Any = None  # MonsterRegistry instance (Phase 7.1)
+    item_catalog: Any = None  # ItemCatalog instance
     warnings: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)  # Phase 7.2: critical errors
     stats: RuntimeContentStats = field(default_factory=RuntimeContentStats)
 
 
@@ -129,46 +135,297 @@ def load_runtime_content(
 
 
 def _load_hexes(hex_dir: Path, result: RuntimeContent, enable_vector_db: bool) -> None:
-    """Load hex data using HexDataLoader."""
+    """
+    Load hex data directly from JSON files.
+
+    Uses direct JSON loading rather than ContentPipeline to avoid
+    constructor issues and simplify the loading process.
+    """
     if not hex_dir.exists():
         result.warnings.append(f"Hex directory not found: {hex_dir}")
         logger.debug(f"Hex directory not found: {hex_dir}")
         return
 
     try:
-        from src.content_loader.content_pipeline import ContentPipeline
-        from src.content_loader.hex_loader import HexDataLoader
-        from src.content_loader.content_manager import ContentType
+        import json
 
-        # Create pipeline for loading
-        pipeline = ContentPipeline(use_vector_db=enable_vector_db)
-        loader = HexDataLoader(pipeline)
+        # Find all JSON files in the hex directory
+        json_files = list(hex_dir.glob("*.json"))
 
-        # Load all hexes
-        load_result = loader.load_directory(hex_dir)
+        if not json_files:
+            logger.debug(f"No JSON files found in {hex_dir}")
+            return
 
-        result.stats.hexes_loaded = load_result.total_hexes_loaded
-        result.stats.hexes_failed = load_result.total_hexes_failed
+        logger.info(f"Found {len(json_files)} hex JSON files in {hex_dir}")
 
-        if load_result.errors:
-            result.warnings.extend(load_result.errors[:10])  # Cap at 10
+        # Load each hex file directly
+        for json_file in sorted(json_files):
+            try:
+                with open(json_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
 
-        # Extract HexLocation objects from the pipeline's content manager
-        all_hex_dicts = pipeline.content_manager.get_all_content(ContentType.HEX)
-        for hex_dict in all_hex_dicts:
-            hex_id = hex_dict.get("hex_id")
-            if hex_id:
-                hex_loc = pipeline.content_manager._dict_to_hex(hex_dict)
-                result.hexes[hex_id] = hex_loc
+                # Check for hex_id at top level (new format)
+                if "hex_id" in data:
+                    hex_location = _parse_hex_json(data)
+                    result.hexes[hex_location.hex_id] = hex_location
+                    result.stats.hexes_loaded += 1
+                # Check for items array (legacy format)
+                elif "items" in data and isinstance(data["items"], list):
+                    for item in data["items"]:
+                        if "hex_id" in item:
+                            hex_location = _parse_hex_json(item)
+                            result.hexes[hex_location.hex_id] = hex_location
+                            result.stats.hexes_loaded += 1
+                else:
+                    result.stats.hexes_failed += 1
+                    result.warnings.append(f"No hex_id found in {json_file.name}")
 
-        logger.info(f"Loaded {len(result.hexes)} hexes from {hex_dir}")
+            except json.JSONDecodeError as e:
+                result.stats.hexes_failed += 1
+                # Phase 7.2: JSON decode errors are critical
+                error_msg = f"Invalid JSON in {json_file.name}: {e}"
+                result.errors.append(error_msg)
+                logger.error(f"Failed to parse {json_file}: {e}")
+            except HexParseError as e:
+                # Phase 7.2: Hex parse errors are critical
+                result.stats.hexes_failed += 1
+                result.errors.append(str(e))
+                logger.error(str(e))
+            except Exception as e:
+                result.stats.hexes_failed += 1
+                error_msg = f"Error loading {json_file.name}: {e}"
+                result.errors.append(error_msg)
+                logger.error(f"Error loading {json_file}: {e}")
 
-    except ImportError as e:
-        result.warnings.append(f"Failed to import hex loader: {e}")
-        logger.warning(f"Failed to import hex loader: {e}")
+        logger.info(f"Loaded {result.stats.hexes_loaded} hexes from {hex_dir}")
+
     except Exception as e:
-        result.warnings.append(f"Error loading hexes: {e}")
-        logger.error(f"Error loading hexes: {e}", exc_info=True)
+        # Phase 7.2: Critical error at the directory level
+        error_msg = f"Critical error loading hexes: {e}"
+        result.errors.append(error_msg)
+        logger.error(error_msg, exc_info=True)
+
+
+class HexParseError(Exception):
+    """Exception raised when hex parsing fails (Phase 7.2)."""
+
+    def __init__(self, hex_id: str, message: str):
+        self.hex_id = hex_id
+        self.message = message
+        super().__init__(f"Failed to parse hex {hex_id}: {message}")
+
+
+def _parse_hex_json(data: dict[str, Any]) -> HexLocation:
+    """
+    Parse a hex JSON dictionary into a HexLocation dataclass.
+
+    Args:
+        data: Dictionary from JSON
+
+    Returns:
+        HexLocation instance
+
+    Raises:
+        HexParseError: If parsing fails (Phase 7.2 - no silent discards)
+    """
+    hex_id = data.get("hex_id", "?")
+    try:
+        from src.data_models import (
+            HexFeature,
+            HexNPC,
+            HexProcedural,
+            PointOfInterest,
+            RollTable,
+            RollTableEntry,
+        )
+
+        # Parse coordinates
+        coords = data.get("coordinates", [0, 0])
+        if isinstance(coords, list) and len(coords) >= 2:
+            coordinates = (coords[0], coords[1])
+        else:
+            coordinates = (0, 0)
+
+        # Parse procedural section
+        procedural = None
+        proc_data = data.get("procedural")
+        if proc_data:
+            procedural = HexProcedural(
+                lost_chance=proc_data.get("lost_chance", "1-in-6"),
+                encounter_chance=proc_data.get("encounter_chance", "1-in-6"),
+                encounter_notes=proc_data.get("encounter_notes", ""),
+                foraging_results=proc_data.get("foraging_results", ""),
+                foraging_special=proc_data.get("foraging_special", []),
+                encounter_modifiers=proc_data.get("encounter_modifiers", []),
+                lost_behavior=proc_data.get("lost_behavior"),
+                night_hazards=proc_data.get("night_hazards", []),
+            )
+
+        # Parse points of interest
+        points_of_interest = []
+        for poi_data in data.get("points_of_interest", []):
+            poi = _parse_point_of_interest(poi_data)
+            points_of_interest.append(poi)
+
+        # Parse hex-level roll tables
+        roll_tables = []
+        for table_data in data.get("roll_tables", []):
+            table = _parse_roll_table(table_data)
+            roll_tables.append(table)
+
+        # Parse NPCs
+        npcs = []
+        for npc_data in data.get("npcs", []):
+            npc = _parse_hex_npc(npc_data)
+            npcs.append(npc)
+
+        # Parse legacy features if present
+        features = []
+        for feature_data in data.get("features", []):
+            feature = HexFeature(
+                name=feature_data.get("name", "Unknown Feature"),
+                description=feature_data.get("description", ""),
+                feature_type=feature_data.get("feature_type", "general"),
+                is_hidden=feature_data.get("is_hidden", False),
+                npcs=feature_data.get("npcs", []),
+                monsters=feature_data.get("monsters", []),
+                treasure=feature_data.get("treasure"),
+                hooks=feature_data.get("hooks", []),
+            )
+            features.append(feature)
+
+        # Build HexLocation
+        hex_location = HexLocation(
+            hex_id=data.get("hex_id", "0000"),
+            coordinates=coordinates,
+            name=data.get("name"),
+            tagline=data.get("tagline", ""),
+            terrain_type=data.get("terrain_type", "forest"),
+            terrain_description=data.get("terrain_description", ""),
+            terrain_difficulty=data.get("terrain_difficulty", 1),
+            region=data.get("region", ""),
+            description=data.get("description", ""),
+            dm_notes=data.get("dm_notes", ""),
+            procedural=procedural,
+            points_of_interest=points_of_interest,
+            roll_tables=roll_tables,
+            npcs=npcs,
+            items=data.get("items", []),
+            secrets=data.get("secrets", []),
+            adjacent_hexes=data.get("adjacent_hexes", []),
+            roads=data.get("roads", []),
+            page_reference=data.get("page_reference", ""),
+            _metadata=data.get("_metadata"),
+            # Legacy fields
+            terrain=data.get("terrain_type", "forest"),
+            flavour_text=data.get("tagline", ""),
+            travel_point_cost=data.get("travel_point_cost", data.get("terrain_difficulty", 1)),
+            lost_chance=data.get("lost_chance", 1),
+            encounter_chance=data.get("encounter_chance", 1),
+            special_encounter_chance=data.get("special_encounter_chance", 0),
+            encounter_table=data.get("encounter_table"),
+            special_encounters=data.get("special_encounters", []),
+            features=features,
+            ley_lines=data.get("ley_lines"),
+            foraging_yields=data.get("foraging_yields", []),
+        )
+
+        return hex_location
+
+    except Exception as e:
+        # Phase 7.2: Don't silently discard parse failures
+        logger.error(f"Error parsing hex {hex_id}: {e}")
+        raise HexParseError(hex_id, str(e)) from e
+
+
+def _parse_point_of_interest(data: dict[str, Any]) -> Any:
+    """Parse a point of interest from JSON."""
+    from src.data_models import PointOfInterest
+
+    # Parse roll tables within the POI
+    roll_tables = []
+    for table_data in data.get("roll_tables", []):
+        table = _parse_roll_table(table_data)
+        roll_tables.append(table)
+
+    # Detect hidden POIs from entering field
+    entering = data.get("entering")
+    is_hidden = data.get("hidden", False)
+    if not is_hidden and entering and isinstance(entering, str):
+        if "hidden" in entering.lower():
+            is_hidden = True
+
+    return PointOfInterest(
+        name=data.get("name", "Unknown"),
+        poi_type=data.get("poi_type", "general"),
+        description=data.get("description", ""),
+        tagline=data.get("tagline"),
+        entering=entering,
+        interior=data.get("interior"),
+        exploring=data.get("exploring"),
+        leaving=data.get("leaving"),
+        inhabitants=data.get("inhabitants"),
+        roll_tables=roll_tables,
+        npcs=data.get("npcs", []),
+        special_features=data.get("special_features", []),
+        secrets=data.get("secrets", []),
+        is_dungeon=data.get("is_dungeon", False),
+        dungeon_levels=data.get("dungeon_levels"),
+        hidden=is_hidden,
+    )
+
+
+def _parse_roll_table(data: dict[str, Any]) -> Any:
+    """Parse a roll table from JSON."""
+    from src.data_models import RollTable, RollTableEntry
+
+    entries = []
+    for entry_data in data.get("entries", []):
+        entry = RollTableEntry(
+            roll=entry_data.get("roll", 1),
+            description=entry_data.get("description", ""),
+            title=entry_data.get("title"),
+            monsters=entry_data.get("monsters", []),
+            npcs=entry_data.get("npcs", []),
+            items=entry_data.get("items", []),
+            mechanical_effect=entry_data.get("mechanical_effect"),
+            sub_table=entry_data.get("sub_table"),
+        )
+        entries.append(entry)
+
+    return RollTable(
+        name=data.get("name", "Unknown Table"),
+        die_type=data.get("die_type", "d6"),
+        description=data.get("description", ""),
+        entries=entries,
+        unique_entries=data.get("unique_entries", False),
+    )
+
+
+def _parse_hex_npc(data: dict[str, Any]) -> Any:
+    """Parse an NPC from JSON."""
+    from src.data_models import HexNPC
+
+    return HexNPC(
+        npc_id=data.get("npc_id", "unknown"),
+        name=data.get("name", "Unknown NPC"),
+        description=data.get("description", ""),
+        kindred=data.get("kindred", "Human"),
+        alignment=data.get("alignment", "Neutral"),
+        title=data.get("title"),
+        demeanor=data.get("demeanor", []),
+        speech=data.get("speech", ""),
+        languages=data.get("languages", []),
+        desires=data.get("desires", []),
+        secrets=data.get("secrets", []),
+        possessions=data.get("possessions", []),
+        location=data.get("location", ""),
+        stat_reference=data.get("stat_reference"),
+        is_combatant=data.get("is_combatant", False),
+        vulnerabilities=data.get("vulnerabilities", []),
+        faction=data.get("faction"),
+        loyalty=data.get("loyalty", "loyal"),
+    )
 
 
 def _load_spells(spell_dir: Path, result: RuntimeContent) -> None:
@@ -218,6 +475,9 @@ def _load_monsters(monster_dir: Path, result: RuntimeContent) -> None:
         result.stats.monsters_loaded = load_stats.get("monsters_loaded", 0)
         result.monsters_loaded = result.stats.monsters_loaded > 0
 
+        # Phase 7.1: Store the registry instance for reuse
+        result.monster_registry = registry
+
         if load_stats.get("errors"):
             result.warnings.extend(load_stats["errors"][:10])
 
@@ -232,7 +492,12 @@ def _load_monsters(monster_dir: Path, result: RuntimeContent) -> None:
 
 
 def _load_items(item_dir: Path, result: RuntimeContent) -> None:
-    """Load item data into the ItemCatalog."""
+    """
+    Load item data into the ItemCatalog.
+
+    Uses ItemCatalog's built-in load() method which recursively loads
+    from all subdirectories using rglob.
+    """
     if not item_dir.exists():
         result.warnings.append(f"Item directory not found: {item_dir}")
         logger.debug(f"Item directory not found: {item_dir}")
@@ -241,35 +506,25 @@ def _load_items(item_dir: Path, result: RuntimeContent) -> None:
     try:
         from src.items.item_catalog import ItemCatalog
 
-        catalog = ItemCatalog()
+        # Create catalog with the items directory path
+        # ItemCatalog.load() uses rglob to find all nested JSON files
+        catalog = ItemCatalog(items_path=str(item_dir))
+        catalog.load()
 
-        # Check for JSON files in the directory
-        json_files = list(item_dir.glob("*.json"))
-        if not json_files:
-            result.warnings.append(f"No item JSON files found in: {item_dir}")
-            return
-
-        # Load each file
-        items_loaded = 0
-        for json_file in json_files:
-            try:
-                count = catalog.load_from_file(json_file)
-                items_loaded += count
-            except Exception as e:
-                result.warnings.append(f"Error loading {json_file.name}: {e}")
+        # Get count from the loaded catalog
+        items_loaded = len(catalog)
 
         result.stats.items_loaded = items_loaded
         result.items_loaded = items_loaded > 0
+
+        # Store the catalog for later access
+        result.item_catalog = catalog
 
         logger.info(f"Loaded {items_loaded} items from {item_dir}")
 
     except ImportError as e:
         result.warnings.append(f"Failed to import item catalog: {e}")
         logger.warning(f"Failed to import item catalog: {e}")
-    except AttributeError:
-        # ItemCatalog may not have load_from_file method yet
-        result.warnings.append("ItemCatalog.load_from_file not implemented")
-        logger.debug("ItemCatalog.load_from_file not implemented")
     except Exception as e:
         result.warnings.append(f"Error loading items: {e}")
         logger.error(f"Error loading items: {e}", exc_info=True)

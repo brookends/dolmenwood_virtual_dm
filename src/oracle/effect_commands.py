@@ -442,8 +442,17 @@ class EffectValidator:
         """Check if an entity exists in game state."""
         if not self._controller:
             return True  # Can't validate without controller
-        # TODO: Wire to actual entity lookup
-        return True  # Assume exists for now
+
+        # Check party members
+        if self._controller.get_character(entity_id):
+            return True
+
+        # Check "party" or "all" special targets
+        if entity_id.lower() in ("party", "all", "self", "caster"):
+            return True
+
+        # Entity not found
+        return False
 
     def _is_valid_dice_expr(self, expr: str) -> bool:
         """Check if a string is a valid dice expression."""
@@ -556,6 +565,22 @@ class EffectExecutor:
         batch.all_succeeded = all_success
         return batch
 
+    def _entity_exists(self, entity_id: str) -> bool:
+        """Check if an entity exists in game state."""
+        if not self._controller:
+            return True  # Can't validate without controller
+
+        # Check party members
+        if self._controller.get_character(entity_id):
+            return True
+
+        # Check "party" or "all" special targets
+        if entity_id.lower() in ("party", "all", "self", "caster"):
+            return True
+
+        # Entity not found
+        return False
+
     def _resolve_dice(self, command: EffectCommand) -> None:
         """Resolve any dice expressions in the command."""
         if not self._dice:
@@ -578,29 +603,96 @@ class EffectExecutor:
         """Remove a condition from a target."""
         condition = cmd.parameters.get("condition")
 
-        if self._controller:
-            # TODO: Wire to actual controller method
-            # self._controller.remove_condition(cmd.target_id, condition)
-            pass
+        if not condition:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description="No condition specified to remove",
+                changes={},
+            )
 
+        if self._controller:
+            # Verify target exists
+            if not self._entity_exists(cmd.target_id):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Unknown entity: {cmd.target_id}",
+                    changes={},
+                )
+
+            # Wire to actual controller method
+            result = self._controller.remove_condition(cmd.target_id, condition)
+            if result.get("error"):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=result["error"],
+                    changes={},
+                )
+
+            return EffectResult(
+                success=True,
+                command=cmd,
+                description=f"Removed '{condition}' from {cmd.target_id}",
+                changes={"removed_condition": condition, "was_present": result.get("removed", False)},
+            )
+
+        # No controller - report as success but no actual change
         return EffectResult(
             success=True,
             command=cmd,
-            description=f"Removed '{condition}' from {cmd.target_id}",
-            changes={"removed_condition": condition},
+            description=f"[No controller] Would remove '{condition}' from {cmd.target_id}",
+            changes={"removed_condition": condition, "simulated": True},
         )
 
     def _execute_add_condition(self, cmd: EffectCommand) -> EffectResult:
         """Add a condition to a target."""
         condition = cmd.parameters.get("condition")
         duration = cmd.parameters.get("duration")
+        source = cmd.parameters.get("source", "spell_effect")
+
+        if not condition:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description="No condition specified to add",
+                changes={},
+            )
 
         if self._controller:
-            # TODO: Wire to actual controller method
-            # self._controller.add_condition(cmd.target_id, condition, duration=duration)
-            pass
+            # Verify target exists
+            if not self._entity_exists(cmd.target_id):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Unknown entity: {cmd.target_id}",
+                    changes={},
+                )
 
-        desc = f"Applied '{condition}' to {cmd.target_id}"
+            # Wire to actual controller method
+            result = self._controller.apply_condition(cmd.target_id, condition, source=source)
+            if result.get("error"):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=result["error"],
+                    changes={},
+                )
+
+            desc = f"Applied '{condition}' to {cmd.target_id}"
+            if duration:
+                desc += f" for {duration}"
+
+            return EffectResult(
+                success=True,
+                command=cmd,
+                description=desc,
+                changes={"added_condition": condition, "duration": duration, "applied": True},
+            )
+
+        # No controller - report as success but no actual change
+        desc = f"[No controller] Would apply '{condition}' to {cmd.target_id}"
         if duration:
             desc += f" for {duration}"
 
@@ -608,26 +700,70 @@ class EffectExecutor:
             success=True,
             command=cmd,
             description=desc,
-            changes={"added_condition": condition, "duration": duration},
+            changes={"added_condition": condition, "duration": duration, "simulated": True},
         )
 
     def _execute_modify_stat(self, cmd: EffectCommand) -> EffectResult:
-        """Permanently modify a stat."""
+        """Permanently modify a stat (ability score)."""
         stat = cmd.parameters.get("stat")
         value = cmd.resolved_values.get("value") or cmd.parameters.get("value", 0)
 
-        if self._controller:
-            # TODO: Wire to actual controller method
-            # old_val = self._controller.get_stat(cmd.target_id, stat)
-            # self._controller.modify_stat(cmd.target_id, stat, value)
-            # new_val = old_val + value
-            pass
+        if not stat:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description="No stat specified to modify",
+                changes={},
+            )
 
+        # Normalize stat name to uppercase
+        stat_upper = stat.upper()
+        valid_stats = {"STR", "INT", "WIS", "DEX", "CON", "CHA"}
+        if stat_upper not in valid_stats:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description=f"Unknown stat: {stat}. Valid: {', '.join(valid_stats)}",
+                changes={},
+            )
+
+        if self._controller:
+            # Verify target exists
+            if not self._entity_exists(cmd.target_id):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Unknown entity: {cmd.target_id}",
+                    changes={},
+                )
+
+            # Get character and modify stat
+            character = self._controller.get_character(cmd.target_id)
+            if not character:
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Character {cmd.target_id} not found",
+                    changes={},
+                )
+
+            old_val = character.ability_scores.get(stat_upper, 10)
+            new_val = max(1, old_val + value)  # Stats can't go below 1
+            character.ability_scores[stat_upper] = new_val
+
+            return EffectResult(
+                success=True,
+                command=cmd,
+                description=f"Modified {cmd.target_id}'s {stat_upper}: {old_val} → {new_val} ({value:+d})",
+                changes={"stat": stat_upper, "old_value": old_val, "new_value": new_val, "delta": value},
+            )
+
+        # No controller - report as simulated
         return EffectResult(
             success=True,
             command=cmd,
-            description=f"Modified {cmd.target_id}'s {stat} by {value:+d}",
-            changes={"stat": stat, "delta": value},
+            description=f"[No controller] Would modify {cmd.target_id}'s {stat_upper} by {value:+d}",
+            changes={"stat": stat_upper, "delta": value, "simulated": True},
         )
 
     def _execute_damage(self, cmd: EffectCommand) -> EffectResult:
@@ -635,32 +771,108 @@ class EffectExecutor:
         amount = cmd.resolved_values.get("amount") or cmd.parameters.get("amount", 0)
         damage_type = cmd.parameters.get("damage_type", "magic")
 
-        if self._controller:
-            # TODO: Wire to actual controller method
-            # self._controller.apply_damage(cmd.target_id, amount, damage_type)
-            pass
+        if amount <= 0:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description=f"Invalid damage amount: {amount}",
+                changes={},
+            )
 
+        if self._controller:
+            # Verify target exists
+            if not self._entity_exists(cmd.target_id):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Unknown entity: {cmd.target_id}",
+                    changes={},
+                )
+
+            # Wire to actual controller method
+            result = self._controller.apply_damage(cmd.target_id, amount, damage_type)
+            if result.get("error"):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=result["error"],
+                    changes={},
+                )
+
+            changes = {
+                "damage": result.get("damage_dealt", amount),
+                "type": damage_type,
+                "hp_remaining": result.get("hp_remaining"),
+            }
+            if result.get("unconscious"):
+                changes["unconscious"] = True
+            if result.get("dead"):
+                changes["dead"] = True
+
+            return EffectResult(
+                success=True,
+                command=cmd,
+                description=f"Dealt {result.get('damage_dealt', amount)} {damage_type} damage to {cmd.target_id}",
+                changes=changes,
+            )
+
+        # No controller - report as simulated
         return EffectResult(
             success=True,
             command=cmd,
-            description=f"Dealt {amount} {damage_type} damage to {cmd.target_id}",
-            changes={"damage": amount, "type": damage_type},
+            description=f"[No controller] Would deal {amount} {damage_type} damage to {cmd.target_id}",
+            changes={"damage": amount, "type": damage_type, "simulated": True},
         )
 
     def _execute_heal(self, cmd: EffectCommand) -> EffectResult:
         """Heal a target."""
         amount = cmd.resolved_values.get("amount") or cmd.parameters.get("amount", 0)
 
-        if self._controller:
-            # TODO: Wire to actual controller method
-            # self._controller.heal_character(cmd.target_id, amount)
-            pass
+        if amount <= 0:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                description=f"Invalid healing amount: {amount}",
+                changes={},
+            )
 
+        if self._controller:
+            # Verify target exists
+            if not self._entity_exists(cmd.target_id):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=f"Unknown entity: {cmd.target_id}",
+                    changes={},
+                )
+
+            # Wire to actual controller method
+            result = self._controller.heal_character(cmd.target_id, amount)
+            if result.get("error"):
+                return EffectResult(
+                    success=False,
+                    command=cmd,
+                    description=result["error"],
+                    changes={},
+                )
+
+            return EffectResult(
+                success=True,
+                command=cmd,
+                description=f"Healed {cmd.target_id} for {result.get('healing', amount)} HP (now {result.get('hp_current')}/{result.get('hp_max')})",
+                changes={
+                    "healing": result.get("healing", amount),
+                    "hp_current": result.get("hp_current"),
+                    "hp_max": result.get("hp_max"),
+                },
+            )
+
+        # No controller - report as simulated
         return EffectResult(
             success=True,
             command=cmd,
-            description=f"Healed {cmd.target_id} for {amount} HP",
-            changes={"healing": amount},
+            description=f"[No controller] Would heal {cmd.target_id} for {amount} HP",
+            changes={"healing": amount, "simulated": True},
         )
 
     def _execute_exhaustion(self, cmd: EffectCommand) -> EffectResult:

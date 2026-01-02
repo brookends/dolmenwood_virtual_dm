@@ -1,0 +1,28 @@
+{
+  "hex_id": "test_0102",
+  "coordinates": [1, 2],
+  "name": "Test Hex Two",
+  "tagline": "Another test hex for unit testing.",
+  "region": "Test Region",
+  "terrain_type": "bog",
+  "terrain_description": "Bog (3), Test Region",
+  "terrain_difficulty": 3,
+  "description": "A murky bog for testing purposes.",
+  "points_of_interest": [
+    {
+      "name": "Test Ruins",
+      "poi_type": "ruins",
+      "description": "Ancient ruins used for testing."
+    }
+  ],
+  "roll_tables": [],
+  "npcs": [],
+  "items": [],
+  "secrets": [],
+  "adjacent_hexes": ["test_0101"],
+  "roads": [],
+  "_metadata": {
+    "source_file": "test",
+    "pages": [2]
+  }
+}

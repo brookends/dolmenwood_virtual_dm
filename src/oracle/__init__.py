@@ -13,6 +13,7 @@ Key components:
 Usage:
     from src.oracle import MythicGME, MythicSpellAdjudicator, AdjudicationContext
 
+    # Default uses DiceRngAdapter for deterministic, logged rolls
     mythic = MythicGME(chaos_factor=5)
     adjudicator = MythicSpellAdjudicator(mythic)
 

@@ -14,7 +14,8 @@ Hunting Procedure:
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
-import random
+
+from src.data_models import DiceRoller
 
 
 class TerrainType(str, Enum):
@@ -501,7 +502,8 @@ def roll_game_animal(terrain: TerrainType) -> GameAnimal:
     Returns:
         The GameAnimal found
     """
-    roll = random.randint(1, 20)
+    result = DiceRoller.roll_d20(reason=f"Hunting table ({terrain.value})")
+    roll = result.total
     table = HUNTING_TABLES.get(terrain, HUNTING_TABLES[TerrainType.FOREST_OPEN])
     animal_id = table[roll]
     return GAME_ANIMALS[animal_id]
@@ -518,13 +520,9 @@ def roll_number_appearing(animal: GameAnimal) -> int:
         Number of animals in the group
     """
     dice_expr = animal.number_appearing
-    # Parse dice expression like "1d6", "3d4", "2d6"
-    if "d" in dice_expr:
-        parts = dice_expr.lower().split("d")
-        num_dice = int(parts[0]) if parts[0] else 1
-        die_size = int(parts[1])
-        return sum(random.randint(1, die_size) for _ in range(num_dice))
-    return int(dice_expr)
+    # Use DiceRoller to parse and roll the dice expression
+    result = DiceRoller.roll(dice_expr, reason=f"Number appearing ({animal.name})")
+    return result.total
 
 
 def roll_encounter_distance() -> int:
@@ -536,7 +534,8 @@ def roll_encounter_distance() -> int:
     Returns:
         Distance in feet
     """
-    return random.randint(1, 4) * 30
+    result = DiceRoller.roll("1d4", reason="Hunting encounter distance")
+    return result.total * 30
 
 
 def calculate_rations_yield(animal: GameAnimal, total_hp_killed: int) -> int:

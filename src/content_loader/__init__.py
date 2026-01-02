@@ -55,6 +55,12 @@ from src.content_loader.settlement_loader import (
     SettlementFileLoadResult,
     SettlementDirectoryLoadResult,
 )
+from src.content_loader.runtime_bootstrap import (
+    RuntimeContent,
+    RuntimeContentStats,
+    HexParseError,
+    load_runtime_content,
+)
 
 __all__ = [
     # Core manager
@@ -110,4 +116,9 @@ __all__ = [
     "SettlementLoader",
     "SettlementFileLoadResult",
     "SettlementDirectoryLoadResult",
+    # Runtime bootstrap (Phase 7)
+    "RuntimeContent",
+    "RuntimeContentStats",
+    "HexParseError",
+    "load_runtime_content",
 ]

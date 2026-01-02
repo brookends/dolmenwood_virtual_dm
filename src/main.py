@@ -129,6 +129,10 @@ class GameConfig:
     # Runtime options
     verbose: bool = False
 
+    # Observability options (Phase 4.3)
+    auto_persist_run_log: bool = False  # Persist RunLog snapshot on each turn
+    run_log_persist_dir: Optional[Path] = None  # Directory for RunLog snapshots
+
     def __post_init__(self):
         """Ensure paths are Path objects."""
         if isinstance(self.data_dir, str):
@@ -211,6 +215,11 @@ class VirtualDM:
         # Wire session manager to controller for engine access
         self.controller.set_session_manager(self.session_manager)
 
+        # Phase 7.1: Content registries stored on VirtualDM for reuse
+        self.monster_registry: Any = None
+        self.item_catalog: Any = None
+        self.spell_data: list[Any] = []  # SpellData objects
+
         # Load base content if requested
         self._content_loaded = False
         if self.config.load_content:
@@ -288,6 +297,15 @@ class VirtualDM:
                 enable_vector_db=self.config.use_vector_db,
             )
 
+            # Phase 7.2: Fail fast if there are critical parse errors
+            if content.errors:
+                error_summary = "; ".join(content.errors[:5])
+                if len(content.errors) > 5:
+                    error_summary += f" ... and {len(content.errors) - 5} more errors"
+                raise RuntimeError(
+                    f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
+                )
+
             # Load hex data into HexCrawlEngine
             for hex_id, hex_loc in content.hexes.items():
                 self.hex_crawl.load_hex_data(hex_id, hex_loc)
@@ -299,12 +317,24 @@ class VirtualDM:
                 spell_count = register_spells_with_combat(content.spells, self.combat)
                 logger.info(f"Registered {spell_count} spells with CombatEngine")
 
+            # Phase 7.1: Store registries on VirtualDM for reuse
+            self.monster_registry = content.monster_registry
+            self.item_catalog = content.item_catalog
+            self.spell_data = content.spells
+
             # Load settlements into SettlementEngine
             self._load_settlements(content_dir)
 
             # Log any warnings
             for warning in content.warnings[:5]:  # Cap logged warnings
                 logger.warning(f"Content load warning: {warning}")
+
+            # Phase 5: Fail fast if critical content is empty
+            if not content.hexes:
+                raise RuntimeError(
+                    f"Content loading failed: No hexes loaded from {content_dir}. "
+                    "Wilderness travel requires hex data. Check content directory structure."
+                )
 
             self._content_loaded = True
             logger.info(
@@ -313,6 +343,9 @@ class VirtualDM:
                 f"{content.stats.monsters_loaded} monsters"
             )
 
+        except RuntimeError:
+            # Re-raise RuntimeError (our explicit failures) without wrapping
+            raise
         except Exception as e:
             logger.error(f"Failed to load base content: {e}", exc_info=True)
             self._content_loaded = False

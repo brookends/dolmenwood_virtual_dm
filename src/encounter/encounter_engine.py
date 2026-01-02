@@ -274,6 +274,23 @@ class EncounterEngine:
             "hex_id": hex_id,
         }
 
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            # Actors can be strings or dicts
+            creature_names = [
+                actor if isinstance(actor, str) else actor.get("name", actor.get("id", "unknown"))
+                for actor in encounter.actors
+            ]
+            get_run_log().log_encounter(
+                encounter_type="start",
+                encounter_id=getattr(encounter, 'encounter_id', ''),
+                creatures=creature_names,
+                context={"origin": origin.value, "hex_id": hex_id, "poi_name": poi_name},
+            )
+        except ImportError:
+            pass  # RunLog not available
+
         # Run awareness phase immediately
         awareness_result = self._resolve_awareness(party_aware, enemies_aware)
         result["awareness"] = awareness_result
@@ -1055,6 +1072,25 @@ class EncounterEngine:
             "origin": self._state.origin.value,
             "turns_passed": 1,
         }
+
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            encounter = self._state.encounter
+            # Actors can be strings or dicts
+            creature_names = [
+                actor if isinstance(actor, str) else actor.get("name", actor.get("id", "unknown"))
+                for actor in encounter.actors
+            ]
+            get_run_log().log_encounter(
+                encounter_type="resolution",
+                encounter_id=getattr(encounter, 'encounter_id', ''),
+                creatures=creature_names,
+                outcome=reason,
+                resolution_method=reason,
+            )
+        except ImportError:
+            pass  # RunLog not available
 
         # Advance time by one turn
         time_result = self.controller.advance_time(1)

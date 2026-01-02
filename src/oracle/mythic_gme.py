@@ -15,8 +15,16 @@ Reference: Mythic Game Master Emulator 2nd Edition by Tana Pigeon
 
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, Protocol, runtime_checkable
 import random
+
+
+@runtime_checkable
+class RNGProtocol(Protocol):
+    """Protocol for RNG objects compatible with MythicGME."""
+
+    def randint(self, a: int, b: int) -> int: ...
+    def choice(self, seq: list) -> Any: ...
 
 
 # =============================================================================
@@ -381,27 +389,42 @@ class MythicGME:
     - Chaos Factor management
 
     Usage:
+        # Default: uses DiceRngAdapter for deterministic, logged rolls
         mythic = MythicGME()
         result = mythic.fate_check("Does the spell succeed?", Likelihood.LIKELY)
         if result.random_event_triggered:
             # Handle complication
             meaning = result.random_event.meaning_pair
+
+        # For testing with specific seed:
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        adapter = DiceRngAdapter("TestOracle")
+        mythic = MythicGME(rng=adapter)
     """
 
     def __init__(
         self,
         chaos_factor: int = 5,
-        rng: Optional[random.Random] = None,
+        rng: Optional[RNGProtocol] = None,
     ):
         """
         Initialize the Mythic GME engine.
 
         Args:
             chaos_factor: Starting chaos factor (1-9)
-            rng: Optional random number generator for reproducibility
+            rng: RNG implementing randint() and choice(). If None, uses
+                 DiceRngAdapter for deterministic, logged rolls.
+
+        Note:
+            For deterministic replay support, always use DiceRngAdapter
+            (the default) or pass a seeded random.Random for testing.
         """
         self.chaos = ChaosFactorState(value=chaos_factor)
-        self._rng = rng or random.Random()
+        if rng is None:
+            # Import here to avoid circular dependency
+            from src.oracle.dice_rng_adapter import DiceRngAdapter
+            rng = DiceRngAdapter("MythicGME")
+        self._rng = rng
 
     def fate_check(
         self,
@@ -452,6 +475,20 @@ class MythicGME:
             no_threshold=no,
             exceptional_no_threshold=ex_no,
         )
+
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_oracle(
+                oracle_type="fate_check",
+                question=question,
+                likelihood=likelihood.name.lower(),
+                roll=roll,
+                result=result.value,
+                chaos_factor=self.chaos.value,
+            )
+        except ImportError:
+            pass  # RunLog not available
 
         # Check for random event
         if check_for_event:
@@ -523,9 +560,24 @@ class MythicGME:
         action_idx = (action_roll - 1) % len(ACTION_MEANINGS)
         subject_idx = (subject_roll - 1) % len(SUBJECT_MEANINGS)
 
+        action = ACTION_MEANINGS[action_idx]
+        subject = SUBJECT_MEANINGS[subject_idx]
+
+        # Log to RunLog for observability (Phase 4.1)
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_oracle(
+                oracle_type="meaning_roll",
+                meaning_action=action,
+                meaning_subject=subject,
+                chaos_factor=self.chaos.value,
+            )
+        except ImportError:
+            pass  # RunLog not available
+
         return MeaningRoll(
-            action=ACTION_MEANINGS[action_idx],
-            subject=SUBJECT_MEANINGS[subject_idx],
+            action=action,
+            subject=subject,
             action_roll=action_roll,
             subject_roll=subject_roll,
         )

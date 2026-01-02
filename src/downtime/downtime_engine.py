@@ -1867,3 +1867,90 @@ class DowntimeEngine:
             }
 
         return summary
+
+    # =========================================================================
+    # BRIDGE API (handle_player_action)
+    # =========================================================================
+
+    def handle_player_action(
+        self, text: str, character_id: Optional[str] = None
+    ) -> DowntimeResult:
+        """
+        Bridge shim for freeform player input during downtime.
+
+        This method provides conservative keyword routing to structured actions.
+        It's designed to work with ConversationFacade integration.
+
+        Args:
+            text: Freeform player input text
+            character_id: Optional character performing the action
+
+        Returns:
+            DowntimeResult with action results
+        """
+        import re
+
+        text_lower = text.strip().lower()
+
+        # Get character_ids for actions
+        char_ids = [character_id] if character_id else None
+
+        # "rest" / "sleep" / "recover"
+        if any(kw in text_lower for kw in ["rest", "sleep", "recover", "heal"]):
+            # Default to long rest
+            return self.rest(RestType.LONG_REST, char_ids)
+
+        # "short rest" / "take a break"
+        if any(kw in text_lower for kw in ["short rest", "take a break", "quick rest"]):
+            return self.rest(RestType.SHORT_REST, char_ids)
+
+        # "full rest" / "complete rest" / "bed rest"
+        if any(kw in text_lower for kw in ["full rest", "complete rest", "bed rest"]):
+            return self.rest(RestType.FULL_REST, char_ids)
+
+        # "train" / "practice" / "learn"
+        train_match = re.search(r"(?:train|practice|learn)\s+(.+)", text_lower)
+        if train_match:
+            skill = train_match.group(1).strip()
+            return self.train(character_id or "party", skill, days=1, gold_spent=0)
+
+        # "research" / "study" / "investigate"
+        research_match = re.search(r"(?:research|study|investigate)\s+(.+)", text_lower)
+        if research_match:
+            topic = research_match.group(1).strip()
+            return self.research(topic, days=1, gold_spent=0)
+
+        # "end downtime" / "leave" / "done"
+        if any(kw in text_lower for kw in ["end downtime", "leave", "done", "finish", "depart"]):
+            result = self.end_downtime()
+            dr = DowntimeResult(
+                success=result.get("downtime_ended", False),
+                activity=DowntimeActivity.REST,
+                days_spent=0,
+            )
+            dr.events.append("Downtime ended.")
+            return dr
+
+        # "activities" / "what can i do"
+        if any(kw in text_lower for kw in ["activities", "what can i do", "options"]):
+            activities = self._get_available_activities()
+            dr = DowntimeResult(
+                success=True,
+                activity=DowntimeActivity.REST,
+                days_spent=0,
+            )
+            dr.events.append(f"Available activities: {', '.join(activities)}")
+            dr.results["available_activities"] = activities
+            return dr
+
+        # Fallback - suggest options
+        dr = DowntimeResult(
+            success=False,
+            activity=DowntimeActivity.REST,
+            days_spent=0,
+        )
+        dr.events.append(
+            f"Unrecognized action: '{text}'. "
+            f"Try: rest, train <skill>, research <topic>, or end downtime."
+        )
+        return dr

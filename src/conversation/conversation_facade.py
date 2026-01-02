@@ -60,7 +60,8 @@ class ConversationFacade:
         self.events = EventStream() if self.config.include_events else None
 
         # Mythic oracle for uncertain questions
-        self.mythic = MythicGME(rng=random.Random())
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        self.mythic = MythicGME(rng=DiceRngAdapter("ConversationOracle"))
 
         # Upgrade D: Oracle enhancement for ambiguity detection
         self.oracle_enhancement = None
@@ -484,14 +485,25 @@ class ConversationFacade:
             text = params.get("text", "")
             character_id = params.get("character_id") or self._default_character_id()
             rr = self.dm.settlement.handle_player_action(text, character_id)
-            msgs = [ChatMessage("dm", rr.narration)] if rr.narration else [ChatMessage("system", "Resolved.")]
+            # SettlementEngine.handle_player_action returns a dict
+            if isinstance(rr, dict):
+                msg = rr.get("message", "Resolved.")
+                msgs = [ChatMessage("system", msg)]
+            elif hasattr(rr, 'narration') and rr.narration:
+                msgs = [ChatMessage("dm", rr.narration)]
+            else:
+                msgs = [ChatMessage("system", "Resolved.")]
             return self._response(msgs)
 
         if action_id == "downtime:action":
             text = params.get("text", "")
             character_id = params.get("character_id") or self._default_character_id()
             rr = self.dm.downtime.handle_player_action(text, character_id)
-            msgs = [ChatMessage("dm", rr.narration)] if rr.narration else [ChatMessage("system", "Resolved.")]
+            # DowntimeResult uses .events list, not .narration
+            if hasattr(rr, 'events') and rr.events:
+                msgs = [ChatMessage("system", event) for event in rr.events]
+            else:
+                msgs = [ChatMessage("system", "Resolved.")]
             return self._response(msgs)
 
         # ------------------------------------------------------------------
@@ -876,6 +888,10 @@ class ConversationFacade:
             msgs = [ChatMessage("dm", rr.narration)] if rr.narration else [ChatMessage("system", "Resolved.")]
             return self._response(msgs, character_id=character_id)
 
+        # Social interaction: route freeform text to social:say
+        if state == GameState.SOCIAL_INTERACTION:
+            return self.handle_action("social:say", {"text": text})
+
         # Combat requires mechanical resolution
         if state == GameState.COMBAT:
             return self._response(
@@ -941,10 +957,13 @@ class ConversationFacade:
         else:
             parts.append("Light: none")
         if self.dm.current_state == GameState.WILDERNESS_TRAVEL:
-            tp = getattr(self.dm.hex_crawl, "_travel_points_remaining", None)
-            tpt = getattr(self.dm.hex_crawl, "_travel_points_total", None)
-            if tp is not None and tpt is not None:
+            # Use public accessors (Phase 6: no private field access)
+            try:
+                tp = self.dm.hex_crawl.get_travel_points_remaining()
+                tpt = self.dm.hex_crawl.get_travel_points_total()
                 parts.append(f"Travel Points: {tp}/{tpt}")
+            except Exception:
+                pass  # Travel points not available
         if self.dm.current_state == GameState.DUNGEON_EXPLORATION:
             try:
                 summ = self.dm.dungeon.get_exploration_summary()
