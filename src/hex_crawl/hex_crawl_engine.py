@@ -1273,19 +1273,8 @@ class HexCrawlEngine:
             "lairs_found": [],
             "landmarks_found": [],
             "travel_points_spent": cost,
+            "travel_points_remaining": self._travel_points_remaining,
         }
-
-        # Check if enough Travel Points
-        if self._travel_day.travel_points_remaining < tp_cost:
-            result["message"] = (
-                f"Not enough Travel Points to search. Need {tp_cost}, have {self._travel_day.travel_points_remaining}"
-            )
-            return result
-
-        # Spend Travel Points
-        self._travel_day.travel_points_remaining -= tp_cost
-        result["travel_points_spent"] = tp_cost
-        result["travel_points_remaining"] = self._travel_day.travel_points_remaining
 
         hex_data = self._hex_data.get(hex_id)
         if not hex_data:
@@ -1833,8 +1822,11 @@ class HexCrawlEngine:
         """Check if it's currently night time."""
         if not self.controller.world_state:
             return False
-        time_of_day = self.controller.world_state.time_of_day
-        return time_of_day in (TimeOfDay.DUSK, TimeOfDay.NIGHT, TimeOfDay.MIDNIGHT)
+        if not self.controller.world_state.current_time:
+            return False
+        time_of_day = self.controller.world_state.current_time.get_time_of_day()
+        # Night periods: DUSK, EVENING, MIDNIGHT, PREDAWN
+        return time_of_day in (TimeOfDay.DUSK, TimeOfDay.EVENING, TimeOfDay.MIDNIGHT, TimeOfDay.PREDAWN)
 
     def _get_terrain_difficulty_description(self, terrain: TerrainType) -> str:
         """Get human-readable terrain difficulty description."""
@@ -1851,8 +1843,8 @@ class HexCrawlEngine:
         parts = []
 
         # Time of day
-        if self.controller.world_state:
-            time_of_day = self.controller.world_state.time_of_day
+        if self.controller.world_state and self.controller.world_state.current_time:
+            time_of_day = self.controller.world_state.current_time.get_time_of_day()
             time_descriptions = {
                 TimeOfDay.DAWN: "The first light of dawn spreads across the land",
                 TimeOfDay.MORNING: "Morning light filters through",
@@ -1860,8 +1852,8 @@ class HexCrawlEngine:
                 TimeOfDay.AFTERNOON: "Afternoon shadows begin to lengthen",
                 TimeOfDay.DUSK: "The fading light of dusk casts long shadows",
                 TimeOfDay.EVENING: "Evening settles over the landscape",
-                TimeOfDay.NIGHT: "Darkness blankets the land",
                 TimeOfDay.MIDNIGHT: "Deep night shrouds everything in darkness",
+                TimeOfDay.PREDAWN: "The darkness before dawn hangs heavy",
             }
             if time_of_day in time_descriptions:
                 parts.append(time_descriptions[time_of_day])
