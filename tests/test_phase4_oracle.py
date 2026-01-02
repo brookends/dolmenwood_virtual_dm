@@ -31,6 +31,7 @@ from src.oracle.spell_adjudicator import (
     SpellAdjudicationType,
     SuccessLevel,
 )
+from src.oracle.effect_commands import EffectCommandBuilder
 
 
 # =============================================================================
@@ -558,11 +559,17 @@ class TestResolveOracleSpellEffects:
 
     def test_resolve_removes_curse_condition(self, controller):
         """resolve_oracle_spell_effects should remove curse on success."""
-        # Create a successful curse break result
+        # Create a successful curse break result with proper EffectCommand
         result = AdjudicationResult(
             adjudication_type=SpellAdjudicationType.CURSE_BREAK,
             success_level=SuccessLevel.SUCCESS,
-            predetermined_effects=["remove_condition:cursed:victim_1"],
+            predetermined_effects=[
+                EffectCommandBuilder.remove_condition(
+                    target_id="victim_1",
+                    condition="cursed",
+                    source="Remove Curse",
+                )
+            ],
             summary="Curse removed",
         )
 
@@ -574,8 +581,8 @@ class TestResolveOracleSpellEffects:
 
         # Check effect was applied
         assert len(resolved["applied_effects"]) == 1
-        assert resolved["applied_effects"][0]["type"] == "condition_removed"
-        assert resolved["applied_effects"][0]["condition"] == "cursed"
+        assert resolved["applied_effects"][0]["type"] == "remove_condition"
+        assert resolved["applied_effects"][0]["success"] is True
 
         # Check character no longer cursed
         victim = controller._characters["victim_1"]

@@ -33,6 +33,7 @@ from src.oracle.mythic_gme import (
     FateCheckResult,
     MeaningRoll,
 )
+from src.oracle.effect_commands import EffectCommand, EffectCommandBuilder
 
 if TYPE_CHECKING:
     from src.oracle.effect_commands import EffectBatch
@@ -115,7 +116,8 @@ class AdjudicationResult:
     random_event_occurred: bool = False
 
     # Pre-determined effects (if any can be mechanically resolved)
-    predetermined_effects: list[str] = field(default_factory=list)
+    # These are EffectCommand objects that can be executed by EffectExecutor
+    predetermined_effects: list[EffectCommand] = field(default_factory=list)
 
     # Human-readable summary
     summary: str = ""
@@ -360,7 +362,14 @@ class MythicSpellAdjudicator:
         predetermined_effects = []
 
         if success_level in (SuccessLevel.EXCEPTIONAL_SUCCESS, SuccessLevel.SUCCESS):
-            predetermined_effects.append(f"remove_condition:cursed:{context.target_description}")
+            # Create proper EffectCommand to remove the curse
+            predetermined_effects.append(
+                EffectCommandBuilder.remove_condition(
+                    target_id=context.target_description,
+                    condition="cursed",
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
 
             # Check for cost even on success (powerful curses resist)
             if curse_power in ("powerful", "legendary"):

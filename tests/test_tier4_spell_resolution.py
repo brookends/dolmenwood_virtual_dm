@@ -473,7 +473,8 @@ class TestEffectCommands:
         result = executor.execute(cmd)
 
         assert result.success
-        assert "Removed" in result.description
+        # Without controller, it's simulated; with controller, it's executed
+        assert "remove" in result.description.lower()
         assert "cursed" in result.description
 
     def test_executor_fails_invalid_commands(self):

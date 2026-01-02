@@ -19,6 +19,7 @@ from src.oracle.spell_adjudicator import (
     AdjudicationResult,
     SpellAdjudicationType,
 )
+from src.oracle.effect_commands import EffectExecutor
 from src.data_models import (
     WorldState,
     PartyState,
@@ -5508,7 +5509,7 @@ class GlobalController:
         Apply effects from an oracle spell adjudication.
 
         Takes the AdjudicationResult and applies any predetermined effects
-        while returning context for LLM interpretation of narrative results.
+        using the EffectExecutor, while returning context for LLM interpretation.
 
         Args:
             result: The adjudication result from adjudicate_oracle_spell
@@ -5518,32 +5519,33 @@ class GlobalController:
         Returns:
             Dictionary with applied effects and LLM interpretation context
         """
+        from src.data_models import DiceRoller
+
         applied_effects = []
 
-        # Apply predetermined effects (like curse removal on success)
-        for effect_cmd in result.predetermined_effects:
-            parts = effect_cmd.split(":")
-            if parts[0] == "remove_condition" and len(parts) >= 2:
-                condition_name = parts[1]
-                effect_target = parts[2] if len(parts) > 2 else target_id
+        # Execute predetermined effects using EffectExecutor
+        if result.predetermined_effects:
+            executor = EffectExecutor(controller=self, dice_roller=DiceRoller())
 
-                # Find and remove the condition
-                if effect_target:
-                    target = self._characters.get(effect_target) or self._npcs.get(effect_target)
-                    if target:
-                        try:
-                            cond_type = ConditionType(condition_name)
-                            target.conditions = [
-                                c for c in target.conditions
-                                if c.condition_type != cond_type
-                            ]
-                            applied_effects.append({
-                                "type": "condition_removed",
-                                "condition": condition_name,
-                                "target": effect_target,
-                            })
-                        except ValueError:
-                            pass
+            for effect_cmd in result.predetermined_effects:
+                effect_result = executor.execute(effect_cmd)
+                applied_effects.append({
+                    "type": effect_cmd.effect_type.value,
+                    "target": effect_cmd.target_id,
+                    "success": effect_result.success,
+                    "description": effect_result.description,
+                    "changes": effect_result.changes,
+                })
+
+                if not effect_result.success:
+                    self._log_event(
+                        "effect_execution_failed",
+                        {
+                            "effect_type": effect_cmd.effect_type.value,
+                            "target": effect_cmd.target_id,
+                            "error": effect_result.error or effect_result.description,
+                        },
+                    )
 
         return {
             "success_level": result.success_level.value,
