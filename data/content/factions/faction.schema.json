@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dolmenwood Faction Turns - Faction Definition",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "faction_id",
+    "name",
+    "description",
+    "resources",
+    "goals",
+    "action_library",
+    "starting_actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "faction_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "territory_model": {
+      "type": "string",
+      "enum": [
+        "territory_only"
+      ]
+    },
+    "home_territory": {
+      "type": "object",
+      "properties": {
+        "hexes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "settlements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "strongholds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "points": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "tags",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "visibility",
+          "default_scope"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "landmark",
+              "hidden",
+              "secret"
+            ]
+          },
+          "default_scope": {
+            "type": "string",
+            "enum": [
+              "task",
+              "mission",
+              "goal"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "action_library": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "goal_id",
+          "segments",
+          "on_complete"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "task",
+              "mission",
+              "goal"
+            ]
+          },
+          "goal_id": {
+            "type": "string"
+          },
+          "resource_tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "id"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "segments": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "on_complete": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "starting_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

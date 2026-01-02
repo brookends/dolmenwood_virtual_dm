@@ -1,0 +1,1655 @@
+{
+  "schema_version": 1,
+  "faction_id": "pluritine_church",
+  "name": "Pluritine Church",
+  "description": "Dominant monotheistic religion of the mortal folk of Dolmenwood; an evangelistic church of one God and many saints, wielding political influence and holy military orders.",
+  "tags": [
+    "religion",
+    "pluritine",
+    "church",
+    "human",
+    "lawful",
+    "holy_orders",
+    "evangelistic"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0805",
+      "0806",
+      "0906",
+      "1508",
+      "0512",
+      "1106",
+      "1604",
+      "1703",
+      "0710",
+      "1110",
+      "0702",
+      "0604",
+      "1307",
+      "1109"
+    ],
+    "settlements": [
+      "castle_brackenwold",
+      "high_hankle",
+      "prigwort",
+      "blackeswell",
+      "meagres_reach",
+      "lankshorn",
+      "dreg",
+      "drigbolton",
+      "woodcutters_encampment"
+    ],
+    "strongholds": [
+      {
+        "id": "castle_brackenwold_cathedral_st_signis",
+        "points": 3
+      },
+      {
+        "id": "castle_brackenwold_bishops_palace",
+        "points": 3
+      },
+      {
+        "id": "seminary_100_martyrs",
+        "points": 3
+      },
+      {
+        "id": "high_hankle_silent_tower",
+        "points": 3
+      },
+      {
+        "id": "swinney_tower",
+        "points": 3
+      },
+      {
+        "id": "refuge_of_st_keye",
+        "points": 3
+      },
+      {
+        "id": "fort_vulgar_chapel_dougan",
+        "points": 3
+      }
+    ],
+    "domains": [
+      {
+        "id": "church_lands",
+        "points": 4,
+        "hexes": [
+          "0805",
+          "0806",
+          "0906"
+        ]
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "blackeswell_church_st_gondyw",
+      "name": "Church of St Gondyw",
+      "hex": "1604",
+      "type": "church",
+      "role": "wayside_church",
+      "status": "active",
+      "summary": "Impressive (and overly large) village church dedicated to St Gondyw."
+    },
+    {
+      "id": "castle_brackenwold_cathedral_st_signis",
+      "name": "Cathedral of St Signis",
+      "hex": "1508",
+      "type": "cathedral",
+      "role": "regional_seat",
+      "status": "active",
+      "summary": "Mighty cathedral dominating the Inner City; core of Pluritine administration in Dolmenwood."
+    },
+    {
+      "id": "castle_brackenwold_bishops_palace",
+      "name": "Bishop’s Palace",
+      "hex": "1508",
+      "type": "palace",
+      "role": "leadership",
+      "status": "active",
+      "summary": "Residence of Bishop Jospher Sanguine; locus of policy and edicts."
+    },
+    {
+      "id": "seminary_100_martyrs",
+      "name": "Seminary of 100 Martyrs",
+      "hex": "1508",
+      "type": "seminary",
+      "role": "training_and_libraries",
+      "status": "active",
+      "summary": "Headquarters of the Order of St Faxis; theological libraries; training new priests."
+    },
+    {
+      "id": "church_lands",
+      "name": "Church Lands",
+      "hex": "0805-0806-0906",
+      "type": "domain",
+      "role": "holy_land",
+      "status": "contested",
+      "summary": "Church-owned lands surrounding the ruined Abbey of St Clewyd."
+    },
+    {
+      "id": "dreg_shrine_st_wick",
+      "name": "Port-side Shrine of St Wick",
+      "hex": "1110",
+      "type": "shrine",
+      "role": "wayside_shrine",
+      "status": "active",
+      "summary": "Mouldering wooden shrine to St Wick in the port village of Dreg."
+    },
+    {
+      "id": "drigbolton_chapel_st_gretchen",
+      "name": "Chapel of St Gretchen",
+      "hex": "0702",
+      "type": "chapel",
+      "role": "village_chapel",
+      "status": "active",
+      "summary": "Small hamlet chapel dedicated to St Gretchen."
+    },
+    {
+      "id": "fort_vulgar_chapel_dougan",
+      "name": "Chapel of St Dougan",
+      "hex": "0604",
+      "type": "chapel",
+      "role": "garrison_chapel",
+      "status": "active",
+      "summary": "Chapel dedicated to the minor saint Dougan at Fort Vulgar."
+    },
+    {
+      "id": "high_hankle_minster_three_saints",
+      "name": "High-Hankle Minster",
+      "hex": "0512",
+      "type": "minster",
+      "role": "town_church",
+      "status": "active",
+      "summary": "Minster dedicated to the three minor saints Esther, Hildace, and Ingrid."
+    },
+    {
+      "id": "high_hankle_silent_tower",
+      "name": "Silent Tower",
+      "hex": "0512",
+      "type": "stronghold",
+      "role": "holy_order_hq",
+      "status": "active",
+      "summary": "Base of the Order of St Signis (Lichwards) in High-Hankle."
+    },
+    {
+      "id": "lankshorn_church_st_pastery",
+      "name": "Church of St Pastery",
+      "hex": "0710",
+      "type": "church",
+      "role": "town_church",
+      "status": "active",
+      "summary": "Antique, elaborately adorned stone church dedicated to St Pastery."
+    },
+    {
+      "id": "meagres_reach_chapel_st_lillibeth",
+      "name": "Chapel of St Lillibeth",
+      "hex": "1703",
+      "type": "chapel",
+      "role": "village_chapel",
+      "status": "active",
+      "summary": "Small village chapel dedicated to St Lillibeth."
+    },
+    {
+      "id": "prigwort_church_st_waylaine",
+      "name": "Church of St Waylaine",
+      "hex": "1106",
+      "type": "church",
+      "role": "town_church",
+      "status": "active",
+      "summary": "Rambling church dedicated to St Waylaine in Prigwort."
+    },
+    {
+      "id": "refuge_of_st_keye",
+      "name": "Refuge of St Keye",
+      "hex": "1307",
+      "type": "monastery",
+      "role": "monastic_refuge",
+      "status": "active",
+      "summary": "Only remaining monastery; former pilgrim rest stop to the Abbey; now serves merchants, pedlars, and woodcutters."
+    },
+    {
+      "id": "swinney_tower",
+      "name": "Swinney Tower",
+      "hex": "1106",
+      "type": "watchtower",
+      "role": "holy_order_hq",
+      "status": "active",
+      "summary": "Old watchtower commandeered as headquarters of the Order of St Sedge."
+    },
+    {
+      "id": "woodcutters_encampment_church_st_foggarty",
+      "name": "Church of St Foggarty",
+      "hex": "1109",
+      "type": "church",
+      "role": "village_church",
+      "status": "active",
+      "summary": "Varnished wooden church dedicated to St Foggarty at the Woodcutters’ Encampment."
+    }
+  ],
+  "resources": [
+    {
+      "id": "political_clout",
+      "name": "Political clout",
+      "tags": [
+        "influence",
+        "nobility",
+        "bureaucracy"
+      ],
+      "description": "Official faith of the Duchy of Brackenwold and beyond; advises princes and duchesses and enforces edict while pursuing its own agenda."
+    },
+    {
+      "id": "holy_orders",
+      "name": "Holy Orders",
+      "tags": [
+        "military",
+        "clerics",
+        "elite"
+      ],
+      "description": "Three holy orders of warrior-priests (St Faxis, St Sedge, St Signis) able to muster force and prosecute church policy."
+    },
+    {
+      "id": "sanctioned_battalions",
+      "name": "Sanctioned battalions",
+      "tags": [
+        "military",
+        "levies"
+      ],
+      "description": "In concert with supportive nobles, the Church can muster significant armed forces from orders and sanctioned battalions."
+    },
+    {
+      "id": "cathedral_and_administration",
+      "name": "Cathedral and administration",
+      "tags": [
+        "infrastructure",
+        "clergy",
+        "records"
+      ],
+      "description": "Cathedral of St Signis, Bishop’s Palace, and Seminary of 100 Martyrs form the administrative core in Castle Brackenwold."
+    },
+    {
+      "id": "ritual_miracles",
+      "name": "Ritual miracles",
+      "tags": [
+        "holy_magic",
+        "ritual"
+      ],
+      "description": "High-ranking priests can channel divine power via elaborate rituals in consecrated sancta; rural vicars typically have no magic."
+    },
+    {
+      "id": "relics_and_saints",
+      "name": "Relics and saints",
+      "tags": [
+        "relics",
+        "saints",
+        "pilgrimage"
+      ],
+      "description": "Relics of saints have magical potency; worship focuses on saints as patrons, each church dedicated to a particular saint."
+    },
+    {
+      "id": "monastic_refuge",
+      "name": "The Refuge of St Keye",
+      "tags": [
+        "monastery",
+        "hospitality",
+        "intelligence"
+      ],
+      "description": "The sole monastery in Dolmenwood, serving as a waypoint and information hub for merchants, pedlars, and woodcutters."
+    }
+  ],
+  "goals": [
+    {
+      "id": "restore_shrines",
+      "name": "Locate and restore the vanished wayside shrines",
+      "visibility": "landmark",
+      "default_scope": "mission",
+      "notes": "Shrines have disappeared over the last century; the Bishop seeks to re-sanctify them and suspects an arcane cause (Drune suspected)."
+    },
+    {
+      "id": "rebuild_abbey",
+      "name": "Rebuild the Abbey of St Clewyd (hex 0906)",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Reconstruction would be the capstone of restoring church power in Dolmenwood; the Church incorrectly suspects Atanuwë’s involvement in the abbey’s destruction."
+    },
+    {
+      "id": "purge_heresy",
+      "name": "Stamp out the Drune and witches",
+      "visibility": "hidden",
+      "default_scope": "mission",
+      "notes": "Under Bishop Sanguine the Church has grown antagonistic toward Drune and witches, inaccurately viewing them as devil-worshipping sects."
+    },
+    {
+      "id": "hunt_undead",
+      "name": "Suppress undead and revenants",
+      "visibility": "hidden",
+      "default_scope": "task",
+      "notes": "Order of St Signis (Lichwards) watches over the dead and hunts undead; fears crypts at the ruined abbey are becoming overrun."
+    },
+    {
+      "id": "maintain_dominion",
+      "name": "Maintain the Church’s political dominion",
+      "visibility": "secret",
+      "default_scope": "mission",
+      "notes": "Leverage counsel and edict to influence nobles, preserve official-faith status, and subtly advance church agenda."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "locate_vanished_shrines",
+      "name": "Dispatch clergy and lay brothers to locate vanished wayside shrines",
+      "scope": "mission",
+      "goal_id": "restore_shrines",
+      "resource_tags": [
+        "influence",
+        "records",
+        "holy_magic"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "dolmenwood_wilds"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_shrines_located",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A lost wayside shrine has been rediscovered in the deep wood; pilgrims speak of fresh candles burning where none had stood for decades."
+        }
+      ]
+    },
+    {
+      "id": "resanctify_shrine",
+      "name": "Re-sanctify a recovered shrine and install a saint’s icon",
+      "scope": "task",
+      "goal_id": "restore_shrines",
+      "resource_tags": [
+        "holy_magic",
+        "clergy"
+      ],
+      "targets": [
+        {
+          "type": "tag",
+          "id": "wayside_shrine"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_shrines_restored",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Travellers report a newly consecrated roadside shrine; the saint’s sigil is fresh-carved and the air smells faintly of incense."
+        }
+      ]
+    },
+    {
+      "id": "investigate_shrine_disappearances",
+      "name": "Investigate the cause of the disappearing shrines",
+      "scope": "mission",
+      "goal_id": "restore_shrines",
+      "resource_tags": [
+        "records",
+        "inquisitors"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "drune"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_shrine_cause_clues",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Church investigators whisper of an unseen hand unmaking holy places; some blame the Drune, others fear a darker power in the wood."
+        }
+      ]
+    },
+    {
+      "id": "survey_ruined_abbey",
+      "name": "Send an expedition to survey the ruins of the Abbey of St Clewyd",
+      "scope": "mission",
+      "goal_id": "rebuild_abbey",
+      "resource_tags": [
+        "military",
+        "holy_magic"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0906"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "st_clewyd_survey_reports",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A battered church party returns from St Clewyd’s ruins with charcoal rubbings of strange marks and tales of cold echoes in the crypts."
+        }
+      ]
+    },
+    {
+      "id": "clear_abbey_crypts",
+      "name": "Attempt to clear the abbey crypts of hostile forces",
+      "scope": "goal",
+      "goal_id": "rebuild_abbey",
+      "resource_tags": [
+        "holy_orders",
+        "undead_bane"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0906"
+        },
+        {
+          "type": "tag",
+          "id": "undead"
+        }
+      ],
+      "segments": 12,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "st_clewyd_crypts_cleared",
+          "delta": 1
+        },
+        {
+          "type": "fortify_territory",
+          "kind": "hex",
+          "id": "0906"
+        },
+        {
+          "type": "add_rumor",
+          "text": "For a night the bells of St Clewyd seem to ring again—then fall silent. Some claim the Church has driven back the dead, if only briefly."
+        }
+      ]
+    },
+    {
+      "id": "raise_reconstruction_funds",
+      "name": "Raise funds and secure craftsmen for rebuilding St Clewyd",
+      "scope": "mission",
+      "goal_id": "rebuild_abbey",
+      "resource_tags": [
+        "influence",
+        "nobility",
+        "bureaucracy"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "castle_brackenwold"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "st_clewyd_rebuild_fund",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Tithes rise and masons are quietly contracted; the Church speaks again of restoring St Clewyd, though the Wood resists."
+        }
+      ]
+    },
+    {
+      "id": "inquisitorial_raids",
+      "name": "Conduct inquisitorial raids against suspected Drune and witches",
+      "scope": "mission",
+      "goal_id": "purge_heresy",
+      "resource_tags": [
+        "inquisitors",
+        "military"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "drune"
+        },
+        {
+          "type": "tag",
+          "id": "witch"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_purge_pressure",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Black-robed clerics and armed men question villagers at dusk; the names of witches and Drune are spoken louder—and more fearfully."
+        }
+      ]
+    },
+    {
+      "id": "establish_watch_posts",
+      "name": "Establish watch-posts to guard Church lands and roads",
+      "scope": "task",
+      "goal_id": "maintain_dominion",
+      "resource_tags": [
+        "defenders",
+        "military"
+      ],
+      "targets": [
+        {
+          "type": "domain",
+          "id": "church_lands_domain"
+        },
+        {
+          "type": "stronghold",
+          "id": "swinney_tower"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "kind": "domain",
+          "id": "church_lands_domain"
+        },
+        {
+          "type": "set_flag",
+          "key": "pluritine_road_security",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Travellers find new patrols on the roads near Prigwort and Fort Vulgar; some feel safer, others feel watched."
+        }
+      ]
+    },
+    {
+      "id": "lichward_patrols",
+      "name": "Lichward patrols to suppress undead and restless spirits",
+      "scope": "task",
+      "goal_id": "hunt_undead",
+      "resource_tags": [
+        "undead_bane",
+        "holy_orders"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "silent_tower"
+        },
+        {
+          "type": "tag",
+          "id": "undead"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_undead_suppressed",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Gravediggers report fewer disturbances; a silent procession of indigo-robed clerics was seen returning to High-Hankle before dawn."
+        }
+      ]
+    },
+    {
+      "id": "recover_hand_of_st_signis",
+      "name": "Seek the lost Hand of St Signis",
+      "scope": "mission",
+      "goal_id": "hunt_undead",
+      "resource_tags": [
+        "relics",
+        "undead_bane"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0906"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "relic_hand_of_st_signis_recovered",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A rumour spreads that a bone-white relic hand has been borne from the Abbey crypts in a locked casket, its nails etched with liturgy."
+        }
+      ]
+    },
+    {
+      "id": "counsel_nobility",
+      "name": "Advise nobles and strengthen the Church’s hold over the Duchy",
+      "scope": "task",
+      "goal_id": "maintain_dominion",
+      "resource_tags": [
+        "influence",
+        "bureaucracy"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "castle_brackenwold"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "pluritine_political_influence",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Courtiers speak of new edicts in pious language; the Church’s counsellors seem to be everywhere in Castle Brackenwold."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "locate_vanished_shrines",
+    "inquisitorial_raids",
+    "lichward_patrols"
+  ],
+  "organization": {
+    "faith": {
+      "core_doctrine": [
+        "There exists but One True God; other deities are treated as aspects of God or ascended saints.",
+        "Evangelistic: aims to convert non-believers and bring them into the fold.",
+        "Daily practice centers on veneration of saints; each place of worship is dedicated to a patron saint."
+      ],
+      "history_notes": [
+        "Arrived in Dolmenwood ~1,200 years ago; missionaries converted Gwyrae shrines into saint chapels and built a profusion of wayside shrines.",
+        "Over the last century, wayside shrines have disappeared, and folk-religion of old gods and spirits has resurged."
+      ]
+    },
+    "leadership": {
+      "regional_head": "bishop_jospher_sanguine",
+      "seat": "castle_brackenwold"
+    },
+    "orders": [
+      {
+        "id": "order_st_faxis",
+        "name": "Order of St Faxis",
+        "role": "Seekers / inquisitors",
+        "hq": {
+          "hex": "1508",
+          "site": "Seminary of 100 Martyrs"
+        },
+        "edict": "Root out practitioners of dark magic (devils, necromancy).",
+        "commander": "sanctus_primus"
+      },
+      {
+        "id": "order_st_sedge",
+        "name": "Order of St Sedge",
+        "role": "Defenders",
+        "hq": {
+          "hex": "1106",
+          "site": "Swinney Tower"
+        },
+        "edict": "Protect Church lands from invaders; secure roads and shrines.",
+        "commander": "hilda_harrowmoor"
+      },
+      {
+        "id": "order_st_signis",
+        "name": "Order of St Signis",
+        "role": "Lichwards",
+        "hq": {
+          "hex": "0512",
+          "site": "Silent Tower"
+        },
+        "edict": "Watch over the dead; hunt undead and restless spirits.",
+        "commander": "joan_ablewright"
+      }
+    ],
+    "clergy": {
+      "priests": "From curates and village priests to archbishops; administer doctrine, rites, and local churches.",
+      "monastics": "Ascetics; in Dolmenwood, effectively only the Refuge of St Keye remains.",
+      "friars": "Wandering ascetics tasked with bringing the word to borderlands; loose affiliation with hierarchy; many saints were friars."
+    }
+  },
+  "entities": {
+    "bishop_jospher_sanguine": {
+      "type": "faction_leader",
+      "names": [
+        "Bishop Jospher Sanguine"
+      ],
+      "appearance": "Elderly human man with pasty skin, bald pate, hawkish nose, and pale blue penetrating eyes; episcopal purple finery with a ruby-encrusted gold medallion.",
+      "form_of_address": "Your Excellency",
+      "demeanour": "Neutral; vainglorious, condescending, coldly zealous; hatred of 'heathens' clouds his reason; grinds his teeth while listening.",
+      "speech": {
+        "style": "Erudite, sneering.",
+        "languages": [
+          "Woldish",
+          "Liturgic",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "Restore the lost shrines of Dolmenwood and the dominance of the Church.",
+        "Weaken or destroy the Drune.",
+        "Eradicate witches and vestiges of the old Gwyrae religion."
+      ],
+      "possessions": {
+        "rod_of_temperance": {
+          "description": "Ebony rod topped with a silver orb; allows wielder to perceive lies with ~50% accuracy; can cast Holy Quest and Reveal Alignment once a week.",
+          "value_gp": 20000
+        },
+        "elixir_of_st_eggort": {
+          "description": "2-foot decanter of eternally radiant liquid; emanates bright sunlight in a 120-foot radius.",
+          "value_gp": 10000
+        }
+      },
+      "servants": "Several dozen assistants and librarians; several dozen household servants; Sanctus Primus (commander of the Order of St Faxis) is his right-hand man.",
+      "location": {
+        "site": "Bishop’s Palace",
+        "settlement": "Castle Brackenwold",
+        "hex": "1508"
+      },
+      "combat_stats": {
+        "category": "everyday_mortal",
+        "notes": "Can cast holy spells up to Rank 5 by performing lengthy rituals in a specially consecrated sanctum."
+      }
+    },
+    "abbot_nedwynne_hargle": {
+      "type": "notable_clergy",
+      "names": [
+        "Abbot Nedwynne Hargle"
+      ],
+      "appearance": "Stiff, looming human man in late middle age with wide rustic face and unruly grey hair; simple tan robes of a librarian.",
+      "form_of_address": "Father",
+      "demeanour": "Lawful; sombre, kindly, intellectual; ruffles his hair unconsciously.",
+      "speech": {
+        "style": "Slow, soft, meandering.",
+        "languages": [
+          "Woldish",
+          "Liturgic",
+          "Old Woldish",
+          "Caprice"
+        ]
+      },
+      "desires": [
+        "Discreet contact with the Drune about the status of the wards against the Cold Prince.",
+        "A quiet retirement in the High Wold countryside once the 'current troubles' are resolved."
+      ],
+      "knowledge": {
+        "specialism": "Lore of the Church, including history of the Triple Compact in Dolmenwood (now all but forgotten to the Church).",
+        "services": "Apply standard rules for hiring a sage; may sometimes provide research free of charge to servants of the Church."
+      },
+      "servants": "A dozen librarians and three personal servants.",
+      "location": {
+        "site": "Seminary of the 100 Martyrs",
+        "settlement": "Castle Brackenwold",
+        "hex": "1508"
+      },
+      "combat_stats": {
+        "category": "everyday_mortal",
+        "notes": "Can cast holy spells up to Rank 4 by performing lengthy rituals in a specially consecrated sanctum."
+      }
+    },
+    "hilda_harrowmoor": {
+      "type": "holy_order_commander",
+      "names": [
+        "Hilda Harrowmoor"
+      ],
+      "title": "Commander of the Order of St Sedge",
+      "appearance": "Tall, brawny human woman in late twenties with cascading black curls, blazing blue eyes, and a wide expressive mouth; stark military garb with plain white tabard.",
+      "form_of_address": "Commander",
+      "demeanour": "Lawful; hard-headed pragmatist, accomplished tactician; little interest in theory.",
+      "speech": {
+        "style": "Eloquent and forthright; prone to inspiring speeches.",
+        "languages": [
+          "Woldish",
+          "Liturgic",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "Glory in adventure and battle.",
+        "Convince Captain Hogwash of the real crookhorn threat in central Dolmenwood, drawing attention away from trivial matters in Prigwort."
+      ],
+      "possessions": {
+        "shield_of_harrowmoor": {
+          "description": "Great Holy Shield bearing the Harrowmoor coat of arms.",
+          "reference": "Holy Shield (p400)"
+        }
+      },
+      "family": {
+        "elder_sister": "Lady Theatrice Harrowmoor",
+        "great_aunt": "Lady Haeroth"
+      },
+      "servants": "Troop of eight clerics of the Order of St Sedge and six soldiers of House Harrowmoor.",
+      "location": {
+        "site": "Swinney Tower (outside Prigwort)",
+        "hex": "1106"
+      },
+      "combat_stats": {
+        "level": 7,
+        "class": "cleric"
+      }
+    },
+    "joan_ablewright": {
+      "type": "holy_order_commander",
+      "names": [
+        "Joan Ablewright"
+      ],
+      "title": "Commander of the Order of St Signis",
+      "appearance": "Elderly human woman with stern brown eyes, furrowed brow, half-moon spectacles on a crooked nose, and thin shoulder-length hair streaked with grey; ivy-crowned skull medallion and elaborately pleated indigo robes.",
+      "form_of_address": "Commander",
+      "demeanour": "Lawful; contemplative, even-tempered, preternaturally perceptive.",
+      "speech": {
+        "style": "Hushed, punctuated with formal macabre phrases.",
+        "languages": [
+          "Woldish",
+          "Liturgic",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "Word on the current state of the ruined Abbey of St Clewyd (fears the crypts are becoming overrun by undead).",
+        "Possession of the lost Hand of St Signis (rumoured to be in the abbey crypts).",
+        "Aid Duchess Ophelia in solving the mystery of her daughter Persimone’s death."
+      ],
+      "possessions": {
+        "stifling_mallet": {
+          "description": "Bone-handled flanged Holy Mace (Undead Bane) able to cast Silence once per day.",
+          "value_gp": 5000,
+          "reference": "Undead Bane (p412)"
+        }
+      },
+      "servants": "Twelve clerics of the Order of St Signis.",
+      "location": {
+        "site": "Silent Tower",
+        "settlement": "High-Hankle",
+        "hex": "0512"
+      },
+      "combat_stats": {
+        "level": 9,
+        "class": "cleric"
+      }
+    },
+    "sanctus_primus": {
+      "type": "holy_order_commander",
+      "names": [
+        "Sanctus Primus",
+        "Lowlan Creede"
+      ],
+      "title": "Commander of the Order of St Faxis",
+      "appearance": "Robust, handsome human man in late forties with square jaw, cropped hair, and deep grey wide-set eyes; sombre black robes with golden symbol of St Faxis (three crossed swords) on a chain.",
+      "form_of_address": "Commander (prefers the Liturgic title 'Sanctus Primus')",
+      "demeanour": "Neutral; hard-line scripturalist, unwaveringly loyal, ruthlessly ambitious.",
+      "speech": {
+        "style": "Silver-tongued; careful enunciation belies working-class roots.",
+        "languages": [
+          "Woldish",
+          "Liturgic",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "Keep his liaisons with One-Eyed Gil (landlady of the Poppy Cock) utterly secret.",
+        "Be announced as the bishop’s official successor.",
+        "Obtain evidence of Abbot Hargle’s entanglement with dark powers."
+      ],
+      "possessions": {
+        "rod_of_bless_weapon": {
+          "description": "Ebony Rod of Bless Weapon engraved with liturgies to St Faxis.",
+          "reference": "Bless Weapon (p416)"
+        }
+      },
+      "servants": "Fifteen clerics of the Order of St Faxis.",
+      "location": {
+        "site": "Seminary of the 100 Martyrs",
+        "settlement": "Castle Brackenwold",
+        "hex": "1508"
+      },
+      "combat_stats": {
+        "level": 10,
+        "class": "cleric"
+      }
+    }
+  },
+  "tables": {
+    "saints_d100": {
+      "dice": "d%",
+      "notes": "The 100 saints venerated in Dolmenwood. Formatting in the source distinguishes 34 major saints; this JSON preserves names and roll values but does not mark major saints due to lost italics in extraction.",
+      "entries": [
+        {
+          "roll": "01",
+          "value": 1,
+          "name": "Abthius, ever-lustrous"
+        },
+        {
+          "roll": "02",
+          "value": 2,
+          "name": "Aeynid the impeccable"
+        },
+        {
+          "roll": "03",
+          "value": 3,
+          "name": "Albert of the bleeding palm"
+        },
+        {
+          "roll": "04",
+          "value": 4,
+          "name": "Albrith the illuminator"
+        },
+        {
+          "roll": "05",
+          "value": 5,
+          "name": "Apoplect the ever-roaming"
+        },
+        {
+          "roll": "06",
+          "value": 6,
+          "name": "Baldric of the liminal eye"
+        },
+        {
+          "roll": "07",
+          "value": 7,
+          "name": "Benester the right-believing"
+        },
+        {
+          "roll": "08",
+          "value": 8,
+          "name": "Bethany of Brackenwold"
+        },
+        {
+          "roll": "09",
+          "value": 9,
+          "name": "Calafredus the confessor"
+        },
+        {
+          "roll": "10",
+          "value": 10,
+          "name": "Cantius, God-fool"
+        },
+        {
+          "roll": "11",
+          "value": 11,
+          "name": "Capernott the prophetess"
+        },
+        {
+          "roll": "12",
+          "value": 12,
+          "name": "Choad the mellifluous"
+        },
+        {
+          "roll": "13",
+          "value": 13,
+          "name": "Clewyd the refulgent"
+        },
+        {
+          "roll": "14",
+          "value": 14,
+          "name": "Clister of the four winds"
+        },
+        {
+          "roll": "15",
+          "value": 15,
+          "name": "Clyde the right-minded"
+        },
+        {
+          "roll": "16",
+          "value": 16,
+          "name": "Clyve the doleful"
+        },
+        {
+          "roll": "17",
+          "value": 17,
+          "name": "Cornice of the angels"
+        },
+        {
+          "roll": "18",
+          "value": 18,
+          "name": "Craven the incontinent"
+        },
+        {
+          "roll": "19",
+          "value": 19,
+          "name": "Dank of the thorn"
+        },
+        {
+          "roll": "20",
+          "value": 20,
+          "name": "Dextre the unbridled"
+        },
+        {
+          "roll": "21",
+          "value": 21,
+          "name": "Dillage the blood-bearer"
+        },
+        {
+          "roll": "22",
+          "value": 22,
+          "name": "Dougan the incredulous"
+        },
+        {
+          "roll": "23",
+          "value": 23,
+          "name": "Dullard the swift"
+        },
+        {
+          "roll": "24",
+          "value": 24,
+          "name": "Egbert the grim"
+        },
+        {
+          "roll": "25",
+          "value": 25,
+          "name": "Eggort the troglodyte"
+        },
+        {
+          "roll": "26",
+          "value": 26,
+          "name": "Elephantine the scribe"
+        },
+        {
+          "roll": "27",
+          "value": 27,
+          "name": "Elsa, balm-gusher"
+        },
+        {
+          "roll": "28",
+          "value": 28,
+          "name": "Esther of the orchard"
+        },
+        {
+          "roll": "29",
+          "value": 29,
+          "name": "Faxis the penitent"
+        },
+        {
+          "roll": "30",
+          "value": 30,
+          "name": "Flatius, parchment-bearer"
+        },
+        {
+          "roll": "31",
+          "value": 31,
+          "name": "Foggarty of the cup"
+        },
+        {
+          "roll": "32",
+          "value": 32,
+          "name": "Fredulus the beheaded"
+        },
+        {
+          "roll": "33",
+          "value": 33,
+          "name": "Galaunt the wonderworker"
+        },
+        {
+          "roll": "34",
+          "value": 34,
+          "name": "Gawain the goodly"
+        },
+        {
+          "roll": "35",
+          "value": 35,
+          "name": "Godfrey the chaste"
+        },
+        {
+          "roll": "36",
+          "value": 36,
+          "name": "Gondyw, converter of kings"
+        },
+        {
+          "roll": "37",
+          "value": 37,
+          "name": "Goodenough the hearty"
+        },
+        {
+          "roll": "38",
+          "value": 38,
+          "name": "Gretchen the maiden"
+        },
+        {
+          "roll": "39",
+          "value": 39,
+          "name": "Gripe the forthright"
+        },
+        {
+          "roll": "40",
+          "value": 40,
+          "name": "Gwigh the unsleeping"
+        },
+        {
+          "roll": "41",
+          "value": 41,
+          "name": "Habicus the lofty"
+        },
+        {
+          "roll": "42",
+          "value": 42,
+          "name": "Hamfast, cloud-head"
+        },
+        {
+          "roll": "43",
+          "value": 43,
+          "name": "Hildace the hidden"
+        },
+        {
+          "roll": "44",
+          "value": 44,
+          "name": "Hoargrime the vexed"
+        },
+        {
+          "roll": "45",
+          "value": 45,
+          "name": "Hodwich the unmercenary"
+        },
+        {
+          "roll": "46",
+          "value": 46,
+          "name": "Hollyhock the jubilant"
+        },
+        {
+          "roll": "47",
+          "value": 47,
+          "name": "Horace the puissant"
+        },
+        {
+          "roll": "48",
+          "value": 48,
+          "name": "Howarth the accursed"
+        },
+        {
+          "roll": "49",
+          "value": 49,
+          "name": "Howdych the tower"
+        },
+        {
+          "roll": "50",
+          "value": 50,
+          "name": "Ingrid of the bludgeon"
+        },
+        {
+          "roll": "51",
+          "value": 51,
+          "name": "Joane the broken"
+        },
+        {
+          "roll": "52",
+          "value": 52,
+          "name": "Jorrael, God-friend"
+        },
+        {
+          "roll": "53",
+          "value": 53,
+          "name": "Jubilant the chanter"
+        },
+        {
+          "roll": "54",
+          "value": 54,
+          "name": "Keye the chronicler"
+        },
+        {
+          "roll": "55",
+          "value": 55,
+          "name": "Knock the steadfast"
+        },
+        {
+          "roll": "56",
+          "value": 56,
+          "name": "Lillibeth of the sugared breath"
+        },
+        {
+          "roll": "57",
+          "value": 57,
+          "name": "Loame the sanctimonious"
+        },
+        {
+          "roll": "58",
+          "value": 58,
+          "name": "Lummox, soul-sooth"
+        },
+        {
+          "roll": "59",
+          "value": 59,
+          "name": "Maternis the sufferer"
+        },
+        {
+          "roll": "60",
+          "value": 60,
+          "name": "Medigor, mead-fast"
+        },
+        {
+          "roll": "61",
+          "value": 61,
+          "name": "Moribund the doorkeeper"
+        },
+        {
+          "roll": "62",
+          "value": 62,
+          "name": "Neblit the horrified"
+        },
+        {
+          "roll": "63",
+          "value": 63,
+          "name": "Nuncy the wretched"
+        },
+        {
+          "roll": "64",
+          "value": 64,
+          "name": "Offrid, oath-bearer"
+        },
+        {
+          "roll": "65",
+          "value": 65,
+          "name": "Pannard the lithe"
+        },
+        {
+          "roll": "66",
+          "value": 66,
+          "name": "Pastery, butter-monger"
+        },
+        {
+          "roll": "67",
+          "value": 67,
+          "name": "Philodeus the mighty"
+        },
+        {
+          "roll": "68",
+          "value": 68,
+          "name": "Pious the plump"
+        },
+        {
+          "roll": "69",
+          "value": 69,
+          "name": "Poltry of the wastes"
+        },
+        {
+          "roll": "70",
+          "value": 70,
+          "name": "Ponch the prudent"
+        },
+        {
+          "roll": "71",
+          "value": 71,
+          "name": "Primace the obdurate"
+        },
+        {
+          "roll": "72",
+          "value": 72,
+          "name": "Primula the beneficent"
+        },
+        {
+          "roll": "73",
+          "value": 73,
+          "name": "Puriphon of the wick"
+        },
+        {
+          "roll": "74",
+          "value": 74,
+          "name": "Quister, ever-loyal"
+        },
+        {
+          "roll": "75",
+          "value": 75,
+          "name": "Rhilma of the parched lip"
+        },
+        {
+          "roll": "76",
+          "value": 76,
+          "name": "Sabian the horn-bearer"
+        },
+        {
+          "roll": "77",
+          "value": 77,
+          "name": "Sanguine, fairy-bane"
+        },
+        {
+          "roll": "78",
+          "value": 78,
+          "name": "Sedge the unblemished"
+        },
+        {
+          "roll": "79",
+          "value": 79,
+          "name": "Shank the eagle-eyed"
+        },
+        {
+          "roll": "80",
+          "value": 80,
+          "name": "Signis the silent"
+        },
+        {
+          "roll": "81",
+          "value": 81,
+          "name": "Simone the withered"
+        },
+        {
+          "roll": "82",
+          "value": 82,
+          "name": "Sortia, serpent-bane"
+        },
+        {
+          "roll": "83",
+          "value": 83,
+          "name": "Talambeth the ignitor"
+        },
+        {
+          "roll": "84",
+          "value": 84,
+          "name": "Therese the young"
+        },
+        {
+          "roll": "85",
+          "value": 85,
+          "name": "Thorm, faith-smith"
+        },
+        {
+          "roll": "86",
+          "value": 86,
+          "name": "Thridgold the gallant"
+        },
+        {
+          "roll": "87",
+          "value": 87,
+          "name": "Torphia of the solitudes"
+        },
+        {
+          "roll": "88",
+          "value": 88,
+          "name": "Tumbel torch-bringer"
+        },
+        {
+          "roll": "89",
+          "value": 89,
+          "name": "Vinicus, thrice hanged"
+        },
+        {
+          "roll": "90",
+          "value": 90,
+          "name": "Visyg of the canker"
+        },
+        {
+          "roll": "91",
+          "value": 91,
+          "name": "Waylaine of the sack"
+        },
+        {
+          "roll": "92",
+          "value": 92,
+          "name": "Waylord of the brook"
+        },
+        {
+          "roll": "93",
+          "value": 93,
+          "name": "Whittery of the woods"
+        },
+        {
+          "roll": "94",
+          "value": 94,
+          "name": "Wick the venerable"
+        },
+        {
+          "roll": "95",
+          "value": 95,
+          "name": "Wilbranch of the weeping"
+        },
+        {
+          "roll": "96",
+          "value": 96,
+          "name": "Willibart, balm-tears"
+        },
+        {
+          "roll": "97",
+          "value": 97,
+          "name": "Willofrith the wide"
+        },
+        {
+          "roll": "98",
+          "value": 98,
+          "name": "Woad the homefast"
+        },
+        {
+          "roll": "99",
+          "value": 99,
+          "name": "Wort the benignant"
+        },
+        {
+          "roll": "00",
+          "value": 100,
+          "name": "Wynne of the scar"
+        }
+      ]
+    }
+  },
+  "lore": {
+    "ruined_abbey_st_clewyd": {
+      "hex": "0906",
+      "summary": "Former capstone of Church power in Dolmenwood; now ruined and purportedly haunted; attempts to clear it have failed.",
+      "hooks": [
+        "Crypts may be becoming overrun by undead.",
+        "Lost relics rumored within (e.g., the Hand of St Signis)."
+      ]
+    },
+    "fall_of_st_howarth": "St Howarth (once 'the Just') is accursed after betraying the archangel Heroclesius to devils; cast out from heaven and miracles reversed. See hexes 0512 and 0610.",
+    "shrines": "Wayside shrines have been disappearing over the last century; Church suspects arcane cause and blames Drune."
+  },
+  "references": {
+    "source": "Dolmenwood - Factions and Powers (Pluritine Church entry)",
+    "pages": [
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "related": [
+      {
+        "type": "hex",
+        "id": "0906",
+        "note": "Ruined Abbey of St Clewyd"
+      },
+      {
+        "type": "settlement",
+        "id": "castle_brackenwold",
+        "hex": "1508"
+      },
+      {
+        "type": "settlement",
+        "id": "high_hankle",
+        "hex": "0512"
+      },
+      {
+        "type": "settlement",
+        "id": "prigwort",
+        "hex": "1106"
+      },
+      {
+        "type": "hex",
+        "id": "0805"
+      },
+      {
+        "type": "hex",
+        "id": "0806"
+      }
+    ]
+  },
+  "territory_manifest": {
+    "hexes": [
+      {
+        "id": "church_lands_0805",
+        "hex": "0805",
+        "name": "Church Lands (north)",
+        "points": 1,
+        "notes": "Church-owned lands surrounding the ruined Abbey of St Clewyd."
+      },
+      {
+        "id": "church_lands_0806",
+        "hex": "0806",
+        "name": "Church Lands (west)",
+        "points": 1,
+        "notes": "Church-owned lands surrounding the ruined Abbey of St Clewyd."
+      },
+      {
+        "id": "abbey_of_st_clewyd_0906",
+        "hex": "0906",
+        "name": "Ruined Abbey of St Clewyd",
+        "points": 1,
+        "notes": "Ruined capstone of former church power; purportedly haunted; attempts to clear have failed."
+      }
+    ],
+    "settlements": [
+      {
+        "id": "castle_brackenwold",
+        "hex": "1508",
+        "name": "Castle Brackenwold",
+        "points": 2,
+        "notes": "Central administration; Cathedral of St Signis, Bishop's Palace, Seminary of 100 Martyrs."
+      },
+      {
+        "id": "high_hankle",
+        "hex": "0512",
+        "name": "High-Hankle",
+        "points": 2,
+        "notes": "Minster to Esther, Hildace, Ingrid; Silent Tower HQ of Order of St Signis."
+      },
+      {
+        "id": "prigwort",
+        "hex": "1106",
+        "name": "Prigwort",
+        "points": 2,
+        "notes": "Rambling church to St Waylaine; near Swinney Tower HQ of Order of St Sedge."
+      },
+      {
+        "id": "blackeswell",
+        "hex": "1604",
+        "name": "Blackeswell",
+        "points": 2,
+        "notes": "Large church dedicated to St Gondyw."
+      },
+      {
+        "id": "meagres_reach",
+        "hex": "1703",
+        "name": "Meagre’s Reach",
+        "points": 2,
+        "notes": "Chapel dedicated to St Lillibeth."
+      },
+      {
+        "id": "lankshorn",
+        "hex": "0710",
+        "name": "Lankshorn",
+        "points": 2,
+        "notes": "Antique ornate stone church dedicated to St Pastery."
+      },
+      {
+        "id": "dreg",
+        "hex": "1110",
+        "name": "Dreg",
+        "points": 2,
+        "notes": "Mouldering port-side shrine to St Wick."
+      },
+      {
+        "id": "drigbolton",
+        "hex": "0702",
+        "name": "Drigbolton",
+        "points": 2,
+        "notes": "Small chapel dedicated to St Gretchen."
+      },
+      {
+        "id": "woodcutters_encampment",
+        "hex": "1109",
+        "name": "The Woodcutters’ Encampment",
+        "points": 2,
+        "notes": "Varnished wooden church dedicated to St Foggarty."
+      }
+    ],
+    "strongholds": [
+      {
+        "id": "fort_vulgar",
+        "hex": "0604",
+        "name": "Fort Vulgar",
+        "points": 3,
+        "notes": "Chapel dedicated to minor saint Dougan."
+      },
+      {
+        "id": "swinney_tower",
+        "hex": "1106",
+        "name": "Swinney Tower",
+        "points": 3,
+        "notes": "Watchtower commandeered as HQ of Order of St Sedge."
+      },
+      {
+        "id": "silent_tower",
+        "hex": "0512",
+        "name": "Silent Tower",
+        "points": 3,
+        "notes": "Order of St Signis base in High-Hankle."
+      },
+      {
+        "id": "refuge_of_st_keye",
+        "hex": "1307",
+        "name": "The Refuge of St Keye",
+        "points": 3,
+        "notes": "Only remaining monastery; former pilgrim rest stop; now serves merchants/pedlars/woodcutters."
+      },
+      {
+        "id": "seminary_100_martyrs",
+        "hex": "1508",
+        "name": "Seminary of 100 Martyrs",
+        "points": 3,
+        "notes": "Headquarters of Order of St Faxis; theological libraries; training priests."
+      },
+      {
+        "id": "bishops_palace",
+        "hex": "1508",
+        "name": "Bishop’s Palace",
+        "points": 3,
+        "notes": "Residence of Bishop Sanguine in Castle Brackenwold."
+      },
+      {
+        "id": "cathedral_st_signis",
+        "hex": "1508",
+        "name": "Cathedral of St Signis",
+        "points": 3,
+        "notes": "Dominates Inner City of Castle Brackenwold."
+      }
+    ],
+    "domains": [
+      {
+        "id": "church_lands_domain",
+        "hexes": [
+          "0805",
+          "0806",
+          "0906"
+        ],
+        "name": "Church Lands",
+        "points": 4,
+        "notes": "Church-owned lands around the ruined Abbey of St Clewyd."
+      }
+    ]
+  }
+}

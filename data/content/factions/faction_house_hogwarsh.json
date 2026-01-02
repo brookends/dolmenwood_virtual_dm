@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_hogwarsh",
+  "name": "House Hogwarsh",
+  "type": "noble_house",
+  "alignment": "neutral",
+  "description": "Barons of the High Wold, ruling from High-Hankle. Under Baron Sagewine Hogwarsh, the barony is wealthy in pastures and feudal dues but lax in law—fostering smuggling, banditry, and vassal quarrels. Sagewine’s politics are shaped by rivalry with his elder half-brother, Lord Ramius.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "hogwarsh",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0512",
+      "0912"
+    ],
+    "settlements": [
+      "high_hankle",
+      "swinescombe"
+    ],
+    "strongholds": [
+      {
+        "id": "castle_perigonne",
+        "points": 3
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "high_hankle",
+      "name": "High-Hankle, Town",
+      "hex": "0512",
+      "type": "town",
+      "role": "Capital of the High Wold; seat of Baron Hogwarsh."
+    },
+    {
+      "id": "castle_perigonne",
+      "name": "Castle Perigonne",
+      "hex": "0512",
+      "type": "castle",
+      "role": "Baron Hogwarsh’s seat within High-Hankle; a fortified residence and symbol of baronial authority."
+    },
+    {
+      "id": "swinescombe",
+      "name": "Swinescombe, Hamlet",
+      "hex": "0912",
+      "type": "hamlet",
+      "role": "Swine-herding community on the southern edge of Dolmenwood; within Baron Hogwarsh’s domain."
+    }
+  ],
+  "resources": [
+    {
+      "id": "baronial_knights",
+      "name": "Baronial Knights & Huntsmen",
+      "tags": [
+        "military",
+        "hunters"
+      ],
+      "description": "Mounted retainers and expert huntsmen used to project force and status."
+    },
+    {
+      "id": "pasture_wealth",
+      "name": "Pasture Wealth",
+      "tags": [
+        "coin",
+        "trade"
+      ],
+      "description": "Wealth from herds, tithes, and swine; convertible into bribes and mercenaries."
+    },
+    {
+      "id": "high_hankle_network",
+      "name": "High-Hankle Contacts",
+      "tags": [
+        "intrigue",
+        "agents"
+      ],
+      "description": "Tavern-keepers, smugglers, and merchants in High-Hankle who trade secrets for coin."
+    },
+    {
+      "id": "vassal_levies",
+      "name": "Vassal Levies",
+      "tags": [
+        "military",
+        "political"
+      ],
+      "description": "Contingents demanded from subordinate houses (often grudgingly)."
+    },
+    {
+      "id": "debauched_court",
+      "name": "Debauched Court",
+      "tags": [
+        "intrigue",
+        "political"
+      ],
+      "description": "A circle of flatterers, lovers, and opportunists drawn to Sagewine’s lifestyle."
+    }
+  ],
+  "goals": [
+    {
+      "id": "keep_high_wold_profitable",
+      "name": "Keep the High Wold Profitable",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Collect dues, protect roads and herds, and keep the barony’s coin flowing."
+    },
+    {
+      "id": "manage_vassals",
+      "name": "Manage Vassal Houses",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Prevent feuds among subordinate houses; extract tribute and enforce minimal order."
+    },
+    {
+      "id": "indulge_and_display",
+      "name": "Indulge and Display Splendour",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Hold hunts and feasts that reinforce Sagewine’s vanity and baronial prestige."
+    },
+    {
+      "id": "counter_ramius",
+      "name": "Counter Lord Ramius",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Undermine or contain Ramius’s schemes without provoking open rebellion."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "host_grand_hunt",
+      "name": "Host a Grand Hunt",
+      "scope": "task",
+      "goal_id": "indulge_and_display",
+      "resource_tags": [
+        "hunters",
+        "political"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "high_wold"
+        },
+        {
+          "type": "settlement",
+          "id": "high_hankle"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "hogwarsh_hunt",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Horn-calls echo across the High Wold as the baron’s hunt rides; old grudges may be settled in the woods."
+        }
+      ]
+    },
+    {
+      "id": "demand_vassal_tribute",
+      "name": "Demand Tribute from Vassals",
+      "scope": "mission",
+      "goal_id": "manage_vassals",
+      "resource_tags": [
+        "political",
+        "coin",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "tag",
+          "id": "vassal_house"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "hogwarsh_tribute_collected",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Tax-collectors and armed escorts make the rounds; vassals grumble but pay—mostly."
+        }
+      ]
+    },
+    {
+      "id": "crack_down_road_bandits",
+      "name": "Crack Down on Road Bandits",
+      "scope": "mission",
+      "goal_id": "keep_high_wold_profitable",
+      "resource_tags": [
+        "military",
+        "agents"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "southern_dolmenwood"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "territory": {
+            "type": "hex",
+            "id": "0512"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "Bodies and broken carts line the roads; for a time, travel feels safer in the High Wold."
+        }
+      ]
+    },
+    {
+      "id": "stoke_rivalry_with_ramius",
+      "name": "Stoke Rivalry with Lord Ramius",
+      "scope": "task",
+      "goal_id": "counter_ramius",
+      "resource_tags": [
+        "intrigue",
+        "agents"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_ramius"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "house_ramius",
+          "modifier": -1,
+          "reason": "Sagewine’s petty maneuvering hampers Ramius’s plans for a turn."
+        },
+        {
+          "type": "add_rumor",
+          "text": "A scandalous rumour spreads about Lord Ramius; the baron’s laughter is heard late into the night."
+        }
+      ]
+    },
+    {
+      "id": "hold_extravagant_feast",
+      "name": "Hold an Extravagant Feast",
+      "scope": "task",
+      "goal_id": "indulge_and_display",
+      "resource_tags": [
+        "coin",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "castle_perigonne"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "hogwarsh_feast",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A feast of excess draws nobles and scoundrels alike to Castle Perigonne; bargains are made over wine."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "hold_extravagant_feast",
+    "demand_vassal_tribute",
+    "stoke_rivalry_with_ramius"
+  ],
+  "entities": {
+    "baron_sagewine_hogwarsh": {
+      "entity_id": "baron_sagewine_hogwarsh",
+      "name": "Baron Sagewine Hogwarsh",
+      "house": "House Hogwarsh",
+      "summary": "A lithe, dashing human man in his mid-thirties, with a head of wayward golden ringlets",
+      "form_of_address": "",
+      "demeanour": "Amoral, hedonistic, self-centred, and utterly vain. Dismisses dissent with an arched brow and a charming smirk. Has a weakness for flattery and beautiful women.",
+      "speech": "Eloquent, chummy, laced with contemporary slang. Woldish, Old Woldish, Caprice, rusty Liturgic.",
+      "desires": "To recover the Hanglehorn—a lost heirloom of his house that was stolen by the infamous robber Dewidort of Smerne (see hex 0607). To be recognised for his (genuine) skills as a composer and fencer.",
+      "possessions": "",
+      "family": "Doting mother, the dowager baroness, who resides with him in Castle Perigonne. Younger brother, the timorous Walter. A wide assortment of lovers, beaus, and fiancées—but no wife.Servants: Advisors, thugs, and assassins who do his bidding in secret. A standing army, a small personal guard, groundsmen, cooks, butlers, librarians, etc.",
+      "servants": "",
+      "location": "Castle Perigonne, in High-Hankle (hex 0512).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Baron of the High Wold"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "high_hankle",
+    "structure": [
+      {
+        "tier": "Baron & Household",
+        "notes": "Sagewine’s court is indulgent and vanity-driven; enforcement is inconsistent."
+      },
+      {
+        "tier": "Castle Perigonne",
+        "notes": "The baron’s fortified residence within High-Hankle; a base for hunts and feasts."
+      },
+      {
+        "tier": "Vassal Web",
+        "notes": "Includes subordinate houses (some breggle) who owe tribute and levies."
+      },
+      {
+        "tier": "Road Wardens",
+        "notes": "When motivated, the baron can empower huntsmen and knights to police roads."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "high_hankle",
+    "hex": "0512"
+  },
+  "domains": [
+    {
+      "id": "barony_high_wold",
+      "name": "Barony of the High Wold",
+      "points": 4,
+      "notes": "Encompasses the long-settled south-west and rustic pastures of the south."
+    }
+  ],
+  "oracle_hooks": {
+    "baron_whim": "Use oracle to decide whether Sagewine follows through on hard choices or retreats into indulgence.",
+    "vassal_feud": "Use oracle to escalate or resolve vassal disputes sparked by tribute demands."
+  }
+}

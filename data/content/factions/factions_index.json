@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "content_type": "factions",
+  "rules_file": "faction_rules.json",
+  "factions": [
+    {
+      "faction_id": "nag_lord",
+      "file": "nag_lord.json"
+    },
+    {
+      "faction_id": "cold_prince",
+      "file": "cold_prince.json"
+    },
+    {
+      "faction_id": "drune",
+      "file": "drune.json"
+    },
+    {
+      "faction_id": "house_brackenwold",
+      "file": "house_brackenwold.json"
+    }
+  ]
+}

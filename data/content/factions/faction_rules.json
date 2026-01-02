@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "system": "dolmenwood_faction_turns_territory_only",
+  "turn_cadence_days": 7,
+  "max_faction_level": 4,
+  "actions_per_faction": 3,
+  "die": "d6",
+  "roll_mod_cap": 1,
+  "progression": {
+    "advance_on_roll": {
+      "4-5": 1,
+      "6+": 2
+    },
+    "complication_on_roll": [
+      1
+    ]
+  },
+  "default_progress_segments": {
+    "task": 4,
+    "mission": 8,
+    "goal": 12
+  },
+  "leveling": {
+    "territory_points_to_level": {
+      "1": 0,
+      "2": 2,
+      "3": 5,
+      "4": 9
+    },
+    "actions_per_turn_by_level": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 2
+    }
+  },
+  "territory_points": {
+    "hex": 1,
+    "settlement": 2,
+    "stronghold": 3,
+    "domain": 4
+  },
+  "notes": [
+    "This rules file implements the ELMC faction-turn procedure (3 actions per faction; roll d6; +/-1 mod capped; advance progress bar).",
+    "Economics/supplies are not tracked; resources are tags that provide situational +1 or impose -1 when opposed."
+  ]
+}

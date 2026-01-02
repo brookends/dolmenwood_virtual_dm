@@ -1,0 +1,731 @@
+{
+  "schema_version": 1,
+  "faction_id": "cold_prince",
+  "name": "The Cold Prince",
+  "description": "A cruel, banished frost-elf prince from the fairy domain of Frigia, obsessed with breaking the Ring of Chell and reclaiming Dolmenwood in eternal winter.",
+  "tags": [
+    "fairy",
+    "frost_elves",
+    "winter",
+    "frigia",
+    "antagonist",
+    "territory"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0504",
+      "0505",
+      "1007"
+    ],
+    "settlements": [],
+    "strongholds": [
+      {
+        "id": "hoarblight_keep_ruins_0505",
+        "points": 3
+      },
+      {
+        "id": "embassy_falls_of_naon_0504",
+        "points": 2
+      },
+      {
+        "id": "tower_of_frost_1007",
+        "points": 2
+      }
+    ],
+    "domains": [
+      {
+        "id": "frigia_ruvanaith",
+        "points": 4
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "embassy_falls_of_naon",
+      "name": "Embassy at the Falls of Naon",
+      "hex": "0504",
+      "type": "enclave",
+      "role": "foothold",
+      "status": "sealed_and_guarded",
+      "summary": "An embassy excluded from the ban of Chell; the only permanent foothold in the mortal world. The Ambassador and household are reduced to a decadent mockery of former majesty, and the Drune guard the site so no frost elf may come or go."
+    },
+    {
+      "id": "hoarblight_keep_ruins",
+      "name": "Ruins of Hoarblight Keep",
+      "hex": "0505",
+      "type": "stronghold_ruins",
+      "role": "former_capital",
+      "status": "ruined",
+      "summary": "Former seat of the Cold Prince’s dominion in Dolmenwood; a primary objective for reclamation if the ward breaks."
+    },
+    {
+      "id": "tower_of_frost",
+      "name": "The Tower of Frost",
+      "hex": "1007",
+      "type": "ruin_tower",
+      "role": "forward_post",
+      "status": "reinhabited",
+      "summary": "An ancient fairy ruin recently re-inhabited by Lady Frost-Dust-Shadow, a servant of the Cold Prince."
+    }
+  ],
+  "resources": [
+    {
+      "id": "frost_elf_courtiers",
+      "name": "Frost Elf Courtiers",
+      "tags": [
+        "elite",
+        "magic",
+        "intrigue",
+        "diplomacy"
+      ],
+      "description": "Counsellors and kin of the Cold Prince—mighty fairies in their own right—skilled in courtly manipulation and perilous glamour."
+    },
+    {
+      "id": "formidable_army",
+      "name": "Formidable Army",
+      "tags": [
+        "military",
+        "campaigns",
+        "cavalry",
+        "infantry"
+      ],
+      "description": "Highly trained foot soldiers and cavalry, currently confined to Frigia but poised for invasion if the ward falls."
+    },
+    {
+      "id": "frost_and_ice_magic",
+      "name": "Magic of Frost and Ice",
+      "tags": [
+        "magic",
+        "environment",
+        "cold",
+        "snow",
+        "frost"
+      ],
+      "description": "Mastery of cold, ice, snow, and frost; frost elves can freeze by touch and move on snow without trace. The Prince can impose winter on a vast scale."
+    },
+    {
+      "id": "ancient_relics",
+      "name": "Ancient Relics of Frigia",
+      "tags": [
+        "relics",
+        "temptation",
+        "bribery"
+      ],
+      "description": "Treasures and artifacts used to tempt, bribe, and empower agents operating beyond Frigia."
+    }
+  ],
+  "goals": [
+    {
+      "id": "secret_paths",
+      "name": "Locate Secret Paths into Dolmenwood",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Trusted servants roam Fairy seeking hidden routes; a few paths exist but none are expedient."
+    },
+    {
+      "id": "break_ward_chell",
+      "name": "Destroy the Ring of Chell",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Obsessive, primary objective: break the ward and reclaim dominion; agents spy on the Drune wardens and seek vulnerabilities and weaknesses."
+    },
+    {
+      "id": "ally_fairy_noble",
+      "name": "Alliance with Another Fairy Noble",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Seek a pact with another fairy ruler to gain paths into Dolmenwood via their domain; the Lady of Midnight is the most promising candidate."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "seek_secret_paths",
+      "name": "Dispatch agents to find hidden routes into Dolmenwood",
+      "scope": "mission",
+      "goal_id": "secret_paths",
+      "resource_tags": [
+        "intrigue",
+        "magic",
+        "elite"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "fairy_borderlands"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "cold_prince_path_found",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A thin, frost-rimmed track through the hedges has been whispered of—some say it leads into Fairy and back again."
+        }
+      ]
+    },
+    {
+      "id": "spy_ring_of_chell",
+      "name": "Investigate the Ring of Chell and spy on its wardens",
+      "scope": "mission",
+      "goal_id": "break_ward_chell",
+      "resource_tags": [
+        "spies",
+        "intrigue",
+        "magic"
+      ],
+      "targets": [
+        {
+          "type": "location",
+          "id": "ring_of_chell"
+        },
+        {
+          "type": "faction",
+          "id": "drune"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "chell_vulnerability_intel",
+          "delta": 1
+        },
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "drune",
+          "modifier": -1,
+          "reason": "Cold Prince agents disrupt Drune vigilance around Chell."
+        },
+        {
+          "type": "add_rumor",
+          "text": "Chalk sigils and pale footprints appear near the standing stones; someone is watching the watchers."
+        }
+      ]
+    },
+    {
+      "id": "tempt_mortal_aides",
+      "name": "Tempt mortals into aiding the Cold Prince with bribery and glamour",
+      "scope": "task",
+      "goal_id": "break_ward_chell",
+      "resource_tags": [
+        "relics",
+        "diplomacy",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "TBD"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "cold_prince_mortal_contacts",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A well-dressed stranger offers silver and secrets; a few locals have begun to vanish on clear winter nights."
+        }
+      ]
+    },
+    {
+      "id": "court_lady_of_midnight",
+      "name": "Negotiate an alliance with the Lady of Midnight of Tainglass",
+      "scope": "mission",
+      "goal_id": "ally_fairy_noble",
+      "resource_tags": [
+        "diplomacy",
+        "intrigue",
+        "elite"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "lady_of_midnight"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "add_relation",
+          "with": "lady_of_midnight",
+          "delta": 1
+        },
+        {
+          "type": "set_flag",
+          "key": "cold_prince_midnight_pact_progress",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Moonlit envoys trade vows in riddles—Tainglass may be listening to Frigia once more."
+        }
+      ]
+    },
+    {
+      "id": "reclaim_hoarblight_keep",
+      "name": "Prepare to reclaim the Ruins of Hoarblight Keep as a restored court",
+      "scope": "goal",
+      "goal_id": "break_ward_chell",
+      "resource_tags": [
+        "military",
+        "campaigns",
+        "environment"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0505"
+        },
+        {
+          "type": "stronghold",
+          "id": "hoarblight_keep_ruins_0505"
+        }
+      ],
+      "segments": 12,
+      "on_complete": [
+        {
+          "type": "contest_territory",
+          "territory": {
+            "type": "hex",
+            "id": "0505"
+          },
+          "against": "house_brackenwold"
+        },
+        {
+          "type": "add_rumor",
+          "text": "The old ruin chills; ice forms in the cracks and ghostly banners flutter where none hang."
+        }
+      ]
+    },
+    {
+      "id": "reinforce_tower_of_frost",
+      "name": "Reinforce the Tower of Frost as a forward post in the mortal world",
+      "scope": "mission",
+      "goal_id": "secret_paths",
+      "resource_tags": [
+        "elite",
+        "environment"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "1007"
+        },
+        {
+          "type": "enclave",
+          "id": "tower_of_frost"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "claim_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1007"
+          }
+        },
+        {
+          "type": "fortify_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1007"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "A pale tower glitters with rime at dawn; travelers swear they hear courtly laughter in the wind."
+        }
+      ]
+    },
+    {
+      "id": "maintain_embassy_vigil",
+      "name": "Maintain the Embassy’s long vigil and cultivate outside contact",
+      "scope": "mission",
+      "goal_id": "secret_paths",
+      "resource_tags": [
+        "diplomacy",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0504"
+        },
+        {
+          "type": "enclave",
+          "id": "embassy_falls_of_naon"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "embassy_contacts_established",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Servants at the Falls of Naon quietly seek maps and legendaria—offering rare fairy foods in exchange."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "seek_secret_paths",
+    "spy_ring_of_chell",
+    "court_lady_of_midnight"
+  ],
+  "organization": {
+    "leader": {
+      "entity_id": "cold_prince",
+      "name": "The Cold Prince",
+      "role": "liege"
+    },
+    "tiers": [
+      {
+        "name": "Courtiers and Trusted Servants",
+        "members": [
+          "Frost elf courtiers, counsellors, and kin; many are rivalrous, but a trusted few roam Fairy seeking routes into Dolmenwood.",
+          "Agents who successfully enter Dolmenwood focus on intelligence-gathering, temptation/bribery of mortals, and probing the Ring of Chell."
+        ]
+      },
+      {
+        "name": "Soldiery",
+        "members": [
+          "A formidable army of trained infantry and cavalry, currently confined to Frigia but primed for invasion."
+        ]
+      },
+      {
+        "name": "Embassy Retinue",
+        "members": [
+          "A reduced, decadent embassy household confined by decree: aides, chefs, butlers, maids under the Ambassador."
+        ]
+      }
+    ],
+    "notes": "Exile has made the Cold Prince insular and mistrustful; he views frost elves as superior to mortals and most other fairies."
+  },
+  "entities": {
+    "cold_prince": {
+      "type": "faction_leader",
+      "names": [
+        "The Cold Prince"
+      ],
+      "appearance": "Tall, lithe frost-elf man; pale blue hoar-crusted skin, angular features, wan eyes with shimmering red light; robes of snow-white fur and a ruff of blue feathers.",
+      "demeanour": "Chaotic; cruel disciplinarian tyrant with volatile fury and malevolent genius.",
+      "speech": {
+        "style": "Grinding/cracking ice; sneering; mocking laughter.",
+        "languages": [
+          "Woldish",
+          "Immortal tongue of Fairy",
+          "High Elfish",
+          "Sylvan",
+          "Old Woldish",
+          "Caprice"
+        ]
+      },
+      "desires": [
+        "Break the ward of Chell and reclaim dominion over Dolmenwood."
+      ],
+      "possessions": {
+        "royal_crown_of_frigia": {
+          "description": "A cluster of 17 primal ice crystals melded into his skull.",
+          "value_gp_each": 5000,
+          "count": 17
+        },
+        "rimeblade": {
+          "type": "weapon",
+          "description": "Fairy longsword of ensorcelled ice; can conjure up to 5 enchanted ice missiles per day (each 1d6+1 damage, auto-hit, 150').",
+          "value_gp": 10000
+        },
+        "staff_of_mortality": {
+          "type": "weapon",
+          "description": "Staff of frigid bone; mortals struck lose 1d4 Constitution permanently; at 0 Constitution, victim dies of old age and cannot be raised short of a wish.",
+          "value_gp": 35000
+        }
+      },
+      "family": {
+        "wives": 5,
+        "children": "innumerable",
+        "notable": [
+          {
+            "name": "Princess Snowfall-at-Dusk",
+            "relationship": "estranged 17th daughter",
+            "status": "imprisoned in a tower in a remote region of Frigia"
+          }
+        ]
+      },
+      "location": {
+        "realm": "Frigia",
+        "site": "Ice-palace Ruvanaith",
+        "details": "Hidden in a mountain valley in the fairy domain of Frigia."
+      },
+      "combat_stats": {
+        "category": "medium_fairy_genius_chaotic",
+        "level": 18,
+        "ac": 19,
+        "hp": 100,
+        "saves": {
+          "D": 2,
+          "R": 2,
+          "H": 3,
+          "B": 4,
+          "S": 5
+        },
+        "attacks": [
+          {
+            "name": "Rimeblade",
+            "to_hit": 14,
+            "damage": "1d8+2"
+          },
+          {
+            "name": "Staff of Mortality",
+            "to_hit": 12,
+            "damage": "1d6 + ageing"
+          },
+          {
+            "name": "Freezing touch",
+            "to_hit": 12,
+            "effect": "Save vs Hold or become statue of ice"
+          },
+          {
+            "name": "Magic",
+            "notes": "See fairy magic list"
+          }
+        ],
+        "speed": 40,
+        "morale": 10,
+        "xp": 14750,
+        "abilities": [
+          {
+            "name": "Awful presence",
+            "rule": "All who behold must Save vs Spell or be charmed (Dominate), terrified (flee 2 Turns), or befuddled (Feeblemind), at the Prince’s choice; peers of equal stature immune."
+          },
+          {
+            "name": "Immunities",
+            "rule": "Only harmed by magic or magic weapons; immune to cold-based attacks."
+          },
+          {
+            "name": "Aura of frost",
+            "rule": "Any in melee suffers 1d8 damage per round."
+          },
+          {
+            "name": "Freezing touch",
+            "rule": "Save vs Hold or frozen into ice statue; restoration magic can reverse."
+          },
+          {
+            "name": "Fairy magic",
+            "rule": "Glamours: Beguilement, Breath of the Wind, Dancing Flame, Fairy Dust, Flame Charm, Masquerade, Moon Sight, Subtle Sight. Runes: lesser (thrice/day) all; greater (once/day) all; mighty (once/day) Eternal Slumber, Rune of Death, Rune of Wishing. Also casts Wall of Ice and Teleport 3/day."
+          }
+        ]
+      }
+    },
+    "ambassador_springs_habitude_vanquished": {
+      "type": "npc",
+      "names": [
+        "Spring’s-Habitude-Vanquished",
+        "Your Excellency (The Ambassador)"
+      ],
+      "appearance": "Exceptionally tall frost elf man; brittle frame; hair like frozen cobwebs; iridescent blue eyes; always in high courtly garb with powdered wigs.",
+      "demeanour": "Neutral; professionally cold, suspicious, condescending; childish glee at the prospect of outsiders.",
+      "speech": {
+        "style": "Rigid courtly form with exuberant giggling; lectures obsessively on heraldry.",
+        "languages": [
+          "Woldish",
+          "High Elfish",
+          "Caprice",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "An end to his vigil.",
+        "Fresh supplies of fairy foods.",
+        "Maps or legendaria relating to the kings of the seas."
+      ],
+      "possessions": {
+        "ring_of_evermore": {
+          "type": "magic_item",
+          "value_gp": 17500,
+          "effects": [
+            "Wearer becomes invisible.",
+            "Wearer may pause the flow of time in the mortal world up to five minutes per day."
+          ],
+          "risk": "Each use of time stop requires Save vs Doom (fairies +2) or fall into a coma for 2d6 days."
+        }
+      },
+      "servants": {
+        "aides": 6,
+        "chefs": 3,
+        "butlers": 3,
+        "maids": 4
+      },
+      "location": {
+        "hex": "0504",
+        "enclave_id": "embassy_falls_of_naon"
+      },
+      "combat_stats": {
+        "category": "elf_courtier",
+        "reference": "DMB"
+      }
+    },
+    "lady_frost_dust_shadow": {
+      "type": "npc",
+      "names": [
+        "Frost-Dust-Shadow"
+      ],
+      "role": "Servant of the Cold Prince",
+      "location": {
+        "hex": "1007",
+        "enclave_id": "tower_of_frost"
+      },
+      "notes": "A named agent associated with the Tower of Frost; expand with site details when implementing hex content."
+    }
+  },
+  "tables": {
+    "frost_elf_names": {
+      "dice": "d20",
+      "columns": [
+        "rustic",
+        "courtly"
+      ],
+      "rows": [
+        {
+          "roll": 1,
+          "rustic": "Bearded-With-Rime",
+          "courtly": "Bitter-Dusk’s-Hallow"
+        },
+        {
+          "roll": 2,
+          "rustic": "Blackened-and-Bitter",
+          "courtly": "Black-Rime-and-Frostbite"
+        },
+        {
+          "roll": 3,
+          "rustic": "Blood-on-the-Lip",
+          "courtly": "Candle’s-Last-Gasp"
+        },
+        {
+          "roll": 4,
+          "rustic": "Churned-and-Curdled",
+          "courtly": "Dawn’s-Feeble-Gleaming"
+        },
+        {
+          "roll": 5,
+          "rustic": "Cold-Stroke-of-Midnight",
+          "courtly": "Frost-Dust-Shadow"
+        },
+        {
+          "roll": 6,
+          "rustic": "Flurry-and-Fleet",
+          "courtly": "Frosted-and-Flawless"
+        },
+        {
+          "roll": 7,
+          "rustic": "Frosted-Night’s-Breath",
+          "courtly": "Frozen-in-Lace"
+        },
+        {
+          "roll": 8,
+          "rustic": "Hawthorn-and-Thistledown",
+          "courtly": "Heart-of-Ice"
+        },
+        {
+          "roll": 9,
+          "rustic": "Mantle-of-Snowdrifts",
+          "courtly": "Hearth’s-Bitter-Gloaming"
+        },
+        {
+          "roll": 10,
+          "rustic": "Plum-Frost-and-Medlars",
+          "courtly": "Howling-Wind’s-Waltz"
+        },
+        {
+          "roll": 11,
+          "rustic": "Raven’s-Cold-Call",
+          "courtly": "Ice-Cap-and-Fox-Gown"
+        },
+        {
+          "roll": 12,
+          "rustic": "Shivers-Entwined",
+          "courtly": "Never-Be-Borrowed"
+        },
+        {
+          "roll": 13,
+          "rustic": "Stark-Raving-Sorrow",
+          "courtly": "Shards-of-Dusk-Mirror"
+        },
+        {
+          "roll": 14,
+          "rustic": "Stars’-Breath-Splintered",
+          "courtly": "Sleet-Under-Foot"
+        },
+        {
+          "roll": 15,
+          "rustic": "Sunbeam’s-Last-Breath",
+          "courtly": "Snowfall-at-Dusk"
+        },
+        {
+          "roll": 16,
+          "rustic": "Thankless-and-Spry",
+          "courtly": "Splendour-of-Morrow"
+        },
+        {
+          "roll": 17,
+          "rustic": "Thaw-Never-Comes",
+          "courtly": "Spring’s-Wilting-of-Heart"
+        },
+        {
+          "roll": 18,
+          "rustic": "Time’s-Slow-Ague",
+          "courtly": "Twine-for-the-May-Ball"
+        },
+        {
+          "roll": 19,
+          "rustic": "Tip-of-the-Hat",
+          "courtly": "Weeps-Until-Morning"
+        },
+        {
+          "roll": 20,
+          "rustic": "Woken-too-Early",
+          "courtly": "Willow’s-Slow-Freezing"
+        }
+      ],
+      "notes": "Frost elves are addressed by epithet-like names; rustic vs courtly reflects origin/persona; their true Fairy tongue names are never revealed to mortals."
+    }
+  },
+  "lore": {
+    "overview": {
+      "frigia": "The Cold Prince rules Frigia, a distant fairy realm of frost-clad forests and mountains; frost elves ventured into Dolmenwood out of insatiable curiosity.",
+      "eternal_winter": "In ancient ages, frost elves claimed Dolmenwood and kept it locked in ice through fairy magic.",
+      "withdrawal": "The Cold Prince’s fickle attention waned; courts withdrew to Frigia and the frosts receded, enabling human habitation.",
+      "triple_compact": "After renewed conflict, the King, the Church, and the Drune formed the Triple Compact and created the Ring of Chell, banishing the Cold Prince from the mortal world and isolating him in Frigia.",
+      "folklore": "Since banishment, the Cold Prince survives in folklore; harsh winters are feared as omens of his return.",
+      "temperament": "Cruel and mistrustful; views frost elves as superior to mortals and most fairies, respecting only some other fairy nobles."
+    },
+    "schemes": {
+      "locate_secret_paths": "Send trusted servants through Fairy to locate hidden routes into Dolmenwood; some exist but none are expedient.",
+      "destroy_ring_of_chell": "Probe the Ring of Chell for vulnerabilities; spy on the Drune; use magic and bribery to tempt mortals into aiding the plan.",
+      "alliance": "Seek alliance with another fairy noble to gain alternative ingress routes via their domain; the Lady of Midnight of Tainglass is the leading prospect."
+    },
+    "magic_notes": "Frost elves can chill or freeze by touch and leave no trace on snow; their words and beauty are as dangerous as their ice-blades."
+  },
+  "references": {
+    "source_file": "output.pdf",
+    "pages": [
+      48,
+      49,
+      50,
+      51
+    ],
+    "notes": "Cold Prince faction writeup (overview, schemes, enclaves, organization, name table, Ambassador, leader stat block)."
+  }
+}

@@ -1,0 +1,371 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_guillefer",
+  "name": "House Guillefer",
+  "type": "noble_house",
+  "alignment": "neutral",
+  "description": "A dreamy noble house of the north-eastern Groaning Loch, ruling from the Hall of Sleep. House Guillefer’s leadership rotates sporadically; under Lord Edwin, the house drifts between aesthetic pursuits and uncanny slumber, leaving parts of its domain neglected—and vulnerable to outside powers.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "guillefer",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "1304",
+      "1403",
+      "1604",
+      "1703"
+    ],
+    "settlements": [
+      "blackeswell_village",
+      "meagres_reach",
+      "odd"
+    ],
+    "strongholds": [
+      {
+        "id": "hall_of_sleep",
+        "points": 3
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "hall_of_sleep",
+      "name": "The Hall of Sleep",
+      "hex": "1304",
+      "type": "manor",
+      "role": "Dreamy red-wood manor; seat of House Guillefer."
+    },
+    {
+      "id": "blackeswell_village",
+      "name": "Blackeswell, Village",
+      "hex": "1604",
+      "type": "village",
+      "role": "Nigh-forgotten village of once-prosperous traders deep in Mulchgrove; notionally under House Guillefer but long neglected."
+    },
+    {
+      "id": "meagres_reach",
+      "name": "Meagre’s Reach",
+      "hex": "1703",
+      "type": "village",
+      "role": "Settlement along Lochsbreth Road; ruled by Ygraine the sorceress (and a point of concern for neighbouring nobles)."
+    },
+    {
+      "id": "odd",
+      "name": "Odd",
+      "hex": "1403",
+      "type": "village",
+      "role": "Outlying settlement in House Guillefer’s domain; under Drune influence/control."
+    }
+  ],
+  "resources": [
+    {
+      "id": "dream_wards",
+      "name": "Dream-Wards & Household Rites",
+      "tags": [
+        "occult",
+        "magic",
+        "wards"
+      ],
+      "description": "Strange protections and sleep-bound customs tied to the Hall of Sleep."
+    },
+    {
+      "id": "hunters_and_guides",
+      "name": "Woodland Guides",
+      "tags": [
+        "scouts",
+        "agents",
+        "logistics"
+      ],
+      "description": "Woods-wise guides who can trace safe routes along the Lochsbreth Road."
+    },
+    {
+      "id": "old_maps",
+      "name": "Maps, Journals, & Lore",
+      "tags": [
+        "lore",
+        "political"
+      ],
+      "description": "Cartographic records, half-finished maps, and travellers’ accounts—often contradictory."
+    },
+    {
+      "id": "masked_court",
+      "name": "Masquerade Contacts",
+      "tags": [
+        "intrigue",
+        "political"
+      ],
+      "description": "Networks of patrons, artists, and minor nobles attracted to House Guillefer’s revels."
+    },
+    {
+      "id": "ygraine_ties",
+      "name": "Ties to Ygraine",
+      "tags": [
+        "magic",
+        "diplomacy"
+      ],
+      "description": "A delicate personal connection to Ygraine the sorceress, ruler of Meagre’s Reach."
+    }
+  ],
+  "goals": [
+    {
+      "id": "preserve_the_hall",
+      "name": "Preserve the Hall of Sleep",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Maintain the house’s strange rhythms, wards, and ceremonies; keep the Hall secure."
+    },
+    {
+      "id": "chart_lochsbreth_road",
+      "name": "Chart the Lochsbreth Road",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Pursue Edwin’s obsession with maps and routes through the north-eastern woods."
+    },
+    {
+      "id": "stabilize_domains",
+      "name": "Stabilize the Neglected Domains",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Reassert gentle control over Blackeswell and neighbouring holdings without disrupting the house’s slumber."
+    },
+    {
+      "id": "contain_drune_odd",
+      "name": "Contain Drune Influence at Odd",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Push back Drune control in Odd (1403) and prevent further encroachment."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "hold_masquerade",
+      "name": "Hold a Masquerade at the Hall",
+      "scope": "task",
+      "goal_id": "preserve_the_hall",
+      "resource_tags": [
+        "intrigue",
+        "political"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "hall_of_sleep"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "guillefer_masquerade",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Invitations to a midnight masquerade circulate; masked guests whisper of bargains struck in song and shadow."
+        }
+      ]
+    },
+    {
+      "id": "commission_cartographers",
+      "name": "Commission Cartographers for the Lochsbreth Road",
+      "scope": "mission",
+      "goal_id": "chart_lochsbreth_road",
+      "resource_tags": [
+        "lore",
+        "coin",
+        "scouts"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "lochsbreth_road"
+        },
+        {
+          "type": "domain",
+          "id": "marquisate_guillefer"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "guillefer_maps_progress",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Fresh maps of the north-eastern woods begin to appear—some accurate, some ominously wrong."
+        }
+      ]
+    },
+    {
+      "id": "send_stewards_to_blackeswell",
+      "name": "Send Stewards to Blackeswell",
+      "scope": "task",
+      "goal_id": "stabilize_domains",
+      "resource_tags": [
+        "political",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "blackeswell_village"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "claim_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1604"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "A quiet retinue arrives in Blackeswell, offering coin for order and information."
+        }
+      ]
+    },
+    {
+      "id": "treat_with_ygraine",
+      "name": "Treat with Ygraine of Meagre’s Reach",
+      "scope": "mission",
+      "goal_id": "stabilize_domains",
+      "resource_tags": [
+        "diplomacy",
+        "magic"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "meagres_reach"
+        },
+        {
+          "type": "entity",
+          "id": "ygraine_sorceress"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "ygraine_pact",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Messengers travel between the Hall of Sleep and Meagre’s Reach; the woods hum with quiet sorcery."
+        }
+      ]
+    },
+    {
+      "id": "counter_drune_at_odd",
+      "name": "Counter Drune Influence at Odd",
+      "scope": "mission",
+      "goal_id": "contain_drune_odd",
+      "resource_tags": [
+        "agents",
+        "scouts",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "odd"
+        },
+        {
+          "type": "faction",
+          "id": "drune"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "contest_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1403"
+          },
+          "against": "drune"
+        },
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "drune",
+          "modifier": -1,
+          "reason": "Agents disrupt Drune influence around Odd."
+        },
+        {
+          "type": "add_rumor",
+          "text": "Nightly fires and sudden sermons unsettle Odd; someone is pushing back against the Drune’s grip."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "commission_cartographers",
+    "hold_masquerade",
+    "send_stewards_to_blackeswell"
+  ],
+  "entities": {
+    "lord_edwin_guillefer": {
+      "entity_id": "lord_edwin_guillefer",
+      "name": "Lord Edwin Guillefer",
+      "house": "House Guillefer",
+      "summary": "A slight human man, with lank blond hair,",
+      "form_of_address": "",
+      "demeanour": "Contemplative, aloof, naive. Kindhearted but absorbed in his artistic pursuits, with little interest in the troubles of the world.",
+      "speech": "Slow lilting, with frequent contemplative pauses. Favours old-fashioned turns of phrase. Woldish, Old Woldish, Liturgic, surprisingly eloquent Sylvan.",
+      "desires": "To be left in peace. To visit the fabled fairy courts of the Duke Who Cherishes Dreams (p31), whom he has met in the dreamlands of his deep slumber.",
+      "possessions": "The Harp of Lady Silver-So-Mirrored—a fairy relic which, when played with skill, conjures low clouds and melancholic drizzle (worth 3,000gp).",
+      "family": "Eleven sleeping relatives, including his wife and parents.Servants: A small guard (known as sleep-wardens), advisors who deal with the quotidian dealings of the House, groundsmen, cooks, butlers, librarians, etc. Sadewyn Gallbucket (p77), a witch high-priestess, is in the employ of House Guillefer, in the guise of a lady’s maid.",
+      "servants": "",
+      "location": "The Hall of Sleep (hex 1304).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Lord of House Guillefer"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "hall_of_sleep",
+    "structure": [
+      {
+        "tier": "Rotating Lordship",
+        "notes": "Rulership shifts sporadically among the house nobles; periods of inattention are common."
+      },
+      {
+        "tier": "Household Retainers",
+        "notes": "Quiet servants and guards trained to keep the Hall undisturbed."
+      },
+      {
+        "tier": "Road Guides",
+        "notes": "Woodsmen hired for travel and mapping along the Lochsbreth Road."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "hall_of_sleep",
+    "hex": "1304"
+  },
+  "domains": [
+    {
+      "id": "marquisate_guillefer",
+      "name": "Marquisate of Guillefer",
+      "points": 4,
+      "notes": "Forest on either side of the Lochsbreth Road; includes Blackeswell, Meagre’s Reach, and Odd."
+    }
+  ],
+  "oracle_hooks": {
+    "rotating_lordship": "Use oracle to determine which Guillefer noble is active this turn if Edwin is absent/asleep.",
+    "dream_omens": "Use oracle for the meaning of dreams, portents, and sleep-bound bargains."
+  }
+}

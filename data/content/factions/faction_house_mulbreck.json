@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_mulbreck",
+  "name": "House Mulbreck",
+  "type": "noble_house",
+  "alignment": "lawful",
+  "description": "A secluded southern house ruling from Bogwitt Manor. Lady Pulsephine Mulbreck keeps to her decaying chateau, maintaining order through representatives among the woods-folk and guarding a dangerous secret about Lord Mulbreck’s fate.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "mulbreck",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "1109",
+      "1112",
+      "1210"
+    ],
+    "settlements": [
+      "woodcutters_encampment"
+    ],
+    "strongholds": [
+      {
+        "id": "bogwitt_manor",
+        "points": 3
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "bogwitt_manor",
+      "name": "Bogwitt Manor",
+      "hex": "1210",
+      "type": "manor",
+      "role": "Ornate but decaying chateau; seat of House Mulbreck."
+    },
+    {
+      "id": "woodcutters_encampment",
+      "name": "The Woodcutters’ Encampment, Village",
+      "hex": "1109",
+      "type": "village",
+      "role": "Rustic woods-folk village under House Mulbreck via their representative, the Oistace."
+    },
+    {
+      "id": "falls_of_nyf",
+      "name": "Falls of Nyf",
+      "hex": "1112",
+      "type": "site",
+      "role": "A waterfall and caves in the Harrowmoor domain; possible lair of nocturnal terrors and local legends."
+    }
+  ],
+  "resources": [
+    {
+      "id": "woodsfolk_network",
+      "name": "Woods-Folk Network",
+      "tags": [
+        "agents",
+        "scouts",
+        "trade"
+      ],
+      "description": "Local cutters, hunters, and guides who answer to Mulbreck’s representatives."
+    },
+    {
+      "id": "timber_coin",
+      "name": "Timber Coin",
+      "tags": [
+        "coin",
+        "trade"
+      ],
+      "description": "Profits from timber and woodland goods."
+    },
+    {
+      "id": "bogwitt_seclusion",
+      "name": "Bogwitt Seclusion",
+      "tags": [
+        "intrigue"
+      ],
+      "description": "The manor’s isolation and controlled access; useful for hiding people and secrets."
+    },
+    {
+      "id": "hidden_prison",
+      "name": "Hidden Prison",
+      "tags": [
+        "secrets"
+      ],
+      "description": "A concealed holding place linked to the house’s dark secret; outcomes should be oracle-driven."
+    },
+    {
+      "id": "river_routes",
+      "name": "River & Meadow Routes",
+      "tags": [
+        "logistics"
+      ],
+      "description": "Knowledge and control of routes east of the Hameth."
+    }
+  ],
+  "goals": [
+    {
+      "id": "keep_secret",
+      "name": "Keep the Mulbreck Secret",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Prevent the truth of Lord Mulbreck’s fate from reaching rivals, church, or duke."
+    },
+    {
+      "id": "hold_woodsfolk",
+      "name": "Hold the Woods-Folk to the House",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Maintain loyalty of the Woodcutters’ Encampment and local cutters, hunters, and traders."
+    },
+    {
+      "id": "secure_southeast",
+      "name": "Secure the South-Eastern Lands",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Protect meadows and river routes east of the Hameth; guard against raiders and monsters."
+    },
+    {
+      "id": "watch_nagwood",
+      "name": "Watch the Nagwood Border",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Keep corruption and incursions from Nagwood from spilling into Mulbreck holdings."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "tighten_bogwitt_access",
+      "name": "Tighten Access to Bogwitt Manor",
+      "scope": "task",
+      "goal_id": "keep_secret",
+      "resource_tags": [
+        "intrigue",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "bogwitt_manor"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "mulbreck_lockdown",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Visitors are turned away from Bogwitt Manor; servants whisper that something is being hidden within."
+        }
+      ]
+    },
+    {
+      "id": "suborn_woodcutters",
+      "name": "Suborn the Woodcutters’ Encampment",
+      "scope": "mission",
+      "goal_id": "hold_woodsfolk",
+      "resource_tags": [
+        "coin",
+        "agents"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "woodcutters_encampment"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "claim_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1109"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "Mulbreck coin flows among the woodcutters; loyalties harden and tongues grow cautious."
+        }
+      ]
+    },
+    {
+      "id": "patrol_east_of_hameth",
+      "name": "Patrol East of the Hameth",
+      "scope": "mission",
+      "goal_id": "secure_southeast",
+      "resource_tags": [
+        "scouts",
+        "military"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "east_of_hameth"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "mulbreck_patrols",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Hunters and riders are seen along meadow paths; strangers find it harder to move unseen."
+        }
+      ]
+    },
+    {
+      "id": "survey_falls_of_nyf",
+      "name": "Survey the Falls of Nyf",
+      "scope": "mission",
+      "goal_id": "watch_nagwood",
+      "resource_tags": [
+        "scouts",
+        "lore"
+      ],
+      "targets": [
+        {
+          "type": "location",
+          "id": "falls_of_nyf"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "claim_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1112"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "A Mulbreck expedition disappears into the spray at the Falls of Nyf; only damp footprints return."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "tighten_bogwitt_access",
+    "suborn_woodcutters",
+    "patrol_east_of_hameth"
+  ],
+  "entities": {
+    "lady_pulsephine_mulbreck": {
+      "entity_id": "lady_pulsephine_mulbreck",
+      "name": "Lady Pulsephine Mulbreck",
+      "house": "House Mulbreck",
+      "summary": "A voluptuous human noblewoman, 50 years",
+      "form_of_address": "",
+      "demeanour": "Sharp wit, piercing intelligence, remorseless cunning. The fungus that addles her mind has inflamed her appetites and eaten away at her conscience. (In former times, Lady Mulbreck was Lawful.)",
+      "speech": "Sweet drivel, indignant roaring. Punctuated with fits of dry coughing. Woldish, Old Woldish, Liturgic.",
+      "desires": "To keep the fate of Lord Mulbreck utterly secret, in order to maintain her indulgent rule (she has essentially imprisoned him within her dungeons). To maintain control of the Falls of Nyf (hex 1112). Would pay 300gp for one of the moss-covered corpses from the caves at the Falls—discreetly delivered—which she covets as a delicacy.",
+      "possessions": "The Crown of Bogwitt (locked in a concealed safe in her manor)—a gold circlet studded with purple tourmaline (worth 8,000gp).",
+      "family": "Her husband, Lord Mulbreck, imprisoned in the cellars of Bogwitt Manor, reduced by the fungal infestation to a bloated, lumbering monster. Eight sons, born as sets of identical twins.Servants: A small guard, wardens at the Falls of Nyf (hex 1112), groundsmen, cooks, butlers, librarians, etc.",
+      "servants": "",
+      "location": "Bogwitt Manor (hex 1210).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Lady of Bogwitt Manor"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "bogwitt_manor",
+    "structure": [
+      {
+        "tier": "Lady & Inner Circle",
+        "notes": "Pulsephine grants few audiences; decisions pass through trusted agents."
+      },
+      {
+        "tier": "Representatives",
+        "notes": "House representatives (e.g., the Oistace) manage woods-folk and timber concerns."
+      },
+      {
+        "tier": "Woods-Folk",
+        "notes": "Cutters and hunters under Mulbreck influence, paid in coin and protection."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "bogwitt_manor",
+    "hex": "1210"
+  },
+  "domains": [
+    {
+      "id": "barony_mulbreck",
+      "name": "Barony of Mulbreck",
+      "points": 4,
+      "notes": "Woods and meadows of southern Dolmenwood east of the River Hameth."
+    }
+  ],
+  "oracle_hooks": {
+    "mulbreck_secret": "Use oracle/adjudication for the nature and consequences of the house’s secret (and any exposure).",
+    "nagwood_corruption": "Use oracle when corruption, blight, or monsters spill from Nagwood toward Mulbreck holdings."
+  }
+}

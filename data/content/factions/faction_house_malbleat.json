@@ -1,0 +1,609 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_malbleat",
+  "name": "House Malbleat",
+  "description": "A chaotic longhorn breggle house ruling the eastern portion of the High Wold, centered on Redwraith Manor. Lord Gryphius Malbleat is a refined aesthete and sadist with occult interests and bitter enmity toward Lord Ramius.",
+  "tags": [
+    "breggle",
+    "longhorn",
+    "nobility",
+    "high_wold",
+    "occult",
+    "territory"
+  ],
+  "alignment": "Chaotic",
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0709",
+      "0710",
+      "1110",
+      "0708"
+    ],
+    "settlements": [
+      "lankshorn",
+      "dreg",
+      "shagsend"
+    ],
+    "strongholds": [
+      {
+        "id": "redwraith_manor",
+        "points": 3
+      }
+    ],
+    "domains": [
+      "The eastern portion of the High Wold region in the south-east of Dolmenwood, encompassing the towns of Lankshorn and Dreg."
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "redwraith_manor",
+      "type": "stronghold",
+      "hex": "0709",
+      "name": "Redwraith Manor",
+      "notes": "Seat and home of Lord Malbleat, four miles north of Lankshorn."
+    },
+    {
+      "id": "lankshorn",
+      "type": "settlement",
+      "hex": "0710",
+      "name": "Lankshorn",
+      "notes": "Market town under Malbleat’s control; frequent visits; Father Dobey is vicar."
+    },
+    {
+      "id": "dreg",
+      "type": "settlement",
+      "hex": "1110",
+      "name": "Dreg",
+      "notes": "Fishing village/port at the far eastern extent of Malbleat’s domain; Madame Shantywood has notable clout here."
+    },
+    {
+      "id": "shagsend",
+      "type": "settlement",
+      "hex": "0708",
+      "name": "Shagsend",
+      "notes": "Fortified hamlet ruled by Hoblewort the sorcerer, servant of Malbleat."
+    }
+  ],
+  "resources": [
+    {
+      "id": "ring_of_vanishing",
+      "name": "Ring of Vanishing",
+      "tags": [
+        "magic",
+        "stealth",
+        "escape"
+      ],
+      "description": "A Ring of Vanishing (p410), enabling covert movement and abductions."
+    },
+    {
+      "id": "occult_library",
+      "name": "Occult Library and Necromancer Tome",
+      "tags": [
+        "magic",
+        "occult",
+        "research"
+      ],
+      "description": "Extensive occult library; includes a human-skin-bound tome holding a trapped necromancer soul (worth 12,000gp) that can cast Geas once per week for a familiar reader."
+    },
+    {
+      "id": "alchemists_and_sorcerers",
+      "name": "Coterie of Alchemists and Minor Sorcerers",
+      "tags": [
+        "magic",
+        "agents",
+        "occult"
+      ],
+      "description": "A coterie of alchemists and minor sorcerers serving Malbleat’s schemes."
+    },
+    {
+      "id": "black_hounds_and_shorthorns",
+      "name": "Hounds and Retainers",
+      "tags": [
+        "military",
+        "guards",
+        "intimidation"
+      ],
+      "description": "Two great black hounds and a small soldiery of shorthorns; household servants and groundsmen."
+    },
+    {
+      "id": "church_influence",
+      "name": "Influence in Lankshorn",
+      "tags": [
+        "religion",
+        "politics",
+        "intrigue"
+      ],
+      "description": "Malbleat has the ear of Father Dobey, vicar of Lankshorn (p158), aiding leverage over local affairs."
+    }
+  ],
+  "goals": [
+    {
+      "id": "depose_ramius",
+      "name": "Depose Lord Ramius",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "To depose Lord Ramius, whom he envies and connives against. To continue cultivating the favour of Baron Hogwarsh. To unlock the arcane secrets of his semi-mythical, sorcerous ancestor Lord Gnarlgruff."
+    },
+    {
+      "id": "cultivate_hogwarsh",
+      "name": "Cultivate the Favour of Baron Hogwarsh",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Maintain and deepen influence with Baron Hogwarsh, who once intervened in the Ramius/Malbleat feud."
+    },
+    {
+      "id": "unlock_gnarlgruff_secrets",
+      "name": "Unlock the Arcane Secrets of Lord Gnarlgruff",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Pursue occult research tied to Malbleat’s semi-mythical ancestor."
+    },
+    {
+      "id": "hold_eastern_marches",
+      "name": "Hold the Eastern High Wold (Lankshorn & Dreg)",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Keep tight control over Lankshorn, Dreg, and fortified Shagsend in the face of rival longhorn schemes."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "propagate_rightful_head_claim",
+      "name": "Exploit the genealogical claim that Malbleat is rightful head of House Ramius",
+      "scope": "mission",
+      "goal_id": "depose_ramius",
+      "segments": 8,
+      "resource_tags": [
+        "intrigue",
+        "politics"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_ramius"
+        },
+        {
+          "type": "region",
+          "id": "high_wold"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "malbleat_legitimacy_campaign",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Old parchments are read aloud in low halls—some insist Malbleat’s bloodline proves the truer claim."
+        }
+      ]
+    },
+    {
+      "id": "cultivate_father_dobey",
+      "name": "Leverage Father Dobey’s favour to steer Lankshorn’s public voice",
+      "scope": "task",
+      "goal_id": "hold_eastern_marches",
+      "segments": 4,
+      "resource_tags": [
+        "religion",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "lankshorn"
+        },
+        {
+          "type": "person",
+          "id": "father_dobey"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "malbleat_lankshorn_pulpit",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A sermon in Lankshorn lands strangely kind to Redwraith—parables with sharp edges for Malbleat’s enemies."
+        }
+      ]
+    },
+    {
+      "id": "occult_research_tome",
+      "name": "Study the necromancer tome to extract binding and geas-lore",
+      "scope": "mission",
+      "goal_id": "unlock_gnarlgruff_secrets",
+      "segments": 8,
+      "resource_tags": [
+        "magic",
+        "occult",
+        "research"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "redwraith_manor"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "malbleat_occult_breakthroughs",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Candles burn late at Redwraith; pages whisper, and the air tastes of old graves."
+        }
+      ]
+    },
+    {
+      "id": "deploy_ring_of_vanishing",
+      "name": "Use the Ring of Vanishing to abduct or sabotage rival agents",
+      "scope": "task",
+      "goal_id": "depose_ramius",
+      "segments": 4,
+      "resource_tags": [
+        "magic",
+        "stealth",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_ramius"
+        },
+        {
+          "type": "faction",
+          "id": "house_murkin"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "malbleat_shadow_abductions",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A messenger vanishes between lantern pools; only hoof-marks and a single black hair remain."
+        }
+      ]
+    },
+    {
+      "id": "tighten_control_lankshorn",
+      "name": "Increase levies, watch, and intimidation to tighten control over Lankshorn",
+      "scope": "mission",
+      "goal_id": "hold_eastern_marches",
+      "segments": 8,
+      "resource_tags": [
+        "military",
+        "intimidation"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "lankshorn"
+        },
+        {
+          "type": "hex",
+          "id": "0710"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "type_id": "settlement",
+          "id": "lankshorn"
+        },
+        {
+          "type": "set_flag",
+          "key": "malbleat_lankshorn_grip",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "secure_dreg_port",
+      "name": "Secure Dreg’s port and trade, countering Shantywood influence",
+      "scope": "mission",
+      "goal_id": "hold_eastern_marches",
+      "segments": 8,
+      "resource_tags": [
+        "politics",
+        "trade",
+        "military"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "dreg"
+        },
+        {
+          "type": "hex",
+          "id": "1110"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "malbleat_dreg_port_control",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Dockside gossip turns: tariffs shift, guards change, and Shantywood’s smile is less certain in Dreg."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "propagate_rightful_head_claim",
+    "occult_research_tome",
+    "tighten_control_lankshorn"
+  ],
+  "organization": {
+    "nobles": "Lords Ramius and Malbleat (longhorns of ancient stock) and the upstart half-breggle Lord Murkin rule large portions of the High Wold.",
+    "longhorn_elite": "Longhorn courtiers and knights under the command of the nobles.",
+    "shorthorns": "Serving class filling roles as household servants, messengers, guards, and soldiers."
+  },
+  "entities": {
+    "lord_gryphius_malbleat": {
+      "type": "npc",
+      "names": [
+        "Lord Gryphius Malbleat"
+      ],
+      "appearance": "MALBLEAT A mature longhorn man of noble, philosophical air. Malbleat is tall (almost 7′), graceful, slender, and has black fur with a silver nose. Dresses in refined silks, with a fashionable neck ruff. Renowned for his love of poetry and his elegance in the ballroom. Dabbles in matters occult.",
+      "demeanour": "Chaotic; Refined aesthete, sadist. Delights in humiliating those of lower rank. Has a habit of smiling at uncomfortably inappropriate junctures.",
+      "speech": {
+        "style": "Silver-tongued, eminently reasonable.",
+        "languages": [
+          "Woldish",
+          "Caprice",
+          "Gaffe",
+          "Old Woldish"
+        ]
+      },
+      "desires": [
+        "To depose Lord Ramius, whom he envies and connives against",
+        "To continue cultivating the favour of Baron Hogwarsh",
+        "To unlock the arcane secrets of his semi-mythical, sorcerous ancestor Lord Gnarlgruff."
+      ],
+      "possessions": {
+        "ring_of_vanishing": {
+          "type": "magic_item",
+          "name": "Ring of Vanishing",
+          "notes": "Ring of Vanishing (p410)."
+        },
+        "necromancer_tome": {
+          "type": "magic_item",
+          "name": "Necromancer Tome",
+          "value_gp": 12000,
+          "notes": "A Ring of Vanishing (p410). An extensive occult library, including a tome, bound in human skin, which contains the trapped soul of a necromancer (worth 12,000gp). One who gains a familiarity with the tome can command the spirit to cast a Geas spell once a week."
+        }
+      },
+      "family": "Seven wives (two longhorns and five humans— including Bronywyn Baldricke, daughter of Berkmaster Baldricke—p159). Malbleat is the younger half-brother (to different mothers) of Lord Ramius.",
+      "servants": "A coterie of alchemists and minor sorcerers. Two great black hounds. Groundsmen, cooks, butlers, etc. A small soldiery of shorthorns. Malbleat has the ear of Father Dobey, the vicar of Lankshorn (p158).",
+      "location": "Redwraith Manor (hex 0709).",
+      "combat_stats": "Longhorn (DMB). Malbleat is a magician of some small talent, and has Glyph of Sealing and Vapours of Dream memorised."
+    },
+    "father_dobey": {
+      "type": "npc",
+      "names": [
+        "Father Dobey"
+      ],
+      "notes": "Vicar of Lankshorn (p158); Malbleat has his ear."
+    },
+    "hoblewort": {
+      "type": "npc",
+      "names": [
+        "Hoblewort"
+      ],
+      "notes": "Sorcerer who rules Shagsend; servant of Malbleat."
+    },
+    "madame_shantywood": {
+      "type": "npc",
+      "names": [
+        "Madame Shantywood"
+      ],
+      "notes": "Ruler of independent Shantywood Isle; has notable clout in Dreg."
+    }
+  },
+  "tables": {
+    "noble_breggle_names": [
+      {
+        "roll": 1,
+        "male": "Amshred",
+        "female": "Aedel",
+        "unisex": "Aegll",
+        "surname": "Barbicant"
+      },
+      {
+        "roll": 2,
+        "male": "Craglow",
+        "female": "Berryld",
+        "unisex": "Andred",
+        "surname": "Canticreed"
+      },
+      {
+        "roll": 3,
+        "male": "Eriggwen",
+        "female": "Bethla",
+        "unisex": "Bllennith",
+        "surname": "Cllern"
+      },
+      {
+        "roll": 4,
+        "male": "Fennig",
+        "female": "Crandragrew",
+        "unisex": "Crewwin",
+        "surname": "Cornicus"
+      },
+      {
+        "roll": 5,
+        "male": "Frannidore",
+        "female": "Dweldra",
+        "unisex": "Drangwen",
+        "surname": "Furroughby"
+      },
+      {
+        "roll": 6,
+        "male": "Ghrend",
+        "female": "Fannigrew",
+        "unisex": "Grennigore",
+        "surname": "Hoblewort"
+      },
+      {
+        "roll": 7,
+        "male": "Gryphius",
+        "female": "Fredreth",
+        "unisex": "Gwendl",
+        "surname": "Houndswort"
+      },
+      {
+        "roll": 8,
+        "male": "Gwellith",
+        "female": "Grendilore",
+        "unisex": "Hgwennith",
+        "surname": "Hraiglent"
+      },
+      {
+        "roll": 9,
+        "male": "Hgrlleld",
+        "female": "Hlleth",
+        "unisex": "Hmenidore",
+        "surname": "Llhraigl"
+      },
+      {
+        "roll": 10,
+        "male": "Hmardrus",
+        "female": "Howand",
+        "unisex": "Hwandilore",
+        "surname": "Lockehorn"
+      },
+      {
+        "roll": 11,
+        "male": "Hwardlow",
+        "female": "Hraigl",
+        "unisex": "Llaind",
+        "surname": "Lockelope"
+      },
+      {
+        "roll": 12,
+        "male": "Hwoldwen",
+        "female": "Hrannilde",
+        "unisex": "Merrild",
+        "surname": "Malbleat"
+      },
+      {
+        "roll": 13,
+        "male": "Llandred",
+        "female": "Lindra",
+        "unisex": "Pllandred",
+        "surname": "Murkin"
+      },
+      {
+        "roll": 14,
+        "male": "Maindr",
+        "female": "Llemberith",
+        "unisex": "Pwenth",
+        "surname": "Overlocke"
+      },
+      {
+        "roll": 15,
+        "male": "Nodlore",
+        "female": "Llemmeth",
+        "unisex": "Shennithold",
+        "surname": "Pellicorn"
+      },
+      {
+        "roll": 16,
+        "male": "Olligore",
+        "female": "Mmereth",
+        "unisex": "Smenthard",
+        "surname": "Ramius"
+      },
+      {
+        "roll": 17,
+        "male": "Shadgore",
+        "female": "Mregginor",
+        "unisex": "Snerg",
+        "surname": "Shankhollow"
+      },
+      {
+        "roll": 18,
+        "male": "Smerigore",
+        "female": "Pettigrew",
+        "unisex": "Thannidreth",
+        "surname": "Snidebleat"
+      },
+      {
+        "roll": 19,
+        "male": "Snide",
+        "female": "Pwettig",
+        "unisex": "Wendlow",
+        "surname": "Wealdleap"
+      },
+      {
+        "roll": 20,
+        "male": "Wllannoth",
+        "female": "Wendliore",
+        "unisex": "Windor",
+        "surname": "Wealdlore"
+      }
+    ]
+  },
+  "lore": {
+    "common": {
+      "origins": {
+        "earliest_mortals": "The origins of breggles are lost in antiquity. They have lived\nin the environs of Dolmenwood for as long as any records \nshow, and were the first mortal Kindred to dwell under the \nforest’s frost-rimed boughs, in ancient days when the Cold \nPrince ruled supreme.\nAncient Nobility\nThe longhorns hold their distant forebears to be those \nbold few breggles who ventured into the ice-clad courts \nof the Cold Prince and pledged him their fealty, desiring \nthe elevation of their own kind. These early days among\nthe high-born of Fairy instilled in the longhorns a love of \nall that is noble, a proclivity which drives them to this day.",
+        "ancient_nobility": "Prince ruled supreme. Ancient Nobility The longhorns hold their distant forebears to be those bold few breggles who ventured into the ice-clad courts of the Cold Prince and pledged him their fealty, desiring the elevation of their own kind. These early days among the high-born of Fairy instilled in the longhorns a love of all that is noble, a proclivity which drives them to this day."
+      },
+      "sorcerous_blood": {
+        "overview": "In addition to their political might, longhorns possess \na degree of sorcerous power, derived from their ancient \ndealings with the Cold Prince. The gaze of the longhorns \nis greatly feared among the ranks of human aristocracy. \nPetty human lords often enlist sorcerous aid when attend-\ning the court of a longhorn."
+      },
+      "drune_enmity": {
+        "overview": "Following the betrayal of the Drune by the longhorn \nwoman Hraigl, some 1,500 years ago (see History, p14), a \nbitter hatred between Drune and breggles has smouldered.\nIn the Service of the Duchy\nThe longhorn aristocrats are counted among the noble \nhouses loyal to the Duke of Brackenwold, ruling the High \nWold side by side with humans. Intermarriage of breggle \nand human nobles is commonplace.\nNominally Follow the Pluritine Church\nThe longhorn nobles and their subjects are nominally \naligned with the Church, though their loyalty is born out \nof political convenience, rather than devotion. It is some-\ntimes noted that the feeling may be mutual—no breggle \nsaints exist within the host of the blessed.",
+        "service_of_duchy": "The longhorn aristocrats are counted among the noble houses loyal to the Duke of Brackenwold, ruling the High Wold side by side with humans. Intermarriage of breggle and human nobles is commonplace. Nominally Follow the Pluritine Church",
+        "church": "The longhorn nobles and their subjects are nominally aligned with the Church, though their loyalty is born out of political convenience, rather than devotion. It is some- times noted that the feeling may be mutual—no breggle saints exist within the host of the blessed."
+      },
+      "shared_objectives": {
+        "maintain_lordship": "At many points in history has an imperious human noble \nof one kind or another emerged to challenge the long-\nhorns’ right to dominion in the High Wold. Always have \nthe tenacious longhorns prevailed, but the risk of outside \nmeddling in breggle rulership of the region remains.",
+        "extend_south": "Collectively, but primarily as individuals, the longhorns \nseek to reverse the trend of the gradual human domination \nof the High Wold and extend their rule further south. Each \nof the nobles has his eye on the courts of High-Hankle and \nthe throne of the foolish Baron Hogwarsh.",
+        "destroy_drune": "The longhorns hate the Drune for their power, arrogance, \nand long-standing vendetta against all breggle-kind. They \nseek to eradicate the Drune from the High Wold and bring \nthe lands of Dwelmfurgh under longhorn rule.\n\n63\nP a r t  t w o  |  f a c t i o n S  a n D  P o w e r S"
+      },
+      "schemes": {
+        "rivalries": "SCHEMES\nVanquish Rival Longhorn Houses\nThe longhorn nobles are greatly occupied with bitter \nin-fighting, with petty familial rivalries amplified to \nblood-feud and vendetta. Each noble wishes to achieve \ndominance over his kin, whether by political subjuga-\ntion, warfare, or sorcery. The longhorn nobles’ scheming \nto outdo one another largely hinders the advancement of \ntheir shared goals."
+      }
+    },
+    "house": {
+      "summary": {
+        "alignment": "Chaotic",
+        "domain": "The eastern portion of the High Wold region in the south-east of Dolmenwood, encompassing the towns of Lankshorn and Dreg.",
+        "seat": "Redwraith Manor, located in the woods four miles north of Lankshorn.",
+        "head": "Lord Gryphius Malbleat, longhorn breggle. A refined aesthete known for his cruelty and his bitter enmity toward his elder half-brother, Lord Ramius."
+      },
+      "ramius_divided": "House Ramius Divided\nTwenty-two years ago, unearthed genealogical documents \npurportedly revealed Lord Malbleat as the rightful head of \nHouse Ramius, through the line of his mother, Lady Shank-\nhollow. Lord Ramius’ interpretation of the documents \nnaturally differed, and a feud ensued, growing quickly to \nviolence. Baron Hogwarsh (then a mere youth) intervened, \nruling that the lands of House Ramius should be divided. \nMalbleat was granted the eastern portion and Ramius the \nwestern.\nTHE LONGHORN NOBILITY’S \nSCHEMES\nVanquish Rival Longhorn Houses\nThe longhorn nobles are greatly occupied with bitter \nin-fighting, with petty familial rivalries amplified to \nblood-feud and vendetta. Each noble wishes to achieve \ndominance over his kin, whether by political subjuga-\ntion, warfare, or sorcery. The longhorn nobles’ scheming \nto outdo one another largely hinders the advancement of \ntheir shared goals.",
+      "murkin_aggressions": "Lord Murkin’s Aggressions\nLord Murkin has eyes on the lands of his southerly neigh-\nbour—the human House Nodlock—and is amassing troops \nnear the border. Only the protection of Lord Ramius (whom \nLord Nodlock is a lackey of) prevents outright war."
+    }
+  },
+  "references": {
+    "source_files": [
+      "output.pdf",
+      "output_2.pdf"
+    ],
+    "pages": [
+      62,
+      63,
+      64,
+      65,
+      176,
+      177
+    ],
+    "notes": "Longhorn Nobility (breggle houses) and Noble Houses appendix entries for House Ramius."
+  }
+}

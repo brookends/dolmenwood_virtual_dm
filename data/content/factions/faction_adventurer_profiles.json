@@ -1,0 +1,1036 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "nag_lord": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Chaotic"
+        ],
+        "join_summary": "Chaotic adventurers who impress the Nag-Lord may receive its ‘blessing’; those enthralled by its gaze can be accepted as true servants."
+      },
+      "interaction_risk": {
+        "audience_risk": "High",
+        "note": "Just as likely to snack on an audience-seeker as to hear them out."
+      },
+      "rewards": [
+        "wild feasts and debauchery",
+        "magic items (often with dangerous side-effects)",
+        "crookhorn servitors"
+      ],
+      "quest_templates": [
+        {
+          "id": "nag_lord_spy_subterfuge",
+          "title": "Spying and subterfuge",
+          "tags": [
+            "covert",
+            "sabotage"
+          ],
+          "summary": "Infiltrate and subvert the actions of the Church or human nobility.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "pluritine_church",
+              "delta": -1
+            },
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "nag_lord_warband_raids",
+          "title": "Warband raids",
+          "tags": [
+            "combat",
+            "raid"
+          ],
+          "summary": "Join or lead crookhorn raids into human-ruled lands or attacks on outposts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": 3
+            },
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": -2
+            }
+          ]
+        }
+      ]
+    },
+    "cold_prince": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": false,
+        "allowed_alignments": [
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Frost elves act subtly via bribery or charm. Mortals are rarely accepted as true members; elves who swear fealty may become trusted allies."
+      },
+      "special_cases": [
+        {
+          "if_party_contains": [
+            "elf"
+          ],
+          "may_escalate_to": "trusted_allies",
+          "notes": "Elves in the party may swear fealty and become trusted allies."
+        }
+      ],
+      "rewards": [
+        "coins of fairy silver (worth 5gp each)",
+        "scintillating ice jewels",
+        "enchanted fairy trinkets (often with inconvenient glamour)"
+      ],
+      "quest_templates": [
+        {
+          "id": "cold_prince_spy_drune",
+          "title": "Spy on the Drune",
+          "tags": [
+            "recon",
+            "investigation"
+          ],
+          "summary": "Scout around Dwelmfurgh and report on Drune doings.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "cold_prince",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "drune",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "cold_prince_locate_nodal_stones",
+          "title": "Locate nodal stones",
+          "tags": [
+            "exploration",
+            "investigation"
+          ],
+          "summary": "Identify locations of nodal stones, especially near the Witching Ring.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "cold_prince",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "cold_prince_escort_embassy",
+          "title": "Escort to the Embassy",
+          "tags": [
+            "escort",
+            "combat"
+          ],
+          "summary": "Guard and scout an important frost elf traveling to the hidden embassy at the Falls of Naon (hex 0504).",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "cold_prince",
+              "delta": 3
+            }
+          ]
+        }
+      ]
+    },
+    "drune": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": false,
+        "allowed_alignments": [
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Parties may establish an ongoing working relationship with the Drune, but PCs cannot be fully initiated into Drune secrets as written."
+      },
+      "warnings": [
+        "The Drune look especially unkindly on rogues who attempt to seduce their daughters."
+      ],
+      "trade": [
+        "purchase magic items and spell books",
+        "trade with questionable creatures via intermediaries"
+      ],
+      "rewards": [
+        "gold",
+        "precious stones (Drune never grant magic items/spells as rewards)"
+      ],
+      "quest_templates": [
+        {
+          "id": "drune_fetch_odd_items",
+          "title": "Fetch odd items or substances",
+          "tags": [
+            "fetch",
+            "exploration"
+          ],
+          "summary": "Acquire items/substances for Drune practice, often via scrabey or goblin merchants.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "drune",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "drune_scout_frost_elf_activity",
+          "title": "Scout frost elf activities",
+          "tags": [
+            "recon",
+            "investigation"
+          ],
+          "summary": "Investigate any report of frost elves or allies in Dolmenwood.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "drune",
+              "delta": 1
+            },
+            {
+              "type": "party_reputation",
+              "faction": "cold_prince",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "drune_guard_ritual_site",
+          "title": "Guard a ritual site",
+          "tags": [
+            "combat",
+            "guard"
+          ],
+          "summary": "Clear monsters from a ritual site and repel intruders while the ritual proceeds.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "drune",
+              "delta": 2
+            }
+          ]
+        }
+      ]
+    },
+    "pluritine_church": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Pious adventurers who take an oath of good faith may be taken into the fold and sent on missions."
+      },
+      "unaffiliated_relic_hunters": {
+        "allowed": true,
+        "notes": "The Church rewards relic hunters if authenticity can be verified."
+      },
+      "rewards": [
+        "salvation",
+        "forgiveness of sins",
+        "gold",
+        "holy magic (e.g., healing spells)",
+        "scrolls/potions for members",
+        "occasional relic use"
+      ],
+      "quest_templates": [
+        {
+          "id": "church_locate_lost_shrines",
+          "title": "Locate lost shrines",
+          "tags": [
+            "exploration",
+            "investigation"
+          ],
+          "summary": "Locate and restore vanished wayside shrines.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "pluritine_church",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "church_vanquish_enemies",
+          "title": "Vanquish enemies",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Eliminate or capture Drunes, witches, or wicked crookhorns.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "pluritine_church",
+              "delta": 3
+            },
+            {
+              "type": "party_reputation",
+              "faction": "drune",
+              "delta": -1
+            },
+            {
+              "type": "party_reputation",
+              "faction": "witches",
+              "delta": -1
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "church_procure_relics",
+          "title": "Procure relics",
+          "tags": [
+            "recovery",
+            "exploration"
+          ],
+          "summary": "Recover relics associated with saints or holy places.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "pluritine_church",
+              "delta": 2
+            }
+          ]
+        }
+      ]
+    },
+    "witches": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": false,
+        "allowed_alignments": [
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "A witch may establish a regular working relationship with a party, but her true aims remain carefully occluded; PCs cannot be fully initiated."
+      },
+      "trade": [
+        "herbs and fungi",
+        "psychedelic or magical substances"
+      ],
+      "rewards": [
+        "charms",
+        "talismans",
+        "spell casting",
+        "curse unravelling services"
+      ],
+      "quest_templates": [
+        {
+          "id": "witch_fetch_magical_specimens",
+          "title": "Fetch magical herbs or fungi",
+          "tags": [
+            "gathering",
+            "exploration"
+          ],
+          "summary": "Retrieve magical specimens from remote or dangerous parts of Dolmenwood.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction": "witches",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    "human_nobility": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    "house_brackenwold": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility",
+      "notes": [
+        "House Brackenwold has a known vein of witchcraft among its women-folk (affects tolerance and contacts)."
+      ]
+    },
+    "house_guillefer": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility"
+    },
+    "house_harrowmoor": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility"
+    },
+    "house_hogwarsh": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility"
+    },
+    "house_mulbreck": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility"
+    },
+    "house_nodlock": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral"
+        ],
+        "join_summary": "Adventurers who swear fealty to a noble may be accepted into service; trustworthy agents receive more sensitive quests and favour."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "human_scout_crookhorns",
+          "title": "Scout crookhorn activities",
+          "tags": [
+            "recon"
+          ],
+          "summary": "Monitor Nag-Lord servants and warn of large-scale incursions.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 2
+            },
+            {
+              "type": "party_reputation",
+              "faction": "nag_lord",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "human_eliminate_monsters",
+          "title": "Eliminate monsters",
+          "tags": [
+            "combat"
+          ],
+          "summary": "Kill or drive off monsters near civilized parts.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "human_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "human_nobility"
+    },
+    "longhorn_nobility": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Adventurers who swear fealty to a longhorn noble house may be accepted; discreet agents receive sensitive or violent assignments with plausible deniability."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "longhorn_spy_rivals",
+          "title": "Spy on other nobles",
+          "tags": [
+            "covert"
+          ],
+          "summary": "Insert spies among rivals.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_assassinate_or_kidnap",
+          "title": "Assassination or kidnapping",
+          "tags": [
+            "covert",
+            "combat"
+          ],
+          "summary": "Eliminate rivals using unaffiliated agents for plausible deniability.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_skirmishes",
+          "title": "Skirmishes",
+          "tags": [
+            "combat",
+            "war"
+          ],
+          "summary": "Join warbands or mustering armies in times of war or brewing war.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    "house_malbleat": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Adventurers who swear fealty to a longhorn noble house may be accepted; discreet agents receive sensitive or violent assignments with plausible deniability."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "longhorn_spy_rivals",
+          "title": "Spy on other nobles",
+          "tags": [
+            "covert"
+          ],
+          "summary": "Insert spies among rivals.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_assassinate_or_kidnap",
+          "title": "Assassination or kidnapping",
+          "tags": [
+            "covert",
+            "combat"
+          ],
+          "summary": "Eliminate rivals using unaffiliated agents for plausible deniability.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_skirmishes",
+          "title": "Skirmishes",
+          "tags": [
+            "combat",
+            "war"
+          ],
+          "summary": "Join warbands or mustering armies in times of war or brewing war.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "longhorn_nobility"
+    },
+    "house_murkin": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Adventurers who swear fealty to a longhorn noble house may be accepted; discreet agents receive sensitive or violent assignments with plausible deniability."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "longhorn_spy_rivals",
+          "title": "Spy on other nobles",
+          "tags": [
+            "covert"
+          ],
+          "summary": "Insert spies among rivals.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_assassinate_or_kidnap",
+          "title": "Assassination or kidnapping",
+          "tags": [
+            "covert",
+            "combat"
+          ],
+          "summary": "Eliminate rivals using unaffiliated agents for plausible deniability.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_skirmishes",
+          "title": "Skirmishes",
+          "tags": [
+            "combat",
+            "war"
+          ],
+          "summary": "Join warbands or mustering armies in times of war or brewing war.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "longhorn_nobility"
+    },
+    "house_ramius": {
+      "pc_join_policy": {
+        "allow_affiliation": true,
+        "fully_initiable": true,
+        "allowed_alignments": [
+          "Lawful",
+          "Neutral",
+          "Chaotic"
+        ],
+        "join_summary": "Adventurers who swear fealty to a longhorn noble house may be accepted; discreet agents receive sensitive or violent assignments with plausible deniability."
+      },
+      "rewards": [
+        "gold",
+        "political favours",
+        "rank and title",
+        "land"
+      ],
+      "quest_templates": [
+        {
+          "id": "longhorn_spy_rivals",
+          "title": "Spy on other nobles",
+          "tags": [
+            "covert"
+          ],
+          "summary": "Insert spies among rivals.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_assassinate_or_kidnap",
+          "title": "Assassination or kidnapping",
+          "tags": [
+            "covert",
+            "combat"
+          ],
+          "summary": "Eliminate rivals using unaffiliated agents for plausible deniability.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 2
+            }
+          ]
+        },
+        {
+          "id": "longhorn_skirmishes",
+          "title": "Skirmishes",
+          "tags": [
+            "combat",
+            "war"
+          ],
+          "summary": "Join warbands or mustering armies in times of war or brewing war.",
+          "default_effects": [
+            {
+              "type": "party_reputation",
+              "faction_group": "longhorn_nobility",
+              "delta": 1
+            }
+          ]
+        }
+      ],
+      "inherits_from": "longhorn_nobility"
+    },
+    "the_hag": {
+      "pc_join_policy": {
+        "allow_affiliation": false,
+        "fully_initiable": false,
+        "allowed_alignments": [],
+        "join_summary": "The Hag is not treated as a joinable PC faction by default; interaction is via bargains and oracle-like services."
+      },
+      "services": [
+        "bargains",
+        "oracle-like divinations",
+        "dangerous favors"
+      ],
+      "rewards": [
+        "information at a price",
+        "cursed or complicated boons"
+      ],
+      "quest_templates": []
+    }
+  },
+  "provenance": {
+    "source": "output.pdf",
+    "notes": "Major faction adventurer interaction rules converted into mechanized, data-driven profiles. Noble houses included as explicit entries for convenience."
+  }
+}

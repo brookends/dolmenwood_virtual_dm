@@ -1,0 +1,424 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_brackenwold",
+  "name": "House Brackenwold",
+  "type": "noble_house",
+  "alignment": "lawful",
+  "description": "The ducal house that claims dominion over all Dolmenwood. From Castle Brackenwold, Duke Thespian III rules through decrees and a patchwork of vassal houses, church authority, and fortified outposts. The duchy’s priorities revolve around preserving lordship, containing the Nag-Lord’s depredations, pushing claims northward, and suppressing Drune influence.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "brackenwold",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0604",
+      "1508"
+    ],
+    "settlements": [
+      "prigwort",
+      "high_hankle",
+      "blackeswell_village",
+      "swinescombe",
+      "woodcutters_encampment",
+      "meagres_reach",
+      "odd"
+    ],
+    "strongholds": [
+      {
+        "id": "castle_brackenwold",
+        "points": 4
+      },
+      {
+        "id": "fort_vulgar",
+        "points": 2
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "castle_brackenwold",
+      "name": "Castle Brackenwold",
+      "hex": "1508",
+      "type": "castle_city",
+      "role": "Capital of the Duchy of Brackenwold; seat of the duke."
+    },
+    {
+      "id": "fort_vulgar",
+      "name": "Fort Vulgar",
+      "hex": "0604",
+      "type": "fort",
+      "role": "Fortified outpost overlooking Lake Longmere; ruled by Sir Osric the Gaunt, vassal of the duke."
+    }
+  ],
+  "resources": [
+    {
+      "id": "ducal_host",
+      "name": "Ducal Host",
+      "tags": [
+        "military",
+        "knights",
+        "logistics"
+      ],
+      "description": "A core of household knights, levied militia, and vassal contingents that can be mustered for campaigns."
+    },
+    {
+      "id": "court_bureaucracy",
+      "name": "Court Bureaucracy",
+      "tags": [
+        "political",
+        "law",
+        "administration"
+      ],
+      "description": "Stewards, magistrates, and clerks who keep decrees moving and collect dues."
+    },
+    {
+      "id": "pluritine_backing",
+      "name": "Pluritine Church Backing",
+      "tags": [
+        "church",
+        "legitimacy"
+      ],
+      "description": "Religious legitimacy and clergy support; useful for investigations and propaganda."
+    },
+    {
+      "id": "treasury",
+      "name": "Treasury & Tribute",
+      "tags": [
+        "coin",
+        "trade"
+      ],
+      "description": "Coin, gifts, and feudal dues extracted from the duchy’s domains and vassals."
+    },
+    {
+      "id": "spies",
+      "name": "Agents & Informants",
+      "tags": [
+        "agents",
+        "intrigue"
+      ],
+      "description": "Runners, hunters, and opportunists paid to watch roads, taverns, and manor halls."
+    }
+  ],
+  "goals": [
+    {
+      "id": "maintain_lordship",
+      "name": "Maintain Lordship of Dolmenwood",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Fortify borders, suppress revolts and intrigues, and maintain the political machinery of the duchy."
+    },
+    {
+      "id": "expel_nag_lord",
+      "name": "Expel the Nag-Lord",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Reduce Atanuwë’s influence and raids from the northern wood; reclaim threatened territory."
+    },
+    {
+      "id": "claim_northern_wilds",
+      "name": "Claim the Wild Lands to the North",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Advance ducal claims toward the Table Downs and the Northern Scratch despite remoteness and peril."
+    },
+    {
+      "id": "root_out_drune",
+      "name": "Root Out the Drune",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Halt the Drune’s clawing after power; support church-led efforts to counter their influence."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "issue_ducal_edicts",
+      "name": "Issue Ducal Edicts",
+      "scope": "task",
+      "goal_id": "maintain_lordship",
+      "resource_tags": [
+        "political",
+        "law",
+        "administration"
+      ],
+      "targets": [
+        {
+          "type": "domain",
+          "id": "duchy_brackenwold"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "brackenwold_edicts",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "New ducal edicts circulate through Dolmenwood, tightening obligations and clarifying punishments."
+        }
+      ]
+    },
+    {
+      "id": "fortify_longmere_outposts",
+      "name": "Fortify the Longmere Outposts",
+      "scope": "mission",
+      "goal_id": "maintain_lordship",
+      "resource_tags": [
+        "military",
+        "logistics"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "fort_vulgar"
+        },
+        {
+          "type": "region",
+          "id": "lake_longmere_shores"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "territory": {
+            "type": "hex",
+            "id": "0604"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "Fresh palisades and patrols appear near Lake Longmere; travellers report stricter inspection at Fort Vulgar."
+        }
+      ]
+    },
+    {
+      "id": "muster_against_nag_lord",
+      "name": "Muster the Host Against the Nag-Lord",
+      "scope": "mission",
+      "goal_id": "expel_nag_lord",
+      "resource_tags": [
+        "military",
+        "knights",
+        "coin"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "nag_lord"
+        },
+        {
+          "type": "region",
+          "id": "northern_wood"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "war_preparations_nag_lord",
+          "delta": 1
+        },
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "nag_lord",
+          "modifier": -1,
+          "reason": "Ducal raids and bounties disrupt Nag-Lord forays for a time."
+        },
+        {
+          "type": "add_rumor",
+          "text": "The duke’s heralds call for arms; mercenaries and hunters congregate, scenting coin and glory."
+        }
+      ]
+    },
+    {
+      "id": "commission_northern_scouts",
+      "name": "Commission Northern Scouts",
+      "scope": "task",
+      "goal_id": "claim_northern_wilds",
+      "resource_tags": [
+        "agents",
+        "logistics",
+        "coin"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "table_downs"
+        },
+        {
+          "type": "region",
+          "id": "northern_scratch"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "northern_claims_intel",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Scouts return with unsettling tales and rough maps of the wild lands beyond Dolmenwood."
+        }
+      ]
+    },
+    {
+      "id": "church_inquisition_against_drune",
+      "name": "Support a Church Inquisition Against the Drune",
+      "scope": "mission",
+      "goal_id": "root_out_drune",
+      "resource_tags": [
+        "church",
+        "agents",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "drune"
+        },
+        {
+          "type": "tag",
+          "id": "drune_influence"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "inquisition_drune",
+          "delta": 1
+        },
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "drune",
+          "modifier": -1,
+          "reason": "Inquisitors and ducal agents pressure Drune sympathizers."
+        },
+        {
+          "type": "add_rumor",
+          "text": "Whispers spread of secret hearings and sudden disappearances among suspected Drune allies."
+        }
+      ]
+    },
+    {
+      "id": "summon_vassals_to_court",
+      "name": "Summon Vassals to Court",
+      "scope": "task",
+      "goal_id": "maintain_lordship",
+      "resource_tags": [
+        "political",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "tag",
+          "id": "vassal_house"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "vassals_summoned",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Vassal lords and ladies ride toward Castle Brackenwold for councils and quarrels."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "issue_ducal_edicts",
+    "summon_vassals_to_court",
+    "muster_against_nag_lord"
+  ],
+  "entities": {
+    "duke_thespian_iii": {
+      "entity_id": "duke_thespian_iii",
+      "name": "Duke Thespian Iii",
+      "house": "House Brackenwold",
+      "summary": "A troubled human man of 60 years, worn",
+      "form_of_address": "Your Grace.",
+      "demeanour": "Even-tempered, magnanimous, stern, carefully elegant. Perpetually furrows his brow.",
+      "speech": "Measured, sonorous. Woldish, Old Woldish, Caprice, Liturgic.",
+      "desires": "To earn renown to rival his father’s. To be the duke who brings the uncivilised lands to the north of Dolmenwood under the wing of the duchy. To retire to a life of hunting, away from courtly intrigue. To see his deceased daughter Persimone once more.",
+      "possessions": "The Amulet of St Faxis—a silver, hand-shaped amulet that grants a +2 bonus to all Saving Throws and the ability to activate an Anti-Magic Ward (per the arcane spell) once a day (worth 12,000gp). The Armour of King Hadryg—a suit of Holy Plate Mail (p400).",
+      "family": "Spouse (Duchess Ophelia, p59). Three sons, five daughters (the eldest, Persimone, was sacrificed to the entity in the Oubliette, see p130). Elderly mother, the Dowager Duchess.",
+      "servants": "A standing army, two dozen knights, a dozen personal guards, a court magician (Paglimon the Perspicacious), groundsmen, cooks, butlers, librarians, scribes, etc.",
+      "location": "Castle Brackenwold (hex 1508).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Duke of Brackenwold"
+      ]
+    },
+    "duchess_ophelia": {
+      "entity_id": "duchess_ophelia",
+      "name": "Duchess Ophelia",
+      "house": "House Brackenwold",
+      "summary": "A tall, unceasingly elegant human woman",
+      "form_of_address": "Your Grace.",
+      "demeanour": "Demure, but with a calculating wit and a fierce temper, seldom seen. Artful—uses deception, flattery, and seduction to push others to reveal their hand. Brushes the air with her fingertips as she speaks.",
+      "speech": "Clear soprano, careful enunciation. Woldish, Old Woldish, Liturgic.",
+      "desires": "To visit the land of her birth in times of peace. Yearns to unravel the mystery of the death of her eldest daughter, Persimone. (The duchess is not privy to her true fate as a sacrifice to the entity in the Oubliette, see p130.)",
+      "possessions": "The Shieldmaiden’s Ring—a jade-studded platinum ring that grants the ability, once a day, to conjure a terrible, four-armed angelic being of shining steel (stats as a gargoyle—DMB) to serve for 6 Turns (worth 10,000gp).",
+      "family": "Spouse (Duke Thespian, p58). Three sons, five daughters (the eldest, Persimone, was sacrificed to the entity in the Oubliette, see p130).Servants: A trio of women knights who serve her alone. Secretaries, ladies-in-waiting, handmaids, etc. Holds the Bishop of Brackenwold (p69) in her sway, tempering his zealous hatred of the witches.",
+      "servants": "",
+      "location": "Castle Brackenwold (hex 1508).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "consort",
+      "species": "human",
+      "titles": [
+        "Duchess of Brackenwold"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "castle_brackenwold",
+    "structure": [
+      {
+        "tier": "Ducal Court",
+        "notes": "The duke and duchess rule by decree through stewards, magistrates, and household knights."
+      },
+      {
+        "tier": "Vassal Houses",
+        "notes": "Human and breggle noble houses hold domains but swear fealty to Brackenwold."
+      },
+      {
+        "tier": "Outpost Lords",
+        "notes": "Minor vassals and castellans (e.g., Fort Vulgar) enforce borders and respond to threats."
+      },
+      {
+        "tier": "Church Allies",
+        "notes": "Pluritine clergy provide legitimacy and a channel for anti-Drune sentiment."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "castle_brackenwold",
+    "hex": "1508"
+  },
+  "domains": [
+    {
+      "id": "duchy_brackenwold",
+      "name": "Duchy of Brackenwold",
+      "points": 4,
+      "notes": "Claims dominion over all Dolmenwood; governs via vassal houses."
+    }
+  ],
+  "oracle_hooks": {
+    "court_intrigue": "Use oracle to resolve court rivalries, scandals, and shifting alliances when not determined by prior events.",
+    "vassal_compliance": "Use oracle when vassal houses resist ducal edicts or delay levies."
+  }
+}

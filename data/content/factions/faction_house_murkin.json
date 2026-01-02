@@ -1,0 +1,575 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_murkin",
+  "name": "House Murkin",
+  "description": "A chaotic noble house of mixed breggle and human parentage ruling rugged lands west of Dolmenwood within the Barony of the High Wold. Lord Simeone Murkin is pompously regal, cruel-tempered, and fixated on conquest and military dominance.",
+  "tags": [
+    "breggle",
+    "half_breggle",
+    "nobility",
+    "high_wold",
+    "military",
+    "territory"
+  ],
+  "alignment": "Chaotic",
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0208",
+      "0108",
+      "0109"
+    ],
+    "settlements": [],
+    "strongholds": [
+      {
+        "id": "kolstoke_keep",
+        "points": 3
+      }
+    ],
+    "domains": [
+      "The rugged, little-travelled lands west of Dolmenwood, within the Barony of the High Wold, bounded by the marshes of the Northern Scratch."
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "kolstoke_keep",
+      "type": "stronghold",
+      "hex": "0208",
+      "name": "Kolstoke Keep",
+      "notes": "Seat of Lord Murkin; a military-minded half-breggle, half-human ruler."
+    },
+    {
+      "id": "murkin_hunting_lodge",
+      "type": "site",
+      "hex": "0109",
+      "name": "Lady Borrid’s Hunting Lodge",
+      "notes": "Maintained by Murkin’s cousin, Lady Borrid, in hex 0109."
+    },
+    {
+      "id": "revolt_site_0108",
+      "type": "site",
+      "hex": "0108",
+      "name": "Revolt Brewing (Hex 0108)",
+      "notes": "A revolt is brewing in Murkin’s domain; Murkin seeks to imprison its instigators."
+    }
+  ],
+  "resources": [
+    {
+      "id": "horns_of_kolstoke",
+      "name": "The Horns of Kolstoke",
+      "tags": [
+        "military",
+        "elite",
+        "knights"
+      ],
+      "description": "A retinue of 12 longhorn knights serving Murkin directly."
+    },
+    {
+      "id": "murkin_troops",
+      "name": "Strengthening Troops",
+      "tags": [
+        "military",
+        "logistics"
+      ],
+      "description": "A small but strengthening body of troops mustered around hex 0109; troops are also amassed near the border with House Nodlock."
+    },
+    {
+      "id": "sword_of_kolstoke",
+      "name": "Sword of Kolstoke",
+      "tags": [
+        "magic",
+        "military",
+        "fairy_bane"
+      ],
+      "description": "An Arcane Two-Handed Sword (Fairy Bane, p412) with black opals in the hilt; heirloom said to have been used in wars against the Cold Prince."
+    },
+    {
+      "id": "mixed_blood_leverage",
+      "name": "Mixed Parentage Leverage",
+      "tags": [
+        "politics",
+        "coercion",
+        "intrigue"
+      ],
+      "description": "Murkin’s mixed breggle/human background can ease infiltration, intimidation, or diplomacy in human-facing matters when useful."
+    }
+  ],
+  "goals": [
+    {
+      "id": "conquer_nodlock",
+      "name": "Conquer House Nodlock and Take Nodding Castle",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Murkin eyes the lands of House Nodlock and amasses troops near the border; Ramius’ protection prevents outright war."
+    },
+    {
+      "id": "suppress_revolt",
+      "name": "Crush the Revolt in Hex 0108",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "To erase the embarrassingly temperate legacy of his father and gain House Murkin the power and respect it deserves. To imprison those behind the revolt brewing in his domain (see hex 0108). To conquer House Nodlock and take Nodding Castle for himself. To undermine Lord Malbleat and Lord Ramius, bring about their painful and excruciating deaths, and rule the High Wold."
+    },
+    {
+      "id": "rule_high_wold",
+      "name": "Overthrow Rival Longhorns and Rule the High Wold",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Murkin aims to undermine Lords Malbleat and Ramius and seize overall dominion."
+    },
+    {
+      "id": "extend_south",
+      "name": "Extend Breggle-Country Southwards",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Shared longhorn ambition to reverse human domination and push influence south."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "amass_border_troops",
+      "name": "Amass troops near the Nodlock border to pressure for war",
+      "scope": "mission",
+      "goal_id": "conquer_nodlock",
+      "segments": 8,
+      "resource_tags": [
+        "military",
+        "logistics"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "southwest_high_wold"
+        },
+        {
+          "type": "faction",
+          "id": "house_nodlock"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "murkin_border_pressure",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Armor glints at the tree-line; Nodlock’s shepherds swear they saw longhorn helms along the border."
+        }
+      ]
+    },
+    {
+      "id": "suppress_revolt_0108",
+      "name": "Track down and imprison those behind the revolt in hex 0108",
+      "scope": "mission",
+      "goal_id": "suppress_revolt",
+      "segments": 8,
+      "resource_tags": [
+        "military",
+        "intrigue",
+        "intimidation"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0108"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "murkin_revolt_suppressed",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Chains clink in Kolstoke’s lower halls; someone important has vanished from the rebel camp."
+        }
+      ]
+    },
+    {
+      "id": "drill_horns_of_kolstoke",
+      "name": "Drill the Horns of Kolstoke and harden the household guard",
+      "scope": "task",
+      "goal_id": "rule_high_wold",
+      "segments": 4,
+      "resource_tags": [
+        "military",
+        "elite"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "kolstoke_keep"
+        },
+        {
+          "type": "hex",
+          "id": "0208"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "type_id": "stronghold",
+          "id": "kolstoke_keep"
+        },
+        {
+          "type": "set_flag",
+          "key": "murkin_household_martial",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "incite_in_fighting",
+      "name": "Stoke the longhorn feud to weaken Ramius and Malbleat",
+      "scope": "task",
+      "goal_id": "rule_high_wold",
+      "segments": 4,
+      "resource_tags": [
+        "intrigue",
+        "politics"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_ramius"
+        },
+        {
+          "type": "faction",
+          "id": "house_malbleat"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "murkin_feud_stoked",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Anonymous letters arrive on fine parchment; accusations bloom like rot between Everdusk and Redwraith."
+        }
+      ]
+    },
+    {
+      "id": "strike_with_fairy_bane",
+      "name": "Use the Sword of Kolstoke to lead a fearsome demonstration raid",
+      "scope": "mission",
+      "goal_id": "rule_high_wold",
+      "segments": 8,
+      "resource_tags": [
+        "military",
+        "magic",
+        "intimidation"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "kolstoke_keep"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "murkin_fairy_bane_reputation",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "They say Kolstoke’s lord marched with a blade that hates fairy blood; even allies flinch at the tale."
+        }
+      ]
+    },
+    {
+      "id": "prepare_seize_nodding_castle",
+      "name": "Lay groundwork to seize Nodding Castle and claim Nodlock’s seat",
+      "scope": "goal",
+      "goal_id": "conquer_nodlock",
+      "segments": 12,
+      "resource_tags": [
+        "military",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "nodding_castle"
+        },
+        {
+          "type": "faction",
+          "id": "house_nodlock"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "murkin_nodding_castle_coup",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Scouts map roads and fordings; the air tastes of iron as Kolstoke’s plans sharpen toward Nodlock."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "amass_border_troops",
+    "suppress_revolt_0108",
+    "drill_horns_of_kolstoke"
+  ],
+  "organization": {
+    "nobles": "Lords Ramius and Malbleat (longhorns of ancient stock) and the upstart half-breggle Lord Murkin rule large portions of the High Wold.",
+    "longhorn_elite": "Longhorn courtiers and knights under the command of the nobles.",
+    "shorthorns": "Serving class filling roles as household servants, messengers, guards, and soldiers."
+  },
+  "entities": {
+    "lord_simeone_murkin": {
+      "type": "npc",
+      "names": [
+        "Lord Simeone Murkin"
+      ],
+      "appearance": "MURKIN A half-breggle, half-human man in his 50s, the only child of the former Lord Murkin (deceased), who fell in love with a human woman. Murkin is auburn-haired, squat, and pot-bellied. He is of human appearance but for his prodigious chin-locks, a rudimentary horn nub, and one goat-like eye. Habitually clad in ill-fitting armour and billowing silk neckerchiefs.",
+      "demeanour": "Chaotic; Pompously regal. Cruel temper.",
+      "speech": {
+        "style": "Nasal and condescending.",
+        "languages": [
+          "Woldish",
+          "Caprice",
+          "Gaffe"
+        ]
+      },
+      "desires": [
+        "To erase the embarrassingly temperate legacy of his father and gain House Murkin the power and respect it deserves",
+        "To imprison those behind the revolt brewing in his domain (see hex 0108)",
+        "To conquer House Nodlock and take Nodding Castle for himself",
+        "To undermine Lord Malbleat and Lord Ramius, bring about their painful and excruciating deaths, and rule the High Wold."
+      ],
+      "possessions": {
+        "sword_of_kolstoke": {
+          "type": "magic_item",
+          "name": "Sword of Kolstoke",
+          "notes": "The Sword of Kolstoke—an Arcane Two- Handed Sword (Fairy Bane, p412) whose hilt is inlaid with black opals. The sword is an heirloom of House Murkin, said to have been used in the wars against the Cold Prince."
+        }
+      },
+      "family": "Murkin’s mother, now in her seventies, is imprisoned in the dungeons of Kolstoke Keep, after contradicting her son’s word one time too many. His cousin, Lady Borrid, maintains a hunting lodge in hex 0109.",
+      "servants": "A retinue of 12 longhorn knights known as “the Horns of Kolstoke.” A small but strengthening body of troops (in hex 0109). Groundsmen, cooks, butlers, etc.",
+      "location": "Kolstoke Keep (hex 0208).",
+      "combat_stats": "Level 3 knight (DMB)."
+    },
+    "lady_borrid": {
+      "type": "npc",
+      "names": [
+        "Lady Borrid"
+      ],
+      "notes": "Murkin’s cousin; maintains a hunting lodge in hex 0109."
+    },
+    "murkin_mother": {
+      "type": "npc",
+      "names": [
+        "Lady Murkin (Mother)"
+      ],
+      "notes": "Murkin’s mother is imprisoned in Kolstoke’s dungeons after contradicting him."
+    },
+    "horns_of_kolstoke": {
+      "type": "unit",
+      "names": [
+        "The Horns of Kolstoke"
+      ],
+      "notes": "Retinue of 12 longhorn knights serving House Murkin."
+    }
+  },
+  "tables": {
+    "noble_breggle_names": [
+      {
+        "roll": 1,
+        "male": "Amshred",
+        "female": "Aedel",
+        "unisex": "Aegll",
+        "surname": "Barbicant"
+      },
+      {
+        "roll": 2,
+        "male": "Craglow",
+        "female": "Berryld",
+        "unisex": "Andred",
+        "surname": "Canticreed"
+      },
+      {
+        "roll": 3,
+        "male": "Eriggwen",
+        "female": "Bethla",
+        "unisex": "Bllennith",
+        "surname": "Cllern"
+      },
+      {
+        "roll": 4,
+        "male": "Fennig",
+        "female": "Crandragrew",
+        "unisex": "Crewwin",
+        "surname": "Cornicus"
+      },
+      {
+        "roll": 5,
+        "male": "Frannidore",
+        "female": "Dweldra",
+        "unisex": "Drangwen",
+        "surname": "Furroughby"
+      },
+      {
+        "roll": 6,
+        "male": "Ghrend",
+        "female": "Fannigrew",
+        "unisex": "Grennigore",
+        "surname": "Hoblewort"
+      },
+      {
+        "roll": 7,
+        "male": "Gryphius",
+        "female": "Fredreth",
+        "unisex": "Gwendl",
+        "surname": "Houndswort"
+      },
+      {
+        "roll": 8,
+        "male": "Gwellith",
+        "female": "Grendilore",
+        "unisex": "Hgwennith",
+        "surname": "Hraiglent"
+      },
+      {
+        "roll": 9,
+        "male": "Hgrlleld",
+        "female": "Hlleth",
+        "unisex": "Hmenidore",
+        "surname": "Llhraigl"
+      },
+      {
+        "roll": 10,
+        "male": "Hmardrus",
+        "female": "Howand",
+        "unisex": "Hwandilore",
+        "surname": "Lockehorn"
+      },
+      {
+        "roll": 11,
+        "male": "Hwardlow",
+        "female": "Hraigl",
+        "unisex": "Llaind",
+        "surname": "Lockelope"
+      },
+      {
+        "roll": 12,
+        "male": "Hwoldwen",
+        "female": "Hrannilde",
+        "unisex": "Merrild",
+        "surname": "Malbleat"
+      },
+      {
+        "roll": 13,
+        "male": "Llandred",
+        "female": "Lindra",
+        "unisex": "Pllandred",
+        "surname": "Murkin"
+      },
+      {
+        "roll": 14,
+        "male": "Maindr",
+        "female": "Llemberith",
+        "unisex": "Pwenth",
+        "surname": "Overlocke"
+      },
+      {
+        "roll": 15,
+        "male": "Nodlore",
+        "female": "Llemmeth",
+        "unisex": "Shennithold",
+        "surname": "Pellicorn"
+      },
+      {
+        "roll": 16,
+        "male": "Olligore",
+        "female": "Mmereth",
+        "unisex": "Smenthard",
+        "surname": "Ramius"
+      },
+      {
+        "roll": 17,
+        "male": "Shadgore",
+        "female": "Mregginor",
+        "unisex": "Snerg",
+        "surname": "Shankhollow"
+      },
+      {
+        "roll": 18,
+        "male": "Smerigore",
+        "female": "Pettigrew",
+        "unisex": "Thannidreth",
+        "surname": "Snidebleat"
+      },
+      {
+        "roll": 19,
+        "male": "Snide",
+        "female": "Pwettig",
+        "unisex": "Wendlow",
+        "surname": "Wealdleap"
+      },
+      {
+        "roll": 20,
+        "male": "Wllannoth",
+        "female": "Wendliore",
+        "unisex": "Windor",
+        "surname": "Wealdlore"
+      }
+    ]
+  },
+  "lore": {
+    "common": {
+      "origins": {
+        "earliest_mortals": "The origins of breggles are lost in antiquity. They have lived\nin the environs of Dolmenwood for as long as any records \nshow, and were the first mortal Kindred to dwell under the \nforest’s frost-rimed boughs, in ancient days when the Cold \nPrince ruled supreme.\nAncient Nobility\nThe longhorns hold their distant forebears to be those \nbold few breggles who ventured into the ice-clad courts \nof the Cold Prince and pledged him their fealty, desiring \nthe elevation of their own kind. These early days among\nthe high-born of Fairy instilled in the longhorns a love of \nall that is noble, a proclivity which drives them to this day.",
+        "ancient_nobility": "Prince ruled supreme. Ancient Nobility The longhorns hold their distant forebears to be those bold few breggles who ventured into the ice-clad courts of the Cold Prince and pledged him their fealty, desiring the elevation of their own kind. These early days among the high-born of Fairy instilled in the longhorns a love of all that is noble, a proclivity which drives them to this day."
+      },
+      "sorcerous_blood": {
+        "overview": "In addition to their political might, longhorns possess \na degree of sorcerous power, derived from their ancient \ndealings with the Cold Prince. The gaze of the longhorns \nis greatly feared among the ranks of human aristocracy. \nPetty human lords often enlist sorcerous aid when attend-\ning the court of a longhorn."
+      },
+      "drune_enmity": {
+        "overview": "Following the betrayal of the Drune by the longhorn \nwoman Hraigl, some 1,500 years ago (see History, p14), a \nbitter hatred between Drune and breggles has smouldered.\nIn the Service of the Duchy\nThe longhorn aristocrats are counted among the noble \nhouses loyal to the Duke of Brackenwold, ruling the High \nWold side by side with humans. Intermarriage of breggle \nand human nobles is commonplace.\nNominally Follow the Pluritine Church\nThe longhorn nobles and their subjects are nominally \naligned with the Church, though their loyalty is born out \nof political convenience, rather than devotion. It is some-\ntimes noted that the feeling may be mutual—no breggle \nsaints exist within the host of the blessed.",
+        "service_of_duchy": "The longhorn aristocrats are counted among the noble houses loyal to the Duke of Brackenwold, ruling the High Wold side by side with humans. Intermarriage of breggle and human nobles is commonplace. Nominally Follow the Pluritine Church",
+        "church": "The longhorn nobles and their subjects are nominally aligned with the Church, though their loyalty is born out of political convenience, rather than devotion. It is some- times noted that the feeling may be mutual—no breggle saints exist within the host of the blessed."
+      },
+      "shared_objectives": {
+        "maintain_lordship": "At many points in history has an imperious human noble \nof one kind or another emerged to challenge the long-\nhorns’ right to dominion in the High Wold. Always have \nthe tenacious longhorns prevailed, but the risk of outside \nmeddling in breggle rulership of the region remains.",
+        "extend_south": "Collectively, but primarily as individuals, the longhorns \nseek to reverse the trend of the gradual human domination \nof the High Wold and extend their rule further south. Each \nof the nobles has his eye on the courts of High-Hankle and \nthe throne of the foolish Baron Hogwarsh.",
+        "destroy_drune": "The longhorns hate the Drune for their power, arrogance, \nand long-standing vendetta against all breggle-kind. They \nseek to eradicate the Drune from the High Wold and bring \nthe lands of Dwelmfurgh under longhorn rule.\n\n63\nP a r t  t w o  |  f a c t i o n S  a n D  P o w e r S"
+      },
+      "schemes": {
+        "rivalries": "SCHEMES\nVanquish Rival Longhorn Houses\nThe longhorn nobles are greatly occupied with bitter \nin-fighting, with petty familial rivalries amplified to \nblood-feud and vendetta. Each noble wishes to achieve \ndominance over his kin, whether by political subjuga-\ntion, warfare, or sorcery. The longhorn nobles’ scheming \nto outdo one another largely hinders the advancement of \ntheir shared goals."
+      }
+    },
+    "house": {
+      "summary": {
+        "alignment": "Chaotic",
+        "domain": "The rugged, little-travelled lands west of Dolmenwood, within the Barony of the High Wold, bounded by the marshes of the Northern Scratch.",
+        "seat": "Kolstoke Keep, located on the western edge of Dolmenwood.",
+        "head": "Lord Simeone Murkin, a boorish and cruel-tempered man of mixed breggle/ human parentage. Murkin’s only passions are conquest and military dominance."
+      },
+      "murkin_aggressions": "Lord Murkin’s Aggressions\nLord Murkin has eyes on the lands of his southerly neigh-\nbour—the human House Nodlock—and is amassing troops \nnear the border. Only the protection of Lord Ramius (whom \nLord Nodlock is a lackey of) prevents outright war.",
+      "schemes": "House Murkin’s ambitions are entangled with the broader longhorn feud; Murkin seeks to erase his father’s temperate legacy and dominate the High Wold."
+    }
+  },
+  "references": {
+    "source_files": [
+      "output.pdf",
+      "output_2.pdf"
+    ],
+    "pages": [
+      62,
+      63,
+      64,
+      65,
+      176,
+      177
+    ],
+    "notes": "Longhorn Nobility (breggle houses) and Noble Houses appendix entries for House Ramius."
+  }
+}
