@@ -708,7 +708,7 @@ class HexCrawlEngine:
 
         # Daily encounter check (only once per day)
         if not self._encounter_checked_today:
-            encounter_roll = self._check_encounter(terrain_info, route_type)
+            encounter_roll = self._check_encounter(terrain_info, route_type, result.actual_hex)
             self._encounter_checked_today = True
             if encounter_roll:
                 result.encounter_occurred = True
@@ -859,14 +859,67 @@ class HexCrawlEngine:
         # Get encumbrance-adjusted party speed from controller
         return self.controller.get_party_speed()
 
-    def _check_encounter(self, terrain_info: TerrainInfo, route_type: RouteType) -> bool:
-        """Daily wandering monster check based on terrain and route."""
+    def _check_encounter(
+        self,
+        terrain_info: TerrainInfo,
+        route_type: RouteType,
+        hex_id: Optional[str] = None,
+    ) -> bool:
+        """
+        Daily wandering monster check based on terrain and route.
+
+        Args:
+            terrain_info: Terrain information for the hex
+            route_type: Type of route being traveled
+            hex_id: Optional hex ID for faction modifier lookup
+
+        Returns:
+            True if an encounter occurs
+        """
         if route_type == RouteType.ROAD:
             return False
 
         chance = terrain_info.encounter_chance
+
+        # Apply faction standing modifier if available
+        if hex_id:
+            faction_modifier = self._get_faction_encounter_modifier(hex_id)
+            chance = max(0, min(6, chance + faction_modifier))
+
         roll = self.dice.roll_d6(1, "wandering encounter")
         return roll.total <= chance
+
+    def _get_faction_encounter_modifier(self, hex_id: str) -> int:
+        """
+        Get encounter probability modifier based on faction control of hex.
+
+        Good standing with the controlling faction reduces encounter chance.
+        Bad standing increases encounter chance.
+
+        Args:
+            hex_id: The hex identifier
+
+        Returns:
+            Modifier to add to encounter chance (-2 to +2)
+        """
+        try:
+            # Access faction engine via controller's dm reference
+            dm = getattr(self.controller, "dm", None)
+            if not dm:
+                return 0
+
+            factions = getattr(dm, "factions", None)
+            if not factions:
+                return 0
+
+            from src.factions.faction_hooks import HexFactionLookup, get_encounter_modifier
+
+            lookup = HexFactionLookup(factions)
+            standing = lookup.get_standing_for_hex(hex_id)
+            return get_encounter_modifier(standing)
+        except Exception:
+            # Fail silently - faction system is optional
+            return 0
 
     def _generate_encounter(self, hex_id: str, terrain: TerrainType) -> EncounterState:
         """

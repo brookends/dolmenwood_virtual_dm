@@ -95,6 +95,15 @@ from src.factions.faction_party import (
     FactionPartyManager,
 )
 
+from src.factions.faction_hooks import (
+    FactionModifiers,
+    HexFactionLookup,
+    calculate_modifiers,
+    get_service_cost_multiplier,
+    get_encounter_modifier,
+    apply_cost_modifier,
+)
+
 __all__ = [
     # Static content models
     "Resource",
@@ -151,4 +160,11 @@ __all__ = [
     "FactionWorkResult",
     "JobCompletionResult",
     "FactionPartyManager",
+    # Faction hooks for other systems
+    "FactionModifiers",
+    "HexFactionLookup",
+    "calculate_modifiers",
+    "get_service_cost_multiplier",
+    "get_encounter_modifier",
+    "apply_cost_modifier",
 ]
