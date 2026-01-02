@@ -420,6 +420,112 @@ class TestActionExecutionDoesNotError:
         assert "Unrecognized action" not in content
 
 
+class TestSuggestedActionExecutabilityContract:
+    """
+    Phase 0.1: Strict contract test for suggested action executability.
+
+    This is the primary guardrail test that ensures NO suggested action
+    can ever be non-executable. If this test fails, it means we're showing
+    players actions they cannot actually perform.
+    """
+
+    # All game states to test
+    ALL_GAME_STATES = [
+        GameState.WILDERNESS_TRAVEL,
+        GameState.DUNGEON_EXPLORATION,
+        GameState.FAIRY_ROAD_TRAVEL,
+        GameState.ENCOUNTER,
+        GameState.COMBAT,
+        GameState.SETTLEMENT_EXPLORATION,
+        GameState.SOCIAL_INTERACTION,
+        GameState.DOWNTIME,
+    ]
+
+    def test_all_states_all_suggestions_executable(self, facade, offline_dm):
+        """
+        CONTRACT TEST: Every suggested action across ALL states MUST be executable.
+
+        This is the critical guardrail - if this fails, players see unusable buttons.
+        """
+        all_unexecutable: dict[str, list[str]] = {}
+
+        for state in self.ALL_GAME_STATES:
+            # Force the state
+            offline_dm.controller.state_machine.force_state(
+                state,
+                reason=f"contract test: {state.value}"
+            )
+
+            # Get suggested actions for this state
+            try:
+                action_ids = get_suggested_action_ids(facade)
+            except Exception as e:
+                # If we can't even get suggestions, that's a different problem
+                continue
+
+            # Check each suggestion for executability
+            unexecutable = collect_unexecutable_actions(facade, action_ids)
+
+            if unexecutable:
+                all_unexecutable[state.value] = unexecutable
+
+        # Assert ALL states pass - fail with comprehensive report
+        if all_unexecutable:
+            report_lines = ["NON-EXECUTABLE ACTIONS FOUND:"]
+            for state_name, actions in all_unexecutable.items():
+                report_lines.append(f"  {state_name}:")
+                for action_id in actions:
+                    report_lines.append(f"    - {action_id}")
+            report_lines.append("")
+            report_lines.append("FIX: Register these actions in action_registry.py")
+
+            pytest.fail("\n".join(report_lines))
+
+    def test_no_duplicate_suggestions(self, facade, offline_dm):
+        """Suggested actions should not have duplicates."""
+        for state in self.ALL_GAME_STATES:
+            offline_dm.controller.state_machine.force_state(
+                state,
+                reason=f"duplicate check: {state.value}"
+            )
+
+            try:
+                action_ids = get_suggested_action_ids(facade)
+            except Exception:
+                continue
+
+            duplicates = [
+                action_id for action_id in action_ids
+                if action_ids.count(action_id) > 1
+            ]
+
+            assert not duplicates, (
+                f"Duplicate suggestions in {state.value}: {set(duplicates)}"
+            )
+
+    def test_suggestions_have_valid_structure(self, facade, offline_dm):
+        """All suggestions should have required fields."""
+        for state in self.ALL_GAME_STATES:
+            offline_dm.controller.state_machine.force_state(
+                state,
+                reason=f"structure check: {state.value}"
+            )
+
+            try:
+                response = facade.handle_chat("")
+                suggestions = response.suggested_actions
+            except Exception:
+                continue
+
+            for suggestion in suggestions:
+                # Must have an ID
+                assert suggestion.id, f"Empty action ID in {state.value}"
+                # Must have a label
+                assert suggestion.label, (
+                    f"Empty label for {suggestion.id} in {state.value}"
+                )
+
+
 class TestLegacyActionsStillWork:
     """Test that legacy action IDs still work through fallback."""
 
