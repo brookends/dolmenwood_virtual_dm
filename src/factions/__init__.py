@@ -68,6 +68,18 @@ from src.factions.faction_adventurers import (
     ProfilesLoadResult,
 )
 
+from src.factions.faction_effects import (
+    EffectResult,
+    FactionEffectsInterpreter,
+)
+
+from src.factions.faction_engine import (
+    ActionRollResult,
+    CycleResult,
+    FactionCycleResult,
+    FactionEngine,
+)
+
 __all__ = [
     # Static content models
     "Resource",
@@ -105,4 +117,12 @@ __all__ = [
     "FactionAdventurerProfiles",
     "FactionAdventurerProfilesLoader",
     "ProfilesLoadResult",
+    # Effects
+    "EffectResult",
+    "FactionEffectsInterpreter",
+    # Engine
+    "ActionRollResult",
+    "CycleResult",
+    "FactionCycleResult",
+    "FactionEngine",
 ]
