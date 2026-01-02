@@ -35,65 +35,22 @@ from src.conversation.types import SuggestedAction
 # -----------------------------------------------------------------------------
 
 # Legacy action IDs that are handled by the ConversationFacade fallback if-chain
+# NOTE: Most of these now have executors in ActionRegistry (Phase 4)
+# This list serves as a fallback for any that might still use the legacy path
 LEGACY_SUPPORTED_ACTION_IDS = {
-    "meta:status",
-    "meta:factions",
-    "party:light",
-    "wilderness:travel",
-    "wilderness:look_around",
-    "wilderness:search_hex",
-    "wilderness:end_day",
-    "wilderness:approach_poi",
-    "wilderness:enter_poi",
-    "wilderness:leave_poi",
-    "wilderness:forage",
-    "wilderness:hunt",
+    # Wilderness actions that still use legacy path for some param variants
     "wilderness:resolve_poi_hazard",
     "wilderness:enter_poi_with_conditions",
-    "wilderness:talk_npc",
     "wilderness:take_item",
     "wilderness:search_location",
     "wilderness:explore_feature",
     "wilderness:enter_dungeon",
-    "dungeon:move",
-    "dungeon:search",
-    "dungeon:listen",
-    "dungeon:open_door",
-    "dungeon:pick_lock",
-    "dungeon:disarm_trap",
-    "dungeon:rest",
-    "dungeon:map",
-    "dungeon:fast_travel",
-    "dungeon:exit",
-    "encounter:action",
-    "settlement:action",
-    "downtime:action",
-    "oracle:fate_check",
-    "oracle:random_event",
-    "oracle:detail_check",
+    # Combat actions that use complex routing
     "combat:resolve_round",
     "combat:flee",
     "combat:parley",
     "combat:status",
     "combat:end",
-    "combat:cast_spell",
-    "fairy_road:enter",
-    "fairy_road:travel_segment",
-    "fairy_road:resolve_encounter",
-    "fairy_road:flee_encounter",
-    "fairy_road:explore_location",
-    "fairy_road:continue_past",
-    "fairy_road:exit",
-    "fairy_road:stray",
-    "fairy_road:status",
-    "fairy_road:find_door",
-    # Social interaction actions
-    "social:say",
-    "social:end",
-    "social:oracle_question",
-    # Meta: Roll log
-    "meta:roll_log",
-    "meta:export_run_log",
 }
 
 
