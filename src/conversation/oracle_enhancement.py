@@ -313,7 +313,7 @@ class OracleEnhancement:
 
 def create_oracle_enhancement(mythic: Optional[MythicGME] = None) -> OracleEnhancement:
     """Create an OracleEnhancement with the given or new Mythic GME."""
-    import random
     if mythic is None:
-        mythic = MythicGME(rng=random.Random())
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        mythic = MythicGME(rng=DiceRngAdapter("OracleEnhancement"))
     return OracleEnhancement(mythic)

@@ -29,6 +29,7 @@ class ActionCategory(str, Enum):
     ENCOUNTER = "encounter"
     SETTLEMENT = "settlement"
     DOWNTIME = "downtime"
+    SOCIAL = "social"
     ORACLE = "oracle"
     TRANSITION = "transition"
 
@@ -235,7 +236,8 @@ def _create_default_registry() -> ActionRegistry:
         }
         likelihood = likelihood_map.get(like, Likelihood.FIFTY_FIFTY)
 
-        mythic = MythicGME(rng=random.Random())
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        mythic = MythicGME(rng=DiceRngAdapter("OracleFateCheck"))
         r = mythic.fate_check(q, likelihood)
         result_str = r.result.value.replace("_", " ").title()
         msg = f"Oracle: {result_str} (roll={r.roll}, chaos={r.chaos_factor})"
@@ -258,9 +260,9 @@ def _create_default_registry() -> ActionRegistry:
     def _oracle_random_event(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Generate a random event."""
         from src.oracle.mythic_gme import MythicGME
-        import random
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
 
-        mythic = MythicGME(rng=random.Random())
+        mythic = MythicGME(rng=DiceRngAdapter("OracleRandomEvent"))
         ev = mythic.generate_random_event()
         msg = f"Random Event — Focus: {ev.focus.value}; Meaning: {ev.action} / {ev.subject}"
         return {"success": True, "message": msg}
@@ -276,9 +278,9 @@ def _create_default_registry() -> ActionRegistry:
     def _oracle_detail_check(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Get a detail check word pair."""
         from src.oracle.mythic_gme import MythicGME
-        import random
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
 
-        mythic = MythicGME(rng=random.Random())
+        mythic = MythicGME(rng=DiceRngAdapter("OracleDetailCheck"))
         m = mythic.detail_check()
         msg = f"Detail Check — {m.action} / {m.subject}"
         return {"success": True, "message": msg}
@@ -589,12 +591,30 @@ def _create_default_registry() -> ActionRegistry:
     # -------------------------------------------------------------------------
     # Encounter actions
     # -------------------------------------------------------------------------
+    def _make_encounter_executor(action_name: str):
+        """Factory for encounter action executors."""
+        def executor(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+            from src.encounter.encounter_engine import EncounterAction
+            try:
+                action = EncounterAction(action_name)
+            except ValueError:
+                return {"success": False, "message": f"Unknown encounter action: {action_name}"}
+            actor = p.get("actor", "party")
+            result = dm.encounter.execute_action(action, actor=actor)
+            messages = [m for m in (result.messages or [])]
+            return {
+                "success": True,
+                "message": "\n".join(messages) if messages else f"Executed {action_name}.",
+            }
+        return executor
+
     registry.register(ActionSpec(
         id="encounter:parley",
         label="Attempt to parley",
         category=ActionCategory.ENCOUNTER,
         requires_state="encounter",
         help="Try to communicate with the encountered creatures.",
+        executor=_make_encounter_executor("parley"),
     ))
 
     registry.register(ActionSpec(
@@ -604,6 +624,7 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="encounter",
         safe_to_execute=False,
         help="Attempt to flee from the encounter.",
+        executor=_make_encounter_executor("evasion"),
     ))
 
     registry.register(ActionSpec(
@@ -613,6 +634,7 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="encounter",
         safe_to_execute=False,
         help="Initiate combat with the encountered creatures.",
+        executor=_make_encounter_executor("attack"),
     ))
 
     registry.register(ActionSpec(
@@ -621,17 +643,54 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.ENCOUNTER,
         requires_state="encounter",
         help="Wait and observe the creatures' behavior.",
+        executor=_make_encounter_executor("wait"),
     ))
 
     # -------------------------------------------------------------------------
     # Settlement actions
     # -------------------------------------------------------------------------
+    def _settlement_explore(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """List locations and overview of settlement."""
+        result = dm.settlement.execute_action("settlement:list_locations", {})
+        return result
+
+    def _settlement_visit_inn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Visit the inn."""
+        result = dm.settlement.handle_player_action("visit inn")
+        if isinstance(result, dict):
+            return result
+        return {"success": True, "message": "Visited the inn."}
+
+    def _settlement_visit_market(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Visit the market."""
+        result = dm.settlement.execute_action("settlement:list_services", {})
+        return result
+
+    def _settlement_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Talk to an NPC."""
+        npc_name = p.get("npc_id") or p.get("npc_name", "")
+        if npc_name:
+            result = dm.settlement.execute_action(
+                "settlement:talk",
+                {"npc_name": npc_name}
+            )
+        else:
+            # List available NPCs
+            result = dm.settlement.execute_action("settlement:list_npcs", {})
+        return result
+
+    def _settlement_leave(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Leave the settlement."""
+        result = dm.settlement.execute_action("settlement:leave", {})
+        return result
+
     registry.register(ActionSpec(
         id="settlement:explore",
         label="Explore the settlement",
         category=ActionCategory.SETTLEMENT,
         requires_state="settlement_exploration",
         help="Walk around and explore the settlement.",
+        executor=_settlement_explore,
     ))
 
     registry.register(ActionSpec(
@@ -640,6 +699,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.SETTLEMENT,
         requires_state="settlement_exploration",
         help="Go to the local inn for rest and rumors.",
+        executor=_settlement_visit_inn,
     ))
 
     registry.register(ActionSpec(
@@ -648,6 +708,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.SETTLEMENT,
         requires_state="settlement_exploration",
         help="Browse the local market for goods.",
+        executor=_settlement_visit_market,
     ))
 
     registry.register(ActionSpec(
@@ -659,6 +720,7 @@ def _create_default_registry() -> ActionRegistry:
             "npc_id": {"type": "string", "required": False},
         },
         help="Speak with a local NPC.",
+        executor=_settlement_talk_npc,
     ))
 
     registry.register(ActionSpec(
@@ -667,17 +729,57 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.SETTLEMENT,
         requires_state="settlement_exploration",
         help="Leave the settlement and return to wilderness.",
+        executor=_settlement_leave,
     ))
 
     # -------------------------------------------------------------------------
     # Downtime actions
     # -------------------------------------------------------------------------
+    def _downtime_rest(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Rest and recover."""
+        result = dm.downtime.handle_player_action("rest")
+        if hasattr(result, 'events') and result.events:
+            return {"success": result.success, "message": "\n".join(result.events)}
+        return {"success": True, "message": "Rested for the day."}
+
+    def _downtime_train(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Train a skill."""
+        skill = p.get("skill", "combat")
+        result = dm.downtime.handle_player_action(f"train {skill}")
+        if hasattr(result, 'events') and result.events:
+            return {"success": result.success, "message": "\n".join(result.events)}
+        return {"success": True, "message": f"Trained {skill}."}
+
+    def _downtime_research(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Research a topic."""
+        topic = p.get("topic", "local lore")
+        result = dm.downtime.handle_player_action(f"research {topic}")
+        if hasattr(result, 'events') and result.events:
+            return {"success": result.success, "message": "\n".join(result.events)}
+        return {"success": True, "message": f"Researched {topic}."}
+
+    def _downtime_craft(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Craft an item."""
+        # Crafting not fully implemented, return placeholder
+        return {
+            "success": True,
+            "message": "Crafting is not yet fully implemented. Use the oracle to adjudicate outcomes.",
+        }
+
+    def _downtime_end(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """End downtime period."""
+        result = dm.downtime.end_downtime()
+        if isinstance(result, dict) and result.get("error"):
+            return {"success": False, "message": result["error"]}
+        return {"success": True, "message": "Downtime ended. Returning to exploration."}
+
     registry.register(ActionSpec(
         id="downtime:rest",
         label="Rest for the day",
         category=ActionCategory.DOWNTIME,
         requires_state="downtime",
         help="Spend a day resting and recovering.",
+        executor=_downtime_rest,
     ))
 
     registry.register(ActionSpec(
@@ -685,7 +787,11 @@ def _create_default_registry() -> ActionRegistry:
         label="Train / Practice",
         category=ActionCategory.DOWNTIME,
         requires_state="downtime",
+        params_schema={
+            "skill": {"type": "string", "required": False},
+        },
         help="Spend time training skills or practicing.",
+        executor=_downtime_train,
     ))
 
     registry.register(ActionSpec(
@@ -693,7 +799,11 @@ def _create_default_registry() -> ActionRegistry:
         label="Research",
         category=ActionCategory.DOWNTIME,
         requires_state="downtime",
+        params_schema={
+            "topic": {"type": "string", "required": False},
+        },
         help="Research lore, magic, or local information.",
+        executor=_downtime_research,
     ))
 
     registry.register(ActionSpec(
@@ -702,6 +812,7 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.DOWNTIME,
         requires_state="downtime",
         help="Spend time crafting an item.",
+        executor=_downtime_craft,
     ))
 
     registry.register(ActionSpec(
@@ -710,6 +821,246 @@ def _create_default_registry() -> ActionRegistry:
         category=ActionCategory.DOWNTIME,
         requires_state="downtime",
         help="End the downtime period.",
+        executor=_downtime_end,
+    ))
+
+    # -------------------------------------------------------------------------
+    # Social Interaction actions
+    # -------------------------------------------------------------------------
+    def _social_say(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Say something to the NPC in conversation."""
+        text = p.get("text", "")
+        if not text:
+            return {
+                "success": False,
+                "message": "What do you want to say? Provide text parameter.",
+            }
+
+        # Check if LLM is available
+        if hasattr(dm, 'dm_agent') and dm.dm_agent:
+            # LLM can generate dialogue response
+            try:
+                # Get social context
+                context = dm.controller.get_social_context() if hasattr(dm.controller, 'get_social_context') else {}
+                npc_name = context.get("npc_name", "the NPC")
+                response = f"[LLM would generate {npc_name}'s response to: '{text}']"
+                return {"success": True, "message": response}
+            except Exception as e:
+                return {"success": True, "message": f"Error: {e}. Use oracle to determine NPC response."}
+        else:
+            # Offline mode - direct to oracle
+            return {
+                "success": True,
+                "message": (
+                    f"[Offline mode] You say: '{text}'\n"
+                    "Use oracle:fate_check to determine NPC reaction, or "
+                    "oracle:detail_check for their response theme."
+                ),
+            }
+
+    def _social_end(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """End the conversation and return to previous state."""
+        prev_state = dm.controller.state_machine.previous_state
+        if not prev_state:
+            return {"success": False, "message": "No previous state to return to."}
+
+        from src.game_state.state_machine import GameState
+
+        # Determine correct trigger based on return state
+        trigger_map = {
+            GameState.WILDERNESS_TRAVEL: "conversation_end_wilderness",
+            GameState.SETTLEMENT_EXPLORATION: "conversation_end_settlement",
+            GameState.DUNGEON_EXPLORATION: "conversation_end_dungeon",
+            GameState.FAIRY_ROAD_TRAVEL: "conversation_end_fairy_road",
+            GameState.ENCOUNTER: "conversation_end_wilderness",  # fallback
+        }
+
+        trigger = trigger_map.get(prev_state, "conversation_end_wilderness")
+
+        try:
+            dm.controller.transition(trigger)
+            return {
+                "success": True,
+                "message": f"Conversation ended. Returned to {prev_state.value}.",
+            }
+        except Exception as e:
+            return {"success": False, "message": f"Could not end conversation: {e}"}
+
+    def _social_oracle_question(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Ask the oracle about the NPC's response or attitude."""
+        question = p.get("question", "How does the NPC react?")
+        # Route to oracle fate check
+        from src.conversation.conversation_facade import _mythic_fate_check
+        return _mythic_fate_check(dm, {"question": question, "modifier": 0})
+
+    registry.register(ActionSpec(
+        id="social:say",
+        label="Say something",
+        category=ActionCategory.SOCIAL,
+        requires_state="social_interaction",
+        params_schema={
+            "text": {"type": "string", "required": True},
+        },
+        help="Say something to the NPC you're conversing with.",
+        executor=_social_say,
+    ))
+
+    registry.register(ActionSpec(
+        id="social:end",
+        label="End conversation",
+        category=ActionCategory.SOCIAL,
+        requires_state="social_interaction",
+        help="End the conversation and return to previous activity.",
+        executor=_social_end,
+    ))
+
+    registry.register(ActionSpec(
+        id="social:oracle_question",
+        label="Ask oracle about NPC",
+        category=ActionCategory.SOCIAL,
+        requires_state="social_interaction",
+        params_schema={
+            "question": {"type": "string", "required": False},
+        },
+        help="Use the oracle to determine NPC reactions or responses.",
+        executor=_social_oracle_question,
+    ))
+
+    # -------------------------------------------------------------------------
+    # Meta: Factions
+    # -------------------------------------------------------------------------
+    def _meta_factions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Get faction status summary."""
+        if not hasattr(dm, "factions") or not dm.factions:
+            return {"success": True, "message": "Faction system not initialized."}
+        from src.factions import get_factions_summary
+        summary = get_factions_summary(dm.factions)
+        return {"success": True, "message": summary}
+
+    registry.register(ActionSpec(
+        id="meta:factions",
+        label="Show faction status",
+        category=ActionCategory.META,
+        help="Display faction levels, territory, active actions, and news.",
+        executor=_meta_factions,
+    ))
+
+    # -------------------------------------------------------------------------
+    # Meta: Roll Log / Observability
+    # -------------------------------------------------------------------------
+    def _meta_roll_log(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Get recent dice roll events."""
+        from src.data_models import DiceRoller
+        dice = DiceRoller()
+        log = dice.get_roll_log()
+
+        # Get last N entries
+        limit = p.get("limit", 20)
+        recent = log[-limit:] if len(log) > limit else log
+
+        if not recent:
+            return {
+                "success": True,
+                "message": "No dice rolls recorded yet.",
+            }
+
+        # Format the output - DiceResult is a dataclass
+        lines = ["Recent Dice Rolls:", ""]
+        for entry in recent:
+            reason = getattr(entry, 'reason', 'Unknown')
+            notation = getattr(entry, 'notation', '?')
+            total = getattr(entry, 'total', '?')
+            lines.append(f"  {reason}: {notation} = {total}")
+
+        return {
+            "success": True,
+            "message": "\n".join(lines),
+            "roll_log": [
+                {
+                    "reason": getattr(e, 'reason', ''),
+                    "notation": getattr(e, 'notation', ''),
+                    "rolls": getattr(e, 'rolls', []),
+                    "total": getattr(e, 'total', 0),
+                }
+                for e in recent
+            ],
+        }
+
+    def _meta_export_run_log(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Export the full run log to JSON."""
+        import json
+        import os
+        from datetime import datetime
+        from src.data_models import DiceRoller
+
+        dice = DiceRoller()
+        log = dice.get_roll_log()
+
+        # Create export directory if needed
+        save_dir = p.get("save_dir", "saves")
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"run_log_{timestamp}.json"
+        filepath = os.path.join(save_dir, filename)
+
+        # Convert DiceResult objects to dicts
+        log_dicts = [
+            {
+                "reason": getattr(e, 'reason', ''),
+                "notation": getattr(e, 'notation', ''),
+                "rolls": getattr(e, 'rolls', []),
+                "total": getattr(e, 'total', 0),
+                "timestamp": str(getattr(e, 'timestamp', '')),
+            }
+            for e in log
+        ]
+
+        # Prepare export data
+        export_data = {
+            "timestamp": datetime.now().isoformat(),
+            "total_rolls": len(log),
+            "roll_log": log_dicts,
+        }
+
+        # Write to file
+        try:
+            with open(filepath, "w") as f:
+                json.dump(export_data, f, indent=2, default=str)
+
+            return {
+                "success": True,
+                "message": f"Run log exported to: {filepath}",
+                "filepath": filepath,
+                "total_rolls": len(log),
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Failed to export run log: {e}",
+            }
+
+    registry.register(ActionSpec(
+        id="meta:roll_log",
+        label="Show recent dice rolls",
+        category=ActionCategory.META,
+        params_schema={
+            "limit": {"type": "integer", "required": False, "default": 20},
+        },
+        help="Display recent dice roll events for observability.",
+        executor=_meta_roll_log,
+    ))
+
+    registry.register(ActionSpec(
+        id="meta:export_run_log",
+        label="Export full run log",
+        category=ActionCategory.META,
+        params_schema={
+            "save_dir": {"type": "string", "required": False, "default": "saves"},
+        },
+        help="Export the full dice roll log to a JSON file.",
+        executor=_meta_export_run_log,
     ))
 
     return registry

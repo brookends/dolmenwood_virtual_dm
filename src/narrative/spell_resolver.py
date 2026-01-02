@@ -4818,7 +4818,8 @@ class SpellResolver:
         # Save failed - query oracle for disguise status
         # In a real game, this would check world state or ask the DM
         # Here we use the Mythic GME oracle for a yes/no answer
-        mythic = MythicGME(rng=random.Random())
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        mythic = MythicGME(rng=DiceRngAdapter("SpellOracle"))
         oracle_result = mythic.fate_check(
             f"Is {target_id} disguised by mundane means?",
             Likelihood.FIFTY_FIFTY,

@@ -1326,6 +1326,22 @@ class HexCrawlEngine:
             "maze_hex_id": self._maze_hex_id,
         }
 
+    # =========================================================================
+    # PUBLIC ACCESSORS (for SuggestionBuilder and other consumers)
+    # =========================================================================
+
+    def get_travel_points_remaining(self) -> int:
+        """Get the number of travel points remaining for the current day."""
+        return self._travel_points_remaining
+
+    def get_travel_points_total(self) -> int:
+        """Get the total travel points for the current day."""
+        return self._travel_points_total
+
+    def get_current_hex_id(self) -> str:
+        """Get the current hex ID."""
+        return self.controller.party_state.location.location_id
+
     def _get_veered_hex(self, intended_hex: str) -> str:
         """Get adjacent hex when veered off course."""
         # Similar to lost but only one hex off
@@ -3656,11 +3672,13 @@ class HexCrawlEngine:
 
         # Trigger transition to SOCIAL_INTERACTION
         self.controller.transition(
-            "npc_interaction_started",
+            "initiate_conversation",
             context={
                 "npc_id": npc_id,
+                "npc_name": npc_name if 'npc_name' in dir() else "",
                 "hex_id": hex_id,
                 "poi_name": self._current_poi,
+                "return_to": "wilderness",
             },
         )
 

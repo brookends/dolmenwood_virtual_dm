@@ -85,6 +85,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "enter_fairy_road",
         "Party enters a fairy road through a fairy door",
     ),
+    StateTransition(
+        GameState.WILDERNESS_TRAVEL,
+        GameState.SOCIAL_INTERACTION,
+        "initiate_conversation",
+        "Party initiates conversation with wilderness NPC",
+    ),
     # Fairy Road Travel transitions
     StateTransition(
         GameState.FAIRY_ROAD_TRAVEL,

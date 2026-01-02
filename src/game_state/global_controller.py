@@ -5626,6 +5626,34 @@ class GlobalController:
                 },
             )
 
+        # Process weather and unseason for each day advanced
+        for _ in range(days):
+            # Check if an unseason should trigger
+            triggered = self.check_unseason_trigger()
+            if triggered:
+                self._log_event(
+                    "day_advance_unseason_triggered",
+                    {"unseason": triggered},
+                )
+
+            # Advance existing unseason (may end)
+            ended = self.advance_unseason_day()
+            if ended:
+                self._log_event(
+                    "day_advance_unseason_ended",
+                    {"unseason": ended},
+                )
+
+            # Roll new weather for the day
+            new_weather = self.roll_weather()
+            self._log_event(
+                "day_advance_weather",
+                {
+                    "current_day": self.time_tracker.days,
+                    "weather": new_weather.value,
+                },
+            )
+
     def _check_ration_spoilage(self, current_day: int) -> list[dict[str, Any]]:
         """
         Check all character inventories for spoiled rations.

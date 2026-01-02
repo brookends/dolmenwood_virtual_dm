@@ -31,6 +31,103 @@ from src.conversation.types import SuggestedAction
 
 
 # -----------------------------------------------------------------------------
+# Executability check
+# -----------------------------------------------------------------------------
+
+# Legacy action IDs that are handled by the ConversationFacade fallback if-chain
+LEGACY_SUPPORTED_ACTION_IDS = {
+    "meta:status",
+    "meta:factions",
+    "party:light",
+    "wilderness:travel",
+    "wilderness:look_around",
+    "wilderness:search_hex",
+    "wilderness:end_day",
+    "wilderness:approach_poi",
+    "wilderness:enter_poi",
+    "wilderness:leave_poi",
+    "wilderness:forage",
+    "wilderness:hunt",
+    "wilderness:resolve_poi_hazard",
+    "wilderness:enter_poi_with_conditions",
+    "wilderness:talk_npc",
+    "wilderness:take_item",
+    "wilderness:search_location",
+    "wilderness:explore_feature",
+    "wilderness:enter_dungeon",
+    "dungeon:move",
+    "dungeon:search",
+    "dungeon:listen",
+    "dungeon:open_door",
+    "dungeon:pick_lock",
+    "dungeon:disarm_trap",
+    "dungeon:rest",
+    "dungeon:map",
+    "dungeon:fast_travel",
+    "dungeon:exit",
+    "encounter:action",
+    "settlement:action",
+    "downtime:action",
+    "oracle:fate_check",
+    "oracle:random_event",
+    "oracle:detail_check",
+    "combat:resolve_round",
+    "combat:flee",
+    "combat:parley",
+    "combat:status",
+    "combat:end",
+    "combat:cast_spell",
+    "fairy_road:enter",
+    "fairy_road:travel_segment",
+    "fairy_road:resolve_encounter",
+    "fairy_road:flee_encounter",
+    "fairy_road:explore_location",
+    "fairy_road:continue_past",
+    "fairy_road:exit",
+    "fairy_road:stray",
+    "fairy_road:status",
+    "fairy_road:find_door",
+    # Social interaction actions
+    "social:say",
+    "social:end",
+    "social:oracle_question",
+    # Meta: Roll log
+    "meta:roll_log",
+    "meta:export_run_log",
+}
+
+
+def _is_action_executable(action_id: str) -> bool:
+    """
+    Check if an action ID is executable.
+
+    An action is executable if:
+    1. It's a transition action (transition:*)
+    2. It's registered in ActionRegistry with an executor
+    3. It's in the legacy fallback support set
+    """
+    # Transition actions are always handled
+    if action_id.startswith("transition:"):
+        return True
+
+    # Check legacy support first (faster)
+    if action_id in LEGACY_SUPPORTED_ACTION_IDS:
+        return True
+
+    # Check registry
+    try:
+        from src.conversation.action_registry import get_default_registry
+        registry = get_default_registry()
+        spec = registry.get(action_id)
+        if spec and spec.executor:
+            return True
+    except Exception:
+        pass
+
+    return False
+
+
+# -----------------------------------------------------------------------------
 # Small helpers
 # -----------------------------------------------------------------------------
 
@@ -126,6 +223,9 @@ def build_suggestions(dm: VirtualDM, *, character_id: Optional[str] = None, limi
     elif state == GameState.FAIRY_ROAD_TRAVEL:
         candidates.extend(_fairy_road_suggestions(dm, cid))
 
+    elif state == GameState.SOCIAL_INTERACTION:
+        candidates.extend(_social_suggestions(dm, cid))
+
     # ------------------------------------------------------------------
     # Cross-cutting: Mythic oracle (kept visible but not dominant)
     # ------------------------------------------------------------------
@@ -162,7 +262,14 @@ def build_suggestions(dm: VirtualDM, *, character_id: Optional[str] = None, limi
             best[c.action.id] = c
 
     ranked = sorted(best.values(), key=lambda c: c.score, reverse=True)
-    return [c.action for c in ranked[: _clamp(limit, 3, 20)]]
+
+    # Filter to only include executable actions
+    executable = [
+        c.action for c in ranked
+        if _is_action_executable(c.action.id)
+    ]
+
+    return executable[: _clamp(limit, 3, 20)]
 
 
 # -----------------------------------------------------------------------------
@@ -461,9 +568,13 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     out: list[_Candidate] = []
     hex_id = _current_hex_id(dm)
 
-    # Travel points are private in the engine; we read them for UX only.
-    tp_remaining = int(getattr(dm.hex_crawl, "_travel_points_remaining", 0) or 0)
-    tp_total = int(getattr(dm.hex_crawl, "_travel_points_total", 0) or 0)
+    # Use public accessors to get travel points (Phase 7: no private field access)
+    try:
+        tp_remaining = dm.hex_crawl.get_travel_points_remaining()
+        tp_total = dm.hex_crawl.get_travel_points_total()
+    except Exception:
+        tp_remaining = 0
+        tp_total = 0
 
     # Are we currently focused on a POI?
     try:
@@ -807,6 +918,9 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
         )
     )
 
+    # Add fairy door suggestions if any are available in this hex
+    out.extend(_get_fairy_door_suggestions(dm, hex_id))
+
     return out
 
 
@@ -1010,11 +1124,11 @@ def _combat_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     """Generate suggestions for COMBAT state."""
     out: list[_Candidate] = []
 
-    # Try to get combat state info
+    # Try to get combat state info (Phase 7: use public accessors)
     try:
         combat_engine = dm.controller.combat_engine
         is_in_combat = combat_engine and combat_engine.is_in_combat()
-        combat_state = combat_engine._combat_state if combat_engine else None
+        combat_state = combat_engine.get_combat_state() if combat_engine else None
     except Exception:
         is_in_combat = False
         combat_state = None
@@ -1284,6 +1398,93 @@ def _fairy_road_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                 help="Display current position, encounters, and destination.",
             ),
             score=35,
+        )
+    )
+
+    return out
+
+
+# -----------------------------------------------------------------------------
+# Social interaction suggestions
+# -----------------------------------------------------------------------------
+
+
+def _social_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
+    """Build suggestions for SOCIAL_INTERACTION state."""
+    out: list[_Candidate] = []
+
+    # Try to get NPC context
+    npc_name = "the NPC"
+    try:
+        if hasattr(dm.controller, '_social_context') and dm.controller._social_context:
+            npc_name = dm.controller._social_context.get("npc_name", "the NPC")
+    except Exception:
+        pass
+
+    # Say something (primary action)
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="social:say",
+                label=f"Say something to {npc_name}",
+                params={"text": ""},
+                safe_to_execute=True,
+                help="Speak to the NPC. Enter what you want to say.",
+            ),
+            score=100,
+        )
+    )
+
+    # Use oracle to determine NPC reaction
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="social:oracle_question",
+                label="Ask oracle about NPC reaction",
+                params={"question": "How does the NPC react?"},
+                safe_to_execute=True,
+                help="Use the Mythic GME oracle to determine NPC behavior.",
+            ),
+            score=90,
+        )
+    )
+
+    # End conversation
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="social:end",
+                label="End conversation",
+                safe_to_execute=True,
+                help="End the conversation and return to previous activity.",
+            ),
+            score=70,
+        )
+    )
+
+    # Oracle options are also useful in conversation
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="oracle:fate_check",
+                label="Fate check (yes/no question)",
+                params={"question": ""},
+                safe_to_execute=True,
+                help="Ask a yes/no question about the NPC or situation.",
+            ),
+            score=85,
+        )
+    )
+
+    out.append(
+        _Candidate(
+            SuggestedAction(
+                id="oracle:detail_check",
+                label="Detail check (flavor/theme)",
+                safe_to_execute=True,
+                help="Get a random theme or detail about the conversation.",
+            ),
+            score=80,
         )
     )
 
