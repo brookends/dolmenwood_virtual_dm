@@ -172,9 +172,12 @@ class MythicSpellAdjudicator:
         Initialize the adjudicator.
 
         Args:
-            mythic: MythicGME instance (creates new one if not provided)
+            mythic: MythicGME instance (creates new one with DiceRngAdapter if not provided)
         """
-        self._mythic = mythic or MythicGME()
+        if mythic is None:
+            from src.oracle.dice_rng_adapter import DiceRngAdapter
+            mythic = MythicGME(rng=DiceRngAdapter("SpellAdjudicator"))
+        self._mythic = mythic
 
     @property
     def chaos_factor(self) -> int:

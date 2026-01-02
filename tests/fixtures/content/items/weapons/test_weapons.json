@@ -1,0 +1,23 @@
+{
+  "category": "weapons",
+  "items": [
+    {
+      "item_id": "test_sword",
+      "name": "Test Sword",
+      "description": "A sword for testing.",
+      "cost_sp": 100,
+      "weight": 40,
+      "item_type": "weapon",
+      "damage": "1d8"
+    },
+    {
+      "item_id": "test_dagger",
+      "name": "Test Dagger",
+      "description": "A dagger for testing.",
+      "cost_sp": 30,
+      "weight": 10,
+      "item_type": "weapon",
+      "damage": "1d4"
+    }
+  ]
+}

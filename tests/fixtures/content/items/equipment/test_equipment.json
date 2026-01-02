@@ -1,0 +1,26 @@
+{
+  "category": "equipment",
+  "items": [
+    {
+      "item_id": "test_torch",
+      "name": "Test Torch",
+      "description": "A torch for testing.",
+      "cost_sp": 1,
+      "weight": 10,
+      "item_type": "light_source",
+      "light_source": {
+        "type": "torch",
+        "duration_turns": 6,
+        "radius_feet": 30
+      }
+    },
+    {
+      "item_id": "test_rope",
+      "name": "Test Rope",
+      "description": "50 feet of rope for testing.",
+      "cost_sp": 10,
+      "weight": 50,
+      "item_type": "adventuring_gear"
+    }
+  ]
+}

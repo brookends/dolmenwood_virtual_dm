@@ -3635,6 +3635,9 @@ class HexCrawlEngine:
         if not target_npc:
             return {"success": False, "error": f"NPC '{npc_id}' not found here"}
 
+        # Compute first_meeting BEFORE adding to _met_npcs
+        first_meeting = npc_id not in self._met_npcs
+
         # Mark as met
         self._met_npcs.add(npc_id)
 
@@ -3653,11 +3656,14 @@ class HexCrawlEngine:
                     npc_data = hex_npc
                     break
 
+        # Get NPC name from target_npc dict
+        npc_name = target_npc.get("name", npc_id)
+
         result = {
             "success": True,
             "npc_id": npc_id,
-            "npc_name": target_npc.get("name", npc_id),
-            "first_meeting": npc_id not in self._met_npcs,
+            "npc_name": npc_name,
+            "first_meeting": first_meeting,
         }
 
         if npc_data:
@@ -3675,10 +3681,11 @@ class HexCrawlEngine:
             "initiate_conversation",
             context={
                 "npc_id": npc_id,
-                "npc_name": npc_name if 'npc_name' in dir() else "",
+                "npc_name": npc_name,
                 "hex_id": hex_id,
                 "poi_name": self._current_poi,
                 "return_to": "wilderness",
+                "first_meeting": first_meeting,
             },
         )
 
@@ -3863,8 +3870,9 @@ class HexCrawlEngine:
             target_npc, approach_description, items_used or []
         )
 
-        # Use Mythic GME for fate check
-        mythic = MythicGME(chaos_factor=5)  # Default balanced chaos
+        # Use Mythic GME for fate check with DiceRngAdapter for determinism
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        mythic = MythicGME(chaos_factor=5, rng=DiceRngAdapter("CreativeApproach"))
 
         # Formulate the question based on approach
         question = self._formulate_approach_question(
@@ -4219,8 +4227,9 @@ class HexCrawlEngine:
                 pattern_match, hazard_info, approach_description, items_used or []
             )
         else:
-            # Use oracle for unknown approaches
-            mythic = MythicGME(chaos_factor=5)
+            # Use oracle for unknown approaches with DiceRngAdapter for determinism
+            from src.oracle.dice_rng_adapter import DiceRngAdapter
+            mythic = MythicGME(chaos_factor=5, rng=DiceRngAdapter("EnvironmentalApproach"))
 
             question = f"Does the creative approach to avoid {hazard_info.get('description', hazard_type)} succeed?"
             likelihood = Likelihood.FIFTY_FIFTY
@@ -4619,8 +4628,9 @@ class HexCrawlEngine:
             # Ideological loyalty is hardest to break
             base = Likelihood(max(base.value - 1, 0))
 
-        # Use oracle
-        mythic = MythicGME(chaos_factor=5)
+        # Use oracle with DiceRngAdapter for determinism
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        mythic = MythicGME(chaos_factor=5, rng=DiceRngAdapter("SubvertLoyalty"))
         question = f"Can {npc_id} be convinced to turn against {against}?"
         fate_result = mythic.fate_check(question, base)
 

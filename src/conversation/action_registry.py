@@ -667,17 +667,59 @@ def _create_default_registry() -> ActionRegistry:
         return result
 
     def _settlement_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
-        """Talk to an NPC."""
-        npc_name = p.get("npc_id") or p.get("npc_name", "")
-        if npc_name:
-            result = dm.settlement.execute_action(
-                "settlement:talk",
-                {"npc_name": npc_name}
-            )
-        else:
+        """
+        Talk to an NPC - transitions to SOCIAL_INTERACTION state.
+
+        This uses the same SOCIAL_INTERACTION system as hex NPC conversations,
+        ensuring a unified conversation pathway.
+        """
+        npc_query = p.get("npc_id") or p.get("npc_name", "")
+        if not npc_query:
             # List available NPCs
             result = dm.settlement.execute_action("settlement:list_npcs", {})
-        return result
+            return result
+
+        # Get NPC info from settlement engine
+        result = dm.settlement.execute_action(
+            "settlement:talk",
+            {"npc_name": npc_query}
+        )
+
+        if not result.get("success"):
+            return result
+
+        # Extract NPC information
+        npc_info = result.get("npc", {})
+        npc_id = npc_info.get("npc_id", npc_query)
+        npc_name = npc_info.get("name", npc_query)
+
+        # Get current settlement context
+        settlement = dm.settlement.get_active_settlement()
+        settlement_id = settlement.settlement_id if settlement else "unknown"
+        settlement_name = settlement.name if settlement else "Unknown Settlement"
+
+        # Transition to SOCIAL_INTERACTION state
+        dm.controller.transition(
+            "initiate_conversation",
+            context={
+                "npc_id": npc_id,
+                "npc_name": npc_name,
+                "settlement_id": settlement_id,
+                "settlement_name": settlement_name,
+                "return_to": "settlement",
+                "first_meeting": True,  # TODO: track met NPCs in settlement
+                "npc_info": npc_info,
+            },
+        )
+
+        return {
+            "success": True,
+            "message": f"You begin a conversation with {npc_name}.",
+            "action": "settlement:talk_npc",
+            "npc_id": npc_id,
+            "npc_name": npc_name,
+            "state": "social_interaction",
+        }
 
     def _settlement_leave(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Leave the settlement."""

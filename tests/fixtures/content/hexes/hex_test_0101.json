@@ -1,0 +1,30 @@
+{
+  "hex_id": "test_0101",
+  "coordinates": [1, 1],
+  "name": "Test Hex One",
+  "tagline": "A test hex for unit testing.",
+  "region": "Test Region",
+  "terrain_type": "forest",
+  "terrain_description": "Forest (2), Test Region",
+  "terrain_difficulty": 2,
+  "description": "A peaceful forest clearing for testing purposes.",
+  "points_of_interest": [],
+  "roll_tables": [],
+  "npcs": [
+    {
+      "npc_id": "test_npc_1",
+      "name": "Test NPC One",
+      "description": "A friendly test NPC.",
+      "kindred": "Human",
+      "alignment": "Neutral"
+    }
+  ],
+  "items": [],
+  "secrets": [],
+  "adjacent_hexes": ["test_0102"],
+  "roads": [],
+  "_metadata": {
+    "source_file": "test",
+    "pages": [1]
+  }
+}
