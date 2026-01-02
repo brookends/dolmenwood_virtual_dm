@@ -35,23 +35,13 @@ from src.conversation.types import SuggestedAction
 # -----------------------------------------------------------------------------
 
 # Legacy action IDs that are handled by the ConversationFacade fallback if-chain
-# NOTE: Most of these now have executors in ActionRegistry (Phase 4)
-# This list serves as a fallback for any that might still use the legacy path
-LEGACY_SUPPORTED_ACTION_IDS = {
-    # Wilderness actions that still use legacy path for some param variants
-    "wilderness:resolve_poi_hazard",
-    "wilderness:enter_poi_with_conditions",
-    "wilderness:take_item",
-    "wilderness:search_location",
-    "wilderness:explore_feature",
-    "wilderness:enter_dungeon",
-    # Combat actions that use complex routing
-    "combat:resolve_round",
-    "combat:flee",
-    "combat:parley",
-    "combat:status",
-    "combat:end",
-}
+# NOTE: Phase 4 migrated most legacy actions to ActionRegistry.
+# This list now contains only actions that cannot yet be fully migrated.
+LEGACY_SUPPORTED_ACTION_IDS: set[str] = set()
+# All previously legacy-only actions are now registered in ActionRegistry:
+# - wilderness:resolve_poi_hazard, wilderness:take_item, wilderness:search_location,
+#   wilderness:explore_feature, wilderness:enter_poi_with_conditions, wilderness:enter_dungeon
+# - combat:resolve_round, combat:flee, combat:parley, combat:status, combat:end
 
 
 def _is_action_executable(action_id: str) -> bool:

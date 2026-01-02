@@ -888,6 +888,10 @@ class ConversationFacade:
             msgs = [ChatMessage("dm", rr.narration)] if rr.narration else [ChatMessage("system", "Resolved.")]
             return self._response(msgs, character_id=character_id)
 
+        # Social interaction: route freeform text to social:say
+        if state == GameState.SOCIAL_INTERACTION:
+            return self.handle_action("social:say", {"text": text})
+
         # Combat requires mechanical resolution
         if state == GameState.COMBAT:
             return self._response(
@@ -953,10 +957,13 @@ class ConversationFacade:
         else:
             parts.append("Light: none")
         if self.dm.current_state == GameState.WILDERNESS_TRAVEL:
-            tp = getattr(self.dm.hex_crawl, "_travel_points_remaining", None)
-            tpt = getattr(self.dm.hex_crawl, "_travel_points_total", None)
-            if tp is not None and tpt is not None:
+            # Use public accessors (Phase 6: no private field access)
+            try:
+                tp = self.dm.hex_crawl.get_travel_points_remaining()
+                tpt = self.dm.hex_crawl.get_travel_points_total()
                 parts.append(f"Travel Points: {tp}/{tpt}")
+            except Exception:
+                pass  # Travel points not available
         if self.dm.current_state == GameState.DUNGEON_EXPLORATION:
             try:
                 summ = self.dm.dungeon.get_exploration_summary()

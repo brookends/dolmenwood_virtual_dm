@@ -306,6 +306,13 @@ class VirtualDM:
             for warning in content.warnings[:5]:  # Cap logged warnings
                 logger.warning(f"Content load warning: {warning}")
 
+            # Phase 5: Fail fast if critical content is empty
+            if not content.hexes:
+                raise RuntimeError(
+                    f"Content loading failed: No hexes loaded from {content_dir}. "
+                    "Wilderness travel requires hex data. Check content directory structure."
+                )
+
             self._content_loaded = True
             logger.info(
                 f"Base content loaded: {content.stats.hexes_loaded} hexes, "
@@ -313,6 +320,9 @@ class VirtualDM:
                 f"{content.stats.monsters_loaded} monsters"
             )
 
+        except RuntimeError:
+            # Re-raise RuntimeError (our explicit failures) without wrapping
+            raise
         except Exception as e:
             logger.error(f"Failed to load base content: {e}", exc_info=True)
             self._content_loaded = False

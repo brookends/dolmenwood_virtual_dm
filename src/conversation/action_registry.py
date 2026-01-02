@@ -199,10 +199,13 @@ def _create_default_registry() -> ActionRegistry:
         else:
             parts.append("Light: none")
         if dm.current_state == GameState.WILDERNESS_TRAVEL:
-            tp = getattr(dm.hex_crawl, "_travel_points_remaining", None)
-            tpt = getattr(dm.hex_crawl, "_travel_points_total", None)
-            if tp is not None and tpt is not None:
+            # Use public accessors (Phase 6: no private field access)
+            try:
+                tp = dm.hex_crawl.get_travel_points_remaining()
+                tpt = dm.hex_crawl.get_travel_points_total()
                 parts.append(f"Travel Points: {tp}/{tpt}")
+            except Exception:
+                pass  # Travel points not available
         if dm.current_state == GameState.DUNGEON_EXPLORATION:
             try:
                 summ = dm.dungeon.get_exploration_summary()
@@ -887,23 +890,71 @@ def _create_default_registry() -> ActionRegistry:
                 "message": "What do you want to say? Provide text parameter.",
             }
 
-        # Check if LLM is available
-        if hasattr(dm, 'dm_agent') and dm.dm_agent:
-            # LLM can generate dialogue response
+        # Get social context
+        npc_name = "the NPC"
+        npc_personality = "a mysterious figure"
+        disposition = "neutral"
+        try:
+            if hasattr(dm.controller, '_social_context') and dm.controller._social_context:
+                ctx = dm.controller._social_context
+                npc_name = ctx.get("npc_name", "the NPC")
+                npc_personality = ctx.get("personality", "a mysterious figure")
+                disposition = ctx.get("disposition", "neutral")
+                # Check for npc_info which may have more details
+                npc_info = ctx.get("npc_info", {})
+                if npc_info:
+                    npc_personality = npc_info.get("personality", npc_personality)
+                    disposition = npc_info.get("disposition", disposition)
+        except Exception:
+            pass
+
+        # Check if LLM/narrator is available and enabled
+        dm_agent = getattr(dm, '_dm_agent', None) or getattr(dm, 'dm_agent', None)
+        if dm_agent and hasattr(dm_agent, 'generate_simple_npc_dialogue'):
+            # Use LLM to generate NPC dialogue
+            # Python-referee principle: LLM narrates, doesn't decide mechanics
             try:
-                # Get social context
-                context = dm.controller.get_social_context() if hasattr(dm.controller, 'get_social_context') else {}
-                npc_name = context.get("npc_name", "the NPC")
-                response = f"[LLM would generate {npc_name}'s response to: '{text}']"
-                return {"success": True, "message": response}
+                result = dm_agent.generate_simple_npc_dialogue(
+                    npc_name=npc_name,
+                    personality=npc_personality,
+                    topic=text,  # What the player said
+                    disposition=disposition,
+                    known_info=[],  # NPC can share nothing unless specified
+                    secrets=[],  # No mechanical secrets to guard
+                )
+
+                if result and hasattr(result, 'description') and result.description:
+                    response = f"You say: \"{text}\"\n\n{result.description}"
+                    return {
+                        "success": True,
+                        "message": response,
+                        "narration": result.description,
+                    }
+                else:
+                    # LLM returned empty, fall back to oracle guidance
+                    return {
+                        "success": True,
+                        "message": (
+                            f"You say to {npc_name}: \"{text}\"\n"
+                            f"[Narration unavailable. Use oracle:fate_check for reaction, "
+                            "oracle:detail_check for theme.]"
+                        ),
+                    }
             except Exception as e:
-                return {"success": True, "message": f"Error: {e}. Use oracle to determine NPC response."}
+                # LLM error, fall back gracefully
+                return {
+                    "success": True,
+                    "message": (
+                        f"You say to {npc_name}: \"{text}\"\n"
+                        f"[Narration error: {e}. Use oracle to determine NPC response.]"
+                    ),
+                }
         else:
             # Offline mode - direct to oracle
             return {
                 "success": True,
                 "message": (
-                    f"[Offline mode] You say: '{text}'\n"
+                    f"[Offline mode] You say to {npc_name}: \"{text}\"\n"
                     "Use oracle:fate_check to determine NPC reaction, or "
                     "oracle:detail_check for their response theme."
                 ),
@@ -939,10 +990,62 @@ def _create_default_registry() -> ActionRegistry:
 
     def _social_oracle_question(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Ask the oracle about the NPC's response or attitude."""
-        question = p.get("question", "How does the NPC react?")
-        # Route to oracle fate check
-        from src.conversation.conversation_facade import _mythic_fate_check
-        return _mythic_fate_check(dm, {"question": question, "modifier": 0})
+        from src.oracle.mythic_gme import MythicGME, Likelihood
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+
+        question = p.get("question", "How does the NPC react?").strip()
+        if not question:
+            question = "How does the NPC react?"
+
+        # Get NPC context if available
+        npc_name = "the NPC"
+        try:
+            if hasattr(dm.controller, '_social_context') and dm.controller._social_context:
+                npc_name = dm.controller._social_context.get("npc_name", "the NPC")
+        except Exception:
+            pass
+
+        # Add NPC context to question if not already present
+        if npc_name != "the NPC" and npc_name.lower() not in question.lower():
+            question = f"[Re: {npc_name}] {question}"
+
+        # Get odds/likelihood from params
+        odds = (p.get("odds") or p.get("likelihood") or "fifty_fifty").strip().lower()
+        likelihood_map = {
+            "impossible": Likelihood.IMPOSSIBLE,
+            "very_unlikely": Likelihood.NO_WAY,
+            "unlikely": Likelihood.UNLIKELY,
+            "fifty_fifty": Likelihood.FIFTY_FIFTY,
+            "likely": Likelihood.LIKELY,
+            "very_likely": Likelihood.VERY_LIKELY,
+            "near_sure_thing": Likelihood.NEAR_SURE_THING,
+            "a_sure_thing": Likelihood.A_SURE_THING,
+            "has_to_be": Likelihood.HAS_TO_BE,
+        }
+        likelihood = likelihood_map.get(odds, Likelihood.FIFTY_FIFTY)
+
+        # Perform the fate check
+        mythic = MythicGME(rng=DiceRngAdapter("SocialOracleQuestion"))
+        result = mythic.fate_check(question, likelihood)
+
+        result_str = result.result.value.replace("_", " ").title()
+        msg = f"Oracle (Social): {result_str}\n"
+        msg += f"Question: {question}\n"
+        msg += f"Roll: {result.roll}, Chaos Factor: {result.chaos_factor}"
+
+        if result.random_event_triggered and result.random_event:
+            msg += f"\n[Random Event: {result.random_event}]"
+
+        return {
+            "success": True,
+            "message": msg,
+            "result": {
+                "answer": result_str,
+                "roll": result.roll,
+                "chaos_factor": result.chaos_factor,
+                "random_event": result.random_event if result.random_event_triggered else None,
+            },
+        }
 
     registry.register(ActionSpec(
         id="social:say",
@@ -1631,6 +1734,282 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Activate a torch or lantern.",
         executor=_party_light,
+    ))
+
+    # -------------------------------------------------------------------------
+    # Wilderness POI actions - Phase 4 (formerly legacy-only)
+    # -------------------------------------------------------------------------
+    def _wilderness_resolve_poi_hazard(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Resolve a POI hazard."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        hazard_index = int(p.get("hazard_index", 0))
+        character_id = p.get("character_id", "party")
+        approach_method = p.get("approach_method", "careful")
+
+        result = dm.hex_crawl.resolve_poi_hazard(hex_id, hazard_index, character_id, approach_method)
+        msg = result.get("message", "Hazard resolved.")
+        if result.get("description"):
+            msg = f"{msg}\n{result['description']}"
+        return {"success": result.get("success", True), "message": msg}
+
+    def _wilderness_take_item(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Take an item from a POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        item_name = p.get("item_name", "")
+        character_id = p.get("character_id", "party")
+
+        if not item_name:
+            return {"success": False, "message": "No item specified."}
+
+        try:
+            result = dm.hex_crawl.take_item(hex_id, item_name, character_id)
+            return {"success": result.get("success", True), "message": result.get("message", "Item taken.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not take item: {e}"}
+
+    def _wilderness_search_location(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Search a location within a POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        search_location = p.get("search_location", "around")
+        thorough = p.get("thorough", False)
+
+        try:
+            result = dm.hex_crawl.search_poi_location(hex_id, search_location, thorough)
+            return {"success": result.get("success", True), "message": result.get("message", "Search complete.")}
+        except Exception as e:
+            return {"success": False, "message": f"Search failed: {e}"}
+
+    def _wilderness_explore_feature(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Explore a notable feature."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        feature_description = p.get("feature_description", "")
+
+        if not feature_description:
+            return {"success": False, "message": "No feature specified."}
+
+        try:
+            result = dm.hex_crawl.explore_poi_feature(hex_id, feature_description)
+            return {"success": result.get("success", True), "message": result.get("message", "Feature explored.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not explore: {e}"}
+
+    def _wilderness_enter_poi_with_conditions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Enter POI with special conditions (payment, password, etc.)."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        payment = p.get("payment", "")
+        password = p.get("password", "")
+        approach = p.get("approach", "respectful")
+
+        try:
+            result = dm.hex_crawl.enter_poi_with_conditions(
+                hex_id, payment=payment, password=password, approach=approach
+            )
+            return {"success": result.get("success", True), "message": result.get("message", "Entry attempted.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not enter: {e}"}
+
+    def _wilderness_enter_dungeon(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Enter a dungeon from a POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        dungeon_id = p.get("dungeon_id", "")
+        entrance_room = p.get("entrance_room", "entrance")
+
+        try:
+            result = dm.hex_crawl.enter_dungeon(hex_id, dungeon_id, entrance_room)
+            return {"success": result.get("success", True), "message": result.get("message", "Entered dungeon.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not enter dungeon: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:resolve_poi_hazard",
+        label="Overcome POI hazard",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "hazard_index": {"type": "integer", "required": False},
+            "character_id": {"type": "string", "required": False},
+            "approach_method": {"type": "string", "required": False},
+        },
+        help="Attempt to overcome a hazard at a point of interest.",
+        executor=_wilderness_resolve_poi_hazard,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:take_item",
+        label="Take item",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "item_name": {"type": "string", "required": True},
+            "character_id": {"type": "string", "required": False},
+        },
+        help="Take an item from a point of interest.",
+        executor=_wilderness_take_item,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:search_location",
+        label="Search location",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "search_location": {"type": "string", "required": False},
+            "thorough": {"type": "boolean", "required": False},
+        },
+        help="Search a specific area within a point of interest.",
+        executor=_wilderness_search_location,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:explore_feature",
+        label="Explore feature",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "feature_description": {"type": "string", "required": True},
+        },
+        help="Examine a notable feature at a point of interest.",
+        executor=_wilderness_explore_feature,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:enter_poi_with_conditions",
+        label="Enter with conditions",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "payment": {"type": "string", "required": False},
+            "password": {"type": "string", "required": False},
+            "approach": {"type": "string", "required": False},
+        },
+        help="Enter a POI with special conditions (payment, password, etc.).",
+        executor=_wilderness_enter_poi_with_conditions,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:enter_dungeon",
+        label="Enter dungeon",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "dungeon_id": {"type": "string", "required": False},
+            "entrance_room": {"type": "string", "required": False},
+        },
+        help="Enter a dungeon from a point of interest.",
+        executor=_wilderness_enter_dungeon,
+    ))
+
+    # -------------------------------------------------------------------------
+    # Combat actions - Phase 4 (formerly legacy-only)
+    # -------------------------------------------------------------------------
+    def _combat_resolve_round(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Resolve a combat round."""
+        combat_engine = dm.controller.combat_engine
+        if not combat_engine or not combat_engine.is_in_combat():
+            return {"success": False, "message": "No active combat."}
+
+        result = combat_engine.resolve_round()
+        msg = "\n".join(result.messages) if hasattr(result, 'messages') and result.messages else "Round resolved."
+        return {"success": True, "message": msg}
+
+    def _combat_flee(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to flee from combat."""
+        combat_engine = dm.controller.combat_engine
+        if not combat_engine or not combat_engine.is_in_combat():
+            return {"success": False, "message": "No active combat."}
+
+        result = combat_engine.attempt_flee()
+        msg = result.get("message", "Flee attempted.")
+        return {"success": result.get("success", False), "message": msg}
+
+    def _combat_parley(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt parley during combat."""
+        combat_engine = dm.controller.combat_engine
+        if not combat_engine or not combat_engine.is_in_combat():
+            return {"success": False, "message": "No active combat."}
+
+        result = combat_engine.attempt_parley()
+        msg = result.get("message", "Parley attempted.")
+        return {"success": result.get("success", False), "message": msg}
+
+    def _combat_status(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Show combat status."""
+        combat_engine = dm.controller.combat_engine
+        if not combat_engine:
+            return {"success": False, "message": "No combat engine available."}
+
+        summary = combat_engine.get_combat_summary()
+        lines = ["Combat Status:"]
+        lines.append(f"Round: {summary.get('round', 1)}")
+        for c in summary.get("combatants", []):
+            status = f"{c.get('name')}: HP {c.get('hp_current')}/{c.get('hp_max')}"
+            if c.get("is_defeated"):
+                status += " [DEFEATED]"
+            lines.append(f"  {status}")
+        return {"success": True, "message": "\n".join(lines)}
+
+    def _combat_end(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """End combat and return to previous state."""
+        combat_engine = dm.controller.combat_engine
+        if combat_engine and combat_engine.is_in_combat():
+            combat_engine.end_combat("player_request")
+
+        # Transition back to previous state
+        try:
+            dm.controller.transition("combat_resolved")
+            return {"success": True, "message": "Combat ended."}
+        except Exception as e:
+            return {"success": True, "message": f"Combat ended. (Transition note: {e})"}
+
+    registry.register(ActionSpec(
+        id="combat:resolve_round",
+        label="Resolve round",
+        category=ActionCategory.ENCOUNTER,
+        requires_state="combat",
+        help="Resolve the current combat round.",
+        executor=_combat_resolve_round,
+    ))
+
+    registry.register(ActionSpec(
+        id="combat:flee",
+        label="Flee",
+        category=ActionCategory.ENCOUNTER,
+        requires_state="combat",
+        help="Attempt to flee from combat.",
+        executor=_combat_flee,
+    ))
+
+    registry.register(ActionSpec(
+        id="combat:parley",
+        label="Parley",
+        category=ActionCategory.ENCOUNTER,
+        requires_state="combat",
+        help="Attempt to negotiate with enemies.",
+        executor=_combat_parley,
+    ))
+
+    registry.register(ActionSpec(
+        id="combat:status",
+        label="Combat status",
+        category=ActionCategory.ENCOUNTER,
+        requires_state="combat",
+        help="Show current combat status.",
+        executor=_combat_status,
+    ))
+
+    registry.register(ActionSpec(
+        id="combat:end",
+        label="End combat",
+        category=ActionCategory.ENCOUNTER,
+        requires_state="combat",
+        help="End the combat and return to exploration.",
+        executor=_combat_end,
     ))
 
     return registry
