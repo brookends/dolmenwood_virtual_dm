@@ -1,0 +1,1040 @@
+{
+  "schema_version": 1,
+  "faction_id": "drune",
+  "name": "Drune",
+  "description": "A sinister cabal of sorcerers who covet occult knowledge above all else.",
+  "tags": [
+    "occult",
+    "ley_lines",
+    "standing_stones",
+    "geomancy",
+    "shadow",
+    "flame",
+    "human",
+    "secretive",
+    "anti_cold_prince"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0507",
+      "1403",
+      "0506",
+      "1603",
+      "0503",
+      "0910",
+      "1205",
+      "0804",
+      "1507",
+      "0509",
+      "0207",
+      "0304",
+      "0903",
+      "0204",
+      "0502"
+    ],
+    "settlements": [
+      "odd"
+    ],
+    "strongholds": [
+      {
+        "id": "drune_lodge_0507",
+        "points": 4
+      },
+      {
+        "id": "odd_church_monolith_1403",
+        "points": 1
+      },
+      {
+        "id": "nodal_drodh_0506",
+        "points": 1
+      },
+      {
+        "id": "nodal_endstone_1603",
+        "points": 1
+      },
+      {
+        "id": "nodal_eol_0503",
+        "points": 1
+      },
+      {
+        "id": "nodal_golokstone_0910",
+        "points": 1
+      },
+      {
+        "id": "nodal_gorthstone_1205",
+        "points": 1
+      },
+      {
+        "id": "nodal_hadrwyl_0804",
+        "points": 1
+      },
+      {
+        "id": "nodal_norstone_1507",
+        "points": 1
+      },
+      {
+        "id": "nodal_pelloryons_0509",
+        "points": 1
+      },
+      {
+        "id": "nodal_radhd_0207",
+        "points": 1
+      },
+      {
+        "id": "nodal_sigil_0304",
+        "points": 1
+      },
+      {
+        "id": "nodal_tenkystone_0903",
+        "points": 1
+      },
+      {
+        "id": "nodal_uruzzur_0204",
+        "points": 1
+      },
+      {
+        "id": "nodal_yrthstone_0502",
+        "points": 1
+      }
+    ],
+    "domains": [
+      {
+        "id": "dwelmfurgh_circle_of_chell",
+        "points": 3
+      },
+      {
+        "id": "ring_of_chell_ward",
+        "points": 3
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "drune_lodge_0507",
+      "name": "Drune Lodge",
+      "hex": "0507",
+      "type": "stronghold",
+      "role": "seat_of_power",
+      "status": "active",
+      "summary": "Centre of Drune activity; hidden doors and catacombs beneath Droun Loch; home of the Elder Phanatarch and the Aegis."
+    },
+    {
+      "id": "dwelmfurgh_circle_of_chell",
+      "name": "Dwelmfurgh",
+      "hex": "0506",
+      "type": "region",
+      "role": "heartland",
+      "status": "active",
+      "summary": "The area around Lake Longmere within the circle of Chell; Drune heartland where their word is law."
+    },
+    {
+      "id": "odd_church_monolith_1403",
+      "name": "Odd (Village) — Church Monolith",
+      "hex": "1403",
+      "type": "settlement_control",
+      "role": "covert_control",
+      "status": "active",
+      "summary": "The Drune secretly control Odd and the monolith integrated into its disused church."
+    },
+    {
+      "id": "nodal_drodh_0506",
+      "name": "Drodh",
+      "hex": "0506",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Rigmirth."
+    },
+    {
+      "id": "nodal_endstone_1603",
+      "name": "Endstone",
+      "hex": "1603",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Mathonwy."
+    },
+    {
+      "id": "nodal_eol_0503",
+      "name": "Eœl",
+      "hex": "0503",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Morgodh."
+    },
+    {
+      "id": "nodal_golokstone_0910",
+      "name": "Golokstone",
+      "hex": "0910",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Aethogrym."
+    },
+    {
+      "id": "nodal_gorthstone_1205",
+      "name": "Gorthstone",
+      "hex": "1205",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Haygral."
+    },
+    {
+      "id": "nodal_hadrwyl_0804",
+      "name": "Hadrwyl",
+      "hex": "0804",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Hermanach."
+    },
+    {
+      "id": "nodal_norstone_1507",
+      "name": "Norstone",
+      "hex": "1507",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Morthgwail."
+    },
+    {
+      "id": "nodal_pelloryons_0509",
+      "name": "The Pelloryons",
+      "hex": "0509",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Cadraigaunt."
+    },
+    {
+      "id": "nodal_radhd_0207",
+      "name": "Radhd",
+      "hex": "0207",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Grebglin."
+    },
+    {
+      "id": "nodal_sigil_0304",
+      "name": "Sigil",
+      "hex": "0304",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Wargfole."
+    },
+    {
+      "id": "nodal_tenkystone_0903",
+      "name": "Tenkystone",
+      "hex": "0903",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Jhaelloch."
+    },
+    {
+      "id": "nodal_uruzzur_0204",
+      "name": "Uruzzur",
+      "hex": "0204",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Mestmord."
+    },
+    {
+      "id": "nodal_yrthstone_0502",
+      "name": "Yrthstone",
+      "hex": "0502",
+      "type": "nodal_stone",
+      "role": "ley_node",
+      "status": "active",
+      "summary": "Nodal stone warded by the Audrune Zarlac."
+    }
+  ],
+  "resources": [
+    {
+      "id": "geomancy_ley_mastery",
+      "name": "Geomancy and Ley-Mastery",
+      "tags": [
+        "magic",
+        "ley_lines",
+        "standing_stones",
+        "travel"
+      ],
+      "description": "Secret arts to harness and manipulate earth energies via standing stones; mapped greater and lesser leys; Audrunes know ley-travel to locations and otherworldly realms."
+    },
+    {
+      "id": "ring_of_chell_wardens",
+      "name": "Wardens of the Ring of Chell",
+      "tags": [
+        "magic",
+        "defense",
+        "territory",
+        "anti_cold_prince"
+      ],
+      "description": "Maintain the vast artificial ley encircling Dwelmfurgh, preventing the Cold Prince from returning; vigil is relentless and lethal."
+    },
+    {
+      "id": "arcane_knowledge_hoard",
+      "name": "Hoarded Arcane Knowledge",
+      "tags": [
+        "lore",
+        "intrigue",
+        "research"
+      ],
+      "description": "Knowledge is sacred, valued above mortal life; Drune rede: “Seek, Know, Keep.”"
+    },
+    {
+      "id": "binding_subjugation",
+      "name": "Occult Binding and Subjugation",
+      "tags": [
+        "magic",
+        "ritual",
+        "coercion"
+      ],
+      "description": "Power amplified through spirits and godlings bound and subjugated; kidnapping and sacrifice feared as fates worse than death."
+    },
+    {
+      "id": "shadow_and_flame",
+      "name": "Magic of Shadow and Flame",
+      "tags": [
+        "magic",
+        "combat",
+        "stealth"
+      ],
+      "description": "All Drunes see in utter blackness and may summon flickering green flames at will."
+    },
+    {
+      "id": "wicker_bramble_constructs",
+      "name": "Constructs of Wicker and Bramble",
+      "tags": [
+        "magic",
+        "constructs",
+        "craft"
+      ],
+      "description": "Occult command of wood and plants; creation of servitors of wood, wicker, and bramble."
+    },
+    {
+      "id": "distributed_society_network",
+      "name": "Distributed Drune Society Network",
+      "tags": [
+        "agents",
+        "logistics",
+        "cover"
+      ],
+      "description": "Aegis bureaucracy, Audrune hermits, cottager scavengers/poison-brewers/omen-watchers, Drunewives with enchanted notions and kilnlings, wandering Braithmaids, and Lampers trained for initiation."
+    }
+  ],
+  "goals": [
+    {
+      "id": "maintain_ring_chell",
+      "name": "Maintain the Ring of Chell",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Chief Drune activity: tend the Ring of Chell around Dwelmfurgh to prevent the Cold Prince’s return; they tolerate no rival in arcane dominion."
+    },
+    {
+      "id": "reawaken_gheillough",
+      "name": "Reawaken the Entity Gheillough",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Seek to restore contact with the mysterious power in Lake Longmere’s waters (lost when the Nag-Lord tainted the lake)."
+    },
+    {
+      "id": "subjugate_atanuwe",
+      "name": "Entrap and Subjugate Atanuwë",
+      "visibility": "secret",
+      "default_scope": "goal",
+      "notes": "Treat Atanuwë as a godling whose powers must be subjugated and harnessed; success would nearly complete Drune occult dominion."
+    },
+    {
+      "id": "reclaim_lost_nodals",
+      "name": "Reclaim Dominion Over Lost Nodals",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Recover Sargstone (0904) stolen by Atanuwë and address Bafflestone (0907) corrupted by Atanuwë."
+    },
+    {
+      "id": "locate_fifth_nodal_ywyr",
+      "name": "Locate the Energy Disturbance on Ywyr",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Investigate fluctuations suggesting an unlawful fifth nodal along ley line Ywyr; the stone is concealed in Chateau Mauvesse (1802) by Ygraine’s magic."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "reinforce_ring_of_chell",
+      "name": "Reinforce and inspect the Ring of Chell",
+      "scope": "operation",
+      "goal_id": "maintain_ring_chell",
+      "resource_tags": [
+        "magic",
+        "ley_lines",
+        "defense"
+      ],
+      "targets": [
+        {
+          "type": "domain",
+          "id": "ring_of_chell_ward"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "drune_ring_chell_integrity",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Hooded figures were seen at dusk, pacing the invisible circle of Chell; the air smelled of ozone and green flame."
+        }
+      ]
+    },
+    {
+      "id": "ritual_reawaken_gheillough",
+      "name": "Conduct rites to reawaken Gheillough at Lake Longmere",
+      "scope": "mission",
+      "goal_id": "reawaken_gheillough",
+      "resource_tags": [
+        "ritual",
+        "binding",
+        "research"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "lake_longmere"
+        }
+      ],
+      "segments": 10,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "gheillough_contact_restored",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Strange dreams ripple through Dwelmfurgh—some swear the lake itself has begun to whisper again."
+        }
+      ]
+    },
+    {
+      "id": "infiltrate_atanuwe_influence",
+      "name": "Gather materials and victims for a binding snare against Atanuwë",
+      "scope": "mission",
+      "goal_id": "subjugate_atanuwe",
+      "resource_tags": [
+        "intrigue",
+        "ritual",
+        "coercion"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0904"
+        }
+      ],
+      "segments": 12,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "atanuwe_binding_prepared",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Disappearances in the hamlets have increased; folk mutter of the Hooded Men and rites beneath the loch."
+        }
+      ]
+    },
+    {
+      "id": "reclaim_sargstone",
+      "name": "Attempt to wrest Sargstone back from Atanuwë",
+      "scope": "operation",
+      "goal_id": "reclaim_lost_nodals",
+      "resource_tags": [
+        "magic",
+        "agents",
+        "combat"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0904"
+        },
+        {
+          "type": "stronghold",
+          "id": "nodal_sargstone_0904"
+        }
+      ],
+      "segments": 14,
+      "on_complete": [
+        {
+          "type": "add_territory",
+          "target": {
+            "type": "hex",
+            "id": "0904"
+          },
+          "points": 2
+        },
+        {
+          "type": "set_flag",
+          "key": "sargstone_contested",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "contain_bafflestone_corruption",
+      "name": "Contain the corruption radiating from Bafflestone",
+      "scope": "operation",
+      "goal_id": "reclaim_lost_nodals",
+      "resource_tags": [
+        "magic",
+        "ley_lines",
+        "ritual"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0907"
+        }
+      ],
+      "segments": 10,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "bafflestone_containment",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A sickly shimmer over the stones has dulled—temporarily—after a night of chanting and green fire."
+        }
+      ]
+    },
+    {
+      "id": "survey_ywyr_for_fifth_nodal",
+      "name": "Survey ley line Ywyr to locate the concealed fifth nodal",
+      "scope": "mission",
+      "goal_id": "locate_fifth_nodal_ywyr",
+      "resource_tags": [
+        "research",
+        "ley_lines",
+        "agents"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "1802"
+        },
+        {
+          "type": "site",
+          "id": "chateau_mauvesse"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "fifth_nodal_suspected_location",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A Drune hermit was seen taking star-maps and plumb-lines toward the old chateau; birds fell silent in his wake."
+        }
+      ]
+    },
+    {
+      "id": "ally_with_witches",
+      "name": "Pursue a deeper alliance with the witches",
+      "scope": "diplomacy",
+      "goal_id": "maintain_ring_chell",
+      "resource_tags": [
+        "intrigue",
+        "agents",
+        "lore"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "witches"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "drune_witch_alliance",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "procure_saintly_relics",
+      "name": "Procure saintly relics to weaponize against Atanuwë",
+      "scope": "mission",
+      "goal_id": "subjugate_atanuwe",
+      "resource_tags": [
+        "intrigue",
+        "agents",
+        "research"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "pluritine_church_sites"
+        }
+      ],
+      "segments": 7,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "saintly_relics_stockpile",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A reliquary went missing from a roadside chapel; wax dripped like tears where the seal had been cut."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "reinforce_ring_of_chell",
+    "ritual_reawaken_gheillough",
+    "survey_ywyr_for_fifth_nodal"
+  ],
+  "organization": {
+    "leader": {
+      "entity_id": "caduceus_doome_elder_phanatarch",
+      "name": "Caduceus Doome — Elder Phanatarch",
+      "role": "elder_phanatarch"
+    },
+    "tiers": [
+      {
+        "name": "The Aegis (High Council)",
+        "members": [
+          "High council dwelling in Drune Lodge; coordinate occult schemes, judge conflicts, and set policy."
+        ]
+      },
+      {
+        "name": "The Drunemoot",
+        "members": [
+          "Moonlit meetings overseen by Aegis members to mete out justice or discuss affairs; up to ~30 Drunes, often fewer."
+        ]
+      },
+      {
+        "name": "Audrunes",
+        "members": [
+          "Sub-order tasked with nodal stones and ley-lines; hermit-like wardens; hold secrets of ley-travel."
+        ]
+      },
+      {
+        "name": "Cottagers",
+        "members": [
+          "Isolated Drune men and families; scavenge ruins for grimoires, dream-talk to ghosts, brew poisons, record omens, track noble houses until called by Aegis."
+        ]
+      },
+      {
+        "name": "Drunewives",
+        "members": [
+          "Practice inherited crafts (herbalism, pottery, song); enchanted 'notions'; construct clay servitors called 'kilnlings'; manage household property."
+        ]
+      },
+      {
+        "name": "Braithmaids",
+        "members": [
+          "Adolescent daughters roaming wilds; sing enchanted melodies; forage magical herbs; may become Drunewives or join witches."
+        ]
+      },
+      {
+        "name": "Lampers",
+        "members": [
+          "Adolescent sons in gruelling ritual/occult study; initiated on 17th birthday; only Drune-born sons become Drunes; each born into a station."
+        ]
+      }
+    ],
+    "notes": "The Drune are a folk apart, marrying only among themselves; feared by common folk who avoid speaking their true name."
+  },
+  "entities": {
+    "caduceus_doome_elder_phanatarch": {
+      "type": "npc",
+      "names": [
+        "Caduceus Doome",
+        "The Owl King",
+        "The Bone King"
+      ],
+      "appearance": "Gaunt, vault-pale human man of imposing height; crowned with finger bones; swathed in black; bramble-tangled hair and beard; green fire in his pupils.",
+      "demeanour": "Neutral; cool-minded, scheming, manipulative; pulls at bony fingers as if removing rings.",
+      "speech": {
+        "style": "Dispassionate whisper that penetrates all noise.",
+        "languages": [
+          "Woldish",
+          "Old Woldish",
+          "Drunic",
+          "Liturgic",
+          "Sylvan",
+          "High Elfish (smattering)"
+        ]
+      },
+      "desires": [
+        "Forge a deeper alliance with the witches, uniting occult energies of male and female.",
+        "Procure saintly relics and turn their power against Atanuwë."
+      ],
+      "possessions": {
+        "vorpal_knife": {
+          "type": "magic_item",
+          "name": "Vorpal Knife",
+          "value_gp": 20000,
+          "effects": [
+            "Arcane Dagger of black iron; on natural 19–20 attack roll, decapitates Small/Medium targets (natural 20 for solid stone/metal).",
+            "Creatures without heads are unaffected; some headed creatures (e.g., constructs) are not killed by decapitation."
+          ]
+        },
+        "amulet_of_refraction": {
+          "type": "magic_item",
+          "reference": "p398"
+        },
+        "magic_rings": [
+          {
+            "type": "magic_item",
+            "name": "Ring of Charming (Humans)",
+            "material": "steel"
+          },
+          {
+            "type": "magic_item",
+            "name": "Ring of Energy Resistance (Fire)",
+            "material": "gold"
+          }
+        ],
+        "crown_of_old_droun": {
+          "type": "treasure",
+          "value_gp": 15000,
+          "effects": [
+            "Wearer ages at one-fifth normal rate.",
+            "Wearer experiences fever dreams where deceased Drunes whisper their rede."
+          ],
+          "notes": "Formed of the finger bones of prior 'Bone Kings'."
+        }
+      },
+      "servants": {
+        "staff": [
+          "scribes",
+          "archivists",
+          "spies"
+        ],
+        "personal_guard": {
+          "type": "monster",
+          "category": "shadows",
+          "count": 12,
+          "reference": "DMB"
+        },
+        "auldweathe": {
+          "type": "monster",
+          "category": "phantoms",
+          "count": 9,
+          "notes": "Spirits of Braithmaids who sacrificed mortal lives to serve the king; function as guards and advisors with ancient memories."
+        }
+      },
+      "location": {
+        "hex": "0507",
+        "enclave_id": "drune_lodge_0507",
+        "place": "Crypts of Drune Lodge"
+      },
+      "combat_stats": {
+        "category": "medium_mortal_genius_neutral",
+        "level": 14,
+        "ac": 12,
+        "hp": 38,
+        "saves": {
+          "D": 10,
+          "R": 10,
+          "H": 9,
+          "B": 12,
+          "S": 10
+        },
+        "attacks": [
+          {
+            "name": "Vorpal Knife",
+            "to_hit": 6,
+            "damage": "1d4+2"
+          },
+          {
+            "name": "Staff",
+            "to_hit": 4,
+            "damage": "1d4 + flame"
+          },
+          {
+            "name": "Spell",
+            "to_hit": null,
+            "damage": null
+          }
+        ],
+        "speed": 40,
+        "morale": 9,
+        "xp": 6550,
+        "traits": [
+          "Dark sight: see normally in darkness up to 30′.",
+          "Flame: victims damaged by staff save vs Spell or take 3 damage/round for 1d4 rounds (snaking green flame).",
+          "Enter Chell: in Drune Lodge, may step into the Ring of Chell at any point around the ring.",
+          "Ley travel: in a hex crossed by a ley line, may step into the ley and travel astrally at 24 miles/hour."
+        ],
+        "spells_memorized": {
+          "rank_1": [
+            "Decipher",
+            "Firelight",
+            "Ingratiate",
+            "Ignite / Extinguish",
+            "Shield of Force"
+          ],
+          "rank_2": [
+            "Flaming Spirit",
+            "Invisibility",
+            "Mirror Image",
+            "Phantasm"
+          ],
+          "rank_3": [
+            "Dispel Magic",
+            "Fireball",
+            "Haste",
+            "Serpent Glyph"
+          ],
+          "rank_4": [
+            "Arcane Eye",
+            "Dimension Door",
+            "Polymorph"
+          ],
+          "rank_5": [
+            "Animate Dead",
+            "Cloudkill",
+            "Mire"
+          ],
+          "rank_6": [
+            "Geas",
+            "Word of Doom"
+          ]
+        }
+      }
+    },
+    "aubrathon": {
+      "type": "historical_figure",
+      "names": [
+        "The Aubrathon"
+      ],
+      "summary": "Renegade Drune genius of seven centuries past; expelled after astrally infiltrating the Witch Queen’s vaults and stealing the Onyx Mirror of Embala.",
+      "last_known_sites": [
+        {
+          "hex": "1103",
+          "site": "Aubrathon’s magically veiled tower (mirror sealed within)"
+        },
+        {
+          "hex": "0201",
+          "site": "Monument in Northern Scratch at the site of his final discourse with his acolyte Cylaeth"
+        }
+      ]
+    }
+  },
+  "tables": {
+    "drune_names": {
+      "dice": "d20",
+      "columns": [
+        "male",
+        "female",
+        "unisex",
+        "surname"
+      ],
+      "rows": [
+        [
+          1,
+          "Abram",
+          "Aembgyth",
+          "Agred",
+          "Astraleth"
+        ],
+        [
+          2,
+          "Aestgrym",
+          "Andramath",
+          "Ambe",
+          "Bonewort"
+        ],
+        [
+          3,
+          "Brackborne",
+          "Braithlynne",
+          "Athe",
+          "Broodmoot"
+        ],
+        [
+          4,
+          "Brimgord",
+          "Caendrgald",
+          "Eld",
+          "Broomewith"
+        ],
+        [
+          5,
+          "Cantcor",
+          "Deregbra",
+          "Frig",
+          "Canker"
+        ],
+        [
+          6,
+          "Celleddach",
+          "Eolenn",
+          "Gremd",
+          "Casket"
+        ],
+        [
+          7,
+          "Dhrimmlon",
+          "Eostra",
+          "Haldrime",
+          "Chancter"
+        ],
+        [
+          8,
+          "Forroth",
+          "Estembra",
+          "Hancith",
+          "Dolmward"
+        ],
+        [
+          9,
+          "Grimlocke",
+          "Frigdra",
+          "Hestor",
+          "Doome"
+        ],
+        [
+          10,
+          "Hecator",
+          "Glana",
+          "Jhaellen",
+          "Duskwith"
+        ],
+        [
+          11,
+          "Hestith",
+          "Gremlith",
+          "Jhorhen",
+          "Hallow"
+        ],
+        [
+          12,
+          "Hestobraithe",
+          "Gwentmarg",
+          "Limnis",
+          "Loome"
+        ],
+        [
+          13,
+          "Illforridh",
+          "Gwordlith",
+          "Lolldhrimm",
+          "Moonewer"
+        ],
+        [
+          14,
+          "Majorus",
+          "Haelleth",
+          "Mandra",
+          "Owlhame"
+        ],
+        [
+          15,
+          "Malrubius",
+          "Idralynne",
+          "Mirrod",
+          "Unction"
+        ],
+        [
+          16,
+          "Mirroddor",
+          "Lagwynne",
+          "Morda",
+          "Unlight"
+        ],
+        [
+          17,
+          "Molloch",
+          "Lestwith",
+          "Oblith",
+          "Vaunte"
+        ],
+        [
+          18,
+          "Mordoch",
+          "Polldra",
+          "Obwynd",
+          "Wicker"
+        ],
+        [
+          19,
+          "Oglimoth",
+          "Pollith",
+          "Oed",
+          "Wraithmord"
+        ],
+        [
+          20,
+          "Waykehald",
+          "Sigdra",
+          "Wakehyld",
+          "Wyrd"
+        ]
+      ],
+      "notes": "Name table for Drune NPCs; surnames and forenames used across Drune society."
+    }
+  },
+  "lore": {
+    "overview": {
+      "masters_of_stones": "Unchallenged masters of Dolmenwood’s standing stones and nodal stones, except Bafflestone (corrupt), Phandrwyl (secret by Ygraine), and Sargstone (usurped by Atanuwë).",
+      "audrunes": "Audrunes are the designated masters of leys, guarding stones and knowing the secrets of travel along leys and into otherworldly realms.",
+      "ring_of_chell": "They tend the Ring of Chell encircling Dwelmfurgh, barring the Cold Prince from the mortal world.",
+      "culture": "A folk apart, marrying only among themselves; common folk avoid speaking their accursed true name, using euphemisms like 'Watchers of the Wood'."
+    },
+    "schemes": {
+      "reawaken_gheillough": "Reawaken the lake-entity Gheillough, contact lost when the Nag-Lord tainted Lake Longmere.",
+      "subjugate_atanuwe": "Bind and harness Atanuwë’s godling power to complete occult dominion.",
+      "reclaim_lost_nodals": "Recover Sargstone and address corruption of Bafflestone.",
+      "locate_fifth_nodal_ywyr": "Track energy fluctuations of Ywyr to locate a concealed unlawful nodal in Chateau Mauvesse (1802)."
+    },
+    "enclaves": {
+      "drune_lodge": "Hidden doors and catacombs beneath Droun Loch; guarded by great magic, invisible and unlocatable to non-Drune.",
+      "dwelmfurgh": "Heartland within the circle of Chell around Lake Longmere; their word is law.",
+      "odd": "Secret control over the village and its church monolith."
+    },
+    "magic_notes": {
+      "binding_subjugation": "They derive potency from bound spirits and godlings; apply techniques to lesser beings to amplify or create arcane force.",
+      "shadow_flame": "All Drunes can see in utter blackness and summon green flames.",
+      "constructs": "They command wood and plants, creating servitors of wood, wicker, and bramble."
+    },
+    "aubrathon": {
+      "summary": "Renegade Aegis member and genius theoretician; expelled after stealing the Onyx Mirror of Embala from the Witch Queen’s vaults.",
+      "tower_hex": "1103",
+      "monument_hex": "0201",
+      "notes": "Some Drunes later honoured his innovation and erected a monument where he last spoke with his acolyte Cylaeth before vanishing north into the bog."
+    }
+  },
+  "references": {
+    "source_file": "output.pdf",
+    "pages": [
+      52,
+      53,
+      54,
+      55
+    ],
+    "notes": "Drune faction writeup (overview, schemes, enclaves, organization, name table, Elder Phanatarch stat block, Aubrathon lore)."
+  }
+}

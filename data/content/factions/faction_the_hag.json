@@ -1,0 +1,635 @@
+{
+  "schema_version": 1,
+  "faction_id": "the_hag",
+  "name": "The Hag",
+  "faction_type": "unique_supernatural",
+  "alignment": "chaotic (evil)",
+  "summary": "A cursed fairy princess in the swamps of Hag’s Addle who guards the door to Absynthe and preys upon mortals.",
+  "description": "An evil old woman—truly a malevolent fairy of ancient years—who haunts the swamp of Hag’s Addle. She is a cursed fairy princess (sister of the Queen of Blackbirds) exiled to the mortal world and compelled to guard the door to the fairy realm of Absynthe. The Hag delights in deception, torment, and the consumption of mortal flesh, and she bargains with (or preys upon) those who dare seek her roaming hut.",
+  "tags": [
+    "fairy",
+    "hag",
+    "swamp",
+    "hags_addle",
+    "absynthe",
+    "chaotic",
+    "antagonist",
+    "oracle_services"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0908"
+    ],
+    "settlements": [],
+    "strongholds": [
+      {
+        "id": "hag_roaming_hut_0908",
+        "points": 2
+      }
+    ],
+    "domains": [
+      {
+        "id": "hags_addle_region",
+        "points": 4
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "hag_roaming_hut_0908",
+      "name": "The Hag’s Roaming Hut",
+      "hex": "0908",
+      "type": "roaming_hut",
+      "role": "Lair and prison-threshold; wardens the fairy door into Absynthe."
+    }
+  ],
+  "resources": [
+    {
+      "id": "fairy_magic",
+      "name": "Ancient Fairy Magic",
+      "tags": [
+        "magic",
+        "fairy",
+        "glamour",
+        "runes"
+      ],
+      "description": "Potent glamours, beguilement, runes, and arcane spells; can cloak her true form and wield powerful curses."
+    },
+    {
+      "id": "absynthe_door",
+      "name": "Door to Absynthe",
+      "tags": [
+        "travel",
+        "leverage",
+        "fairy_realm"
+      ],
+      "description": "A guarded passage from Hag’s Addle into the fairy realm of Absynthe; the Hag can 'turn a blind eye' for a price."
+    },
+    {
+      "id": "grimalkin_servants",
+      "name": "Grimalkin Servitors",
+      "tags": [
+        "minions",
+        "scouts",
+        "guards"
+      ],
+      "description": "Five grimalkins, charmed to remain forever in chester; they serve as spies, messengers, and guardians."
+    },
+    {
+      "id": "witch_herbs",
+      "name": "Witch-Herbs and Fungi",
+      "tags": [
+        "alchemy",
+        "herbalism",
+        "poisons"
+      ],
+      "description": "Pouches containing portions of Bloodcap, Bosun’s Balm, Grinning Jenny, Hag’s Tears, Lankswith, Marshwick, Snogglebeard, and Witch’s Oyster."
+    },
+    {
+      "id": "boggle_lantern",
+      "name": "Boggle Lantern",
+      "tags": [
+        "magic_item",
+        "fear",
+        "control"
+      ],
+      "description": "An uncanny lantern used to intimidate, lure, or ensnare mortals in the marsh."
+    }
+  ],
+  "goals": [
+    {
+      "id": "release_from_bondage",
+      "name": "Release from Her Bondage",
+      "visibility": "secret",
+      "default_scope": "goal",
+      "notes": "Seeks to break the fairy geas that binds her to Hag’s Addle and the Absynthe door."
+    },
+    {
+      "id": "corrupt_absynthe",
+      "name": "Corrupt the Fairy Realm of Absynthe",
+      "visibility": "hidden",
+      "default_scope": "mission",
+      "notes": "Occasionally lets unsavoury things into Absynthe as revenge; dreams of fully ruining her sister’s domain."
+    },
+    {
+      "id": "expand_swamp",
+      "name": "Expand Her Swampy Dominion",
+      "visibility": "hidden",
+      "default_scope": "mission",
+      "notes": "Would extend her miasma and corruption beyond Hag’s Addle if freed."
+    },
+    {
+      "id": "indulge_appetites",
+      "name": "Indulge Her Appetites",
+      "visibility": "secret",
+      "default_scope": "task",
+      "notes": "Seeks succulent young mortals for lust and flesh; delights in deception and cruelty."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "seek_geas_breaking_lore",
+      "name": "Seek lore to break the geas",
+      "scope": "mission",
+      "goal_id": "release_from_bondage",
+      "resource_tags": [
+        "magic",
+        "fairy",
+        "knowledge"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "nag_lord"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "flag": "hag_geas_breakthrough",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Whispers in the marsh: an ancient power is seeking a way to unmake a fairy geas in Hag’s Addle."
+        }
+      ]
+    },
+    {
+      "id": "bargain_with_atanuwe",
+      "name": "Bargain with Atanuwë for liberation",
+      "scope": "mission",
+      "goal_id": "release_from_bondage",
+      "resource_tags": [
+        "bargain",
+        "magic",
+        "influence"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "nag_lord"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "Rumour: a crooked pact was struck between the Nag-Lord’s agents and a crone of the southern bogs."
+        },
+        {
+          "type": "set_flag",
+          "flag": "hag_atanuwe_contact",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "admit_unsavoury_into_absynthe",
+      "name": "Admit unsavoury things into Absynthe",
+      "scope": "mission",
+      "goal_id": "corrupt_absynthe",
+      "resource_tags": [
+        "absynthe_door",
+        "malice",
+        "travel"
+      ],
+      "targets": [
+        {
+          "type": "domain",
+          "id": "absynthe"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "flag": "absynthe_corruption_events",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Fairy-haunted tales spread: something vile slipped into Absynthe through a bog-door the Queen of Blackbirds cannot watch."
+        }
+      ]
+    },
+    {
+      "id": "tempt_adventurers_with_access",
+      "name": "Tempt adventurers with access to Absynthe",
+      "scope": "task",
+      "goal_id": "corrupt_absynthe",
+      "resource_tags": [
+        "bargain",
+        "absynthe_door"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0908"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "A price is being named in hushed tones: the Hag of 0908 will 'turn a blind eye' at the fairy door."
+        }
+      ]
+    },
+    {
+      "id": "spread_miasma_within_hags_addle",
+      "name": "Spread miasma within Hag’s Addle",
+      "scope": "mission",
+      "goal_id": "expand_swamp",
+      "resource_tags": [
+        "magic",
+        "swamp",
+        "terror"
+      ],
+      "targets": [
+        {
+          "type": "domain",
+          "id": "hags_addle_region"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "flag": "hags_addle_miasma_level",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "The bog grows fouler—fungus blooms on trees and a sickly reek clings to travellers near Hag’s Addle."
+        }
+      ]
+    },
+    {
+      "id": "extend_bog_tendrils_outward",
+      "name": "Extend bog tendrils beyond the marsh",
+      "scope": "goal",
+      "goal_id": "expand_swamp",
+      "resource_tags": [
+        "magic",
+        "territory"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0908"
+        }
+      ],
+      "segments": 10,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "Marshwater rises in ditches far from Hag’s Addle, and frogs sing where fields were dry."
+        }
+      ]
+    },
+    {
+      "id": "lure_mortals_for_feast",
+      "name": "Lure mortals for a feast",
+      "scope": "task",
+      "goal_id": "indulge_appetites",
+      "resource_tags": [
+        "deception",
+        "predation"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0908"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "A rustic maid was seen gathering marsh herbs—then vanished. Folks swear the bog is hungry again."
+        },
+        {
+          "type": "set_flag",
+          "flag": "hag_feasts_recently",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "offer_prophecy_for_price",
+      "name": "Offer prophecy for a terrible price",
+      "scope": "task",
+      "goal_id": "indulge_appetites",
+      "resource_tags": [
+        "oracle",
+        "prophecy",
+        "bargain"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0908"
+        }
+      ],
+      "segments": 3,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "Someone returned from the marsh babbling of smoke-visions—and walking oddly slow, as if lazy curse clung to their bones."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "seek_geas_breaking_lore",
+    "admit_unsavoury_into_absynthe",
+    "spread_miasma_within_hags_addle"
+  ],
+  "organization": {
+    "leader": {
+      "entity_id": "the_hag",
+      "name": "The Hag",
+      "role": "cursed_warden"
+    },
+    "tiers": [
+      {
+        "name": "Servitors",
+        "members": [
+          "Five grimalkins, charmed to remain forever in chester (spies/guards).",
+          "Marsh-things and lesser boggarts lured by her magic (occasional)."
+        ]
+      }
+    ],
+    "notes": "A solitary, supernatural power. The Hag’s influence is strongest around her roaming hut and the fairy door she is compelled to guard."
+  },
+  "entities": {
+    "the_hag": {
+      "type": "unique_fairy",
+      "names": [
+        "The Hag",
+        "Black Allis",
+        "Shub’s Nanna (false)",
+        "Old Crust-Breath",
+        "Mother Swithenby"
+      ],
+      "true_name_note": "Her true (fairy) name is forgotten to all but the Queen of Blackbirds.",
+      "demeanour": "Depraved, lustful, treacherous; loves to deceive, torment, and kill mortals; fears elf nobles and anything associated with them.",
+      "speech": {
+        "style": "Slavering and cackling",
+        "languages": [
+          "Woldish",
+          "Old Woldish",
+          "Sylvan",
+          "Mewl",
+          "High Elfish (rusty)"
+        ]
+      },
+      "desires": [
+        "Fornication with succulent young mortals",
+        "Feast on the flesh of succulent young mortals",
+        "Break the geas binding her to Hag’s Addle and the Absynthe door"
+      ],
+      "possessions": {
+        "major": [
+          "Enchanted walking stick (Arcane Club)",
+          "Boggle Lantern"
+        ],
+        "herbs_fungi": [
+          "Bloodcap",
+          "Bosun’s Balm",
+          "Grinning Jenny",
+          "Hag’s Tears",
+          "Lankswith",
+          "Marshwick",
+          "Snogglebeard",
+          "Witch’s Oyster"
+        ],
+        "notes": "Carries pouches containing 1d4 portions of each listed herb/fungus."
+      },
+      "family": {
+        "sister": {
+          "entity_id": "queen_of_blackbirds",
+          "name": "Queen of Blackbirds",
+          "relationship": "estranged elder sister"
+        }
+      },
+      "servants": [
+        "Five grimalkins (charmed; remain forever in chester)"
+      ],
+      "location": {
+        "hex": "0908",
+        "enclave_id": "hag_roaming_hut_0908",
+        "region": "Hag’s Addle"
+      },
+      "combat_stats": {
+        "category": "medium_fairy_genius_chaotic",
+        "level": 11,
+        "ac": 16,
+        "hp": 57,
+        "saves": {
+          "doom": 6,
+          "ray": 7,
+          "hold": 8,
+          "blast": 9,
+          "spell": 10
+        },
+        "attacks": [
+          {
+            "name": "Stick",
+            "to_hit": "+10",
+            "damage": "1d4+2"
+          },
+          {
+            "name": "Finger snap (waxification)",
+            "effect": "Save vs Spell or be transformed into a gnarled candle (requires target enchanted with Sway the Mortal Mind)"
+          },
+          {
+            "name": "Magic",
+            "effect": "Fairy magic and arcane spells (see special)"
+          }
+        ],
+        "speed": 20,
+        "morale": 8,
+        "xp": 5600,
+        "traits": {
+          "cold_iron": "Suffers 1 extra point of damage when hit with (enchanted) cold iron weapons.",
+          "immunities": "Only harmed by magic or magic weapons.",
+          "magic_resistance": "+4 bonus to Saving Throws against effects of magical origin."
+        },
+        "special": {
+          "cloak_true_form": "May take on any outward appearance (female humanoids similar size); detection magic has 50% chance to fail to detect glamour.",
+          "fairy_magic": {
+            "glamours_beguilement": "once/day",
+            "cloak_of_darkness": "once/day",
+            "disguise_object": "once/day",
+            "fairy_dust": "once/day",
+            "moon_sight": "once/day",
+            "subtle_sight": "once/day",
+            "lesser_runes": "once/day (all)",
+            "greater_runes": "once/day (Arcane Unbinding)",
+            "arcane_spells_once_day": [
+              "Hex Weaving",
+              "Polymorph",
+              "Cloudkill"
+            ]
+          },
+          "finger_snap": "With a click of her fingers, can permanently transform a subject enchanted with Sway the Mortal Mind into a gnarled candle (Save vs Spell). Can reverse with another click.",
+          "walking_stick": "Crooked stick acts as an Arcane Club."
+        },
+        "pronouns": {
+          "subject": "she",
+          "object": "her",
+          "possessive": "her"
+        }
+      }
+    },
+    "queen_of_blackbirds": {
+      "type": "fairy_noble",
+      "names": [
+        "Queen of Blackbirds"
+      ],
+      "description": "Fairy noble of Blackbirds; estranged elder sister of the Hag who cursed and exiled her to the mortal world and bound her as warden of Absynthe’s door.",
+      "relationship_to_faction": "Primary antagonist/constraint; source of the geas."
+    },
+    "grimalkins": {
+      "type": "minion_group",
+      "names": [
+        "Grimalkins (five)"
+      ],
+      "description": "Charmed feline servants bound to remain forever in chester; serve the Hag as scouts, spies, and guardians."
+    }
+  },
+  "tables": {
+    "favoured_guises": {
+      "die": "d8",
+      "columns": [
+        "illusory_guise"
+      ],
+      "rows": [
+        {
+          "roll": 1,
+          "illusory_guise": "A rustic maid gathering marsh herbs."
+        },
+        {
+          "roll": 2,
+          "illusory_guise": "A longhorn woman, capering in a copse."
+        },
+        {
+          "roll": 3,
+          "illusory_guise": "A gaunt, wide-eyed girl, tall beyond her years."
+        },
+        {
+          "roll": 4,
+          "illusory_guise": "A pregnant woman with eyes of blood red."
+        },
+        {
+          "roll": 5,
+          "illusory_guise": "An elderly lady with skin covered in fungus."
+        },
+        {
+          "roll": 6,
+          "illusory_guise": "A wooden woman, carved from a rotting log."
+        },
+        {
+          "roll": 7,
+          "illusory_guise": "A crow-headed lady, dressed in sodden lace."
+        },
+        {
+          "roll": 8,
+          "illusory_guise": "A pale, wailing corpse, lurching through the bog."
+        }
+      ]
+    },
+    "prices_examples": {
+      "die": "n/a",
+      "columns": [
+        "price",
+        "details"
+      ],
+      "rows": [
+        {
+          "price": "A living child",
+          "details": "To be dismembered and boiled into a stew."
+        },
+        {
+          "price": "A limb",
+          "details": "Freshly severed with her rusty bread knife; she will cauterise with irons from her fire."
+        },
+        {
+          "price": "A night of passion",
+          "details": "Full night in her embrace; max HP –1d6; –1 Attack & Saving Throws until gaining a level."
+        },
+        {
+          "price": "A soul",
+          "details": "Extracted via an all-night ritual; cannot be raised from the dead thereafter."
+        }
+      ]
+    }
+  },
+  "lore": {
+    "background": {
+      "corrupt_fairy_princess": "Once a fairy princess and sister of the Queen of Blackbirds; delighted in time’s ravages—decay, disease, death—and corrupted her sister’s water-meadows into bog.",
+      "exiled_to_mortal_world": "Cursed to wither and decay (never die) in Hag’s Addle, imprisoned amid the miasma she created.",
+      "cursed_warden": "Bound by a fairy geas to ward the door from Hag’s Addle into Absynthe—compelled to dwell at the threshold she cannot pass."
+    },
+    "schemes": [
+      {
+        "id": "release",
+        "text": "Endeavours to dispel the geas and gain release from bondage."
+      },
+      {
+        "id": "corrupt_absynthe",
+        "text": "Revenge by occasionally allowing unsavoury things into Absynthe; dreams of full corruption."
+      },
+      {
+        "id": "expand",
+        "text": "Would extend her swampy dominion and miasma further into Dolmenwood if freed."
+      }
+    ],
+    "faction_relations": [
+      {
+        "faction_id": "nag_lord",
+        "relation": "seeks_contact",
+        "notes": "Hopes Atanuwë can break the magic binding her to Hag’s Addle and the fairy door."
+      },
+      {
+        "faction_id": "witches",
+        "relation": "occasional_consultations",
+        "notes": "Individual witches consult her on herbalism/sorcery; no formal affiliation."
+      }
+    ],
+    "adventurer_services": [
+      {
+        "service": "Access to Absynthe",
+        "effect": "For a price, turns a blind eye at the fairy door (within constraints of her geas)."
+      },
+      {
+        "service": "Prophecy",
+        "effect": "Smoke-vision stupor (1d6 hours). Each witness has 10% chance of curse of indolence (2-in-6 do nothing in combat; XP –50%); gaining a level removes penalties."
+      },
+      {
+        "service": "Spell casting",
+        "effect": "May cast powerful fairy/arcane spells useful to adventurers (see combat stats)."
+      },
+      {
+        "service": "Bestow vigour / beauty",
+        "effect": "Increase CON or CHA by 1d3 (max 18) for 1d6 years."
+      },
+      {
+        "service": "Raise dead",
+        "effect": "Effective without time limit, but requires a true lover to forfeit life and immortal soul; that sacrifice cannot be raised."
+      }
+    ]
+  },
+  "references": {
+    "source_file": "output.pdf",
+    "source_pages": [
+      82,
+      83
+    ],
+    "notes": "Faction file derived from the 'The Hag' faction entry; formatted for the Dolmenwood faction-turn system."
+  }
+}

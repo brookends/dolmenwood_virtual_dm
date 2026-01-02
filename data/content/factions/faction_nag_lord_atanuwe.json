@@ -1,0 +1,957 @@
+{
+  "schema_version": 1,
+  "faction_id": "nag_lord",
+  "name": "Atanuwë, the Nag-Lord",
+  "description": "A nine-legged unicorn chaos godling (\"Old Shub\") ruling a Court of Chaos at Sargstone (hex 0904). It commands crookhorn brigands, atacorns, harridans, corrupted unicorns, harpies, and other monstrous humanoids. Its acts are laced with cosmic irony, absurdity, and horrific slapstick, driving Dolmenwood toward the Weird.",
+  "tags": [
+    "chaos",
+    "chaotic",
+    "godling",
+    "court_of_chaos",
+    "crookhorns",
+    "atacorns"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0904",
+      "1004",
+      "0803",
+      "0911",
+      "1509",
+      "0807",
+      "1104",
+      "1110"
+    ],
+    "settlements": [
+      "cobton_on_the_shiver",
+      "dreg"
+    ],
+    "strongholds": [
+      {
+        "id": "court_of_the_nag_lord",
+        "points": 4
+      },
+      {
+        "id": "baron_fragglehorns_tower",
+        "points": 2
+      },
+      {
+        "id": "camp_of_captain_snarkscorn",
+        "points": 2
+      },
+      {
+        "id": "cottage_of_shubs_nanna",
+        "points": 1
+      },
+      {
+        "id": "deceivers_well",
+        "points": 1
+      },
+      {
+        "id": "ignormwms_cottage",
+        "points": 1
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "baron_fragglehorns_tower",
+      "name": "Baron Fragglehorn’s Tower",
+      "hex": "1004",
+      "type": "tower",
+      "role": "Base of operations in the Valley of Wise Beasts; safeguard against attack from the east."
+    },
+    {
+      "id": "camp_of_captain_snarkscorn",
+      "name": "The Camp of Captain Snarkscorn",
+      "hex": "0803",
+      "type": "military_camp",
+      "role": "Semi-permanent military outpost guarding the Court against attack from the west."
+    },
+    {
+      "id": "cottage_of_shubs_nanna",
+      "name": "Cottage of Shub’s Nanna",
+      "hex": "0911",
+      "type": "cottage",
+      "role": "Dwelling of Shub’s Nanna, a favored servant who supplies the Court with kidnapped children."
+    },
+    {
+      "id": "court_of_the_nag_lord",
+      "name": "Court of the Nag-Lord",
+      "hex": "0904",
+      "type": "court",
+      "role": "Court of Chaos; lair of Atanuwë and its most powerful servants and minions."
+    },
+    {
+      "id": "deceivers_well",
+      "name": "The Deceiver’s Well",
+      "hex": "1509",
+      "type": "hideout",
+      "role": "Hiding place of the atacorn Hawalyeer."
+    },
+    {
+      "id": "ignormwms_cottage",
+      "name": "Ignormwm’s Cottage",
+      "hex": "0807",
+      "type": "cottage",
+      "role": "Dwelling of the atacorn Ignormwm and her spawn."
+    },
+    {
+      "id": "nagwood",
+      "name": "The Nagwood",
+      "hex": null,
+      "type": "region",
+      "role": "Twisted woods overrun by evil trees and crookhorns; sorcerous malaise that twists the mind."
+    },
+    {
+      "id": "valley_of_wise_beasts",
+      "name": "The Valley of Wise Beasts",
+      "hex": null,
+      "type": "region",
+      "role": "Long valley of awakened talking humanoid animals (Cobbins)."
+    },
+    {
+      "id": "cobton_on_the_shiver",
+      "name": "The Village of Cobton-on-the-Shiver",
+      "hex": "1104",
+      "type": "village",
+      "role": "Centre of Cobbin culture in the Valley; watched over by a crookhorn garrison."
+    },
+    {
+      "id": "dreg",
+      "name": "The Village of Dreg",
+      "hex": "1110",
+      "type": "village",
+      "role": "Hiding place of the atacorn Crewithyant."
+    }
+  ],
+  "resources": [
+    {
+      "id": "court_of_chaos",
+      "name": "Court of Chaos at Sargstone",
+      "tags": [
+        "ritual",
+        "command",
+        "ley_line",
+        "fortified"
+      ],
+      "description": "The Court established at Sargstone (hex 0904), nexus of two ley lines; seat of Atanuwë's absolute authority."
+    },
+    {
+      "id": "crookhorn_brigands",
+      "name": "Crookhorn Brigands",
+      "tags": [
+        "military",
+        "brigands",
+        "terror",
+        "mob"
+      ],
+      "description": "Breggles corrupted by Atanuwë who carry out its whims; an ever-increasing force threatening travel and civilization (notably Prigwort, hex 1106)."
+    },
+    {
+      "id": "atacorns",
+      "name": "Atacorns",
+      "tags": [
+        "elite",
+        "agents",
+        "chaos"
+      ],
+      "description": "Spawn of the Nag-Lord, unicorn-things with human features and cruel humor; three remain in Dolmenwood (Ignormwm, Crewithyant, Hawalyeer)."
+    },
+    {
+      "id": "harridan_soothsayers",
+      "name": "Harridan Soothsayers",
+      "tags": [
+        "ritual",
+        "lieutenants",
+        "divination"
+      ],
+      "description": "Witches corrupted into hideous ogres; serve as lieutenants and soothsayers."
+    },
+    {
+      "id": "harpies_and_giants",
+      "name": "Harpies and Giant Humanoids",
+      "tags": [
+        "military",
+        "shock_troops"
+      ],
+      "description": "A menagerie of chaotic monsters: wicked harpies, twisted ogres, and evil fomorians gathered at the Court."
+    },
+    {
+      "id": "corrupt_unicorns",
+      "name": "Corrupt Unicorn Lieutenants",
+      "tags": [
+        "elite",
+        "war",
+        "ritual"
+      ],
+      "description": "A small number of unicorns thoroughly corrupted; assist in war and dark sorcery."
+    }
+  ],
+  "goals": [
+    {
+      "id": "rule_dolmenwood",
+      "name": "Become Ruler of All Dolmenwood",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Expand dominion to encompass the whole of Dolmenwood and beyond."
+    },
+    {
+      "id": "marry_gheillough",
+      "name": "Marriage With Gheillough",
+      "visibility": "secret",
+      "default_scope": "goal",
+      "notes": "Summon the slumbering dragon-spirit Gheillough, complete its corruption into pure Chaos, and wed it."
+    },
+    {
+      "id": "collect_holy_bones",
+      "name": "Collect the Bones of Holy People",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Expand a collection of saints' skulls, revivified for the Court’s amusement."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "send_crookhorn_raids_south",
+      "name": "Send crookhorn raids south",
+      "scope": "mission",
+      "goal_id": "rule_dolmenwood",
+      "resource_tags": [
+        "military",
+        "brigands",
+        "terror"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "1106"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "claim_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1106"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "Crookhorn raids intensify on the southern roads; travelers vanish and villages lock their gates at dusk."
+        }
+      ]
+    },
+    {
+      "id": "expand_nagwood_malaise",
+      "name": "Expand the Nagwood’s sorcerous malaise",
+      "scope": "mission",
+      "goal_id": "rule_dolmenwood",
+      "resource_tags": [
+        "ritual",
+        "corruption"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "nagwood"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "nagwood_malaise_level",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A mind-warping malaise creeps outward from the Nagwood; hunters return glassy-eyed and laughing."
+        }
+      ]
+    },
+    {
+      "id": "seize_saint_relics",
+      "name": "Seize bones of holy people",
+      "scope": "task",
+      "goal_id": "collect_holy_bones",
+      "resource_tags": [
+        "agents",
+        "sacrilege",
+        "terror"
+      ],
+      "targets": [
+        {
+          "type": "tag",
+          "id": "pluritine_relic_site"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "saint_skulls_collected",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A shrine’s ossuary was found empty; laughter and hoofprints trail into the woods."
+        }
+      ]
+    },
+    {
+      "id": "kidnap_children_for_larder",
+      "name": "Kidnap children for the Court’s larder",
+      "scope": "task",
+      "goal_id": "rule_dolmenwood",
+      "resource_tags": [
+        "agents",
+        "terror"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0911"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "add_rumor",
+          "text": "Children have gone missing near a rustic cottage; silver-eyed goats were seen on the moonlit lane."
+        }
+      ]
+    },
+    {
+      "id": "corrupt_gheillough_deeper",
+      "name": "Deepen Gheillough’s corruption in Lake Longmere",
+      "scope": "mission",
+      "goal_id": "marry_gheillough",
+      "resource_tags": [
+        "ritual",
+        "ley_line"
+      ],
+      "targets": [
+        {
+          "type": "entity",
+          "id": "gheillough"
+        }
+      ],
+      "segments": 10,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "gheillough_corruption",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "The lake water tastes wrong; dreams of braying laughter spread among those who sleep near the shore."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "send_crookhorn_raids_south",
+    "expand_nagwood_malaise",
+    "seize_saint_relics"
+  ],
+  "organization": {
+    "leader": {
+      "entity_id": "atanuwe",
+      "name": "Atanuwë, the Nag-Lord",
+      "role": "Chaos godling; absolute ruler of the faction."
+    },
+    "tiers": [
+      {
+        "name": "Court & Godling",
+        "members": [
+          "atanuwe"
+        ]
+      },
+      {
+        "name": "Elite Spawn & Lieutenants",
+        "members": [
+          "ignormwm",
+          "crewithyant",
+          "hawalyeer",
+          "harridan_cabal",
+          "corrupt_unicorn_lieutenants"
+        ]
+      },
+      {
+        "name": "Warlords & Commanders",
+        "members": [
+          "baron_lucius_fragglehorn",
+          "captain_gib_snarkscorn",
+          "shubs_nanna"
+        ]
+      },
+      {
+        "name": "Forces",
+        "members": [
+          "crookhorns",
+          "harpies",
+          "giant_humanoids",
+          "chaos_monsters"
+        ]
+      }
+    ],
+    "notes": "Atanuwë is a godling comparable to Dolmenwood's Wood Gods; it can bestow magical powers and teach dark secrets, but cannot grant spells like a true deity (e.g., the Pluritine god is of a higher order)."
+  },
+  "entities": {
+    "atanuwe": {
+      "type": "unique_monster",
+      "names": [
+        "Atanuwë",
+        "The Nag-Lord",
+        "Old Shub",
+        "Your Worshipfulness"
+      ],
+      "demeanour": "Cruel, decadent, utterly narcissistic; basks in flattery; loves absurd injustice.",
+      "speech": {
+        "style": "Suave insinuations punctuated with lunatic braying",
+        "languages": [
+          "all (telepathic)"
+        ]
+      },
+      "desires": [
+        "rule_dolmenwood",
+        "marry_gheillough",
+        "collect_holy_bones"
+      ],
+      "possessions": {
+        "carried": [],
+        "hoard": "Magical artefacts hoarded at hex 0904."
+      },
+      "servants": [
+        "crookhorns",
+        "monstrous_humanoids",
+        "harpy_servitors",
+        "harridan_soothsayers",
+        "twisted_unicorn_advisers"
+      ],
+      "location": {
+        "hex": "0904",
+        "enclave_id": "court_of_the_nag_lord"
+      },
+      "combat_stats": {
+        "category": "large_monstrosity_genius_chaotic",
+        "level": 22,
+        "ac": 20,
+        "hp": 112,
+        "saves": {
+          "doom": 2,
+          "ray": 2,
+          "hold": 2,
+          "blast": 2,
+          "spell": 2
+        },
+        "speed": 50,
+        "morale": 10,
+        "xp": 15350,
+        "attacks": [
+          {
+            "name": "hooves",
+            "count": 6,
+            "to_hit": 14,
+            "damage": "1d4"
+          },
+          {
+            "name": "horn",
+            "count": 1,
+            "to_hit": 14,
+            "damage": "1d10 + jellification"
+          },
+          {
+            "name": "spellcasting",
+            "notes": "May cast listed arcane spells without limit."
+          },
+          {
+            "name": "hypnotic_gaze",
+            "notes": "Save vs Spell or Dominate effect."
+          }
+        ],
+        "immunities": [
+          "only harmed by magic or magic weapons",
+          "poison",
+          "fire",
+          "cold"
+        ],
+        "special": {
+          "magic_reflection": {
+            "roll": "1d6",
+            "1": "reflected",
+            "2-3": "nullified",
+            "4-6": "normal"
+          },
+          "see_invisible": true,
+          "jellification": "Horn victim must Save vs Doom or become a pool of jelly.",
+          "spells": [
+            "Rank 3: Dispel Magic",
+            "Rank 4: Confusion",
+            "Rank 4: Dimension Door",
+            "Rank 4: Hex Weaving (place curse only)",
+            "Rank 4: Polymorph",
+            "Rank 5: Animate Dead",
+            "Rank 5: Feeblemind"
+          ]
+        }
+      },
+      "pronouns": {
+        "subject": "it",
+        "object": "it",
+        "possessive": "its"
+      },
+      "gender_note": "Transcendent of human concepts of gender; commonly referred to as “it”."
+    },
+    "baron_lucius_fragglehorn": {
+      "type": "npc",
+      "name": "Baron Lucius Fragglehorn",
+      "species": "crookhorn",
+      "appearance": "Monstrously obese crookhorn man, 8' tall, one milky weeping eye; three horns curve downward like a veil.",
+      "demeanour": "Lecherous, debauched, brutal; terrified of snakes.",
+      "speech": {
+        "style": "Menacing mirth, bellowing fits",
+        "languages": [
+          "Woldish",
+          "Gaffe"
+        ]
+      },
+      "desires": [
+        "Fine vittles",
+        "More wives"
+      ],
+      "family": {
+        "wives": 6,
+        "note": "Willing concubines of the powerful crookhorn lord."
+      },
+      "servants": [
+        "two_dozen_crookhorn_soldiers",
+        "Mertrude (despicable human cook)"
+      ],
+      "location": {
+        "hex": "1004",
+        "enclave_id": "baron_fragglehorns_tower"
+      },
+      "combat_stats": {
+        "category": "large_mortal_sentient_chaotic",
+        "level": 7,
+        "ac": 16,
+        "hp": 40,
+        "saves": {
+          "doom": 8,
+          "ray": 9,
+          "hold": 10,
+          "blast": 11,
+          "spell": 12
+        },
+        "speed": 40,
+        "morale": 9,
+        "xp": 1080,
+        "attacks": [
+          {
+            "name": "bite/butt",
+            "to_hit": 6,
+            "damage": "1d8 + disease"
+          },
+          {
+            "name": "two-handed_sword",
+            "to_hit": 6,
+            "damage": "1d10+2"
+          },
+          {
+            "name": "arcane_dagger",
+            "to_hit": 8,
+            "damage": "1d4+2",
+            "notes": "Antique goathorn dagger (Arcane Dagger)."
+          }
+        ],
+        "special": {
+          "disease": "Save vs Doom or afflicted by nasty infection (crookhorn disease)."
+        }
+      }
+    },
+    "captain_gib_snarkscorn": {
+      "type": "npc",
+      "name": "Captain Gib Snarkscorn",
+      "species": "crookhorn",
+      "appearance": "Lanky 7'6\" crookhorn man in rag-tag plate, huge wooden shield (repurposed barn door).",
+      "demeanour": "Cruel bully, prone to random rages; loves wild music and debauchery.",
+      "speech": {
+        "style": "Raw-throated barking and derisive whimpering",
+        "languages": [
+          "Woldish",
+          "Gaffe"
+        ]
+      },
+      "desires": [
+        "Depose Baron Fragglehorn as lord of the Valley of Wise Beasts",
+        "Capture Lady Haeroth (escaped by trickery twice)"
+      ],
+      "servants": [
+        "60 crookhorn soldiers"
+      ],
+      "location": {
+        "hex": "0803",
+        "enclave_id": "camp_of_captain_snarkscorn"
+      },
+      "combat_stats": {
+        "category": "large_mortal_sentient_chaotic",
+        "level": 6,
+        "ac": 16,
+        "hp": 40,
+        "saves": {
+          "doom": 9,
+          "ray": 10,
+          "hold": 11,
+          "blast": 12,
+          "spell": 13
+        },
+        "speed": 40,
+        "morale": 10,
+        "xp": 720,
+        "attacks": [
+          {
+            "name": "bite/butt",
+            "to_hit": 5,
+            "damage": "1d8 + disease"
+          },
+          {
+            "name": "battle_axe",
+            "to_hit": 5,
+            "damage": "1d8+2"
+          }
+        ],
+        "special": {
+          "disease": "Save vs Doom or afflicted by nasty infection (crookhorn disease).",
+          "war_horn": {
+            "uses_per_day": 1,
+            "summons": "1d6 harpies",
+            "arrival": "in 1d4 rounds",
+            "value_gp": 10000
+          }
+        }
+      }
+    },
+    "shubs_nanna": {
+      "type": "npc",
+      "name": "Shub’s Nanna",
+      "species": "longhorn_breggle",
+      "appearance": "Elderly longhorn woman with flowing pale tan fur; silver eyes with violet pupils; black dresses and green shawl.",
+      "role": "Favored servant responsible for keeping Atanuwë’s larder stocked with plump human children.",
+      "demeanour": "Acts kindly and coddling; schemes to trap visitors; loves flattery.",
+      "speech": {
+        "style": "Absent-minded blather, baby talk, bleating cackles",
+        "languages": [
+          "Woldish",
+          "Caprice",
+          "Gaffe",
+          "Sylvan"
+        ]
+      },
+      "desires": [
+        "Plump children",
+        "Magical baubles",
+        "To be young and fair again"
+      ],
+      "possessions": [
+        {
+          "id": "magical_goat_sleigh",
+          "name": "Magical goat-sleigh",
+          "effect": "Carries Nanna + 4 passengers anywhere along ley line Lamm in minutes; used to visit hex 0904."
+        },
+        {
+          "id": "arcane_whip",
+          "name": "Arcane Whip",
+          "effect": "1d6+2 damage, 10' reach; woven from hair of elf maidens",
+          "value_gp": 2500
+        }
+      ],
+      "servants": [
+        "7 silver goblins",
+        "5 silver-eyed goats"
+      ],
+      "location": {
+        "hex": "0911",
+        "enclave_id": "cottage_of_shubs_nanna"
+      },
+      "combat_stats": {
+        "reference": "Longhorn breggle (DMB)"
+      },
+      "summoning": {
+        "magic_word": "Leeleeglablea",
+        "conditions": "Call on a moonlit night within Dolmenwood.",
+        "response": "Nanna may dispatch goblins to the caller.",
+        "goblin_arrival": "within 1d6 turns",
+        "goblin_departure": "may return at will; vanish into mist within 3 rounds",
+        "folklore_transactions": [
+          {
+            "offer": "unwanted child",
+            "price": "13sp"
+          },
+          {
+            "offer": "especially succulent sweet-smelling children",
+            "reward_examples": [
+              "transportation",
+              "other favours"
+            ]
+          }
+        ]
+      }
+    },
+    "ignormwm": {
+      "type": "npc",
+      "name": "Ignormwm",
+      "species": "atacorn",
+      "role": "Atacorn spawn of the Nag-Lord; dwells with her spawn.",
+      "demeanour": "Bizarre, cruel sense of humour (typical of atacorns).",
+      "location": {
+        "hex": "0807",
+        "enclave_id": "ignormwms_cottage"
+      },
+      "combat_stats": {
+        "reference": "Atacorn (see DMB / bestiary)"
+      },
+      "notes": "One of the three atacorns who remain in Dolmenwood."
+    },
+    "crewithyant": {
+      "type": "npc",
+      "name": "Crewithyant",
+      "species": "atacorn",
+      "role": "Atacorn hiding in the village of Dreg.",
+      "demeanour": "Bizarre, cruel sense of humour (typical of atacorns).",
+      "location": {
+        "hex": "1110",
+        "enclave_id": "dreg"
+      },
+      "combat_stats": {
+        "reference": "Atacorn (see DMB / bestiary)"
+      },
+      "notes": "One of the three atacorns who remain in Dolmenwood."
+    },
+    "hawalyeer": {
+      "type": "npc",
+      "name": "Hawalyeer",
+      "species": "atacorn",
+      "role": "Atacorn hidden at the Deceiver’s Well.",
+      "demeanour": "Bizarre, cruel sense of humour (typical of atacorns).",
+      "location": {
+        "hex": "1509",
+        "enclave_id": "deceivers_well"
+      },
+      "combat_stats": {
+        "reference": "Atacorn (see DMB / bestiary)"
+      },
+      "notes": "One of the three atacorns who remain in Dolmenwood."
+    }
+  },
+  "tables": {
+    "crookhorn_names": {
+      "die": "d20",
+      "columns": [
+        "male",
+        "female",
+        "unisex",
+        "surname"
+      ],
+      "rows": [
+        {
+          "roll": 1,
+          "male": "Bart",
+          "female": "Breek",
+          "unisex": "Addle",
+          "surname": "Bludger"
+        },
+        {
+          "roll": 2,
+          "male": "Billy",
+          "female": "Crag",
+          "unisex": "Adder",
+          "surname": "Boner"
+        },
+        {
+          "roll": 3,
+          "male": "Broo",
+          "female": "Crewn",
+          "unisex": "Blocke",
+          "surname": "Bugber"
+        },
+        {
+          "roll": 4,
+          "male": "Broob",
+          "female": "Dank",
+          "unisex": "Bog",
+          "surname": "Clubber"
+        },
+        {
+          "roll": 5,
+          "male": "Curlip",
+          "female": "Errid",
+          "unisex": "Cleaver",
+          "surname": "Crapshod"
+        },
+        {
+          "roll": 6,
+          "male": "Grim",
+          "female": "Fanny",
+          "unisex": "Crewn",
+          "surname": "Gouger"
+        },
+        {
+          "roll": 7,
+          "male": "Grip",
+          "female": "Grewigg",
+          "unisex": "Curlip",
+          "surname": "Grimes"
+        },
+        {
+          "roll": 8,
+          "male": "Gripe",
+          "female": "Gruw",
+          "unisex": "Dunder",
+          "surname": "Hogbard"
+        },
+        {
+          "roll": 9,
+          "male": "Hoge",
+          "female": "Lankly",
+          "unisex": "Frand",
+          "surname": "Hogblood"
+        },
+        {
+          "roll": 10,
+          "male": "Lank",
+          "female": "Nagly",
+          "unisex": "Grerg",
+          "surname": "Hoglick"
+        },
+        {
+          "roll": 11,
+          "male": "Lope",
+          "female": "Nanna",
+          "unisex": "Grin",
+          "surname": "Limplore"
+        },
+        {
+          "roll": 12,
+          "male": "Lurp",
+          "female": "Plim",
+          "unisex": "Gore",
+          "surname": "Nagger"
+        },
+        {
+          "roll": 13,
+          "male": "Org",
+          "female": "Prim",
+          "unisex": "Hanck",
+          "surname": "Nailer"
+        },
+        {
+          "roll": 14,
+          "male": "Shadgore",
+          "female": "Scrag",
+          "unisex": "Hod",
+          "surname": "Quimmer"
+        },
+        {
+          "roll": 15,
+          "male": "Shank",
+          "female": "Shim",
+          "unisex": "Lin",
+          "surname": "Shergulp"
+        },
+        {
+          "roll": 16,
+          "male": "Slurp",
+          "female": "Shoddy",
+          "unisex": "Meg",
+          "surname": "Shiver"
+        },
+        {
+          "roll": 17,
+          "male": "Snerd",
+          "female": "Slyme",
+          "unisex": "Mug",
+          "surname": "Smollow"
+        },
+        {
+          "roll": 18,
+          "male": "Snerg",
+          "female": "Slynn",
+          "unisex": "Shrug",
+          "surname": "Sodder"
+        },
+        {
+          "roll": 19,
+          "male": "Willy",
+          "female": "Smoo",
+          "unisex": "Sodlow",
+          "surname": "Wallow"
+        },
+        {
+          "roll": 20,
+          "male": "Winder",
+          "female": "Wilda",
+          "unisex": "Wug",
+          "surname": "Wanklore"
+        }
+      ]
+    }
+  },
+  "lore": {
+    "origin": "Not native to Dolmenwood; provenance obscured by illusion, treachery, and lies.",
+    "arrival": "Entered Dolmenwood ~400 years ago; established a dominion from which to ooze unsettling influence.",
+    "sargstone": "Wrested Sargstone (hex 0904) from the Drune by dispatching its warden and subjugating its power.",
+    "crookhorns": "Corrupted northern breggles, giving birth to the crookhorns.",
+    "gheillough": "Poisoned Lake Longmere, keeping the water-dragon Gheillough in dream-wracked torpor and usurping its regulator role.",
+    "tone": [
+      "dark comedy",
+      "cosmic irony",
+      "absurdity",
+      "horrific slapstick",
+      "debauchery",
+      "wanton destruction"
+    ],
+    "valley_of_wise_beasts": "As a pet project, Atanuwë awakened sentience in the valley animals and gave them humanoid form (Cobbins), trapping them in a nightmare of quaint tea parties and police-state terror under crookhorn rule.",
+    "minions_called": "After establishing the Court around Sargstone, Atanuwë invited all creatures of Chaos to bow; a ghastly menagerie flowed through the Court’s gates and pledged allegiance. Its whim is law.",
+    "feasts": "Feasts and banquets are constant: mounds of decaying food crushed beneath piles of fresh delicacies."
+  },
+  "references": {
+    "source_file": "output.pdf",
+    "notes": "Translated from provided PDF summary (Atanuwë faction entry) into engine-friendly JSON."
+  },
+  "atacorns": {
+    "total_number": 18,
+    "notes": [
+      "Spawn of the Nag-Lord, birthed by unholy union with a harridan.",
+      "One is slain (Sallowbryg). Three remain in Dolmenwood; fourteen roamed to distant lands to spread discord."
+    ],
+    "known_in_dolmenwood": [
+      {
+        "id": "ignormwm",
+        "name": "Ignormwm",
+        "hex": "0807",
+        "enclave_id": "ignormwms_cottage"
+      },
+      {
+        "id": "crewithyant",
+        "name": "Crewithyant",
+        "hex": "1110",
+        "enclave_id": "dreg"
+      },
+      {
+        "id": "hawalyeer",
+        "name": "Hawalyeer",
+        "hex": "1509",
+        "enclave_id": "deceivers_well"
+      }
+    ],
+    "known_elsewhere": {
+      "count": 14,
+      "status": "abroad"
+    }
+  }
+}

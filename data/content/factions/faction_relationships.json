@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "score_range": [
+    -100,
+    100
+  ],
+  "defaults": {
+    "no_statement": {
+      "score": 0,
+      "sentiment": "neutral",
+      "notes": "No explicit relationship stated."
+    }
+  },
+  "groups": {
+    "human_nobility": {
+      "match_tags_any": [
+        "human_nobility",
+        "vassal_house",
+        "noble_house"
+      ],
+      "description": "All human noble houses / aristocracy factions (e.g., House Brackenwold and other vassal houses)."
+    },
+    "longhorn_nobility": {
+      "match_tags_any": [
+        "longhorn",
+        "breggle",
+        "high_wold"
+      ],
+      "description": "All longhorn/breggle noble houses of the High Wold."
+    }
+  },
+  "pairs": [
+    {
+      "a": "nag_lord",
+      "b": "pluritine_church",
+      "score": -80,
+      "sentiment": "hate",
+      "notes": "Atanuwë hates the Church; Church fears Atanuwë."
+    },
+    {
+      "a": "nag_lord",
+      "b": "human_nobility",
+      "score": -70,
+      "sentiment": "antagonism_and_fear",
+      "notes": "Atanuwë hates human nobility; nobles fear crookhorn incursions."
+    },
+    {
+      "a": "nag_lord",
+      "b": "longhorn_nobility",
+      "score": -85,
+      "sentiment": "fear_and_hate",
+      "notes": "Longhorn nobility fear and hate Atanuwë for twisting breggles into crookhorns."
+    },
+    {
+      "a": "nag_lord",
+      "b": "witches",
+      "score": -90,
+      "sentiment": "hate",
+      "notes": "Witches view Atanuwë as an imposter and principal threat; seek to confine it."
+    },
+    {
+      "a": "nag_lord",
+      "b": "drune",
+      "score": -10,
+      "sentiment": "coveted_but_dangerous",
+      "notes": "Drune lust after Atanuwë’s power and seek revenge; relationship is tense/transactional."
+    },
+    {
+      "a": "nag_lord",
+      "b": "cold_prince",
+      "score": 0,
+      "sentiment": "unaware",
+      "notes": "Mutual lack of awareness in current era (Cold Prince and Atanuwë)."
+    },
+    {
+      "a": "cold_prince",
+      "b": "pluritine_church",
+      "score": -60,
+      "sentiment": "ancient_hatred",
+      "notes": "Cold Prince hates Church/humans who deposed him; Church dismisses him as legend."
+    },
+    {
+      "a": "cold_prince",
+      "b": "human_nobility",
+      "score": -60,
+      "sentiment": "ancient_hatred",
+      "notes": "Cold Prince hates human nobility; human nobles dismiss him as legend."
+    },
+    {
+      "a": "cold_prince",
+      "b": "drune",
+      "score": -60,
+      "sentiment": "hates_but_treats",
+      "notes": "Cold Prince hates but may treat with Drune; Drune ward against his return."
+    },
+    {
+      "a": "cold_prince",
+      "b": "longhorn_nobility",
+      "score": 10,
+      "sentiment": "seeks_alliance",
+      "notes": "Cold Prince seeks to rekindle longhorn loyalty; longhorns may dismiss as legend."
+    },
+    {
+      "a": "cold_prince",
+      "b": "witches",
+      "score": 0,
+      "sentiment": "unaware_or_ignored",
+      "notes": "Cold Prince historically paid witches little heed; witches largely ignore him."
+    },
+    {
+      "a": "drune",
+      "b": "pluritine_church",
+      "score": -90,
+      "sentiment": "hated",
+      "notes": "Church seeks to eradicate Drune; Drune disdain Church."
+    },
+    {
+      "a": "drune",
+      "b": "human_nobility",
+      "score": -40,
+      "sentiment": "turning_against",
+      "notes": "Human nobility turning against Drune; Drune disdain mortals."
+    },
+    {
+      "a": "drune",
+      "b": "longhorn_nobility",
+      "score": -60,
+      "sentiment": "mistrust_and_fear",
+      "notes": "Drune mistrust breggles; longhorn nobility fear and hate Drune."
+    },
+    {
+      "a": "drune",
+      "b": "witches",
+      "score": 20,
+      "sentiment": "pact",
+      "notes": "Ancient pacts deter interference; occasional collaboration."
+    },
+    {
+      "a": "human_nobility",
+      "b": "pluritine_church",
+      "score": 60,
+      "sentiment": "allied",
+      "notes": "Church and human nobility largely unified; clergy accepts aristocratic advice."
+    },
+    {
+      "a": "human_nobility",
+      "b": "longhorn_nobility",
+      "score": 40,
+      "sentiment": "allied",
+      "notes": "Humans and longhorns have ruled side by side in the High Wold; stable alliance."
+    },
+    {
+      "a": "human_nobility",
+      "b": "witches",
+      "score": 10,
+      "sentiment": "tolerant",
+      "notes": "Human nobility largely neutral/tolerant; House Brackenwold has witchcraft history."
+    },
+    {
+      "a": "human_nobility",
+      "b": "cold_prince",
+      "score": 0,
+      "sentiment": "dismisses_as_legend",
+      "notes": "Human nobility dismisses the Cold Prince as legend."
+    },
+    {
+      "a": "pluritine_church",
+      "b": "witches",
+      "score": -90,
+      "sentiment": "seeks_eradication",
+      "notes": "Church hates witches and seeks to eradicate them; witches hide from Church."
+    },
+    {
+      "a": "pluritine_church",
+      "b": "longhorn_nobility",
+      "score": 10,
+      "sentiment": "tolerates",
+      "notes": "Church tolerates longhorn nobility as an uncomfortable relic."
+    },
+    {
+      "a": "pluritine_church",
+      "b": "cold_prince",
+      "score": 0,
+      "sentiment": "dismisses_as_legend",
+      "notes": "Church dismisses the Cold Prince as superstition/legend."
+    },
+    {
+      "a": "longhorn_nobility",
+      "b": "witches",
+      "score": 0,
+      "sentiment": "ignores",
+      "notes": "Longhorn nobility largely ignores witches; occasional breggle women become witches."
+    },
+    {
+      "a": "longhorn_nobility",
+      "b": "cold_prince",
+      "score": 0,
+      "sentiment": "dismisses_as_legend",
+      "notes": "Longhorn nobility dismisses the Cold Prince as legend."
+    }
+  ],
+  "provenance": {
+    "source": "output.pdf",
+    "notes": "Major faction relationship statements converted into symmetric pair scores for mechanical use."
+  }
+}

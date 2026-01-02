@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_nodlock",
+  "name": "House Nodlock",
+  "type": "noble_house",
+  "alignment": "neutral",
+  "description": "A small south-western barony centered on Nodding Castle. Lord Harald Nodlock is slovenly and wine-soaked, and is widely said to be a lackey of Lord Ramius—trading obedience for protection.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "nodlock",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0210"
+    ],
+    "settlements": [],
+    "strongholds": [
+      {
+        "id": "nodding_castle",
+        "points": 3
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "nodding_castle",
+      "name": "Nodding Castle",
+      "hex": "0210",
+      "type": "keep",
+      "role": "Moated keep; home of Lord Nodlock."
+    }
+  ],
+  "resources": [
+    {
+      "id": "wine_cellars",
+      "name": "Wine Cellars",
+      "tags": [
+        "coin"
+      ],
+      "description": "Harald’s stores of wine and the coin spent to replenish them."
+    },
+    {
+      "id": "small_household_guard",
+      "name": "Small Household Guard",
+      "tags": [
+        "military"
+      ],
+      "description": "A modest guard force—more for show than war."
+    },
+    {
+      "id": "wyrd_rod",
+      "name": "Rod of the Wyrd",
+      "tags": [
+        "magic",
+        "occult"
+      ],
+      "description": "A strange rod kept close by Harald; its true power is best handled via oracle."
+    },
+    {
+      "id": "hidden_coffers",
+      "name": "Hidden Coffers",
+      "tags": [
+        "coin",
+        "intrigue"
+      ],
+      "description": "Caches of coin stashed away in and around Nodding Castle."
+    },
+    {
+      "id": "ramius_patronage",
+      "name": "Ramius’s Patronage",
+      "tags": [
+        "political"
+      ],
+      "description": "Protection granted (and demanded) by Lord Ramius."
+    }
+  ],
+  "goals": [
+    {
+      "id": "stay_alive",
+      "name": "Stay Alive and in Power",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Avoid provoking stronger neighbours; keep the household intact."
+    },
+    {
+      "id": "appease_ramius",
+      "name": "Appease Lord Ramius",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Send gifts, intel, and small favors to maintain Ramius’s patronage."
+    },
+    {
+      "id": "protect_coin",
+      "name": "Protect the Treasury",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Hide reserves and avoid ducal collectors or opportunistic raiders."
+    },
+    {
+      "id": "avoid_scandal",
+      "name": "Avoid Scandal and Attention",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Keep the barony quiet; suppress rumours that could draw the duke’s wrath."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "send_gifts_to_ramius",
+      "name": "Send Gifts to Lord Ramius",
+      "scope": "task",
+      "goal_id": "appease_ramius",
+      "resource_tags": [
+        "coin",
+        "political"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_ramius"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "house_ramius",
+          "modifier": 1,
+          "reason": "Harald’s gifts and obedience improve relations for a time."
+        },
+        {
+          "type": "set_flag",
+          "key": "nodlock_gifts_sent",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A wine-laden cart leaves Nodding Castle under guard, bound for Lord Ramius."
+        }
+      ]
+    },
+    {
+      "id": "hide_treasury",
+      "name": "Hide the Treasury",
+      "scope": "task",
+      "goal_id": "protect_coin",
+      "resource_tags": [
+        "coin",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "nodding_castle"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "nodlock_hidden_coffers",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Servants are seen hauling chests at night; the castle’s wealth becomes harder to trace."
+        }
+      ]
+    },
+    {
+      "id": "hire_bodyguards",
+      "name": "Hire Bodyguards and Bravos",
+      "scope": "mission",
+      "goal_id": "stay_alive",
+      "resource_tags": [
+        "coin",
+        "military"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "nodding_castle"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "territory": {
+            "type": "hex",
+            "id": "0210"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "New hard-eyed bravos appear at Nodding Castle, demanding respect (and payment)."
+        }
+      ]
+    },
+    {
+      "id": "bribe_ducal_collectors",
+      "name": "Bribe Ducal Collectors",
+      "scope": "task",
+      "goal_id": "avoid_scandal",
+      "resource_tags": [
+        "coin",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_brackenwold"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "nodlock_bribes_paid",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Officials leave Nodding Castle smiling and slightly heavier of purse."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "send_gifts_to_ramius",
+    "hide_treasury",
+    "bribe_ducal_collectors"
+  ],
+  "entities": {
+    "lord_harald_nodlock": {
+      "entity_id": "lord_harald_nodlock",
+      "name": "Lord Harald Nodlock",
+      "house": "House Nodlock",
+      "summary": "A slovenly human man in his mid-fifties, of",
+      "form_of_address": "",
+      "demeanour": "Presents himself as battle-hardened and iron-willed, but is a coward and has never seen combat. Drunk at almost any time of day. Flies into a rage at any mention of his neighbour, Lord Murkin (p65), who threatens Nodlock’s northern border.",
+      "speech": "Gruff drawl, accompanied with frequent belching and spittle spray. (It is advisable not to sit too close to Lord Nodlock when he speaks.) Woldish, Old Woldish.",
+      "desires": "Nodlock is a simple man: he desires little beyond fine wine, fine food, and fine women, spiced with the occasional amusing execution.",
+      "possessions": "The Rod of the Wyrd—a melodramatically named heirloom of House Nodlock. What it lacks in occult power, the rod makes up for in mundane value: it is set with diamonds to the value of 10,000gp.",
+      "family": "Happily unmarried. Has many illegitimate children, but no heir.Servants: A retinue of sycophants and advisors who oversee the castle and borders during Nodlock’s frequent alcohol-induced slumbers. A poorly trained standing army. Groundsmen, cooks, butlers, librarians, etc.",
+      "servants": "",
+      "location": "Nodding Castle (hex 0210).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Lord of Nodding Castle"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "nodding_castle",
+    "structure": [
+      {
+        "tier": "Lord & Household",
+        "notes": "Harald’s court is disorderly, wine-soaked, and fearful of stronger powers."
+      },
+      {
+        "tier": "Castle Staff",
+        "notes": "Servants and a small guard keep the estate functioning—barely."
+      },
+      {
+        "tier": "External Patron",
+        "notes": "Ramius’s influence shapes decisions; many actions are taken to appease him."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "nodding_castle",
+    "hex": "0210"
+  },
+  "domains": [
+    {
+      "id": "barony_nodlock",
+      "name": "Barony of Nodlock",
+      "points": 4,
+      "notes": "A small pocket of pasture and woodland at the far south-western tip of Dolmenwood."
+    }
+  ],
+  "oracle_hooks": {
+    "wyrd_rod_effect": "Use oracle/adjudication to determine if/when Harald’s rod manifests supernatural effects.",
+    "ramius_demands": "Use oracle to generate new demands from Ramius when Nodlock appears weak or defiant."
+  }
+}

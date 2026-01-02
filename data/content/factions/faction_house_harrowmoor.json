@@ -1,0 +1,371 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_harrowmoor",
+  "name": "House Harrowmoor",
+  "type": "noble_house",
+  "alignment": "lawful",
+  "description": "A central Dolmenwood house ruling from Harrowmoor Keep on the cliffs of the Groaning Loch. Lady Theatrice Harrowmoor is a famed intellect and church-aligned ruler, focused on defending her lands, countering crookhorn ruffians, and unraveling threats—including the disappearance of her daughter, Violet.",
+  "tags": [
+    "dolmenwood",
+    "human_nobility",
+    "noble_house",
+    "harrowmoor",
+    "vassal_house"
+  ],
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0704",
+      "1105",
+      "1106",
+      "1112"
+    ],
+    "settlements": [
+      "prigwort"
+    ],
+    "strongholds": [
+      {
+        "id": "harrowmoor_keep",
+        "points": 3
+      },
+      {
+        "id": "derodand_manor",
+        "points": 2
+      }
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "harrowmoor_keep",
+      "name": "Harrowmoor Keep",
+      "hex": "1105",
+      "type": "keep",
+      "role": "Fortified castle atop the cliffs of the Groaning Loch; seat of House Harrowmoor."
+    },
+    {
+      "id": "prigwort",
+      "name": "Prigwort, Town",
+      "hex": "1106",
+      "type": "town",
+      "role": "Famed brewing town under the protection and rule of Lady Harrowmoor."
+    },
+    {
+      "id": "derodand_manor",
+      "name": "Derodand Manor",
+      "hex": "0704",
+      "type": "manor",
+      "role": "Secluded manor on the borders of the corrupted Nagwood; home of Lady Haeroth (great-aunt of Lady Harrowmoor)."
+    },
+    {
+      "id": "falls_of_nyf",
+      "name": "Falls of Nyf",
+      "hex": "1112",
+      "type": "site",
+      "role": "A waterfall and caves in the Harrowmoor domain; possible lair of nocturnal terrors and local legends."
+    }
+  ],
+  "resources": [
+    {
+      "id": "keep_garrison",
+      "name": "Harrowmoor Garrison",
+      "tags": [
+        "military",
+        "law"
+      ],
+      "description": "A disciplined garrison at Harrowmoor Keep and sworn retainers loyal to Theatrice."
+    },
+    {
+      "id": "prigwort_brewers",
+      "name": "Prigwort Brewers & Coin",
+      "tags": [
+        "coin",
+        "trade"
+      ],
+      "description": "Brewing wealth and guild contacts from Prigwort; a lever for influence and bribes."
+    },
+    {
+      "id": "church_network",
+      "name": "Church Network",
+      "tags": [
+        "church",
+        "agents"
+      ],
+      "description": "Clergy, pilgrims, and confessionals that can move information quickly."
+    },
+    {
+      "id": "pipe_of_forroth",
+      "name": "Pipe of Forroth",
+      "tags": [
+        "occult",
+        "magic"
+      ],
+      "description": "A strange pipe that can summon a local forroth entity—powerful but unpredictable."
+    },
+    {
+      "id": "sages_and_histories",
+      "name": "Sages & Histories",
+      "tags": [
+        "lore"
+      ],
+      "description": "Theatrice’s scholarly contacts and archives on Dolmenwood’s threats and histories."
+    }
+  ],
+  "goals": [
+    {
+      "id": "find_violet",
+      "name": "Find Violet Harrowmoor",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Investigate sightings, rumours, and kidnappers; leverage coin and church networks to locate Violet."
+    },
+    {
+      "id": "secure_prigwort",
+      "name": "Secure Prigwort and the Heartlands",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Bolster town guard and patrols; protect brewing wealth and trade from bandits and raiders."
+    },
+    {
+      "id": "purge_drune",
+      "name": "Purge Drune Influence",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Act against Drune plots and sympathizers in the central woods."
+    },
+    {
+      "id": "curb_crookhorns",
+      "name": "Curb Crookhorn Ruffians",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Suppress crookhorn criminality and intimidation in the region."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "offer_reward_for_violet",
+      "name": "Offer a Reward for Violet’s Return",
+      "scope": "task",
+      "goal_id": "find_violet",
+      "resource_tags": [
+        "coin",
+        "agents",
+        "church"
+      ],
+      "targets": [
+        {
+          "type": "entity",
+          "id": "violet_harrowmoor"
+        },
+        {
+          "type": "settlement",
+          "id": "prigwort"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "violet_reward_offered",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A rich reward is promised for news of Violet Harrowmoor; every inn repeats the offer in hushed tones."
+        }
+      ]
+    },
+    {
+      "id": "bolster_prigwort_guard",
+      "name": "Bolster the Prigwort Town Guard",
+      "scope": "mission",
+      "goal_id": "secure_prigwort",
+      "resource_tags": [
+        "military",
+        "law",
+        "coin"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "prigwort"
+        },
+        {
+          "type": "stronghold",
+          "id": "harrowmoor_keep"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "territory": {
+            "type": "hex",
+            "id": "1106"
+          }
+        },
+        {
+          "type": "add_rumor",
+          "text": "Prigwort’s guard drills daily; strangers are questioned, and crookhorns keep their heads down."
+        }
+      ]
+    },
+    {
+      "id": "hunt_crookhorn_ruffians",
+      "name": "Hunt Crookhorn Ruffians",
+      "scope": "mission",
+      "goal_id": "curb_crookhorns",
+      "resource_tags": [
+        "military",
+        "agents"
+      ],
+      "targets": [
+        {
+          "type": "tag",
+          "id": "crookhorns"
+        },
+        {
+          "type": "region",
+          "id": "central_dolmenwood"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "crookhorns_suppressed",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A string of raids breaks up crookhorn gangs; bodies hang from trees as warning."
+        }
+      ]
+    },
+    {
+      "id": "consult_forroth_entity",
+      "name": "Consult the Forroth Entity",
+      "scope": "task",
+      "goal_id": "find_violet",
+      "resource_tags": [
+        "occult",
+        "lore"
+      ],
+      "targets": [
+        {
+          "type": "item",
+          "id": "pipe_of_forroth"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "forroth_consulted",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A mournful piping echoes over the loch; those who listen too long dream of drowned roads."
+        }
+      ]
+    },
+    {
+      "id": "purge_drune_cells",
+      "name": "Purge Drune Cells",
+      "scope": "mission",
+      "goal_id": "purge_drune",
+      "resource_tags": [
+        "church",
+        "agents",
+        "law"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "drune"
+        },
+        {
+          "type": "region",
+          "id": "groaning_loch"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "apply_modifier_next_turn",
+          "target_faction": "drune",
+          "modifier": -1,
+          "reason": "Harrowmoor-led investigations and raids pressure Drune cells."
+        },
+        {
+          "type": "add_rumor",
+          "text": "Confessions and denunciations spread; the Drune’s allies fear the noose."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "offer_reward_for_violet",
+    "bolster_prigwort_guard",
+    "hunt_crookhorn_ruffians"
+  ],
+  "entities": {
+    "lady_theatrice_harrowmoor": {
+      "entity_id": "lady_theatrice_harrowmoor",
+      "name": "Lady Theatrice Harrowmoor",
+      "house": "House Harrowmoor",
+      "summary": "A towering, ungainly human woman in her",
+      "form_of_address": "",
+      "demeanour": "Forbidding intellectual, pious and even-handed ruler. Her passionate side is revealed when discussing matters of history, religion, or politics.",
+      "speech": "Punctilious, dwells on the abstract. Woldish, Old Woldish, Liturgic, Caprice.",
+      "desires": "The return of her missing daughter, Violet. To brace the defences of mid-Dolmenwood against the mustering crookhorn armies. To discover whether the folkloric Nag-Lord is truly the force behind the crookhorns. Reward: 2,000gp for the safe return of her daughter. Knowledge: Lady Harrowmoor is possessed of a great mind and is a renowned expert on the history of Dolmenwood. Apply the standard rules for hiring a sage (DPB).",
+      "possessions": "The Pipe of the Forroth—a long, wooden flute (worth 2,500gp) which can summon a telepathic entity from Groaning Loch (see hex 1105). Communion with the entity can reveal secrets, but is perilous. Lady Harrowmoor resists consulting with the Forroth, but is coming close to doing so on the matter of her missing daughter.Family: Husband. Three children, aged 6–12. (The youngest, Violet, recently disappeared when they visited the construction site at Prigwort.) Younger sister—Hilda Harrowmoor (p70). Great aunt—Lady Haeroth (p76).",
+      "family": "",
+      "servants": "Six knights, a small personal guard, groundsmen, cooks, butlers, librarians, etc. A profusion of cats.",
+      "location": "Harrowmoor Keep (hex 1105).",
+      "combat_stats": "Level 3 knight (DMB).",
+      "role": "faction_leader",
+      "species": "human",
+      "titles": [
+        "Lady of Harrowmoor"
+      ]
+    }
+  },
+  "organization": {
+    "seat": "harrowmoor_keep",
+    "structure": [
+      {
+        "tier": "Lady & Council",
+        "notes": "Theatrice rules through advisors, clergy, and a strict household guard."
+      },
+      {
+        "tier": "Keep Garrison",
+        "notes": "A disciplined garrison and patrols along roads and loch shores."
+      },
+      {
+        "tier": "Prigwort Guard",
+        "notes": "Expanded town guard funded by brewing wealth."
+      },
+      {
+        "tier": "Outlying Kin",
+        "notes": "Derodand Manor is held by Lady Haeroth, great-aunt of Theatrice, at the edge of Nagwood corruption."
+      }
+    ]
+  },
+  "seat": {
+    "enclave_id": "harrowmoor_keep",
+    "hex": "1105"
+  },
+  "domains": [
+    {
+      "id": "marquisate_harrowmoor",
+      "name": "Marquisate of Harrowmoor",
+      "points": 4,
+      "notes": "Broad heartland forest from Prigwort east toward Lake Longmere."
+    }
+  ],
+  "oracle_hooks": {
+    "violet_leads": "Use oracle for leads, sightings, and the truth behind Violet’s disappearance when not established.",
+    "forroth_bargain": "Use oracle/adjudication for the consequences of calling on the forroth entity."
+  }
+}

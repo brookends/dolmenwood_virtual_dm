@@ -1,0 +1,957 @@
+{
+  "schema_version": 1,
+  "faction_id": "witches",
+  "name": "The Witches",
+  "faction_type": "occult_sisterhood",
+  "alignment": "neutral",
+  "summary": "A secretive sisterhood of women who commune with ancient Wood Gods (the Gwyrigons) and practice hidden witchcraft throughout Dolmenwood.",
+  "territory_model": "territory_only",
+  "resources": [
+    {
+      "id": "eyes_of_the_gwyrigons",
+      "name": "Eyes of the Gwyrigons",
+      "tags": [
+        "members",
+        "magic"
+      ],
+      "description": "The bulk of the sisterhood: initiated witches bound in permanent spiritual union with a Gwyrigon, serving as its eyes in the mortal world."
+    },
+    {
+      "id": "covens",
+      "name": "Local Covens",
+      "tags": [
+        "organization",
+        "influence"
+      ],
+      "description": "Covens of up to thirteen witches (‘a witches’ dozen’) in the vicinity of each settlement and scattered through the wild wood."
+    },
+    {
+      "id": "occult_lore",
+      "name": "Occult Lore",
+      "tags": [
+        "magic",
+        "secrets"
+      ],
+      "description": "A guarded body of lore enabling charms, curses, and potion-brewing; often involving psychedelic plant ingredients."
+    },
+    {
+      "id": "secret_cant",
+      "name": "Witches' Cant",
+      "tags": [
+        "secrets",
+        "counterintelligence"
+      ],
+      "description": "A secret cant used to identify fellow witches and coordinate clandestinely."
+    },
+    {
+      "id": "familiars_and_servitors",
+      "name": "Familiars and Servitors",
+      "tags": [
+        "defense",
+        "minions"
+      ],
+      "description": "Bound animal familiars and crafted guardians (corn-dolls, manikins) that protect lairs and assist witches."
+    },
+    {
+      "id": "high_coven",
+      "name": "High Coven",
+      "tags": [
+        "leadership",
+        "command"
+      ],
+      "description": "Three High Priestesses who command the covens of Dolmenwood and answer to the Queen of All Witches."
+    },
+    {
+      "id": "mirrors_of_embala",
+      "name": "Mirrors of Embala",
+      "tags": [
+        "artifact",
+        "quest",
+        "magic"
+      ],
+      "description": "Three crystal mirrors (malachite, onyx, selenite) once used to commune with the lost Gwyrigon Embala of the Husk; reuniting them may reawaken Embala."
+    }
+  ],
+  "goals": [
+    {
+      "id": "g_secrecy",
+      "name": "Maintain the Secrecy of the Craft",
+      "visibility": "secret",
+      "default_scope": "mission",
+      "notes": "Ensure the craft, its loci, and knowledge of the Gwyrigons remain hidden; protect the Gwyrigons from external tampering."
+    },
+    {
+      "id": "g_mirrors",
+      "name": "Recover the Mirrors of Embala",
+      "visibility": "secret",
+      "default_scope": "mission",
+      "notes": "Recover the lost malachite and onyx mirrors and reunite them with the selenite mirror to restore communion with Embala of the Husk."
+    },
+    {
+      "id": "g_hoaghryn",
+      "name": "Locate the Hoaghryn",
+      "visibility": "secret",
+      "default_scope": "mission",
+      "notes": "Search for the prophesied child destined to become the Queen of the Witches and rule Dolmenwood in the name of the Gwyrigons."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "a_silence_witness",
+      "name": "Silence a Dangerous Witness",
+      "scope": "task",
+      "goal_id": "g_secrecy",
+      "resource_tags": [
+        "counterintelligence",
+        "secrets"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "any_nearby"
+        }
+      ],
+      "segments": 2,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.secrecy_recently_compromised",
+          "value": false
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "A villager who spoke too openly of strange dreams has gone quiet—by choice or by charm, none can say."
+        }
+      ]
+    },
+    {
+      "id": "a_strengthen_cant_network",
+      "name": "Strengthen the Witches’ Cant Network",
+      "scope": "mission",
+      "goal_id": "g_secrecy",
+      "resource_tags": [
+        "organization",
+        "secrets"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "dolmenwood"
+        }
+      ],
+      "segments": 3,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.cant_network",
+          "value": "strengthened"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "Market women trade a few odd turns of phrase—harmless banter, or something older?"
+        }
+      ]
+    },
+    {
+      "id": "a_relocate_lair",
+      "name": "Relocate a Threatened Lair",
+      "scope": "task",
+      "goal_id": "g_secrecy",
+      "resource_tags": [
+        "defense",
+        "secrets"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "wild"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.lairs_relocated",
+          "value": true
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "Deep in the wood, an old hut stands empty—its wards unbroken, as if it walked away."
+        }
+      ]
+    },
+    {
+      "id": "a_guard_selenite_mirror",
+      "name": "Guard the Selenite Mirror of Embala",
+      "scope": "task",
+      "goal_id": "g_mirrors",
+      "resource_tags": [
+        "artifact",
+        "defense"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0806"
+        }
+      ],
+      "segments": 2,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.selenite_mirror_secure",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "a_search_malachite_mirror",
+      "name": "Search for the Malachite Mirror (Ruined Watchtower)",
+      "scope": "mission",
+      "goal_id": "g_mirrors",
+      "resource_tags": [
+        "quest",
+        "exploration"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0701"
+        }
+      ],
+      "segments": 5,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.malachite_mirror_status",
+          "value": "located_or_investigated"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "A green-glinting relic is whispered to lie in a lonely watchtower on the Table Downs."
+        }
+      ]
+    },
+    {
+      "id": "a_recover_onyx_mirror",
+      "name": "Recover the Onyx Mirror (Chantery Isle)",
+      "scope": "mission",
+      "goal_id": "g_mirrors",
+      "resource_tags": [
+        "quest",
+        "infiltration",
+        "magic"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "1103"
+        },
+        {
+          "type": "faction",
+          "id": "drune"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.onyx_mirror_status",
+          "value": "recovered_or_contested"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "Something black as midnight is sealed in a veiled tower upon Chantery Isle."
+        }
+      ]
+    },
+    {
+      "id": "a_ritual_reawaken_embala",
+      "name": "Attempt the Rite to Reawaken Embala",
+      "scope": "goal",
+      "goal_id": "g_mirrors",
+      "resource_tags": [
+        "ritual",
+        "artifact",
+        "magic"
+      ],
+      "targets": [
+        {
+          "type": "landmark",
+          "id": "groaning_loch_depths"
+        }
+      ],
+      "segments": 8,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.embala_status",
+          "value": "stirring_or_awakened"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "On moonless nights, the Groaning Loch seems to answer in a voice that is not wind."
+        }
+      ]
+    },
+    {
+      "id": "a_scry_birth_omens",
+      "name": "Scry for Birth Omens",
+      "scope": "task",
+      "goal_id": "g_hoaghryn",
+      "resource_tags": [
+        "magic",
+        "investigation"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "dolmenwood"
+        }
+      ],
+      "segments": 3,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.hoaghryn_leads",
+          "value": "new"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "Midwives mutter of a babe born beneath an ill-starred sky, marked by strange dreams."
+        }
+      ]
+    },
+    {
+      "id": "a_shadow_midwives",
+      "name": "Shadow Midwives and Wise-Women",
+      "scope": "mission",
+      "goal_id": "g_hoaghryn",
+      "resource_tags": [
+        "influence",
+        "secrets",
+        "investigation"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "any"
+        }
+      ],
+      "segments": 4,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.hoaghryn_search",
+          "value": "active"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "A kindly herb-woman has gained new friends—quiet women who arrive after dusk."
+        }
+      ]
+    },
+    {
+      "id": "a_secure_the_child",
+      "name": "Secure the Prophesied Child",
+      "scope": "mission",
+      "goal_id": "g_hoaghryn",
+      "resource_tags": [
+        "protection",
+        "influence"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "unknown"
+        }
+      ],
+      "segments": 6,
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "witches.hoaghryn_status",
+          "value": "secured_or_lost"
+        },
+        {
+          "type": "add_rumor",
+          "rumor": "A cradle stood by morning empty—no sign of struggle, only a faint scent of mandrake."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "a_strengthen_cant_network",
+    "a_guard_selenite_mirror",
+    "a_scry_birth_omens"
+  ],
+  "enclaves": [
+    {
+      "id": "derodand_manor",
+      "name": "Derodand Manor",
+      "hex": "0704",
+      "type": "manse",
+      "description": "Home of Lady Emelda Haeroth, High Priestess of northern and western Dolmenwood and scion of House Harrowmoor.",
+      "security": "warded"
+    },
+    {
+      "id": "hall_of_sleep",
+      "name": "The Hall of Sleep",
+      "hex": "1304",
+      "type": "manse",
+      "description": "Abode of Sadewyn Gallbucket, High Priestess of eastern Dolmenwood; she moves within House Guillefer’s circles as a lady’s maid.",
+      "security": "subtle"
+    },
+    {
+      "id": "hill_of_henlann",
+      "name": "The Hill of Henlann",
+      "hex": "1602",
+      "type": "locus",
+      "description": "Ancient burial ground where the Gwyrigon Hasturiel may be addressed.",
+      "security": "ritual"
+    },
+    {
+      "id": "locus_of_ertta",
+      "name": "The Locus of Ertta",
+      "hex": "0505",
+      "type": "locus",
+      "description": "On windswept nights witches fly to the ruined tower on the Isle of Yeth to commune with Ertta the Devouring Mother.",
+      "security": "perilous"
+    },
+    {
+      "id": "locus_of_hasturiel",
+      "name": "The Locus of Hasturiel",
+      "hex": "1404",
+      "type": "locus",
+      "description": "A gargantuan granite pylon of unknown provenance marks Hasturiel’s primary locus.",
+      "security": "awe"
+    },
+    {
+      "id": "locus_of_limwdd",
+      "name": "The Locus of Limwdd",
+      "hex": "1006",
+      "type": "locus",
+      "description": "A glade warded by witch magic wherein contact with Limwdd the Quiet Brother is possible.",
+      "security": "warded"
+    },
+    {
+      "id": "palace_of_the_witch_queen",
+      "name": "The Palace of the Witch Queen",
+      "hex": "0806",
+      "type": "palace",
+      "description": "A secret palace dug into underwater cliffs at the eastern shore of Lake Longmere; location known only to the three High Priestesses.",
+      "security": "secret"
+    },
+    {
+      "id": "snake_cave",
+      "name": "The Snake Cave",
+      "hex": "0608",
+      "type": "lair",
+      "description": "Cavern lair of Grwith the Scaled, High Priestess of the South; a place of snakes and strange waters.",
+      "security": "lethal"
+    }
+  ],
+  "home_territory": {
+    "hexes": [
+      "0505",
+      "0608",
+      "0704",
+      "0806",
+      "1006",
+      "1304",
+      "1404",
+      "1602"
+    ],
+    "domains": [
+      "hidden_covens_near_each_settlement"
+    ],
+    "landmarks": [
+      {
+        "id": "groaning_loch_depths",
+        "name": "Groaning Loch Depths",
+        "notes": "Legend places Embala of the Husk in a coma in a deep crevice at the base of the Groaning Loch; mirrors united may reawaken it."
+      }
+    ]
+  },
+  "organization": {
+    "leader": {
+      "entity_id": "celenia",
+      "title": "Queen of All Witches"
+    },
+    "high_coven": {
+      "entity_ids": [
+        "haeroth",
+        "grwith",
+        "sadewyn"
+      ],
+      "notes": "Three High Priestesses command regional covens; only they have direct contact with the Queen."
+    },
+    "ranks": [
+      {
+        "rank": "Queen of All Witches",
+        "members": "1",
+        "notes": "Near-mythical; commands the High Coven."
+      },
+      {
+        "rank": "High Priestess",
+        "members": "3",
+        "notes": "Regional rulers of covens; sit on the High Coven."
+      },
+      {
+        "rank": "Priestess",
+        "members": "varies",
+        "notes": "Loosely governs a local coven; sets dates and conditions of gatherings."
+      },
+      {
+        "rank": "Eyes of the Gwyrigons",
+        "members": "many",
+        "notes": "Initiated witches in union with a Gwyrigon; form the bulk of the sisterhood."
+      },
+      {
+        "rank": "Initiate",
+        "members": "varies",
+        "notes": "Women undergoing thirteen lunar cycles of initiation after witnessing a Gwyrigon manifestation."
+      }
+    ],
+    "coven_size": "Up to 13 (a witches’ dozen).",
+    "taboos": [
+      "Never speak of dreams."
+    ],
+    "signals": [
+      "Witches’ Cant (secret cant)."
+    ]
+  },
+  "entities": {
+    "celenia": {
+      "type": "faction_leader",
+      "names": {
+        "primary": "Celenia",
+        "titles": [
+          "The Queen of All Witches"
+        ]
+      },
+      "appearance": "An androgynous human woman of waifish build with cropped silver hair, eyes as blue as cold moonlight, and ethereal gowns of silver gauze. Appears ~20 but is ~280 years old.",
+      "demeanour": "Aloof, mercurial, quick to anger; suffers no fools gladly.",
+      "speech": "Dreamy, old-fashioned, and formal. Speaks Woldish, Old Woldish, Sylvan, and some High Elfish.",
+      "desires": [
+        "Find a High Priestess to replace Grwith (whose behaviour grows more bestial).",
+        "Discover the arcane secrets of the sorceress Ygraine.",
+        "Re-establish communion with Embala of the Husk."
+      ],
+      "possessions": [
+        {
+          "name": "Sword of Lost Souls",
+          "type": "magic_weapon",
+          "notes": "Arcane Longsword with a clear crystal blade that traps the souls of those it slays; slain creatures cannot be returned to life unless the sword is destroyed."
+        },
+        {
+          "name": "Crown of Fallen Stars",
+          "type": "magic_item",
+          "notes": "Vortex of glittering crystals orbiting the wearer’s head; grants AC 16 and immunity to Rank 1 spells; worth 25,000gp."
+        },
+        {
+          "name": "Giant clam shell",
+          "type": "divination_focus",
+          "notes": "Used to gain glimpses of the future."
+        },
+        {
+          "name": "Selenite Mirror of Embala",
+          "type": "artifact",
+          "notes": "One of the three Mirrors of Embala; held by the Queen."
+        }
+      ],
+      "location": {
+        "hex": "0806",
+        "name": "Submerged Palace at the bottom of Lake Longmere",
+        "notes": "The palace is secret and known only to the High Coven."
+      },
+      "servants": [
+        "Swarms of silvery eels (able to evade the ravenous Big Chook).",
+        "The Belwycht—guardian of ancient magic.",
+        "Six witches (two in union with each of the Gwyrigons)."
+      ],
+      "combat_stats": {
+        "category": "medium mortal—genius—neutral",
+        "level": 12,
+        "ac": 18,
+        "hp": 40,
+        "saves": {
+          "doom": 11,
+          "ray": 11,
+          "hold": 10,
+          "blast": 13,
+          "spell": 11
+        },
+        "speed": 40,
+        "morale": 10,
+        "xp": 7200,
+        "attacks": [
+          {
+            "name": "Sword of Lost Souls",
+            "to_hit_bonus": 5,
+            "damage": "1d8+2",
+            "notes": "Arcane Longsword; traps souls of those it slays."
+          },
+          {
+            "name": "Arcane Spell",
+            "notes": "Uses memorised arcane spells as attacks."
+          }
+        ],
+        "spells_memorised": [
+          "Rank 1: Crystal Resonance, Ingratiate, Firelight, Glyph of Sealing",
+          "Rank 2: Dweomerlight, Levitate, Mind Crystal, Perceive the Invisible",
+          "Rank 3: Fireball, Paralysation, Water Breathing",
+          "Rank 4: Confusion, Hex Weaving, Wall of Fire",
+          "Rank 5: Conjure Elemental, Teleport",
+          "Rank 6: Geas, Wave of Force"
+        ],
+        "special": [
+          {
+            "name": "Secret name of Hasturiel (thrice/day)",
+            "effect": "Beings of Level 6 or lower within 20′ flee in terror for 2 Turns (Save vs Hold to resist)."
+          },
+          {
+            "name": "Evil eye (thrice/day)",
+            "effect": "Inflicts a curse as per Hex Weaving by gazing at a target."
+          },
+          {
+            "name": "Cloak true form",
+            "effect": "Can take on any outward appearance (female humanoids of roughly same size)."
+          },
+          {
+            "name": "Metamorphosis (1/day)",
+            "effect": "Polymorph into any creature; lasts until dawn or she sheds the new form."
+          }
+        ]
+      },
+      "union_with": "Hasturiel Thrice-Crowned"
+    },
+    "grwith": {
+      "type": "npc",
+      "names": {
+        "primary": "Grwith",
+        "titles": [
+          "The Scaled",
+          "High Priestess of the South"
+        ]
+      },
+      "appearance": "Wild-eyed, stick-thin human woman with long black hair, gleaming green eyes, and dark slightly scaly skin; appears ~30s but is ~220 years old. Strange waters have made her semi-ophidian with forked tongue and ravenous appetite for flesh.",
+      "demeanour": "Suspicious and secretive; hates the Drune for their arrogance.",
+      "speech": "Sinister and sibilant. Speaks Woldish, Old Woldish, Sylvan.",
+      "desires": [
+        "Feast on mortal flesh.",
+        "Acquire the skeletons of two dozen Drunes for a ritual to destroy the sorcerers (she suspects Drune Lodge in hex 0508)."
+      ],
+      "possessions": [
+        {
+          "name": "Bone Staff of Dominion",
+          "type": "magic_staff",
+          "notes": "Staff of Dominion (Snakes)."
+        }
+      ],
+      "servants": [
+        "A dozen great snakes, charmed by her staff."
+      ],
+      "location": {
+        "hex": "0608",
+        "name": "Snake Cave",
+        "notes": "Cave lair in the south."
+      },
+      "combat_stats": {
+        "category": "witch (Eye of Limwdd)",
+        "hp": 35,
+        "notes": "Can cast additional arcane spells: Vapours of Dream, Dispel Magic, Confusion, Polymorph; and holy spells treated as arcane: Charm Serpents, Serpent Transformation."
+      },
+      "union_with": "Limwdd the Quiet Brother"
+    },
+    "haeroth": {
+      "type": "npc",
+      "names": {
+        "primary": "Lady Emelda Haeroth",
+        "titles": [
+          "High Priestess of the North and West"
+        ]
+      },
+      "appearance": "Tall, elegant human noblewoman of House Harrowmoor, dressed in black lace; listless blond hair, delicate complexion, blue eyes; often wears a veil. Appears ~40 but is ~105 years old.",
+      "demeanour": "Reclusive and enigmatic; does not welcome visitors.",
+      "speech": "Cold, graceful, self-assured. Speaks Woldish and Old Woldish.",
+      "desires": [
+        "Information on the lost Mirrors of Embala; believes the Drune keep a mirror on Phantom Isle (hex 0706).",
+        "The head of Captain Snarkscorn, whose ruffians encroach on her lands.",
+        "Discover the fate of her jade necklace stolen by her apprentice Myrabelle (hex 0303)."
+      ],
+      "possessions": [
+        {
+          "name": "Service of Calthrounhe",
+          "type": "magic_item",
+          "notes": "A magical tea set."
+        }
+      ],
+      "family_notes": "Great-aunt of Lady Harrowmoor and Hilda Harrowmoor; member of House Harrowmoor.",
+      "servants": [
+        "Witch owl familiar 'Hallohoo' (DMB).",
+        "Four great guard dogs.",
+        "Household staff (maids, cooks, footmen, etc.)."
+      ],
+      "location": {
+        "hex": "0704",
+        "name": "Derodand Manor",
+        "notes": "Isolated manse bordering the corrupted Nagwood."
+      },
+      "combat_stats": {
+        "category": "witch (Eye of Ertta)",
+        "hp": 30,
+        "notes": "Can cast additional spells: Mind Crystal, Phantasm, Crystal Vision, Lightning Bolt."
+      },
+      "union_with": "Ertta the Devouring Mother"
+    },
+    "sadewyn": {
+      "type": "npc",
+      "names": {
+        "primary": "Sadewyn Gallbucket",
+        "titles": [
+          "High Priestess of the East"
+        ]
+      },
+      "appearance": "Buxom, rosy-cheeked human woman with curly brown hair and merry twinkle; appears ~50 but is ~350 years old. Long dwelt among House Guillefer, shifting guises (currently a lady’s maid).",
+      "demeanour": "Merry and overly familiar; feigned dimwittedness with flashes of wry wisdom.",
+      "speech": "Uneducated and coarse; prone to rustic aphorism. Speaks Woldish, Old Woldish, Sylvan.",
+      "desires": [
+        "Discover the powers of the monolith in Odd.",
+        "Awaken House Guillefer and nudge them into mobilising against Atanuwë.",
+        "Acquire stirge-owl feathers (hex 1005) to complete a magical cloak."
+      ],
+      "possessions": [
+        {
+          "name": "Needles of Hexing",
+          "type": "magic_item",
+          "notes": "Needles of Hexing."
+        },
+        {
+          "name": "Stirge-owl feather cloak (in progress)",
+          "type": "magic_item",
+          "notes": "Once complete, allows her to move insubstantially."
+        }
+      ],
+      "servants": [
+        "The nightingales nesting in the grounds of the Hall of Sleep."
+      ],
+      "location": {
+        "hex": "1304",
+        "name": "The Hall of Sleep",
+        "notes": "Works as a lady’s maid."
+      },
+      "combat_stats": {
+        "category": "witch (Eye of Hasturiel)",
+        "hp": 28,
+        "notes": "Can cast additional spells: Firelight, Glyph of Sealing, Vapours of Dream, Invisibility, Knock, Mind Crystal, Dark Sight, Missile Ward."
+      },
+      "union_with": "Hasturiel Thrice-Crowned"
+    },
+    "ertta": {
+      "type": "unique_monster",
+      "names": {
+        "primary": "Ertta",
+        "titles": [
+          "The Devouring Mother",
+          "Gwyrigon"
+        ]
+      },
+      "description": "A sleepy Wood God with dominion over ageing, death, and decay; associated with sky and winds; most easily contacted on stormy days.",
+      "primary_locus": {
+        "hex": "0505",
+        "name": "Isle of Yeth (ruined tower summit)"
+      }
+    },
+    "hasturiel": {
+      "type": "unique_monster",
+      "names": {
+        "primary": "Hasturiel",
+        "titles": [
+          "Thrice-Crowned",
+          "She from beyond",
+          "Gwyrigon"
+        ]
+      },
+      "description": "Wood God with dominion over metamorphosis, vision, and speech; associated with fire.",
+      "primary_locus": {
+        "hex": "1404",
+        "name": "Granite pylon of unknown provenance"
+      }
+    },
+    "limwdd": {
+      "type": "unique_monster",
+      "names": {
+        "primary": "Limwdd",
+        "titles": [
+          "The Quiet Brother",
+          "Gwyrigon"
+        ]
+      },
+      "description": "Wood God with dominion over stasis, growth, and rejuvenation; associated with seeds and the depths of the earth; witches in union can feel its pulse when barefoot.",
+      "primary_locus": {
+        "hex": "1006",
+        "name": "Warded glade"
+      }
+    },
+    "embala": {
+      "type": "unique_monster",
+      "names": {
+        "primary": "Embala",
+        "titles": [
+          "Of the Husk",
+          "Lost Gwyrigon"
+        ]
+      },
+      "description": "A lost Gwyrigon; myth says it once ruled all Dolmenwood. Lies in a coma in the depths of the Groaning Loch; may be reawakened if the Mirrors of Embala are united.",
+      "status": "lost_contact",
+      "rumored_location": {
+        "landmark": "groaning_loch_depths"
+      }
+    }
+  },
+  "tables": {
+    "coven_names": {
+      "dice": "d20",
+      "entries": [
+        {
+          "roll": 1,
+          "first": "Bleeding",
+          "second": "Blade"
+        },
+        {
+          "roll": 2,
+          "first": "Bloody",
+          "second": "Chalice"
+        },
+        {
+          "roll": 3,
+          "first": "Chiming",
+          "second": "Circle"
+        },
+        {
+          "roll": 4,
+          "first": "Cloaked",
+          "second": "Crone"
+        },
+        {
+          "roll": 5,
+          "first": "Coiled",
+          "second": "Elm"
+        },
+        {
+          "roll": 6,
+          "first": "Crooked",
+          "second": "Hart"
+        },
+        {
+          "roll": 7,
+          "first": "Drowned",
+          "second": "Heart"
+        },
+        {
+          "roll": 8,
+          "first": "Hatching",
+          "second": "Holly"
+        },
+        {
+          "roll": 9,
+          "first": "Hidden",
+          "second": "Mandrake"
+        },
+        {
+          "roll": 10,
+          "first": "Ivy-Crowned",
+          "second": "Moon"
+        },
+        {
+          "roll": 11,
+          "first": "Liminal",
+          "second": "Night"
+        },
+        {
+          "roll": 12,
+          "first": "Silent",
+          "second": "Oak"
+        },
+        {
+          "roll": 13,
+          "first": "Silver",
+          "second": "Palm"
+        },
+        {
+          "roll": 14,
+          "first": "Singing",
+          "second": "Pentacle"
+        },
+        {
+          "roll": 15,
+          "first": "Triple",
+          "second": "Raven"
+        },
+        {
+          "roll": 16,
+          "first": "Twinned",
+          "second": "River"
+        },
+        {
+          "roll": 17,
+          "first": "Veiled",
+          "second": "Serpent"
+        },
+        {
+          "roll": 18,
+          "first": "Virgin",
+          "second": "Solstice"
+        },
+        {
+          "roll": 19,
+          "first": "Wailing",
+          "second": "Well"
+        },
+        {
+          "roll": 20,
+          "first": "Whispering",
+          "second": "Wyrm"
+        }
+      ],
+      "usage": "Combine first and second elements to name a coven (e.g., 'Cloaked Crone')."
+    }
+  },
+  "lore": {
+    "secrecy": "The presence of the Gwyrigons and the witches’ worship are closely guarded secrets; witches hide in all spheres of society, using a cant to recognize one another.",
+    "initiation": "Initiation lasts thirteen lunar cycles, culminating in a night-long visionary ritual with a psychedelic mandrake brew; after acceptance a witch enters permanent spiritual union with a Gwyrigon.",
+    "taboos": [
+      "Never speak of dreams; dreams are the private realm of communion with the Gwyrigons."
+    ],
+    "mirrors_of_embala": {
+      "overview": "Three crystal mirrors (malachite, onyx, selenite) were used to contact Embala of the Husk. The selenite mirror is with the Queen; the other two were hidden and lost.",
+      "malachite_mirror": {
+        "material": "malachite",
+        "status": "lost",
+        "hex": "0701",
+        "notes": "Hidden in a ruined watchtower on the Table Downs; the guarding Priestess was slain and the mirror’s fate lost."
+      },
+      "onyx_mirror": {
+        "material": "onyx",
+        "status": "stolen",
+        "hex": "1103",
+        "notes": "Stolen centuries ago by the renegade Drune Aubrathon, sealed in a magically veiled tower on Chantery Isle."
+      },
+      "selenite_mirror": {
+        "material": "selenite",
+        "status": "held_by_queen",
+        "hex": "0806",
+        "notes": "In the Queen’s possession."
+      },
+      "uniting_effect": "Uniting all three mirrors may reawaken Embala of the Husk in the depths of the Groaning Loch."
+    },
+    "prophecy_hoaghryn": "Witch lore speaks of a child (the Hoaghryn) destined to become the Queen of the Witches and rule Dolmenwood; some witches see this quest as the true aim of witchcraft."
+  },
+  "references": {
+    "source_file": "output.pdf",
+    "pages": "72-77",
+    "notes": "Translated from provided PDF entry into engine-friendly faction JSON; aligned to faction.schema.json required fields."
+  },
+  "description": "A clandestine sect of women spread through every stratum of Dolmenwood society—from scullery maids to noble ladies—who commune in dreams with the ancient Wood Gods called the Gwyrigons. Their craft is guarded by taboo, cant, wards, and coven discipline; their schemes revolve around secrecy, the lost Mirrors of Embala, and the prophecy of the Hoaghryn."
+}

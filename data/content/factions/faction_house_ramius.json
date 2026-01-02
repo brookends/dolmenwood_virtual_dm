@@ -1,0 +1,593 @@
+{
+  "schema_version": 1,
+  "faction_id": "house_ramius",
+  "name": "House Ramius",
+  "description": "A neutral longhorn breggle house ruling the western deeps of Dolmenwood within the Barony of the High Wold. Led by Lord Shadgore Ramius—cold, shrewd, and ambitious—whose strategies seek to secure greater dominion and keep rivals in check.",
+  "tags": [
+    "breggle",
+    "longhorn",
+    "nobility",
+    "high_wold",
+    "strategy",
+    "territory"
+  ],
+  "alignment": "Neutral",
+  "territory_model": "territory_only",
+  "home_territory": {
+    "hexes": [
+      "0410",
+      "0409"
+    ],
+    "settlements": [
+      "galblight"
+    ],
+    "strongholds": [
+      {
+        "id": "castle_everdusk",
+        "points": 3
+      }
+    ],
+    "domains": [
+      "The western deeps of Dolmenwood and a small portion of the grasslands upon its south-western verge, within the Barony of the High Wold."
+    ]
+  },
+  "enclaves": [
+    {
+      "id": "castle_everdusk",
+      "type": "stronghold",
+      "hex": "0410",
+      "name": "Castle Everdusk",
+      "notes": "Home of Lord Ramius; most powerful of the longhorn nobles."
+    },
+    {
+      "id": "galblight",
+      "type": "settlement",
+      "hex": "0409",
+      "name": "Galblight",
+      "notes": "Hamlet of shorthorns ruled by Cabruc Lockehorn, servant of Lord Ramius."
+    },
+    {
+      "id": "garnacks_tower",
+      "type": "stronghold",
+      "hex": "0309",
+      "name": "Garnack’s Tower",
+      "notes": "Home of Garnack the Horse, longhorn hedge knight who hires out to the highest bidder."
+    }
+  ],
+  "resources": [
+    {
+      "id": "ramius_longhorn_elite",
+      "name": "Longhorn Elite",
+      "tags": [
+        "military",
+        "elite",
+        "knights",
+        "strategy"
+      ],
+      "description": "Longhorn courtiers and knights under House Ramius; disciplined and politically astute."
+    },
+    {
+      "id": "ramius_standing_army",
+      "name": "Standing Army",
+      "tags": [
+        "military",
+        "infantry",
+        "cavalry"
+      ],
+      "description": "A standing army of shorthorns and humans, commanded by Ramius’ sons (longhorn knights)."
+    },
+    {
+      "id": "thorned_eye",
+      "name": "The Thorned Eye",
+      "tags": [
+        "magic",
+        "intrigue",
+        "darkness",
+        "relic"
+      ],
+      "description": "A gold medallion worth 8,000gp: conjures magical darkness (15′ radius) and allows striking at shadows (AC 10)."
+    },
+    {
+      "id": "court_influence",
+      "name": "Court Influence",
+      "tags": [
+        "diplomacy",
+        "intrigue",
+        "politics"
+      ],
+      "description": "Ties to human aristocracy and the ducal court; Ramius cultivates trust to gain formal elevation within the High Wold."
+    }
+  ],
+  "goals": [
+    {
+      "id": "check_malbleat",
+      "name": "Keep Lord Malbleat in Check",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Ramius seeks to restrain Malbleat’s ambitions and the bitter feud within the longhorn nobility."
+    },
+    {
+      "id": "secure_barony",
+      "name": "Secure the Barony of the High Wold",
+      "visibility": "landmark",
+      "default_scope": "goal",
+      "notes": "Cultivate the Duke of Brackenwold’s trust to be granted the barony, supplanting Baron Hogwarsh."
+    },
+    {
+      "id": "enslave_bicorne",
+      "name": "Enslave the Bicorne (Hex 0510)",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Attempt to enslave the monster known as the Bicorne and use it as a beast of war."
+    },
+    {
+      "id": "drive_drune_out",
+      "name": "Eradicate the Drune from the High Wold",
+      "visibility": "hidden",
+      "default_scope": "goal",
+      "notes": "Long-standing vendetta; seek to push Drune power from the region and contest Dwelmfurgh."
+    }
+  ],
+  "action_library": [
+    {
+      "id": "play_drune_against_malbleat",
+      "name": "Manipulate Drune pressure to keep Malbleat off-balance",
+      "scope": "mission",
+      "goal_id": "check_malbleat",
+      "segments": 8,
+      "resource_tags": [
+        "intrigue",
+        "magic"
+      ],
+      "targets": [
+        {
+          "type": "region",
+          "id": "high_wold"
+        },
+        {
+          "type": "faction",
+          "id": "drune"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "ramius_drune_pressure",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Whispers spread that unseen hands have stirred Drune attention along Malbleat’s marches."
+        }
+      ],
+      "notes": "Grounded in Ramius’ stated desire to play the Drune against Malbleat."
+    },
+    {
+      "id": "court_duke_brackenwold",
+      "name": "Send emissaries to cultivate the Duke of Brackenwold’s trust",
+      "scope": "mission",
+      "goal_id": "secure_barony",
+      "segments": 8,
+      "resource_tags": [
+        "diplomacy",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "faction",
+          "id": "house_brackenwold"
+        },
+        {
+          "type": "region",
+          "id": "high_wold"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "ramius_ducal_favour",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "A thorn-embroidered envoy departs Everdusk bearing gifts and carefully chosen words for the duke’s court."
+        }
+      ]
+    },
+    {
+      "id": "negotiate_berryld_marriage",
+      "name": "Pursue a marriage pact between Lady Berryld and Baron Hogwarsh",
+      "scope": "mission",
+      "goal_id": "secure_barony",
+      "segments": 8,
+      "resource_tags": [
+        "diplomacy",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "person",
+          "id": "lady_berryld"
+        },
+        {
+          "type": "faction",
+          "id": "house_hogwarsh"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "ramius_marriage_negotiations",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Talk of a union between Berryld Ramius and the baron’s household stirs quiet anxiety among rival longhorns."
+        }
+      ]
+    },
+    {
+      "id": "fortify_castle_everdusk",
+      "name": "Strengthen Castle Everdusk’s defenses and patrols",
+      "scope": "task",
+      "goal_id": "check_malbleat",
+      "segments": 4,
+      "resource_tags": [
+        "military",
+        "logistics"
+      ],
+      "targets": [
+        {
+          "type": "stronghold",
+          "id": "castle_everdusk"
+        },
+        {
+          "type": "hex",
+          "id": "0410"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "fortify_territory",
+          "type_id": "stronghold",
+          "id": "castle_everdusk"
+        },
+        {
+          "type": "set_flag",
+          "key": "ramius_fortifications",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "assert_galblight_control",
+      "name": "Reinforce Ramius’ hold over Galblight through Cabruc Lockehorn",
+      "scope": "task",
+      "goal_id": "check_malbleat",
+      "segments": 4,
+      "resource_tags": [
+        "military",
+        "intrigue"
+      ],
+      "targets": [
+        {
+          "type": "settlement",
+          "id": "galblight"
+        },
+        {
+          "type": "hex",
+          "id": "0409"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "ramius_galblight_control",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Galblight’s shorthorns speak of tighter watch and sharper orders from Cabruc Lockehorn."
+        }
+      ]
+    },
+    {
+      "id": "hunt_and_bind_bicorne",
+      "name": "Dispatch hunters and binders to enslave the Bicorne",
+      "scope": "goal",
+      "goal_id": "enslave_bicorne",
+      "segments": 12,
+      "resource_tags": [
+        "military",
+        "magic",
+        "elite"
+      ],
+      "targets": [
+        {
+          "type": "hex",
+          "id": "0510"
+        }
+      ],
+      "on_complete": [
+        {
+          "type": "set_flag",
+          "key": "bicorne_enslaved_by_ramius",
+          "delta": 1
+        },
+        {
+          "type": "add_rumor",
+          "text": "Tracks like gouges in the earth lead toward Everdusk—some say a horned beast is being broken to the yoke."
+        }
+      ]
+    }
+  ],
+  "starting_actions": [
+    "court_duke_brackenwold",
+    "play_drune_against_malbleat",
+    "fortify_castle_everdusk"
+  ],
+  "organization": {
+    "nobles": "Lords Ramius and Malbleat (longhorns of ancient stock) and the upstart half-breggle Lord Murkin rule large portions of the High Wold.",
+    "longhorn_elite": "Longhorn courtiers and knights under the command of the nobles.",
+    "shorthorns": "Serving class filling roles as household servants, messengers, guards, and soldiers."
+  },
+  "entities": {
+    "lord_shadgore_ramius": {
+      "type": "npc",
+      "names": [
+        "Lord Shadgore Ramius"
+      ],
+      "appearance": "RAMIUS A venerable longhorn nobleman with snowwhite fur, yellow eyes with red pupils, and a curly beard down to his ample belly. Ramius dresses in thickly layered regal robes embroidered with thorny roses.",
+      "demeanour": "Neutral; Cold, shrewd. Disdainful of social mores. Brilliant strategist and a wise ruler. Red pupils enlarge and contract when he is displeased.",
+      "speech": {
+        "style": "Sweet, rasping, well-considered.",
+        "languages": [
+          "Woldish",
+          "Caprice",
+          "Gaffe",
+          "Old Woldish",
+          "basic Sylvan"
+        ]
+      },
+      "desires": [
+        "To keep Lord Malbleat in check by playing the Drune against him",
+        "To cultivate the trust of the Duke of Brackenwold and be granted the barony of the High Wold, supplanting the reckless Baron Hogwarsh",
+        "Failing that, to wed his daughter Berryld to the baron",
+        "To enslave the monster known as the Bicorne (hex 0510) and use it as a beast of war."
+      ],
+      "possessions": {
+        "thorned_eye": {
+          "type": "magic_item",
+          "name": "The Thorned Eye",
+          "value_gp": 8000,
+          "notes": "The Thorned Eye—a gold medallion whose curious shape is featured on the Ramius coat-of-arms (worth 8,000gp). One who wears the medallion can conjure a 15′ radius area of magical darkness for 6 Turns thrice a day and can harm mortals by striking at their shadows (AC 10)."
+        }
+      },
+      "family": "Widower with three sons and four daughters (including his heir, Lady Berryld, p233). Ramius is the elder half-brother (to different mothers) of Lord Malbleat.",
+      "servants": "A standing army of shorthorns and humans, commanded by his sons (longhorn knights). Groundsmen, cooks, butlers, etc.",
+      "location": "Castle Everdusk (hex 0410)—ancestral home of House Ramius (and of Lord Malbleat).",
+      "combat_stats": "Longhorn (DMB)."
+    },
+    "lady_berryld": {
+      "type": "npc",
+      "names": [
+        "Lady Berryld Ramius"
+      ],
+      "notes": "Heir of House Ramius; referenced among Ramius’ children (p233 in the source)."
+    },
+    "cabruc_lockehorn": {
+      "type": "npc",
+      "names": [
+        "Cabruc Lockehorn"
+      ],
+      "notes": "Rules over Galblight as a servant of Lord Ramius."
+    },
+    "garnack_the_horse": {
+      "type": "npc",
+      "names": [
+        "Garnack the Horse"
+      ],
+      "notes": "Longhorn hedge knight at Garnack’s Tower; hires services to the highest bidder."
+    }
+  },
+  "tables": {
+    "noble_breggle_names": [
+      {
+        "roll": 1,
+        "male": "Amshred",
+        "female": "Aedel",
+        "unisex": "Aegll",
+        "surname": "Barbicant"
+      },
+      {
+        "roll": 2,
+        "male": "Craglow",
+        "female": "Berryld",
+        "unisex": "Andred",
+        "surname": "Canticreed"
+      },
+      {
+        "roll": 3,
+        "male": "Eriggwen",
+        "female": "Bethla",
+        "unisex": "Bllennith",
+        "surname": "Cllern"
+      },
+      {
+        "roll": 4,
+        "male": "Fennig",
+        "female": "Crandragrew",
+        "unisex": "Crewwin",
+        "surname": "Cornicus"
+      },
+      {
+        "roll": 5,
+        "male": "Frannidore",
+        "female": "Dweldra",
+        "unisex": "Drangwen",
+        "surname": "Furroughby"
+      },
+      {
+        "roll": 6,
+        "male": "Ghrend",
+        "female": "Fannigrew",
+        "unisex": "Grennigore",
+        "surname": "Hoblewort"
+      },
+      {
+        "roll": 7,
+        "male": "Gryphius",
+        "female": "Fredreth",
+        "unisex": "Gwendl",
+        "surname": "Houndswort"
+      },
+      {
+        "roll": 8,
+        "male": "Gwellith",
+        "female": "Grendilore",
+        "unisex": "Hgwennith",
+        "surname": "Hraiglent"
+      },
+      {
+        "roll": 9,
+        "male": "Hgrlleld",
+        "female": "Hlleth",
+        "unisex": "Hmenidore",
+        "surname": "Llhraigl"
+      },
+      {
+        "roll": 10,
+        "male": "Hmardrus",
+        "female": "Howand",
+        "unisex": "Hwandilore",
+        "surname": "Lockehorn"
+      },
+      {
+        "roll": 11,
+        "male": "Hwardlow",
+        "female": "Hraigl",
+        "unisex": "Llaind",
+        "surname": "Lockelope"
+      },
+      {
+        "roll": 12,
+        "male": "Hwoldwen",
+        "female": "Hrannilde",
+        "unisex": "Merrild",
+        "surname": "Malbleat"
+      },
+      {
+        "roll": 13,
+        "male": "Llandred",
+        "female": "Lindra",
+        "unisex": "Pllandred",
+        "surname": "Murkin"
+      },
+      {
+        "roll": 14,
+        "male": "Maindr",
+        "female": "Llemberith",
+        "unisex": "Pwenth",
+        "surname": "Overlocke"
+      },
+      {
+        "roll": 15,
+        "male": "Nodlore",
+        "female": "Llemmeth",
+        "unisex": "Shennithold",
+        "surname": "Pellicorn"
+      },
+      {
+        "roll": 16,
+        "male": "Olligore",
+        "female": "Mmereth",
+        "unisex": "Smenthard",
+        "surname": "Ramius"
+      },
+      {
+        "roll": 17,
+        "male": "Shadgore",
+        "female": "Mregginor",
+        "unisex": "Snerg",
+        "surname": "Shankhollow"
+      },
+      {
+        "roll": 18,
+        "male": "Smerigore",
+        "female": "Pettigrew",
+        "unisex": "Thannidreth",
+        "surname": "Snidebleat"
+      },
+      {
+        "roll": 19,
+        "male": "Snide",
+        "female": "Pwettig",
+        "unisex": "Wendlow",
+        "surname": "Wealdleap"
+      },
+      {
+        "roll": 20,
+        "male": "Wllannoth",
+        "female": "Wendliore",
+        "unisex": "Windor",
+        "surname": "Wealdlore"
+      }
+    ]
+  },
+  "lore": {
+    "common": {
+      "origins": {
+        "earliest_mortals": "The origins of breggles are lost in antiquity. They have lived\nin the environs of Dolmenwood for as long as any records \nshow, and were the first mortal Kindred to dwell under the \nforest’s frost-rimed boughs, in ancient days when the Cold \nPrince ruled supreme.\nAncient Nobility\nThe longhorns hold their distant forebears to be those \nbold few breggles who ventured into the ice-clad courts \nof the Cold Prince and pledged him their fealty, desiring \nthe elevation of their own kind. These early days among\nthe high-born of Fairy instilled in the longhorns a love of \nall that is noble, a proclivity which drives them to this day.",
+        "ancient_nobility": "Prince ruled supreme. Ancient Nobility The longhorns hold their distant forebears to be those bold few breggles who ventured into the ice-clad courts of the Cold Prince and pledged him their fealty, desiring the elevation of their own kind. These early days among the high-born of Fairy instilled in the longhorns a love of all that is noble, a proclivity which drives them to this day."
+      },
+      "sorcerous_blood": {
+        "overview": "In addition to their political might, longhorns possess \na degree of sorcerous power, derived from their ancient \ndealings with the Cold Prince. The gaze of the longhorns \nis greatly feared among the ranks of human aristocracy. \nPetty human lords often enlist sorcerous aid when attend-\ning the court of a longhorn."
+      },
+      "drune_enmity": {
+        "overview": "Following the betrayal of the Drune by the longhorn \nwoman Hraigl, some 1,500 years ago (see History, p14), a \nbitter hatred between Drune and breggles has smouldered.\nIn the Service of the Duchy\nThe longhorn aristocrats are counted among the noble \nhouses loyal to the Duke of Brackenwold, ruling the High \nWold side by side with humans. Intermarriage of breggle \nand human nobles is commonplace.\nNominally Follow the Pluritine Church\nThe longhorn nobles and their subjects are nominally \naligned with the Church, though their loyalty is born out \nof political convenience, rather than devotion. It is some-\ntimes noted that the feeling may be mutual—no breggle \nsaints exist within the host of the blessed.",
+        "service_of_duchy": "The longhorn aristocrats are counted among the noble houses loyal to the Duke of Brackenwold, ruling the High Wold side by side with humans. Intermarriage of breggle and human nobles is commonplace. Nominally Follow the Pluritine Church",
+        "church": "The longhorn nobles and their subjects are nominally aligned with the Church, though their loyalty is born out of political convenience, rather than devotion. It is some- times noted that the feeling may be mutual—no breggle saints exist within the host of the blessed."
+      },
+      "shared_objectives": {
+        "maintain_lordship": "At many points in history has an imperious human noble \nof one kind or another emerged to challenge the long-\nhorns’ right to dominion in the High Wold. Always have \nthe tenacious longhorns prevailed, but the risk of outside \nmeddling in breggle rulership of the region remains.",
+        "extend_south": "Collectively, but primarily as individuals, the longhorns \nseek to reverse the trend of the gradual human domination \nof the High Wold and extend their rule further south. Each \nof the nobles has his eye on the courts of High-Hankle and \nthe throne of the foolish Baron Hogwarsh.",
+        "destroy_drune": "The longhorns hate the Drune for their power, arrogance, \nand long-standing vendetta against all breggle-kind. They \nseek to eradicate the Drune from the High Wold and bring \nthe lands of Dwelmfurgh under longhorn rule.\n\n63\nP a r t  t w o  |  f a c t i o n S  a n D  P o w e r S"
+      },
+      "schemes": {
+        "rivalries": "SCHEMES\nVanquish Rival Longhorn Houses\nThe longhorn nobles are greatly occupied with bitter \nin-fighting, with petty familial rivalries amplified to \nblood-feud and vendetta. Each noble wishes to achieve \ndominance over his kin, whether by political subjuga-\ntion, warfare, or sorcery. The longhorn nobles’ scheming \nto outdo one another largely hinders the advancement of \ntheir shared goals."
+      }
+    },
+    "house": {
+      "summary": {
+        "alignment": "Neutral",
+        "domain": "The western deeps of Dolmenwood and a small portion of the grasslands upon its south-western verge, within the Barony of the High Wold.",
+        "seat": "Castle Everdusk, located two miles into the woods in the High Wold region in the south-east of Dolmenwood.",
+        "head": "Lord Shadgore Ramius, longhorn breggle. A brilliant mind, known for his subtle strategies and far-reaching ambition. Resents the meddling Baron Hogwarsh for granting his younger half-brother, Lord Malbleat, dominion over much of the High Wold."
+      },
+      "feud": [
+        "Twenty-two years ago, unearthed genealogical documents ",
+        "purportedly revealed Lord Malbleat as the rightful head of ",
+        "House Ramius, through the line of his mother, Lady Shank-",
+        "hollow. Lord Ramius’ interpretation of the documents ",
+        "naturally differed, and a feud ensued, growing quickly to ",
+        "violence. Baron Hogwarsh (then a mere youth) intervened, ",
+        "ruling that the lands of House Ramius should be divided. "
+      ]
+    }
+  },
+  "references": {
+    "source_files": [
+      "output.pdf",
+      "output_2.pdf"
+    ],
+    "pages": [
+      62,
+      63,
+      64,
+      65,
+      176,
+      177
+    ],
+    "notes": "Longhorn Nobility (breggle houses) and Noble Houses appendix entries for House Ramius."
+  }
+}
