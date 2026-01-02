@@ -162,7 +162,7 @@ class FactionRules:
     roll_mod_cap: int = 1
     advance_on_4_5: int = 1
     advance_on_6_plus: int = 2
-    complication_on_rolls: list[int] = field(default_factory=lambda: [1])
+    complication_on_rolls: tuple[int, ...] = (1,)
     default_segments_task: int = 4
     default_segments_mission: int = 8
     default_segments_goal: int = 12
@@ -175,6 +175,7 @@ class FactionRules:
     territory_point_values: dict[str, int] = field(
         default_factory=lambda: {"hex": 1, "settlement": 2, "stronghold": 3, "domain": 4}
     )
+    oracle_config: Optional[dict[str, Any]] = None  # Parsed by FactionOracleConfig.from_dict
 
     def get_default_segments(self, scope: str) -> int:
         """Get default segment count for a scope."""

@@ -44,6 +44,8 @@ class FactionWorkResult:
     standing_delta: int = 0
     rewards: list[str] = None
     message: str = ""
+    roll_total: int = 0  # The 2d6 roll total
+    oracle_twist: Optional[Any] = None  # OracleEvent for extreme rolls
 
     def __post_init__(self):
         if self.rewards is None:
@@ -408,6 +410,7 @@ class FactionPartyManager:
         faction_id: str,
         days: int,
         task_type: str = "general",
+        current_date: str = "",
     ) -> FactionWorkResult:
         """
         Perform faction work during downtime.
@@ -415,10 +418,15 @@ class FactionPartyManager:
         This integrates with the DowntimeEngine's faction_work method
         but uses the global faction system for standing.
 
+        Extreme rolls (2 or 12) trigger oracle detail checks for twists:
+        - Roll of 2: Catastrophic failure with narrative twist
+        - Roll of 12: Exceptional success with narrative twist
+
         Args:
             faction_id: The faction to work for
             days: Number of days worked
             task_type: Type of work performed
+            current_date: Current game date for oracle events
 
         Returns:
             FactionWorkResult with outcomes
@@ -429,6 +437,21 @@ class FactionPartyManager:
 
         # Roll for work success (2d6)
         roll = dice.roll_2d6(f"faction work for {faction_id}")
+        roll_total = roll.total
+
+        # Check for extreme rolls and generate oracle twist if enabled
+        oracle_twist = None
+        is_extreme_roll = roll_total in (2, 12)
+        if is_extreme_roll and self._engine.oracle:
+            oracle = self._engine.oracle
+            if oracle.config.enabled and oracle.config.party_work_twists_enabled:
+                if oracle.config.party_work_twist_on_extremes:
+                    tag = "party_work_exceptional" if roll_total == 12 else "party_work_catastrophe"
+                    oracle_twist = oracle.detail_check(
+                        date=current_date,
+                        faction_id=faction_id,
+                        tag=tag,
+                    )
 
         # Determine success threshold based on standing
         # Better standing = easier tasks
@@ -440,7 +463,7 @@ class FactionPartyManager:
         elif standing_before < 0:
             threshold = 8
 
-        success = roll.total >= threshold
+        success = roll_total >= threshold
 
         if success:
             # Calculate standing gain
@@ -452,12 +475,20 @@ class FactionPartyManager:
                 base_gain = 1
 
             # Bonus for good roll
-            if roll.total >= 10:
+            if roll_total >= 10:
+                base_gain += 1
+
+            # Extra bonus for natural 12
+            if roll_total == 12:
                 base_gain += 1
 
             _, standing_after = self.adjust_standing(
                 faction_id, base_gain, f"Faction work ({days} days)"
             )
+
+            twist_msg = ""
+            if oracle_twist:
+                twist_msg = f" Twist: {oracle_twist.meaning_pair}"
 
             return FactionWorkResult(
                 success=True,
@@ -465,14 +496,25 @@ class FactionPartyManager:
                 standing_before=standing_before,
                 standing_after=standing_after,
                 standing_delta=base_gain,
-                message=f"Successfully completed {task_type} work for {faction_id}",
+                message=f"Successfully completed {task_type} work for {faction_id}.{twist_msg}",
+                roll_total=roll_total,
+                oracle_twist=oracle_twist,
             )
         else:
             # Failure - possible standing loss on bad roll
             delta = 0
-            if roll.total <= 4:
+            if roll_total <= 4:
                 delta = -1
                 self.adjust_standing(faction_id, delta, "Failed faction work")
+
+            # Extra penalty for natural 2
+            if roll_total == 2:
+                delta -= 1
+                self.adjust_standing(faction_id, -1, "Catastrophic faction work failure")
+
+            twist_msg = ""
+            if oracle_twist:
+                twist_msg = f" Twist: {oracle_twist.meaning_pair}"
 
             return FactionWorkResult(
                 success=False,
@@ -480,7 +522,9 @@ class FactionPartyManager:
                 standing_before=standing_before,
                 standing_after=standing_before + delta,
                 standing_delta=delta,
-                message=f"Failed to complete {task_type} work for {faction_id}",
+                message=f"Failed to complete {task_type} work for {faction_id}.{twist_msg}",
+                roll_total=roll_total,
+                oracle_twist=oracle_twist,
             )
 
     # =========================================================================

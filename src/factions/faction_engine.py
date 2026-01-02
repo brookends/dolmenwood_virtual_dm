@@ -37,6 +37,7 @@ from src.factions.faction_models import (
 if TYPE_CHECKING:
     from src.factions.faction_loader import FactionLoader
     from src.factions.faction_relations import FactionRelations
+    from src.factions.faction_oracle import FactionOracle, OracleEvent
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class ActionRollResult:
     completed: bool
     complication: bool
     effects_applied: list[EffectResult] = field(default_factory=list)
+    oracle_event: Optional[Any] = None  # OracleEvent if complication triggered
 
 
 @dataclass
@@ -73,6 +75,7 @@ class CycleResult:
     date: str
     faction_results: list[FactionCycleResult] = field(default_factory=list)
     rumors_generated: list[dict[str, Any]] = field(default_factory=list)
+    oracle_events: list[Any] = field(default_factory=list)  # OracleEvent list
 
 
 class FactionEngine:
@@ -89,6 +92,7 @@ class FactionEngine:
         rules: FactionRules,
         definitions: dict[str, FactionDefinition],
         relations: Optional["FactionRelations"] = None,
+        oracle: Optional["FactionOracle"] = None,
     ):
         """
         Initialize the faction engine.
@@ -97,10 +101,12 @@ class FactionEngine:
             rules: Faction rules configuration
             definitions: Dict of faction_id -> FactionDefinition
             relations: Optional faction relations for modifiers
+            oracle: Optional FactionOracle for complications and contested actions
         """
         self._rules = rules
         self._definitions = definitions
         self._relations = relations
+        self._oracle = oracle
         self._effects = FactionEffectsInterpreter()
 
         # Dynamic state
@@ -180,6 +186,15 @@ class FactionEngine:
     def party_state(self) -> Optional[PartyFactionState]:
         """Get party faction state."""
         return self._party_state
+
+    @property
+    def oracle(self) -> Optional["FactionOracle"]:
+        """Get the faction oracle (if enabled)."""
+        return self._oracle
+
+    def set_oracle(self, oracle: Optional["FactionOracle"]) -> None:
+        """Set or replace the faction oracle."""
+        self._oracle = oracle
 
     @property
     def days_accumulated(self) -> int:
@@ -270,6 +285,10 @@ class FactionEngine:
         """
         self._cycles_completed += 1
 
+        # Reset oracle cycle counter if oracle is present
+        if self._oracle:
+            self._oracle.reset_cycle_counter()
+
         result = CycleResult(
             cycle_number=self._cycles_completed,
             date=self._current_date,
@@ -279,6 +298,11 @@ class FactionEngine:
         for faction_id in sorted(self._faction_states.keys()):
             faction_result = self._process_faction_turn(faction_id)
             result.faction_results.append(faction_result)
+
+            # Collect oracle events from action results
+            for action_result in faction_result.actions:
+                if action_result.oracle_event is not None:
+                    result.oracle_events.append(action_result.oracle_event)
 
         # Collect rumors generated during this cycle
         result.rumors_generated = self._effects.clear_pending_rumors()
@@ -412,6 +436,17 @@ class FactionEngine:
         # Check for complication
         complication = raw_roll in self._rules.complication_on_rolls
 
+        # Generate oracle event if complication occurred and oracle is enabled
+        oracle_event = None
+        if complication and self._oracle:
+            oracle_config = self._oracle.config
+            if oracle_config.enabled and oracle_config.auto_random_event_on_complication:
+                oracle_event = self._oracle.random_event(
+                    date=self._current_date,
+                    faction_id=state.faction_id,
+                    tag="action_complication",
+                )
+
         # Apply progress
         action.progress += delta
         completed = action.is_complete
@@ -419,7 +454,15 @@ class FactionEngine:
         # Apply effects if completed
         effects_applied: list[EffectResult] = []
         if completed and template and template.on_complete:
-            context = {"date": self._current_date, "faction_id": state.faction_id}
+            context = {
+                "date": self._current_date,
+                "faction_id": state.faction_id,
+                "oracle": self._oracle,
+                "all_faction_states": self._faction_states,
+                "faction_definitions": self._definitions,
+                "relations": self._relations,
+                "rules": self._rules,
+            }
             effects_applied = self._effects.apply_effects(
                 template.on_complete,
                 state,
@@ -438,6 +481,7 @@ class FactionEngine:
             completed=completed,
             complication=complication,
             effects_applied=effects_applied,
+            oracle_event=oracle_event,
         )
 
     def _get_cycle_modifiers(self, state: FactionTurnState) -> dict[str, int]:
@@ -521,7 +565,7 @@ class FactionEngine:
         Returns:
             Dict suitable for JSON serialization
         """
-        return {
+        result = {
             "days_accumulated": self._days_accumulated,
             "cycles_completed": self._cycles_completed,
             "current_date": self._current_date,
@@ -532,6 +576,12 @@ class FactionEngine:
             "party_state": self._party_state.to_dict() if self._party_state else None,
             "global_flags": self._effects.global_flags,
         }
+
+        # Include oracle state if oracle is present
+        if self._oracle:
+            result["oracle_state"] = self._oracle.to_dict()
+
+        return result
 
     def from_dict(self, data: dict[str, Any]) -> None:
         """
@@ -557,6 +607,11 @@ class FactionEngine:
         # Restore global flags
         global_flags = data.get("global_flags", {})
         self._effects.set_global_flags(global_flags)
+
+        # Restore oracle state if present
+        oracle_data = data.get("oracle_state")
+        if oracle_data and self._oracle:
+            self._oracle.from_dict(oracle_data)
 
     # =========================================================================
     # STATUS & REPORTING

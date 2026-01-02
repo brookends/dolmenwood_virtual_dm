@@ -219,13 +219,14 @@ class FactionLoader:
                 roll_mod_cap=data.get("roll_mod_cap", 1),
                 advance_on_4_5=advance_4_5,
                 advance_on_6_plus=advance_6_plus,
-                complication_on_rolls=complication_rolls,
+                complication_on_rolls=tuple(complication_rolls),  # Convert to tuple for frozen dataclass
                 default_segments_task=default_segments.get("task", 4),
                 default_segments_mission=default_segments.get("mission", 8),
                 default_segments_goal=default_segments.get("goal", 12),
                 territory_points_to_level=tp_to_level if tp_to_level else {1: 0, 2: 2, 3: 5, 4: 9},
                 actions_per_turn_by_level=actions_by_level if actions_by_level else {1: 1, 2: 1, 3: 2, 4: 2},
                 territory_point_values=data.get("territory_points", {"hex": 1, "settlement": 2, "stronghold": 3, "domain": 4}),
+                oracle_config=data.get("oracle"),  # Pass oracle config for FactionOracleConfig.from_dict
             )
             return self._rules
 
