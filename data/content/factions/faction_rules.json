@@ -40,6 +40,25 @@
     "stronghold": 3,
     "domain": 4
   },
+  "oracle": {
+    "enabled": true,
+    "default_chaos_factor": 5,
+    "auto_random_event_on_complication": true,
+    "contested_territory": {
+      "enabled": true,
+      "_comment": "Uses MythicGME fate checks to resolve contested territory claims. Likelihood based on faction level difference and relationship."
+    },
+    "party_work_twists": {
+      "enabled": true,
+      "on_extremes": true,
+      "_comment": "Generates oracle detail checks on extreme rolls (2 or 12) during faction work."
+    },
+    "_notes": [
+      "Oracle generates structured tokens (action/subject pairs, yes/no results) not invented facts.",
+      "The LLM narrator interprets these prompts into narrative context.",
+      "System remains fully playable with LLM disabled - oracle results display as raw tokens."
+    ]
+  },
   "notes": [
     "This rules file implements the ELMC faction-turn procedure (3 actions per faction; roll d6; +/-1 mod capped; advance progress bar).",
     "Economics/supplies are not tracked; resources are tags that provide situational +1 or impose -1 when opposed."

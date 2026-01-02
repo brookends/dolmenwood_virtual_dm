@@ -202,6 +202,9 @@ class ConversationFacade:
         if action_id == "meta:status":
             return self._response([ChatMessage("system", self._status_summary())])
 
+        if action_id == "meta:factions":
+            return self._response([ChatMessage("system", self._factions_summary())])
+
         # State-machine trigger passthrough (debug/tooling)
         if action_id.startswith("transition:"):
             trigger = action_id.split(":", 1)[1]
@@ -949,3 +952,10 @@ class ConversationFacade:
             except Exception:
                 pass
         return "\n".join(parts)
+
+    def _factions_summary(self) -> str:
+        """Generate a summary of faction status."""
+        from src.factions import get_factions_summary
+        if not hasattr(self.dm, "factions") or not self.dm.factions:
+            return "Faction system not initialized."
+        return get_factions_summary(self.dm.factions)

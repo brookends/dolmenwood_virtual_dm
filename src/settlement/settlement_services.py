@@ -25,6 +25,15 @@ class CostEstimate:
     cp: int = 0
     notes: str = ""
 
+    def apply_multiplier(self, multiplier: float) -> "CostEstimate":
+        """Return a new CostEstimate with costs scaled by multiplier."""
+        return CostEstimate(
+            gp=max(0, int(self.gp * multiplier)),
+            sp=max(0, int(self.sp * multiplier)),
+            cp=max(0, int(self.cp * multiplier)),
+            notes=self.notes,
+        )
+
 
 _SIMPLE_COIN_RE = re.compile(r"(?P<num>\d+)\s*(?P<denom>gp|sp|cp)\b", flags=re.I)
 
@@ -65,6 +74,8 @@ class ServiceUseResult:
     cost_estimate: Optional[CostEstimate]
     notes: str = ""
     effects: list[dict] = field(default_factory=list)  # future EffectCommands
+    faction_modifier_applied: bool = False
+    faction_cost_percent: int = 0  # e.g., -15 for 15% discount, +25 for markup
 
     def to_dict(self) -> dict:
         return {
@@ -74,6 +85,8 @@ class ServiceUseResult:
             "cost_estimate": (self.cost_estimate.__dict__ if self.cost_estimate else None),
             "notes": self.notes,
             "effects": self.effects or [],
+            "faction_modifier_applied": self.faction_modifier_applied,
+            "faction_cost_percent": self.faction_cost_percent,
         }
 
 
@@ -85,9 +98,37 @@ class SettlementServiceExecutor:
     Later passes can add real effects (healing, room/rest, hirelings, spellcasting, etc.).
     """
 
-    def use(self, service: SettlementServiceData, params: Optional[dict] = None) -> ServiceUseResult:
+    def use(
+        self,
+        service: SettlementServiceData,
+        params: Optional[dict] = None,
+        faction_standing: int = 0,
+    ) -> ServiceUseResult:
+        """
+        Execute a service and return structured results.
+
+        Args:
+            service: The service data
+            params: Optional parameters for the service
+            faction_standing: Party standing with the settlement's controlling faction.
+                Positive values give discounts, negative values add markups.
+
+        Returns:
+            ServiceUseResult with cost estimates and effects
+        """
         params = params or {}
         cost_est = parse_cost_text(service.cost or "")
+
+        # Apply faction standing modifier to costs
+        faction_modifier_applied = False
+        faction_cost_percent = 0
+        if cost_est and faction_standing != 0:
+            from src.factions.faction_hooks import get_service_cost_multiplier
+            multiplier = get_service_cost_multiplier(faction_standing)
+            if multiplier != 1.0:
+                cost_est = cost_est.apply_multiplier(multiplier)
+                faction_modifier_applied = True
+                faction_cost_percent = int((multiplier - 1.0) * 100)
 
         lname = (service.name or "").lower()
 
@@ -99,6 +140,8 @@ class SettlementServiceExecutor:
                 cost_text=service.cost or "",
                 cost_estimate=cost_est,
                 notes="TODO: integrate with SettlementEngine lifestyle + rest healing and/or DowntimeEngine.",
+                faction_modifier_applied=faction_modifier_applied,
+                faction_cost_percent=faction_cost_percent,
             )
 
         # Food/drink
@@ -109,6 +152,8 @@ class SettlementServiceExecutor:
                 cost_text=service.cost or "",
                 cost_estimate=cost_est,
                 notes=service.notes or "",
+                faction_modifier_applied=faction_modifier_applied,
+                faction_cost_percent=faction_cost_percent,
             )
 
         # Healing
@@ -119,6 +164,8 @@ class SettlementServiceExecutor:
                 cost_text=service.cost or "",
                 cost_estimate=cost_est,
                 notes="TODO: integrate with CharacterState healing/conditions + downtime/rest rules.",
+                faction_modifier_applied=faction_modifier_applied,
+                faction_cost_percent=faction_cost_percent,
             )
 
         # Prayer/blessing
@@ -129,6 +176,8 @@ class SettlementServiceExecutor:
                 cost_text=service.cost or "",
                 cost_estimate=cost_est,
                 notes="TODO: integrate with blessing effects and/or condition removal (rules-driven).",
+                faction_modifier_applied=faction_modifier_applied,
+                faction_cost_percent=faction_cost_percent,
             )
 
         # Stabling/transport
@@ -139,6 +188,8 @@ class SettlementServiceExecutor:
                 cost_text=service.cost or "",
                 cost_estimate=cost_est,
                 notes=service.notes or "",
+                faction_modifier_applied=faction_modifier_applied,
+                faction_cost_percent=faction_cost_percent,
             )
 
         # Default: generic service/purchase
@@ -148,4 +199,6 @@ class SettlementServiceExecutor:
             cost_text=service.cost or "",
             cost_estimate=cost_est,
             notes=service.notes or "",
+            faction_modifier_applied=faction_modifier_applied,
+            faction_cost_percent=faction_cost_percent,
         )
