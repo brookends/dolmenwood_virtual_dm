@@ -98,6 +98,8 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "encounter_triggered",
         "Encounter occurs on the fairy road",
     ),
+    # TODO(Phase 5.2): Wire fairy_road_combat trigger in FairyRoadEngine
+    # when hostile fairy creatures are encountered or party attacks
     StateTransition(
         GameState.FAIRY_ROAD_TRAVEL,
         GameState.COMBAT,
@@ -148,6 +150,8 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "initiate_conversation",
         "Party initiates conversation with NPC",
     ),
+    # TODO(Phase 5.2): Wire settlement_combat trigger in SettlementEngine
+    # when party attacks NPCs or guards intervene in crimes
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.COMBAT,
@@ -246,6 +250,12 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "combat_to_parley",
         "Combat transitions to negotiation (surrender, etc.)",
     ),
+    StateTransition(
+        GameState.COMBAT,
+        GameState.ENCOUNTER,
+        "combat_end_encounter",
+        "Combat ends, return to encounter resolution (e.g., after encounter_to_combat)",
+    ),
     # Social Interaction transitions
     StateTransition(
         GameState.SOCIAL_INTERACTION,
@@ -276,6 +286,18 @@ VALID_TRANSITIONS: list[StateTransition] = [
         GameState.COMBAT,
         "conversation_escalates",
         "Conversation escalates to combat",
+    ),
+    StateTransition(
+        GameState.SOCIAL_INTERACTION,
+        GameState.ENCOUNTER,
+        "parley_end_encounter",
+        "Parley ends, return to encounter resolution (e.g., after encounter_to_parley)",
+    ),
+    StateTransition(
+        GameState.SOCIAL_INTERACTION,
+        GameState.COMBAT,
+        "parley_return_combat",
+        "Parley ends without resolution, return to combat (e.g., after combat_to_parley)",
     ),
     # Downtime transitions
     StateTransition(
@@ -499,6 +521,13 @@ class StateMachine:
                 GameState.SOCIAL_INTERACTION,
                 GameState.FAIRY_ROAD_TRAVEL,
             ): "conversation_end_fairy_road",
+            # Nested state returns (Phase 5.1)
+            # When combat was entered from encounter (encounter_to_combat)
+            (GameState.COMBAT, GameState.ENCOUNTER): "combat_end_encounter",
+            # When parley was entered from encounter (encounter_to_parley)
+            (GameState.SOCIAL_INTERACTION, GameState.ENCOUNTER): "parley_end_encounter",
+            # When parley was entered from combat (combat_to_parley)
+            (GameState.SOCIAL_INTERACTION, GameState.COMBAT): "parley_return_combat",
         }
 
         key = (self._current_state, self._previous_state)
