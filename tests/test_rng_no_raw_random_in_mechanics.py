@@ -524,3 +524,107 @@ class TestCombatRngDeterminism:
 
         if trap_random.has_violations():
             pytest.fail(trap_random.format_report())
+
+
+class TestModulesHaveNoRawRandom:
+    """
+    Phase 6.2: Verify specific modules don't use raw random.
+
+    These tests import and exercise the modules to check for violations.
+    """
+
+    def test_tables_module_uses_dice_roller(self, offline_dm, trap_random):
+        """Tables module (including hunting tables) should use DiceRoller."""
+        from src.tables import hunting_tables
+
+        # Try to access the module - any import-time random usage will be caught
+        # Now exercise the hunting functions if they exist
+        if hasattr(hunting_tables, "roll_hunting_result"):
+            try:
+                hunting_tables.roll_hunting_result()
+            except Exception:
+                pass
+
+        if trap_random.has_violations():
+            pytest.fail(trap_random.format_report())
+
+    def test_dungeon_engine_uses_dice_roller(self, offline_dm, trap_random):
+        """Dungeon engine should use DiceRoller, not raw random."""
+        from src.dungeon import dungeon_engine
+
+        # Exercise dungeon engine functions
+        registry = get_default_registry()
+
+        offline_dm.controller.state_machine.force_state(
+            GameState.DUNGEON_EXPLORATION,
+            reason="test"
+        )
+
+        try:
+            registry.execute(offline_dm, "dungeon:explore", {})
+        except Exception:
+            pass
+
+        if trap_random.has_violations():
+            pytest.fail(trap_random.format_report())
+
+    def test_hex_crawl_engine_uses_dice_roller(self, offline_dm, trap_random):
+        """Hex crawl engine should use DiceRoller, not raw random."""
+        from src.hex_crawl import hex_crawl_engine
+
+        # Exercise hex crawl functions through registry
+        registry = get_default_registry()
+
+        try:
+            registry.execute(
+                offline_dm,
+                "wilderness:travel",
+                {"direction": "east"}
+            )
+        except Exception:
+            pass
+
+        if trap_random.has_violations():
+            pytest.fail(trap_random.format_report())
+
+    def test_spell_resolver_uses_dice_roller(self, offline_dm, trap_random):
+        """Spell resolver should use DiceRoller, not raw random."""
+        from src.narrative import spell_resolver
+
+        # Try calling spell resolution
+        registry = get_default_registry()
+
+        try:
+            registry.execute(
+                offline_dm,
+                "oracle:spell_adjudication",
+                {
+                    "spell_name": "Magic Missile",
+                    "caster_id": "test_ranger_1",
+                }
+            )
+        except Exception:
+            pass
+
+        if trap_random.has_violations():
+            pytest.fail(trap_random.format_report())
+
+    def test_mythic_gme_uses_adapter_by_default(self, seeded_dice, trap_random):
+        """MythicGME should use DiceRngAdapter by default (not random.Random)."""
+        from src.oracle.mythic_gme import MythicGME, Likelihood
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+
+        # Create MythicGME without explicit rng
+        mythic = MythicGME()
+
+        # Verify it uses DiceRngAdapter
+        assert isinstance(mythic._rng, DiceRngAdapter), (
+            f"MythicGME should use DiceRngAdapter by default, got {type(mythic._rng)}"
+        )
+
+        # Execute a fate check - should go through DiceRoller
+        mythic.fate_check("Test question?", Likelihood.FIFTY_FIFTY)
+
+        # Verify no raw random violations
+        if trap_random.has_violations():
+            pytest.fail(trap_random.format_report())

@@ -15,8 +15,16 @@ Reference: Mythic Game Master Emulator 2nd Edition by Tana Pigeon
 
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, Protocol, runtime_checkable
 import random
+
+
+@runtime_checkable
+class RNGProtocol(Protocol):
+    """Protocol for RNG objects compatible with MythicGME."""
+
+    def randint(self, a: int, b: int) -> int: ...
+    def choice(self, seq: list) -> Any: ...
 
 
 # =============================================================================
@@ -381,27 +389,42 @@ class MythicGME:
     - Chaos Factor management
 
     Usage:
+        # Default: uses DiceRngAdapter for deterministic, logged rolls
         mythic = MythicGME()
         result = mythic.fate_check("Does the spell succeed?", Likelihood.LIKELY)
         if result.random_event_triggered:
             # Handle complication
             meaning = result.random_event.meaning_pair
+
+        # For testing with specific seed:
+        from src.oracle.dice_rng_adapter import DiceRngAdapter
+        adapter = DiceRngAdapter("TestOracle")
+        mythic = MythicGME(rng=adapter)
     """
 
     def __init__(
         self,
         chaos_factor: int = 5,
-        rng: Optional[random.Random] = None,
+        rng: Optional[RNGProtocol] = None,
     ):
         """
         Initialize the Mythic GME engine.
 
         Args:
             chaos_factor: Starting chaos factor (1-9)
-            rng: Optional random number generator for reproducibility
+            rng: RNG implementing randint() and choice(). If None, uses
+                 DiceRngAdapter for deterministic, logged rolls.
+
+        Note:
+            For deterministic replay support, always use DiceRngAdapter
+            (the default) or pass a seeded random.Random for testing.
         """
         self.chaos = ChaosFactorState(value=chaos_factor)
-        self._rng = rng or random.Random()
+        if rng is None:
+            # Import here to avoid circular dependency
+            from src.oracle.dice_rng_adapter import DiceRngAdapter
+            rng = DiceRngAdapter("MythicGME")
+        self._rng = rng
 
     def fate_check(
         self,
