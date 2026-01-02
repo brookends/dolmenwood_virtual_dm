@@ -215,6 +215,11 @@ class VirtualDM:
         # Wire session manager to controller for engine access
         self.controller.set_session_manager(self.session_manager)
 
+        # Phase 7.1: Content registries stored on VirtualDM for reuse
+        self.monster_registry: Any = None
+        self.item_catalog: Any = None
+        self.spell_data: list[Any] = []  # SpellData objects
+
         # Load base content if requested
         self._content_loaded = False
         if self.config.load_content:
@@ -292,6 +297,15 @@ class VirtualDM:
                 enable_vector_db=self.config.use_vector_db,
             )
 
+            # Phase 7.2: Fail fast if there are critical parse errors
+            if content.errors:
+                error_summary = "; ".join(content.errors[:5])
+                if len(content.errors) > 5:
+                    error_summary += f" ... and {len(content.errors) - 5} more errors"
+                raise RuntimeError(
+                    f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
+                )
+
             # Load hex data into HexCrawlEngine
             for hex_id, hex_loc in content.hexes.items():
                 self.hex_crawl.load_hex_data(hex_id, hex_loc)
@@ -302,6 +316,11 @@ class VirtualDM:
             if content.spells:
                 spell_count = register_spells_with_combat(content.spells, self.combat)
                 logger.info(f"Registered {spell_count} spells with CombatEngine")
+
+            # Phase 7.1: Store registries on VirtualDM for reuse
+            self.monster_registry = content.monster_registry
+            self.item_catalog = content.item_catalog
+            self.spell_data = content.spells
 
             # Load settlements into SettlementEngine
             self._load_settlements(content_dir)

@@ -50,8 +50,10 @@ class RuntimeContent:
         spells: List of SpellData objects (for SpellResolver registration)
         monsters_loaded: Whether monsters were loaded into the registry
         items_loaded: Whether items were loaded into the catalog
+        monster_registry: The loaded MonsterRegistry instance (if monsters loaded)
         item_catalog: The loaded ItemCatalog instance (if items loaded)
         warnings: List of non-fatal warnings during loading
+        errors: List of critical errors that should cause fail-fast
         stats: Load statistics
     """
 
@@ -59,8 +61,10 @@ class RuntimeContent:
     spells: list[Any] = field(default_factory=list)  # SpellData objects
     monsters_loaded: bool = False
     items_loaded: bool = False
+    monster_registry: Any = None  # MonsterRegistry instance (Phase 7.1)
     item_catalog: Any = None  # ItemCatalog instance
     warnings: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)  # Phase 7.2: critical errors
     stats: RuntimeContentStats = field(default_factory=RuntimeContentStats)
 
 
@@ -163,38 +167,55 @@ def _load_hexes(hex_dir: Path, result: RuntimeContent, enable_vector_db: bool) -
                 # Check for hex_id at top level (new format)
                 if "hex_id" in data:
                     hex_location = _parse_hex_json(data)
-                    if hex_location:
-                        result.hexes[hex_location.hex_id] = hex_location
-                        result.stats.hexes_loaded += 1
+                    result.hexes[hex_location.hex_id] = hex_location
+                    result.stats.hexes_loaded += 1
                 # Check for items array (legacy format)
                 elif "items" in data and isinstance(data["items"], list):
                     for item in data["items"]:
                         if "hex_id" in item:
                             hex_location = _parse_hex_json(item)
-                            if hex_location:
-                                result.hexes[hex_location.hex_id] = hex_location
-                                result.stats.hexes_loaded += 1
+                            result.hexes[hex_location.hex_id] = hex_location
+                            result.stats.hexes_loaded += 1
                 else:
                     result.stats.hexes_failed += 1
                     result.warnings.append(f"No hex_id found in {json_file.name}")
 
             except json.JSONDecodeError as e:
                 result.stats.hexes_failed += 1
-                result.warnings.append(f"Invalid JSON in {json_file.name}: {e}")
-                logger.warning(f"Failed to parse {json_file}: {e}")
+                # Phase 7.2: JSON decode errors are critical
+                error_msg = f"Invalid JSON in {json_file.name}: {e}"
+                result.errors.append(error_msg)
+                logger.error(f"Failed to parse {json_file}: {e}")
+            except HexParseError as e:
+                # Phase 7.2: Hex parse errors are critical
+                result.stats.hexes_failed += 1
+                result.errors.append(str(e))
+                logger.error(str(e))
             except Exception as e:
                 result.stats.hexes_failed += 1
-                result.warnings.append(f"Error loading {json_file.name}: {e}")
-                logger.warning(f"Error loading {json_file}: {e}")
+                error_msg = f"Error loading {json_file.name}: {e}"
+                result.errors.append(error_msg)
+                logger.error(f"Error loading {json_file}: {e}")
 
         logger.info(f"Loaded {result.stats.hexes_loaded} hexes from {hex_dir}")
 
     except Exception as e:
-        result.warnings.append(f"Error loading hexes: {e}")
-        logger.error(f"Error loading hexes: {e}", exc_info=True)
+        # Phase 7.2: Critical error at the directory level
+        error_msg = f"Critical error loading hexes: {e}"
+        result.errors.append(error_msg)
+        logger.error(error_msg, exc_info=True)
 
 
-def _parse_hex_json(data: dict[str, Any]) -> Optional[HexLocation]:
+class HexParseError(Exception):
+    """Exception raised when hex parsing fails (Phase 7.2)."""
+
+    def __init__(self, hex_id: str, message: str):
+        self.hex_id = hex_id
+        self.message = message
+        super().__init__(f"Failed to parse hex {hex_id}: {message}")
+
+
+def _parse_hex_json(data: dict[str, Any]) -> HexLocation:
     """
     Parse a hex JSON dictionary into a HexLocation dataclass.
 
@@ -202,8 +223,12 @@ def _parse_hex_json(data: dict[str, Any]) -> Optional[HexLocation]:
         data: Dictionary from JSON
 
     Returns:
-        HexLocation instance or None on error
+        HexLocation instance
+
+    Raises:
+        HexParseError: If parsing fails (Phase 7.2 - no silent discards)
     """
+    hex_id = data.get("hex_id", "?")
     try:
         from src.data_models import (
             HexFeature,
@@ -308,8 +333,9 @@ def _parse_hex_json(data: dict[str, Any]) -> Optional[HexLocation]:
         return hex_location
 
     except Exception as e:
-        logger.error(f"Error parsing hex {data.get('hex_id', '?')}: {e}")
-        return None
+        # Phase 7.2: Don't silently discard parse failures
+        logger.error(f"Error parsing hex {hex_id}: {e}")
+        raise HexParseError(hex_id, str(e)) from e
 
 
 def _parse_point_of_interest(data: dict[str, Any]) -> Any:
@@ -448,6 +474,9 @@ def _load_monsters(monster_dir: Path, result: RuntimeContent) -> None:
 
         result.stats.monsters_loaded = load_stats.get("monsters_loaded", 0)
         result.monsters_loaded = result.stats.monsters_loaded > 0
+
+        # Phase 7.1: Store the registry instance for reuse
+        result.monster_registry = registry
 
         if load_stats.get("errors"):
             result.warnings.extend(load_stats["errors"][:10])
