@@ -73,6 +73,15 @@ from src.narrative.intent_parser import (
 # Conversation-first interface
 from src.conversation import ConversationFacade, TurnResponse, SuggestedAction
 
+# Faction system
+from src.factions import (
+    FactionEngine,
+    init_faction_engine,
+    save_faction_state,
+    load_faction_state,
+    get_factions_summary,
+)
+
 
 # Configure logging
 def setup_logging(verbose: bool = False) -> None:
@@ -206,6 +215,12 @@ class VirtualDM:
         self._content_loaded = False
         if self.config.load_content:
             self._load_base_content()
+
+        # Initialize faction engine (after content is loaded)
+        self.factions: Optional[FactionEngine] = None
+        if self.config.load_content:
+            content_dir = self.config.content_dir or (self.config.data_dir / "content")
+            self.factions = init_faction_engine(self, content_dir)
 
         # Initialize the DM Agent for narrative descriptions
         self._dm_agent: Optional[DMAgent] = None
@@ -684,6 +699,9 @@ class VirtualDM:
         # Save current game state enum
         session.custom_data["current_game_state"] = self.current_state.value
 
+        # Save faction state
+        save_faction_state(self.factions, session.custom_data)
+
         # Save to slot file
         filename = f"slot_{slot}.json"
         filepath = self.session_manager.save_session(session, filename)
@@ -759,6 +777,9 @@ class VirtualDM:
             # Restore encounter state if present
             if "encounter_state" in session.custom_data:
                 self._deserialize_encounter_state(session.custom_data["encounter_state"])
+
+            # Restore faction state if present
+            load_faction_state(self.factions, session.custom_data)
 
             logger.info(f"Game loaded from slot {slot}")
             return True

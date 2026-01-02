@@ -80,6 +80,14 @@ from src.factions.faction_engine import (
     FactionEngine,
 )
 
+from src.factions.faction_wiring import (
+    init_faction_engine,
+    save_faction_state,
+    load_faction_state,
+    get_factions_summary,
+    get_party_faction_summary,
+)
+
 __all__ = [
     # Static content models
     "Resource",
@@ -125,4 +133,10 @@ __all__ = [
     "CycleResult",
     "FactionCycleResult",
     "FactionEngine",
+    # Wiring
+    "init_faction_engine",
+    "save_faction_state",
+    "load_faction_state",
+    "get_factions_summary",
+    "get_party_faction_summary",
 ]

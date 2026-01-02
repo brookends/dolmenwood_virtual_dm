@@ -87,6 +87,20 @@ def build_suggestions(dm: VirtualDM, *, character_id: Optional[str] = None, limi
         )
     )
 
+    # Faction status (offline surface for faction system)
+    if hasattr(dm, "factions") and dm.factions:
+        candidates.append(
+            _Candidate(
+                SuggestedAction(
+                    id="meta:factions",
+                    label="Show faction status",
+                    safe_to_execute=True,
+                    help="Display faction levels, territory, active actions, and news.",
+                ),
+                score=4,
+            )
+        )
+
     # ------------------------------------------------------------------
     # Mode-specific suggestions
     # ------------------------------------------------------------------
