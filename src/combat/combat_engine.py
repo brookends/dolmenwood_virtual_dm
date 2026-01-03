@@ -383,6 +383,10 @@ class CombatEngine:
 
         result.messages.append(f"Initiative: Party {party_init.total} vs Enemy {enemy_init.total}")
 
+        # 1b. Process start-of-round aura effects
+        aura_messages = self._process_aura_damage()
+        result.messages.extend(aura_messages)
+
         # 2. Generate enemy actions if not provided
         if enemy_actions is None:
             enemy_actions = self._generate_enemy_actions()
@@ -1184,6 +1188,123 @@ class CombatEngine:
                 round_modifiers["ac_bonus"][action.combatant_id] = (
                     round_modifiers["ac_bonus"].get(action.combatant_id, 0) + parry_bonus
                 )
+
+    # =========================================================================
+    # AURA EFFECTS (Section for special monster abilities)
+    # =========================================================================
+
+    def _process_aura_damage(self) -> list[str]:
+        """
+        Process aura damage at the start of each round.
+
+        Creatures with auras (like Cold Aura) deal automatic damage to
+        nearby enemies at the start of each combat round.
+
+        Returns:
+            List of messages describing aura effects
+        """
+        if not self._combat_state:
+            return []
+
+        from src.data_models import CombatAura
+
+        messages: list[str] = []
+
+        # Check all combatants for aura abilities
+        for combatant in self._combat_state.encounter.combatants:
+            if not combatant.stat_block or combatant.stat_block.hp_current <= 0:
+                continue
+
+            # Parse auras from special abilities
+            for ability in combatant.stat_block.special_abilities:
+                aura = CombatAura.parse_from_special_ability(ability)
+                if aura and aura.damage_per_round > 0:
+                    # Apply aura damage to enemies within range
+                    aura_targets = self._get_aura_targets(combatant, aura)
+                    for target in aura_targets:
+                        damage = aura.damage_per_round
+                        if target.stat_block:
+                            target.stat_block.hp_current -= damage
+                            messages.append(
+                                f"{combatant.name}'s {aura.aura_type.value} aura deals "
+                                f"{damage} {aura.damage_type} damage to {target.name}!"
+                            )
+
+                            # Track casualty if killed by aura
+                            if target.stat_block.hp_current <= 0:
+                                messages.append(f"{target.name} falls to the {aura.damage_type}!")
+
+        return messages
+
+    def _get_aura_targets(
+        self,
+        aura_source: "Combatant",
+        aura: "CombatAura",
+    ) -> list["Combatant"]:
+        """
+        Get combatants affected by an aura.
+
+        In Dolmenwood's zone-based combat, we simplify range by assuming
+        melee range = within aura range for most auras.
+
+        Args:
+            aura_source: The combatant with the aura
+            aura: The aura definition
+
+        Returns:
+            List of combatants affected by the aura
+        """
+        if not self._combat_state:
+            return []
+
+        targets: list["Combatant"] = []
+        source_side = aura_source.side
+
+        # Auras affect enemies (opposite side)
+        for combatant in self._combat_state.encounter.combatants:
+            if combatant.combatant_id == aura_source.combatant_id:
+                continue  # Don't target self
+            if combatant.side == source_side:
+                continue  # Don't target allies
+
+            # Check if combatant is alive
+            if not combatant.stat_block or combatant.stat_block.hp_current <= 0:
+                continue
+
+            # In zone-based combat, assume melee combatants are within aura range
+            # For larger aura ranges (>10ft), include more combatants
+            if aura.radius_feet >= 10:
+                # Assume all enemies in melee are within 10ft
+                targets.append(combatant)
+
+        return targets
+
+    def get_combatant_auras(self, combatant_id: str) -> list["CombatAura"]:
+        """
+        Get all auras for a specific combatant.
+
+        Args:
+            combatant_id: ID of the combatant
+
+        Returns:
+            List of CombatAura objects
+        """
+        if not self._combat_state:
+            return []
+
+        from src.data_models import CombatAura
+
+        for combatant in self._combat_state.encounter.combatants:
+            if combatant.combatant_id == combatant_id:
+                if not combatant.stat_block:
+                    return []
+                auras = []
+                for ability in combatant.stat_block.special_abilities:
+                    aura = CombatAura.parse_from_special_ability(ability)
+                    if aura:
+                        auras.append(aura)
+                return auras
+        return []
 
     # =========================================================================
     # ENEMY AI

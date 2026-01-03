@@ -201,6 +201,10 @@ class ConditionType(str, Enum):
     COMPELLED_DANCING = "compelled_dancing"  # Must dance, cannot take other actions
     MAGICAL_SLEEP = "magical_sleep"  # Enchanted slumber, protected from elements
     FAIRY_MARKED = "fairy_marked"  # Long-term fairy attention (dreams, omens)
+    # Supernatural fear/compulsion conditions (vorpal monolith, hex effects)
+    RESTLESS_SLEEP = "restless_sleep"  # No HP recovery, no spell memorization
+    TERROR = "terror"  # Must flee, penalties to actions while fleeing
+    COMPELLED = "compelled"  # Must move toward target, can be restrained
 
 
 # Condition-based action restrictions
@@ -247,7 +251,116 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "allowed": [],
         "message": "You are frozen in time.",
     },
+    "exhausted": {
+        "blocked": [],  # Exhaustion doesn't block actions, just penalizes them
+        "allowed": ["all"],
+        "message": "You are exhausted. -1 to all rolls until a full rest elsewhere.",
+    },
+    "restless_sleep": {
+        "blocked": [],  # Doesn't block actions, but affects resting
+        "allowed": ["all"],
+        "message": "You are haunted by vivid dreams. No HP recovery or spell memorization until you rest elsewhere.",
+    },
+    "terror": {
+        "blocked": ["combat", "spell", "exploration", "social", "inventory", "creative"],
+        "allowed": ["movement", "hazard"],  # Can only flee
+        "message": "Overwhelming terror compels you to flee! You cannot take any action except running away.",
+    },
+    "compelled": {
+        "blocked": ["combat", "spell", "exploration", "survival", "social", "inventory", "creative"],
+        "allowed": ["movement"],  # Must move toward target
+        "message": "A supernatural compulsion forces you toward the monolith. You cannot resist unless restrained.",
+    },
 }
+
+# Condition-based roll modifiers
+# Maps condition types to penalties/bonuses applied to die rolls
+CONDITION_ROLL_MODIFIERS: dict[str, dict[str, Any]] = {
+    "exhausted": {
+        "all_rolls": -1,
+        "attack_rolls": -1,
+        "saving_throws": -1,
+        "ability_checks": -1,
+        "removal": "rest_elsewhere",  # How to remove: rest in a different location
+        "description": "The exhaustion from magical nightmares weighs on you.",
+    },
+    "poisoned": {
+        "attack_rolls": -2,
+        "saving_throws": -2,
+        "removal": "cure_poison",
+    },
+    "frightened": {
+        "attack_rolls": -2,
+        "removal": "time_or_save",  # Usually ends after combat or a save
+    },
+    "confused": {
+        "attack_rolls": -2,  # When confused can attack, penalties apply
+        "removal": "spell_duration",
+    },
+    "hasted": {
+        "initiative": 2,  # Bonus to initiative
+        "armor_class": 2,  # Bonus to AC
+        "removal": "spell_duration",
+    },
+    "hungry": {
+        "attack_rolls": -1,
+        "ability_checks": -1,
+        "removal": "eat_food",
+    },
+    "starving": {
+        "all_rolls": -2,
+        "removal": "eat_food",
+    },
+    "restless_sleep": {
+        "hp_recovery": 0,  # No HP recovered from rest
+        "spell_memorization": False,  # Cannot memorize spells
+        "removal": "rest_elsewhere",  # Rest in a location away from the monolith
+        "description": "Vivid dreams of crimson light prevent restful sleep.",
+    },
+    "terror": {
+        "climbing_checks": -2,  # Penalty to climbing while fleeing
+        "attack_rolls": -2,  # If somehow able to attack
+        "removal": "duration_1_turn",  # Lasts 1 Turn (10 minutes)
+        "forces_flee": True,  # Must flee the source
+        "description": "Supernatural terror overwhelms you.",
+    },
+    "compelled": {
+        "all_rolls": 0,  # No penalty to rolls
+        "removal": "time_of_day_dawn",  # Ends at dawn
+        "forces_movement": True,  # Must move toward target
+        "can_be_restrained": True,  # Physical restraint prevents movement
+        "description": "An overwhelming compulsion draws you toward the monolith.",
+    },
+}
+
+
+def get_condition_roll_modifier(
+    condition_type: str, roll_type: str = "all_rolls"
+) -> int:
+    """
+    Get the roll modifier for a condition.
+
+    Args:
+        condition_type: The condition type (e.g., "exhausted")
+        roll_type: Type of roll (all_rolls, attack_rolls, saving_throws, ability_checks)
+
+    Returns:
+        The modifier to apply (usually negative)
+    """
+    if condition_type not in CONDITION_ROLL_MODIFIERS:
+        return 0
+
+    modifiers = CONDITION_ROLL_MODIFIERS[condition_type]
+
+    # Check specific roll type first
+    if roll_type in modifiers:
+        return modifiers[roll_type]
+
+    # Fall back to all_rolls if specified
+    if "all_rolls" in modifiers:
+        return modifiers["all_rolls"]
+
+    return 0
 
 
 class ConfusionBehavior(str, Enum):
@@ -6407,6 +6520,109 @@ class AreaEffectType(str, Enum):
     CUSTOM = "custom"  # Custom effect
 
 
+class AuraType(str, Enum):
+    """Types of auras that combatants can emit."""
+
+    COLD = "cold"  # Cold damage aura (e.g., Frore Gryphus)
+    FIRE = "fire"  # Fire damage aura
+    LIGHTNING = "lightning"  # Lightning damage aura
+    POISON = "poison"  # Poison damage aura
+    FEAR = "fear"  # Fear aura (save or frightened)
+    CHARM = "charm"  # Charm aura (save or charmed)
+    DARKNESS = "darkness"  # Magical darkness around creature
+    CUSTOM = "custom"  # Custom aura effect
+
+
+@dataclass
+class CombatAura:
+    """
+    An aura effect that a combatant emits during combat.
+
+    Auras apply effects to creatures within a certain radius at the
+    start of each round (or on certain triggers).
+    """
+
+    aura_type: AuraType
+    radius_feet: int = 10  # Radius in feet
+    damage_per_round: int = 0  # Automatic damage each round
+    damage_type: str = ""  # "cold", "fire", etc.
+    save_type: Optional[str] = None  # If requires save: "doom", "spell", etc.
+    save_negates: bool = False  # If True, save negates all damage
+    save_halves: bool = False  # If True, save halves damage
+    condition_on_fail: Optional[str] = None  # Condition applied on failed save
+    description: str = ""
+
+    @classmethod
+    def parse_from_special_ability(cls, ability_text: str) -> Optional["CombatAura"]:
+        """
+        Parse a CombatAura from a special ability description.
+
+        Examples:
+            "Cold Aura (creatures within 10 feet take 1 cold damage per round)"
+            "Fire Aura (10ft radius, 1d4 fire damage, Save vs Doom halves)"
+
+        Args:
+            ability_text: The special ability text
+
+        Returns:
+            CombatAura if parseable, None otherwise
+        """
+        import re
+
+        text_lower = ability_text.lower()
+
+        # Check if this is an aura
+        if "aura" not in text_lower:
+            return None
+
+        # Default values
+        aura_type = AuraType.CUSTOM
+        radius = 10
+        damage = 0
+        damage_type = ""
+        save_type = None
+
+        # Detect aura type
+        for at in AuraType:
+            if at.value in text_lower:
+                aura_type = at
+                damage_type = at.value
+                break
+
+        # Parse radius (e.g., "within 10 feet", "10ft radius")
+        radius_match = re.search(r"(\d+)\s*(?:feet|ft|\')", text_lower)
+        if radius_match:
+            radius = int(radius_match.group(1))
+
+        # Parse damage (e.g., "take 1 cold damage", "1d4 fire damage")
+        damage_match = re.search(r"(?:take\s+)?(\d+(?:d\d+)?)\s*(?:cold|fire|lightning|poison)?\s*damage", text_lower)
+        if damage_match:
+            damage_str = damage_match.group(1)
+            # For now just handle flat damage, not dice
+            if "d" not in damage_str:
+                damage = int(damage_str)
+            else:
+                # For dice, use average
+                parts = damage_str.split("d")
+                num_dice = int(parts[0]) if parts[0] else 1
+                die_size = int(parts[1])
+                damage = num_dice * (die_size + 1) // 2
+
+        # Parse save requirement
+        save_match = re.search(r"save\s+(?:vs\.?\s+)?(\w+)", text_lower)
+        if save_match:
+            save_type = save_match.group(1)
+
+        return cls(
+            aura_type=aura_type,
+            radius_feet=radius,
+            damage_per_round=damage,
+            damage_type=damage_type,
+            save_type=save_type,
+            description=ability_text,
+        )
+
+
 @dataclass
 class AreaEffect:
     """
@@ -7495,6 +7711,280 @@ class SecretStatus(str, Enum):
     UNKNOWN = "unknown"  # Player doesn't know it exists
     HINTED = "hinted"  # NPC has hinted at it
     REVEALED = "revealed"  # Fully disclosed
+
+
+class QuestState(str, Enum):
+    """State of a quest in the tracking system."""
+
+    UNKNOWN = "unknown"  # Quest exists but party doesn't know about it
+    AVAILABLE = "available"  # Quest is available but not accepted
+    ACCEPTED = "accepted"  # Quest has been accepted
+    IN_PROGRESS = "in_progress"  # Quest objective is being pursued
+    COMPLETED = "completed"  # Quest completed successfully
+    FAILED = "failed"  # Quest failed (time ran out, objective impossible)
+    ABANDONED = "abandoned"  # Party chose to abandon the quest
+
+
+@dataclass
+class ActiveQuest:
+    """
+    An active quest being tracked by the party.
+
+    Contains all information needed to track quest progress and completion.
+    """
+
+    quest_id: str
+    title: str
+    description: str
+    state: QuestState = QuestState.ACCEPTED
+
+    # Quest giver and location
+    quest_giver_npc: Optional[str] = None  # NPC ID who gave the quest
+    quest_giver_hex: Optional[str] = None  # Hex where quest was given
+
+    # Objectives
+    objective: str = ""
+    destination_location: Optional[str] = None  # POI name
+    destination_hex: Optional[str] = None  # Hex ID if different
+    target_monster: Optional[str] = None  # Monster ID if kill quest
+    target_count: int = 1  # How many to kill/collect
+
+    # Progress tracking
+    progress_count: int = 0  # Items collected, monsters killed, etc.
+    notes: list[str] = field(default_factory=list)  # Progress notes
+
+    # Reward
+    reward_description: str = ""
+    reward_gold: int = 0
+    reward_items: list[str] = field(default_factory=list)
+    reward_per_bonus: dict[str, int] = field(default_factory=dict)  # e.g., {"sheep_carcass": 1}
+
+    # Timing
+    accepted_date: Optional[str] = None  # In-game date when accepted
+    completed_date: Optional[str] = None  # In-game date when completed
+    deadline: Optional[str] = None  # In-game deadline if any
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            "quest_id": self.quest_id,
+            "title": self.title,
+            "description": self.description,
+            "state": self.state.value,
+            "quest_giver_npc": self.quest_giver_npc,
+            "quest_giver_hex": self.quest_giver_hex,
+            "objective": self.objective,
+            "destination_location": self.destination_location,
+            "destination_hex": self.destination_hex,
+            "target_monster": self.target_monster,
+            "target_count": self.target_count,
+            "progress_count": self.progress_count,
+            "notes": self.notes,
+            "reward_description": self.reward_description,
+            "reward_gold": self.reward_gold,
+            "reward_items": self.reward_items,
+            "reward_per_bonus": self.reward_per_bonus,
+            "accepted_date": self.accepted_date,
+            "completed_date": self.completed_date,
+            "deadline": self.deadline,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ActiveQuest":
+        """Create from dictionary."""
+        return cls(
+            quest_id=data.get("quest_id", ""),
+            title=data.get("title", ""),
+            description=data.get("description", ""),
+            state=QuestState(data.get("state", "accepted")),
+            quest_giver_npc=data.get("quest_giver_npc"),
+            quest_giver_hex=data.get("quest_giver_hex"),
+            objective=data.get("objective", ""),
+            destination_location=data.get("destination_location"),
+            destination_hex=data.get("destination_hex"),
+            target_monster=data.get("target_monster"),
+            target_count=data.get("target_count", 1),
+            progress_count=data.get("progress_count", 0),
+            notes=data.get("notes", []),
+            reward_description=data.get("reward_description", ""),
+            reward_gold=data.get("reward_gold", 0),
+            reward_items=data.get("reward_items", []),
+            reward_per_bonus=data.get("reward_per_bonus", {}),
+            accepted_date=data.get("accepted_date"),
+            completed_date=data.get("completed_date"),
+            deadline=data.get("deadline"),
+        )
+
+    @classmethod
+    def from_quest_hook(
+        cls, hook: dict[str, Any], npc_id: Optional[str] = None, hex_id: Optional[str] = None
+    ) -> "ActiveQuest":
+        """Create an ActiveQuest from a quest_hook definition."""
+        # Parse reward_description for gold amount
+        reward_gold = 0
+        reward_per = {}
+        reward_desc = hook.get("reward_description", "")
+
+        # Try to extract gold values like "50gp" or "1gp per"
+        import re
+
+        gold_match = re.search(r"(\d+)gp", reward_desc)
+        if gold_match:
+            reward_gold = int(gold_match.group(1))
+
+        per_match = re.search(r"(\d+)gp per (\w+)", reward_desc)
+        if per_match:
+            reward_per[per_match.group(2)] = int(per_match.group(1))
+
+        return cls(
+            quest_id=hook.get("quest_id", ""),
+            title=hook.get("title", "Untitled Quest"),
+            description=hook.get("description", ""),
+            state=QuestState.ACCEPTED,
+            quest_giver_npc=hook.get("quest_giver") or npc_id,
+            quest_giver_hex=hex_id,
+            objective=hook.get("objective", ""),
+            destination_location=hook.get("destination_location"),
+            destination_hex=hook.get("destination_hex"),
+            target_monster=hook.get("target_monster"),
+            target_count=hook.get("target_count", 1),
+            reward_description=reward_desc,
+            reward_gold=reward_gold,
+            reward_items=hook.get("reward_items", []),
+            reward_per_bonus=reward_per,
+        )
+
+    def check_completion(self, killed_monsters: list[str], current_hex: str) -> bool:
+        """
+        Check if quest completion conditions are met.
+
+        Args:
+            killed_monsters: List of monster IDs killed this session
+            current_hex: Current hex ID
+
+        Returns:
+            True if quest is complete
+        """
+        if self.target_monster:
+            # Kill quest - check if target was killed
+            if self.target_monster in killed_monsters:
+                self.progress_count += 1
+                if self.progress_count >= self.target_count:
+                    return True
+        return False
+
+    def is_active(self) -> bool:
+        """Check if quest is in an active state."""
+        return self.state in (QuestState.ACCEPTED, QuestState.IN_PROGRESS)
+
+
+@dataclass
+class PendingTurnEvent:
+    """
+    An event scheduled to occur after a number of exploration turns.
+
+    Used for delayed monster arrivals, environmental effects, or other
+    time-based events during exploration.
+    """
+
+    event_id: str
+    event_type: str  # "monster_arrival", "reinforcements", "environmental"
+    description: str = ""
+
+    # Timing
+    trigger_in_turns: int = 1  # Triggers after this many turns
+    created_turn: int = 0  # Turn number when created
+    target_turn: int = 0  # Turn when it should trigger (created + trigger_in_turns)
+
+    # Location context
+    hex_id: Optional[str] = None
+    poi_name: Optional[str] = None
+
+    # For recurring checks (like "roll each Turn; on 1-3 they return")
+    check_each_turn: bool = False
+    check_probability: str = ""  # e.g., "1-3" on a d6
+    check_die: str = "d6"  # Die to roll for probability check
+
+    # Monster arrivals
+    monster_id: Optional[str] = None
+    monster_count: int = 1
+    monster_context: str = ""  # Narrative context for arrival
+
+    # State
+    triggered: bool = False
+    cancelled: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            "event_id": self.event_id,
+            "event_type": self.event_type,
+            "description": self.description,
+            "trigger_in_turns": self.trigger_in_turns,
+            "created_turn": self.created_turn,
+            "target_turn": self.target_turn,
+            "hex_id": self.hex_id,
+            "poi_name": self.poi_name,
+            "check_each_turn": self.check_each_turn,
+            "check_probability": self.check_probability,
+            "check_die": self.check_die,
+            "monster_id": self.monster_id,
+            "monster_count": self.monster_count,
+            "monster_context": self.monster_context,
+            "triggered": self.triggered,
+            "cancelled": self.cancelled,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "PendingTurnEvent":
+        """Create from dictionary."""
+        return cls(
+            event_id=data.get("event_id", ""),
+            event_type=data.get("event_type", ""),
+            description=data.get("description", ""),
+            trigger_in_turns=data.get("trigger_in_turns", 1),
+            created_turn=data.get("created_turn", 0),
+            target_turn=data.get("target_turn", 0),
+            hex_id=data.get("hex_id"),
+            poi_name=data.get("poi_name"),
+            check_each_turn=data.get("check_each_turn", False),
+            check_probability=data.get("check_probability", ""),
+            check_die=data.get("check_die", "d6"),
+            monster_id=data.get("monster_id"),
+            monster_count=data.get("monster_count", 1),
+            monster_context=data.get("monster_context", ""),
+            triggered=data.get("triggered", False),
+            cancelled=data.get("cancelled", False),
+        )
+
+    def should_trigger(self, current_turn: int) -> bool:
+        """Check if this event should trigger on the current turn."""
+        if self.triggered or self.cancelled:
+            return False
+        return current_turn >= self.target_turn
+
+    def check_recurring(self, roll_result: int) -> bool:
+        """
+        Check if a recurring event should trigger based on roll result.
+
+        Args:
+            roll_result: Result of the die roll
+
+        Returns:
+            True if the roll triggers the event
+        """
+        if not self.check_probability:
+            return True
+
+        # Parse probability like "1-3" or "1-2"
+        if "-" in self.check_probability:
+            parts = self.check_probability.split("-")
+            low = int(parts[0])
+            high = int(parts[1])
+            return low <= roll_result <= high
+        else:
+            # Single value like "1"
+            return roll_result == int(self.check_probability)
 
 
 @dataclass
