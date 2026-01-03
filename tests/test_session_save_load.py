@@ -705,6 +705,11 @@ class TestGameStateRestoration:
         assert dm2.current_state == GameState.COMBAT
         # Controller should have encounter set
         assert dm2.controller.get_encounter() is not None
+        # Combat round should be restored
+        assert dm2.combat._combat_state is not None
+        assert dm2.combat._combat_state.round_number == 3
+        # Return state should be restored
+        assert dm2.combat._return_state == GameState.WILDERNESS_TRAVEL
 
     def test_previous_state_restored(self, dm_with_state, temp_save_dir):
         """Previous state is preserved for return_to_previous."""
