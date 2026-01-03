@@ -5472,8 +5472,23 @@ class HexCrawlEngine:
             "trap": HazardType.TRAP,
             "falling": HazardType.FALLING,
             "environmental": HazardType.ENVIRONMENTAL,
+            "enchantment": HazardType.ENCHANTMENT,
         }
         hazard_type = hazard_type_map.get(hazard_type_str, HazardType.ENVIRONMENTAL)
+
+        # Route spell saves to enchantment handler
+        if save_type.lower() == "spell" or hazard_type == HazardType.ENCHANTMENT:
+            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+                hazard_type=HazardType.ENCHANTMENT,
+                character=character,
+                save_modifier=hazard.get("modifier", hazard.get("save_modifier", 0)),
+                effect_name=hazard.get("name", "enchantment"),
+                condition_on_fail=hazard.get("condition_on_fail", hazard.get("on_fail", {}).get("condition")),
+                ends_at_time_of_day=hazard.get("ends_at_time_of_day", hazard.get("effect", {}).get("ends_at")),
+                leads_to=hazard.get("leads_to"),
+                automatic=hazard.get("automatic", False),
+                description=description,
+            )
 
         # Use the narrative resolver's hazard resolver
         if hazard_type == HazardType.SWIMMING:

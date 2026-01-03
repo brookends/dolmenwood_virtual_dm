@@ -79,6 +79,10 @@ class HazardType(str, Enum):
     SUFFOCATION = "suffocation"  # p154
     TRAP = "trap"  # p155
 
+    # Magical hazards
+    ENCHANTMENT = "enchantment"  # Fairy magic, hex effects (spell save)
+    ENVIRONMENTAL = "environmental"  # Generic environmental hazard
+
 
 class DarknessLevel(str, Enum):
     """Light levels affecting visibility."""
@@ -349,6 +353,7 @@ class HazardResolver:
             HazardType.SWIMMING: self._resolve_swimming,
             HazardType.SUFFOCATION: self._resolve_suffocation,
             HazardType.TRAP: self._resolve_trap,
+            HazardType.ENCHANTMENT: self._resolve_enchantment,
         }
 
         handler = handlers.get(hazard_type)
@@ -1909,3 +1914,117 @@ class HazardResolver:
             "yegril": 18,
         }
         return hp_estimates.get(monster_id, 4)  # Default to 4 HP
+
+    def _resolve_enchantment(
+        self,
+        character: "CharacterState",
+        save_modifier: int = 0,
+        effect_name: str = "enchantment",
+        condition_on_fail: Optional[str] = None,
+        ends_at_time_of_day: Optional[str] = None,
+        leads_to: Optional[str] = None,
+        automatic: bool = False,
+        description: str = "",
+        **kwargs: Any,
+    ) -> HazardResult:
+        """
+        Resolve an enchantment hazard (spell save, fairy magic, etc.).
+
+        This handles hazards like:
+        - Drinking the Woman's tears (Save vs Spell or hear music)
+        - Enchanted reverie (automatic after hearing music)
+        - Full moon compulsion (Save vs Spell -4 or drawn to dance)
+
+        Args:
+            character: The character facing the enchantment
+            save_modifier: Bonus/penalty to the spell save
+            effect_name: Name of the enchantment effect
+            condition_on_fail: Condition type to apply on failed save
+            ends_at_time_of_day: When the condition ends (e.g., "dawn")
+            leads_to: Next hazard_id in the chain
+            automatic: If True, no save allowed - effect applies automatically
+            description: Description of the effect
+
+        Returns:
+            HazardResult with enchantment outcomes
+        """
+        from src.data_models import ConditionType, Condition
+        from src.narrative.intent_parser import ActionType
+
+        # For automatic effects, no save is needed
+        if automatic:
+            conditions_applied = []
+            apply_conditions = []
+
+            if condition_on_fail:
+                conditions_applied.append(condition_on_fail)
+                if hasattr(character, "character_id"):
+                    apply_conditions.append((character.character_id, condition_on_fail))
+
+            return HazardResult(
+                success=False,  # Effect applies automatically
+                hazard_type=HazardType.ENCHANTMENT,
+                action_type=ActionType.NARRATIVE_ACTION,
+                description=description or f"Succumbed to {effect_name}",
+                conditions_applied=conditions_applied,
+                apply_conditions=apply_conditions,
+                narrative_hints=[
+                    "falls under the enchantment's power",
+                    f"cannot resist the {effect_name}",
+                ],
+            )
+
+        # Roll spell save using character's make_saving_throw method
+        if hasattr(character, "make_saving_throw"):
+            roll_total, success = character.make_saving_throw("spell", save_modifier)
+        else:
+            # Fallback for characters without the method
+            roll = self.dice.roll_d20(f"Save vs Spell ({effect_name})")
+            target = character.saving_throws.get("spell", 15) if hasattr(character, "saving_throws") else 15
+            roll_total = roll.total + save_modifier
+            success = roll_total >= target
+
+        if success:
+            return HazardResult(
+                success=True,
+                hazard_type=HazardType.ENCHANTMENT,
+                action_type=ActionType.NARRATIVE_ACTION,
+                description=f"Resisted {effect_name}",
+                check_made=True,
+                check_type=None,  # Saving throw, not ability check
+                check_result=roll_total,
+                narrative_hints=[
+                    "shakes off the enchantment",
+                    "willpower prevails",
+                ],
+            )
+
+        # Failed save - apply the condition
+        conditions_applied = []
+        apply_conditions = []
+
+        if condition_on_fail:
+            conditions_applied.append(condition_on_fail)
+            if hasattr(character, "character_id"):
+                apply_conditions.append((character.character_id, condition_on_fail))
+
+        narrative_hints = [
+            f"falls under the {effect_name}",
+            "resistance crumbles",
+        ]
+
+        if ends_at_time_of_day:
+            narrative_hints.append(f"will last until {ends_at_time_of_day}")
+
+        return HazardResult(
+            success=False,
+            hazard_type=HazardType.ENCHANTMENT,
+            action_type=ActionType.NARRATIVE_ACTION,
+            description=description or f"Succumbed to {effect_name}",
+            check_made=True,
+            check_type=None,  # Saving throw, not ability check
+            check_result=roll_total,
+            conditions_applied=conditions_applied,
+            apply_conditions=apply_conditions,
+            narrative_hints=narrative_hints,
+        )
