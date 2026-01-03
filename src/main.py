@@ -396,8 +396,29 @@ class VirtualDM:
             return None
 
         # Extract damage totals from the context
-        damage_dealt = sum(context.damage_dealt.values()) if context.damage_dealt else 0
-        damage_taken = sum(context.healing_done.values()) if context.healing_done else 0
+        # P0-4: Fix damage computation - damage_taken should NOT come from healing_done
+        damage_total = sum(context.damage_dealt.values()) if context.damage_dealt else 0
+
+        # Infer actor_id by matching character_name to known characters
+        actor_id: Optional[str] = None
+        for char in self.controller.get_all_characters():
+            if char.name == character_name:
+                actor_id = char.character_id
+                break
+
+        # damage_taken = damage dealt TO the actor (self)
+        # damage_dealt = damage dealt to others
+        if actor_id and context.damage_dealt:
+            damage_taken = context.damage_dealt.get(actor_id, 0)
+            damage_dealt = max(0, damage_total - damage_taken)
+        else:
+            # No actor identified - assume all damage was dealt to others
+            damage_taken = 0
+            damage_dealt = damage_total
+
+        # healing_done is kept separate - it should not affect damage_taken
+        # Note: Currently not passed to narrate_resolved_action, but computed correctly
+        # healing_done = sum(context.healing_done.values()) if context.healing_done else 0
 
         # Get dice info if available
         dice_rolled = ""
