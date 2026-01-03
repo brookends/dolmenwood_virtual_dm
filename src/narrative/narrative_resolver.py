@@ -325,8 +325,13 @@ class ResolutionResult:
     """Complete result of resolving a player action."""
 
     success: bool
-    narration_context: NarrationContext
-    parsed_intent: ParsedIntent
+    narration_context: Optional[NarrationContext] = None
+    parsed_intent: Optional[ParsedIntent] = None
+
+    # Resolution metadata
+    resolution_type: Optional[ResolutionType] = None
+    description: str = ""
+    narrative_hints: list[str] = field(default_factory=list)
 
     # State changes to apply
     apply_damage: list[tuple[str, int]] = field(default_factory=list)  # (target_id, damage)
@@ -339,6 +344,9 @@ class ResolutionResult:
     triggers_encounter: bool = False
     requires_follow_up: bool = False
     follow_up_prompt: Optional[str] = None
+
+    # Condition blocking
+    blocked_by_condition: Optional[str] = None
 
     # LLM-generated narration (if callback was set)
     narration: Optional[str] = None
@@ -434,6 +442,17 @@ class NarrativeResolver:
         # Step 1: Parse intent
         parsed = self._parse_intent(player_input, context)
 
+        # Step 1.5: Check if any condition blocks this action
+        restriction = self._check_condition_restrictions(character, parsed)
+        if restriction:
+            return ResolutionResult(
+                success=False,
+                resolution_type=ResolutionType.AUTO_FAIL,
+                description=restriction["message"],
+                narrative_hints=["struggles against the condition", "cannot act"],
+                blocked_by_condition=restriction.get("condition_type"),
+            )
+
         # Step 2: Route to appropriate resolver
         result = self._route_action(parsed, character, context)
 
@@ -462,6 +481,41 @@ class NarrativeResolver:
 
         # Fallback: simple pattern matching
         return self._pattern_match_intent(player_input, context)
+
+    def _check_condition_restrictions(
+        self, character: "CharacterState", parsed: ParsedIntent
+    ) -> Optional[dict[str, Any]]:
+        """
+        Check if any of the character's conditions block the attempted action.
+
+        Args:
+            character: The character attempting the action
+            parsed: The parsed intent with action category
+
+        Returns:
+            Restriction dict with message if blocked, None if allowed
+        """
+        from src.data_models import CONDITION_BLOCKED_ACTIONS
+
+        if not hasattr(character, "conditions"):
+            return None
+
+        action_category = parsed.action_category.value if parsed.action_category else "unknown"
+
+        for condition in character.conditions:
+            condition_key = condition.condition_type.value
+            restriction = CONDITION_BLOCKED_ACTIONS.get(condition_key)
+
+            if restriction:
+                blocked_categories = restriction.get("blocked", [])
+                if action_category in blocked_categories:
+                    return {
+                        "condition_type": condition_key,
+                        "message": restriction.get("message", f"You cannot act due to {condition_key}."),
+                        "blocked_categories": blocked_categories,
+                    }
+
+        return None
 
     def _pattern_match_intent(self, player_input: str, context: dict[str, Any]) -> ParsedIntent:
         """

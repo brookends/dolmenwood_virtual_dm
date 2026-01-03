@@ -9,7 +9,7 @@ Implements Section 5.1 Global Loop Invariants and Section 6.6 TimeTracker.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 import logging
 
 from src.game_state.state_machine import GameState, StateMachine
@@ -1235,6 +1235,225 @@ class GlobalController:
             reason=f"travel segment ({actual_hours} hours)",
         )
 
+    def advance_to_time_of_day(
+        self, target_time: "TimeOfDay", reason: str = "waiting"
+    ) -> dict[str, Any]:
+        """
+        Advance time until reaching the target time of day.
+
+        Used for "wait until dawn" style commands. Checks for condition
+        expirations at each time-of-day transition.
+
+        Args:
+            target_time: TimeOfDay to advance to (e.g., DAWN)
+            reason: Reason for time advancement
+
+        Returns:
+            Dict with hours_passed, conditions_expired, transitions, etc.
+        """
+        current_time = self.time_tracker.game_time
+        hours_passed = 0
+        max_hours = 24  # Safety limit
+        all_expirations: list[dict[str, Any]] = []
+        time_transitions: list[str] = []
+
+        initial_time_of_day = current_time.get_time_of_day()
+
+        while current_time.get_time_of_day() != target_time and hours_passed < max_hours:
+            old_tod = current_time.get_time_of_day()
+
+            # Advance by 1 hour (6 turns)
+            self.advance_time(turns=6, reason=reason)
+            hours_passed += 1
+            current_time = self.time_tracker.game_time
+
+            new_tod = current_time.get_time_of_day()
+
+            # Check for time-of-day transitions
+            if new_tod != old_tod:
+                time_transitions.append(new_tod.value)
+                # Check and process condition expirations
+                expirations = self._check_time_of_day_expirations(new_tod)
+                if expirations:
+                    all_expirations.extend(expirations)
+
+        return {
+            "success": True,
+            "hours_passed": hours_passed,
+            "new_time": str(current_time),
+            "time_of_day": current_time.get_time_of_day().value,
+            "initial_time": initial_time_of_day.value,
+            "time_transitions": time_transitions,
+            "conditions_expired": all_expirations,
+        }
+
+    def _check_time_of_day_expirations(
+        self, current_time: "TimeOfDay"
+    ) -> list[dict[str, Any]]:
+        """
+        Check and expire conditions that end at the current time of day.
+
+        Handles condition chains by applying healing and follow-on conditions.
+
+        Args:
+            current_time: Current TimeOfDay value
+
+        Returns:
+            List of dicts describing expired conditions and transitions
+        """
+        expired: list[dict[str, Any]] = []
+
+        for character in self._characters.values():
+            conditions_to_remove = []
+            conditions_to_add = []
+
+            for condition in character.conditions:
+                if condition.should_end_at_time(current_time):
+                    # Get transition effects before removal
+                    transition = condition.get_end_transition()
+
+                    expiration_record = {
+                        "character_id": character.character_id,
+                        "character_name": character.name,
+                        "condition": condition.condition_type.value,
+                        "time_of_day": current_time.value,
+                        "healing_applied": None,
+                        "chained_to": None,
+                    }
+
+                    # Apply healing if specified
+                    if transition.get("healing"):
+                        healing_result = self._apply_condition_end_healing(
+                            character, transition["healing"]
+                        )
+                        expiration_record["healing_applied"] = healing_result
+
+                    # Create chained condition if specified
+                    if transition.get("next_condition"):
+                        next_cond = self._create_chained_condition(
+                            transition["next_condition"]
+                        )
+                        conditions_to_add.append(next_cond)
+                        expiration_record["chained_to"] = next_cond.condition_type.value
+
+                    conditions_to_remove.append(condition)
+                    expired.append(expiration_record)
+
+            # Remove expired conditions
+            for cond in conditions_to_remove:
+                character.conditions.remove(cond)
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
+
+        return expired
+
+    def _apply_condition_end_healing(
+        self, character: CharacterState, healing_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Apply healing when a condition ends.
+
+        Args:
+            character: The character to heal
+            healing_data: Dict with dice formula and condition
+
+        Returns:
+            Dict with healing amount and result
+        """
+        dice_formula = healing_data.get("dice", "1d6")
+        condition = healing_data.get("condition", "")
+
+        # Roll healing dice
+        roll = DiceRoller.roll(dice_formula, f"healing from {condition}")
+        healing = roll.total
+
+        # Apply healing
+        old_hp = character.hp_current
+        character.hp_current = min(character.hp_current + healing, character.hp_max)
+        actual_healing = character.hp_current - old_hp
+
+        return {
+            "roll": roll.total,
+            "actual_healing": actual_healing,
+            "new_hp": character.hp_current,
+            "condition": condition,
+        }
+
+    def _create_chained_condition(
+        self, chain_data: dict[str, Any]
+    ) -> "Condition":
+        """
+        Create the next condition in a chain.
+
+        Args:
+            chain_data: Dict with condition_type and source
+
+        Returns:
+            New Condition object
+        """
+        condition_type_str = chain_data.get("condition_type", "")
+        source = chain_data.get("source", "condition_chain")
+
+        try:
+            condition_type = ConditionType(condition_type_str)
+        except ValueError:
+            condition_type = ConditionType.CHARMED  # Fallback
+
+        # Define metadata for common condition chains
+        chain_metadata = {
+            "enchanted_hearing": {
+                # Hearing magic music leads immediately to dancing
+                # Duration of 0 turns means it chains right away on next tick
+                "duration_turns": 0,
+                "ends_at_time_of_day": None,
+                "leads_to_condition": {
+                    "condition_type": "compelled_dancing",
+                    "source": "enchanting_music",
+                },
+            },
+            "compelled_dancing": {
+                # Dancing until dawn
+                "ends_at_time_of_day": "dawn",
+                "protection_effects": {"elements": True},
+                "leads_to_condition": {
+                    "condition_type": "magical_sleep",
+                    "source": "dawn_slumber",
+                },
+            },
+            "magical_sleep": {
+                # 8 hours of enchanted slumber (48 turns = 8 hours × 6 turns/hour)
+                "duration_turns": 48,
+                "ends_at_time_of_day": None,
+                "healing_on_end": {"dice": "1d6", "condition": "undisturbed"},
+                "leads_to_condition": {
+                    "condition_type": "fairy_marked",
+                    "source": "neveryon_dreams",
+                },
+                "protection_effects": {"elements": True},
+            },
+            "fairy_marked": {
+                "duration_days": 180,  # 6 months
+                "ends_at_time_of_day": None,
+                "healing_on_end": None,
+                "leads_to_condition": None,  # End of chain
+            },
+        }
+
+        metadata = chain_metadata.get(condition_type_str, {})
+
+        return Condition(
+            condition_type=condition_type,
+            source=source,
+            duration_turns=metadata.get("duration_turns"),
+            ends_at_time_of_day=metadata.get("ends_at_time_of_day"),
+            duration_days=metadata.get("duration_days"),
+            healing_on_end=metadata.get("healing_on_end"),
+            leads_to_condition=metadata.get("leads_to_condition"),
+            protection_effects=metadata.get("protection_effects"),
+        )
+
     # =========================================================================
     # CHARACTER MANAGEMENT
     # =========================================================================
@@ -1478,15 +1697,18 @@ class GlobalController:
         return result
 
     def apply_condition(
-        self, character_id: str, condition: str, source: str = "hazard"
+        self,
+        character_id: str,
+        condition: Union[str, "Condition"],
+        source: str = "hazard",
     ) -> dict[str, Any]:
         """
         Apply a condition to a character.
 
         Args:
             character_id: The character to affect
-            condition: Condition name (e.g., "exhausted", "drowning", "poisoned")
-            source: What caused the condition
+            condition: Condition name (string) or Condition object
+            source: What caused the condition (used if condition is a string)
 
         Returns:
             Dictionary with condition application results
@@ -1495,63 +1717,85 @@ class GlobalController:
         if not character:
             return {"error": f"Character {character_id} not found"}
 
-        # Map string conditions to ConditionType enum
-        condition_map = {
-            "exhausted": ConditionType.EXHAUSTED,
-            "frightened": ConditionType.FRIGHTENED,
-            "poisoned": ConditionType.POISONED,
-            "paralyzed": ConditionType.PARALYZED,
-            "unconscious": ConditionType.UNCONSCIOUS,
-            "dead": ConditionType.DEAD,
-            "drowning": ConditionType.DROWNING,
-            "holding_breath": ConditionType.HOLDING_BREATH,
-            "hungry": ConditionType.HUNGRY,
-            "starving": ConditionType.STARVING,
-            "dehydrated": ConditionType.DEHYDRATED,
-            "blinded": ConditionType.BLINDED,
-            "deafened": ConditionType.DEAFENED,
-            "stunned": ConditionType.STUNNED,
-            "prone": ConditionType.PRONE,
-            "restrained": ConditionType.RESTRAINED,
-            "charmed": ConditionType.CHARMED,
-            "invisible": ConditionType.INVISIBLE,
-            "incapacitated": ConditionType.INCAPACITATED,
-        }
-
-        condition_lower = condition.lower()
-        condition_type = condition_map.get(condition_lower)
-
-        if not condition_type:
-            # Create a generic condition if type not recognized
-            logger.warning(f"Unknown condition type: {condition}")
-            # Use a fallback for unknown conditions
-            return {
-                "character_id": character_id,
-                "condition": condition,
-                "applied": False,
-                "reason": f"Unknown condition type: {condition}",
+        # If already a Condition object, use it directly
+        if isinstance(condition, Condition):
+            new_condition = condition
+            condition_type = condition.condition_type
+            condition_name = condition_type.value
+        else:
+            # Map string conditions to ConditionType enum
+            condition_map = {
+                "exhausted": ConditionType.EXHAUSTED,
+                "frightened": ConditionType.FRIGHTENED,
+                "poisoned": ConditionType.POISONED,
+                "paralyzed": ConditionType.PARALYZED,
+                "unconscious": ConditionType.UNCONSCIOUS,
+                "dead": ConditionType.DEAD,
+                "drowning": ConditionType.DROWNING,
+                "holding_breath": ConditionType.HOLDING_BREATH,
+                "hungry": ConditionType.HUNGRY,
+                "starving": ConditionType.STARVING,
+                "dehydrated": ConditionType.DEHYDRATED,
+                "blinded": ConditionType.BLINDED,
+                "deafened": ConditionType.DEAFENED,
+                "stunned": ConditionType.STUNNED,
+                "prone": ConditionType.PRONE,
+                "restrained": ConditionType.RESTRAINED,
+                "charmed": ConditionType.CHARMED,
+                "invisible": ConditionType.INVISIBLE,
+                "incapacitated": ConditionType.INCAPACITATED,
+                # Enchantment conditions (fairy magic, hex effects)
+                "enchanted_hearing": ConditionType.ENCHANTED_HEARING,
+                "compelled_dancing": ConditionType.COMPELLED_DANCING,
+                "magical_sleep": ConditionType.MAGICAL_SLEEP,
+                "fairy_marked": ConditionType.FAIRY_MARKED,
+                # Other conditions
+                "food_poisoning": ConditionType.FOOD_POISONING,
+                "dreamless": ConditionType.DREAMLESS,
+                "confused": ConditionType.CONFUSED,
+                "hasted": ConditionType.HASTED,
+                "temporal_stasis": ConditionType.TEMPORAL_STASIS,
             }
+
+            condition_lower = condition.lower()
+            condition_type = condition_map.get(condition_lower)
+
+            if not condition_type:
+                # Try to get it directly from ConditionType enum
+                try:
+                    condition_type = ConditionType(condition_lower)
+                except ValueError:
+                    logger.warning(f"Unknown condition type: {condition}")
+                    return {
+                        "character_id": character_id,
+                        "condition": condition,
+                        "applied": False,
+                        "reason": f"Unknown condition type: {condition}",
+                    }
+
+            condition_name = condition
+            new_condition = Condition(condition_type, source=source)
 
         # Check if character already has this condition
         existing = any(c.condition_type == condition_type for c in character.conditions)
         if existing:
             return {
                 "character_id": character_id,
-                "condition": condition,
+                "condition": condition_name,
                 "applied": False,
                 "reason": "Character already has this condition",
             }
 
         # Apply the condition
-        new_condition = Condition(condition_type, source=source)
         character.conditions.append(new_condition)
 
         result = {
             "character_id": character_id,
-            "condition": condition,
+            "condition": condition_name,
             "condition_type": condition_type.value,
-            "source": source,
+            "source": new_condition.source,
             "applied": True,
+            "ends_at_time_of_day": new_condition.ends_at_time_of_day,
         }
 
         self._log_event("condition_applied", result)
@@ -5856,24 +6100,61 @@ class GlobalController:
         )
 
     def _tick_conditions(self, turns: int) -> list[dict[str, Any]]:
-        """Tick all conditions and return expired ones."""
+        """
+        Tick all conditions and return expired ones.
+
+        Handles condition chains by applying healing and creating follow-on
+        conditions when a turn-based condition expires.
+        """
         expired = []
 
         for character in self._characters.values():
             still_active = []
+            conditions_to_add = []
+
             for condition in character.conditions:
+                condition_expired = False
                 for _ in range(turns):
                     if condition.tick():
-                        expired.append(
-                            {
-                                "character_id": character.character_id,
-                                "condition": condition.condition_type.value,
-                            }
-                        )
+                        # Get transition effects before removal
+                        transition = condition.get_end_transition()
+
+                        expiration_record = {
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "condition": condition.condition_type.value,
+                            "healing_applied": None,
+                            "chained_to": None,
+                        }
+
+                        # Apply healing if specified
+                        if transition and transition.get("healing"):
+                            healing_result = self._apply_condition_end_healing(
+                                character, transition["healing"]
+                            )
+                            expiration_record["healing_applied"] = healing_result
+
+                        # Create chained condition if specified
+                        if transition and transition.get("next_condition"):
+                            next_cond = self._create_chained_condition(
+                                transition["next_condition"]
+                            )
+                            conditions_to_add.append(next_cond)
+                            expiration_record["chained_to"] = next_cond.condition_type.value
+
+                        expired.append(expiration_record)
+                        condition_expired = True
                         break
-                else:
+
+                if not condition_expired:
                     still_active.append(condition)
+
+            # Update character conditions
             character.conditions = still_active
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
 
         return expired
 
@@ -5896,6 +6177,7 @@ class GlobalController:
 
         for character in self._characters.values():
             still_active = []
+            conditions_to_add = []
             for condition in character.conditions:
                 for _ in range(days):
                     result = condition.tick_day()
@@ -5941,17 +6223,44 @@ class GlobalController:
 
                     # Check if condition expired
                     if result["expired"]:
-                        effects.append({
+                        # Get transition effects before removal
+                        transition = condition.get_end_transition()
+
+                        expiration_record = {
                             "character_id": character.character_id,
                             "character_name": character.name,
                             "condition": condition.condition_type.value,
                             "effect_type": "expired",
-                        })
+                            "healing_applied": None,
+                            "chained_to": None,
+                        }
+
+                        # Apply healing if specified
+                        if transition and transition.get("healing"):
+                            healing_result = self._apply_condition_end_healing(
+                                character, transition["healing"]
+                            )
+                            expiration_record["healing_applied"] = healing_result
+
+                        # Create chained condition if specified
+                        if transition and transition.get("next_condition"):
+                            next_cond = self._create_chained_condition(
+                                transition["next_condition"]
+                            )
+                            conditions_to_add.append(next_cond)
+                            expiration_record["chained_to"] = next_cond.condition_type.value
+
+                        effects.append(expiration_record)
                         break
                 else:
                     still_active.append(condition)
 
+            # Update character conditions
             character.conditions = still_active
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
 
         return effects
 

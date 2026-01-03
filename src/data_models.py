@@ -203,6 +203,53 @@ class ConditionType(str, Enum):
     FAIRY_MARKED = "fairy_marked"  # Long-term fairy attention (dreams, omens)
 
 
+# Condition-based action restrictions
+# Maps condition types to blocked action categories and a message
+# Action categories: SPELL, HAZARD, EXPLORATION, SOCIAL, COMBAT, SURVIVAL, MOVEMENT, INVENTORY, CREATIVE, NARRATIVE
+CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
+    "compelled_dancing": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard"],
+        "allowed": ["narrative", "social"],  # Can speak while dancing
+        "message": "You cannot stop dancing! The enchanting music compels you to continue.",
+    },
+    "magical_sleep": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative"],
+        "allowed": [],  # Cannot do anything while asleep
+        "message": "You are in a deep enchanted slumber and cannot act.",
+    },
+    "paralyzed": {
+        "blocked": ["combat", "movement", "hazard", "inventory"],
+        "allowed": ["narrative", "spell"],  # Can still cast verbal-only spells
+        "message": "You cannot move! Your body is paralyzed.",
+    },
+    "stunned": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative"],
+        "allowed": [],
+        "message": "You are stunned and cannot take any actions!",
+    },
+    "unconscious": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative", "narrative"],
+        "allowed": [],
+        "message": "You are unconscious.",
+    },
+    "incapacitated": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "inventory", "creative"],
+        "allowed": ["narrative", "social"],
+        "message": "You are incapacitated and cannot take actions.",
+    },
+    "petrified": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative", "narrative"],
+        "allowed": [],
+        "message": "You have been turned to stone.",
+    },
+    "temporal_stasis": {
+        "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative", "narrative"],
+        "allowed": [],
+        "message": "You are frozen in time.",
+    },
+}
+
+
 class ConfusionBehavior(str, Enum):
     """
     Behavior types for confused creatures.
