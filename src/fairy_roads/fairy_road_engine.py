@@ -27,6 +27,7 @@ from src.data_models import (
     EncounterState,
     EncounterType,
     Combatant,
+    StatBlock,
 )
 from src.encounter.encounter_engine import EncounterOrigin
 from src.fairy_roads.models import (
@@ -927,6 +928,131 @@ class FairyRoadEngine:
                     "direction": door.direction,
                 })
         return exits
+
+    # =========================================================================
+    # COMBAT TRIGGER (P2-11)
+    # =========================================================================
+
+    def trigger_combat_transition(
+        self,
+        target_ids: Optional[list[str]] = None,
+        reason: str = "hostile_encounter",
+    ) -> dict[str, Any]:
+        """
+        Trigger a direct transition to COMBAT state for fairy road combat.
+
+        This is used when:
+        - Party attacks fairy road denizens
+        - Hostile fairy creatures attack the party
+        - A reaction roll results in immediate attack
+
+        Per state_machine.py:
+        - FAIRY_ROAD_TRAVEL -> COMBAT via "fairy_road_combat"
+        - Combat ends return to FAIRY_ROAD_TRAVEL via "combat_end_fairy_road"
+
+        Args:
+            target_ids: Optional list of monster IDs to fight.
+                If not provided, uses the last encounter entry.
+            reason: Reason for combat (for logging)
+
+        Returns:
+            Dictionary with transition result
+        """
+        if not self._state:
+            return {"success": False, "message": "No active fairy road travel"}
+
+        # Get combatant info from last encounter or explicit targets
+        combatants: list[Combatant] = []
+        actors: list[str] = []
+        encounter_name = "unknown creatures"
+
+        if target_ids:
+            actors = target_ids
+            encounter_name = ", ".join(target_ids)
+        elif self._state.last_encounter_entry:
+            entry = self._state.last_encounter_entry
+            actors = [entry.name]
+            encounter_name = entry.name
+
+            # Check is_hostile flag from fairy road models
+            if hasattr(entry, "is_hostile") and entry.is_hostile:
+                reason = "hostile_fairy_creature"
+
+        if not actors:
+            return {"success": False, "message": "No targets for combat"}
+
+        # Create combatants from monster registry
+        from src.content_loader.monster_registry import get_monster_registry
+        from uuid import uuid4
+
+        registry = get_monster_registry()
+        num_appearing = self._state.last_check_result or 1
+
+        for actor_id in actors:
+            for i in range(num_appearing):
+                combatant = registry.create_combatant(
+                    monster_id=actor_id,
+                    combatant_id=f"{actor_id}_{uuid4().hex[:8]}",
+                )
+                if combatant:
+                    combatant.side = "enemy"
+                    combatants.append(combatant)
+                else:
+                    # Fallback: create generic combatant with stat block
+                    fallback_stat_block = StatBlock(
+                        armor_class=12,  # Fairy creatures tend to be agile
+                        hit_dice="1d8",
+                        hp_current=8,
+                        hp_max=8,
+                        movement=40,  # Fey are quick
+                        attacks=[{"name": "Attack", "damage": "1d6", "bonus": 1}],
+                        morale=8,
+                    )
+                    combatants.append(
+                        Combatant(
+                            combatant_id=f"fairy_{uuid4().hex[:8]}",
+                            name=actor_id if num_appearing == 1 else f"{actor_id} #{i + 1}",
+                            side="enemy",
+                            stat_block=fallback_stat_block,
+                        )
+                    )
+
+        if not combatants:
+            return {"success": False, "message": "Could not create combatants"}
+
+        # Create encounter state with combatants
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER,
+            actors=actors,
+            context=reason,
+            terrain="fairy_road",
+            combatants=combatants,
+        )
+
+        # Set encounter in controller
+        self.controller.set_encounter(encounter)
+
+        # Transition to combat state
+        self.controller.transition(
+            "fairy_road_combat",
+            context={
+                "origin": "fairy_road",
+                "road_id": self._state.road_id,
+                "reason": reason,
+            },
+        )
+
+        logger.info(
+            f"Fairy road combat triggered: {encounter_name} "
+            f"({len(combatants)} combatants)"
+        )
+
+        return {
+            "success": True,
+            "message": f"Combat begins on the fairy road! Fighting {encounter_name}.",
+            "combatant_count": len(combatants),
+            "reason": reason,
+        }
 
 
 # Singleton instance
