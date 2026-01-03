@@ -469,6 +469,9 @@ class EffectValidator:
         "HP", "MAX_HP", "AC", "LEVEL", "XP",
     }
 
+    # P10.4: Special target identifiers that don't require entity lookup
+    SPECIAL_TARGETS = {"party", "all", "self", "caster", "location", "area", "hex"}
+
     def __init__(self, controller: Optional["GlobalController"] = None):
         self._controller = controller
 
@@ -483,8 +486,9 @@ class EffectValidator:
 
         # Check target exists (if we have a controller)
         if self._controller:
-            if not self._entity_exists(command.target_id):
-                errors.append(f"Target '{command.target_id}' not found")
+            exists, reason = self._entity_exists_with_reason(command.target_id)
+            if not exists:
+                errors.append(f"Target '{command.target_id}' not found: {reason}")
 
         # Validate based on effect type
         validator_method = getattr(
@@ -512,21 +516,49 @@ class EffectValidator:
             self.validate(effect)
         return batch
 
+    def _entity_exists_with_reason(self, entity_id: str) -> tuple[bool, str]:
+        """
+        P10.4: Check if an entity exists with detailed reason.
+
+        Returns:
+            Tuple of (exists: bool, reason: str)
+            When no controller is available, returns (True, "validation skipped")
+            to allow simulated mode to work.
+        """
+        if not self._controller:
+            # No controller - skip validation for simulated mode
+            # Note: The executor will still run in simulated mode
+            return True, "validation skipped (no controller)"
+
+        # Check special target identifiers
+        if entity_id.lower() in self.SPECIAL_TARGETS:
+            return True, "special target"
+
+        # Check party members and registered NPCs
+        if self._controller.get_character(entity_id):
+            return True, "found in characters/NPCs"
+
+        # Check registered NPCs specifically
+        if self._controller.get_npc(entity_id):
+            return True, "found in NPCs"
+
+        # Check combatants in active combat
+        if hasattr(self._controller, 'combat_engine') and self._controller.combat_engine:
+            combat_engine = self._controller.combat_engine
+            if hasattr(combat_engine, 'get_combatant') and combat_engine.get_combatant(entity_id):
+                return True, "found in active combat"
+            if hasattr(combat_engine, '_combat_state') and combat_engine._combat_state:
+                for combatant in combat_engine._combat_state.combatants:
+                    if combatant.combatant_id == entity_id:
+                        return True, "found in combat combatants"
+
+        # P10.4: Entity not found - return explicit error
+        return False, "not found in party, NPCs, or combat"
+
     def _entity_exists(self, entity_id: str) -> bool:
         """Check if an entity exists in game state."""
-        if not self._controller:
-            return True  # Can't validate without controller
-
-        # Check party members
-        if self._controller.get_character(entity_id):
-            return True
-
-        # Check "party" or "all" special targets
-        if entity_id.lower() in ("party", "all", "self", "caster"):
-            return True
-
-        # Entity not found
-        return False
+        exists, _ = self._entity_exists_with_reason(entity_id)
+        return exists
 
     def _is_valid_dice_expr(self, expr: str) -> bool:
         """Check if a string is a valid dice expression."""
@@ -640,20 +672,16 @@ class EffectExecutor:
         return batch
 
     def _entity_exists(self, entity_id: str) -> bool:
-        """Check if an entity exists in game state."""
-        if not self._controller:
-            return True  # Can't validate without controller
+        """
+        P10.4: Check if an entity exists in game state.
 
-        # Check party members
-        if self._controller.get_character(entity_id):
-            return True
+        Delegates to the validator's comprehensive entity lookup.
+        """
+        return self._validator._entity_exists(entity_id)
 
-        # Check "party" or "all" special targets
-        if entity_id.lower() in ("party", "all", "self", "caster"):
-            return True
-
-        # Entity not found
-        return False
+    def _entity_exists_with_reason(self, entity_id: str) -> tuple[bool, str]:
+        """P10.4: Check if entity exists with detailed reason."""
+        return self._validator._entity_exists_with_reason(entity_id)
 
     def _resolve_dice(self, command: EffectCommand) -> None:
         """Resolve any dice expressions in the command."""
@@ -686,12 +714,13 @@ class EffectExecutor:
             )
 
         if self._controller:
-            # Verify target exists
-            if not self._entity_exists(cmd.target_id):
+            # P10.4: Verify target exists with detailed reason
+            exists, reason = self._entity_exists_with_reason(cmd.target_id)
+            if not exists:
                 return EffectResult(
                     success=False,
                     command=cmd,
-                    description=f"Unknown entity: {cmd.target_id}",
+                    error=f"Invalid target '{cmd.target_id}': {reason}",
                     changes={},
                 )
 
@@ -735,12 +764,13 @@ class EffectExecutor:
             )
 
         if self._controller:
-            # Verify target exists
-            if not self._entity_exists(cmd.target_id):
+            # P10.4: Verify target exists with detailed reason
+            exists, reason = self._entity_exists_with_reason(cmd.target_id)
+            if not exists:
                 return EffectResult(
                     success=False,
                     command=cmd,
-                    description=f"Unknown entity: {cmd.target_id}",
+                    error=f"Invalid target '{cmd.target_id}': {reason}",
                     changes={},
                 )
 
@@ -802,12 +832,13 @@ class EffectExecutor:
             )
 
         if self._controller:
-            # Verify target exists
-            if not self._entity_exists(cmd.target_id):
+            # P10.4: Verify target exists with detailed reason
+            exists, reason = self._entity_exists_with_reason(cmd.target_id)
+            if not exists:
                 return EffectResult(
                     success=False,
                     command=cmd,
-                    description=f"Unknown entity: {cmd.target_id}",
+                    error=f"Invalid target '{cmd.target_id}': {reason}",
                     changes={},
                 )
 
@@ -854,12 +885,13 @@ class EffectExecutor:
             )
 
         if self._controller:
-            # Verify target exists
-            if not self._entity_exists(cmd.target_id):
+            # P10.4: Verify target exists with detailed reason
+            exists, reason = self._entity_exists_with_reason(cmd.target_id)
+            if not exists:
                 return EffectResult(
                     success=False,
                     command=cmd,
-                    description=f"Unknown entity: {cmd.target_id}",
+                    error=f"Invalid target '{cmd.target_id}': {reason}",
                     changes={},
                 )
 
@@ -911,12 +943,13 @@ class EffectExecutor:
             )
 
         if self._controller:
-            # Verify target exists
-            if not self._entity_exists(cmd.target_id):
+            # P10.4: Verify target exists with detailed reason
+            exists, reason = self._entity_exists_with_reason(cmd.target_id)
+            if not exists:
                 return EffectResult(
                     success=False,
                     command=cmd,
-                    description=f"Unknown entity: {cmd.target_id}",
+                    error=f"Invalid target '{cmd.target_id}': {reason}",
                     changes={},
                 )
 
