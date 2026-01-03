@@ -1,9 +1,6 @@
 {
   "hex_id": "0105",
-  "coordinates": [
-    1,
-    5
-  ],
+  "coordinates": [1, 5],
   "name": "The Demesne of the Frore Gryphus",
   "tagline": "Long, blue-green grass mixed with wild coneflower and goldenrod. Unnatural silence fills the area.",
   "region": "High Wold",
@@ -14,49 +11,190 @@
     "lost_chance": "1-in-6",
     "encounter_chance": "1-in-6",
     "encounter_notes": "Encounters are 3-in-6 likely to be with the frore gryphus residing in this hex, soaring high above the grasslands in search of prey",
-    "foraging_results": null,
-    "foraging_special": []
+    "foraging_results": "Successful foraging yields 1d3 portions of Meadow Herbs (coneflower, goldenrod), in addition to the normal results",
+    "foraging_special": [
+      "Meadow Herbs (1d3 portions)"
+    ],
+    "encounter_modifiers": [
+      {
+        "chance": "3-in-6",
+        "monster_id": "frore_gryphus",
+        "result": "frore gryphus",
+        "number_appearing": 1,
+        "context": "A massive, frost-rimed gryphus circles high above the grasslands, its white-blue feathers catching the light. It screams a cry of ancient winter and descends toward potential prey.",
+        "behavior": "hunting",
+        "demeanor": ["territorial", "hungry", "ancient"],
+        "speech": "None (animal intelligence, but responds to High Elfish frost-commands)",
+        "topic_intelligence": {
+          "known_topics": [],
+          "secret_info": []
+        }
+      }
+    ],
+    "lost_behavior": {
+      "type": "standard",
+      "description": "The unnatural silence and featureless meadows make navigation difficult. Travelers who get lost wander in circles, the only landmarks being the scattered frost-patches.",
+      "escape_requires": "successful_lost_check"
+    },
+    "night_hazards": [
+      {
+        "trigger": "camp_near_frost_patches",
+        "save_type": "doom",
+        "description": "Characters who camp within 100 feet of the frost-covered patches must Save Versus Doom or suffer 1d4 cold damage as the ancient battle-magic seeps into their dreams.",
+        "on_fail": {
+          "damage_dice": "1d4",
+          "damage_type": "cold",
+          "description": "Cold damage from proximity to frost-patches"
+        }
+      },
+      {
+        "trigger": "sleep",
+        "save_type": "spell",
+        "description": "At night, the silence in this hex becomes oppressive. Characters sleeping here may dream of the ancient battle—frost elves clashing with mortal soldiers—and must Save Versus Spell or awaken exhausted (-1 to all rolls until a full rest elsewhere).",
+        "on_fail": {
+          "condition": "exhausted",
+          "duration_dice": "1",
+          "duration_unit": "days",
+          "effect": "-1 to all rolls until rest elsewhere"
+        }
+      }
+    ]
   },
-  "description": "Long, blue-green grass mixed with wild coneflower and goldenrod. Unnatural silence fills the area.",
+  "description": "Long, blue-green grass mixed with wild coneflower and goldenrod. Unnatural silence fills the area. Frost-covered patches dot the landscape, remnants of an ancient battle.",
   "points_of_interest": [
     {
       "name": "Frozen Battleground",
       "poi_type": "battleground",
       "description": "No matter the season, wide, frost-covered patches of hard earth dot the centre of this hex, ice cracking in web-like patterns. The patches radiate magic and wintry cold.",
-      "tagline": null,
-      "entering": null,
-      "interior": "Searching the field: Soon reveals the remnants of an ancient battle: arrowheads marked with High Elfish frost-runes, broken blades of swords ranging from the crude to the fanciful, and decayed pennants of forgotten heraldry. The fallen giant: In a particularly desolate portion of the battleground, a dead frost giant lies prone, limbs sprawled wide, marbled blue eyes staring skyward. Alongside him, two ice-coated soldiers, man and frost elf, stand frozen in conflict, swords permanently crossed.",
-      "exploring": null,
-      "leaving": null,
+      "tagline": "Ancient frost magic lingers here",
+      "entering": "Approaching the frost patches, the temperature drops noticeably. Your breath mists in the air despite the season. The grass underfoot crunches with hidden ice crystals.",
+      "interior": "Searching the field soon reveals the remnants of an ancient battle: arrowheads marked with High Elfish frost-runes, broken blades of swords ranging from the crude to the fanciful, and decayed pennants of forgotten heraldry. In a particularly desolate portion of the battleground, a dead frost giant lies prone, limbs sprawled wide, marbled blue eyes staring skyward. Alongside him, two ice-coated soldiers—man and frost elf—stand frozen in eternal conflict, swords permanently crossed.",
+      "exploring": "Roll on the Battlefield Discoveries table for each Turn spent searching. Touching any of the frozen figures or the frost giant requires a Save Versus Doom or suffer 1d6 cold damage as ancient magic lashes out.",
+      "leaving": "The warmth of the surrounding meadow seems almost oppressive after the chill of the battlefield. The silence follows you for several minutes before the normal sounds of nature return.",
       "inhabitants": null,
-      "roll_tables": [],
+      "roll_tables": [
+        {
+          "name": "Battlefield Discoveries",
+          "die_type": "d6",
+          "description": "Roll when spending a Turn searching. Each item can be found only once; re-roll duplicates.",
+          "unique_entries": true,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Frost Elf Arrowheads",
+              "description": "A quiver of 6 arrowheads made of enchanted ice that never melts. Can be fitted to arrow shafts to create +1 arrows that deal an extra 1 cold damage. Worth 15gp each to collectors of fairy artifacts.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["frost_elf_arrowheads"],
+              "mechanical_effect": "+1 arrows, +1 cold damage"
+            },
+            {
+              "roll": 2,
+              "title": "Shattered Shield",
+              "description": "A human knight's shield, split in two by some tremendous blow. The heraldry shows a gold sun on blue—the sigil of a forgotten noble house. Worth 5gp for the metalwork, or 25gp to a historian.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["shattered_shield"],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Frost Elf Blade Fragment",
+              "description": "A 6-inch shard of a frost elf sword, still wickedly sharp after centuries. Functions as a dagger that deals +1 cold damage. The blade whispers in High Elfish when drawn—fragments of battle-orders.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["frost_elf_blade_fragment"],
+              "mechanical_effect": "Dagger, +1 cold damage, whispers in High Elfish"
+            },
+            {
+              "roll": 4,
+              "title": "Frozen Soldier's Locket",
+              "description": "A small silver locket found clutched in a skeletal hand. Inside is a perfectly preserved miniature portrait of a young woman with dark hair. Opening it triggers a faint, sad sigh from nowhere.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["frozen_soldiers_locket"],
+              "mechanical_effect": "Sigh when opened (cosmetic)"
+            },
+            {
+              "roll": 5,
+              "title": "Battle Standard Fragment",
+              "description": "A torn piece of ancient fabric, still showing traces of a frost-rimed tree design—the sigil of the Cold Prince's forces. Radiates faint cold. Worth 50gp to fairy scholars or agents of the Cold Prince.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["battle_standard_fragment"],
+              "mechanical_effect": "Radiates faint cold"
+            },
+            {
+              "roll": 6,
+              "title": "Frost Giant's Finger Bone",
+              "description": "A massive finger bone from the fallen frost giant, as long as a human forearm. If used as a component for cold-based magic, adds +1 to spell damage or +1 to saving throw DC.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["frost_giant_finger_bone"],
+              "mechanical_effect": "+1 cold spell damage or +1 cold spell DC"
+            }
+          ]
+        }
+      ],
       "npcs": [],
       "special_features": [
-        "Frost-covered patches radiate magic and wintry cold",
-        "Dead frost giant with frozen soldiers"
+        "Frost-covered patches radiate magic and wintry cold (detectable with Detect Magic)",
+        "Dead frost giant with frozen soldiers locked in combat",
+        "Touching frozen figures: Save Versus Doom or 1d6 cold damage",
+        "The area is under a permanent Silence-like effect—no sounds travel more than 30 feet"
       ],
       "secrets": [
-        "This field was the site of a major battle in the war between humans and the armies of the Cold Prince nearly 900 years ago. The frost-magicks unleashed by the fairy army linger here still."
+        "This field was the site of a major battle in the war between humans and the armies of the Cold Prince nearly 900 years ago. The frost-magicks unleashed by the fairy army linger here still.",
+        "The frozen soldiers—one mortal, one frost elf—were brothers in arms before the war. Their shared fate is a tragic reminder of the war's cost.",
+        "The frost giant's corpse could be valuable to necromancers or agents of the Cold Prince seeking to reclaim their fallen"
       ],
       "is_dungeon": false,
-      "dungeon_levels": null
+      "dungeon_levels": null,
+      "hazards": [
+        {
+          "hazard_id": "frost_touch",
+          "name": "Ancient Frost Magic",
+          "trigger": "touching frozen figures or frost giant",
+          "save_type": "doom",
+          "damage_dice": "1d6",
+          "damage_type": "cold",
+          "description": "Ancient battle-magic lashes out at those who disturb the fallen"
+        }
+      ]
     },
     {
       "name": "Shepherd Encampment",
       "poi_type": "encampment",
       "description": "At the southern edge of the hex stands a gentle hill dotted with small tree groves, leaves green and yellow. Wandering the slopes are many sheep, with sleepy sheep dogs pacing and watching for predators. The hill is crowned by a rough semicircle of irregular boulders, and in their shadow sits a cluster of rough canvas tents stained by weather, surrounding a cooking fire.",
-      "tagline": null,
-      "entering": null,
-      "interior": null,
-      "exploring": null,
-      "leaving": null,
+      "tagline": "A beleaguered shepherd camp",
+      "entering": "As you approach the hill, several sheepdogs raise their heads and bark warnings. Shepherds look up from their work, hands moving to crooks and knives. Their leader, a tall woman with braided black hair, steps forward to greet you with wary courtesy.",
+      "interior": "The encampment consists of eight weather-worn tents arranged in a crescent around a central fire pit. Sheep pens made of woven branches hold a few dozen animals at night. Drying racks for wool and meat stand near the boulders. The shepherds eat simple fare—mutton stew, hard bread, and weak ale.",
+      "exploring": "The shepherds are focused on caring for their flocks, squabbling over wool prices, and debating how to protect their sheep from the winged beast that preys upon them. Speaking with them may reveal information about the frore gryphus and its nest. Aegnyth Cormick, their unofficial leader, knows the most.",
+      "leaving": "The shepherds wave farewell but quickly return to watching the skies. Their dogs continue to bark at your departing forms until you're well away from the flock.",
       "inhabitants": "12 shepherds focused on caring for their flocks, squabbling over wool prices, and debating how to protect their sheep from the winged beast that preys upon them—a fairy creature, according to local legend, called a frore gryphus. The shepherds' unofficial leader is Aegnyth Cormick.",
       "roll_tables": [],
-      "npcs": [
-        "aegnyth_cormick"
+      "npcs": ["aegnyth_cormick"],
+      "special_features": [
+        "12 shepherds with approximately 200 sheep",
+        "Sheepdogs serve as early warning for predators",
+        "The boulder semicircle provides shelter from weather"
       ],
-      "special_features": [],
       "secrets": [],
+      "quest_hooks": [
+        {
+          "quest_id": "hunt_frore_gryphus",
+          "title": "The Winged Terror",
+          "description": "The shepherds have lost a dozen sheep to a monstrous flying beast over the past month. Aegnyth Cormick offers a reward for anyone who can slay or drive off the creature.",
+          "quest_giver": "aegnyth_cormick",
+          "objective": "Slay or banish the frore gryphus",
+          "destination_npc": null,
+          "destination_location": "The Nest of the Frore Gryphus",
+          "reward_items": [],
+          "reward_description": "50gp pooled from the shepherds, plus 1gp per sheep carcass recovered from the nest, plus the gratitude of the shepherds",
+          "conditions": {},
+          "notes": "The shepherds cannot afford more but may offer wool, mutton, or future hospitality"
+        }
+      ],
       "is_dungeon": false,
       "dungeon_levels": null
     },
@@ -65,20 +203,83 @@
       "poi_type": "nest",
       "description": "Scattered copses of trees dot the northern edge of the hex. Concealed within one of them is an enormous nest of broken boughs and uprooted shrubbery.",
       "tagline": "(Hidden)",
-      "entering": null,
-      "interior": "Brood of 5 frost-rimed frore gryphlings (stats as hawks, DMB) noisily peck at one another. There is 3-in-6 chance that their mother, the frore gryphus who terrorises this hex, is in the nest; if not, she arrives in 1 Turn.",
-      "exploring": "Searching the nest: Takes 1 Turn and reveals, wedged amongst the crushed foliage, a Fairy Longsword (Mortal Bane, p412) of frost elf origin, and a necklace of ice-like crystals (650gp)—both leftover relics from the Frozen Battlefield.",
-      "leaving": null,
+      "hidden": true,
+      "entering": "The copse of trees seems normal from the outside—a small grove of oak and birch. Only upon entering does one notice the broken branches overhead and the massive nest of interwoven boughs, easily 15 feet across, resting in the crown of a great oak.",
+      "interior": "A brood of 5 frost-rimed frore gryphlings (stats as hawks, DMB) noisily peck at one another in the nest. The nest itself is woven from branches, sheep bones, and tufts of bloody wool. There is a 3-in-6 chance that their mother, the frore gryphus who terrorises this hex, is in the nest; if not, she arrives in 1 Turn.",
+      "exploring": "Searching the nest takes 1 Turn and reveals, wedged amongst the crushed foliage, a Fairy Longsword (Mortal Bane, p412) of frost elf origin, and a necklace of ice-like crystals (650gp)—both leftover relics from the Frozen Battlefield.",
+      "leaving": "Escaping the nest may require evading the frore gryphus or her gryphlings. The gryphlings will pursue for 1 Turn before returning to the nest. The mother will pursue until the party leaves the hex.",
       "inhabitants": "Brood of 5 frost-rimed frore gryphlings and their mother, the frore gryphus",
-      "roll_tables": [],
+      "roll_tables": [
+        {
+          "name": "Nest Encounters",
+          "die_type": "d6",
+          "description": "Roll upon entering the nest area",
+          "entries": [
+            {
+              "roll": "1-2",
+              "title": "Mother Present",
+              "description": "The frore gryphus is in the nest, feeding her young with a freshly-killed sheep. She screeches and attacks immediately.",
+              "monsters": ["frore_gryphus"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Combat with frore gryphus"
+            },
+            {
+              "roll": "3-4",
+              "title": "Gryphlings Only",
+              "description": "Only the five gryphlings are present. They screech warnings but do not attack unless provoked. Their cries will summon the mother in 1 Turn.",
+              "monsters": ["frore_gryphling"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Mother arrives in 1 Turn"
+            },
+            {
+              "roll": "5-6",
+              "title": "Hunting",
+              "description": "The nest is temporarily empty—both mother and gryphlings are hunting elsewhere. Roll again each Turn; on 1-3 they return.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "1-3 on d6 each Turn means return"
+            }
+          ]
+        }
+      ],
       "npcs": [],
       "special_features": [
-        "3-in-6 chance frore gryphus is present, otherwise arrives in 1 Turn"
+        "3-in-6 chance frore gryphus is present, otherwise arrives in 1 Turn",
+        "Five frore gryphlings (stats as hawks)",
+        "Nest is 15 feet across, 30 feet up in an oak tree"
       ],
+      "treasure_hoard": {
+        "coins": {},
+        "items": [
+          {
+            "item_id": "0105:item:fairy_longsword_mortal_bane",
+            "name": "Fairy Longsword (Mortal Bane)",
+            "quantity": 1,
+            "value_gp": null,
+            "magical": true,
+            "page_reference": "p412",
+            "notes": "Frost elf origin, relic from the Frozen Battlefield"
+          },
+          {
+            "item_id": "0105:item:ice_crystal_necklace",
+            "name": "Necklace of Ice-like Crystals",
+            "quantity": 1,
+            "value_gp": 650,
+            "magical": false,
+            "notes": "Relic from the Frozen Battlefield"
+          }
+        ],
+        "worthless": "sheep bones, bloody wool, broken branches"
+      },
       "secrets": [
-        "A survivor of the ancient battle, this frore gryphus lay frozen for centuries and has only recently awoken and laid her clutch of eggs."
+        "A survivor of the ancient battle, this frore gryphus lay frozen for centuries and has only recently awoken and laid her clutch of eggs.",
+        "The Fairy Longsword in the nest once belonged to a frost elf captain who fell in the battle. It still bears his frozen blood.",
+        "If the gryphlings are captured young, they can potentially be trained—though this would require fairy magic or the aid of someone who knows the Cold Prince's ways"
       ],
-      "is_dungeon": false,
+      "is_dungeon": true,
       "dungeon_levels": null
     }
   ],
@@ -88,54 +289,225 @@
       "npc_id": "aegnyth_cormick",
       "name": "Aegnyth Cormick",
       "title": "Shepherd Leader",
-      "description": "A tall, broad-shouldered human woman with weathered olive brown skin and long black hair in a tight, practical braid. Garbed in shepherd's robes, fraying and stained with weather.",
+      "description": "A tall, broad-shouldered human woman with weathered olive brown skin and long black hair in a tight, practical braid. Garbed in shepherd's robes, fraying and stained by weather.",
       "kindred": "Human",
       "alignment": "Lawful",
       "demeanor": [
         "Sturdy and solemn",
-        "magnetism that causes humans and sheep alike to feel secure",
+        "Magnetism that causes humans and sheep alike to feel secure",
         "Deeply pragmatic",
-        "an authority respected by both sheep and shepherd"
+        "An authority respected by both sheep and shepherd"
       ],
       "speech": "Slow drawl, lovingly enunciating every syllable and consonant. Woldish.",
-      "languages": [
-        "Woldish"
-      ],
+      "languages": ["Woldish"],
       "desires": [
         "News from Shrivelbyne (0108)",
         "Safety for her flock",
         "The defeat or banishment of the frore gryphus"
       ],
       "secrets": [],
-      "possessions": [],
+      "possessions": [
+        "Shepherd's crook (functions as quarterstaff)",
+        "Horn for summoning sheepdogs",
+        "Pouch containing 15gp savings"
+      ],
       "location": "Shepherd Encampment",
-      "stat_reference": null,
-      "is_combatant": false
+      "stat_reference": "Level 2 Fighter (DMB)",
+      "is_combatant": true,
+      "vulnerabilities": [
+        "concern_for_flock",
+        "practical_arguments",
+        "news_from_shrivelbyne",
+        "respect_for_authority"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "frore_gryphus_quest",
+          "content": "That beast has taken twelve sheep this past month alone. We've tried driving it off with fire and noise, but it always returns. I'd pay good coin—50gp pooled from all of us—to anyone who could slay the creature or drive it from these lands permanently.",
+          "keywords": ["gryphus", "beast", "monster", "creature", "quest", "help", "problem", "sheep", "attack", "hunt", "kill", "slay", "bounty", "reward"],
+          "required_disposition": -5,
+          "category": "quest",
+          "shared": false,
+          "priority": 10
+        },
+        {
+          "topic_id": "nest_location_hint",
+          "content": "We've seen it fly to the northern copses. There must be a nest up there somewhere—I've heard shrieking that sounds like young ones. Be careful if you go looking; the creature is fiercely protective.",
+          "keywords": ["nest", "where", "location", "find", "north", "trees", "copse", "young", "babies", "gryphlings"],
+          "required_disposition": 0,
+          "category": "location",
+          "shared": false,
+          "priority": 8
+        },
+        {
+          "topic_id": "frozen_battleground",
+          "content": "Aye, the frost patches in the centre of these meadows. My grandmother told tales of a great battle there, centuries ago, between mortal folk and the fairy armies of winter. The cold never leaves that place. Best avoided, especially at night.",
+          "keywords": ["frost", "ice", "battle", "battleground", "cold", "fairy", "war", "history", "patches", "magic"],
+          "required_disposition": -3,
+          "category": "lore",
+          "shared": false,
+          "priority": 5
+        },
+        {
+          "topic_id": "sheep_situation",
+          "content": "We lost another ewe last night. Found her wool scattered near the northern trees. The dogs are jumpy, the shepherds are scared, and if this keeps up, we'll have no choice but to abandon these pastures.",
+          "keywords": ["sheep", "flock", "attack", "lost", "kill", "situation", "status", "how", "going"],
+          "required_disposition": -5,
+          "category": "situation",
+          "shared": false,
+          "priority": 7
+        },
+        {
+          "topic_id": "shrivelbyne_news",
+          "content": "I have kin in Shrivelbyne—my sister Marged and her children. If you've come from that way, or are heading there, I'd be grateful for any news. It's been two months since the last peddler came through.",
+          "keywords": ["shrivelbyne", "news", "village", "town", "sister", "family", "kin", "0108"],
+          "required_disposition": -2,
+          "category": "personal",
+          "shared": false,
+          "priority": 4
+        },
+        {
+          "topic_id": "creature_description",
+          "content": "It's bigger than a horse, with the body of a great cat and the head and wings of an eagle—but all covered in frost. Its feathers are white and blue, and ice forms in the air around it. The old tales call such things 'frore gryphus'—servants of the Cold Prince in ages past.",
+          "keywords": ["describe", "look", "appearance", "what", "gryphus", "beast", "creature", "cold", "frost", "ice", "prince"],
+          "required_disposition": -4,
+          "category": "lore",
+          "shared": false,
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "cold_prince_connection",
+          "content": "My grandmother's tales spoke of more than just the battle. She said the Cold Prince's servants never truly die—they sleep beneath the frost until called again. This gryphus may have awoken because someone or something summoned it. If the Cold Prince's power is stirring again, we're all in danger.",
+          "hint": "When discussing the frozen battleground, Aegnyth's voice drops and she glances toward the frost patches with more than simple fear.",
+          "keywords": ["cold", "prince", "fairy", "magic", "awoken", "summoned", "danger", "power", "stirring", "ancient"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        },
+        {
+          "secret_id": "sister_debt",
+          "content": "The real reason I stay out here tending sheep, despite the danger, is that my sister Marged owes money to House Mulbreck. I send her most of what I earn. If I abandon these pastures, she and her children will be sold into debt-bondage.",
+          "hint": "When Shrivelbyne is mentioned, a flicker of worry crosses her stoic face that seems disproportionate to simple missing news.",
+          "keywords": ["sister", "marged", "shrivelbyne", "debt", "money", "mulbreck", "why", "stay", "danger"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0,
+          "status": "unknown",
+          "hint_count": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "marged_cormick",
+          "relationship_type": "family",
+          "description": "Sister who lives in Shrivelbyne. Aegnyth sends money to help with debts.",
+          "hex_id": "0108",
+          "notes": "Marged owes money to House Mulbreck"
+        },
+        {
+          "npc_id": "shepherds_of_0105",
+          "relationship_type": "subordinate",
+          "description": "The 11 other shepherds in the encampment look to Aegnyth for leadership.",
+          "hex_id": "0105",
+          "notes": "Informal leadership based on competence and respect"
+        }
+      ],
+      "faction": null,
+      "loyalty": "independent"
+    },
+    {
+      "npc_id": "frore_gryphus",
+      "name": "The Frore Gryphus",
+      "title": null,
+      "description": "A massive, frost-rimed gryphus—the body of a great cat with the head, wings, and foreclaws of an eagle. Its feathers are white and pale blue, and a rime of frost constantly forms on its plumage. Ice crystals hang in the air around it, and its eyes are cold blue orbs of predatory intelligence. It screams with a voice like cracking glaciers.",
+      "kindred": "Fairy",
+      "alignment": "Neutral",
+      "demeanor": [
+        "Territorial",
+        "Protective of its young",
+        "Ancient predator instincts"
+      ],
+      "speech": "None (animal-level intelligence, but may respond to commands in High Elfish frost-tongue)",
+      "languages": [],
+      "desires": [
+        "Feed itself and its young",
+        "Protect its nest",
+        "Remain undisturbed in its territory"
+      ],
+      "secrets": [
+        "This gryphus served in the Cold Prince's armies 900 years ago",
+        "It lay frozen on the battlefield until recently awakening",
+        "Its young could be trained by someone with knowledge of fairy beasts"
+      ],
+      "possessions": [],
+      "location": "The Nest of the Frore Gryphus",
+      "stat_reference": "Gryphon (DMB) with cold variant. Large Monstrosity, Level 6. AC 14, HP 35. Attacks: 2 claws (+5, 1d6+2) and 1 bite (+5, 2d6). Special: Cold Aura (creatures within 10 feet take 1 cold damage per round). Immune to cold damage. Vulnerable to fire (+50% damage). Morale 9. XP 820.",
+      "is_combatant": true,
+      "vulnerabilities": [
+        "cold_iron",
+        "fire",
+        "High Elfish frost-commands (may cause hesitation)",
+        "threats to gryphlings"
+      ],
+      "known_topics": [],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "cold_prince",
+          "relationship_type": "former_master",
+          "description": "Once served in the Cold Prince's armies during the war 900 years ago. No longer bound but retains vestiges of that allegiance.",
+          "hex_id": null,
+          "notes": "The Cold Prince is referenced in Dolmenwood lore"
+        }
+      ],
+      "faction": "cold_prince",
+      "loyalty": "independent",
+      "personal_feelings": "No longer serves; acts on instinct alone"
     }
   ],
   "items": [
     {
-      "name": "Fairy Longsword",
-      "description": "Fairy Longsword (Mortal Bane, p412) of frost elf origin",
+      "item_id": "0105:item:fairy_longsword_mortal_bane",
+      "name": "Fairy Longsword (Mortal Bane)",
+      "description": "A frost elf longsword of exquisite craftsmanship. The blade is pale blue steel with frost-runes etched along its length. It deals +1 damage to mortal (non-fairy) creatures and glows faintly blue in the presence of cold iron.",
       "location": "The Nest of the Frore Gryphus",
-      "value": null
+      "value": null,
+      "magical": true,
+      "page_reference": "p412"
     },
     {
-      "name": "Necklace of ice-like crystals",
-      "description": "A necklace of ice-like crystals",
+      "item_id": "0105:item:ice_crystal_necklace",
+      "name": "Necklace of Ice-like Crystals",
+      "description": "A delicate necklace of crystals that resemble ice but never melt. The crystals chime softly when moved and are pleasantly cool to the touch.",
       "location": "The Nest of the Frore Gryphus",
-      "value": "650gp"
+      "value": "650gp",
+      "magical": false
     }
   ],
-  "secrets": [],
-  "dm_notes": "",
-  "adjacent_hexes": [],
+  "secrets": [
+    "The frore gryphus is a survivor of the ancient war, not a new arrival. Its awakening may signal a stirring of the Cold Prince's power.",
+    "The Frozen Battleground conceals relics of great value to collectors of fairy artifacts—and potentially dangerous magical remnants.",
+    "If the gryphus is slain, the Cold Prince may eventually send agents to investigate what happened to his ancient servant."
+  ],
+  "dm_notes": "This hex combines wilderness travel with a monster hunt quest and exploration of an ancient battlefield. The frore gryphus can be a challenging combat encounter (Level 6) for low-level parties, or a target for negotiation if characters speak High Elfish or have fairy connections. The shepherds provide a sympathetic quest hook and local color. The Frozen Battleground offers treasure-hunting opportunities with mild environmental hazards. Consider having the Cold Prince's agents appear in later sessions if the gryphus is slain, as a consequence.",
+  "adjacent_hexes": [
+    {"hex_id": "0104", "direction": "north", "notes": "The Phantom Lighthouse"},
+    {"hex_id": "0106", "direction": "east", "notes": "Adjacent hex"},
+    {"hex_id": "0205", "direction": "southeast", "notes": "Adjacent hex"},
+    {"hex_id": "0204", "direction": "southwest", "notes": "Adjacent hex"}
+  ],
   "roads": [],
   "_metadata": {
     "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [
-      196
-    ],
-    "extraction_note": "Review and correct this data before importing"
+    "pages": [196],
+    "extraction_note": "Enriched with procedural, NPC topic intelligence, and structured POI data",
+    "enrichment_date": "2026-01-03",
+    "enrichment_version": "1.0"
   }
 }
