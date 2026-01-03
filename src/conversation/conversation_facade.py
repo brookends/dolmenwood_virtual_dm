@@ -148,6 +148,18 @@ class ConversationFacade:
                     self._add_recent_action(f"{intent.action_id}: {text[:50]}")
                     return self.handle_action(intent.action_id, intent.params)
 
+                # P1-8: LLM suggested an action that's not currently available
+                if intent.action_id != "unknown" and intent.action_id not in available_actions:
+                    msg = (
+                        f"I understood you want to '{intent.action_id}', but that action "
+                        f"isn't available right now. Try asking for available options."
+                    )
+                    return self._response(
+                        [ChatMessage("system", msg)],
+                        requires_clarification=True,
+                        clarification_prompt=msg,
+                    )
+
             # Clarification needed
             if intent.requires_clarification:
                 return self._response(
