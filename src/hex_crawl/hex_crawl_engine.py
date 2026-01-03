@@ -1847,6 +1847,100 @@ class HexCrawlEngine:
         # Night periods: DUSK, EVENING, MIDNIGHT, PREDAWN
         return time_of_day in (TimeOfDay.DUSK, TimeOfDay.EVENING, TimeOfDay.MIDNIGHT, TimeOfDay.PREDAWN)
 
+    def _is_full_moon(self) -> bool:
+        """Check if it's currently a full moon."""
+        if not self.controller.world_state:
+            return False
+        if not self.controller.world_state.current_date:
+            return False
+        return self.controller.world_state.current_date.is_full_moon()
+
+    def process_night_hazards(self, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Process night-specific hazards for a hex, including moon phase effects.
+
+        Called when entering night at a hex or during night phases.
+        Handles hazards like hex 0107's full moon compulsion.
+
+        Args:
+            hex_id: The hex to process night hazards for
+
+        Returns:
+            List of hazard resolution results
+        """
+        results: list[dict[str, Any]] = []
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.procedural:
+            return results
+
+        is_full_moon = self._is_full_moon()
+        is_night = self._is_night()
+
+        # Get night hazards from procedural data
+        night_hazards = hex_data.procedural.night_hazards or []
+
+        for hazard in night_hazards:
+            trigger = hazard.get("trigger", "")
+            trigger_lower = trigger.lower() if trigger else ""
+
+            # Determine if this hazard should trigger
+            should_trigger = False
+
+            if "full_moon" in trigger_lower and is_full_moon and is_night:
+                should_trigger = True
+            elif "night" in trigger_lower and is_night and "full_moon" not in trigger_lower:
+                # Regular night hazard (not full moon specific)
+                should_trigger = True
+
+            if should_trigger:
+                # Apply to all party members in the hex
+                for character in self.controller.get_all_characters():
+                    hazard_result = self._resolve_hazard(hazard, character)
+                    results.append({
+                        "character_id": character.character_id,
+                        "character_name": character.name,
+                        "hazard_name": hazard.get("name", trigger),
+                        "trigger": trigger,
+                        "is_full_moon": is_full_moon,
+                        "success": hazard_result.success,
+                        "description": hazard_result.description,
+                        "conditions_applied": hazard_result.conditions_applied,
+                    })
+
+        return results
+
+    def check_hex_night_entry(self, hex_id: str) -> dict[str, Any]:
+        """
+        Check for and process night hazards when entering night in a hex.
+
+        This should be called when time advances to DUSK in a hex.
+
+        Args:
+            hex_id: Current hex ID
+
+        Returns:
+            Dict with night phase results
+        """
+        if not self._is_night():
+            return {"triggered": False, "reason": "Not night time"}
+
+        is_full_moon = self._is_full_moon()
+        hazard_results = self.process_night_hazards(hex_id)
+
+        result = {
+            "triggered": True,
+            "time_of_day": self.controller.world_state.current_time.get_time_of_day().value,
+            "is_full_moon": is_full_moon,
+            "hazard_results": hazard_results,
+            "characters_affected": len(hazard_results),
+        }
+
+        # Emit event for narration
+        if hazard_results:
+            self._emit_run_log_event("night_hazards_triggered", result)
+
+        return result
+
     def _get_terrain_difficulty_description(self, terrain: TerrainType) -> str:
         """Get human-readable terrain difficulty description."""
         terrain_info = self.get_terrain_info(terrain)
@@ -5447,13 +5541,15 @@ class HexCrawlEngine:
         self,
         hazard: dict[str, Any],
         character: CharacterState,
+        apply_effects: bool = True,
     ) -> HazardResult:
         """
-        Resolve a single hazard check.
+        Resolve a single hazard check and optionally apply effects to game state.
 
         Args:
             hazard: Hazard definition dict
             character: Character facing the hazard
+            apply_effects: If True, apply damage/conditions to game state
 
         Returns:
             HazardResult with outcomes
@@ -5476,9 +5572,11 @@ class HexCrawlEngine:
         }
         hazard_type = hazard_type_map.get(hazard_type_str, HazardType.ENVIRONMENTAL)
 
+        result: HazardResult
+
         # Route spell saves to enchantment handler
         if save_type.lower() == "spell" or hazard_type == HazardType.ENCHANTMENT:
-            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.ENCHANTMENT,
                 character=character,
                 save_modifier=hazard.get("modifier", hazard.get("save_modifier", 0)),
@@ -5489,13 +5587,12 @@ class HexCrawlEngine:
                 automatic=hazard.get("automatic", False),
                 description=description,
             )
-
-        # Use the narrative resolver's hazard resolver
-        if hazard_type == HazardType.SWIMMING:
+        elif hazard_type == HazardType.SWIMMING:
+            # Use the narrative resolver's hazard resolver
             armor_weight = (
                 character.armor_weight.value if hasattr(character, "armor_weight") else "unarmoured"
             )
-            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.SWIMMING,
                 character=character,
                 armor_weight=armor_weight,
@@ -5503,7 +5600,7 @@ class HexCrawlEngine:
                 difficulty=difficulty,
             )
         elif hazard_type == HazardType.CLIMBING:
-            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.CLIMBING,
                 character=character,
                 height_feet=hazard.get("height", 20),
@@ -5511,7 +5608,7 @@ class HexCrawlEngine:
                 difficulty=difficulty,
             )
         elif hazard_type == HazardType.TRAP:
-            return self.narrative_resolver.hazard_resolver.resolve_hazard(
+            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.TRAP,
                 character=character,
                 difficulty=difficulty,
@@ -5532,7 +5629,7 @@ class HexCrawlEngine:
 
             from src.narrative.intent_parser import ActionType
 
-            return HazardResult(
+            result = HazardResult(
                 success=success,
                 hazard_type=hazard_type,
                 action_type=ActionType.UNKNOWN,
@@ -5541,6 +5638,12 @@ class HexCrawlEngine:
                 save_made=success,
                 roll_total=total,
             )
+
+        # Apply effects to game state (damage, conditions, roll tables)
+        if apply_effects and (result.apply_damage or result.apply_conditions):
+            self._apply_hazard_effects(result, character, hazard)
+
+        return result
 
     def get_poi_hazards(self, hex_id: str) -> list[dict[str, Any]]:
         """
@@ -5572,6 +5675,346 @@ class HexCrawlEngine:
                 ]
 
         return []
+
+    # POI Interaction Action Patterns
+    # Maps keywords to action types for detecting POI-triggered hazards
+    POI_ACTION_PATTERNS = {
+        "consume": ["drink", "sip", "taste", "imbibe", "swallow", "quaff", "eat", "consume"],
+        "touch": ["touch", "press", "push", "activate", "grab", "hold", "handle"],
+        "enter": ["enter", "go in", "step into", "walk into", "climb into"],
+        "examine": ["examine", "look at", "inspect", "study", "investigate"],
+    }
+
+    def detect_poi_action(self, player_input: str) -> Optional[tuple[str, str]]:
+        """
+        Detect if player input matches a POI interaction pattern.
+
+        Args:
+            player_input: Raw player input text
+
+        Returns:
+            Tuple of (action_type, matched_keyword) or None if no match
+        """
+        input_lower = player_input.lower()
+
+        for action_type, keywords in self.POI_ACTION_PATTERNS.items():
+            for keyword in keywords:
+                if keyword in input_lower:
+                    return (action_type, keyword)
+
+        return None
+
+    def get_matching_poi_hazards(
+        self, hex_id: str, action_type: str
+    ) -> list[dict[str, Any]]:
+        """
+        Get POI hazards that match a specific action type.
+
+        Args:
+            hex_id: Current hex
+            action_type: The detected action type (consume, touch, etc.)
+
+        Returns:
+            List of matching hazard definitions
+        """
+        if not self._current_poi:
+            return []
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return []
+
+        matching_hazards = []
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                for hazard in poi.hazards:
+                    trigger = hazard.get("trigger", "").lower()
+
+                    # Match action type to trigger
+                    should_match = False
+                    if action_type == "consume":
+                        if any(kw in trigger for kw in ["drink", "taste", "consume", "imbibe", "water"]):
+                            should_match = True
+                    elif action_type == "touch":
+                        if any(kw in trigger for kw in ["touch", "press", "activate", "handle"]):
+                            should_match = True
+                    elif action_type == "enter":
+                        if any(kw in trigger for kw in ["enter", "inside", "entering"]):
+                            should_match = True
+
+                    if should_match:
+                        matching_hazards.append(hazard)
+
+        return matching_hazards
+
+    def resolve_poi_action(
+        self, player_input: str, character_id: str, hex_id: Optional[str] = None
+    ) -> dict[str, Any]:
+        """
+        Resolve a player action that may trigger POI hazards.
+
+        This is the main entry point for POI interaction detection.
+
+        Args:
+            player_input: Raw player input
+            character_id: Character performing the action
+            hex_id: Override hex ID (uses current hex if not specified)
+
+        Returns:
+            Dict with action result, including any hazard resolutions
+        """
+        hex_id = hex_id or self._current_hex
+        if not hex_id:
+            return {"triggered": False, "reason": "Not in a hex"}
+
+        if not self._current_poi:
+            return {"triggered": False, "reason": "Not at a POI"}
+
+        character = self.controller.get_character(character_id)
+        if not character:
+            return {"triggered": False, "reason": "Character not found"}
+
+        # Detect action type from input
+        action_match = self.detect_poi_action(player_input)
+        if not action_match:
+            return {"triggered": False, "reason": "No matching action detected"}
+
+        action_type, matched_keyword = action_match
+
+        # Get matching hazards
+        matching_hazards = self.get_matching_poi_hazards(hex_id, action_type)
+        if not matching_hazards:
+            return {
+                "triggered": False,
+                "action_type": action_type,
+                "keyword": matched_keyword,
+                "reason": "No hazards match this action",
+            }
+
+        # Resolve all matching hazards
+        results = []
+        for hazard in matching_hazards:
+            hazard_result = self._resolve_hazard(hazard, character)
+            results.append({
+                "hazard_name": hazard.get("name", hazard.get("trigger", "unknown")),
+                "success": hazard_result.success,
+                "description": hazard_result.description,
+                "conditions_applied": hazard_result.conditions_applied,
+                "narrative_hints": hazard_result.narrative_hints,
+            })
+
+        return {
+            "triggered": True,
+            "action_type": action_type,
+            "keyword": matched_keyword,
+            "poi_name": self._current_poi,
+            "hazard_results": results,
+            "hazards_triggered": len(results),
+        }
+
+    def _apply_hazard_effects(
+        self,
+        result: HazardResult,
+        character: CharacterState,
+        hazard_data: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """
+        Apply damage and conditions from a hazard result to game state.
+
+        Args:
+            result: The HazardResult from hazard resolution
+            character: The character affected
+            hazard_data: Original hazard definition (for metadata extraction)
+
+        Returns:
+            Dict summarizing what was applied
+        """
+        applied = {
+            "damage_applied": [],
+            "conditions_applied": [],
+            "roll_table_results": [],
+        }
+
+        # Apply damage
+        for target_id, damage in result.apply_damage:
+            self.controller.apply_damage(target_id, damage, result.damage_type or "hazard")
+            applied["damage_applied"].append({"target": target_id, "damage": damage})
+
+        # Apply conditions with rich metadata
+        for target_id, condition_str in result.apply_conditions:
+            # Create rich Condition with enchantment metadata
+            condition = self._create_condition_from_hazard(
+                condition_str=condition_str,
+                hazard_result=result,
+                hazard_data=hazard_data or {},
+            )
+            apply_result = self.controller.apply_condition(
+                target_id, condition, source=result.description
+            )
+            applied["conditions_applied"].append(apply_result)
+
+            # Trigger associated roll tables for certain conditions
+            if condition_str == "compelled_dancing" and apply_result.get("applied"):
+                table_result = self._roll_associated_tables(character, "Fairy Dance Visions")
+                if table_result:
+                    applied["roll_table_results"].append(table_result)
+
+        return applied
+
+    def _create_condition_from_hazard(
+        self,
+        condition_str: str,
+        hazard_result: HazardResult,
+        hazard_data: dict[str, Any],
+    ) -> "Condition":
+        """
+        Create a rich Condition object from hazard result and data.
+
+        Args:
+            condition_str: The condition type string
+            hazard_result: The HazardResult with narrative hints
+            hazard_data: Original hazard definition
+
+        Returns:
+            Condition object with full metadata
+        """
+        from src.data_models import Condition, ConditionType
+
+        # Get condition type
+        try:
+            condition_type = ConditionType(condition_str)
+        except ValueError:
+            # Fallback for unknown types
+            condition_type = ConditionType.CHARMED
+
+        # Extract metadata from hazard data
+        ends_at = hazard_data.get("ends_at_time_of_day") or hazard_data.get(
+            "effect", {}
+        ).get("ends_at")
+
+        # Check narrative hints for "until dawn" patterns
+        if not ends_at:
+            for hint in hazard_result.narrative_hints:
+                hint_lower = hint.lower()
+                if "until dawn" in hint_lower:
+                    ends_at = "dawn"
+                    break
+                elif "until dusk" in hint_lower:
+                    ends_at = "dusk"
+                    break
+
+        # Extract leads_to for condition chaining
+        leads_to = None
+        if hazard_data.get("leads_to"):
+            leads_to = {"hazard_id": hazard_data["leads_to"]}
+
+        # Get protection effects from known condition types
+        protection_effects = None
+        if condition_type in (ConditionType.MAGICAL_SLEEP, ConditionType.COMPELLED_DANCING):
+            protection_effects = {"elements": True}
+
+        # Get healing on end for magical sleep
+        healing_on_end = None
+        if condition_type == ConditionType.MAGICAL_SLEEP:
+            healing_on_end = {"dice": "1d6", "condition": "undisturbed"}
+
+        # Get chain for condition transitions
+        leads_to_condition = None
+        if condition_type == ConditionType.COMPELLED_DANCING:
+            leads_to_condition = {
+                "condition_type": "magical_sleep",
+                "source": "dawn_slumber",
+            }
+        elif condition_type == ConditionType.MAGICAL_SLEEP:
+            leads_to_condition = {
+                "condition_type": "fairy_marked",
+                "source": "neveryon_dreams",
+            }
+
+        return Condition(
+            condition_type=condition_type,
+            source=hazard_result.description,
+            ends_at_time_of_day=ends_at,
+            protection_effects=protection_effects,
+            healing_on_end=healing_on_end,
+            leads_to_condition=leads_to_condition,
+        )
+
+    def _roll_associated_tables(
+        self, character: CharacterState, table_name: str
+    ) -> Optional[dict[str, Any]]:
+        """
+        Roll on a POI's roll table and store result for narration.
+
+        Args:
+            character: The character experiencing the effect
+            table_name: Name of the roll table to use
+
+        Returns:
+            Dict with roll result, or None if table not found
+        """
+        if not self._current_poi or not self._current_hex:
+            return None
+
+        hex_data = self._hex_data.get(self._current_hex)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                # Look for the roll table
+                for table in getattr(poi, "roll_tables", []) or []:
+                    if table.get("name") == table_name:
+                        # Roll on the table
+                        die_type = table.get("die_type", "1d6")
+                        roll = self.dice.roll(die_type, table_name)
+
+                        # Find matching entry
+                        entries = table.get("entries", [])
+                        result_entry = None
+                        for entry in entries:
+                            roll_range = entry.get("roll", "")
+                            if self._matches_roll_range(roll.total, roll_range):
+                                result_entry = entry
+                                break
+
+                        if result_entry:
+                            # Store event for narration
+                            self._emit_run_log_event(
+                                "roll_table_result",
+                                {
+                                    "character_id": character.character_id,
+                                    "table": table_name,
+                                    "roll": roll.total,
+                                    "result": result_entry.get("title", ""),
+                                    "description": result_entry.get("description", ""),
+                                },
+                            )
+
+                            return {
+                                "table": table_name,
+                                "roll": roll.total,
+                                "entry": result_entry,
+                            }
+
+        return None
+
+    def _matches_roll_range(self, roll: int, range_str: str) -> bool:
+        """Check if a roll matches a range string like '1-2' or '3'."""
+        if not range_str:
+            return False
+        if "-" in str(range_str):
+            parts = str(range_str).split("-")
+            try:
+                low, high = int(parts[0]), int(parts[1])
+                return low <= roll <= high
+            except (ValueError, IndexError):
+                return False
+        try:
+            return roll == int(range_str)
+        except ValueError:
+            return False
 
     # =========================================================================
     # LOCK AND BARRIER SYSTEM

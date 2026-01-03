@@ -77,6 +77,11 @@ class ActionType(str, Enum):
     DROP = "drop"
     GIVE = "give"
 
+    # POI Interaction actions
+    CONSUME = "consume"  # Drink, eat, taste, imbibe
+    TOUCH = "touch"  # Touch, press, activate
+    INTERACT = "interact"  # Generic POI interaction
+
     # Creative/Narrative
     CREATIVE_SOLUTION = "creative_solution"
     NARRATIVE_ACTION = "narrative_action"
