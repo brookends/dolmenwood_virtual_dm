@@ -329,3 +329,195 @@ class TestProcessNightHazardsIntegration:
         assert results[0]["success"] is False
         assert results[1]["character_name"] == "Wizard"
         assert results[1]["success"] is True
+
+
+class TestHazardSchemaVariations:
+    """Tests for JSON hazard schema variations (damage_dice vs damage, top-level vs on_fail)."""
+
+    def test_top_level_damage_dice_used(self):
+        """Verify top-level damage_dice is used for POI hazards like frost_touch."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)  # Failed save
+        engine.dice.roll.return_value = MagicMock(total=4)  # 4 damage
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(3, False))
+        char.character_id = "test_char"
+
+        # Hex 0105 frost_touch hazard uses top-level damage_dice
+        hazard = {
+            "hazard_id": "frost_touch",
+            "name": "Ancient Frost Magic",
+            "trigger": "touching frozen figures or frost giant",
+            "save_type": "doom",
+            "damage_dice": "1d6",  # Top-level, NOT in on_fail
+            "damage_type": "cold",
+            "description": "Ancient battle-magic lashes out at those who disturb the fallen",
+        }
+
+        result = engine._resolve_hazard(hazard, char, apply_effects=False)
+
+        assert result.success is False
+        assert result.damage_dealt == 4
+        assert result.damage_type == "cold"
+        # Verify dice.roll was called with "1d6"
+        engine.dice.roll.assert_called_with("1d6", "hazard damage")
+
+    def test_on_fail_damage_dice_used(self):
+        """Verify on_fail.damage_dice is used for night hazards like frost patches."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)
+        engine.dice.roll.return_value = MagicMock(total=3)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(3, False))
+        char.character_id = "test_char"
+
+        # Hex 0105 camp_near_frost_patches hazard uses on_fail.damage_dice
+        hazard = {
+            "trigger": "camp_near_frost_patches",
+            "save_type": "doom",
+            "description": "Characters who camp within 100 feet of the frost-covered patches...",
+            "on_fail": {
+                "damage_dice": "1d4",
+                "damage_type": "cold",
+                "description": "Cold damage from proximity to frost-patches",
+            },
+        }
+
+        result = engine._resolve_hazard(hazard, char, apply_effects=False)
+
+        assert result.success is False
+        assert result.damage_dealt == 3
+        assert result.damage_type == "cold"
+        engine.dice.roll.assert_called_with("1d4", "hazard damage")
+
+    def test_damage_key_supported(self):
+        """Verify 'damage' key (without _dice suffix) is also supported."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)
+        engine.dice.roll.return_value = MagicMock(total=5)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(3, False))
+        char.character_id = "test_char"
+
+        # Using "damage" instead of "damage_dice"
+        hazard = {
+            "save_type": "doom",
+            "damage": "2d6",  # Using "damage" key
+            "description": "A hazard with damage key",
+        }
+
+        result = engine._resolve_hazard(hazard, char, apply_effects=False)
+
+        assert result.damage_dealt == 5
+        engine.dice.roll.assert_called_with("2d6", "hazard damage")
+
+    def test_top_level_condition_supported(self):
+        """Verify top-level condition is extracted correctly."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(3, False))
+        char.character_id = "test_char"
+
+        # Using top-level condition with doom save (avoids enchantment routing)
+        hazard = {
+            "save_type": "doom",
+            "condition": "poisoned",  # Top-level condition
+            "description": "Toxic gas cloud",
+        }
+
+        result = engine._resolve_hazard(hazard, char, apply_effects=False)
+
+        assert result.success is False
+        assert "poisoned" in result.conditions_applied
+
+    def test_frost_patches_cold_damage_on_failed_save(self):
+        """
+        Acceptance test: 0105 frost patches hazard actually deals cold damage on failed save.
+
+        This tests the complete flow using the actual hex 0105 hazard schema.
+        """
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=5)  # Will fail doom save
+        engine.dice.roll.return_value = MagicMock(total=3)  # 3 cold damage
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(5, False))  # Failed save
+        char.character_id = "test_fighter"
+
+        # The ACTUAL hazard from hex 0105 JSON (POI version)
+        frost_touch_hazard = {
+            "hazard_id": "frost_touch",
+            "name": "Ancient Frost Magic",
+            "trigger": "touching frozen figures or frost giant",
+            "save_type": "doom",
+            "damage_dice": "1d6",
+            "damage_type": "cold",
+            "description": "Ancient battle-magic lashes out at those who disturb the fallen",
+        }
+
+        result = engine._resolve_hazard(frost_touch_hazard, char, apply_effects=False)
+
+        # Verify the hazard deals cold damage
+        assert result.success is False
+        assert result.damage_dealt == 3
+        assert result.damage_taken == 3  # Unified schema alias
+        assert result.damage_type == "cold"
+        assert "cold" in result.damage_type
+
+    def test_no_default_damage_when_condition_only(self):
+        """Verify no default 1d6 damage when hazard only applies condition."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.make_saving_throw = MagicMock(return_value=(3, False))
+        char.character_id = "test_char"
+
+        # Condition-only hazard with doom save (avoids enchantment routing)
+        hazard = {
+            "save_type": "doom",
+            "description": "Toxic spores fill the air",
+            "on_fail": {"condition": "exhausted"},
+        }
+
+        result = engine._resolve_hazard(hazard, char, apply_effects=False)
+
+        # Should NOT roll damage since no damage specified
+        engine.dice.roll.assert_not_called()
+        assert result.damage_dealt == 0
+        assert "exhausted" in result.conditions_applied
