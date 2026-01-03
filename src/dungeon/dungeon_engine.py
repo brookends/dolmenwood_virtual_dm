@@ -217,6 +217,12 @@ class DungeonState:
     # Pending time effects to apply on dungeon exit
     pending_time_effects: list[dict[str, Any]] = field(default_factory=list)
 
+    # Pre-dungeon location context for proper exit restoration (P9.3)
+    # Tracks the exact location before entering dungeon
+    pre_dungeon_location_type: Optional[str] = None  # "hex", "settlement", etc.
+    pre_dungeon_location_id: Optional[str] = None  # The specific hex_id or settlement_id
+    pre_dungeon_sub_location: Optional[str] = None  # POI or building within location
+
 
 class DungeonEngine:
     """
@@ -363,6 +369,12 @@ class DungeonEngine:
         }:
             return {"error": "Cannot enter dungeon from current state"}
 
+        # P9.3: Capture current location before entering dungeon for proper exit restoration
+        current_location = self.controller.party_state.location
+        pre_dungeon_location_type = current_location.location_type.value
+        pre_dungeon_location_id = current_location.location_id
+        pre_dungeon_sub_location = current_location.sub_location
+
         # Initialize or load dungeon state
         if dungeon_data:
             self._dungeon_state = dungeon_data
@@ -371,6 +383,11 @@ class DungeonEngine:
                 dungeon_id=dungeon_id,
                 current_room=entry_room,
             )
+
+        # P9.3: Store pre-dungeon location context for exit restoration
+        self._dungeon_state.pre_dungeon_location_type = pre_dungeon_location_type
+        self._dungeon_state.pre_dungeon_location_id = pre_dungeon_location_id
+        self._dungeon_state.pre_dungeon_sub_location = pre_dungeon_sub_location
 
         # Apply POI configuration if provided
         if poi_config:
@@ -398,6 +415,10 @@ class DungeonEngine:
                 "dungeon_id": dungeon_id,
                 "entry_room": entry_room,
                 "poi_name": poi_config.get("poi_name") if poi_config else None,
+                # P9.3: Include pre-dungeon context for traceability
+                "from_location_type": pre_dungeon_location_type,
+                "from_location_id": pre_dungeon_location_id,
+                "from_sub_location": pre_dungeon_sub_location,
             },
         )
 
@@ -414,6 +435,12 @@ class DungeonEngine:
             "entry_room": entry_room,
             "light_status": light_status,
             "state": GameState.DUNGEON_EXPLORATION.value,
+            # P9.3: Include pre-dungeon context in result
+            "entered_from": {
+                "location_type": pre_dungeon_location_type,
+                "location_id": pre_dungeon_location_id,
+                "sub_location": pre_dungeon_sub_location,
+            },
         }
 
         # Add dynamic layout info if applicable
@@ -425,32 +452,80 @@ class DungeonEngine:
 
     def exit_dungeon(self) -> dict[str, Any]:
         """
-        Exit the dungeon to wilderness.
+        Exit the dungeon and return to the pre-dungeon location.
+
+        P9.3: Properly restores party location to the hex/POI where they
+        entered the dungeon, rather than just transitioning to wilderness.
 
         Returns:
-            Dictionary with exit results
+            Dictionary with exit results including restored location
         """
         if self.controller.current_state != GameState.DUNGEON_EXPLORATION:
             return {"error": "Not in dungeon exploration state"}
 
         dungeon_id = self._dungeon_state.dungeon_id if self._dungeon_state else "unknown"
+        turns_spent = self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0
 
-        # Transition back to wilderness
+        # P9.3: Determine return location and state
+        return_location_type = None
+        return_location_id = None
+        return_sub_location = None
+        return_trigger = "exit_dungeon"
+
+        if self._dungeon_state:
+            # Use stored pre-dungeon location if available
+            if self._dungeon_state.pre_dungeon_location_type:
+                return_location_type = self._dungeon_state.pre_dungeon_location_type
+                return_location_id = self._dungeon_state.pre_dungeon_location_id
+                return_sub_location = self._dungeon_state.pre_dungeon_sub_location
+            # Fallback to hex_id from POI config
+            elif self._dungeon_state.hex_id:
+                return_location_type = "hex"
+                return_location_id = self._dungeon_state.hex_id
+                return_sub_location = self._dungeon_state.poi_name
+
+        # Transition back to appropriate state
         self.controller.transition(
-            "exit_dungeon",
+            return_trigger,
             context={
                 "dungeon_id": dungeon_id,
-                "turns_spent": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
+                "turns_spent": turns_spent,
+                "return_location_type": return_location_type,
+                "return_location_id": return_location_id,
+                "return_sub_location": return_sub_location,
             },
         )
 
+        # P9.3: Restore party location to pre-dungeon context
+        if return_location_id:
+            # Map string location type back to LocationType enum
+            location_type_map = {
+                "hex": LocationType.HEX,
+                "settlement": LocationType.SETTLEMENT,
+                "building": LocationType.BUILDING,
+                "wilderness_feature": LocationType.WILDERNESS_FEATURE,
+            }
+            loc_type = location_type_map.get(return_location_type, LocationType.HEX)
+            self.controller.set_party_location(
+                loc_type, return_location_id, sub_location=return_sub_location
+            )
+
         result = {
             "dungeon_id": dungeon_id,
-            "turns_spent": self._dungeon_state.turns_in_dungeon if self._dungeon_state else 0,
+            "turns_spent": turns_spent,
             "state": GameState.WILDERNESS_TRAVEL.value,
+            "returned_to": {
+                "location_type": return_location_type,
+                "location_id": return_location_id,
+                "sub_location": return_sub_location,
+            },
         }
 
-        # Clear dungeon state (but could persist for re-entry)
+        # Include leaving description if configured
+        if self._dungeon_state and self._dungeon_state.leaving_description:
+            result["leaving_description"] = self._dungeon_state.leaving_description
+
+        # Note: Dungeon state is preserved for potential re-entry
         # self._dungeon_state = None
 
         return result

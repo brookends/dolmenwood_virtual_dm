@@ -1371,26 +1371,37 @@ def _create_default_registry() -> ActionRegistry:
     ))
 
     # -------------------------------------------------------------------------
-    # Meta: Replay status - Phase 5.3
+    # Meta: Replay functionality - Phase 10.3
     # -------------------------------------------------------------------------
     def _meta_replay_status(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Show current replay mode status."""
         from src.data_models import DiceRoller
 
-        # Check if DiceRoller is in replay mode
-        if hasattr(DiceRoller, '_replay_session') and DiceRoller._replay_session is not None:
+        session = DiceRoller.get_replay_session()
+        if session is not None and session.is_replaying():
+            summary = session.get_summary()
+            lines = [
+                "Replay mode: ACTIVE",
+                f"Position: {summary['current_position']}/{summary['total_rolls']} rolls",
+                f"Remaining: {summary['remaining_rolls']} rolls",
+            ]
+            if summary['overruns'] > 0:
+                lines.append(f"Overruns: {summary['overruns']} (ran out of recorded rolls)")
             return {
                 "success": True,
-                "message": "Replay mode: ACTIVE - DiceRoller is using recorded roll sequence.",
+                "message": "\n".join(lines),
                 "replay_active": True,
+                "position": summary['current_position'],
+                "total_rolls": summary['total_rolls'],
+                "remaining_rolls": summary['remaining_rolls'],
+                "overruns": summary['overruns'],
             }
         else:
             return {
                 "success": True,
                 "message": (
-                    "Replay mode: NOT IMPLEMENTED\n"
-                    "Replay functionality is not yet fully implemented.\n"
-                    "RunLog can record events but replay requires additional work."
+                    "Replay mode: INACTIVE\n"
+                    "Use 'meta:replay_load' with a run log file to start replay."
                 ),
                 "replay_active": False,
             }
@@ -1399,8 +1410,165 @@ def _create_default_registry() -> ActionRegistry:
         id="meta:replay_status",
         label="Check replay mode status",
         category=ActionCategory.META,
-        help="Check if replay mode is active and what state it's in.",
+        help="Check if replay mode is active and show position in roll stream.",
         executor=_meta_replay_status,
+    ))
+
+    def _meta_replay_load(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Load a run log file and start replay mode."""
+        from src.data_models import DiceRoller
+        from src.observability.replay import ReplaySession
+        from pathlib import Path
+
+        filepath = p.get("filepath", "")
+        if not filepath:
+            # Try to find the most recent run log in the default location
+            saves_dir = Path("./saves")
+            if saves_dir.exists():
+                run_logs = list(saves_dir.glob("run_log_*.json"))
+                if run_logs:
+                    # Sort by modification time, most recent first
+                    run_logs.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    filepath = str(run_logs[0])
+                    return {
+                        "success": False,
+                        "message": (
+                            f"No filepath specified. Found {len(run_logs)} run log(s).\n"
+                            f"Most recent: {filepath}\n"
+                            f"Use meta:replay_load with filepath parameter to load it."
+                        ),
+                    }
+            return {
+                "success": False,
+                "message": "No filepath specified. Provide the path to a run log JSON file.",
+            }
+
+        path = Path(filepath)
+        if not path.exists():
+            # Try in saves directory
+            saves_path = Path("./saves") / filepath
+            if saves_path.exists():
+                path = saves_path
+            else:
+                return {
+                    "success": False,
+                    "message": f"File not found: {filepath}",
+                }
+
+        try:
+            session = ReplaySession.load(str(path))
+            session.start_replay()
+            DiceRoller.set_replay_session(session)
+
+            summary = session.get_summary()
+            return {
+                "success": True,
+                "message": (
+                    f"Replay loaded from: {path}\n"
+                    f"Total rolls: {summary['total_rolls']}\n"
+                    f"Replay mode is now ACTIVE. Future dice rolls will use recorded values."
+                ),
+                "total_rolls": summary['total_rolls'],
+                "seed": summary.get('seed'),
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Failed to load replay: {e}",
+            }
+
+    registry.register(ActionSpec(
+        id="meta:replay_load",
+        label="Load run log for replay",
+        category=ActionCategory.META,
+        params_schema={
+            "filepath": {"type": "string", "required": False},
+        },
+        help="Load a run log JSON file and start deterministic replay mode.",
+        executor=_meta_replay_load,
+    ))
+
+    def _meta_replay_stop(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Stop replay mode and return to normal random rolls."""
+        from src.data_models import DiceRoller
+
+        session = DiceRoller.get_replay_session()
+        if session is None:
+            return {
+                "success": True,
+                "message": "Replay mode was not active.",
+            }
+
+        summary = session.get_summary()
+        session.stop_replay()
+        DiceRoller.set_replay_session(None)
+
+        return {
+            "success": True,
+            "message": (
+                f"Replay stopped.\n"
+                f"Position was: {summary['current_position']}/{summary['total_rolls']}\n"
+                f"Overruns: {summary['overruns']}\n"
+                f"Future dice rolls will be randomly generated."
+            ),
+        }
+
+    registry.register(ActionSpec(
+        id="meta:replay_stop",
+        label="Stop replay mode",
+        category=ActionCategory.META,
+        help="Stop replay mode and return to normal random dice rolls.",
+        executor=_meta_replay_stop,
+    ))
+
+    def _meta_replay_peek(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Peek at the next recorded rolls without consuming them."""
+        from src.data_models import DiceRoller
+
+        session = DiceRoller.get_replay_session()
+        if session is None or not session.is_replaying():
+            return {
+                "success": False,
+                "message": "Replay mode is not active.",
+            }
+
+        count = min(p.get("count", 5), 20)  # Show up to 20 upcoming rolls
+        position = session.get_position()
+        rolls = session.roll_stream[position:position + count]
+
+        if not rolls:
+            return {
+                "success": True,
+                "message": "No more recorded rolls remaining.",
+                "remaining": 0,
+            }
+
+        lines = [f"Next {len(rolls)} recorded roll(s):"]
+        for i, roll in enumerate(rolls):
+            notation = roll.get("notation", "?")
+            total = roll.get("total", 0)
+            reason = roll.get("reason", "")
+            reason_str = f" ({reason})" if reason else ""
+            lines.append(f"  {position + i + 1}. {notation} = {total}{reason_str}")
+
+        lines.append(f"\nRemaining: {session.get_remaining_rolls()} rolls")
+
+        return {
+            "success": True,
+            "message": "\n".join(lines),
+            "remaining": session.get_remaining_rolls(),
+            "rolls_shown": len(rolls),
+        }
+
+    registry.register(ActionSpec(
+        id="meta:replay_peek",
+        label="Peek at upcoming replay rolls",
+        category=ActionCategory.META,
+        params_schema={
+            "count": {"type": "integer", "required": False},
+        },
+        help="Show the next N recorded rolls without consuming them.",
+        executor=_meta_replay_peek,
     ))
 
     # -------------------------------------------------------------------------

@@ -537,3 +537,188 @@ class TestBatchExecution:
         assert result_batch.all_succeeded is False
         assert result_batch.results[0].success is True
         assert result_batch.results[1].success is False
+
+
+class TestInvalidEntityValidation:
+    """P10.4: Test that invalid entities are properly rejected with explicit errors."""
+
+    def test_validator_rejects_invalid_entity(self, dm_with_character, seeded_dice):
+        """Validator should reject unknown entity with detailed reason."""
+        from src.oracle.effect_commands import EffectValidator
+
+        controller = dm_with_character.controller
+        validator = EffectValidator(controller=controller)
+
+        cmd = EffectCommandBuilder.damage(
+            target_id="completely_fake_entity",
+            amount=10,
+            source="Test",
+        )
+
+        validated = validator.validate(cmd)
+
+        assert validated.validated is False
+        assert len(validated.validation_errors) > 0
+        assert "completely_fake_entity" in validated.validation_errors[0]
+        assert "not found" in validated.validation_errors[0].lower()
+
+    def test_validator_accepts_valid_character(self, dm_with_character, seeded_dice):
+        """Validator should accept registered character."""
+        from src.oracle.effect_commands import EffectValidator
+
+        controller = dm_with_character.controller
+        validator = EffectValidator(controller=controller)
+
+        cmd = EffectCommandBuilder.damage(
+            target_id="test_mage_1",
+            amount=5,
+            source="Test",
+        )
+
+        validated = validator.validate(cmd)
+
+        assert validated.validated is True
+        assert len(validated.validation_errors) == 0
+
+    def test_validator_accepts_special_targets(self, dm_with_character, seeded_dice):
+        """Validator should accept special target identifiers."""
+        from src.oracle.effect_commands import EffectValidator
+
+        controller = dm_with_character.controller
+        validator = EffectValidator(controller=controller)
+
+        special_targets = ["party", "all", "self", "caster", "location", "area"]
+
+        for target in special_targets:
+            cmd = EffectCommandBuilder.custom(
+                target_id=target,
+                description="Test effect",
+                source="Test",
+            )
+            validated = validator.validate(cmd)
+            assert validated.validated is True, f"Special target '{target}' should be valid"
+
+    def test_executor_reports_invalid_entity_in_error(self, dm_with_character, seeded_dice):
+        """Executor should include entity ID and reason in error message."""
+        controller = dm_with_character.controller
+        executor = EffectExecutor(controller=controller, dice_roller=seeded_dice)
+
+        cmd = EffectCommandBuilder.heal(
+            target_id="nonexistent_healer",
+            amount=10,
+            source="Test",
+        )
+
+        result = executor.execute(cmd)
+
+        assert result.success is False
+        # Error should contain both the entity ID and reason
+        error_text = result.error or result.description
+        assert "nonexistent_healer" in error_text
+        assert "not found" in error_text.lower()
+
+    def test_simulated_mode_skips_entity_validation(self, seeded_dice):
+        """Without controller, validation should be skipped for simulated mode."""
+        from src.oracle.effect_commands import EffectValidator
+
+        # Validator without controller
+        validator = EffectValidator(controller=None)
+
+        cmd = EffectCommandBuilder.damage(
+            target_id="any_entity_id",
+            amount=5,
+            source="Test",
+        )
+
+        validated = validator.validate(cmd)
+
+        # Should pass validation (simulated mode)
+        assert validated.validated is True
+
+    def test_executor_simulated_mode_still_works(self, seeded_dice):
+        """Executor without controller should still work in simulated mode."""
+        executor = EffectExecutor(controller=None, dice_roller=seeded_dice)
+
+        cmd = EffectCommandBuilder.damage(
+            target_id="simulated_target",
+            amount=5,
+            source="Test",
+        )
+
+        result = executor.execute(cmd)
+
+        assert result.success is True
+        assert result.changes.get("simulated") is True
+        assert "[No controller]" in result.description
+
+    def test_entity_with_registered_npc(self, dm_with_character, seeded_dice):
+        """Validator should accept registered NPCs."""
+        from src.oracle.effect_commands import EffectValidator
+
+        controller = dm_with_character.controller
+
+        # Register an NPC
+        test_npc = CharacterState(
+            character_id="test_npc_1",
+            name="Test NPC",
+            character_class="Fighter",
+            level=2,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 12, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=7,
+            base_speed=30,
+        )
+        controller.register_npc(test_npc)
+
+        validator = EffectValidator(controller=controller)
+
+        cmd = EffectCommandBuilder.damage(
+            target_id="test_npc_1",
+            amount=3,
+            source="Test",
+        )
+
+        validated = validator.validate(cmd)
+
+        assert validated.validated is True
+
+    def test_all_effect_types_validate_entity(self, dm_with_character, seeded_dice):
+        """All effect types that require entities should validate them."""
+        controller = dm_with_character.controller
+        executor = EffectExecutor(controller=controller, dice_roller=seeded_dice)
+
+        # Test damage to invalid entity
+        result = executor.execute(EffectCommandBuilder.damage(
+            target_id="invalid_1", amount=5, source="Test"
+        ))
+        assert result.success is False
+        assert "invalid_1" in (result.error or result.description)
+
+        # Test heal to invalid entity
+        result = executor.execute(EffectCommandBuilder.heal(
+            target_id="invalid_2", amount=5, source="Test"
+        ))
+        assert result.success is False
+        assert "invalid_2" in (result.error or result.description)
+
+        # Test add_condition to invalid entity
+        result = executor.execute(EffectCommandBuilder.add_condition(
+            target_id="invalid_3", condition="cursed", source="Test"
+        ))
+        assert result.success is False
+        assert "invalid_3" in (result.error or result.description)
+
+        # Test remove_condition to invalid entity
+        result = executor.execute(EffectCommandBuilder.remove_condition(
+            target_id="invalid_4", condition="cursed", source="Test"
+        ))
+        assert result.success is False
+        assert "invalid_4" in (result.error or result.description)
+
+        # Test modify_stat to invalid entity
+        result = executor.execute(EffectCommandBuilder.modify_stat(
+            target_id="invalid_5", stat="STR", value=1, source="Test"
+        ))
+        assert result.success is False
+        assert "invalid_5" in (result.error or result.description)

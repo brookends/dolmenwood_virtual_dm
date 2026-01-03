@@ -54,6 +54,7 @@ from src.data_models import (
     FactionRelationship,
 )
 from src.content_loader.monster_registry import get_monster_registry
+from src.game_state.session_manager import ActiveNPC
 
 # Import narrative components (optional, may not be initialized yet)
 try:
@@ -110,6 +111,8 @@ class POIVisit:
     items_taken: list[str] = field(default_factory=list)  # Items picked up
     secrets_discovered: list[str] = field(default_factory=list)  # Secrets found here
     time_spent_turns: int = 0
+    # P9.4: Track resolved hazards by index to prevent re-triggering
+    hazards_resolved: list[int] = field(default_factory=list)
 
 
 @dataclass
@@ -2368,8 +2371,12 @@ class HexCrawlEngine:
         """
         Resolve a hazard required to access a POI.
 
-        Uses the narrative resolver to handle climbing, swimming, or
-        other hazards that must be overcome to reach a POI.
+        P9.4: Canonical path for POI hazard resolution:
+        1. Check if hazard was already resolved (delta state)
+        2. Resolve via HazardResolver with deterministic dice
+        3. Apply effects using controller APIs
+        4. Mark hazard as resolved in POIVisit
+        5. Log via RunLog
 
         Args:
             hex_id: The hex containing the POI
@@ -2402,6 +2409,21 @@ class HexCrawlEngine:
         if hazard_index < 0 or hazard_index >= len(approach_hazards):
             return {"success": False, "error": "Invalid hazard index"}
 
+        # P9.4: Check if hazard was already resolved (delta state)
+        visit_key = f"{hex_id}:{self._current_poi}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=self._current_poi)
+
+        poi_visit = self._poi_visits[visit_key]
+        if hazard_index in poi_visit.hazards_resolved:
+            return {
+                "success": True,
+                "already_resolved": True,
+                "hazard_index": hazard_index,
+                "message": "This hazard has already been overcome.",
+                "can_proceed": True,
+            }
+
         hazard = approach_hazards[hazard_index]
         hazard_type = hazard.get("hazard_type", "environmental")
         difficulty = hazard.get("difficulty", "moderate")
@@ -2411,15 +2433,23 @@ class HexCrawlEngine:
         if not character:
             return {"success": False, "error": "Character not found"}
 
+        # Initialize result fields
+        damage_taken = 0
+        effect_applied = None
+        narrative = ""
+        roll_value = None
+        threshold = None
+
         # Resolve using narrative resolver if available
         if self.narrative_resolver:
             # Map hazard type to HazardType enum
             try:
-                h_type = HazardType(hazard_type.upper())
+                h_type = HazardType(hazard_type.lower())
             except ValueError:
-                h_type = HazardType.ENVIRONMENTAL
+                # Default to TRAP for unknown hazard types
+                h_type = HazardType.TRAP
 
-            result = self.narrative_resolver.hazard_resolver.resolve_hazard(
+            resolver_result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 character=character,
                 hazard_type=h_type,
                 difficulty=difficulty,
@@ -2430,31 +2460,71 @@ class HexCrawlEngine:
                 },
             )
 
-            return {
-                "success": result.success,
-                "hazard_type": hazard_type,
-                "description": hazard.get("description", ""),
-                "damage": result.damage_taken,
-                "effect": result.effect_applied,
-                "narrative": result.narrative,
-                "can_proceed": result.success,
-            }
+            success = resolver_result.success
+            damage_taken = resolver_result.damage_taken
+            effect_applied = resolver_result.effect_applied
+            narrative = resolver_result.narrative
         else:
             # Basic resolution without narrative resolver
-            roll = self.dice.roll("1d6").total
+            roll_result = self.dice.roll("1d6", f"poi_hazard:{poi.name}:{hazard_index}")
+            roll_value = roll_result.total
             difficulty_threshold = {"easy": 2, "moderate": 3, "hard": 4, "extreme": 5}
             threshold = difficulty_threshold.get(difficulty, 3)
 
-            success = roll >= threshold
+            success = roll_value >= threshold
 
-            return {
-                "success": success,
+            # Apply basic damage on failure for certain hazard types
+            if not success and hazard_type in ("climbing", "swimming", "falling"):
+                damage_roll = self.dice.roll(
+                    hazard.get("damage", "1d6"), f"hazard_damage:{hazard_index}"
+                )
+                damage_taken = damage_roll.total
+
+        # P9.4: Apply effects using controller APIs
+        if damage_taken > 0:
+            self.controller.apply_damage(character_id, damage_taken, f"hazard:{hazard_type}")
+
+        if effect_applied:
+            self.controller.apply_condition(character_id, effect_applied, f"hazard:{hazard_type}")
+
+        # P9.4: Mark hazard as resolved on success
+        if success:
+            poi_visit.hazards_resolved.append(hazard_index)
+
+        # P9.4: Log via RunLog
+        self._log_event(
+            "poi_hazard_resolved",
+            {
+                "hex_id": hex_id,
+                "poi_name": poi.name,
+                "hazard_index": hazard_index,
                 "hazard_type": hazard_type,
-                "description": hazard.get("description", ""),
-                "roll": roll,
-                "threshold": threshold,
-                "can_proceed": success,
-            }
+                "difficulty": difficulty,
+                "character_id": character_id,
+                "success": success,
+                "damage_taken": damage_taken,
+                "effect_applied": effect_applied,
+                "approach_method": approach_method,
+            },
+        )
+
+        result: dict[str, Any] = {
+            "success": success,
+            "hazard_type": hazard_type,
+            "hazard_index": hazard_index,
+            "description": hazard.get("description", ""),
+            "damage": damage_taken,
+            "effect": effect_applied,
+            "can_proceed": success,
+        }
+
+        if narrative:
+            result["narrative"] = narrative
+        if roll_value is not None:
+            result["roll"] = roll_value
+            result["threshold"] = threshold
+
+        return result
 
     def enter_poi(self, hex_id: str) -> dict[str, Any]:
         """
@@ -3537,11 +3607,28 @@ class HexCrawlEngine:
         # Get NPC name from target_npc dict
         npc_name = target_npc.get("name", npc_id)
 
+        # P9.4: Compute base disposition from relationship modifiers + prior interactions
+        base_disposition = self.get_npc_disposition_to_party(hex_id, npc_id)
+
+        # Add NPC's default disposition if available from npc_data
+        npc_default_disposition = 0
+        if npc_data and hasattr(npc_data, "disposition"):
+            npc_default_disposition = getattr(npc_data, "disposition", 0)
+
+        # Combine base disposition with NPC default
+        # Scale: -100 to +100 from faction state, NPC default also in same range
+        computed_disposition = base_disposition + npc_default_disposition
+
+        # Clamp to valid range
+        computed_disposition = max(-100, min(100, computed_disposition))
+
         result = {
             "success": True,
             "npc_id": npc_id,
             "npc_name": npc_name,
             "first_meeting": first_meeting,
+            # P9.4: Include computed disposition in result
+            "disposition": computed_disposition,
         }
 
         if npc_data:
@@ -3555,6 +3642,7 @@ class HexCrawlEngine:
             )
 
         # Trigger transition to SOCIAL_INTERACTION
+        # P9.4: Include disposition in context so SocialContext can use it
         self.controller.transition(
             "initiate_conversation",
             context={
@@ -3564,6 +3652,10 @@ class HexCrawlEngine:
                 "poi_name": self._current_poi,
                 "return_to": "wilderness",
                 "first_meeting": first_meeting,
+                # P9.4: Pass disposition for SocialParticipant/SocialContext
+                "disposition": computed_disposition,
+                "base_disposition": base_disposition,
+                "npc_default_disposition": npc_default_disposition,
             },
         )
 
@@ -4460,6 +4552,89 @@ class HexCrawlEngine:
         """Get an NPC's disposition toward the party."""
         faction_state = self.get_faction_state(hex_id)
         return faction_state.get_party_reputation(npc_id)
+
+    def get_active_npc(self, hex_id: str, npc_id: str) -> Optional[ActiveNPC]:
+        """
+        P9.5: Get an NPC with delta overlay applied.
+
+        Combines immutable base NPC data with mutable session delta state
+        and faction reputation into a single view model.
+
+        Args:
+            hex_id: Hex containing the NPC
+            npc_id: NPC identifier
+
+        Returns:
+            ActiveNPC with combined base + delta state, or None if not found
+        """
+        # Get base NPC from hex data
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.npcs:
+            return None
+
+        base_npc = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == npc_id:
+                base_npc = npc
+                break
+
+        if not base_npc:
+            return None
+
+        # Get disposition from faction state
+        disposition_numeric = self.get_npc_disposition_to_party(hex_id, npc_id)
+
+        # Get delta from session manager (if available)
+        delta = None
+        met_before = False
+        if self.controller._session_manager and self.controller._session_manager.current_session:
+            session = self.controller._session_manager.current_session
+            hex_delta = session.hex_deltas.get(hex_id)
+            if hex_delta:
+                delta = hex_delta.npc_deltas.get(npc_id)
+                # Check if we've met before (any interaction logged)
+                met_before = npc_id in hex_delta.npc_deltas
+
+        # Create and return the active NPC view
+        return ActiveNPC.from_base_npc(
+            base_npc=base_npc,
+            hex_id=hex_id,
+            delta=delta,
+            disposition_numeric=disposition_numeric,
+            met_before=met_before,
+        )
+
+    def get_active_npcs_in_hex(self, hex_id: str) -> list[ActiveNPC]:
+        """
+        P9.5: Get all NPCs in a hex with delta overlays applied.
+
+        Args:
+            hex_id: Hex to query
+
+        Returns:
+            List of ActiveNPC view models for all NPCs in the hex
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.npcs:
+            return []
+
+        return [
+            active_npc
+            for npc in hex_data.npcs
+            if (active_npc := self.get_active_npc(hex_id, npc.npc_id)) is not None
+        ]
+
+    def get_available_npcs_in_hex(self, hex_id: str) -> list[ActiveNPC]:
+        """
+        P9.5: Get all available (not dead/removed) NPCs in a hex.
+
+        Args:
+            hex_id: Hex to query
+
+        Returns:
+            List of ActiveNPC view models for available NPCs
+        """
+        return [npc for npc in self.get_active_npcs_in_hex(hex_id) if npc.is_available()]
 
     def modify_npc_disposition_to_party(
         self, hex_id: str, npc_id: str, delta: int, reason: str = ""
