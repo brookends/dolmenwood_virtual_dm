@@ -196,6 +196,11 @@ class ConditionType(str, Enum):
     HASTED = "hasted"  # Extra actions, +2 initiative, +2 AC
     # Stasis/suspension conditions
     TEMPORAL_STASIS = "temporal_stasis"  # Frozen in time, invulnerable, cannot act
+    # Enchantment conditions (fairy magic, hex effects)
+    ENCHANTED_HEARING = "enchanted_hearing"  # Hearing magical music (leads to dancing)
+    COMPELLED_DANCING = "compelled_dancing"  # Must dance, cannot take other actions
+    MAGICAL_SLEEP = "magical_sleep"  # Enchanted slumber, protected from elements
+    FAIRY_MARKED = "fairy_marked"  # Long-term fairy attention (dreams, omens)
 
 
 class ConfusionBehavior(str, Enum):
@@ -1764,6 +1769,22 @@ class Condition:
     # Format: {stat: "wisdom", threshold: 0, effect: "incapacitated", description: "..."}
     threshold_effect: Optional[dict[str, Any]] = None
 
+    # Time-of-day based duration (for "until dawn" style conditions)
+    # Uses TimeOfDay enum values: DAWN, MORNING, MIDDAY, AFTERNOON, DUSK, EVENING, MIDNIGHT, PREDAWN
+    ends_at_time_of_day: Optional[str] = None  # e.g., "dawn" for conditions that end at dawn
+
+    # Protection effects while condition is active (for magical sleep, etc.)
+    # Format: {"elements": True, "damage_types": ["cold", "fire"]}
+    protection_effects: Optional[dict[str, Any]] = None
+
+    # Healing applied when condition ends
+    # Format: {"dice": "1d6", "condition": "undisturbed"}
+    healing_on_end: Optional[dict[str, Any]] = None
+
+    # Chain to next condition when this one ends
+    # Format: {"condition_type": "fairy_marked", "source": "enchanted_reverie"}
+    leads_to_condition: Optional[dict[str, Any]] = None
+
     @property
     def is_charm_effect(self) -> bool:
         """Check if this is a charm-type condition."""
@@ -1859,6 +1880,39 @@ class Condition:
                 result["effect"] = self.periodic_effect
 
         return result
+
+    def should_end_at_time(self, current_time: "TimeOfDay") -> bool:
+        """
+        Check if this condition should end at the specified time of day.
+
+        Args:
+            current_time: Current TimeOfDay value
+
+        Returns:
+            True if condition should end now
+        """
+        if not self.ends_at_time_of_day:
+            return False
+
+        # Normalize the time string for comparison
+        time_str = self.ends_at_time_of_day.lower().replace("_", "")
+        current_str = current_time.value.lower().replace("_", "")
+
+        return time_str == current_str
+
+    def get_end_transition(self) -> Optional[dict[str, Any]]:
+        """
+        Get what should happen when this condition ends.
+
+        Returns:
+            Dict with transition details:
+            - healing: Healing to apply (if any)
+            - next_condition: Next condition to apply (if any)
+        """
+        return {
+            "healing": self.healing_on_end,
+            "next_condition": self.leads_to_condition,
+        }
 
     def check_threshold(self, current_stat_value: int) -> Optional[dict[str, Any]]:
         """

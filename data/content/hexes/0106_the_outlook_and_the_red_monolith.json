@@ -1,9 +1,6 @@
 {
   "hex_id": "0106",
-  "coordinates": [
-    1,
-    6
-  ],
+  "coordinates": [1, 6],
   "name": "The Outlook and the Red Monolith",
   "tagline": "Spires and crags of pale, wind-carved rock, like the bones of gargantuan beasts.",
   "region": "High Wold",
@@ -13,32 +10,156 @@
   "procedural": {
     "lost_chance": "2-in-6",
     "encounter_chance": "2-in-6",
-    "encounter_notes": null,
+    "encounter_notes": "The twisted trees and rock formations make navigation treacherous. Wildlife avoids the area near the monolith.",
     "foraging_results": "Successful foraging yields 1d3 portions of Wayfarrow (DPB), in addition to the normal results",
     "foraging_special": [
       "Wayfarrow (1d3 portions)"
+    ],
+    "encounter_modifiers": [],
+    "lost_behavior": {
+      "type": "disorienting",
+      "description": "The tangled undergrowth and strange rock formations create a maze-like environment. Characters who get lost find themselves circling back to the granite crag, drawn by some subtle influence of the monolith.",
+      "escape_requires": "successful_lost_check",
+      "special": "Lost characters have 2-in-6 chance of stumbling upon the Granite Crag each watch"
+    },
+    "night_hazards": [
+      {
+        "trigger": "sleep_near_monolith",
+        "save_type": "spell",
+        "description": "Characters who sleep within sight of the Red Vorpal Monolith experience vivid dreams of crimson light, falling through endless darkness, and ancient voices speaking in forgotten tongues. They must Save Versus Spell or gain no benefit from rest (no HP recovery, no spell memorization).",
+        "on_fail": {
+          "condition": "restless_sleep",
+          "effect": "No HP recovery, no spell memorization",
+          "duration_unit": "until_rest_elsewhere"
+        }
+      },
+      {
+        "trigger": "winter_night",
+        "save_type": "spell",
+        "description": "On winter nights, the monolith's crimson glow intensifies. Characters within the hex must Save Versus Spell or feel an overwhelming compulsion to climb the crag and approach the monolith.",
+        "on_fail": {
+          "condition": "compelled",
+          "effect": "Must move toward monolith unless restrained",
+          "duration_unit": "until_dawn"
+        }
+      }
     ]
   },
-  "description": "Spires and crags of pale, wind-carved rock, like the bones of gargantuan beasts.",
+  "description": "Spires and crags of pale, wind-carved rock, like the bones of gargantuan beasts. A tangled forest of twisted oaks and hawthorns grows between the pale stone formations. At night, a faint crimson glow is visible from the highest crag.",
   "points_of_interest": [
     {
       "name": "Granite Crag",
       "poi_type": "crag",
-      "description": "Close to the eastern edge of the hex, a sheer granite crag, 50′ wide at the base, smothered in ivy and brambles, rises unexpectedly and penetrates the canopy of the wood. A faint crimson glow is visible at the summit.",
-      "tagline": null,
-      "entering": "Characters with the ability to climb walls can scale it without danger. Others must make a Dexterity Check to climb unaided.",
-      "interior": "The crag is 100′ tall and steep-sided. The crag tapers to a 30′ wide summit.",
-      "exploring": "Searching the brambles at the base of the crag reveals the remnants of ancient magical runes, hinting at the astral significance of the place, as well as several human skeletons. Many of the bones on the skeletons are broken.",
-      "leaving": null,
+      "description": "Close to the eastern edge of the hex, a sheer granite crag, 50 feet wide at the base, smothered in ivy and brambles, rises unexpectedly and penetrates the canopy of the wood. A faint crimson glow is visible at the summit.",
+      "tagline": "A treacherous climb to an ancient outlook",
+      "entering": "The crag rises suddenly from the forest floor, its lower slopes choked with thorny brambles and thick ivy. Characters with the Climb Walls ability can scale it without danger. Others must make a Dexterity Check to climb unaided; failure means a fall for 1d6 damage per 10 feet climbed before falling.",
+      "interior": "The crag is 100 feet tall and steep-sided. Handholds are carved into the rock at irregular intervals—ancient, weathered, but still usable. Halfway up, a narrow ledge offers a resting place. The crag tapers to a 30-foot wide summit of bare, wind-scoured granite.",
+      "exploring": "At the base: Searching the brambles reveals the remnants of ancient magical runes carved into the rock, now nearly illegible but still radiating faint abjuration magic. Several human skeletons lie scattered among the roots, bones broken as if from great falls. Roll on the Crag Base Discoveries table. At the summit: The panoramic view extends for miles in all directions. On a clear day, the Falls of Naon are visible to the northeast. The Red Vorpal Monolith hovers silently above the center of the summit.",
+      "leaving": "Descending the crag requires the same check as climbing. Characters under the influence of the monolith's terror effect suffer a -2 penalty to this check.",
       "inhabitants": null,
-      "roll_tables": [],
+      "roll_tables": [
+        {
+          "name": "Crag Base Discoveries",
+          "die_type": "d6",
+          "description": "Roll when searching the base of the crag. Each item can be found only once; re-roll duplicates.",
+          "unique_entries": true,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Weathered Journal",
+              "description": "A leather-bound journal, its pages swollen with damp. Most entries are illegible, but one page describes 'the crimson light that speaks without words' and warns against 'the winter touching.' The final entry, dated decades ago, reads only: 'I must see it again.'",
+              "monsters": [],
+              "npcs": [],
+              "items": ["weathered_journal"],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Shattered Lantern",
+              "description": "An old brass lantern, bent and broken. Inside, instead of oil, there are traces of a waxy crimson substance that glows faintly in darkness. Worth 5gp for the brass, or 25gp to an alchemist interested in the residue.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["shattered_lantern_crimson_residue"],
+              "mechanical_effect": "Residue glows faintly in darkness"
+            },
+            {
+              "roll": 3,
+              "title": "Carved Bone Talisman",
+              "description": "A small talisman carved from human bone, depicting a stylized monolith. Wearing it grants +1 to saves against the monolith's terror effect but causes disturbing dreams of crimson light.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["bone_talisman"],
+              "mechanical_effect": "+1 to saves vs monolith terror; disturbing dreams"
+            },
+            {
+              "roll": 4,
+              "title": "Ancient Rune Fragment",
+              "description": "A chunk of granite bearing a partial magical rune. A Magic-User can study it for 1 Turn to gain a temporary +1 bonus to their next spell cast involving light, darkness, or shadow (expires at dawn).",
+              "monsters": [],
+              "npcs": [],
+              "items": ["rune_fragment"],
+              "mechanical_effect": "Study 1 Turn for +1 to next light/dark/shadow spell"
+            },
+            {
+              "roll": 5,
+              "title": "Pilgrim's Pouch",
+              "description": "A rotted leather pouch containing 23sp, a dried sprig of Wayfarrow, and a crude map marking this location with the words 'THE FIFTH LIGHT' in shaky handwriting.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["pilgrims_pouch"],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Obsidian Shard",
+              "description": "A palm-sized shard of volcanic glass, completely out of place in this region. It absorbs light rather than reflecting it. If used as a spell component for shadow or darkness magic, the spell's duration is doubled.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["obsidian_shard"],
+              "mechanical_effect": "Spell component: doubles shadow/darkness spell duration"
+            }
+          ]
+        }
+      ],
       "npcs": [],
       "special_features": [
-        "Panoramic views: The summit affords a panoramic view of the surrounding land, as far as the Falls of Naon to the north-east, on a clear day."
+        "Panoramic views: The summit affords a panoramic view of the surrounding land, as far as the Falls of Naon to the northeast, on a clear day. Visible hexes: 0005, 0006, 0007, 0105, 0107, 0205, 0206, 0207.",
+        "Ancient handholds: Weathered handholds carved into the rock suggest this was once a sacred site or regular pilgrimage destination.",
+        "Abjuration residue: The runes at the base once served a protective function, now faded. Detect Magic reveals faint abjuration.",
+        "Fallen pilgrims: The skeletons at the base are those of individuals who fell—or jumped—from the summit. Their bones show no signs of violence other than impact."
       ],
       "secrets": [
-        "Ancient magical runes at base hint at astral significance",
-        "Human skeletons with broken bones at base"
+        "The handholds were carved by an ancient cult that worshipped the vorpal monoliths as manifestations of a fifth ley line.",
+        "The protective runes at the base were meant to shield visitors from the monolith's influence, but they have faded over centuries.",
+        "Some of the fallen were not accidents—they were overcome by the monolith's winter compulsion and walked off the edge."
+      ],
+      "hazards": [
+        {
+          "hazard_id": "climbing_check",
+          "name": "Crag Ascent/Descent",
+          "trigger": "climbing without Climb Walls ability",
+          "check_type": "dexterity",
+          "modifier": 0,
+          "on_fail": {
+            "damage_dice": "1d6",
+            "damage_type": "falling",
+            "per": "10 feet climbed before falling"
+          },
+          "description": "Characters without Climb Walls must make a Dexterity Check to scale the 100-foot crag"
+        },
+        {
+          "hazard_id": "terror_descent",
+          "name": "Terror-Induced Descent",
+          "trigger": "descending while under monolith terror effect",
+          "check_type": "dexterity",
+          "modifier": -2,
+          "on_fail": {
+            "damage_dice": "1d6",
+            "damage_type": "falling",
+            "per": "10 feet climbed before falling"
+          },
+          "description": "Characters fleeing the monolith's terror suffer -2 to climbing checks"
+        }
       ],
       "is_dungeon": false,
       "dungeon_levels": null
@@ -46,38 +167,129 @@
     {
       "name": "The Red Vorpal Monolith",
       "poi_type": "monolith",
-      "description": "Hovering at the top of the granite crag is a 20′-high spectral monolith of crimson light. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood. In spring, summer, and autumn, the monolith is a mere shimmering figment. In wintertime, it becomes semi-corporeal.",
-      "tagline": null,
-      "entering": null,
-      "interior": null,
-      "exploring": null,
-      "leaving": null,
+      "description": "Hovering at the top of the granite crag is a 20-foot-high spectral monolith of crimson light. This is one of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood.",
+      "tagline": "A pillar of frozen crimson light",
+      "entering": "The monolith hovers three feet above the summit's center, casting no shadow despite its luminescence. Approaching within 10 feet, one feels a subtle pressure against the skin, like walking into a cold wind that isn't there.",
+      "interior": "The monolith has no true interior—it is a manifestation of magical energy. However, in its winter state, the light appears to have depth, as if one could fall into it forever.",
+      "exploring": "In spring, summer, and autumn, the monolith is a mere shimmering figment—beautiful but intangible. Characters can pass their hands through it, feeling only a momentary chill. In wintertime (roughly the months of Haggryme, Coldgrain, and Snowmass), it becomes semi-corporeal: the light thickens, the surface becomes tangible (feeling like cold, sticky slime), and its power awakens.",
+      "leaving": "Leaving the monolith's presence requires descending the crag. Characters affected by the terror effect must flee immediately and suffer -2 to climbing checks during their panicked descent.",
       "inhabitants": null,
       "roll_tables": [],
       "npcs": [],
       "special_features": [
-        "Viewing: All who behold the monolith in the wintertime must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Those who fail are overcome by a wave of terror and the desire to leave the monolith's presence as quickly as possible. Climbing down in this state of dread requires a Climb Walls Check or a Dexterity Check with a –2 penalty.",
-        "Touching: In its wintertime manifestation, the monolith's partially tangible surface feels like cold, sticky slime. Spells of shadow or darkness cast while touching the monolith are made permanent. In other seasons, a PC touching the monolith's diaphanous outline temporarily experiences the frosty chill of a winter's day."
+        "Seasonal manifestation: In winter, the monolith becomes semi-corporeal. In other seasons, it is intangible.",
+        "Terror aura (winter only): All who behold the monolith in wintertime must Save Versus Spell. Arcane spell-casters gain a +2 bonus. Failure means overwhelming terror and the compulsion to flee.",
+        "Spell permanence (winter only): Shadow or darkness spells cast while touching the monolith become permanent. This includes spells like Darkness, Shadow Door, or similar effects.",
+        "Ley line node: The monolith marks a point on an emergent fifth ley line. Magic-Users who meditate here for 1 hour gain a +1 bonus to their next casting check (if using such rules).",
+        "No shadow: Despite glowing brightly, the monolith casts no shadow and illuminates nothing—the light it produces seems to exist only within itself."
       ],
       "secrets": [
-        "One of the mysterious vorpal monoliths that trace an emergent fifth ley line in Dolmenwood"
+        "This is one of five vorpal monoliths that trace an emergent fifth ley line in Dolmenwood. The others are scattered across the wood, their locations known only to a few scholars.",
+        "The monolith's winter awakening corresponds to the thinning of the veil between the mortal world and Fairy. Some believe the monoliths are anchors preventing something from crossing over.",
+        "Spells made permanent through the monolith cannot be dispelled by normal means—only by touching the monolith again during winter and willing the spell to end.",
+        "The crimson color is not natural magical light—it is the color of the fifth ley line itself, a hue that exists nowhere else in nature."
       ],
+      "hazards": [
+        {
+          "hazard_id": "monolith_viewing",
+          "name": "Monolith Terror (Winter)",
+          "trigger": "viewing the monolith in winter",
+          "save_type": "spell",
+          "modifier_arcane_casters": 2,
+          "on_fail": {
+            "condition": "terror",
+            "effect": "Must flee the monolith's presence immediately",
+            "duration": "1 Turn",
+            "additional": "Suffer -2 to climbing checks while fleeing"
+          },
+          "description": "The monolith's winter manifestation induces supernatural terror in those who behold it"
+        },
+        {
+          "hazard_id": "monolith_touching",
+          "name": "Spell Permanence (Winter)",
+          "trigger": "touching the monolith in winter while casting shadow/darkness spell",
+          "save_type": "none",
+          "effect": "spell_permanence",
+          "spell_types": ["shadow", "darkness"],
+          "description": "Shadow or darkness spells cast while touching the semi-corporeal monolith become permanent"
+        },
+        {
+          "hazard_id": "monolith_chill",
+          "name": "Spectral Chill (Non-Winter)",
+          "trigger": "touching the monolith in spring/summer/autumn",
+          "save_type": "none",
+          "effect": "cosmetic",
+          "description": "Touching the intangible monolith produces a momentary sensation of winter cold, but no mechanical effect"
+        }
+      ],
+      "seasonal_behavior": {
+        "winter": {
+          "months": ["Haggryme", "Coldgrain", "Snowmass"],
+          "state": "semi-corporeal",
+          "effects_active": ["terror_aura", "spell_permanence", "compulsion_dreams"],
+          "description": "The monolith becomes semi-corporeal, its surface tangible like cold slime. Its power awakens."
+        },
+        "non_winter": {
+          "months": ["Willowmoon", "Meadowtide", "Sandhaze", "Ambersap", "Cornfall", "Rotfall"],
+          "state": "intangible",
+          "effects_active": ["spectral_chill_only"],
+          "description": "The monolith is a shimmering figment, beautiful but harmless. Characters can pass through it."
+        }
+      },
       "is_dungeon": false,
       "dungeon_levels": null
     }
   ],
   "roll_tables": [],
   "npcs": [],
-  "items": [],
-  "secrets": [],
-  "dm_notes": "",
-  "adjacent_hexes": [],
+  "items": [
+    {
+      "item_id": "0106:item:bone_talisman",
+      "name": "Carved Bone Talisman",
+      "description": "A small talisman carved from human bone, depicting a stylized monolith. Grants +1 to saves against the monolith's terror effect but causes disturbing dreams of crimson light when worn.",
+      "location": "Granite Crag base",
+      "value": "15gp",
+      "magical": true
+    },
+    {
+      "item_id": "0106:item:obsidian_shard",
+      "name": "Obsidian Shard",
+      "description": "A palm-sized shard of volcanic glass that absorbs light. When used as a spell component for shadow or darkness magic, the spell's duration is doubled.",
+      "location": "Granite Crag base",
+      "value": "50gp",
+      "magical": true
+    }
+  ],
+  "secrets": [
+    "The Red Vorpal Monolith is one of five such monuments scattered across Dolmenwood, each marking a point on an emergent fifth ley line.",
+    "The pilgrims whose bones litter the crag's base were members of a cult that worshipped the monoliths. Their order has long since vanished, but their writings occasionally surface.",
+    "In ages past, the protective runes at the crag's base were maintained by druids who understood the monolith's danger. When the druids were driven out, the runes began to fade.",
+    "The monolith's crimson light is visible from great distances on winter nights, sometimes drawing travelers to their doom."
+  ],
+  "dm_notes": "This hex features a challenging climb and a supernatural mystery. The Red Vorpal Monolith should be run as an unsettling, awe-inspiring phenomenon rather than a simple magical trap. In winter, it becomes genuinely dangerous—the terror effect and the compulsion dreams can drive characters to reckless behavior. The spell permanence effect is a powerful tool that clever players may seek to exploit, but making darkness spells permanent has obvious drawbacks. The fallen pilgrims and faded runes hint at a larger mystery involving the five vorpal monoliths and the emergent fifth ley line—a potential campaign thread. Consider: What would happen if all five monoliths were touched in a single winter? Who maintains the other monoliths? What sleeps beneath the fifth ley line?",
+  "adjacent_hexes": [
+    {"hex_id": "0105", "direction": "west", "notes": "The Demesne of the Frore Gryphus"},
+    {"hex_id": "0107", "direction": "east", "notes": "Adjacent hex"},
+    {"hex_id": "0005", "direction": "north", "notes": "Adjacent hex"},
+    {"hex_id": "0006", "direction": "northeast", "notes": "Visible from summit"},
+    {"hex_id": "0205", "direction": "southwest", "notes": "Adjacent hex"},
+    {"hex_id": "0206", "direction": "south", "notes": "Adjacent hex"},
+    {"hex_id": "0207", "direction": "southeast", "notes": "Adjacent hex"}
+  ],
   "roads": [],
+  "ley_lines": {
+    "fifth_ley_line": {
+      "status": "emergent",
+      "node_type": "vorpal_monolith",
+      "color": "crimson",
+      "notes": "One of five vorpal monoliths marking an emergent fifth ley line in Dolmenwood"
+    }
+  },
   "_metadata": {
     "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [
-      197
-    ],
-    "extraction_note": "Review and correct this data before importing"
+    "pages": [197],
+    "extraction_note": "Enriched with procedural, hazards, roll tables, and seasonal mechanics",
+    "enrichment_date": "2026-01-03",
+    "enrichment_version": "1.0"
   }
 }

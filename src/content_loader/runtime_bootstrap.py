@@ -402,9 +402,59 @@ def _parse_roll_table(data: dict[str, Any]) -> Any:
     )
 
 
+def _parse_known_topic(data: dict[str, Any]) -> Any:
+    """Parse a KnownTopic from JSON."""
+    from src.data_models import KnownTopic
+
+    return KnownTopic(
+        topic_id=data.get("topic_id", "unknown"),
+        content=data.get("content", ""),
+        keywords=data.get("keywords", []),
+        required_disposition=data.get("required_disposition", -5),
+        category=data.get("category", "general"),
+        shared=data.get("shared", False),
+        priority=data.get("priority", 0),
+    )
+
+
+def _parse_secret_info(data: dict[str, Any]) -> Any:
+    """Parse a SecretInfo from JSON."""
+    from src.data_models import SecretInfo, SecretStatus
+
+    # Handle status conversion from string to enum
+    status_str = data.get("status", "unknown")
+    try:
+        status = SecretStatus(status_str)
+    except ValueError:
+        status = SecretStatus.UNKNOWN
+
+    return SecretInfo(
+        secret_id=data.get("secret_id", "unknown"),
+        content=data.get("content", ""),
+        hint=data.get("hint", ""),
+        keywords=data.get("keywords", []),
+        required_disposition=data.get("required_disposition", 3),
+        required_trust=data.get("required_trust", 2),
+        can_be_bribed=data.get("can_be_bribed", False),
+        bribe_amount=data.get("bribe_amount", 0),
+        status=status,
+        hint_count=data.get("hint_count", 0),
+    )
+
+
 def _parse_hex_npc(data: dict[str, Any]) -> Any:
     """Parse an NPC from JSON."""
     from src.data_models import HexNPC
+
+    # Parse known_topics into KnownTopic objects
+    known_topics = []
+    for topic_data in data.get("known_topics", []):
+        known_topics.append(_parse_known_topic(topic_data))
+
+    # Parse secret_info into SecretInfo objects
+    secret_info = []
+    for secret_data in data.get("secret_info", []):
+        secret_info.append(_parse_secret_info(secret_data))
 
     return HexNPC(
         npc_id=data.get("npc_id", "unknown"),
@@ -425,6 +475,13 @@ def _parse_hex_npc(data: dict[str, Any]) -> Any:
         vulnerabilities=data.get("vulnerabilities", []),
         faction=data.get("faction"),
         loyalty=data.get("loyalty", "loyal"),
+        # Enhanced topic intelligence
+        known_topics=known_topics,
+        secret_info=secret_info,
+        # Relationship network
+        relationships=data.get("relationships", []),
+        # Binding/imprisonment
+        binding=data.get("binding"),
     )
 
 
