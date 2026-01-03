@@ -54,6 +54,7 @@ from src.data_models import (
     FactionRelationship,
 )
 from src.content_loader.monster_registry import get_monster_registry
+from src.game_state.session_manager import ActiveNPC
 
 # Import narrative components (optional, may not be initialized yet)
 try:
@@ -4551,6 +4552,89 @@ class HexCrawlEngine:
         """Get an NPC's disposition toward the party."""
         faction_state = self.get_faction_state(hex_id)
         return faction_state.get_party_reputation(npc_id)
+
+    def get_active_npc(self, hex_id: str, npc_id: str) -> Optional[ActiveNPC]:
+        """
+        P9.5: Get an NPC with delta overlay applied.
+
+        Combines immutable base NPC data with mutable session delta state
+        and faction reputation into a single view model.
+
+        Args:
+            hex_id: Hex containing the NPC
+            npc_id: NPC identifier
+
+        Returns:
+            ActiveNPC with combined base + delta state, or None if not found
+        """
+        # Get base NPC from hex data
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.npcs:
+            return None
+
+        base_npc = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == npc_id:
+                base_npc = npc
+                break
+
+        if not base_npc:
+            return None
+
+        # Get disposition from faction state
+        disposition_numeric = self.get_npc_disposition_to_party(hex_id, npc_id)
+
+        # Get delta from session manager (if available)
+        delta = None
+        met_before = False
+        if self.controller._session_manager and self.controller._session_manager.current_session:
+            session = self.controller._session_manager.current_session
+            hex_delta = session.hex_deltas.get(hex_id)
+            if hex_delta:
+                delta = hex_delta.npc_deltas.get(npc_id)
+                # Check if we've met before (any interaction logged)
+                met_before = npc_id in hex_delta.npc_deltas
+
+        # Create and return the active NPC view
+        return ActiveNPC.from_base_npc(
+            base_npc=base_npc,
+            hex_id=hex_id,
+            delta=delta,
+            disposition_numeric=disposition_numeric,
+            met_before=met_before,
+        )
+
+    def get_active_npcs_in_hex(self, hex_id: str) -> list[ActiveNPC]:
+        """
+        P9.5: Get all NPCs in a hex with delta overlays applied.
+
+        Args:
+            hex_id: Hex to query
+
+        Returns:
+            List of ActiveNPC view models for all NPCs in the hex
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.npcs:
+            return []
+
+        return [
+            active_npc
+            for npc in hex_data.npcs
+            if (active_npc := self.get_active_npc(hex_id, npc.npc_id)) is not None
+        ]
+
+    def get_available_npcs_in_hex(self, hex_id: str) -> list[ActiveNPC]:
+        """
+        P9.5: Get all available (not dead/removed) NPCs in a hex.
+
+        Args:
+            hex_id: Hex to query
+
+        Returns:
+            List of ActiveNPC view models for available NPCs
+        """
+        return [npc for npc in self.get_active_npcs_in_hex(hex_id) if npc.is_available()]
 
     def modify_npc_disposition_to_party(
         self, hex_id: str, npc_id: str, delta: int, reason: str = ""

@@ -174,6 +174,140 @@ class NPCStateDelta:
 
 
 @dataclass
+class ActiveNPC:
+    """
+    P9.5: Read-through view model combining base NPC with session delta overlay.
+
+    This provides a unified view of an NPC's current state without mutating
+    the immutable base content. Engines should use this for NPC state queries.
+
+    Attributes from base HexNPC are copied, then delta fields are overlaid.
+    """
+
+    # Core identification (from base NPC)
+    npc_id: str
+    hex_id: str
+    name: str
+    description: str
+
+    # Base NPC fields
+    kindred: str = "human"
+    alignment: str = "Neutral"
+    title: Optional[str] = None
+    demeanor: list[str] = field(default_factory=list)
+    speech: str = ""
+    languages: list[str] = field(default_factory=list)
+    desires: list[str] = field(default_factory=list)
+    secrets: list[str] = field(default_factory=list)
+    possessions: list[str] = field(default_factory=list)
+    location: str = ""
+    stat_reference: Optional[str] = None
+    is_combatant: bool = False
+    faction: Optional[str] = None
+    loyalty: str = "loyal"
+    binding: Optional[dict[str, Any]] = None
+    relationships: list[dict[str, Any]] = field(default_factory=list)
+
+    # Delta overlay fields (P9.5)
+    disposition: Optional[str] = None  # "friendly", "neutral", "hostile"
+    disposition_numeric: int = 0  # -100 to +100 numeric disposition
+    is_dead: bool = False
+    is_removed: bool = False
+    is_hostile: bool = False
+
+    # Session-specific tracking
+    quests_given: list[str] = field(default_factory=list)
+    quests_completed: list[str] = field(default_factory=list)
+    topics_discussed: list[str] = field(default_factory=list)
+    secrets_revealed: list[str] = field(default_factory=list)
+    custom_state: dict[str, Any] = field(default_factory=dict)
+
+    # Metadata
+    has_delta: bool = False  # True if any delta was applied
+    met_before: bool = False  # Has party met this NPC before
+
+    def is_available(self) -> bool:
+        """Check if NPC is available for interaction (not dead/removed)."""
+        return not self.is_dead and not self.is_removed
+
+    def get_effective_disposition(self) -> str:
+        """Get the effective disposition string."""
+        if self.disposition:
+            return self.disposition
+        # Derive from numeric if no string set
+        if self.disposition_numeric >= 25:
+            return "friendly"
+        elif self.disposition_numeric <= -25:
+            return "hostile"
+        return "neutral"
+
+    @classmethod
+    def from_base_npc(
+        cls,
+        base_npc: Any,  # HexNPC
+        hex_id: str,
+        delta: Optional["NPCStateDelta"] = None,
+        disposition_numeric: int = 0,
+        met_before: bool = False,
+    ) -> "ActiveNPC":
+        """
+        Create an ActiveNPC from a base HexNPC with optional delta overlay.
+
+        Args:
+            base_npc: The immutable HexNPC from content
+            hex_id: The hex where this NPC is located
+            delta: Optional NPCStateDelta with session changes
+            disposition_numeric: Numeric disposition from faction state
+            met_before: Whether party has met this NPC before
+
+        Returns:
+            ActiveNPC with combined base + delta state
+        """
+        active = cls(
+            # Core identification
+            npc_id=base_npc.npc_id,
+            hex_id=hex_id,
+            name=base_npc.name,
+            description=base_npc.description,
+            # Base fields
+            kindred=getattr(base_npc, "kindred", "human"),
+            alignment=getattr(base_npc, "alignment", "Neutral"),
+            title=getattr(base_npc, "title", None),
+            demeanor=list(getattr(base_npc, "demeanor", [])),
+            speech=getattr(base_npc, "speech", ""),
+            languages=list(getattr(base_npc, "languages", [])),
+            desires=list(getattr(base_npc, "desires", [])),
+            secrets=list(getattr(base_npc, "secrets", [])),
+            possessions=list(getattr(base_npc, "possessions", [])),
+            location=getattr(base_npc, "location", ""),
+            stat_reference=getattr(base_npc, "stat_reference", None),
+            is_combatant=getattr(base_npc, "is_combatant", False),
+            faction=getattr(base_npc, "faction", None),
+            loyalty=getattr(base_npc, "loyalty", "loyal"),
+            binding=getattr(base_npc, "binding", None),
+            relationships=list(getattr(base_npc, "relationships", [])),
+            # Initial delta values
+            disposition_numeric=disposition_numeric,
+            met_before=met_before,
+        )
+
+        # Apply delta overlay if present
+        if delta:
+            active.has_delta = True
+            active.disposition = delta.disposition
+            active.is_dead = delta.is_dead
+            active.is_removed = delta.is_removed
+            active.is_hostile = delta.is_hostile
+            active.quests_given = list(delta.quests_given)
+            active.quests_completed = list(delta.quests_completed)
+            active.topics_discussed = list(delta.topics_discussed)
+            active.secrets_revealed = list(delta.secrets_revealed)
+            active.custom_state = dict(delta.custom_state)
+
+        return active
+
+
+@dataclass
 class HexStateDelta:
     """
     Tracks changes to a hex's state during the session.
