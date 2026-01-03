@@ -228,3 +228,68 @@ class TestHex0107Secrets:
         poi = hex_0107_data["points_of_interest"][0]
         assert "secrets" in poi
         assert len(poi["secrets"]) >= 4
+
+
+class TestHex0107ParsedPOIFields:
+    """Tests for parsed POI objects containing all fields (not just raw JSON)."""
+
+    def test_parsed_poi_has_hazards(self, hex_0107):
+        """Verify parsed POI has hazards as list attribute."""
+        poi = hex_0107.points_of_interest[0]
+        assert hasattr(poi, "hazards")
+        assert isinstance(poi.hazards, list)
+        assert len(poi.hazards) >= 4
+
+        # Check drinking_tears hazard is accessible
+        drinking = next(
+            (h for h in poi.hazards if h.get("hazard_id") == "drinking_tears"),
+            None
+        )
+        assert drinking is not None
+        assert drinking["save_type"] == "spell"
+
+    def test_parsed_poi_has_visibility_fields(self, hex_0107):
+        """Verify parsed POI has visibility-related fields."""
+        poi = hex_0107.points_of_interest[0]
+        assert hasattr(poi, "visible_from_distance")
+        assert hasattr(poi, "approach_required")
+        assert isinstance(poi.visible_from_distance, bool)
+        assert isinstance(poi.approach_required, bool)
+
+    def test_parsed_poi_has_roll_tables(self, hex_0107):
+        """Verify parsed POI has roll_tables as list of RollTable objects."""
+        poi = hex_0107.points_of_interest[0]
+        assert len(poi.roll_tables) > 0
+        # Roll tables should be RollTable objects, not dicts
+        table = poi.roll_tables[0]
+        assert hasattr(table, "name")
+        assert hasattr(table, "entries")
+        assert table.name == "Fairy Dance Visions"
+
+    def test_parsed_poi_has_special_features(self, hex_0107):
+        """Verify parsed POI has special_features list."""
+        poi = hex_0107.points_of_interest[0]
+        assert hasattr(poi, "special_features")
+        assert isinstance(poi.special_features, list)
+        assert len(poi.special_features) >= 4
+
+    def test_parsed_poi_has_secrets(self, hex_0107):
+        """Verify parsed POI has secrets list."""
+        poi = hex_0107.points_of_interest[0]
+        assert hasattr(poi, "secrets")
+        assert isinstance(poi.secrets, list)
+        assert len(poi.secrets) >= 4
+
+    def test_parsed_poi_defaults_for_missing_fields(self, hex_0107):
+        """Verify parsed POI has default values for optional fields."""
+        poi = hex_0107.points_of_interest[0]
+        # These fields should have default values even if not in JSON
+        assert hasattr(poi, "seasonal_behavior")
+        assert hasattr(poi, "quest_hooks")
+        assert hasattr(poi, "locks")
+        assert hasattr(poi, "alerts")
+        # They should be None or empty list
+        assert poi.seasonal_behavior is None or isinstance(poi.seasonal_behavior, dict)
+        assert isinstance(poi.quest_hooks, list)
+        assert isinstance(poi.locks, list)
+        assert isinstance(poi.alerts, list)

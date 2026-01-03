@@ -379,3 +379,75 @@ class TestNPCTopicParsing:
         assert len(npc.relationships) == 1
         assert npc.binding is not None
         assert npc.binding["bound_to"] == "A location"
+
+
+class TestHex0105ParsedPOIFields:
+    """Tests for parsed POI objects containing all fields (not just raw JSON)."""
+
+    def test_parsed_battleground_has_hazards(self, hex_0105):
+        """Verify parsed Frozen Battleground POI has hazards as list attribute."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if p.name == "Frozen Battleground"),
+            None
+        )
+        assert poi is not None
+        # Hazards should be a list on the parsed POI object
+        assert hasattr(poi, "hazards")
+        assert isinstance(poi.hazards, list)
+
+    def test_parsed_nest_has_hazards(self, hex_0105):
+        """Verify parsed Nest POI has hazards as list attribute."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if "Nest" in p.name),
+            None
+        )
+        assert poi is not None
+        assert hasattr(poi, "hazards")
+        assert isinstance(poi.hazards, list)
+
+    def test_parsed_encampment_has_quest_hooks(self, hex_0105):
+        """Verify parsed Shepherd Encampment POI has quest_hooks as list attribute."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if p.name == "Shepherd Encampment"),
+            None
+        )
+        assert poi is not None
+        assert hasattr(poi, "quest_hooks")
+        assert isinstance(poi.quest_hooks, list)
+        # The encampment has a quest hook for the gryphus hunt
+        assert len(poi.quest_hooks) >= 1
+
+    def test_parsed_poi_has_visibility_fields(self, hex_0105):
+        """Verify parsed POIs have visibility-related fields."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if p.name == "Frozen Battleground"),
+            None
+        )
+        assert poi is not None
+        assert hasattr(poi, "visible_from_distance")
+        assert hasattr(poi, "approach_required")
+        assert isinstance(poi.visible_from_distance, bool)
+        assert isinstance(poi.approach_required, bool)
+
+    def test_parsed_nest_is_hidden(self, hex_0105):
+        """Verify parsed Nest POI has hidden flag set correctly."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if "Nest" in p.name),
+            None
+        )
+        assert poi is not None
+        assert poi.hidden is True
+
+    def test_parsed_poi_has_roll_tables(self, hex_0105):
+        """Verify parsed POI has roll_tables as list of RollTable objects."""
+        poi = next(
+            (p for p in hex_0105.points_of_interest if p.name == "Frozen Battleground"),
+            None
+        )
+        assert poi is not None
+        assert len(poi.roll_tables) > 0
+        # Roll tables should be RollTable objects, not dicts
+        table = poi.roll_tables[0]
+        assert hasattr(table, "name")
+        assert hasattr(table, "entries")
+        assert table.name == "Battlefield Discoveries"

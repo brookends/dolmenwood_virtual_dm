@@ -2334,14 +2334,10 @@ class HexCrawlEngine:
         if not poi:
             return {"has_seasonal_behavior": False}
 
-        # Check for seasonal_behavior in POI data
-        seasonal_behavior = getattr(poi, "seasonal_behavior", None)
+        # Check for seasonal_behavior in POI data (now directly on model)
+        seasonal_behavior = poi.seasonal_behavior
         if not seasonal_behavior:
-            # Check raw data if not on model
-            if hasattr(poi, "_raw_data") and "seasonal_behavior" in poi._raw_data:
-                seasonal_behavior = poi._raw_data["seasonal_behavior"]
-            else:
-                return {"has_seasonal_behavior": False}
+            return {"has_seasonal_behavior": False}
 
         # Get current season
         current_season = "summer"  # Default

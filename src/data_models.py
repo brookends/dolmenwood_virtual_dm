@@ -3000,6 +3000,11 @@ class PointOfInterest:
     # When not available, POI cannot be entered and hidden_message is shown
     availability: Optional[dict[str, Any]] = None
 
+    # Seasonal behavior - effects that change based on current season
+    # Format: {winter: {state, effects_active, description, months}, non_winter: {...}}
+    # Used for POIs like the Red Vorpal Monolith that have different states by season
+    seasonal_behavior: Optional[dict[str, Any]] = None
+
     # Contextual encounter modifiers - affects hex-level random encounters
     # Format: [{chance: "2-in-6", result: "bewildered banshee", context: "heading to a ball"}]
     # When rolling hex encounters, these modifiers may replace or supplement standard results
