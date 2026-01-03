@@ -39,6 +39,7 @@ from src.data_models import (
     StatBlock,
     DiceRoller,
     LightSourceType,
+    ContentLoadReport,
 )
 from src.game_state import (
     GameState,
@@ -125,6 +126,7 @@ class GameConfig:
     content_dir: Optional[Path] = None
     ingest_pdf: Optional[Path] = None
     load_content: bool = False
+    fail_fast_on_missing_content: bool = False  # P1-6: Raise on missing content
 
     # Runtime options
     verbose: bool = False
@@ -222,6 +224,7 @@ class VirtualDM:
 
         # Load base content if requested
         self._content_loaded = False
+        self._content_load_report: Optional[ContentLoadReport] = None  # P1-6
         if self.config.load_content:
             self._load_base_content()
 
@@ -282,6 +285,8 @@ class VirtualDM:
 
         Called during initialization when config.load_content is True.
         Populates hex data in HexCrawlEngine, spells in SpellResolver, etc.
+
+        P1-6: Stores content loading status in _content_load_report for player visibility.
         """
         from src.content_loader.runtime_bootstrap import (
             load_runtime_content,
@@ -291,50 +296,72 @@ class VirtualDM:
         content_dir = self.config.content_dir or (self.config.data_dir / "content")
         logger.info(f"Loading base content from: {content_dir}")
 
+        # P1-6: Initialize content load report
+        report = ContentLoadReport()
+
         try:
             content = load_runtime_content(
                 content_root=content_dir,
                 enable_vector_db=self.config.use_vector_db,
             )
 
-            # Phase 7.2: Fail fast if there are critical parse errors
+            # P1-6: Collect hex errors/warnings instead of failing immediately
             if content.errors:
-                error_summary = "; ".join(content.errors[:5])
-                if len(content.errors) > 5:
-                    error_summary += f" ... and {len(content.errors) - 5} more errors"
-                raise RuntimeError(
-                    f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
-                )
+                for err in content.errors:
+                    report.add_error(f"Hex parse error: {err}")
+                report.hexes_failed = content.stats.hexes_failed
+
+                # Only raise if fail_fast_on_missing_content is True
+                if self.config.fail_fast_on_missing_content:
+                    error_summary = "; ".join(content.errors[:5])
+                    if len(content.errors) > 5:
+                        error_summary += f" ... and {len(content.errors) - 5} more errors"
+                    raise RuntimeError(
+                        f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
+                    )
 
             # Load hex data into HexCrawlEngine
             for hex_id, hex_loc in content.hexes.items():
                 self.hex_crawl.load_hex_data(hex_id, hex_loc)
 
+            report.hexes_loaded = len(content.hexes)
             logger.info(f"Loaded {len(content.hexes)} hexes into HexCrawlEngine")
 
             # Register spells with CombatEngine's SpellResolver
             if content.spells:
                 spell_count = register_spells_with_combat(content.spells, self.combat)
+                report.spells_loaded = spell_count
                 logger.info(f"Registered {spell_count} spells with CombatEngine")
 
             # Phase 7.1: Store registries on VirtualDM for reuse
             self.monster_registry = content.monster_registry
             self.item_catalog = content.item_catalog
             self.spell_data = content.spells
+            report.monsters_loaded = content.stats.monsters_loaded
+            report.items_loaded = content.stats.items_loaded
 
             # Load settlements into SettlementEngine
-            self._load_settlements(content_dir)
+            settlements_loaded, settlements_failed, settlement_errors = self._load_settlements(content_dir)
+            report.settlements_loaded = settlements_loaded
+            report.settlements_failed = settlements_failed
+            for err in settlement_errors:
+                report.add_warning(f"Settlement: {err}")
 
-            # Log any warnings
+            # Log any warnings from runtime content
             for warning in content.warnings[:5]:  # Cap logged warnings
                 logger.warning(f"Content load warning: {warning}")
+                report.add_warning(warning)
 
-            # Phase 5: Fail fast if critical content is empty
+            # P1-6: Check for missing critical content
             if not content.hexes:
-                raise RuntimeError(
-                    f"Content loading failed: No hexes loaded from {content_dir}. "
+                msg = (
+                    f"No hexes loaded from {content_dir}. "
                     "Wilderness travel requires hex data. Check content directory structure."
                 )
+                report.add_error(msg)
+
+                if self.config.fail_fast_on_missing_content:
+                    raise RuntimeError(f"Content loading failed: {msg}")
 
             self._content_loaded = True
             logger.info(
@@ -348,21 +375,29 @@ class VirtualDM:
             raise
         except Exception as e:
             logger.error(f"Failed to load base content: {e}", exc_info=True)
+            report.add_error(f"Content load exception: {e}")
             self._content_loaded = False
 
-    def _load_settlements(self, content_dir: Path) -> None:
+        # P1-6: Store the report for player visibility
+        self._content_load_report = report
+
+    def _load_settlements(self, content_dir: Path) -> tuple[int, int, list[str]]:
         """
         Load settlement content from JSON files into SettlementEngine.
 
         Args:
             content_dir: Base content directory (contains settlements/ subdirectory)
+
+        Returns:
+            Tuple of (loaded_count, failed_count, error_messages)
         """
         from src.content_loader import SettlementLoader
 
         settlements_dir = content_dir / "settlements"
         if not settlements_dir.exists():
-            logger.warning(f"Settlements directory not found: {settlements_dir}")
-            return
+            msg = f"Settlements directory not found: {settlements_dir}"
+            logger.warning(msg)
+            return 0, 0, [msg]
 
         try:
             loader = SettlementLoader(settlements_dir)
@@ -378,8 +413,15 @@ class VirtualDM:
                 f"from {report.files_successful} files"
             )
 
+            return (
+                report.total_settlements_loaded,
+                report.total_settlements_failed,
+                report.errors,
+            )
+
         except Exception as e:
             logger.error(f"Failed to load settlements: {e}", exc_info=True)
+            return 0, 0, [str(e)]
 
     def _narrate_from_context(
         self,
@@ -734,6 +776,37 @@ class VirtualDM:
             Dictionary with all game state
         """
         return self.controller.get_full_state()
+
+    def get_content_status(self) -> Optional[ContentLoadReport]:
+        """
+        Get content loading status report.
+
+        P1-6: Returns the ContentLoadReport with loading status, errors, and warnings
+        so players can see content loading issues without reading logs.
+
+        Returns:
+            ContentLoadReport if content was loaded, None otherwise
+        """
+        return self._content_load_report
+
+    def get_startup_warnings(self) -> list[str]:
+        """
+        Get startup warnings and errors for player visibility.
+
+        P1-6: Provides a simple list of warnings/errors from content loading.
+
+        Returns:
+            List of warning/error strings
+        """
+        if not self._content_load_report:
+            return []
+
+        warnings = []
+        for err in self._content_load_report.errors:
+            warnings.append(f"Error: {err}")
+        for warn in self._content_load_report.warnings:
+            warnings.append(f"Warning: {warn}")
+        return warnings
 
     def get_valid_actions(self) -> list[str]:
         """
