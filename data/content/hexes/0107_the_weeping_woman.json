@@ -1,9 +1,6 @@
 {
   "hex_id": "0107",
-  "coordinates": [
-    1,
-    7
-  ],
+  "coordinates": [1, 7],
   "name": "The Weeping Woman",
   "tagline": "Faint, otherworldly pipe music drifts sporadically on the breeze.",
   "region": "High Wold",
@@ -13,69 +10,234 @@
   "procedural": {
     "lost_chance": "1-in-6",
     "encounter_chance": "1-in-6",
-    "encounter_notes": null,
+    "encounter_notes": "The faint sound of piping music occasionally drifts across the meadow, making travelers pause and listen. Wildlife is abundant but unusually docile near the Weeping Woman.",
     "foraging_results": "Successful foraging yields 1d3 portions of Wolfsbane (DPB), in addition to the normal results",
     "foraging_special": [
       "Wolfsbane (1d3 portions)"
+    ],
+    "encounter_modifiers": [],
+    "lost_behavior": {
+      "type": "drawn",
+      "description": "Characters who get lost in this hex are drawn toward the sound of trickling water. They inevitably find themselves at the base of the Weeping Woman within 1d4 hours.",
+      "escape_requires": "successful_lost_check",
+      "special": "Lost characters always arrive at the Weeping Woman POI"
+    },
+    "night_hazards": [
+      {
+        "trigger": "night_near_weeping_woman",
+        "save_type": "spell",
+        "save_modifier": -2,
+        "description": "At night, the enchanting music is more potent. Characters within sight of the Weeping Woman who have drunk the water suffer a -2 penalty to their saving throw against the music's compulsion.",
+        "on_fail": {
+          "condition": "enchanted_reverie",
+          "effect": "Compelled to dance until dawn",
+          "additional": "Perceive fairy beings dancing alongside"
+        }
+      },
+      {
+        "trigger": "full_moon",
+        "save_type": "spell",
+        "save_modifier": -4,
+        "description": "On nights of the full moon, the music can be heard throughout the hex without drinking the water. All characters must Save Versus Spell with a -4 penalty or be drawn to the Weeping Woman to dance.",
+        "on_fail": {
+          "condition": "moon_dance_compulsion",
+          "effect": "Drawn to Weeping Woman, must dance until dawn"
+        }
+      }
     ]
   },
-  "description": "Near the verge of the forest stands a tall outcropping of lichen-pocked grey stone surrounded by boulders and scattered rubble. The 40′-tall central outcropping—while clearly a natural rock formation—resembles a cloaked female figure, kneeling and facing westward. The figure is known to locals as the Weeping Woman.",
+  "description": "Near the verge of the forest stands a tall outcropping of lichen-pocked grey stone surrounded by boulders and scattered rubble. The 40-foot-tall central outcropping—while clearly a natural rock formation—resembles a cloaked female figure, kneeling and facing westward. The figure is known to locals as the Weeping Woman. Faint, otherworldly pipe music drifts sporadically on the breeze.",
   "points_of_interest": [
     {
       "name": "The Weeping Woman",
-      "poi_type": "natural formation",
-      "description": "A 40′-tall natural rock outcropping that resembles a cloaked female figure, kneeling and facing westward. From dark recesses in the figure's face trickle twin rivulets of cold water that roll down her body and form a stream beneath her. This stream flows north, through part of Dolmenwood, eventually spilling into the dank fens of the Northern Scratch.",
-      "tagline": null,
-      "entering": null,
-      "interior": null,
-      "exploring": null,
-      "leaving": null,
+      "poi_type": "natural_formation",
+      "description": "A 40-foot-tall natural rock outcropping that resembles a cloaked female figure, kneeling and facing westward. From dark recesses in the figure's face trickle twin rivulets of cold water that roll down her body and form a stream beneath her.",
+      "tagline": "A stone figure weeping tears of enchanted water",
+      "entering": "Approaching the formation, the air grows noticeably cooler. The sound of trickling water becomes audible—a gentle, constant sound like quiet weeping. Wildflowers of unusual variety carpet the ground at the Woman's feet, and small woodland creatures gather without fear.",
+      "interior": "At the base of the formation, a small pool collects the Woman's 'tears' before flowing northward as a stream. The rock is worn smooth where countless hands have touched it over the ages. Offerings—coins, flowers, small carvings—lie scattered among the boulders. The pool is crystal clear and bitterly cold.",
+      "exploring": "The formation can be climbed with a successful Dexterity Check, though the lichen makes handholds slippery. From the Woman's 'shoulders' (about 30 feet up), one can see across the High Wold toward the forest edge. The 'face' is a dark hollow from which the water emerges—too narrow for a human to enter. The water's source appears to be a deep aquifer far below the surface.",
+      "leaving": "Those who leave without drinking the water feel a curious sense of loss, as if they've forgotten something important. This sensation fades after an hour. Those who drank and danced carry the memory—and the dreams—with them for months.",
       "inhabitants": null,
-      "roll_tables": [],
-      "npcs": [],
-      "special_features": [
+      "roll_tables": [
         {
-          "name": "The Woman's tears",
-          "description": "From dark recesses in the figure's face trickle twin rivulets of cold water that roll down her body and form a stream beneath her. This stream flows north, through part of Dolmenwood, eventually spilling into the dank fens of the Northern Scratch."
-        },
-        {
-          "name": "Drinking the waters",
-          "description": "The water is deliciously cold and refreshing, with a faint blossomy note. Those who imbibe must Save Versus Spell or begin to perceive faint, piping music of a singularly enchanting nature. The source of the music is unclear, but it seems to drift from the Woman's eyes, along with the water, emanating from an aquifer deep below the world.",
-          "mechanical_effect": "Save Versus Spell or perceive enchanting piping music"
-        },
-        {
-          "name": "Hearing the music",
-          "description": "Those who hear the music of the deeps fall into an enchanted reverie wherein they are compelled to dance and caper at the feet of the Weeping Woman. Dancers perceive elves, fauns, sylphs, and nymphs emerging from the forest to join them in celebration of starlight and moonlight. (Those not affected by the water and the music cannot see these creatures—indeed, they may be purely imaginary, at the Referee's discretion.) They dance into the night and until dawn, when the music fades.",
-          "mechanical_effect": "Compelled to dance until dawn"
-        },
-        {
-          "name": "After the music",
-          "description": "When dawn comes, dancers fall into a slumber at the feet of the Weeping Woman and sleep for 8 hours, magically protected from the elements. If undisturbed, they heal 1d6 Hit Points.",
-          "mechanical_effect": "Sleep 8 hours, heal 1d6 Hit Points if undisturbed"
-        },
-        {
-          "name": "Long-term effects of the music",
-          "description": "All who have danced to the enchanting music dream sporadically, over the next 6 months, of odd, sly-faced elves demanding they \"return the music stolen from the fairy lord of Neveryon.\" (Neveryon is not counted among the fairy realms known to those who study such matters.)",
-          "mechanical_effect": "Dreams for 6 months of elves demanding return of stolen music"
+          "name": "Fairy Dance Visions",
+          "die_type": "d6",
+          "description": "Roll for each dancer to determine what fairy beings they perceive during the enchanted reverie. These visions may be real or imaginary—the Referee decides.",
+          "unique_entries": false,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Elven Musicians",
+              "description": "A troupe of pale, slender elves playing pipes and harps. Their eyes are knowing and slightly mocking. They seem to be studying the dancer intently.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Dancing Fauns",
+              "description": "Goat-legged fauns caper and leap with wild abandon, encouraging ever-faster dancing. They smell of wine and wild herbs.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Sylphs of the Air",
+              "description": "Translucent winged beings swirl through the air, leaving trails of starlight. They whisper secrets in a language the dancer almost understands.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Water Nymphs",
+              "description": "Beautiful figures rise from the Woman's tears, their forms flowing like water. They reach out to take the dancer's hands, their touch cold but gentle.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Crowned Shadow",
+              "description": "Among the dancers moves a tall, shadowy figure wearing a crown of thorns or antlers. It never speaks but its gaze feels significant, as if it is choosing or judging.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "May indicate attention from a fairy lord"
+            },
+            {
+              "roll": 6,
+              "title": "The Weeping Woman Herself",
+              "description": "The stone figure seems to move, turning to watch the dancers. Tears of starlight roll down her face. She mouths words that cannot be heard but seem desperately important.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Dancer receives a cryptic vision or message (Referee's discretion)"
+            }
+          ]
         }
       ],
-      "secrets": [],
+      "npcs": [],
+      "special_features": [
+        "The Woman's tears: Twin rivulets of cold water trickle from dark recesses in the figure's face, forming a stream that flows north through Dolmenwood to the Northern Scratch.",
+        "Offerings: Locals leave offerings at her feet—coins, flowers, small carvings—hoping for good fortune or protection from fairy mischief.",
+        "The stream: The stream born from her tears is said to carry memories of ancient songs. Drinking from it downstream has a diluted version of the effect (Save at +4).",
+        "Climbing: The formation can be climbed (Dexterity Check) to reach the 'shoulders' at 30 feet. The 'face' is a dark hollow too narrow to enter."
+      ],
+      "secrets": [
+        "The Weeping Woman may be a petrified fairy queen, cursed by a rival lord. Her tears are her endless mourning for a stolen treasure—the 'music of Neveryon.'",
+        "Neveryon is not listed among known fairy realms because it was erased from mortal memory. Only echoes remain, trapped in the Woman's tears.",
+        "Those who dance on the night of the winter solstice may glimpse Neveryon itself through the veil, though none who have done so have reported what they saw.",
+        "The stream's journey through Dolmenwood traces a ley line that predates the four known lines—a fifth, hidden line of grief and memory."
+      ],
+      "hazards": [
+        {
+          "hazard_id": "drinking_tears",
+          "name": "The Woman's Tears",
+          "trigger": "drinking the water",
+          "save_type": "spell",
+          "modifier": 0,
+          "on_fail": {
+            "condition": "hear_music",
+            "effect": "Perceive enchanting piping music from the Woman's eyes",
+            "duration": "until save succeeds or music ends at dawn",
+            "leads_to": "enchanted_reverie"
+          },
+          "description": "The water is deliciously cold with a faint blossomy note. Those who imbibe must Save Versus Spell or hear enchanting piping music."
+        },
+        {
+          "hazard_id": "enchanted_reverie",
+          "name": "The Enchanted Reverie",
+          "trigger": "hearing the music (from drinking or full moon)",
+          "save_type": "none",
+          "automatic": true,
+          "condition_required": "hear_music",
+          "effect": {
+            "condition": "compelled_dancing",
+            "duration": "until dawn",
+            "description": "Dancers perceive fairy beings (roll on Fairy Dance Visions table) and dance until dawn. They cannot stop willingly."
+          },
+          "description": "Those who hear the music fall into an enchanted reverie, dancing and capering at the Woman's feet with perceived fairy beings."
+        },
+        {
+          "hazard_id": "dawn_slumber",
+          "name": "Dawn Slumber",
+          "trigger": "dancing until dawn",
+          "save_type": "none",
+          "automatic": true,
+          "condition_required": "compelled_dancing",
+          "effect": {
+            "condition": "magical_sleep",
+            "duration": "8 hours",
+            "protection": "Magically protected from elements",
+            "healing": "1d6 HP if undisturbed"
+          },
+          "description": "At dawn, dancers fall into slumber at the Woman's feet, protected from elements. If undisturbed, they heal 1d6 HP."
+        },
+        {
+          "hazard_id": "neveryon_dreams",
+          "name": "Dreams of Neveryon",
+          "trigger": "having danced to the music",
+          "save_type": "none",
+          "automatic": true,
+          "long_term": true,
+          "effect": {
+            "condition": "neveryon_dreams",
+            "duration": "6 months",
+            "description": "Sporadic dreams of sly-faced elves demanding the dancer 'return the music stolen from the fairy lord of Neveryon.'"
+          },
+          "description": "For 6 months after dancing, the character dreams of elves demanding return of music stolen from Neveryon."
+        }
+      ],
       "is_dungeon": false,
       "dungeon_levels": null
     }
   ],
   "roll_tables": [],
   "npcs": [],
-  "items": [],
-  "secrets": [],
-  "dm_notes": "",
-  "adjacent_hexes": [],
+  "items": [
+    {
+      "item_id": "0107:item:womans_tear_vial",
+      "name": "Vial of the Woman's Tears",
+      "description": "A small crystal vial containing water from the Weeping Woman. The water remains cold indefinitely. Drinking it away from the Woman still triggers the Save Versus Spell, but the music heard is fainter (+2 to save).",
+      "location": "Can be collected at the Weeping Woman",
+      "value": "25gp",
+      "magical": true,
+      "mechanical_effect": {
+        "trigger": "drinking",
+        "save_type": "spell",
+        "save_modifier": 2,
+        "effect": "Hear faint music; dancer effect still applies if save fails"
+      }
+    }
+  ],
+  "secrets": [
+    "The Weeping Woman is said to be a fairy queen petrified in an age before memory, her tears mourning something stolen from her realm of Neveryon.",
+    "Neveryon does not appear in any record of fairy realms because it was deliberately erased from mortal knowledge. Only the Woman's tears preserve its echo.",
+    "The music heard by those who drink is not from this world—it drifts up from the aquifer, which connects to places beneath and between the mortal realm.",
+    "Those who dance at the Woman's feet are being observed. By whom, and for what purpose, remains unclear—but the crowned shadow that sometimes appears may be a fairy lord assessing mortals."
+  ],
+  "dm_notes": "The Weeping Woman is a location of gentle menace. The enchantment is not hostile—dancers are healed and protected—but the long-term dreams and the mysterious Neveryon create hooks for future adventures. Key questions: Who stole the music from Neveryon? Why do the elves demand mortals return it? What would happen if someone tried to enter the dark hollow that is the Woman's face? The full moon effect can catch unwary travelers off-guard. Consider: Is the Woman truly a petrified fairy queen? Can she be restored? What would awakening her mean for Dolmenwood?",
+  "adjacent_hexes": [
+    {"hex_id": "0106", "direction": "west", "notes": "The Outlook and the Red Monolith"},
+    {"hex_id": "0108", "direction": "east", "notes": "Adjacent hex"},
+    {"hex_id": "0006", "direction": "north", "notes": "Adjacent hex"},
+    {"hex_id": "0007", "direction": "northeast", "notes": "Toward Falls of Naon"},
+    {"hex_id": "0206", "direction": "southwest", "notes": "Adjacent hex"},
+    {"hex_id": "0207", "direction": "south", "notes": "Adjacent hex"},
+    {"hex_id": "0208", "direction": "southeast", "notes": "Adjacent hex"}
+  ],
   "roads": [],
   "_metadata": {
     "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [
-      198
-    ],
-    "extraction_note": "Review and correct this data before importing"
+    "pages": [198],
+    "extraction_note": "Enriched with procedural, hazards, roll tables, and Neveryon lore",
+    "enrichment_date": "2026-01-03",
+    "enrichment_version": "1.0"
   }
 }
