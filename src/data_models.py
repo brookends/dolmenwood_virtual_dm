@@ -201,6 +201,10 @@ class ConditionType(str, Enum):
     COMPELLED_DANCING = "compelled_dancing"  # Must dance, cannot take other actions
     MAGICAL_SLEEP = "magical_sleep"  # Enchanted slumber, protected from elements
     FAIRY_MARKED = "fairy_marked"  # Long-term fairy attention (dreams, omens)
+    # Supernatural fear/compulsion conditions (vorpal monolith, hex effects)
+    RESTLESS_SLEEP = "restless_sleep"  # No HP recovery, no spell memorization
+    TERROR = "terror"  # Must flee, penalties to actions while fleeing
+    COMPELLED = "compelled"  # Must move toward target, can be restrained
 
 
 # Condition-based action restrictions
@@ -252,6 +256,21 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "allowed": ["all"],
         "message": "You are exhausted. -1 to all rolls until a full rest elsewhere.",
     },
+    "restless_sleep": {
+        "blocked": [],  # Doesn't block actions, but affects resting
+        "allowed": ["all"],
+        "message": "You are haunted by vivid dreams. No HP recovery or spell memorization until you rest elsewhere.",
+    },
+    "terror": {
+        "blocked": ["combat", "spell", "exploration", "social", "inventory", "creative"],
+        "allowed": ["movement", "hazard"],  # Can only flee
+        "message": "Overwhelming terror compels you to flee! You cannot take any action except running away.",
+    },
+    "compelled": {
+        "blocked": ["combat", "spell", "exploration", "survival", "social", "inventory", "creative"],
+        "allowed": ["movement"],  # Must move toward target
+        "message": "A supernatural compulsion forces you toward the monolith. You cannot resist unless restrained.",
+    },
 }
 
 # Condition-based roll modifiers
@@ -291,6 +310,26 @@ CONDITION_ROLL_MODIFIERS: dict[str, dict[str, Any]] = {
     "starving": {
         "all_rolls": -2,
         "removal": "eat_food",
+    },
+    "restless_sleep": {
+        "hp_recovery": 0,  # No HP recovered from rest
+        "spell_memorization": False,  # Cannot memorize spells
+        "removal": "rest_elsewhere",  # Rest in a location away from the monolith
+        "description": "Vivid dreams of crimson light prevent restful sleep.",
+    },
+    "terror": {
+        "climbing_checks": -2,  # Penalty to climbing while fleeing
+        "attack_rolls": -2,  # If somehow able to attack
+        "removal": "duration_1_turn",  # Lasts 1 Turn (10 minutes)
+        "forces_flee": True,  # Must flee the source
+        "description": "Supernatural terror overwhelms you.",
+    },
+    "compelled": {
+        "all_rolls": 0,  # No penalty to rolls
+        "removal": "time_of_day_dawn",  # Ends at dawn
+        "forces_movement": True,  # Must move toward target
+        "can_be_restrained": True,  # Physical restraint prevents movement
+        "description": "An overwhelming compulsion draws you toward the monolith.",
     },
 }
 

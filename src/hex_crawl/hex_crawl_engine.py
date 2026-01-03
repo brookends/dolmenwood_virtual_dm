@@ -1855,6 +1855,15 @@ class HexCrawlEngine:
             return False
         return self.controller.world_state.current_date.is_full_moon()
 
+    def _is_winter(self) -> bool:
+        """Check if it's currently winter season."""
+        if not self.controller.world_state:
+            return False
+        if not self.controller.world_state.current_date:
+            return False
+        season = self.controller.world_state.current_date.get_season()
+        return season == Season.WINTER
+
     def process_night_hazards(
         self,
         hex_id: str,
@@ -1899,9 +1908,15 @@ class HexCrawlEngine:
             if "full_moon" in trigger_lower and is_full_moon and is_night:
                 should_trigger = True
 
-            # Regular night triggers (not full moon specific)
-            elif "night" in trigger_lower and is_night and "full_moon" not in trigger_lower:
+            # Regular night triggers (not full moon or seasonal specific)
+            elif "night" in trigger_lower and is_night and "full_moon" not in trigger_lower and "winter_night" not in trigger_lower:
                 should_trigger = True
+
+            # Seasonal night triggers (e.g., "winter_night") - check before generic night
+            elif trigger_lower == "winter_night" and is_night:
+                # Only trigger in winter season
+                if self._is_winter():
+                    should_trigger = True
 
             # Sleep triggers - fire when party is sleeping at night
             elif trigger_lower == "sleep" and is_night:
@@ -1925,6 +1940,18 @@ class HexCrawlEngine:
                                 should_trigger = True
                     else:
                         # Generic camp trigger
+                        should_trigger = True
+
+            # Sleep near POI triggers (e.g., "sleep_near_monolith")
+            elif trigger_lower.startswith("sleep_near_") and is_night:
+                if activity in ("sleeping", "resting", "camping"):
+                    # Extract the POI/feature name
+                    near_what = trigger_lower.replace("sleep_near_", "")
+                    # Check if camping near that specific feature/POI
+                    if camp_location and near_what in camp_location.lower():
+                        should_trigger = True
+                    # Check if hex has matching POI
+                    elif self._hex_has_feature(hex_id, near_what):
                         should_trigger = True
 
             if should_trigger:
@@ -2273,6 +2300,97 @@ class HexCrawlEngine:
 
         # Unknown type - assume available
         return {"available": True}
+
+    def get_poi_seasonal_state(
+        self, hex_id: str, poi_name: str
+    ) -> dict[str, Any]:
+        """
+        Get the current seasonal state of a POI.
+
+        Some POIs have seasonal_behavior that changes their effects based
+        on the current season (e.g., the Red Vorpal Monolith is only
+        semi-corporeal in winter).
+
+        Args:
+            hex_id: The hex identifier
+            poi_name: Name of the POI
+
+        Returns:
+            Dictionary with:
+            - has_seasonal_behavior: bool
+            - current_season: str (e.g., "winter", "summer")
+            - current_state: str (e.g., "semi-corporeal", "intangible")
+            - effects_active: list of active effect names
+            - description: str describing current state
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"has_seasonal_behavior": False}
+
+        poi = next(
+            (p for p in hex_data.points_of_interest if p.name == poi_name),
+            None
+        )
+        if not poi:
+            return {"has_seasonal_behavior": False}
+
+        # Check for seasonal_behavior in POI data
+        seasonal_behavior = getattr(poi, "seasonal_behavior", None)
+        if not seasonal_behavior:
+            # Check raw data if not on model
+            if hasattr(poi, "_raw_data") and "seasonal_behavior" in poi._raw_data:
+                seasonal_behavior = poi._raw_data["seasonal_behavior"]
+            else:
+                return {"has_seasonal_behavior": False}
+
+        # Get current season
+        current_season = "summer"  # Default
+        if self.controller.world_state and self.controller.world_state.current_date:
+            current_season = self.controller.world_state.current_date.get_season().value
+
+        # Determine which seasonal state applies
+        # Check for winter explicitly
+        is_winter = current_season == "winter"
+        if is_winter and "winter" in seasonal_behavior:
+            state_data = seasonal_behavior["winter"]
+        elif "non_winter" in seasonal_behavior:
+            state_data = seasonal_behavior["non_winter"]
+        else:
+            # Try to match by season name
+            state_data = seasonal_behavior.get(current_season, {})
+
+        return {
+            "has_seasonal_behavior": True,
+            "current_season": current_season,
+            "is_winter": is_winter,
+            "current_state": state_data.get("state", "normal"),
+            "effects_active": state_data.get("effects_active", []),
+            "description": state_data.get("description", ""),
+            "months": state_data.get("months", []),
+        }
+
+    def is_poi_effect_active(
+        self, hex_id: str, poi_name: str, effect_name: str
+    ) -> bool:
+        """
+        Check if a specific POI effect is currently active.
+
+        Used to determine if seasonal hazards should trigger.
+
+        Args:
+            hex_id: The hex identifier
+            poi_name: Name of the POI
+            effect_name: Name of the effect to check (e.g., "terror_aura")
+
+        Returns:
+            True if the effect is currently active
+        """
+        state = self.get_poi_seasonal_state(hex_id, poi_name)
+        if not state.get("has_seasonal_behavior"):
+            return True  # No seasonal behavior = always active
+
+        effects_active = state.get("effects_active", [])
+        return effect_name in effects_active
 
     def get_visible_pois(self, hex_id: str) -> list[dict[str, Any]]:
         """
@@ -5710,16 +5828,39 @@ class HexCrawlEngine:
             on_fail_condition = on_fail.get("condition")
             on_fail_effect = on_fail.get("effect", "")
 
-            # Route saving throw based on save_type
+            # Check for explicit check_type (ability check) vs save_type
+            check_type = hazard.get("check_type")
             save_type_lower = save_type.lower() if save_type else "dex"
             success = False
             roll_total = 0
+            modifier = hazard.get("modifier", 0)
 
-            if save_type_lower in ("doom", "spell", "ray", "hold", "blast"):
+            # Check for class-based modifiers (e.g., modifier_arcane_casters)
+            arcane_mod = hazard.get("modifier_arcane_casters", 0)
+            if arcane_mod and hasattr(character, "character_class"):
+                # Check if character is an arcane caster
+                arcane_classes = ("magic-user", "elf", "magic_user", "mage", "wizard", "sorcerer")
+                char_class = (character.character_class or "").lower()
+                if any(ac in char_class for ac in arcane_classes):
+                    modifier += arcane_mod
+
+            # Handle explicit ability check (check_type takes precedence)
+            if check_type:
+                check_type_lower = check_type.lower() if check_type else "dexterity"
+                ability_score = 10  # Default
+                if hasattr(character, "abilities") and character.abilities:
+                    ability_score = getattr(character.abilities, check_type_lower, 10)
+                elif hasattr(character, check_type_lower):
+                    ability_score = getattr(character, check_type_lower, 10)
+                # OSE/Dolmenwood ability check: roll d20, success if <= ability score
+                roll = self.dice.roll_d20(f"{check_type_lower} check")
+                roll_total = roll.total - modifier  # Negative modifier makes it harder
+                success = roll_total <= ability_score
+            elif save_type_lower in ("doom", "spell", "ray", "hold", "blast"):
                 # Use proper saving throw mechanism
                 if hasattr(character, "make_saving_throw"):
                     roll_total, success = character.make_saving_throw(
-                        save_type_lower, hazard.get("modifier", 0)
+                        save_type_lower, modifier
                     )
                 else:
                     # Fallback: roll d20 against saving throw target
@@ -5727,10 +5868,10 @@ class HexCrawlEngine:
                     if hasattr(character, "saving_throws"):
                         target = character.saving_throws.get(save_type_lower, 15)
                     roll = self.dice.roll_d20(f"Save vs {save_type}")
-                    roll_total = roll.total + hazard.get("modifier", 0)
+                    roll_total = roll.total + modifier
                     success = roll_total >= target
             else:
-                # Ability check
+                # Ability check (legacy path)
                 ability_mod = character.get_ability_modifier(save_type)
                 roll = self.dice.roll_d20(f"hazard save ({save_type})")
                 roll_total = roll.total + ability_mod
