@@ -339,7 +339,12 @@ def _parse_hex_json(data: dict[str, Any]) -> HexLocation:
 
 
 def _parse_point_of_interest(data: dict[str, Any]) -> Any:
-    """Parse a point of interest from JSON."""
+    """Parse a point of interest from JSON.
+
+    Parses all POI fields including hazards, locks, items, quest_hooks,
+    availability, seasonal_behavior, entry_conditions, alerts, sub_locations,
+    discovery_hints, and visibility settings.
+    """
     from src.data_models import PointOfInterest
 
     # Parse roll tables within the POI
@@ -356,22 +361,78 @@ def _parse_point_of_interest(data: dict[str, Any]) -> Any:
             is_hidden = True
 
     return PointOfInterest(
+        # Core fields
         name=data.get("name", "Unknown"),
         poi_type=data.get("poi_type", "general"),
         description=data.get("description", ""),
         tagline=data.get("tagline"),
+        # Exploration details
         entering=entering,
         interior=data.get("interior"),
         exploring=data.get("exploring"),
         leaving=data.get("leaving"),
         inhabitants=data.get("inhabitants"),
+        # Roll tables
         roll_tables=roll_tables,
+        # Associated content
         npcs=data.get("npcs", []),
         special_features=data.get("special_features", []),
         secrets=data.get("secrets", []),
+        # Dungeon properties
         is_dungeon=data.get("is_dungeon", False),
         dungeon_levels=data.get("dungeon_levels"),
+        dungeon_id=data.get("dungeon_id"),
+        dungeon_entrance_room=data.get("dungeon_entrance_room"),
+        # Visibility and discovery
         hidden=is_hidden,
+        discovered=data.get("discovered", False),
+        visible_from_distance=data.get("visible_from_distance", True),
+        approach_required=data.get("approach_required", True),
+        # POI relationships
+        parent_poi=data.get("parent_poi"),
+        requires_discovery=data.get("requires_discovery"),
+        child_pois=data.get("child_pois", []),
+        # Magical effects
+        magical_effects=data.get("magical_effects", []),
+        # Items and treasures
+        items=data.get("items", []),
+        # Hazards (climbing, traps, environmental, etc.)
+        hazards=data.get("hazards", []),
+        # Locks and barriers
+        locks=data.get("locks", []),
+        # Sub-locations within POI
+        sub_locations=data.get("sub_locations", []),
+        # Discovery hints (sound, smell, visual clues)
+        discovery_hints=data.get("discovery_hints", {}),
+        # Ability grants (spells, skills, blessings)
+        ability_grants=data.get("ability_grants", []),
+        # Alert/alarm systems
+        alerts=data.get("alerts", []),
+        # Concealed items
+        concealed_items=data.get("concealed_items", []),
+        # Variable inhabitants
+        variable_inhabitants=data.get("variable_inhabitants"),
+        # Entry conditions
+        entry_conditions=data.get("entry_conditions"),
+        # Quest hooks
+        quest_hooks=data.get("quest_hooks", []),
+        # Time-of-day variants
+        description_day=data.get("description_day"),
+        description_night=data.get("description_night"),
+        interior_day=data.get("interior_day"),
+        interior_night=data.get("interior_night"),
+        entering_day=data.get("entering_day"),
+        entering_night=data.get("entering_night"),
+        # Availability conditions
+        availability=data.get("availability"),
+        # Seasonal behavior (e.g., winter vs non-winter states)
+        seasonal_behavior=data.get("seasonal_behavior"),
+        # Encounter modifiers
+        encounter_modifiers=data.get("encounter_modifiers", []),
+        # Item persistence rules
+        item_persistence=data.get("item_persistence"),
+        # Dynamic layout for procedural dungeons
+        dynamic_layout=data.get("dynamic_layout"),
     )
 
 

@@ -283,3 +283,77 @@ class TestHex0106SeasonalBehavior:
         assert "effects_active" in winter
         assert "terror_aura" in winter["effects_active"]
         assert "spell_permanence" in winter["effects_active"]
+
+
+class TestHex0106ParsedPOIFields:
+    """Tests for parsed POI objects containing all fields (not just raw JSON)."""
+
+    def test_parsed_crag_has_hazards(self, hex_0106):
+        """Verify parsed Granite Crag POI has hazards as list attribute."""
+        crag = next(
+            (p for p in hex_0106.points_of_interest if p.name == "Granite Crag"),
+            None
+        )
+        assert crag is not None
+        # Hazards should be a list on the parsed POI object
+        assert hasattr(crag, "hazards")
+        assert isinstance(crag.hazards, list)
+        assert len(crag.hazards) >= 2
+
+        # Check climbing hazard content
+        climbing_hazard = next(
+            (h for h in crag.hazards if h.get("hazard_id") == "climbing_check"),
+            None
+        )
+        assert climbing_hazard is not None
+        assert climbing_hazard["check_type"] == "dexterity"
+
+    def test_parsed_monolith_has_hazards(self, hex_0106):
+        """Verify parsed Monolith POI has hazards as list attribute."""
+        monolith = next(
+            (p for p in hex_0106.points_of_interest if "Monolith" in p.name),
+            None
+        )
+        assert monolith is not None
+        assert hasattr(monolith, "hazards")
+        assert isinstance(monolith.hazards, list)
+        assert len(monolith.hazards) >= 3
+
+    def test_parsed_monolith_has_seasonal_behavior(self, hex_0106):
+        """Verify parsed Monolith POI has seasonal_behavior as dict attribute."""
+        monolith = next(
+            (p for p in hex_0106.points_of_interest if "Monolith" in p.name),
+            None
+        )
+        assert monolith is not None
+        assert hasattr(monolith, "seasonal_behavior")
+        assert monolith.seasonal_behavior is not None
+        assert isinstance(monolith.seasonal_behavior, dict)
+        assert "winter" in monolith.seasonal_behavior
+        assert "non_winter" in monolith.seasonal_behavior
+
+    def test_parsed_seasonal_behavior_winter_content(self, hex_0106):
+        """Verify winter seasonal behavior content is correct."""
+        monolith = next(
+            (p for p in hex_0106.points_of_interest if "Monolith" in p.name),
+            None
+        )
+        winter = monolith.seasonal_behavior["winter"]
+        assert winter["state"] == "semi-corporeal"
+        assert "terror_aura" in winter["effects_active"]
+        assert "spell_permanence" in winter["effects_active"]
+
+    def test_parsed_crag_has_roll_tables(self, hex_0106):
+        """Verify parsed Crag POI has roll_tables as list of RollTable objects."""
+        crag = next(
+            (p for p in hex_0106.points_of_interest if p.name == "Granite Crag"),
+            None
+        )
+        assert crag is not None
+        assert len(crag.roll_tables) > 0
+        # Roll tables should be RollTable objects, not dicts
+        table = crag.roll_tables[0]
+        assert hasattr(table, "name")
+        assert hasattr(table, "unique_entries")
+        assert table.name == "Crag Base Discoveries"
+        assert table.unique_entries is True

@@ -1958,6 +1958,10 @@ class HexCrawlEngine:
                 # Apply to all party members in the hex
                 for character in self.controller.get_all_characters():
                     hazard_result = self._resolve_hazard(hazard, character)
+                    # Effects are now applied automatically in _resolve_hazard
+                    effects_applied = bool(
+                        hazard_result.apply_damage or hazard_result.apply_conditions
+                    )
                     results.append({
                         "character_id": character.character_id,
                         "character_name": character.name,
@@ -1970,6 +1974,7 @@ class HexCrawlEngine:
                         "description": hazard_result.description,
                         "damage_taken": hazard_result.damage_taken,
                         "conditions_applied": hazard_result.conditions_applied,
+                        "effects_applied": effects_applied,
                     })
 
         return results
@@ -2334,14 +2339,10 @@ class HexCrawlEngine:
         if not poi:
             return {"has_seasonal_behavior": False}
 
-        # Check for seasonal_behavior in POI data
-        seasonal_behavior = getattr(poi, "seasonal_behavior", None)
+        # Check for seasonal_behavior in POI data (now directly on model)
+        seasonal_behavior = poi.seasonal_behavior
         if not seasonal_behavior:
-            # Check raw data if not on model
-            if hasattr(poi, "_raw_data") and "seasonal_behavior" in poi._raw_data:
-                seasonal_behavior = poi._raw_data["seasonal_behavior"]
-            else:
-                return {"has_seasonal_behavior": False}
+            return {"has_seasonal_behavior": False}
 
         # Get current season
         current_season = "summer"  # Default
@@ -5760,7 +5761,24 @@ class HexCrawlEngine:
         difficulty = hazard.get("difficulty", 10)
         description = hazard.get("description", "You encounter a hazard.")
         save_type = hazard.get("save_type", "DEX")
-        damage = hazard.get("damage", "1d6")
+
+        # Normalize damage formula - support both "damage" and "damage_dice" at any level
+        on_fail = hazard.get("on_fail", {})
+        damage_formula = (
+            hazard.get("damage")
+            or hazard.get("damage_dice")
+            or on_fail.get("damage_dice")
+            or on_fail.get("damage")
+        )
+        # Legacy fallback - only use default if no damage specified anywhere
+        if not damage_formula and not on_fail.get("condition"):
+            damage_formula = "1d6"
+
+        # Normalize damage type
+        damage_type_str = hazard.get("damage_type") or on_fail.get("damage_type", "")
+
+        # Normalize condition - check both top-level and on_fail
+        condition_on_fail = hazard.get("condition") or on_fail.get("condition")
 
         # Map string to HazardType enum
         hazard_type_map = {
@@ -5773,6 +5791,44 @@ class HexCrawlEngine:
             "enchantment": HazardType.ENCHANTMENT,
         }
         hazard_type = hazard_type_map.get(hazard_type_str, HazardType.ENVIRONMENTAL)
+
+        # Infer hazard type from context ONLY if not explicitly set in hazard dict
+        # (i.e., hazard_type_str is "environmental" and it wasn't explicitly provided)
+        hazard_type_was_explicit = "hazard_type" in hazard
+        if hazard_type == HazardType.ENVIRONMENTAL and not hazard_type_was_explicit:
+            trigger = hazard.get("trigger", "").lower()
+            name = hazard.get("name", "").lower()
+            desc_lower = description.lower()
+            check_type = hazard.get("check_type", "").lower() if hazard.get("check_type") else ""
+
+            # Climbing hazard: ONLY infer when "climb" keywords are present
+            # but NO explicit check_type (let environmental path handle explicit ability checks)
+            if not check_type and any(
+                kw in trigger or kw in name
+                for kw in ("climb", "scale", "ascend")
+            ):
+                hazard_type = HazardType.CLIMBING
+
+            # Enchantment hazard: save_type == "spell" + magical keywords
+            elif save_type.lower() == "spell" and any(
+                kw in name or kw in desc_lower
+                for kw in ("enchant", "charm", "compel", "bewitch", "fairy", "fey", "magic")
+            ):
+                hazard_type = HazardType.ENCHANTMENT
+
+            # Swimming hazard: water-related keywords
+            elif any(
+                kw in trigger or kw in name or kw in desc_lower
+                for kw in ("swim", "water", "river", "lake", "drown", "ford")
+            ):
+                hazard_type = HazardType.SWIMMING
+
+            # Trap hazard: trap keywords
+            elif any(
+                kw in trigger or kw in name or kw in desc_lower
+                for kw in ("trap", "snare", "tripwire", "pit")
+            ):
+                hazard_type = HazardType.TRAP
 
         result: HazardResult
 
@@ -5815,17 +5871,15 @@ class HexCrawlEngine:
                 hazard_type=HazardType.TRAP,
                 character=character,
                 difficulty=difficulty,
-                damage_dice=damage,
+                damage_dice=damage_formula or "1d6",
                 save_type=save_type,
             )
         else:
             # Generic environmental hazard
             from src.narrative.intent_parser import ActionType
 
-            # Check for on_fail structure (used by night hazards)
-            on_fail = hazard.get("on_fail", {})
-            on_fail_damage = on_fail.get("damage_dice") or damage
-            on_fail_condition = on_fail.get("condition")
+            # Use normalized damage_formula and condition_on_fail from earlier extraction
+            # on_fail dict already extracted at start of method
             on_fail_effect = on_fail.get("effect", "")
 
             # Check for explicit check_type (ability check) vs save_type
@@ -5881,14 +5935,30 @@ class HexCrawlEngine:
             conditions_applied: list[str] = []
 
             if not success:
-                # Apply damage from on_fail or top-level damage
-                if on_fail_damage:
-                    damage_roll = self.dice.roll(on_fail_damage, "hazard damage")
+                # Apply damage from normalized damage_formula (supports top-level or on_fail)
+                if damage_formula:
+                    damage_roll = self.dice.roll(damage_formula, "hazard damage")
                     damage_dealt = damage_roll.total
 
-                # Apply condition from on_fail
-                if on_fail_condition:
-                    conditions_applied.append(on_fail_condition)
+                # Apply condition from normalized condition_on_fail (supports top-level or on_fail)
+                if condition_on_fail:
+                    conditions_applied.append(condition_on_fail)
+
+            # Build apply lists for game state updates
+            apply_damage: list[tuple[str, int]] = []
+            apply_conditions: list[tuple[str, str]] = []
+
+            character_id = getattr(character, "character_id", None)
+            if character_id:
+                # Handle potential MagicMock values from tests
+                try:
+                    damage_val = int(damage_dealt) if damage_dealt else 0
+                    if damage_val > 0:
+                        apply_damage.append((character_id, damage_val))
+                except (TypeError, ValueError):
+                    pass
+                for condition in conditions_applied:
+                    apply_conditions.append((character_id, condition))
 
             # Build description including effect hint if failed
             final_description = description if success else (on_fail.get("description") or description)
@@ -5901,10 +5971,12 @@ class HexCrawlEngine:
                 action_type=ActionType.UNKNOWN,
                 description=final_description,
                 damage_dealt=damage_dealt,
-                damage_type=on_fail.get("damage_type", ""),
+                damage_type=damage_type_str,
                 check_made=True,
                 check_result=roll_total,
                 conditions_applied=conditions_applied,
+                apply_damage=apply_damage,
+                apply_conditions=apply_conditions,
             )
 
         # Apply effects to game state (damage, conditions, roll tables)
@@ -6064,11 +6136,17 @@ class HexCrawlEngine:
         results = []
         for hazard in matching_hazards:
             hazard_result = self._resolve_hazard(hazard, character)
+            # Effects are now applied automatically in _resolve_hazard
+            effects_applied = bool(
+                hazard_result.apply_damage or hazard_result.apply_conditions
+            )
             results.append({
                 "hazard_name": hazard.get("name", hazard.get("trigger", "unknown")),
                 "success": hazard_result.success,
                 "description": hazard_result.description,
+                "damage_taken": hazard_result.damage_taken,
                 "conditions_applied": hazard_result.conditions_applied,
+                "effects_applied": effects_applied,
                 "narrative_hints": hazard_result.narrative_hints,
             })
 

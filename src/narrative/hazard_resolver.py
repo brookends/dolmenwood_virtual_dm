@@ -105,6 +105,12 @@ class HazardResult:
     damage_dealt: int = 0
     damage_type: str = ""
 
+    # Unified schema aliases - these provide consistent field names across all hazard types
+    # damage_taken: Damage dealt TO the acting character (alias of damage_dealt for hazards)
+    # effect_applied: Single effect/condition applied (convenience for conditions_applied[0])
+    damage_taken: int = 0
+    effect_applied: Optional[str] = None
+
     # Check details
     check_made: bool = False
     check_type: Optional[CheckType] = None
@@ -152,6 +158,33 @@ class HazardResult:
     encounter_distance: int = 0  # Starting distance in feet (1d4 × 30')
     party_has_surprise: bool = False  # Party always has surprise when hunting
     potential_rations: int = 0  # Rations if all animals killed
+
+    def __post_init__(self):
+        """Synchronize aliased fields after initialization."""
+        # Sync damage_taken with damage_dealt (bidirectional)
+        # Handle cases where values might be non-int (e.g., from mocks in tests)
+        try:
+            damage_dealt_val = int(self.damage_dealt) if self.damage_dealt else 0
+            damage_taken_val = int(self.damage_taken) if self.damage_taken else 0
+
+            if damage_dealt_val > 0 and damage_taken_val == 0:
+                self.damage_taken = damage_dealt_val
+            elif damage_taken_val > 0 and damage_dealt_val == 0:
+                self.damage_dealt = damage_taken_val
+        except (TypeError, ValueError):
+            # If conversion fails, leave as-is (test mocks, etc.)
+            pass
+
+        # Sync effect_applied with conditions_applied
+        if self.conditions_applied and self.effect_applied is None:
+            self.effect_applied = self.conditions_applied[0]
+        elif self.effect_applied and not self.conditions_applied:
+            self.conditions_applied = [self.effect_applied]
+
+    @property
+    def narrative(self) -> str:
+        """Alias for description, for compatibility with code that expects 'narrative'."""
+        return self.description
 
 
 @dataclass
@@ -731,8 +764,6 @@ class HazardResolver:
                     description=f"{character.name} picked the lock (rolled {roll.total} vs target {adjusted_target})",
                     turns_spent=1,
                     narrative_hints=["tumblers click into place", "lock yields to skilled fingers"],
-                    damage_taken=0,
-                    damage_type=None,
                 )
 
             # Failed attempt
@@ -743,8 +774,6 @@ class HazardResolver:
                 description=f"{character.name} failed to pick the lock (rolled {roll.total} vs target {adjusted_target})",
                 turns_spent=1,
                 narrative_hints=["pick slips", "mechanism resists", "can try again"],
-                damage_taken=0,
-                damage_type=None,
             )
 
         return HazardResult(
