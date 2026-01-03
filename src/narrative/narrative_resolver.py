@@ -10,11 +10,14 @@ Architecture:
 2. Action Router directs to appropriate resolver
 3. Mechanical Resolution (Python) determines outcomes
 4. Narration Context packages results for LLM narration
+
+Phase 9.2: Expanded fallback intent coverage for LLM-optional operation.
 """
 
 from dataclasses import dataclass, field
 from typing import Any, Optional, Callable, TYPE_CHECKING
 import logging
+import re
 
 if TYPE_CHECKING:
     from src.data_models import CharacterState, DiceRoller
@@ -52,6 +55,216 @@ from src.narrative.creative_resolver import (
 
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# FALLBACK INTENT PATTERN MATCHING (Phase 9.2)
+# =============================================================================
+
+@dataclass
+class FallbackIntentResult:
+    """
+    Result from fallback intent pattern matching.
+
+    Links parsed intent to canonical action IDs from ActionRegistry.
+    """
+    intent: ParsedIntent
+    action_id: Optional[str] = None  # Canonical action ID (e.g., "social:say")
+    action_params: dict[str, Any] = field(default_factory=dict)
+    confidence: float = 1.0
+    requires_oracle: bool = False  # True if should route to oracle for resolution
+    oracle_question: Optional[str] = None  # Pre-formed oracle question if applicable
+
+
+# Pattern definitions mapping keywords to action IDs and categories.
+# Format: (keywords_tuple, action_category, action_type, action_id, param_extractor)
+# The param_extractor is a function that takes the input text and returns params dict.
+
+def _extract_speech_text(text: str) -> dict[str, Any]:
+    """Extract speech text from 'say X', 'tell them X', etc."""
+    # Remove common prefixes
+    for prefix in ["say", "tell", "ask", "speak", "talk"]:
+        if text.lower().startswith(prefix):
+            text = text[len(prefix):].strip()
+            # Remove "to them", "to him", "to her", etc.
+            text = re.sub(r'^(to )?(them|him|her|it|the npc)\s*', '', text, flags=re.IGNORECASE)
+            break
+    # Remove leading quotes if present
+    text = text.strip('"\'')
+    return {"text": text} if text else {}
+
+
+def _extract_target(text: str) -> dict[str, Any]:
+    """Extract target from 'attack the X', 'talk to X', etc."""
+    # Look for common target patterns
+    patterns = [
+        r'(?:attack|hit|strike|fight)\s+(?:the\s+)?(\w+)',
+        r'(?:talk|speak)\s+(?:to|with)\s+(?:the\s+)?(\w+)',
+        r'(?:approach)\s+(?:the\s+)?(\w+)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text.lower())
+        if match:
+            return {"target": match.group(1)}
+    return {}
+
+
+def _extract_direction(text: str) -> dict[str, Any]:
+    """Extract direction from movement commands."""
+    directions = ["north", "south", "east", "west", "up", "down", "left", "right"]
+    for d in directions:
+        if d in text.lower():
+            return {"direction": d}
+    return {}
+
+
+def _extract_question(text: str) -> dict[str, Any]:
+    """Extract question for oracle queries."""
+    # Remove oracle/ask fate prefixes (order matters - longer patterns first)
+    text = re.sub(r'^(oracle|ask the oracle|ask fate|fate check)\s*:?\s*', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'^(ask|fate|check)\s*:?\s*', '', text, flags=re.IGNORECASE)
+    return {"question": text.strip()} if text.strip() else {}
+
+
+# State-specific pattern tables
+# Each entry: (keywords, action_id, param_extractor_or_None, confidence)
+WILDERNESS_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Social/NPC interaction
+    (("talk to", "speak to", "speak with", "talk with"), "wilderness:talk_npc", _extract_target, 0.9),
+    (("approach", "go to"), "wilderness:approach_poi", None, 0.8),
+
+    # Exploration
+    (("search", "search area", "look for", "scan", "examine area"), "wilderness:search_hex", None, 0.9),
+    (("look around", "survey", "observe", "what do i see"), "wilderness:look_around", None, 0.9),
+    (("enter", "go in", "enter the", "go inside"), "wilderness:enter_poi", None, 0.85),
+    (("leave", "depart", "exit"), "wilderness:leave_poi", None, 0.85),
+
+    # Survival
+    (("forage", "gather food", "find food", "gather plants", "pick berries"), "wilderness:forage", None, 0.95),
+    (("hunt", "track animal", "hunt for game", "go hunting"), "wilderness:hunt", None, 0.95),
+
+    # Travel/Rest
+    (("travel to", "move to", "go to hex", "walk to"), "wilderness:travel", _extract_direction, 0.85),
+    (("camp", "make camp", "set up camp", "rest for night", "end day", "sleep"), "wilderness:end_day", None, 0.9),
+]
+
+DUNGEON_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Exploration
+    (("search", "search room", "examine", "look around", "scan"), "dungeon:search", None, 0.9),
+    (("listen", "listen at", "hear", "press ear"), "dungeon:listen", None, 0.9),
+    (("open door", "open the door", "try the door"), "dungeon:open_door", None, 0.9),
+    (("pick lock", "pick the lock", "lockpick", "unlock"), "dungeon:pick_lock", None, 0.9),
+
+    # Movement
+    (("move", "go", "proceed", "walk", "enter"), "dungeon:move", _extract_direction, 0.8),
+    (("go back", "return", "backtrack"), "dungeon:fast_travel", None, 0.8),
+
+    # Rest
+    (("rest", "take a break", "short rest"), "dungeon:rest", None, 0.9),
+
+    # Exit
+    (("exit", "leave dungeon", "go outside", "leave", "exit dungeon"), "dungeon:exit", None, 0.85),
+]
+
+ENCOUNTER_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Social
+    (("talk", "speak", "parley", "negotiate", "communicate", "greet", "hail"), "encounter:parley", None, 0.9),
+
+    # Evasion
+    (("flee", "run", "escape", "evade", "run away", "retreat", "hide", "sneak away"), "encounter:flee", None, 0.9),
+
+    # Combat
+    (("attack", "fight", "charge", "strike", "engage", "draw weapon"), "encounter:attack", _extract_target, 0.9),
+
+    # Observation
+    (("wait", "observe", "watch", "hold position", "do nothing"), "encounter:wait", None, 0.85),
+]
+
+SETTLEMENT_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Social
+    (("talk", "speak", "talk to", "speak with", "ask", "chat"), "settlement:talk_npc", _extract_target, 0.9),
+
+    # Commerce (mapped to explore for now - buy/sell need specific implementation)
+    (("buy", "purchase", "shop"), "settlement:visit_market", None, 0.85),
+    (("sell", "trade", "barter"), "settlement:visit_market", None, 0.85),
+
+    # Locations
+    (("inn", "tavern", "pub", "visit inn", "go to inn", "rest at inn"), "settlement:visit_inn", None, 0.9),
+    (("market", "shop", "store", "visit market"), "settlement:visit_market", None, 0.9),
+    (("explore", "walk around", "look around", "wander"), "settlement:explore", None, 0.85),
+
+    # Exit
+    (("leave", "exit", "depart", "go outside", "leave town"), "settlement:leave", None, 0.9),
+]
+
+SOCIAL_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Oracle for NPC behavior (must be first - more specific than generic "ask")
+    (("oracle", "ask fate", "ask the oracle", "what does", "how does", "will they"), "social:oracle_question", _extract_question, 0.85),
+
+    # Dialogue (generic "ask" must come after "ask fate")
+    (("say", "tell", "ask", "speak", "respond", "reply", "answer"), "social:say", _extract_speech_text, 0.95),
+
+    # End conversation
+    (("goodbye", "farewell", "leave", "end conversation", "walk away", "go", "bye"), "social:end", None, 0.9),
+]
+
+DOWNTIME_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Rest/Recovery
+    (("rest", "sleep", "recover", "heal", "recuperate"), "downtime:rest", None, 0.9),
+
+    # Research (must be before train - "study lore" is more specific than "study")
+    (("research", "investigate", "read", "study lore", "look up"), "downtime:research", None, 0.9),
+
+    # Training (generic "study" comes after "study lore")
+    (("train", "practice", "study", "learn", "exercise"), "downtime:train", None, 0.9),
+
+    # Crafting
+    (("craft", "make", "create", "build", "repair"), "downtime:craft", None, 0.85),
+
+    # End downtime
+    (("end downtime", "finish", "done", "adventure"), "downtime:end", None, 0.85),
+]
+
+COMBAT_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Combat actions
+    (("attack", "strike", "hit", "swing"), "combat:resolve_round", _extract_target, 0.9),
+    (("flee", "run", "retreat", "escape"), "combat:flee", None, 0.9),
+    (("parley", "negotiate", "talk", "surrender"), "combat:parley", None, 0.85),
+    (("status", "who's hurt", "how are we doing"), "combat:status", None, 0.9),
+]
+
+# Universal patterns (work in any state)
+UNIVERSAL_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
+    # Oracle
+    (("oracle", "fate check", "ask the oracle", "is it", "does", "will", "can i"), "oracle:fate_check", _extract_question, 0.7),
+    (("random event", "what happens"), "oracle:random_event", None, 0.8),
+    (("detail", "meaning", "describe"), "oracle:detail_check", None, 0.75),
+
+    # Meta
+    (("status", "where am i", "what time", "inventory"), "meta:status", None, 0.85),
+    (("roll log", "dice log", "show rolls"), "meta:roll_log", None, 0.9),
+    (("light torch", "light lantern", "activate light"), "party:light", None, 0.9),
+]
+
+
+def _match_patterns(
+    text: str,
+    patterns: list[tuple[tuple[str, ...], str, Optional[Callable], float]],
+) -> Optional[tuple[str, dict[str, Any], float]]:
+    """
+    Match text against a pattern list.
+
+    Returns (action_id, params, confidence) or None if no match.
+    """
+    text_lower = text.lower().strip()
+
+    for keywords, action_id, param_extractor, confidence in patterns:
+        for keyword in keywords:
+            if keyword in text_lower:
+                params = param_extractor(text) if param_extractor else {}
+                return (action_id, params, confidence)
+
+    return None
 
 
 @dataclass
@@ -251,8 +464,34 @@ class NarrativeResolver:
         return self._pattern_match_intent(player_input, context)
 
     def _pattern_match_intent(self, player_input: str, context: dict[str, Any]) -> ParsedIntent:
-        """Simple pattern matching for common actions."""
+        """
+        Expanded pattern matching for common actions (Phase 9.2).
+
+        Uses state-specific pattern tables to map player input to canonical
+        action IDs. Falls back to creative/oracle routing if no match.
+        """
         input_lower = player_input.lower()
+
+        # Get current game state for state-specific patterns
+        current_state = context.get("game_state", "wilderness_travel")
+        if self.controller:
+            try:
+                from src.game_state.state_machine import GameState
+                state = getattr(self.controller, "current_state", None)
+                if state:
+                    current_state = state.value if hasattr(state, "value") else str(state)
+            except Exception:
+                pass
+
+        # Try expanded fallback matching first
+        fallback_result = self._fallback_intent_from_text(player_input, current_state)
+        if fallback_result.action_id:
+            # Store action_id in intent for routing
+            intent = fallback_result.intent
+            intent.confidence = fallback_result.confidence
+            return intent
+
+        # Original pattern matching as secondary fallback
 
         # Spell casting
         if any(kw in input_lower for kw in ["cast", "use spell", "invoke"]):
@@ -291,71 +530,235 @@ class NarrativeResolver:
                 raw_input=player_input,
             )
 
-        # Exploration
-        if "search" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.EXPLORATION,
-                action_type=ActionType.SEARCH,
-                raw_input=player_input,
-                consumes_time=True,
-                time_cost_turns=1,
+        # Default: route to creative solution with oracle guidance
+        return self._create_creative_oracle_intent(player_input)
+
+    def _fallback_intent_from_text(
+        self,
+        player_input: str,
+        game_state: str,
+    ) -> FallbackIntentResult:
+        """
+        Match player input against state-specific pattern tables.
+
+        Phase 9.2: Expanded coverage for LLM-optional operation.
+        Returns structured intent with action_id for ActionRegistry routing.
+
+        Args:
+            player_input: Raw player text
+            game_state: Current game state value (e.g., "wilderness_travel")
+
+        Returns:
+            FallbackIntentResult with matched action_id or None
+        """
+        # Select patterns based on game state
+        state_patterns = self._get_patterns_for_state(game_state)
+
+        # Try state-specific patterns first
+        match = _match_patterns(player_input, state_patterns)
+        if match:
+            action_id, params, confidence = match
+            intent = self._create_intent_from_action_id(action_id, player_input, params)
+            return FallbackIntentResult(
+                intent=intent,
+                action_id=action_id,
+                action_params=params,
+                confidence=confidence,
             )
 
-        if "listen" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.EXPLORATION,
-                action_type=ActionType.LISTEN,
-                raw_input=player_input,
-                consumes_time=True,
-                time_cost_turns=1,
+        # Try universal patterns
+        match = _match_patterns(player_input, UNIVERSAL_PATTERNS)
+        if match:
+            action_id, params, confidence = match
+            intent = self._create_intent_from_action_id(action_id, player_input, params)
+            return FallbackIntentResult(
+                intent=intent,
+                action_id=action_id,
+                action_params=params,
+                confidence=confidence,
             )
 
-        # Survival
-        if "forage" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.SURVIVAL,
-                action_type=ActionType.FORAGE,
+        # No match - return empty result (will fall through to creative/oracle)
+        return FallbackIntentResult(
+            intent=ParsedIntent(
+                action_category=ActionCategory.CREATIVE,
+                action_type=ActionType.CREATIVE_SOLUTION,
                 raw_input=player_input,
-            )
+            ),
+            action_id=None,
+            requires_oracle=True,
+            oracle_question=f"Does the party succeed at: {player_input}?",
+        )
 
-        if "fish" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.SURVIVAL,
-                action_type=ActionType.FISH,
-                raw_input=player_input,
-            )
+    def _get_patterns_for_state(
+        self,
+        game_state: str,
+    ) -> list[tuple[tuple[str, ...], str, Optional[Callable], float]]:
+        """Get pattern table for current game state."""
+        state_pattern_map = {
+            "wilderness_travel": WILDERNESS_PATTERNS,
+            "dungeon_exploration": DUNGEON_PATTERNS,
+            "encounter": ENCOUNTER_PATTERNS,
+            "settlement_exploration": SETTLEMENT_PATTERNS,
+            "social_interaction": SOCIAL_PATTERNS,
+            "downtime": DOWNTIME_PATTERNS,
+            "combat": COMBAT_PATTERNS,
+            "fairy_road_travel": WILDERNESS_PATTERNS,  # Similar to wilderness
+        }
+        return state_pattern_map.get(game_state, WILDERNESS_PATTERNS)
 
-        if "hunt" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.SURVIVAL,
-                action_type=ActionType.HUNT,
-                raw_input=player_input,
-            )
+    def _create_intent_from_action_id(
+        self,
+        action_id: str,
+        player_input: str,
+        params: dict[str, Any],
+    ) -> ParsedIntent:
+        """Create a ParsedIntent from an action_id."""
+        # Map action_id prefixes to categories
+        category_map = {
+            "wilderness": ActionCategory.EXPLORATION,
+            "dungeon": ActionCategory.EXPLORATION,
+            "encounter": ActionCategory.COMBAT,
+            "settlement": ActionCategory.SOCIAL,
+            "social": ActionCategory.SOCIAL,
+            "downtime": ActionCategory.SURVIVAL,
+            "combat": ActionCategory.COMBAT,
+            "oracle": ActionCategory.CREATIVE,
+            "meta": ActionCategory.NARRATIVE,
+            "party": ActionCategory.NARRATIVE,
+            "fairy_road": ActionCategory.MOVEMENT,
+        }
 
-        # Combat
-        if "attack" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.COMBAT,
-                action_type=ActionType.ATTACK,
-                raw_input=player_input,
-                is_combat_action=True,
-            )
+        # Map action_id to ActionType
+        action_type_map = {
+            # Wilderness
+            "wilderness:talk_npc": ActionType.PARLEY,
+            "wilderness:search_hex": ActionType.SEARCH,
+            "wilderness:look_around": ActionType.EXAMINE,
+            "wilderness:forage": ActionType.FORAGE,
+            "wilderness:hunt": ActionType.HUNT,
+            "wilderness:end_day": ActionType.CAMP,
+            "wilderness:travel": ActionType.TRAVEL,
+            "wilderness:enter_poi": ActionType.ENTER,
+            "wilderness:leave_poi": ActionType.EXIT,
+            "wilderness:approach_poi": ActionType.TRAVEL,
 
-        if "flee" in input_lower or "run away" in input_lower:
-            return ParsedIntent(
-                action_category=ActionCategory.COMBAT,
-                action_type=ActionType.FLEE,
-                raw_input=player_input,
-                is_combat_action=True,
-            )
+            # Dungeon
+            "dungeon:search": ActionType.SEARCH,
+            "dungeon:listen": ActionType.LISTEN,
+            "dungeon:move": ActionType.TRAVEL,
+            "dungeon:open_door": ActionType.FORCE_DOOR,
+            "dungeon:pick_lock": ActionType.PICK_LOCK,
+            "dungeon:rest": ActionType.REST,
+            "dungeon:exit": ActionType.EXIT,
 
-        # Default to creative/narrative
+            # Encounter
+            "encounter:parley": ActionType.PARLEY,
+            "encounter:flee": ActionType.FLEE,
+            "encounter:attack": ActionType.ATTACK,
+            "encounter:wait": ActionType.NARRATIVE_ACTION,
+
+            # Settlement
+            "settlement:talk_npc": ActionType.PARLEY,
+            "settlement:visit_inn": ActionType.REST,
+            "settlement:visit_market": ActionType.USE_ITEM,
+            "settlement:explore": ActionType.EXAMINE,
+            "settlement:leave": ActionType.EXIT,
+
+            # Social
+            "social:say": ActionType.PARLEY,
+            "social:end": ActionType.EXIT,
+            "social:oracle_question": ActionType.CREATIVE_SOLUTION,
+
+            # Downtime
+            "downtime:rest": ActionType.REST,
+            "downtime:train": ActionType.NARRATIVE_ACTION,
+            "downtime:research": ActionType.EXAMINE,
+            "downtime:craft": ActionType.USE_ITEM,
+            "downtime:end": ActionType.EXIT,
+
+            # Combat
+            "combat:resolve_round": ActionType.ATTACK,
+            "combat:flee": ActionType.FLEE,
+            "combat:parley": ActionType.PARLEY,
+            "combat:status": ActionType.EXAMINE,
+
+            # Oracle/Meta
+            "oracle:fate_check": ActionType.CREATIVE_SOLUTION,
+            "oracle:random_event": ActionType.CREATIVE_SOLUTION,
+            "oracle:detail_check": ActionType.CREATIVE_SOLUTION,
+            "meta:status": ActionType.NARRATIVE_ACTION,
+            "meta:roll_log": ActionType.NARRATIVE_ACTION,
+            "party:light": ActionType.USE_ITEM,
+        }
+
+        prefix = action_id.split(":")[0] if ":" in action_id else "unknown"
+        category = category_map.get(prefix, ActionCategory.CREATIVE)
+        action_type = action_type_map.get(action_id, ActionType.CREATIVE_SOLUTION)
+
+        # Determine if this is a combat action
+        is_combat = action_id.startswith("combat:") or action_id.startswith("encounter:")
+
+        # Extract target if available
+        target_desc = params.get("target")
+        text_param = params.get("text", "")
+
+        return ParsedIntent(
+            action_category=category,
+            action_type=action_type,
+            raw_input=player_input,
+            target_description=target_desc,
+            narrative_description=text_param or player_input,
+            is_combat_action=is_combat,
+        )
+
+    def _create_creative_oracle_intent(self, player_input: str) -> ParsedIntent:
+        """
+        Create intent for creative solution routed to oracle.
+
+        When no pattern matches, the action requires oracle adjudication.
+        This provides explicit oracle routing rather than generic fallback.
+        """
         return ParsedIntent(
             action_category=ActionCategory.CREATIVE,
             action_type=ActionType.CREATIVE_SOLUTION,
             raw_input=player_input,
             narrative_description=player_input,
+            suggested_resolution=ResolutionType.CHECK_REQUIRED,
+            requires_clarification=True,
+            clarification_prompt=(
+                f"This action requires oracle adjudication. "
+                f"Use 'oracle:fate_check' with question: 'Does the party succeed at {player_input}?'"
+            ),
         )
+
+    def get_fallback_intent(
+        self,
+        player_input: str,
+        game_state: Optional[str] = None,
+    ) -> FallbackIntentResult:
+        """
+        Public method for getting fallback intent with action_id.
+
+        This is the main entry point for offline/LLM-free operation.
+
+        Args:
+            player_input: Raw player text
+            game_state: Optional game state override
+
+        Returns:
+            FallbackIntentResult with action_id for ActionRegistry
+        """
+        if game_state is None and self.controller:
+            try:
+                state = getattr(self.controller, "current_state", None)
+                game_state = state.value if state and hasattr(state, "value") else "wilderness_travel"
+            except Exception:
+                game_state = "wilderness_travel"
+        elif game_state is None:
+            game_state = "wilderness_travel"
+
+        return self._fallback_intent_from_text(player_input, game_state)
 
     def _route_action(
         self, parsed: ParsedIntent, character: "CharacterState", context: dict[str, Any]
