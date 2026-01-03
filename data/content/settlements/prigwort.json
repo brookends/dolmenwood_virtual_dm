@@ -650,7 +650,86 @@
       ],
       "secrets": [],
       "location_id": "1",
-      "occupation": "Level 6 Fighter, Captain of town guards"
+      "occupation": "Level 6 Fighter, Captain of town guards",
+      "vulnerabilities": [
+        "suspicious_nature_easily_manipulated",
+        "obsession_with_austaches_bounders",
+        "alcoholism_even_when_drunk_on_edge"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "town_security",
+          "content": "The captain speaks gravely of increased crookhorn activity in the surrounding woods. Lady Harrowmoor has ordered construction of a garrison.",
+          "keywords": ["crookhorns", "garrison", "security", "monsters", "harrowmoor"],
+          "required_disposition": -2,
+          "category": "situation",
+          "priority": 8
+        },
+        {
+          "topic_id": "austaches_bounders",
+          "content": "The captain's eye twitches. 'Those ruffians! They call themselves vigilantes but I suspect criminal activity. Mark my words, I'll have that Austache in irons.'",
+          "keywords": ["bounders", "austache", "vigilantes", "criminals", "gang"],
+          "required_disposition": -1,
+          "category": "npc",
+          "priority": 9
+        },
+        {
+          "topic_id": "lady_harrowmoor",
+          "content": "He straightens proudly. 'Lady Harrowmoor herself oversees our garrison construction. Prigwort will be well-defended when the time comes.'",
+          "keywords": ["harrowmoor", "lady", "garrison", "defense", "keep"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "bounders_evidence",
+          "content": "The captain has collected circumstantial evidence of the Bounders engaging in 'protection' schemes with local merchants.",
+          "hint": "He mutters about having 'documentation' that will soon bring Austache down.",
+          "keywords": ["evidence", "protection", "bounders", "merchants"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "austache_jongle",
+          "relationship_type": "enemy",
+          "description": "Suspects Austache of criminal activity and seeks his arrest",
+          "hex_id": null,
+          "notes": "Professional antagonism"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "house_harrowmoor",
+        "secondary_faction_ids": [],
+        "faction_role": "sworn_sword",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -3,
+          "wary_between": [-2, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "harrowmoor_allies",
+            "condition": "party_affiliated_with=house_harrowmoor",
+            "modifier_delta": 2,
+            "npc_response": "Ah, you serve Lady Harrowmoor? Then we are comrades in arms."
+          }
+        ]
+      }
     },
     {
       "npc_id": "heggid_axminster",
@@ -677,7 +756,51 @@
         "Plans for illegal distillery"
       ],
       "location_id": "3",
-      "occupation": "Tavern proprietor"
+      "occupation": "Tavern proprietor",
+      "vulnerabilities": [
+        "greed_for_profit",
+        "feigned_absent_mindedness_can_be_exposed",
+        "desires_recognition_for_bravery"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "oaf_in_oast",
+          "content": "Heggid gestures proudly at his establishment. 'Best bitter in Prigwort, brewed by House Ogsbody. No fancy folk here—just honest workers.'",
+          "keywords": ["tavern", "bitter", "ogsbody", "workers", "beer"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "brewmasters_taxes",
+          "content": "He spits. 'The Brewmasters and their tax collectors—always taking their cut. A man can barely make an honest living.'",
+          "keywords": ["brewmasters", "taxes", "council", "profit"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 6
+        },
+        {
+          "topic_id": "defending_prigwort",
+          "content": "His chest swells. 'If crookhorns come to our gates, they'll find Heggid Axminster ready to fight. I'd show my mettle, I would.'",
+          "keywords": ["crookhorns", "defense", "fighting", "bravery"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "illegal_distillery",
+          "content": "Heggid is planning to set up a clandestine distillery in his cellars, hidden from the Brewmasters' tax collectors. He wants to export cheap liquor to Dreg.",
+          "hint": "He sometimes glances toward the cellar door with a scheming look, muttering about 'future investments.'",
+          "keywords": ["distillery", "smuggling", "dreg", "liquor", "cellars"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "algenon_brandybile",
@@ -703,7 +826,43 @@
       ],
       "secrets": [],
       "location_id": "4",
-      "occupation": "High-class tailor"
+      "occupation": "High-class tailor",
+      "vulnerabilities": [
+        "vanity_about_fashion_expertise",
+        "rivalry_with_cantius_croupe",
+        "snobbery_toward_lower_classes"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "fashion_services",
+          "content": "Algenon examines you critically. 'Fine clothing starts at fifty gold. Embroidery from twenty-five. I also have... special arrangements for enchanted garments.'",
+          "keywords": ["tailoring", "clothing", "fashion", "enchantment"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "cantius_croupe",
+          "content": "His face twists with disgust. 'Cantius Croupe—the duke's boudoir-ward—that pretentious fool knows nothing of true fashion. I dream of seeing him humiliated.'",
+          "keywords": ["croupe", "rival", "duke", "castle_brackenwold"],
+          "required_disposition": 1,
+          "category": "npc",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "shadow_house_connection",
+          "content": "Brandybile's is an affiliate of the Shadow House in Castle Brackenwold. Through these contacts, he can arrange for clothing suitable for enchantment.",
+          "hint": "He occasionally mentions having 'connections' for special commissions.",
+          "keywords": ["shadow_house", "enchantment", "castle_brackenwold", "magic"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "aspith_raptappen",
@@ -730,7 +889,40 @@
       ],
       "secrets": [],
       "location_id": "5",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "obsession_with_death_and_afterlife",
+        "desire_for_noble_patronage",
+        "morbid_curiosity"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "raptappens_lodging",
+          "content": "Aspith bows low. 'Welcome to Raptappen's Quadrant. Quiet, secure lodging. We have wines of exceptional quality—I personally fetch them from the cellars.'",
+          "keywords": ["inn", "lodging", "wine", "quiet"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "death_and_beyond",
+          "content": "She leans forward with genuine interest. 'Tell me—in your adventures, have you glimpsed what lies beyond death? I seek knowledge of that final mystery.'",
+          "keywords": ["death", "afterlife", "undead", "spirits"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 7
+        },
+        {
+          "topic_id": "lady_harrowmoor",
+          "content": "She sighs wistfully. 'To host Lady Harrowmoor herself... that would be the greatest honor. Perhaps one day she will grace our humble establishment.'",
+          "keywords": ["harrowmoor", "nobility", "patronage"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "hague_jerricorn",
@@ -760,7 +952,53 @@
         "Possesses a Ring of Invisibility"
       ],
       "location_id": "7",
-      "occupation": "Jeweller"
+      "occupation": "Jeweller",
+      "vulnerabilities": [
+        "reckless_streak",
+        "desire_for_adventure",
+        "obsession_with_grandfathers_treasure"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "jewelry_services",
+          "content": "Hague gestures elegantly at her display cases. 'Gems and jewelry of the finest quality. I also buy treasure—no questions asked about provenance.'",
+          "keywords": ["jewelry", "gems", "treasure", "buying", "selling"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "adventure_longing",
+          "content": "Her eyes sparkle with barely contained excitement. 'I envy you adventurers—the excitement, the danger, the romance of it all. Sometimes I dream of leaving this shop behind.'",
+          "keywords": ["adventure", "excitement", "travel", "freedom"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "grandfathers_treasure_map",
+          "content": "Hague possesses a map to a treasure hoard her grandfather—the founder of the Sea of Stars—claims to have buried on a remote island during his seafaring days.",
+          "hint": "She sometimes argues with sailors about old maps and distant islands.",
+          "keywords": ["treasure", "map", "island", "grandfather", "seafaring"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "ring_of_invisibility",
+          "content": "Hague possesses a Ring of Invisibility, which she keeps hidden among her personal jewelry.",
+          "hint": "She occasionally touches a particular ring on her finger with a knowing smile.",
+          "keywords": ["ring", "invisibility", "magic", "item"],
+          "required_disposition": 3,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "maydrid_hydball",
@@ -789,7 +1027,51 @@
         "Has a lover, the wandering bard Gherigew Thorncripe"
       ],
       "location_id": "8",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "love_for_wandering_bard",
+        "conflict_with_conservative_brothers",
+        "charming_informality_can_be_exploited"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "wrinkled_medlar",
+          "content": "Maydrid beams warmly. 'The Wrinkled Medlar offers luxury away from home. Our evening entertainment features the finest musicians in Prigwort—no weapons or armor inside, I'm afraid.'",
+          "keywords": ["inn", "lodging", "music", "entertainment", "luxury"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "ballroom_dream",
+          "content": "She sighs. 'I so wish to convince my brothers to open a ballroom in the attic. Can you imagine the dances we could hold?'",
+          "keywords": ["ballroom", "dancing", "brothers", "expansion"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "lover_gherigew",
+          "content": "Maydrid has a secret lover—the wandering bard Gherigew Thorncripe. She desperately wishes he would settle in Prigwort.",
+          "hint": "Her eyes grow distant when bards perform, and she occasionally mentions a 'dear friend' who travels.",
+          "keywords": ["lover", "bard", "gherigew", "thorncripe", "romance"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sprewdiman_kneeve",
+          "relationship_type": "suitor",
+          "description": "Kneeve desperately pursues her hand in marriage, but Maydrid has no time for the smarmy bard",
+          "hex_id": null,
+          "notes": "One-sided romantic pursuit"
+        }
+      ]
     },
     {
       "npc_id": "sprewdiman_kneeve",
@@ -817,7 +1099,51 @@
         "Stage fright prevents him from performing despite being a virtuoso violinist"
       ],
       "location_id": "8",
-      "occupation": "Bardic Guild delegate, virtuoso violinist"
+      "occupation": "Bardic Guild delegate, virtuoso violinist",
+      "vulnerabilities": [
+        "stage_fright",
+        "unrequited_love_for_maydrid",
+        "vanity_and_insipid_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bardic_guild",
+          "content": "Sprewdiman swishes his handkerchief. 'As Prigwort delegate of the Bardic Guild, I am the foremost authority on matters musical. The Wrinkled Medlar hosts only the finest performers.'",
+          "keywords": ["bardic_guild", "music", "performances", "entertainment"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "maydrid_admiration",
+          "content": "He gazes longingly toward the bar. 'Maydrid Hydball—is she not the most radiant creature? I shall win her heart, I am certain of it.'",
+          "keywords": ["maydrid", "love", "romance", "marriage"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "stage_fright",
+          "content": "Despite being a virtuoso violinist, Sprewdiman suffers from crippling stage fright that prevents him from ever performing publicly.",
+          "hint": "He nervously changes the subject whenever asked to demonstrate his violin skills.",
+          "keywords": ["violin", "stage_fright", "performance", "fear"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "maydrid_hydball",
+          "relationship_type": "suitor",
+          "description": "Desperately seeks her hand in marriage, though she has no time for him",
+          "hex_id": null,
+          "notes": "Unrequited love"
+        }
+      ]
     },
     {
       "npc_id": "edgar_wyrmspittle",
@@ -846,7 +1172,43 @@
       ],
       "secrets": [],
       "location_id": "9",
-      "occupation": "Herbalist and apothecary"
+      "occupation": "Herbalist and apothecary",
+      "vulnerabilities": [
+        "irascible_superiority",
+        "desire_for_brewmaster_secrets",
+        "friendly_to_herb_enthusiasts"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "herbalist_services",
+          "content": "Wyrmspittle raises an eyebrow sceptically. 'Herbal consultations, mushrooms, alchemical compounds. I pay well for unusual specimens—seventy-five percent of listed price.'",
+          "keywords": ["herbs", "mushrooms", "alchemy", "buying", "selling"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "dolmenwood_flora",
+          "content": "His expression softens. 'Ah, you have an interest in the wild herbs and fungi of Dolmenwood? Then we shall get along splendidly. The forest holds countless secrets.'",
+          "keywords": ["flora", "fungi", "dolmenwood", "nature", "foraging"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "brewmaster_secrets",
+          "content": "Wyrmspittle desperately seeks the distillation secrets of the Brewmasters, which they guard jealously.",
+          "hint": "He occasionally makes pointed inquiries about brewing techniques and special ingredients.",
+          "keywords": ["brewmasters", "distillation", "secrets", "brewing"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 100
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "reverend_mother_liane_smunk",
@@ -875,7 +1237,70 @@
         "Has breggle blood in her ancestry"
       ],
       "location_id": "10",
-      "occupation": "Vicar, native of Lankshorn"
+      "occupation": "Vicar, native of Lankshorn",
+      "vulnerabilities": [
+        "irritatingly_cheerful_can_be_exploited",
+        "breggle_ancestry_secret",
+        "compassion_for_suffering"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "church_services",
+          "content": "Mother Smunk beams with radiant cheerfulness. 'Welcome, dear child! The Church of St Waylaine offers blessings to all who pray. Do come in!'",
+          "keywords": ["church", "blessing", "prayer", "st_waylaine"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "shorthorn_mission",
+          "content": "She clasps her hands hopefully. 'I dream of sending a mission to the High Wold, seeking shorthorn initiates to the clergy. Wouldn't that be wonderful?'",
+          "keywords": ["mission", "high_wold", "shorthorns", "clergy", "breggles"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "breggle_ancestry",
+          "content": "The Reverend Mother has breggle blood in her ancestry, which explains her one orange, goat-like eye.",
+          "hint": "She avoids discussing her family history and is oddly sympathetic to breggle visitors.",
+          "keywords": ["breggle", "ancestry", "heritage", "eye"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -4,
+          "wary_between": [-3, 0],
+          "helpful_at_or_above": 1
+        },
+        "default_reaction_modifier": 1,
+        "triggers": [
+          {
+            "trigger_id": "church_faithful",
+            "condition": "party_affiliated_with=pluritine_church",
+            "modifier_delta": 2,
+            "npc_response": "Fellow servants of the saints! How wonderful to meet kindred spirits!"
+          }
+        ]
+      }
     },
     {
       "npc_id": "mostlemyre_drouge",
@@ -909,7 +1334,61 @@
         "House Oberon spirits rumoured enhanced by his magic"
       ],
       "location_id": "15",
-      "occupation": "Level 8 Magician, consulting magician"
+      "occupation": "Level 8 Magician, consulting magician",
+      "vulnerabilities": [
+        "obsession_with_scrying_and_dimensions",
+        "seeks_black_book_of_llareggub",
+        "fondness_for_adventurers"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "magical_services",
+          "content": "Mostlemyre smiles enigmatically. 'Detect Magic, deciphering inscriptions, identification of enchanted items. My rates are quite reasonable for those who bring interesting work.'",
+          "keywords": ["magic", "detect_magic", "identification", "services"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 8
+        },
+        {
+          "topic_id": "dimensional_magic",
+          "content": "His eyes gleam with interest. 'Scrying, other dimensions, planar magic—these are my specialties. Do you have any tomes or items relating to such matters?'",
+          "keywords": ["scrying", "dimensions", "planar", "magic", "tomes"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 7
+        },
+        {
+          "topic_id": "adventurer_tales",
+          "content": "He chuckles warmly. 'I do enjoy the tales of adventurers. Roguish antics, narrow escapes—tell me of your exploits.'",
+          "keywords": ["adventures", "stories", "exploits", "tales"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "black_book_quest",
+          "content": "Mostlemyre desperately seeks a copy of the infamous Black Book of Llareggub, a tome of summoning magic.",
+          "hint": "He makes pointed inquiries about any ancient books adventurers might have encountered.",
+          "keywords": ["black_book", "llareggub", "summoning", "tome"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "house_oberon_magic",
+          "content": "It is rumored that House Oberon's spirits are enhanced by Mostlemyre's magic. He is the elder brother of Elevated Sirrop Drouge.",
+          "hint": "House Oberon's brews have an unusual quality that some attribute to magical enhancement.",
+          "keywords": ["oberon", "brewing", "enhancement", "sirrop"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "blino_jongle",
@@ -937,7 +1416,40 @@
       ],
       "secrets": [],
       "location_id": "16",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "feeble_and_forgetful",
+        "blind_devotion_to_austache",
+        "worried_about_family_legacy"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "clashed_antler",
+          "content": "Blino's voice wavers. 'The Clashed Antler... been in my family for generations. Lodging, food, and our famous Bundt cake twice weekly—free to all!'",
+          "keywords": ["inn", "lodging", "bundt_cake", "family"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "austache_defense",
+          "content": "He wrings his hands. 'My great-nephew Austache is a good lad, truly! Those guards just don't understand him. He only wants to protect the town.'",
+          "keywords": ["austache", "bounders", "defense", "nephew"],
+          "required_disposition": -1,
+          "category": "npc",
+          "priority": 6
+        }
+      ],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "austache_jongle",
+          "relationship_type": "kin",
+          "description": "Great-uncle who raised Austache and refuses to see his faults",
+          "hex_id": null,
+          "notes": "Doting family bond"
+        }
+      ]
     },
     {
       "npc_id": "austache_jongle",
@@ -962,7 +1474,47 @@
       ],
       "secrets": [],
       "location_id": "16",
-      "occupation": "Leader of Austache's Bounders vigilante gang"
+      "occupation": "Leader of Austache's Bounders vigilante gang",
+      "vulnerabilities": [
+        "early_onset_alcoholism",
+        "desire_to_stay_young_and_carefree",
+        "ungainly_and_careless"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bounders_recruitment",
+          "content": "Austache whoops loudly. 'Join Austache's Bounders! We patrol the woods, keep the town safe from wrong-uns. Adventure! Excitement! Free drinks!'",
+          "keywords": ["bounders", "vigilantes", "recruitment", "patrol"],
+          "required_disposition": -1,
+          "category": "quest",
+          "priority": 8
+        },
+        {
+          "topic_id": "crookhorn_threats",
+          "content": "He gestures dramatically with shaky hands. 'Crookhorns and monsters in the woods! Only the Bounders stand between Prigwort and doom!'",
+          "keywords": ["crookhorns", "monsters", "patrol", "protection"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 7
+        }
+      ],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "blino_jongle",
+          "relationship_type": "kin",
+          "description": "Great-nephew who runs the vigilante gang from his uncle's inn",
+          "hex_id": null,
+          "notes": "Family bond"
+        },
+        {
+          "npc_id": "captain_simwise_hogwash",
+          "relationship_type": "enemy",
+          "description": "The captain suspects the Bounders of criminal activity and seeks to arrest Austache",
+          "hex_id": null,
+          "notes": "Professional antagonism"
+        }
+      ]
     }
   ],
   "encounter_tables": [

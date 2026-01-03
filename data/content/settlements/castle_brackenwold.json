@@ -675,7 +675,78 @@
       ],
       "secrets": [],
       "location_id": "4",
-      "occupation": "Level 10 Fighter, Commander of the Garrison"
+      "occupation": "Level 10 Fighter, Commander of the Garrison",
+      "vulnerabilities": [
+        "grief_over_missing_son_jocund",
+        "ambition_for_landed_title",
+        "boastful_overbearing_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "garrison_duties",
+          "content": "Bogle twirls his moustache proudly. 'Eighty soldiers under my command. The castle defenses are impenetrable—a military marvel!'",
+          "keywords": ["garrison", "soldiers", "castle", "defense", "military"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "missing_son",
+          "content": "His face darkens. 'My eldest son, Jocund... disappeared near Prigwort while hunting. Any word of his whereabouts would be... generously rewarded.'",
+          "keywords": ["jocund", "son", "missing", "prigwort", "hunting", "reward"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 9
+        },
+        {
+          "topic_id": "redwraith_manor",
+          "content": "He gazes wistfully. 'Malbleat's manse, Redwraith Manor... a man like myself deserves a proper estate, wouldn't you say?'",
+          "keywords": ["redwraith", "manor", "malbleat", "estate", "title"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "house_brackenwold",
+        "secondary_faction_ids": [],
+        "faction_role": "sworn_sword",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -3,
+          "wary_between": [-2, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "ducal_allies",
+            "condition": "party_affiliated_with=house_brackenwold",
+            "modifier_delta": 2,
+            "npc_response": "Servants of the Duke! Welcome, friends!"
+          }
+        ]
+      },
+      "faction_hooks": {
+        "can_offer_faction_work": true,
+        "work_offer_style": "official",
+        "eligible_offer_faction_ids": ["house_brackenwold"],
+        "preferred_job_tags": ["combat", "recovery", "escort", "investigation"],
+        "requires": {
+          "min_disposition": 1,
+          "min_trust": 0,
+          "min_party_standing": 0
+        }
+      }
     },
     {
       "npc_id": "drouge_underhill",
@@ -701,7 +772,32 @@
       ],
       "secrets": [],
       "location_id": "11",
-      "occupation": "Inn Proprietor"
+      "occupation": "Inn Proprietor",
+      "vulnerabilities": [
+        "vanity_about_aging",
+        "obsession_with_eclipsing_bitter_rose",
+        "desire_for_lady_haeroth"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chateau_services",
+          "content": "Drouge fawns rapidly. 'The Chateau offers the finest lodgings in the city! Our music room hosts exquisite performances—far superior to certain other establishments.'",
+          "keywords": ["inn", "lodging", "music", "performances", "chateau"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "bitter_rose_rivalry",
+          "content": "He sniffs disdainfully. 'The Bitter Rose? Overrated! The Chateau will eclipse them soon enough. True refinement is what we offer.'",
+          "keywords": ["bitter_rose", "rivalry", "competition", "inn"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 5
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "lady_periwinkle",
@@ -732,7 +828,53 @@
         "In truth, Lady Periwinkle is in her middle-age, using a Mirror of Youthfulness"
       ],
       "location_id": "13",
-      "occupation": "Level 11 Magician"
+      "occupation": "Level 11 Magician",
+      "vulnerabilities": [
+        "desire_for_ygraines_secrets",
+        "affection_for_lady_zoemina",
+        "vanity_uses_mirror_of_youthfulness"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "shadow_house_services",
+          "content": "Lady Periwinkle's gaze drifts distantly. 'Detection of magic, permanent enchantments... the Shadow House serves those who can afford true sorcery.'",
+          "keywords": ["magic", "enchantment", "shadow_house", "services"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "arcane_research",
+          "content": "Her eyes flash with sudden wit. 'Do you know of Ygraine? The Lady of Thorns holds secrets I would dearly love to uncover.'",
+          "keywords": ["ygraine", "secrets", "arcane", "research", "lady_of_thorns"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "mirror_of_youthfulness",
+          "content": "Lady Periwinkle is actually in her middle age. She uses a Mirror of Youthfulness to maintain her youthful appearance.",
+          "hint": "She occasionally seems to avoid mirrors and reflective surfaces when others are watching.",
+          "keywords": ["mirror", "youth", "illusion", "magic_item", "age"],
+          "required_disposition": 3,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "zoemina_affection",
+          "content": "Lady Periwinkle desires the affections of Lady Zoemina, the Duke's 22-year-old daughter.",
+          "hint": "She speaks of the ducal family with unusual interest, particularly the daughter.",
+          "keywords": ["zoemina", "duke", "daughter", "affection", "romance"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "hadle_butterwheeve",
@@ -760,7 +902,43 @@
         "Knows about the secret passage to The Frolicke but not where it leads"
       ],
       "location_id": "14",
-      "occupation": "Butler"
+      "occupation": "Butler",
+      "vulnerabilities": [
+        "curiosity_about_enigmatic_employers",
+        "obsession_with_taxidermied_trottelings",
+        "scrupulous_manners"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bitter_rose_services",
+          "content": "Hadle bows slowly. 'The Bitter Rose offers accommodations of the finest quality. Our wine cellar is unmatched in the duchy.'",
+          "keywords": ["inn", "lodging", "wine", "luxury", "bitter_rose"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "trottelings_collection",
+          "content": "His eyes light up subtly. 'Taxidermied trottelings... I collect them, you see. Should you encounter any specimens...'",
+          "keywords": ["trottelings", "taxidermy", "collection", "hobby"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "secret_passage_knowledge",
+          "content": "Hadle knows about a secret passage in the wine cellar that leads somewhere, but he doesn't know where it goes—to The Frolicke.",
+          "hint": "He occasionally glances toward the wine cellar with a curious, guarded expression.",
+          "keywords": ["passage", "secret", "cellar", "frolicke"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "professor_edwynne_woglemain",
@@ -792,7 +970,51 @@
       ],
       "secrets": [],
       "location_id": "15",
-      "occupation": "Level 10 Magician"
+      "occupation": "Level 10 Magician",
+      "vulnerabilities": [
+        "obsession_with_other_worlds",
+        "need_to_clear_institutes_reputation",
+        "cold_dismissive_of_lesser_intellects"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "institute_services",
+          "content": "Woglemain peers intensely. 'The Royal Institute of Physicks and Sorcerers is the only magic guild sanctioned by nobility. We do not serve the common rabble.'",
+          "keywords": ["institute", "magic", "guild", "nobility", "sanctioned"],
+          "required_disposition": 0,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "otherworldly_research",
+          "content": "His eyes gleam with obsession. 'Other worlds, dimensional travel... do you possess any knowledge of such matters? I pay handsomely for genuine information.'",
+          "keywords": ["dimensions", "otherworlds", "planar", "research", "magic"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        },
+        {
+          "topic_id": "madame_thornwaife",
+          "content": "He muses coldly. 'My former colleague, Madame Thornwaife... I require her expertise in constructing demon-binding chains. If you know of her whereabouts...'",
+          "keywords": ["thornwaife", "demons", "chains", "binding", "colleague"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "demon_in_vault",
+          "content": "A demon is currently trapped in the Heptagrammic Vault within the Institute. Forbidden magicks of summoning are explored here.",
+          "hint": "Strange sounds and lights occasionally emanate from the lower levels of the Institute.",
+          "keywords": ["demon", "vault", "summoning", "forbidden", "magic"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "one_eyed_gil",
@@ -822,7 +1044,53 @@
         "Is a member of the thieves' guild"
       ],
       "location_id": "21",
-      "occupation": "Level 4 Thief, Landlady"
+      "occupation": "Level 4 Thief, Landlady",
+      "vulnerabilities": [
+        "ambition_for_thieves_guild_leadership",
+        "secret_relationship_with_sanctus_primus",
+        "desire_for_keep_intelligence"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "poppy_cock_services",
+          "content": "Gil snarls loudly. 'Lodging, food, pipeleaf—we've got it all. Don't expect fancy here. This is a place for real folk.'",
+          "keywords": ["inn", "lodging", "pipeleaf", "tavern", "poppy_cock"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "underworld_connections",
+          "content": "She feigns drunkenness but her eyes are sharp. 'Looking for work? The kind that doesn't ask too many questions? You might be in the right place.'",
+          "keywords": ["thieves", "work", "underworld", "crime", "guild"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "sanctus_primus_relationship",
+          "content": "Gil has a clandestine relationship with Sanctus Primus of the Seminary. She uses this to elicit secrets about Church activities.",
+          "hint": "She occasionally shows surprising knowledge of Seminary affairs.",
+          "keywords": ["sanctus_primus", "seminary", "church", "relationship", "secrets"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "keep_intelligence_desire",
+          "content": "Gil desperately seeks information on the layout of the Ducal Keep and any weaknesses in its defenses—for a future heist.",
+          "hint": "She asks subtle questions about the castle whenever nobles or guards visit.",
+          "keywords": ["keep", "castle", "defenses", "layout", "heist"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 100
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "mistress_hanctra_waldefroum",
@@ -849,7 +1117,59 @@
       ],
       "secrets": [],
       "location_id": "20",
-      "occupation": "Level 8 Friar, Herbalist"
+      "occupation": "Level 8 Friar, Herbalist",
+      "vulnerabilities": [
+        "physical_frailty_back_pains",
+        "nostalgia_for_past",
+        "eagerness_for_rare_specimens"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "herb_gardens",
+          "content": "Mistress Waldefroum smiles benevolently. 'These gardens have been tended by the Seminary for generations. Medicinal herbs of all kinds—I know them all.'",
+          "keywords": ["herbs", "gardens", "seminary", "medicinal"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "rare_specimens",
+          "content": "Her eyes gleam like jewels. 'Rare herbs, unusual fungi... the Church has funds for such specimens. Bring them to me, and you shall be compensated.'",
+          "keywords": ["herbs", "fungi", "rare", "specimens", "buying"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 7
+        }
+      ],
+      "secret_info": [],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -4,
+          "wary_between": [-3, 0],
+          "helpful_at_or_above": 1
+        },
+        "default_reaction_modifier": 1,
+        "triggers": [
+          {
+            "trigger_id": "church_faithful",
+            "condition": "party_affiliated_with=pluritine_church",
+            "modifier_delta": 2,
+            "npc_response": "Fellow servants of the faith! How may I help you?"
+          }
+        ]
+      }
     }
   ],
   "encounter_tables": [

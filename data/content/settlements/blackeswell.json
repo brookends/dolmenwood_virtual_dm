@@ -406,7 +406,78 @@
         "Secretly plots with Father Bertil to discover more about the outsiders' schemes"
       ],
       "location_id": "9",
-      "occupation": "Tailor and elected leader of the council"
+      "occupation": "Tailor and elected leader of the council",
+      "vulnerabilities": [
+        "narcissism",
+        "distrust_of_outsiders",
+        "pride_in_costumery"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "asters_costumery",
+          "content": "Sylvain clasps his hands together in delight. 'Aster's Fine Costumery! Fashionable outfits—off the rack at fifty gold, tailored to order from one hundred. My concept of fashion is... singular.'",
+          "keywords": ["costumery", "tailor", "fashion", "clothing"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "council_leader",
+          "content": "He adjusts his shiny monocle. 'I am the elected leader of the council—representatives of six guilds governing Blackeswell. The tailors, lenders, taverners, masons, jewellers, and chandlers.'",
+          "keywords": ["council", "guilds", "leader", "governance"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 5
+        },
+        {
+          "topic_id": "outsider_suspicion",
+          "content": "His two-faced demeanor darkens. 'Outsiders like Mr Klepp and Mr Paronax have been purchasing property in Blackeswell. Their motives are... suspicious. I intend to discover their true intentions.'",
+          "keywords": ["klepp", "paronax", "outsiders", "suspicious"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "conspiracy_with_bertil",
+          "content": "He glances around conspirationally. 'Father Bertil and I have been investigating the outsiders in secret. We meet after midnight to compare notes. If you have information about their schemes, we would be... grateful.'",
+          "hint": "He seems unusually close to the vicar.",
+          "keywords": ["conspiracy", "bertil", "investigation", "outsiders"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "20gp"
+        },
+        {
+          "secret_id": "ban_property_sales",
+          "content": "His narcissistic smile hardens. 'I intend to convince the council to ban the sale of property to non-Blackeswellers. This village must preserve its... unique character.'",
+          "hint": "He speaks of outsiders with unusual venom.",
+          "keywords": ["ban", "property", "sales", "council"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "father_ingram_bertil",
+          "relationship_type": "conspirator",
+          "description": "Secretly plots with the vicar to investigate outsiders",
+          "hex_id": "1604",
+          "notes": "They meet after midnight to compare notes"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "house_guillefer",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 1,
+        "public_alignment": "open",
+        "cover_story": null
+      }
     },
     {
       "npc_id": "gilly_ann_locke",
@@ -432,7 +503,51 @@
       ],
       "secrets": [],
       "location_id": "6",
-      "occupation": "Tavern proprietor"
+      "occupation": "Tavern proprietor",
+      "vulnerabilities": [
+        "nosiness",
+        "desire_for_tales_from_afar",
+        "welcoming_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "spigot_and_gullet_services",
+          "content": "Gilly-Ann wipes her nose on her sleeve cheerfully. 'The Spigot and Gullet! Poor quality food, but the Fishfop's is the best frothing green ale you'll taste! Eight coppers a mug.'",
+          "keywords": ["spigot", "gullet", "tavern", "fishfops"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "village_atmosphere",
+          "content": "She beams broadly. 'We're a merry lot here—dancing, boozing, chewing the fat! The fiddle music never stops. Come dance with us!'",
+          "keywords": ["merry", "dancing", "music", "atmosphere"],
+          "required_disposition": -1,
+          "category": "location",
+          "priority": 4
+        },
+        {
+          "topic_id": "tales_wanted",
+          "content": "Her hairy ears perk up. 'Tell me tales from afar! What have you seen in your travels? I adore stories from beyond Blackeswell.'",
+          "keywords": ["tales", "stories", "travels", "adventures"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "mr_klepp_welcome",
+          "content": "She leans close conspiratorially. 'I wish to welcome Mr Klepp to the village by cooking his favourite food for him. But I don't know what he likes! If you could find out...'",
+          "hint": "She seems unusually interested in the mysterious newcomer.",
+          "keywords": ["klepp", "welcome", "food", "favorite"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "arbie_snyde",
@@ -458,7 +573,43 @@
       ],
       "secrets": [],
       "location_id": "5",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "desire_to_leave_blackeswell",
+        "penny_pinching_nature",
+        "perpetual_grimace"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "crooked_arm_services",
+          "content": "Arbie grimaces perpetually—as if she's the only villager who can smell the Blacke. 'Common lodging, common food, standard prices. The frothing green ale is eight coppers. No other drinks served.'",
+          "keywords": ["crooked arm", "inn", "lodging", "ale"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "stabling_arrangements",
+          "content": "She drawls cantankerously. 'Mounts go in the adjacent goat field—no shelter. Two silver per mount. Take it or leave it.'",
+          "keywords": ["stabling", "mounts", "goat field", "horses"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "escape_to_brackenwold",
+          "content": "Her grimace softens briefly. 'I wish to relocate to Castle Brackenwold. This stinking village... the Blacke... I cannot stand it any longer. I'm saving every penny for my escape.'",
+          "hint": "She seems to despise Blackeswell despite running an inn here.",
+          "keywords": ["castle brackenwold", "relocate", "escape", "savings"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "10gp"
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "father_ingram_bertil",
@@ -487,7 +638,82 @@
         "Secretly plots with Sylvain Aster to discover more about the outsiders' schemes"
       ],
       "location_id": "3",
-      "occupation": "Vicar"
+      "occupation": "Vicar",
+      "vulnerabilities": [
+        "scattiness",
+        "desire_to_avoid_work",
+        "suspicion_of_outsiders"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "church_of_st_gondyw",
+          "content": "Father Bertil grins wonkily. 'The Church of St Gondyw—grandest building in Blackeswell! Those who pray may receive the blessing of St Gondyw: the ability to cast Bless.'",
+          "keywords": ["st gondyw", "church", "blessing", "bless"],
+          "required_disposition": -2,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "church_attendance",
+          "content": "He speaks flightily. 'The pious villagers take care of many of my duties—cleaning, tending the graveyard, leading minor services. It allows me to focus on... more important matters.'",
+          "keywords": ["duties", "villagers", "pious", "delegation"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 4
+        },
+        {
+          "topic_id": "outsider_concerns",
+          "content": "His bristling eyebrows furrow. 'These meddling outsiders—Klepp and Paronax—what are they doing in our village? I intend to find out.'",
+          "keywords": ["klepp", "paronax", "outsiders", "meddling"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "conspiracy_with_aster",
+          "content": "He whispers animatedly. 'Sylvain Aster and I are investigating the outsiders in secret. We meet after midnight to compare notes. Have you seen anything... suspicious?'",
+          "hint": "He spends unusual amounts of time near Klepp's workshop.",
+          "keywords": ["conspiracy", "aster", "investigation", "midnight"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "15gp"
+        },
+        {
+          "secret_id": "snooping_activities",
+          "content": "His bent spectacles gleam. 'I have been snooping around Klepp's workshop—peering through the shutters, listening at the door. I heard mechanical sounds... clockwork, perhaps?'",
+          "hint": "He has been seen loitering near Klepp's workshop at odd hours.",
+          "keywords": ["snooping", "klepp", "workshop", "clockwork"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sylvain_aster",
+          "relationship_type": "conspirator",
+          "description": "Secretly plots with the council leader to investigate outsiders",
+          "hex_id": "1604",
+          "notes": "They meet after midnight to compare notes"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -2,
+        "witches": -1
+      }
     }
   ],
   "encounter_tables": [

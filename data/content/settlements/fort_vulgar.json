@@ -368,7 +368,40 @@
       ],
       "secrets": [],
       "location_id": "5",
-      "occupation": "Dockmaster"
+      "occupation": "Dockmaster",
+      "vulnerabilities": [
+        "obsession_with_unusual_fruits",
+        "fear_of_big_chook",
+        "grudge_against_captain_snarkscorn"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "dock_operations",
+          "content": "Wiglow clutches her cudgel warily. 'Dockmaster of Fort Vulgar, I am. All goods through here pay the tax. No exceptions, no arguments.'",
+          "keywords": ["docks", "tax", "trade", "goods", "shipping"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "captain_snarkscorn",
+          "content": "Her face twists with anger. 'Captain Snarkscorn and his cronies! Hunting honey badgers to extinction—my marmalade depends on them! Someone needs to stop those villains.'",
+          "keywords": ["snarkscorn", "crookhorns", "honey_badger", "hunting", "bounty"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 8
+        },
+        {
+          "topic_id": "big_chook_fear",
+          "content": "She casts a worried glance at the lake. 'Big Chook... don't speak its name too loud. The Chookers hear things, they do. Stay away from the lake at night.'",
+          "keywords": ["big_chook", "lake", "monster", "chookers", "danger"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 7
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "brewigg_shankwolde",
@@ -396,7 +429,40 @@
       ],
       "secrets": [],
       "location_id": "4",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "homesickness_for_high_wold",
+        "slow_witted_easily_confused",
+        "eager_for_outside_news"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chooks_nob_services",
+          "content": "Brewigg eyes you suspiciously, then relaxes. 'Lodging, food, Crabble cider... the Chook's Nob has what you need. Private rooms if you've got the coin.'",
+          "keywords": ["inn", "lodging", "crabble", "tavern", "chooks_nob"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "high_wold_news",
+          "content": "Her red eyes brighten. 'You've come from the High Wold? Tell me—how fare the shorthorn folk there? Any news of Lankshorn or the breggles?'",
+          "keywords": ["high_wold", "shorthorn", "lankshorn", "breggles", "news"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 7
+        },
+        {
+          "topic_id": "tentacle_tattoo",
+          "content": "She proudly displays her shaved forearm. 'The tentacle marks a true barge-folk. I'll ink one for you—free, if you've got the nerve.'",
+          "keywords": ["tattoo", "tentacle", "barge_folk", "tradition"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 4
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "father_edgar_drabe",
@@ -424,7 +490,67 @@
       ],
       "secrets": [],
       "location_id": "6",
-      "occupation": "Vicar"
+      "occupation": "Vicar",
+      "vulnerabilities": [
+        "desire_for_better_posting",
+        "obsession_with_antique_scriptures",
+        "socially_awkward_with_women"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chapel_services",
+          "content": "Father Drabe drones nervously. 'Welcome to the Chapel of St Dougan the Incredulous. Prayers and blessings for the faithful. *nervous laughter*'",
+          "keywords": ["chapel", "dougan", "prayer", "blessing"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "antique_scriptures",
+          "content": "His eyes light up. 'Antique scriptures! If you've encountered any old religious texts in your travels, I would pay handsomely for them.'",
+          "keywords": ["scriptures", "antique", "texts", "religious", "buying"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "posting_complaints",
+          "content": "He sighs wistfully. 'Fort Vulgar is... rustic. I dream of a post in Castle Brackenwold or Prigwort. Somewhere with culture and proper society.'",
+          "keywords": ["posting", "castle_brackenwold", "prigwort", "transfer"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -4,
+          "wary_between": [-3, 0],
+          "helpful_at_or_above": 1
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "church_faithful",
+            "condition": "party_affiliated_with=pluritine_church",
+            "modifier_delta": 2,
+            "npc_response": "Fellow servants of the Church! *nervous laughter* How wonderful to meet you."
+          }
+        ]
+      }
     },
     {
       "npc_id": "sir_osric_the_gaunt",
@@ -456,7 +582,89 @@
       ],
       "secrets": [],
       "location_id": "9",
-      "occupation": "Knight and fort commander"
+      "occupation": "Knight and fort commander",
+      "vulnerabilities": [
+        "unrequited_love_for_lady_mulbreck",
+        "hot_tempered_easily_provoked",
+        "obsession_with_hunting_crookhorns"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "fort_duties",
+          "content": "Sir Osric slaps your back heartily. 'Welcome to Keep Vulgular! Finest outpost in the Duke's service, what what! We watch the lake and guard the trade.'",
+          "keywords": ["keep", "fort", "vulgar", "garrison", "lake"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "crookhorn_threat",
+          "content": "His face reddens with fury. 'Crookhorns! Captain Snarkscorn's rabble harries our traders! I want his head on a pike. Bring me intelligence from the Nagwood and you'll be rewarded.'",
+          "keywords": ["crookhorns", "snarkscorn", "nagwood", "bounty", "intelligence"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 9
+        },
+        {
+          "topic_id": "hunting_permission",
+          "content": "He cranes his neck forward eagerly. 'If only the Duke would grant me free rein to hunt crookhorns in the woods! Those wretched beasts would learn to fear the Vulgar Knights!'",
+          "keywords": ["hunting", "crookhorns", "permission", "duke", "woods"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "lady_mulbreck_admiration",
+          "content": "Sir Osric has admired Lady Mulbreck from afar for years and desperately desires her hand in marriage.",
+          "hint": "He becomes wistful and uncharacteristically quiet when Lord Mulbreck's family is mentioned.",
+          "keywords": ["mulbreck", "lady", "love", "marriage", "admiration"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "house_brackenwold",
+        "secondary_faction_ids": [],
+        "faction_role": "sworn_sword",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -3,
+          "wary_between": [-2, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "ducal_allies",
+            "condition": "party_affiliated_with=house_brackenwold",
+            "modifier_delta": 2,
+            "npc_response": "Servants of the Duke! Capital! Come, share a drink and tell me of the capital!"
+          }
+        ]
+      },
+      "faction_hooks": {
+        "can_offer_faction_work": true,
+        "work_offer_style": "official",
+        "eligible_offer_faction_ids": ["house_brackenwold"],
+        "preferred_job_tags": ["combat", "recon", "recovery"],
+        "requires": {
+          "min_disposition": 0,
+          "min_trust": 0,
+          "min_party_standing": 0
+        }
+      }
     }
   ],
   "encounter_tables": [

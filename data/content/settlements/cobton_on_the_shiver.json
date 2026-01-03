@@ -365,7 +365,68 @@
       ],
       "secrets": [],
       "location_id": null,
-      "occupation": "Resistance leader"
+      "occupation": "Resistance leader",
+      "vulnerabilities": [
+        "timid_nature",
+        "principled_beliefs",
+        "love_for_smunkey_o_brady"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "village_situation",
+          "content": "Wallobry mumbles, looking at the ground. 'The crookhorns... they control everything. We cannot leave the Valley. We must worship the Nag-Lord. It is... difficult.'",
+          "keywords": ["crookhorns", "valley", "oppression", "nag-lord"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 6
+        },
+        {
+          "topic_id": "daily_life",
+          "content": "She tugs at her floppy hat nervously. 'The Cobbins just want to live in peace. Fish, sail boats, make and mend. But the crookhorns... they make everything hard.'",
+          "keywords": ["cobbins", "daily life", "fishing", "peace"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "grey_league_leader",
+          "content": "Her twinkling eyes grow serious. 'I lead the Grey League—what remains of us. Three mice, a badger, two water voles, and myself. We resist the crookhorns in secret. Our meetings are held in the cellars of the Shiverston Brewery.'",
+          "hint": "She seems unusually interested in the political situation for such a timid mole.",
+          "keywords": ["grey league", "resistance", "rebellion", "brewery"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "love_for_smunkey",
+          "content": "She blushes beneath her grey fur. 'I wish to marry Smunkey O'Brady, the innkeeper. But with the crookhorns watching everything... it is hard to speak of such things.'",
+          "hint": "She grows flustered whenever the innkeeper is mentioned.",
+          "keywords": ["smunkey", "love", "marriage", "innkeeper"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "smunkey_o_brady",
+          "relationship_type": "romantic_interest",
+          "description": "Secretly wishes to marry the innkeeper",
+          "hex_id": "1104",
+          "notes": "Both are sympathetic to the resistance"
+        },
+        {
+          "npc_id": "fosbry_hollowhop",
+          "relationship_type": "ally",
+          "description": "The smith manufactures weapons for the Grey League in secret",
+          "hex_id": "1104",
+          "notes": "Provides illegal weapons to the resistance"
+        }
+      ]
     },
     {
       "npc_id": "smunkey_o_brady",
@@ -396,7 +457,69 @@
         "Knows that Baron Fragglehorn is afraid of snakes"
       ],
       "location_id": "1",
-      "occupation": "Innkeeper"
+      "occupation": "Innkeeper",
+      "vulnerabilities": [
+        "excitable_nature",
+        "desire_for_freedom",
+        "dream_of_lake_longmere"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "kings_head_services",
+          "content": "Smunkey tugs his bent ear thoughtfully. 'The King's Head offers lodging at standard price—though only Cobbin-sized beds, I'm afraid. Shiverston ale costs one silver a mug. Golden, smooth, hint of honey!'",
+          "keywords": ["kings head", "inn", "lodging", "ale"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "cobbin_life",
+          "content": "He leans in conspiratorially. 'We Cobbins were awakened by the Nag-Lord—given sentience. But now we're trapped here, forced to worship. It's not right.'",
+          "keywords": ["cobbins", "nag-lord", "awakening", "oppression"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "lake_longmere_dream",
+          "content": "His eyes grow wistful. 'I dream of sailing upon the mythical Lake Longmere. They say it lies beyond the Valley... but we cannot leave.'",
+          "keywords": ["lake longmere", "dream", "sailing", "escape"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "grey_league_contacts",
+          "content": "He whispers excitedly. 'I know of the Grey League and have contacts among them. If you wish to help free Cobton from slavery... we should talk privately.'",
+          "hint": "He seems unusually interested in outsiders who question crookhorn authority.",
+          "keywords": ["grey league", "contacts", "resistance", "freedom"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "barons_weakness",
+          "content": "He grins mischievously. 'I know something useful: Baron Fragglehorn is afraid of snakes! Terrified of them. Could be useful, yes?'",
+          "hint": "He seems to know more about the Baron than most Cobbins.",
+          "keywords": ["baron fragglehorn", "snakes", "fear", "weakness"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "10gp"
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "wallobry_trundlehorn",
+          "relationship_type": "romantic_interest",
+          "description": "The Grey League leader wishes to marry him",
+          "hex_id": "1104",
+          "notes": "Both sympathetic to the resistance"
+        }
+      ]
     },
     {
       "npc_id": "briggsy_bugber",
@@ -422,7 +545,71 @@
       ],
       "secrets": [],
       "location_id": "3",
-      "occupation": "Guard Captain"
+      "occupation": "Guard Captain",
+      "vulnerabilities": [
+        "boredom_with_post",
+        "desire_for_battle",
+        "utter_humourlessness"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "crookhorn_authority",
+          "content": "Briggsy brays dictatorially. 'I am guard captain of Cobton. Twelve crookhorns under my command. The law is simple: no weapons larger than a dagger, no leaving the Valley, and daily worship of the Nag-Lord!'",
+          "keywords": ["guard", "crookhorn", "law", "weapons", "nag-lord"],
+          "required_disposition": -2,
+          "category": "faction",
+          "priority": 7
+        },
+        {
+          "topic_id": "village_church",
+          "content": "She brandishes her spiked ceremonial mace. 'Every evening, the whole village gathers at the church for hymns and prayer. I lead the service myself. Attendance is... mandatory.'",
+          "keywords": ["church", "worship", "mandatory", "prayer"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "bored_of_post",
+          "content": "Her frenzied eyes soften momentarily. 'I wish to serve in battle under Captain Snarkscorn. I am bored of this peaceful village—there are so few opportunities to exercise my... talents.'",
+          "hint": "She seems restless and frustrated with garrison duty.",
+          "keywords": ["snarkscorn", "battle", "bored", "transfer"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "25gp"
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "old_madame_whipthorn",
+          "relationship_type": "informant",
+          "description": "Consults with the harpy spy at night",
+          "hex_id": "1104",
+          "notes": "Slips into the mill's back door to meet with Whipthorn"
+        },
+        {
+          "npc_id": "baron_fragglehorn",
+          "relationship_type": "superior",
+          "description": "Serves Baron Fragglehorn from his tower in hex 1004",
+          "hex_id": "1004",
+          "notes": "The Baron occasionally visits Cobton"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "nag_lord",
+        "secondary_faction_ids": [],
+        "faction_role": "sworn_sword",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "pluritine_church": -2,
+        "human_nobility": -1
+      }
     },
     {
       "npc_id": "doctor_simeone_fisher",
@@ -448,7 +635,43 @@
       ],
       "secrets": [],
       "location_id": "7",
-      "occupation": "Herbalist"
+      "occupation": "Herbalist",
+      "vulnerabilities": [
+        "desire_for_rare_herbs",
+        "belief_crookhorns_are_sick",
+        "cantankerous_kindness"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "herbalist_services",
+          "content": "Doctor Fisher rumbles and burps. 'I am the village herbalist. Mushrooms and herbs at standard prices. Infirmary care costs five gold per day—ailments cured in half the normal time.'",
+          "keywords": ["herbalist", "mushrooms", "herbs", "infirmary"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "rare_materials",
+          "content": "His pale violet eyes gleam. 'I seek rare herbs and mushrooms from beyond the Valley. If you have traveled far, perhaps you carry something... unusual?'",
+          "keywords": ["rare herbs", "mushrooms", "materials", "quest"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "crookhorn_cure",
+          "content": "The old toad sighs deeply. 'I believe the crookhorns' evil nature is a product of their sickness—some malady of body or spirit. If I could find the right cure... perhaps they could be healed, and Cobton freed without bloodshed.'",
+          "hint": "He treats injured crookhorns with unusual compassion.",
+          "keywords": ["crookhorns", "cure", "sickness", "healing"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "fosbry_hollowhop",
@@ -473,7 +696,61 @@
       ],
       "secrets": [],
       "location_id": "6",
-      "occupation": "Smith"
+      "occupation": "Smith",
+      "vulnerabilities": [
+        "political_neutrality",
+        "ambition_for_wealth_and_power",
+        "affable_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "smithy_services",
+          "content": "Fosbry speaks eloquently, meandering between topics. 'The smithy provides pots, pans, tools—all the necessities. Standard prices. We're dug into the riverbank, so watch your head.'",
+          "keywords": ["smithy", "tools", "pots", "services"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "political_stance",
+          "content": "He takes a swig from his flask. 'I remain carefully neutral, politically. The crookhorns leave me alone, and I leave them alone. It's simpler that way.'",
+          "keywords": ["neutral", "politics", "crookhorns", "careful"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "illegal_weapons",
+          "content": "He glances around, then whispers. 'In secret, I manufacture weapons for the Grey League. Ten times the normal price, of course. Only for trusted friends of the resistance.'",
+          "hint": "He seems unusually prosperous for a simple village smith.",
+          "keywords": ["weapons", "grey league", "illegal", "resistance"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "20gp"
+        },
+        {
+          "secret_id": "leadership_ambitions",
+          "content": "His one good eye gleams. 'If the crookhorn regime is ever deposed, I intend to be the wealthiest Cobbin in the Valley—and leader of Cobton. Someone must guide the village into a new era.'",
+          "hint": "He speaks of a post-crookhorn future with unusual confidence.",
+          "keywords": ["leader", "ambition", "wealthy", "future"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "wallobry_trundlehorn",
+          "relationship_type": "supplier",
+          "description": "Manufactures weapons for the Grey League in secret",
+          "hex_id": "1104",
+          "notes": "Profits handsomely from the resistance"
+        }
+      ]
     },
     {
       "npc_id": "old_madame_whipthorn",
@@ -506,7 +783,84 @@
         "Pearl brooch (1,500gp) and earrings (600gp each)"
       ],
       "location_id": "8",
-      "occupation": "Spy for Atanuwë"
+      "occupation": "Spy for Atanuwë",
+      "vulnerabilities": [
+        "cold_iron",
+        "narcissism",
+        "loves_flattery"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "harpy_identity",
+          "content": "Old Madame Whipthorn speaks with the beautiful, clear voice of a young noblewoman. 'I am but a humble resident of this village. The miller family has been... most hospitable.'",
+          "keywords": ["harpy", "mill", "resident", "voice"],
+          "required_disposition": -1,
+          "category": "personal",
+          "priority": 5
+        },
+        {
+          "topic_id": "nag_lord_worship",
+          "content": "She preens her luxuriant blonde curls. 'The Nag-Lord is lord of all creation. We are blessed to serve such a magnificent being.'",
+          "keywords": ["nag-lord", "worship", "atanuwë", "blessed"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "spy_role",
+          "content": "Her red eyes gleam with cunning. 'I serve the Nag-Lord as his eyes and ears in Cobton. Every evening, the miller mice tell me all they saw and heard. Nothing escapes my notice.'",
+          "hint": "The miller family seems strangely devoted to her.",
+          "keywords": ["spy", "nag-lord", "miller", "information"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "atacorn_desire",
+          "content": "She sighs wistfully. 'My deepest desire is to bear an Atacorn—a spawn of the Nag-Lord himself. To be mother to such a creature would be... glorious.'",
+          "hint": "She speaks of the Nag-Lord with unusual devotion.",
+          "keywords": ["atacorn", "nag-lord", "spawn", "desire"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "magic_treasures",
+          "content": "She strokes a charmed willow stick—a Wand of Phantasm with twelve charges. Her pearl brooch alone is worth fifteen hundred gold, her earrings six hundred each.",
+          "hint": "She adorns herself with surprisingly valuable pearls.",
+          "keywords": ["wand", "phantasm", "pearls", "treasure"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "briggsy_bugber",
+          "relationship_type": "handler",
+          "description": "The guard captain consults with her at night",
+          "hex_id": "1104",
+          "notes": "Briggsy slips into the mill to receive intelligence"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "nag_lord",
+        "secondary_faction_ids": [],
+        "faction_role": "agent",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "covert",
+        "cover_story": "Simple mill resident"
+      },
+      "faction_attitudes": {
+        "pluritine_church": -3,
+        "human_nobility": -2
+      }
     }
   ],
   "encounter_tables": [

@@ -457,7 +457,86 @@
         "Dobey is a corrupt priest who cares little for the Church. He serves Lord Malbleat and is complicit in several of his wicked schemes."
       ],
       "location_id": 1,
-      "occupation": "Vicar"
+      "occupation": "Vicar",
+      "vulnerabilities": [
+        "ambition_for_archdeacon_position",
+        "complicity_in_malbleats_schemes",
+        "doddery_facade_hides_cunning"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "church_services",
+          "content": "Father Dobey wags his finger. 'Welcome to the Church of St Pastery, patron of butchers and well-borers. Blessings upon those who seek them.'",
+          "keywords": ["church", "pastery", "blessing", "prayer"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "local_superstitions",
+          "content": "He nods knowingly. 'The folk of Lankshorn have their own customs, you see. Ancient beliefs mingled with proper faith. Wise visitors respect our ways.'",
+          "keywords": ["superstitions", "customs", "beliefs", "lankshorn"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "malbleat_servant",
+          "content": "Dobey is a corrupt priest who serves Lord Malbleat and is complicit in several of his wicked schemes. He cares little for the Church itself.",
+          "hint": "He speaks of Lord Malbleat with unusual deference and avoids criticizing the lord's cruelty.",
+          "keywords": ["malbleat", "corruption", "schemes", "complicit"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 100
+        },
+        {
+          "secret_id": "secret_tunnel",
+          "content": "Dobey uses a secret tunnel beneath the church to travel between Lankshorn and Redwraith Manor unseen.",
+          "hint": "He sometimes arrives at the church looking travel-worn despite claiming to have been in his vicarage.",
+          "keywords": ["tunnel", "secret", "passage", "redwraith"],
+          "required_disposition": 3,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "house_malbleat",
+        "secondary_faction_ids": ["pluritine_church"],
+        "faction_role": "agent",
+        "loyalty_type": "bought",
+        "loyalty_strength": 2,
+        "public_alignment": "covert",
+        "cover_story": "A humble vicar devoted to his flock",
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -2,
+          "wary_between": [-1, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": -1,
+        "triggers": [
+          {
+            "trigger_id": "malbleat_allies",
+            "condition": "party_affiliated_with=house_malbleat",
+            "modifier_delta": 2,
+            "npc_response": "Ah, friends of His Lordship. Come, let us speak privately."
+          },
+          {
+            "trigger_id": "ramius_enemies",
+            "condition": "party_affiliated_with=house_ramius",
+            "modifier_delta": -2,
+            "npc_response": "I sense... divided loyalties. Be careful in Lankshorn."
+          }
+        ]
+      }
     },
     {
       "npc_id": "margerie_stallowmade",
@@ -487,7 +566,51 @@
         "She is acquainted with the fairy Thrattlewhit (hex 0810), with whom she shares foraged blackberries and silly stories of comings and goings in Lankshorn. She knows the location of the fairy's lair, but does not share it lightly."
       ],
       "location_id": 5,
-      "occupation": "Innkeeper"
+      "occupation": "Innkeeper",
+      "vulnerabilities": [
+        "grief_for_husband_and_sons",
+        "fascination_with_fairy_and_magic",
+        "protective_of_fairy_friend_thrattlewhit"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "hornstoats_rest",
+          "content": "Margerie beams while polishing. 'Welcome to the Hornstoat's Rest! Lodging, food, and the finest Aspintheon in all the High Wold. Purple's always in stock—and if you're special, maybe Green.'",
+          "keywords": ["inn", "lodging", "aspintheon", "hornstoat"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "dolmenwood_secrets",
+          "content": "Her eyes sparkle. 'The Wood holds such wonders... I've walked its paths, you know. Met creatures most folk only dream of. Real witches and wizards—I'd love to meet one!'",
+          "keywords": ["dolmenwood", "fairy", "magic", "witches", "wizards"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "fairy_friend",
+          "content": "Margerie is acquainted with the fairy Thrattlewhit in hex 0810. She knows the fairy's lair location but doesn't share it lightly.",
+          "hint": "She occasionally disappears into the woods with baskets of blackberries.",
+          "keywords": ["thrattlewhit", "fairy", "blackberries", "lair"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "farnham_ribblemead",
+          "relationship_type": "ally",
+          "description": "Rents the attic suite to the sage and shares quiet drinks with him",
+          "hex_id": null,
+          "notes": "Friendly landlord-tenant relationship"
+        }
+      ]
     },
     {
       "npc_id": "farnham_ribblemead",
@@ -521,7 +644,40 @@
       ],
       "secrets": [],
       "location_id": 5,
-      "occupation": "Sage"
+      "occupation": "Sage",
+      "vulnerabilities": [
+        "obsession_with_obscure_scripts",
+        "desire_for_malbleats_library",
+        "bumbling_jocular_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "sage_services",
+          "content": "Farnham peers through half-moon spectacles. 'Languages, scripts, ancient texts—my specialty. I speak eight tongues fluently. What mysteries do you bring?'",
+          "keywords": ["sage", "languages", "scripts", "translation", "research"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "old_caprice_texts",
+          "content": "He leans forward eagerly. 'Lord Malbleat's library... rumored to contain texts in Old Caprice. If only I could gain access...'",
+          "keywords": ["library", "malbleat", "caprice", "texts", "scripts"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 6
+        }
+      ],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "margerie_stallowmade",
+          "relationship_type": "ally",
+          "description": "Rents the attic suite and shares quiet evenings with the landlady",
+          "hex_id": null,
+          "notes": "Friendly tenant-landlord relationship"
+        }
+      ]
     },
     {
       "npc_id": "berkmaster_clewyd_baldricke",
@@ -552,7 +708,80 @@
         "Many townsfolk privately mock the Berkmaster as a self-important puppet of Lord Malbleat"
       ],
       "location_id": 6,
-      "occupation": "Berkmaster"
+      "occupation": "Berkmaster",
+      "vulnerabilities": [
+        "desire_for_respect",
+        "concern_for_cursed_grandson",
+        "worry_about_malbleats_cruelty"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "berkmaster_authority",
+          "content": "Baldricke booms pompously. 'I am Berkmaster of Lankshorn, His Lordship's representative! All matters of governance pass through me.'",
+          "keywords": ["berkmaster", "authority", "governance", "malbleat"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "grandson_concern",
+          "content": "His voice drops with genuine worry. 'My grandson... a good lad, truly. If only there were someone skilled in curing... unusual afflictions.'",
+          "keywords": ["grandson", "billy", "curse", "cure", "affliction"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "hidden_grandson",
+          "content": "The Berkmaster harbors his grandson Billy—a half-human, half-breggle boy cursed to mutate into different forms after his governess fed him a dangerous mandrake brew at Redwraith Manor.",
+          "hint": "He occasionally glances toward a particular wing of Harper's Hall with anxious concern.",
+          "keywords": ["billy", "grandson", "curse", "mandrake", "redwraith"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "rebellion_fears",
+          "content": "Baldricke privately worries that Malbleat's growing cruelty will lead to rebellion. Many townsfolk mock him as a self-important puppet.",
+          "hint": "He flinches when 'MALBLEAT OUT!' graffiti is mentioned.",
+          "keywords": ["rebellion", "cruelty", "malbleat", "unrest"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "house_malbleat",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "coerced",
+        "loyalty_strength": 1,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -3,
+          "wary_between": [-2, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "malbleat_mention",
+            "condition": "topic=malbleat_cruelty",
+            "modifier_delta": -1,
+            "npc_response": "His Lordship has his ways. I... serve as I must."
+          }
+        ]
+      }
     },
     {
       "npc_id": "joremey_whilpston_puddingfoot",
@@ -582,7 +811,51 @@
         "Unbeknown to any in the town, Joremey has fairy blood—his grandfather was sired by a wandering elf"
       ],
       "location_id": 7,
-      "occupation": "Blacksmith"
+      "occupation": "Blacksmith",
+      "vulnerabilities": [
+        "desire_to_know_fairy_ancestor",
+        "ambition_to_forge_for_duke",
+        "passionate_about_his_craft"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bladesmithing",
+          "content": "Joremey holds your gaze calmly. 'Steel blades, iron daggers, silvered weapons—I craft them all. My work is of a quality seldom found even in great towns.'",
+          "keywords": ["blades", "smithing", "weapons", "iron", "silver"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "moon_forging",
+          "content": "His eyes light up with passion. 'Moon-forging... an ancient craft of fairy origin. I can imbue blades with enchantments, for trusted customers who understand such arts.'",
+          "keywords": ["moon_forging", "enchantment", "fairy", "craft", "magic"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        },
+        {
+          "topic_id": "duke_ambition",
+          "content": "He gazes wistfully at his finest work. 'To forge a sword for the Duke of Brackenwold himself... that is my greatest dream.'",
+          "keywords": ["duke", "brackenwold", "sword", "dream", "commission"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "fairy_ancestry",
+          "content": "Joremey has fairy blood—his grandfather was sired by a wandering elf. He desperately wishes to know the identity of this fairy ancestor.",
+          "hint": "He speaks Sylvan and knows fairy crafting techniques that should be beyond a mortal smith.",
+          "keywords": ["fairy", "elf", "ancestry", "grandfather", "heritage"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "sydewich_maldwort",
@@ -609,7 +882,43 @@
       ],
       "secrets": [],
       "location_id": 8,
-      "occupation": "Apothecary"
+      "occupation": "Apothecary",
+      "vulnerabilities": [
+        "forbidden_love_for_elmine_crump",
+        "boredom_with_simple_townsfolk",
+        "desire_to_escape_lankshorn"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "apothecary_services",
+          "content": "Sydewich's voice is nasal and oily. 'Herbs, mushrooms, alchemical compounds... The Man of Gold has served Lankshorn for three generations. What do you require?'",
+          "keywords": ["herbs", "mushrooms", "alchemy", "apothecary"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "adventurer_interest",
+          "content": "His eyes brighten. 'Adventurers! Finally, folk of spirit. Tell me of your travels—the simple townsfolk here bore me to tears.'",
+          "keywords": ["adventure", "travel", "excitement", "boredom"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "elmine_affair",
+          "content": "Sydewich is in love with Elmine Crump, wife of the keeper of the Spawning Salmon tavern in Dreg. He dreams of selling the apothecary and eloping with her.",
+          "hint": "He frequently travels to Dreg on 'business' and speaks wistfully of the port-town.",
+          "keywords": ["elmine", "dreg", "love", "affair", "elope"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "lump_sarge_groghorn",
@@ -639,7 +948,62 @@
         "Served in Lord Murkin's army for many years"
       ],
       "location_id": 13,
-      "occupation": "Tavern Proprietor"
+      "occupation": "Tavern Proprietor",
+      "vulnerabilities": [
+        "desire_to_marry_longhorn_lady",
+        "grudge_against_lord_murkin",
+        "mean_exterior_hides_hearty_humor"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bogways_services",
+          "content": "Sarge scowls meanly, then laughs heartily. 'Food, drink, stabling—Bogway's has it all. No fancy lodgings, but the horses are treated like royalty.'",
+          "keywords": ["tavern", "food", "stabling", "horses", "bogways"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "murkin_grudge",
+          "content": "He pulls his ear thoughtfully. 'Lord Murkin's enchanted sword... I served in his army for years. That blade should be mine by rights.'",
+          "keywords": ["murkin", "sword", "army", "service", "enchanted"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "murkin_service",
+          "content": "Sarge served in Lord Murkin's army for many years and knows intimate details of longhorn military tactics and the layout of Murkin's holdings.",
+          "hint": "He occasionally uses military terminology and speaks of 'the old days' with bitterness.",
+          "keywords": ["murkin", "army", "service", "military", "longhorn"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "whimsly_bobblefrock",
+          "relationship_type": "ally",
+          "description": "Co-proprietor of Bogway's tavern",
+          "hex_id": null,
+          "notes": "Business partnership"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "longhorn_nobility",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "opportunistic",
+        "loyalty_strength": 0,
+        "public_alignment": "deniable",
+        "cover_story": "Just a humble tavern keeper now",
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      }
     },
     {
       "npc_id": "whimsly_bobblefrock",
@@ -670,7 +1034,61 @@
         "An Eye of the Yurl (p420), hidden beneath her eyepatch"
       ],
       "location_id": 13,
-      "occupation": "Tavern Proprietor"
+      "occupation": "Tavern Proprietor",
+      "vulnerabilities": [
+        "cold_iron",
+        "vendetta_against_chateau_shantywood",
+        "gambling_debts_history"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "grimalkin_hospitality",
+          "content": "Whimsly purrs indignantly. 'Bogway's welcomes all—grimalkin, shorthorn, human alike. We judge by coin, not kindred.'",
+          "keywords": ["tavern", "grimalkin", "hospitality", "bogways"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "thievery_interest",
+          "content": "She yowls with flamboyance. 'The arrogant rich deserve to be relieved of their baubles, wouldn't you say? I know folk who... arrange such things.'",
+          "keywords": ["thievery", "rich", "baubles", "crime"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "shantywood_escape",
+          "content": "Whimsly escaped imprisonment for gambling debts in Chateau Shantywood with the aid of a sympathetic bard. She dreams of burning the chateau down.",
+          "hint": "She hisses whenever Shantywood Isle or Dreg is mentioned.",
+          "keywords": ["shantywood", "escape", "prison", "gambling", "revenge"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "eye_of_yurl",
+          "content": "Hidden beneath her eyepatch is an Eye of the Yurl—a magical artifact.",
+          "hint": "She never removes her eyepatch, even when bathing.",
+          "keywords": ["eye", "yurl", "eyepatch", "magic", "artifact"],
+          "required_disposition": 3,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lump_sarge_groghorn",
+          "relationship_type": "ally",
+          "description": "Co-proprietor of Bogway's tavern",
+          "hex_id": null,
+          "notes": "Business partnership"
+        }
+      ]
     }
   ],
   "encounter_tables": [
