@@ -469,6 +469,53 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi,
     ))
 
+    def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.
+
+        Supports both npc_id and npc_index parameters.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.get_current_hex_id()
+        npc_id = p.get("npc_id", "")
+        npc_index = p.get("npc_index")
+
+        # Support both npc_id and npc_index
+        if npc_index is not None and not npc_id:
+            result = dm.hex_crawl.talk_to_npc_by_index(hex_id, int(npc_index))
+        elif npc_id:
+            result = dm.hex_crawl.interact_with_npc(hex_id, npc_id)
+        else:
+            # No NPC specified - return error with available NPCs
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            if not npcs:
+                return {"success": False, "message": "No NPCs present at this location."}
+            npc_list = ", ".join(n.get("name", "unknown") for n in npcs)
+            return {
+                "success": False,
+                "message": f"No NPC specified. Available: {npc_list}",
+                "available_npcs": npcs,
+            }
+
+        # Normalize error -> message for consistent response format
+        if not result.get("success") and "error" in result and "message" not in result:
+            result["message"] = result["error"]
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:talk_npc",
+        label="Talk to NPC",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "npc_id": {"type": "string", "required": False},
+            "npc_index": {"type": "integer", "required": False},
+        },
+        help="Talk to an NPC at the current POI. Transitions to SOCIAL_INTERACTION state.",
+        executor=_wilderness_talk_npc,
+    ))
+
     # -------------------------------------------------------------------------
     # Dungeon actions
     # -------------------------------------------------------------------------

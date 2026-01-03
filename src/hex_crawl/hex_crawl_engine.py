@@ -3691,6 +3691,66 @@ class HexCrawlEngine:
 
         return result
 
+    def talk_to_npc_by_index(
+        self,
+        hex_id: str,
+        npc_index: int,
+    ) -> dict[str, Any]:
+        """
+        Begin interaction with an NPC at the current POI by index.
+
+        This is a convenience method for when the caller has an index
+        rather than an NPC ID (e.g., from a numbered list).
+
+        Args:
+            hex_id: Current hex
+            npc_index: 0-based index into the NPCs at POI list
+
+        Returns:
+            Dictionary with interaction result or error
+        """
+        if not self._current_poi:
+            return {
+                "success": False,
+                "error": "Not currently at a POI. Approach a location first.",
+            }
+
+        npcs = self.get_npcs_at_poi(hex_id)
+        if not npcs:
+            return {"success": False, "error": "No NPCs present at this location."}
+
+        if npc_index < 0 or npc_index >= len(npcs):
+            return {
+                "success": False,
+                "error": f"Invalid NPC index {npc_index}. Valid range: 0-{len(npcs) - 1}",
+            }
+
+        target_npc = npcs[npc_index]
+
+        # Check if this is a group/inhabitants entry (not a specific NPC)
+        if target_npc.get("is_group"):
+            return {
+                "success": False,
+                "error": (
+                    f"'{target_npc.get('inhabitants', 'Group')}' is a group, not a "
+                    "specific NPC. Use the oracle to determine who approaches, or "
+                    "trigger a social encounter."
+                ),
+                "is_group": True,
+                "inhabitants": target_npc.get("inhabitants"),
+            }
+
+        # Get the NPC ID or name to pass to interact_with_npc
+        npc_id = target_npc.get("npc_id") or target_npc.get("name")
+        if not npc_id:
+            return {
+                "success": False,
+                "error": "NPC has no identifier. Cannot initiate conversation.",
+            }
+
+        # Delegate to the main interact_with_npc method
+        return self.interact_with_npc(hex_id, npc_id)
+
     def engage_poi_npc(
         self,
         hex_id: str,

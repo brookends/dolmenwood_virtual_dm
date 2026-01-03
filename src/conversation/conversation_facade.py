@@ -358,10 +358,31 @@ class ConversationFacade:
         if action_id == "wilderness:talk_npc":
             hex_id = params.get("hex_id") or self._current_hex_id()
             npc_id = params.get("npc_id", "")
-            result = self.dm.hex_crawl.interact_with_npc(hex_id, npc_id)
-            msgs = [ChatMessage("system", result.get("message", "You interact."))]
-            if result.get("interaction"):
-                msgs.append(ChatMessage("dm", result["interaction"]))
+            npc_index = params.get("npc_index")
+
+            # Support both npc_id and npc_index
+            if npc_index is not None and not npc_id:
+                result = self.dm.hex_crawl.talk_to_npc_by_index(hex_id, int(npc_index))
+            elif npc_id:
+                result = self.dm.hex_crawl.interact_with_npc(hex_id, npc_id)
+            else:
+                # No NPC specified - list available NPCs
+                npcs = self.dm.hex_crawl.get_npcs_at_poi(hex_id)
+                if not npcs:
+                    return self._response([ChatMessage("system", "No NPCs present here.")])
+                npc_list = ", ".join(n.get("name", "unknown") for n in npcs)
+                return self._response([
+                    ChatMessage("system", f"Available NPCs: {npc_list}. Specify npc_id or npc_index.")
+                ])
+
+            if not result.get("success"):
+                return self._response([ChatMessage("system", result.get("error", "Could not talk to NPC."))])
+
+            # Build response message
+            npc_name = result.get("npc_name", "the NPC")
+            msgs = [ChatMessage("system", f"You begin a conversation with {npc_name}.")]
+            if result.get("description"):
+                msgs.append(ChatMessage("dm", result["description"]))
             return self._response(msgs)
 
         if action_id == "wilderness:take_item":
