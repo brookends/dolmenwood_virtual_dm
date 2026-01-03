@@ -756,6 +756,862 @@ class MythicSpellAdjudicator:
         return Likelihood(result_value)
 
     # =========================================================================
+    # CHARM RESISTANCE
+    # =========================================================================
+
+    def adjudicate_charm_resistance(
+        self,
+        context: AdjudicationContext,
+        target_hit_dice: int = 1,
+        charm_strength: str = "standard",  # weak, standard, strong
+    ) -> AdjudicationResult:
+        """
+        Adjudicate whether a target resists a charm effect.
+
+        Mechanic: target saves vs charm; on success, effect fails;
+        on partial, duration reduced. If system lacks a charm save
+        mechanic, use oracle fate check with odds derived from
+        target HD/level vs caster level.
+
+        Args:
+            context: Casting context with caster and target info
+            target_hit_dice: Target's hit dice or level
+            charm_strength: Strength of the charm spell
+
+        Returns:
+            AdjudicationResult with resist/partial/fail and effects
+        """
+        # Assess likelihood of resistance based on HD vs caster level
+        likelihood = self._assess_charm_resistance_likelihood(
+            context, target_hit_dice, charm_strength
+        )
+
+        # Primary question: Does target resist?
+        primary_check = self._mythic.fate_check(
+            f"Does {context.target_description} resist the charm?",
+            likelihood,
+        )
+
+        # Resistance outcomes:
+        # Exceptional Yes = Complete resistance, target becomes suspicious
+        # Yes = Resists charm
+        # No = Charmed
+        # Exceptional No = Deeply charmed (extended duration)
+
+        predetermined_effects: list[EffectCommand] = []
+        meaning_roll = None
+
+        if primary_check.result == FateResult.EXCEPTIONAL_YES:
+            success_level = SuccessLevel.EXCEPTIONAL_SUCCESS
+            # Target resists and becomes suspicious
+            predetermined_effects.append(
+                EffectCommandBuilder.modify_disposition(
+                    target_id=context.target_description,
+                    delta=-1,
+                    reason="Sensed charm attempt",
+                    source=f"{context.spell_name} resisted",
+                )
+            )
+        elif primary_check.result == FateResult.YES:
+            success_level = SuccessLevel.SUCCESS
+            # Clean resistance, no effects
+        elif primary_check.result == FateResult.EXCEPTIONAL_NO:
+            success_level = SuccessLevel.CATASTROPHIC_FAILURE
+            # Deeply charmed - apply with extended duration
+            predetermined_effects.append(
+                EffectCommandBuilder.add_condition(
+                    target_id=context.target_description,
+                    condition="charmed",
+                    duration="1 day",  # Extended
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
+        else:  # NO
+            success_level = SuccessLevel.FAILURE
+            # Standard charm
+            predetermined_effects.append(
+                EffectCommandBuilder.add_condition(
+                    target_id=context.target_description,
+                    condition="charmed",
+                    duration="1 hour",
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
+
+        # Check for secondary partial result (between YES and clean NO)
+        # If there's a random event on failure, it's a partial charm
+        if success_level == SuccessLevel.FAILURE and primary_check.random_event_triggered:
+            success_level = SuccessLevel.PARTIAL_SUCCESS
+            # Partial charm - reduced duration
+            predetermined_effects = [
+                EffectCommandBuilder.add_condition(
+                    target_id=context.target_description,
+                    condition="charmed",
+                    duration="10 minutes",  # Reduced
+                    source=f"{context.spell_name} (weakened) by {context.caster_name}",
+                )
+            ]
+            meaning_roll = self._mythic.roll_meaning()
+
+        # Log to RunLog
+        self._log_adjudication(
+            context=context,
+            adjudication_type=SpellAdjudicationType.CHARM_RESISTANCE,
+            success_level=success_level,
+            effects=predetermined_effects,
+            primary_check=primary_check,
+            meaning_roll=meaning_roll,
+        )
+
+        result = AdjudicationResult(
+            adjudication_type=SpellAdjudicationType.CHARM_RESISTANCE,
+            success_level=success_level,
+            primary_fate_check=primary_check,
+            meaning_roll=meaning_roll,
+            random_event_occurred=primary_check.random_event_triggered,
+            predetermined_effects=predetermined_effects,
+            interpretation_context={
+                "caster": context.caster_name,
+                "caster_level": context.caster_level,
+                "target": context.target_description,
+                "target_hd": target_hit_dice,
+                "charm_strength": charm_strength,
+                "resistance_result": "resisted" if success_level in (SuccessLevel.SUCCESS, SuccessLevel.EXCEPTIONAL_SUCCESS) else "charmed",
+            },
+        )
+
+        result.summary = self._generate_charm_resistance_summary(result)
+        return result
+
+    def _assess_charm_resistance_likelihood(
+        self,
+        context: AdjudicationContext,
+        target_hit_dice: int,
+        charm_strength: str,
+    ) -> Likelihood:
+        """Assess likelihood of target resisting charm."""
+        # Higher HD targets are more likely to resist
+        # HD difference: positive = target stronger, negative = caster stronger
+        hd_diff = target_hit_dice - context.caster_level
+
+        # Base likelihood from charm strength (inverted - stronger charm = less likely to resist)
+        strength_bases = {
+            "weak": Likelihood.LIKELY,
+            "standard": Likelihood.FIFTY_FIFTY,
+            "strong": Likelihood.UNLIKELY,
+        }
+        base = strength_bases.get(charm_strength, Likelihood.FIFTY_FIFTY)
+
+        # Modify based on HD difference
+        modifier = 0
+        if hd_diff >= 4:
+            modifier += 2  # Much stronger target
+        elif hd_diff >= 2:
+            modifier += 1  # Stronger target
+        elif hd_diff <= -4:
+            modifier -= 2  # Much weaker target
+        elif hd_diff <= -2:
+            modifier -= 1  # Weaker target
+
+        # Magical resistance bonus
+        if context.magical_resistance:
+            modifier += 2
+
+        result_value = max(0, min(9, base.value + modifier))
+        return Likelihood(result_value)
+
+    def _generate_charm_resistance_summary(self, result: AdjudicationResult) -> str:
+        """Generate summary for charm resistance."""
+        ctx = result.interpretation_context
+        target = ctx.get("target", "target")
+
+        if result.success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+            return f"{target} completely resists and becomes suspicious of {ctx.get('caster')}."
+        elif result.success_level == SuccessLevel.SUCCESS:
+            return f"{target} resists the charm."
+        elif result.success_level == SuccessLevel.PARTIAL_SUCCESS:
+            return f"{target} is partially charmed (reduced duration): {result.meaning_roll}"
+        elif result.success_level == SuccessLevel.FAILURE:
+            return f"{target} is charmed by {ctx.get('caster')}."
+        else:  # Catastrophic
+            return f"{target} is deeply charmed by {ctx.get('caster')} (extended duration)."
+
+    # =========================================================================
+    # PROTECTION BYPASS
+    # =========================================================================
+
+    def adjudicate_protection_bypass(
+        self,
+        context: AdjudicationContext,
+        protection_strength: str = "standard",  # minor, standard, powerful, legendary
+        spell_level: int = 1,
+    ) -> AdjudicationResult:
+        """
+        Adjudicate whether a spell bypasses a ward or protection.
+
+        Mechanic: does spell bypass a ward/protection? Use deterministic
+        check first if protections are mechanized; otherwise oracle fate
+        check with odds derived from spell level vs protection strength.
+
+        Args:
+            context: Casting context
+            protection_strength: How strong is the protection?
+            spell_level: Level of the spell attempting to bypass
+
+        Returns:
+            AdjudicationResult with bypass/fail and context flags
+        """
+        # Assess likelihood based on spell level vs protection
+        likelihood = self._assess_protection_bypass_likelihood(
+            context, protection_strength, spell_level
+        )
+
+        # Primary question: Does spell bypass?
+        primary_check = self._mythic.fate_check(
+            f"Does {context.spell_name} bypass the protection on {context.target_description}?",
+            likelihood,
+        )
+
+        success_level = self._fate_to_success(primary_check.result)
+        predetermined_effects: list[EffectCommand] = []
+        meaning_roll = None
+
+        if success_level in (SuccessLevel.EXCEPTIONAL_SUCCESS, SuccessLevel.SUCCESS):
+            # Spell bypasses - set context flag for downstream effects
+            predetermined_effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id=context.target_description,
+                    flag_name="protection_bypassed",
+                    flag_value=True,
+                    scope="interaction",
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
+            if success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+                # Protection is temporarily weakened
+                predetermined_effects.append(
+                    EffectCommandBuilder.set_flag(
+                        target_id=context.target_description,
+                        flag_name="protection_weakened",
+                        flag_value=True,
+                        scope="scene",
+                        source=f"{context.spell_name} overwhelmed protection",
+                    )
+                )
+        else:
+            # Protection holds
+            if success_level == SuccessLevel.CATASTROPHIC_FAILURE:
+                # Spell is reflected or caster is affected
+                meaning_roll = self._mythic.roll_meaning()
+
+        # Log to RunLog
+        self._log_adjudication(
+            context=context,
+            adjudication_type=SpellAdjudicationType.PROTECTION_BYPASS,
+            success_level=success_level,
+            effects=predetermined_effects,
+            primary_check=primary_check,
+            meaning_roll=meaning_roll,
+        )
+
+        result = AdjudicationResult(
+            adjudication_type=SpellAdjudicationType.PROTECTION_BYPASS,
+            success_level=success_level,
+            primary_fate_check=primary_check,
+            meaning_roll=meaning_roll,
+            random_event_occurred=primary_check.random_event_triggered,
+            predetermined_effects=predetermined_effects,
+            interpretation_context={
+                "caster": context.caster_name,
+                "caster_level": context.caster_level,
+                "spell": context.spell_name,
+                "spell_level": spell_level,
+                "target": context.target_description,
+                "protection_strength": protection_strength,
+                "bypassed": success_level in (SuccessLevel.EXCEPTIONAL_SUCCESS, SuccessLevel.SUCCESS),
+            },
+        )
+
+        result.summary = self._generate_protection_bypass_summary(result)
+        return result
+
+    def _assess_protection_bypass_likelihood(
+        self,
+        context: AdjudicationContext,
+        protection_strength: str,
+        spell_level: int,
+    ) -> Likelihood:
+        """Assess likelihood of bypassing protection."""
+        # Base likelihood from protection strength
+        strength_bases = {
+            "minor": Likelihood.VERY_LIKELY,
+            "standard": Likelihood.LIKELY,
+            "powerful": Likelihood.FIFTY_FIFTY,
+            "legendary": Likelihood.UNLIKELY,
+        }
+        base = strength_bases.get(protection_strength, Likelihood.FIFTY_FIFTY)
+
+        # Modify based on spell level
+        modifier = 0
+        if spell_level >= 7:
+            modifier += 2  # Very high level spell
+        elif spell_level >= 5:
+            modifier += 1  # High level spell
+        elif spell_level >= 3:
+            modifier += 0  # Medium spell
+        elif spell_level >= 1:
+            modifier -= 1  # Low level spell
+        else:
+            modifier -= 2  # Cantrip
+
+        # Caster level helps
+        if context.caster_level >= 14:
+            modifier += 1
+        elif context.caster_level <= 5:
+            modifier -= 1
+
+        result_value = max(0, min(9, base.value + modifier))
+        return Likelihood(result_value)
+
+    def _generate_protection_bypass_summary(self, result: AdjudicationResult) -> str:
+        """Generate summary for protection bypass."""
+        ctx = result.interpretation_context
+
+        if result.success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+            return f"{ctx.get('spell')} overwhelms the protection - barrier temporarily weakened."
+        elif result.success_level == SuccessLevel.SUCCESS:
+            return f"{ctx.get('spell')} pierces the protection."
+        elif result.success_level == SuccessLevel.PARTIAL_SUCCESS:
+            return f"{ctx.get('spell')} partially penetrates: {result.meaning_roll}"
+        elif result.success_level == SuccessLevel.FAILURE:
+            return f"The protection holds against {ctx.get('spell')}."
+        else:  # Catastrophic
+            return f"The protection reflects {ctx.get('spell')}: {result.meaning_roll}"
+
+    # =========================================================================
+    # DURATION EXTENSION
+    # =========================================================================
+
+    def adjudicate_duration_extension(
+        self,
+        context: AdjudicationContext,
+        condition_to_extend: str,
+        original_duration_turns: int = 10,
+        extension_power: str = "standard",  # minor, standard, major
+    ) -> AdjudicationResult:
+        """
+        Adjudicate extending an existing effect's duration.
+
+        Mechanic: extend an existing effect's duration. Needs stable
+        representation of active effect durations. Produces effects
+        to extend condition duration.
+
+        Args:
+            context: Casting context
+            condition_to_extend: The condition/effect to extend
+            original_duration_turns: Original duration in turns
+            extension_power: How powerful is the extension attempt
+
+        Returns:
+            AdjudicationResult with extension amount and effects
+        """
+        # Assess likelihood of successful extension
+        likelihood = self._assess_duration_extension_likelihood(
+            context, extension_power
+        )
+
+        # Primary question: Does extension succeed?
+        primary_check = self._mythic.fate_check(
+            f"Does {context.caster_name}'s extension of {condition_to_extend} succeed?",
+            likelihood,
+        )
+
+        success_level = self._fate_to_success(primary_check.result)
+        predetermined_effects: list[EffectCommand] = []
+        meaning_roll = None
+
+        # Calculate extension amount based on success
+        extension_turns = 0
+        extension_hours = 0
+
+        if success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+            # Double original duration
+            extension_turns = original_duration_turns
+            extension_hours = 1 if original_duration_turns >= 60 else 0
+        elif success_level == SuccessLevel.SUCCESS:
+            # Standard extension (50% of original)
+            extension_turns = original_duration_turns // 2
+        elif success_level == SuccessLevel.PARTIAL_SUCCESS:
+            # Minimal extension
+            extension_turns = max(1, original_duration_turns // 4)
+            meaning_roll = self._mythic.roll_meaning()
+
+        if extension_turns > 0 or extension_hours > 0:
+            predetermined_effects.append(
+                EffectCommandBuilder.extend_condition_duration(
+                    target_id=context.target_description,
+                    condition=condition_to_extend,
+                    turns=extension_turns,
+                    hours=extension_hours,
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
+
+        # Log to RunLog
+        self._log_adjudication(
+            context=context,
+            adjudication_type=SpellAdjudicationType.DURATION_EXTENSION,
+            success_level=success_level,
+            effects=predetermined_effects,
+            primary_check=primary_check,
+            meaning_roll=meaning_roll,
+        )
+
+        result = AdjudicationResult(
+            adjudication_type=SpellAdjudicationType.DURATION_EXTENSION,
+            success_level=success_level,
+            primary_fate_check=primary_check,
+            meaning_roll=meaning_roll,
+            random_event_occurred=primary_check.random_event_triggered,
+            predetermined_effects=predetermined_effects,
+            interpretation_context={
+                "caster": context.caster_name,
+                "caster_level": context.caster_level,
+                "target": context.target_description,
+                "condition": condition_to_extend,
+                "original_duration": original_duration_turns,
+                "extension_turns": extension_turns,
+                "extension_hours": extension_hours,
+            },
+        )
+
+        result.summary = self._generate_duration_extension_summary(result)
+        return result
+
+    def _assess_duration_extension_likelihood(
+        self,
+        context: AdjudicationContext,
+        extension_power: str,
+    ) -> Likelihood:
+        """Assess likelihood of duration extension."""
+        # Base from extension power
+        power_bases = {
+            "minor": Likelihood.LIKELY,
+            "standard": Likelihood.FIFTY_FIFTY,
+            "major": Likelihood.UNLIKELY,  # Hard to extend major effects
+        }
+        base = power_bases.get(extension_power, Likelihood.FIFTY_FIFTY)
+
+        # Caster level helps
+        modifier = 0
+        if context.caster_level >= 14:
+            modifier += 2
+        elif context.caster_level >= 9:
+            modifier += 1
+        elif context.caster_level <= 3:
+            modifier -= 1
+
+        result_value = max(0, min(9, base.value + modifier))
+        return Likelihood(result_value)
+
+    def _generate_duration_extension_summary(self, result: AdjudicationResult) -> str:
+        """Generate summary for duration extension."""
+        ctx = result.interpretation_context
+        condition = ctx.get("condition", "effect")
+        ext_turns = ctx.get("extension_turns", 0)
+        ext_hours = ctx.get("extension_hours", 0)
+
+        if result.success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+            return f"{condition} duration doubled: +{ext_turns} turns, +{ext_hours} hours."
+        elif result.success_level == SuccessLevel.SUCCESS:
+            return f"{condition} duration extended by {ext_turns} turns."
+        elif result.success_level == SuccessLevel.PARTIAL_SUCCESS:
+            return f"{condition} barely extended ({ext_turns} turns): {result.meaning_roll}"
+        else:
+            return f"Failed to extend {condition} duration."
+
+    # =========================================================================
+    # REALITY WARP
+    # =========================================================================
+
+    # Reality warp outcome categories (deterministic table)
+    REALITY_WARP_OUTCOMES = [
+        "temporary_condition",  # 1-20
+        "displacement",         # 21-40
+        "resource_loss",        # 41-55
+        "environmental_change", # 56-70
+        "transformation",       # 71-85
+        "temporal_effect",      # 86-95
+        "planar_echo",          # 96-100
+    ]
+
+    def adjudicate_reality_warp(
+        self,
+        context: AdjudicationContext,
+        warp_intensity: str = "standard",  # minor, standard, major, legendary
+    ) -> AdjudicationResult:
+        """
+        Adjudicate a reality warp spell (polymorph, transmutation, etc.).
+
+        High-uncertainty outcome that MUST be deterministic, not LLM-decided.
+        Uses oracle tables: fate check for backlash, then deterministic
+        table roll for warp category.
+
+        Args:
+            context: Casting context
+            warp_intensity: How intense is the reality warp
+
+        Returns:
+            AdjudicationResult with structured outcome
+        """
+        from src.data_models import DiceRoller
+
+        predetermined_effects: list[EffectCommand] = []
+        secondary_checks: list[FateCheckResult] = []
+
+        # First check: Does the spell succeed?
+        success_likelihood = self._assess_reality_warp_likelihood(context, warp_intensity)
+        primary_check = self._mythic.fate_check(
+            f"Does {context.spell_name} successfully warp reality?",
+            success_likelihood,
+        )
+        success_level = self._fate_to_success(primary_check.result)
+
+        # Check for backlash (always a risk with reality warps)
+        backlash_likelihood = self._assess_backlash_likelihood(warp_intensity)
+        backlash_check = self._mythic.fate_check(
+            "Does the reality warp cause a backlash?",
+            backlash_likelihood,
+        )
+        secondary_checks.append(backlash_check)
+
+        has_backlash = self._mythic.is_yes(backlash_check)
+        warp_category = None
+        meaning_roll = None
+
+        # Roll on deterministic warp table for outcome category
+        warp_roll = DiceRoller.roll("1d100", f"{context.spell_name} warp category")
+        warp_category = self._lookup_warp_category(warp_roll.total)
+
+        # Generate effects based on success and warp category
+        if success_level in (SuccessLevel.EXCEPTIONAL_SUCCESS, SuccessLevel.SUCCESS):
+            # Warp succeeded - apply primary effect
+            predetermined_effects.extend(
+                self._generate_warp_effects(context, warp_category, "success")
+            )
+        elif success_level == SuccessLevel.PARTIAL_SUCCESS:
+            # Partial warp - reduced effect
+            predetermined_effects.extend(
+                self._generate_warp_effects(context, warp_category, "partial")
+            )
+            meaning_roll = self._mythic.roll_meaning()
+
+        # Apply backlash if triggered
+        if has_backlash:
+            backlash_effects = self._generate_backlash_effects(context, warp_category)
+            predetermined_effects.extend(backlash_effects)
+            if meaning_roll is None:
+                meaning_roll = self._mythic.roll_meaning()
+
+        # Log to RunLog
+        self._log_adjudication(
+            context=context,
+            adjudication_type=SpellAdjudicationType.REALITY_WARP,
+            success_level=success_level,
+            effects=predetermined_effects,
+            primary_check=primary_check,
+            meaning_roll=meaning_roll,
+            has_complication=has_backlash,  # Backlash is the complication for reality warp
+        )
+
+        result = AdjudicationResult(
+            adjudication_type=SpellAdjudicationType.REALITY_WARP,
+            success_level=success_level,
+            primary_fate_check=primary_check,
+            secondary_fate_checks=secondary_checks,
+            meaning_roll=meaning_roll,
+            has_complication=has_backlash,
+            complication_meaning=meaning_roll if has_backlash else None,
+            random_event_occurred=primary_check.random_event_triggered or backlash_check.random_event_triggered,
+            predetermined_effects=predetermined_effects,
+            interpretation_context={
+                "caster": context.caster_name,
+                "caster_level": context.caster_level,
+                "target": context.target_description,
+                "spell": context.spell_name,
+                "warp_intensity": warp_intensity,
+                "warp_category": warp_category,
+                "warp_roll": warp_roll.total,
+                "has_backlash": has_backlash,
+            },
+        )
+
+        result.summary = self._generate_reality_warp_summary(result)
+        return result
+
+    def _assess_reality_warp_likelihood(
+        self,
+        context: AdjudicationContext,
+        warp_intensity: str,
+    ) -> Likelihood:
+        """Assess likelihood of reality warp succeeding."""
+        # Base from intensity
+        intensity_bases = {
+            "minor": Likelihood.VERY_LIKELY,
+            "standard": Likelihood.LIKELY,
+            "major": Likelihood.FIFTY_FIFTY,
+            "legendary": Likelihood.UNLIKELY,
+        }
+        base = intensity_bases.get(warp_intensity, Likelihood.FIFTY_FIFTY)
+
+        # Caster level helps
+        modifier = 0
+        if context.caster_level >= 14:
+            modifier += 2
+        elif context.caster_level >= 9:
+            modifier += 1
+        elif context.caster_level <= 5:
+            modifier -= 1
+
+        result_value = max(0, min(9, base.value + modifier))
+        return Likelihood(result_value)
+
+    def _assess_backlash_likelihood(self, warp_intensity: str) -> Likelihood:
+        """Assess likelihood of backlash from reality warp."""
+        # Higher intensity = more likely backlash
+        intensity_backlash = {
+            "minor": Likelihood.VERY_UNLIKELY,
+            "standard": Likelihood.UNLIKELY,
+            "major": Likelihood.FIFTY_FIFTY,
+            "legendary": Likelihood.LIKELY,
+        }
+        return intensity_backlash.get(warp_intensity, Likelihood.UNLIKELY)
+
+    def _lookup_warp_category(self, roll: int) -> str:
+        """Look up warp category from roll (1-100)."""
+        if roll <= 20:
+            return "temporary_condition"
+        elif roll <= 40:
+            return "displacement"
+        elif roll <= 55:
+            return "resource_loss"
+        elif roll <= 70:
+            return "environmental_change"
+        elif roll <= 85:
+            return "transformation"
+        elif roll <= 95:
+            return "temporal_effect"
+        else:
+            return "planar_echo"
+
+    def _generate_warp_effects(
+        self,
+        context: AdjudicationContext,
+        warp_category: str,
+        outcome: str,  # "success" or "partial"
+    ) -> list[EffectCommand]:
+        """Generate effects based on warp category and outcome."""
+        effects: list[EffectCommand] = []
+        target = context.target_description
+
+        duration = "1 hour" if outcome == "success" else "10 minutes"
+
+        if warp_category == "temporary_condition":
+            effects.append(
+                EffectCommandBuilder.add_condition(
+                    target_id=target,
+                    condition="transformed",
+                    duration=duration,
+                    source=f"{context.spell_name} by {context.caster_name}",
+                )
+            )
+        elif warp_category == "displacement":
+            effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id=target,
+                    flag_name="displaced",
+                    flag_value=True,
+                    scope="scene",
+                    source=f"{context.spell_name}",
+                )
+            )
+        elif warp_category == "resource_loss":
+            # Minor exhaustion from reality strain
+            effects.append(
+                EffectCommandBuilder.apply_exhaustion(
+                    target_id=target,
+                    duration_days=1 if outcome == "success" else "1d4",
+                    effect="reality strain",
+                    source=f"{context.spell_name}",
+                )
+            )
+        elif warp_category == "environmental_change":
+            effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id="environment",
+                    flag_name="reality_warped",
+                    flag_value=True,
+                    scope="scene",
+                    source=f"{context.spell_name}",
+                )
+            )
+        elif warp_category == "transformation":
+            effects.append(
+                EffectCommandBuilder.add_condition(
+                    target_id=target,
+                    condition="transformed",
+                    duration=duration,
+                    source=f"{context.spell_name}",
+                )
+            )
+            effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id=target,
+                    flag_name="form_changed",
+                    flag_value=True,
+                    scope="scene",
+                    source=f"{context.spell_name}",
+                )
+            )
+        elif warp_category == "temporal_effect":
+            effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id=target,
+                    flag_name="time_affected",
+                    flag_value=True,
+                    scope="scene",
+                    source=f"{context.spell_name}",
+                )
+            )
+        elif warp_category == "planar_echo":
+            effects.append(
+                EffectCommandBuilder.set_flag(
+                    target_id=target,
+                    flag_name="planar_touched",
+                    flag_value=True,
+                    scope="scene",
+                    source=f"{context.spell_name}",
+                )
+            )
+
+        return effects
+
+    def _generate_backlash_effects(
+        self,
+        context: AdjudicationContext,
+        warp_category: str,
+    ) -> list[EffectCommand]:
+        """Generate backlash effects from reality warp."""
+        effects: list[EffectCommand] = []
+        caster = context.caster_name
+
+        # Backlash hits the caster
+        if warp_category in ("temporary_condition", "transformation"):
+            effects.append(
+                EffectCommandBuilder.add_condition(
+                    target_id=caster,
+                    condition="stunned",
+                    duration="1 round",
+                    source="Reality warp backlash",
+                )
+            )
+        elif warp_category == "resource_loss":
+            effects.append(
+                EffectCommandBuilder.apply_exhaustion(
+                    target_id=caster,
+                    duration_days=1,
+                    effect="reality strain backlash",
+                    source="Reality warp backlash",
+                )
+            )
+        elif warp_category == "temporal_effect":
+            effects.append(
+                EffectCommandBuilder.age(
+                    target_id=caster,
+                    years="1d4",
+                    source="Reality warp temporal backlash",
+                )
+            )
+        else:
+            # Generic minor backlash
+            effects.append(
+                EffectCommandBuilder.damage(
+                    target_id=caster,
+                    amount="1d6",
+                    damage_type="psychic",
+                    source="Reality warp backlash",
+                )
+            )
+
+        return effects
+
+    def _generate_reality_warp_summary(self, result: AdjudicationResult) -> str:
+        """Generate summary for reality warp."""
+        ctx = result.interpretation_context
+        warp_cat = ctx.get("warp_category", "unknown")
+        has_backlash = ctx.get("has_backlash", False)
+
+        category_descriptions = {
+            "temporary_condition": "temporary transformation",
+            "displacement": "spatial displacement",
+            "resource_loss": "draining reality strain",
+            "environmental_change": "environmental warping",
+            "transformation": "physical transformation",
+            "temporal_effect": "time distortion",
+            "planar_echo": "planar resonance",
+        }
+        cat_desc = category_descriptions.get(warp_cat, warp_cat)
+
+        base = ""
+        if result.success_level == SuccessLevel.EXCEPTIONAL_SUCCESS:
+            base = f"Reality warps perfectly: {cat_desc}."
+        elif result.success_level == SuccessLevel.SUCCESS:
+            base = f"Reality warps: {cat_desc}."
+        elif result.success_level == SuccessLevel.PARTIAL_SUCCESS:
+            base = f"Reality partially warps ({cat_desc}): {result.meaning_roll}"
+        elif result.success_level == SuccessLevel.FAILURE:
+            base = "The reality warp fails to take hold."
+        else:
+            base = f"The reality warp fails catastrophically: {result.meaning_roll}"
+
+        if has_backlash:
+            base += f" [BACKLASH: {result.complication_meaning}]"
+
+        return base
+
+    # =========================================================================
+    # LOGGING HELPER
+    # =========================================================================
+
+    def _log_adjudication(
+        self,
+        context: AdjudicationContext,
+        adjudication_type: SpellAdjudicationType,
+        success_level: SuccessLevel,
+        effects: list[EffectCommand],
+        primary_check: FateCheckResult,
+        meaning_roll: Optional[MeaningRoll] = None,
+        has_complication: Optional[bool] = None,
+    ) -> None:
+        """Log adjudication to RunLog for observability."""
+        # Default to primary check's random event if not specified
+        complication = has_complication if has_complication is not None else primary_check.random_event_triggered
+        try:
+            from src.observability.run_log import get_run_log
+            get_run_log().log_spell_adjudication(
+                spell_name=context.spell_name,
+                caster_id=context.caster_name,
+                adjudication_type=adjudication_type.value,
+                success_level=success_level.value,
+                summary=f"Roll: {primary_check.roll}, Likelihood: {primary_check.likelihood.name}",
+                effects_executed=[str(e) for e in effects],
+                has_complication=complication,
+                meaning_pair=str(meaning_roll) if meaning_roll else "",
+            )
+        except ImportError:
+            pass  # RunLog not available
+
+    # =========================================================================
     # GENERIC ADJUDICATION
     # =========================================================================
 

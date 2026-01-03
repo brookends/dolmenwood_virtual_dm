@@ -67,6 +67,11 @@ class EffectType(str, Enum):
     # Time/duration
     APPLY_EXHAUSTION = "exhaustion"
     AGE = "age"
+    EXTEND_CONDITION_DURATION = "extend_condition_duration"
+
+    # Context flags and disposition
+    SET_FLAG = "set_flag"  # Set a context flag for this interaction
+    MODIFY_DISPOSITION = "modify_disposition"  # Change NPC disposition
 
     # Meta
     CUSTOM = "custom"  # For referee-adjudicated effects
@@ -364,6 +369,74 @@ class EffectCommandBuilder:
             source=source,
         )
 
+    @staticmethod
+    def extend_condition_duration(
+        target_id: str,
+        condition: str,
+        turns: int = 0,
+        minutes: int = 0,
+        hours: int = 0,
+        source: str = "",
+    ) -> EffectCommand:
+        """Create a command to extend the duration of an existing condition."""
+        return EffectCommand(
+            effect_type=EffectType.EXTEND_CONDITION_DURATION,
+            target_id=target_id,
+            parameters={
+                "condition": condition,
+                "extend_turns": turns,
+                "extend_minutes": minutes,
+                "extend_hours": hours,
+            },
+            source=source,
+        )
+
+    @staticmethod
+    def set_flag(
+        target_id: str,
+        flag_name: str,
+        flag_value: bool | str | int = True,
+        scope: str = "interaction",  # "interaction", "scene", "session"
+        source: str = "",
+    ) -> EffectCommand:
+        """Create a command to set a context flag."""
+        return EffectCommand(
+            effect_type=EffectType.SET_FLAG,
+            target_id=target_id,
+            parameters={
+                "flag_name": flag_name,
+                "flag_value": flag_value,
+                "scope": scope,
+            },
+            source=source,
+        )
+
+    @staticmethod
+    def modify_disposition(
+        target_id: str,
+        delta: int,
+        reason: str = "",
+        source: str = "",
+    ) -> EffectCommand:
+        """
+        Create a command to modify NPC disposition.
+
+        Args:
+            target_id: NPC to modify
+            delta: Change in disposition (-2 hostile, -1 wary, +1 friendly, +2 helpful)
+            reason: Why disposition changed
+            source: What caused it
+        """
+        return EffectCommand(
+            effect_type=EffectType.MODIFY_DISPOSITION,
+            target_id=target_id,
+            parameters={
+                "delta": delta,
+                "reason": reason,
+            },
+            source=source,
+        )
+
 
 # =============================================================================
 # EFFECT VALIDATOR
@@ -387,6 +460,7 @@ class EffectValidator:
         "invisible", "blinded", "deafened", "stunned", "unconscious",
         "exhausted", "prone", "restrained", "petrified", "incapacitated",
         "sleeping", "confused", "diseased", "dying", "dead",
+        "transformed", "suspicious", "displaced",  # Reality warp / charm conditions
     }
 
     # Valid stats that can be modified
@@ -941,4 +1015,136 @@ class EffectExecutor:
             command=cmd,
             description=f"Custom effect: {description}",
             changes={"custom": description, "requires_adjudication": True},
+        )
+
+    def _execute_extend_condition_duration(self, cmd: EffectCommand) -> EffectResult:
+        """Extend the duration of an existing condition."""
+        condition = cmd.parameters.get("condition")
+        extend_turns = cmd.parameters.get("extend_turns", 0)
+        extend_minutes = cmd.parameters.get("extend_minutes", 0)
+        extend_hours = cmd.parameters.get("extend_hours", 0)
+
+        if not condition:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                error="No condition specified to extend",
+            )
+
+        if self._controller:
+            # Wire to controller's extend_condition_duration if available
+            if hasattr(self._controller, 'extend_condition_duration'):
+                result = self._controller.extend_condition_duration(
+                    cmd.target_id, condition,
+                    turns=extend_turns, minutes=extend_minutes, hours=extend_hours
+                )
+                if result.get("error"):
+                    return EffectResult(
+                        success=False,
+                        command=cmd,
+                        error=result["error"],
+                    )
+                return EffectResult(
+                    success=True,
+                    command=cmd,
+                    description=f"Extended '{condition}' duration on {cmd.target_id}",
+                    changes={
+                        "condition": condition,
+                        "extended_turns": extend_turns,
+                        "extended_minutes": extend_minutes,
+                        "extended_hours": extend_hours,
+                    },
+                )
+
+        # No controller or method - report as simulated
+        desc_parts = []
+        if extend_turns:
+            desc_parts.append(f"{extend_turns} turns")
+        if extend_minutes:
+            desc_parts.append(f"{extend_minutes} minutes")
+        if extend_hours:
+            desc_parts.append(f"{extend_hours} hours")
+        duration_str = " + ".join(desc_parts) or "0"
+
+        return EffectResult(
+            success=True,
+            command=cmd,
+            description=f"[Simulated] Extend '{condition}' on {cmd.target_id} by {duration_str}",
+            changes={
+                "condition": condition,
+                "extended_turns": extend_turns,
+                "extended_minutes": extend_minutes,
+                "extended_hours": extend_hours,
+                "simulated": True,
+            },
+        )
+
+    def _execute_set_flag(self, cmd: EffectCommand) -> EffectResult:
+        """Set a context flag for this interaction."""
+        flag_name = cmd.parameters.get("flag_name")
+        flag_value = cmd.parameters.get("flag_value", True)
+        scope = cmd.parameters.get("scope", "interaction")
+
+        if not flag_name:
+            return EffectResult(
+                success=False,
+                command=cmd,
+                error="No flag_name specified",
+            )
+
+        if self._controller:
+            # Wire to controller's set_context_flag if available
+            if hasattr(self._controller, 'set_context_flag'):
+                self._controller.set_context_flag(flag_name, flag_value, scope=scope)
+
+        return EffectResult(
+            success=True,
+            command=cmd,
+            description=f"Set flag '{flag_name}' = {flag_value} (scope: {scope})",
+            changes={
+                "flag_name": flag_name,
+                "flag_value": flag_value,
+                "scope": scope,
+            },
+        )
+
+    def _execute_modify_disposition(self, cmd: EffectCommand) -> EffectResult:
+        """Modify NPC disposition."""
+        delta = cmd.parameters.get("delta", 0)
+        reason = cmd.parameters.get("reason", "")
+
+        if self._controller:
+            # Wire to controller's modify_disposition if available
+            if hasattr(self._controller, 'modify_npc_disposition'):
+                result = self._controller.modify_npc_disposition(
+                    cmd.target_id, delta, reason=reason
+                )
+                if result.get("error"):
+                    return EffectResult(
+                        success=False,
+                        command=cmd,
+                        error=result["error"],
+                    )
+                return EffectResult(
+                    success=True,
+                    command=cmd,
+                    description=f"Modified disposition of {cmd.target_id} by {delta:+d}",
+                    changes={
+                        "npc_id": cmd.target_id,
+                        "delta": delta,
+                        "new_disposition": result.get("new_disposition"),
+                    },
+                )
+
+        # No controller - report as simulated
+        return EffectResult(
+            success=True,
+            command=cmd,
+            description=f"[Simulated] Modify disposition of {cmd.target_id} by {delta:+d}",
+            changes={
+                "npc_id": cmd.target_id,
+                "delta": delta,
+                "reason": reason,
+                "simulated": True,
+            },
         )
