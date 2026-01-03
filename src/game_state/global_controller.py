@@ -1362,8 +1362,6 @@ class GlobalController:
         Returns:
             Dict with healing amount and result
         """
-        from src.dice.dice_roller import DiceRoller
-
         dice_formula = healing_data.get("dice", "1d6")
         condition = healing_data.get("condition", "")
 
@@ -1405,8 +1403,29 @@ class GlobalController:
 
         # Define metadata for common condition chains
         chain_metadata = {
+            "enchanted_hearing": {
+                # Hearing magic music leads immediately to dancing
+                # Duration of 0 turns means it chains right away on next tick
+                "duration_turns": 0,
+                "ends_at_time_of_day": None,
+                "leads_to_condition": {
+                    "condition_type": "compelled_dancing",
+                    "source": "enchanting_music",
+                },
+            },
+            "compelled_dancing": {
+                # Dancing until dawn
+                "ends_at_time_of_day": "dawn",
+                "protection_effects": {"elements": True},
+                "leads_to_condition": {
+                    "condition_type": "magical_sleep",
+                    "source": "dawn_slumber",
+                },
+            },
             "magical_sleep": {
-                "ends_at_time_of_day": None,  # Ends when disturbed or after rest
+                # 8 hours of enchanted slumber (48 turns = 8 hours × 6 turns/hour)
+                "duration_turns": 48,
+                "ends_at_time_of_day": None,
                 "healing_on_end": {"dice": "1d6", "condition": "undisturbed"},
                 "leads_to_condition": {
                     "condition_type": "fairy_marked",
@@ -1427,6 +1446,7 @@ class GlobalController:
         return Condition(
             condition_type=condition_type,
             source=source,
+            duration_turns=metadata.get("duration_turns"),
             ends_at_time_of_day=metadata.get("ends_at_time_of_day"),
             duration_days=metadata.get("duration_days"),
             healing_on_end=metadata.get("healing_on_end"),
@@ -6080,24 +6100,61 @@ class GlobalController:
         )
 
     def _tick_conditions(self, turns: int) -> list[dict[str, Any]]:
-        """Tick all conditions and return expired ones."""
+        """
+        Tick all conditions and return expired ones.
+
+        Handles condition chains by applying healing and creating follow-on
+        conditions when a turn-based condition expires.
+        """
         expired = []
 
         for character in self._characters.values():
             still_active = []
+            conditions_to_add = []
+
             for condition in character.conditions:
+                condition_expired = False
                 for _ in range(turns):
                     if condition.tick():
-                        expired.append(
-                            {
-                                "character_id": character.character_id,
-                                "condition": condition.condition_type.value,
-                            }
-                        )
+                        # Get transition effects before removal
+                        transition = condition.get_end_transition()
+
+                        expiration_record = {
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "condition": condition.condition_type.value,
+                            "healing_applied": None,
+                            "chained_to": None,
+                        }
+
+                        # Apply healing if specified
+                        if transition and transition.get("healing"):
+                            healing_result = self._apply_condition_end_healing(
+                                character, transition["healing"]
+                            )
+                            expiration_record["healing_applied"] = healing_result
+
+                        # Create chained condition if specified
+                        if transition and transition.get("next_condition"):
+                            next_cond = self._create_chained_condition(
+                                transition["next_condition"]
+                            )
+                            conditions_to_add.append(next_cond)
+                            expiration_record["chained_to"] = next_cond.condition_type.value
+
+                        expired.append(expiration_record)
+                        condition_expired = True
                         break
-                else:
+
+                if not condition_expired:
                     still_active.append(condition)
+
+            # Update character conditions
             character.conditions = still_active
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
 
         return expired
 
@@ -6120,6 +6177,7 @@ class GlobalController:
 
         for character in self._characters.values():
             still_active = []
+            conditions_to_add = []
             for condition in character.conditions:
                 for _ in range(days):
                     result = condition.tick_day()
@@ -6165,17 +6223,44 @@ class GlobalController:
 
                     # Check if condition expired
                     if result["expired"]:
-                        effects.append({
+                        # Get transition effects before removal
+                        transition = condition.get_end_transition()
+
+                        expiration_record = {
                             "character_id": character.character_id,
                             "character_name": character.name,
                             "condition": condition.condition_type.value,
                             "effect_type": "expired",
-                        })
+                            "healing_applied": None,
+                            "chained_to": None,
+                        }
+
+                        # Apply healing if specified
+                        if transition and transition.get("healing"):
+                            healing_result = self._apply_condition_end_healing(
+                                character, transition["healing"]
+                            )
+                            expiration_record["healing_applied"] = healing_result
+
+                        # Create chained condition if specified
+                        if transition and transition.get("next_condition"):
+                            next_cond = self._create_chained_condition(
+                                transition["next_condition"]
+                            )
+                            conditions_to_add.append(next_cond)
+                            expiration_record["chained_to"] = next_cond.condition_type.value
+
+                        effects.append(expiration_record)
                         break
                 else:
                     still_active.append(condition)
 
+            # Update character conditions
             character.conditions = still_active
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
 
         return effects
 

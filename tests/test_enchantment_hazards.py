@@ -431,3 +431,197 @@ class TestFullMoonVariation:
         """Verify check_hex_night_entry method exists."""
         from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
         assert hasattr(HexCrawlEngine, "check_hex_night_entry")
+
+
+class TestConditionChainMetadata:
+    """Tests for condition chain metadata in _create_chained_condition."""
+
+    def test_enchanted_hearing_chains_to_dancing(self):
+        """Verify ENCHANTED_HEARING chains to COMPELLED_DANCING."""
+        from src.game_state.global_controller import GlobalController
+
+        controller = GlobalController()
+        chain_data = {"condition_type": "enchanted_hearing", "source": "test"}
+        condition = controller._create_chained_condition(chain_data)
+
+        # Should have a very short duration to chain immediately
+        assert condition.duration_turns == 0
+        assert condition.leads_to_condition is not None
+        assert condition.leads_to_condition["condition_type"] == "compelled_dancing"
+
+    def test_compelled_dancing_ends_at_dawn(self):
+        """Verify COMPELLED_DANCING ends at dawn and chains to sleep."""
+        from src.game_state.global_controller import GlobalController
+
+        controller = GlobalController()
+        chain_data = {"condition_type": "compelled_dancing", "source": "test"}
+        condition = controller._create_chained_condition(chain_data)
+
+        assert condition.ends_at_time_of_day == "dawn"
+        assert condition.leads_to_condition is not None
+        assert condition.leads_to_condition["condition_type"] == "magical_sleep"
+
+    def test_magical_sleep_has_duration(self):
+        """Verify MAGICAL_SLEEP has 8-hour duration (48 turns)."""
+        from src.game_state.global_controller import GlobalController
+
+        controller = GlobalController()
+        chain_data = {"condition_type": "magical_sleep", "source": "test"}
+        condition = controller._create_chained_condition(chain_data)
+
+        # 8 hours = 48 turns (6 turns per hour)
+        assert condition.duration_turns == 48
+        assert condition.healing_on_end is not None
+        assert condition.healing_on_end["dice"] == "1d6"
+        assert condition.leads_to_condition["condition_type"] == "fairy_marked"
+
+    def test_fairy_marked_has_6_month_duration(self):
+        """Verify FAIRY_MARKED has 6-month duration."""
+        from src.game_state.global_controller import GlobalController
+
+        controller = GlobalController()
+        chain_data = {"condition_type": "fairy_marked", "source": "test"}
+        condition = controller._create_chained_condition(chain_data)
+
+        assert condition.duration_days == 180
+        assert condition.leads_to_condition is None  # End of chain
+
+
+class TestConditionChainExecution:
+    """Tests for condition chain execution during time advancement."""
+
+    def test_tick_conditions_chains_on_expiry(self):
+        """Verify _tick_conditions creates chained conditions on expiry."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, Condition, ConditionType
+
+        controller = GlobalController()
+
+        # Create a character with ENCHANTED_HEARING (duration 0 = expires immediately)
+        char = CharacterState(
+            character_id="test_dancer",
+            name="Test Dancer",
+            character_class="Fighter",
+            level=1,
+            hp_max=10,
+            hp_current=10,
+            ability_scores={"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10},
+            armor_class=10,
+            base_speed=30,
+        )
+        char.conditions = [
+            Condition(
+                condition_type=ConditionType.ENCHANTED_HEARING,
+                source="The Weeping Woman",
+                duration_turns=1,  # Will expire after 1 tick
+                leads_to_condition={
+                    "condition_type": "compelled_dancing",
+                    "source": "enchanting_music",
+                },
+            )
+        ]
+        controller.add_character(char)
+
+        # Tick 1 turn - ENCHANTED_HEARING should expire
+        expired = controller._tick_conditions(1)
+
+        assert len(expired) == 1
+        assert expired[0]["condition"] == "enchanted_hearing"
+        assert expired[0]["chained_to"] == "compelled_dancing"
+
+        # Character should now have COMPELLED_DANCING
+        assert len(char.conditions) == 1
+        assert char.conditions[0].condition_type == ConditionType.COMPELLED_DANCING
+
+    def test_magical_sleep_expires_after_48_turns(self):
+        """Verify MAGICAL_SLEEP expires after 48 turns and chains to FAIRY_MARKED."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, Condition, ConditionType
+
+        controller = GlobalController()
+
+        char = CharacterState(
+            character_id="test_sleeper",
+            name="Test Sleeper",
+            character_class="Fighter",
+            level=1,
+            hp_max=10,
+            hp_current=5,  # Injured to test healing
+            ability_scores={"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10},
+            armor_class=10,
+            base_speed=30,
+        )
+        char.conditions = [
+            Condition(
+                condition_type=ConditionType.MAGICAL_SLEEP,
+                source="dawn_slumber",
+                duration_turns=48,
+                healing_on_end={"dice": "1d6", "condition": "undisturbed"},
+                leads_to_condition={
+                    "condition_type": "fairy_marked",
+                    "source": "neveryon_dreams",
+                },
+            )
+        ]
+        controller.add_character(char)
+
+        # Tick 47 turns - should not expire yet
+        expired = controller._tick_conditions(47)
+        assert len(expired) == 0
+        assert len(char.conditions) == 1
+        assert char.conditions[0].condition_type == ConditionType.MAGICAL_SLEEP
+
+        # Tick 1 more turn - should expire now
+        expired = controller._tick_conditions(1)
+        assert len(expired) == 1
+        assert expired[0]["condition"] == "magical_sleep"
+        assert expired[0]["chained_to"] == "fairy_marked"
+        assert expired[0]["healing_applied"] is not None
+
+        # Character should now have FAIRY_MARKED and be healed
+        assert len(char.conditions) == 1
+        assert char.conditions[0].condition_type == ConditionType.FAIRY_MARKED
+        assert char.hp_current > 5  # Should have healed some
+
+    def test_fairy_marked_expires_after_180_days(self):
+        """Verify FAIRY_MARKED expires after 180 days with no chain."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, Condition, ConditionType
+
+        controller = GlobalController()
+
+        char = CharacterState(
+            character_id="test_marked",
+            name="Test Marked",
+            character_class="Fighter",
+            level=1,
+            hp_max=10,
+            hp_current=10,
+            ability_scores={"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10},
+            armor_class=10,
+            base_speed=30,
+        )
+        char.conditions = [
+            Condition(
+                condition_type=ConditionType.FAIRY_MARKED,
+                source="neveryon_dreams",
+                duration_days=180,
+            )
+        ]
+        controller.add_character(char)
+
+        # Tick 179 days - should not expire yet
+        effects = controller._tick_conditions_daily(179)
+        expired_effects = [e for e in effects if e.get("effect_type") == "expired"]
+        assert len(expired_effects) == 0
+        assert len(char.conditions) == 1
+
+        # Tick 1 more day - should expire
+        effects = controller._tick_conditions_daily(1)
+        expired_effects = [e for e in effects if e.get("effect_type") == "expired"]
+        assert len(expired_effects) == 1
+        assert expired_effects[0]["condition"] == "fairy_marked"
+        assert expired_effects[0]["chained_to"] is None  # End of chain
+
+        # Character should have no conditions
+        assert len(char.conditions) == 0
