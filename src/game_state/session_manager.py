@@ -845,6 +845,14 @@ class GameSession:
     # Completed quests
     completed_quests: list[str] = field(default_factory=list)
 
+    # Active quests being tracked
+    # Format: {quest_id: ActiveQuest.to_dict()}
+    active_quests: dict[str, dict[str, Any]] = field(default_factory=dict)
+
+    # Pending turn-based events (delayed arrivals, etc.)
+    # Format: [PendingTurnEvent.to_dict()]
+    pending_turn_events: list[dict[str, Any]] = field(default_factory=list)
+
     # POI visit tracking
     poi_visits: dict[str, dict[str, Any]] = field(default_factory=dict)
 
@@ -880,6 +888,8 @@ class GameSession:
             "granted_abilities": [a.to_dict() for a in self.granted_abilities],
             "world_changes": [c.to_dict() for c in self.world_changes],
             "completed_quests": self.completed_quests,
+            "active_quests": self.active_quests,
+            "pending_turn_events": self.pending_turn_events,
             "poi_visits": self.poi_visits,
             "unique_items_acquired": self.unique_items_acquired,
             "materialized_items": self.materialized_items,
@@ -922,6 +932,8 @@ class GameSession:
                 SerializableWorldChange.from_dict(c) for c in data.get("world_changes", [])
             ],
             completed_quests=data.get("completed_quests", []),
+            active_quests=data.get("active_quests", {}),
+            pending_turn_events=data.get("pending_turn_events", []),
             poi_visits=data.get("poi_visits", {}),
             unique_items_acquired=data.get("unique_items_acquired", {}),
             materialized_items=data.get("materialized_items", {}),
@@ -1417,6 +1429,427 @@ class SessionManager:
 
         if quest_id not in self._current_session.completed_quests:
             self._current_session.completed_quests.append(quest_id)
+
+        # Also update active quest state if tracked
+        if quest_id in self._current_session.active_quests:
+            from src.data_models import QuestState
+
+            quest_data = self._current_session.active_quests[quest_id]
+            quest_data["state"] = QuestState.COMPLETED.value
+
+    # =========================================================================
+    # QUEST TRACKING SYSTEM
+    # =========================================================================
+
+    def accept_quest(
+        self,
+        quest_hook: dict[str, Any],
+        npc_id: Optional[str] = None,
+        hex_id: Optional[str] = None,
+    ) -> Optional[dict[str, Any]]:
+        """
+        Accept a quest and begin tracking it.
+
+        Args:
+            quest_hook: The quest hook definition from hex/NPC data
+            npc_id: Optional NPC ID who gave the quest
+            hex_id: Optional hex ID where quest was accepted
+
+        Returns:
+            The ActiveQuest dict if accepted, None if already active
+        """
+        if not self._current_session:
+            return None
+
+        from src.data_models import ActiveQuest
+
+        quest_id = quest_hook.get("quest_id", "")
+        if not quest_id:
+            return None
+
+        # Don't accept already active or completed quests
+        if quest_id in self._current_session.active_quests:
+            return None
+        if quest_id in self._current_session.completed_quests:
+            return None
+
+        # Create ActiveQuest from hook
+        quest = ActiveQuest.from_quest_hook(quest_hook, npc_id, hex_id)
+        quest_dict = quest.to_dict()
+
+        self._current_session.active_quests[quest_id] = quest_dict
+        return quest_dict
+
+    def get_active_quest(self, quest_id: str) -> Optional[dict[str, Any]]:
+        """Get an active quest by ID."""
+        if not self._current_session:
+            return None
+        return self._current_session.active_quests.get(quest_id)
+
+    def get_all_active_quests(self) -> list[dict[str, Any]]:
+        """Get all active quests."""
+        if not self._current_session:
+            return []
+        return list(self._current_session.active_quests.values())
+
+    def update_quest_progress(
+        self,
+        quest_id: str,
+        progress_count: Optional[int] = None,
+        note: Optional[str] = None,
+        state: Optional[str] = None,
+    ) -> bool:
+        """
+        Update quest progress.
+
+        Args:
+            quest_id: Quest to update
+            progress_count: New progress count
+            note: Note to add
+            state: New state (accepted, in_progress, completed, failed)
+
+        Returns:
+            True if updated, False if quest not found
+        """
+        if not self._current_session:
+            return False
+
+        if quest_id not in self._current_session.active_quests:
+            return False
+
+        quest = self._current_session.active_quests[quest_id]
+
+        if progress_count is not None:
+            quest["progress_count"] = progress_count
+
+        if note:
+            if "notes" not in quest:
+                quest["notes"] = []
+            quest["notes"].append(note)
+
+        if state:
+            from src.data_models import QuestState
+
+            quest["state"] = state
+            if state == QuestState.COMPLETED.value:
+                self.complete_quest(quest_id)
+
+        return True
+
+    def check_quest_completion(
+        self,
+        killed_monsters: Optional[list[str]] = None,
+        current_hex: Optional[str] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Check all active quests for completion conditions.
+
+        Args:
+            killed_monsters: List of monster IDs killed
+            current_hex: Current hex ID
+
+        Returns:
+            List of completed quests
+        """
+        if not self._current_session:
+            return []
+
+        from src.data_models import ActiveQuest, QuestState
+
+        completed = []
+        killed = killed_monsters or []
+
+        for quest_id, quest_data in list(self._current_session.active_quests.items()):
+            quest = ActiveQuest.from_dict(quest_data)
+
+            if not quest.is_active():
+                continue
+
+            if quest.check_completion(killed, current_hex or ""):
+                quest.state = QuestState.COMPLETED
+                self._current_session.active_quests[quest_id] = quest.to_dict()
+                self.complete_quest(quest_id)
+                completed.append(quest.to_dict())
+
+        return completed
+
+    def on_monster_killed(self, monster_id: str, hex_id: str) -> list[dict[str, Any]]:
+        """
+        Check for quest completions when a monster is killed.
+
+        Args:
+            monster_id: The ID of the killed monster
+            hex_id: The hex where it was killed
+
+        Returns:
+            List of completed quests
+        """
+        return self.check_quest_completion([monster_id], hex_id)
+
+    def abandon_quest(self, quest_id: str) -> bool:
+        """
+        Abandon a quest.
+
+        Args:
+            quest_id: Quest to abandon
+
+        Returns:
+            True if abandoned, False if not found
+        """
+        if not self._current_session:
+            return False
+
+        if quest_id in self._current_session.active_quests:
+            from src.data_models import QuestState
+
+            self._current_session.active_quests[quest_id]["state"] = QuestState.ABANDONED.value
+            return True
+        return False
+
+    def fail_quest(self, quest_id: str, reason: str = "") -> bool:
+        """
+        Mark a quest as failed.
+
+        Args:
+            quest_id: Quest to fail
+            reason: Reason for failure
+
+        Returns:
+            True if failed, False if not found
+        """
+        if not self._current_session:
+            return False
+
+        if quest_id in self._current_session.active_quests:
+            from src.data_models import QuestState
+
+            quest = self._current_session.active_quests[quest_id]
+            quest["state"] = QuestState.FAILED.value
+            if reason:
+                if "notes" not in quest:
+                    quest["notes"] = []
+                quest["notes"].append(f"Failed: {reason}")
+            return True
+        return False
+
+    # =========================================================================
+    # TURN-BASED EVENT TRACKING
+    # =========================================================================
+
+    def schedule_turn_event(
+        self,
+        event_type: str,
+        trigger_in_turns: int,
+        current_turn: int,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+        monster_id: Optional[str] = None,
+        monster_count: int = 1,
+        monster_context: str = "",
+        description: str = "",
+        check_each_turn: bool = False,
+        check_probability: str = "",
+        check_die: str = "d6",
+    ) -> Optional[dict[str, Any]]:
+        """
+        Schedule a turn-based event (e.g., delayed monster arrival).
+
+        Args:
+            event_type: Type of event ("monster_arrival", "reinforcements", etc.)
+            trigger_in_turns: Number of turns until event triggers
+            current_turn: Current exploration turn number
+            hex_id: Hex where event will occur
+            poi_name: POI where event will occur
+            monster_id: Monster ID for arrival events
+            monster_count: Number of monsters arriving
+            monster_context: Narrative context for arrival
+            description: Description of the event
+            check_each_turn: If True, roll each turn instead of guaranteed trigger
+            check_probability: Probability string (e.g., "1-3" on a d6)
+            check_die: Die to roll for probability check
+
+        Returns:
+            The scheduled event dict, or None if no session
+        """
+        if not self._current_session:
+            return None
+
+        import uuid
+
+        from src.data_models import PendingTurnEvent
+
+        event = PendingTurnEvent(
+            event_id=str(uuid.uuid4())[:8],
+            event_type=event_type,
+            description=description,
+            trigger_in_turns=trigger_in_turns,
+            created_turn=current_turn,
+            target_turn=current_turn + trigger_in_turns,
+            hex_id=hex_id,
+            poi_name=poi_name,
+            check_each_turn=check_each_turn,
+            check_probability=check_probability,
+            check_die=check_die,
+            monster_id=monster_id,
+            monster_count=monster_count,
+            monster_context=monster_context,
+        )
+
+        event_dict = event.to_dict()
+        self._current_session.pending_turn_events.append(event_dict)
+        return event_dict
+
+    def get_pending_turn_events(
+        self,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Get pending turn events, optionally filtered by location.
+
+        Args:
+            hex_id: Filter by hex ID
+            poi_name: Filter by POI name
+
+        Returns:
+            List of pending event dicts
+        """
+        if not self._current_session:
+            return []
+
+        events = [
+            e
+            for e in self._current_session.pending_turn_events
+            if not e.get("triggered") and not e.get("cancelled")
+        ]
+
+        if hex_id:
+            events = [e for e in events if e.get("hex_id") == hex_id]
+        if poi_name:
+            events = [e for e in events if e.get("poi_name") == poi_name]
+
+        return events
+
+    def process_turn_events(
+        self,
+        current_turn: int,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+        dice_roller: Optional[Any] = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Process turn events and return those that trigger.
+
+        Args:
+            current_turn: Current exploration turn number
+            hex_id: Current hex ID (events outside this hex won't trigger)
+            poi_name: Current POI name
+            dice_roller: Optional dice roller for probability checks
+
+        Returns:
+            List of triggered events
+        """
+        if not self._current_session:
+            return []
+
+        from src.data_models import PendingTurnEvent
+
+        triggered = []
+
+        for event_data in list(self._current_session.pending_turn_events):
+            if event_data.get("triggered") or event_data.get("cancelled"):
+                continue
+
+            event = PendingTurnEvent.from_dict(event_data)
+
+            # Check if in correct location
+            if event.hex_id and hex_id and event.hex_id != hex_id:
+                continue
+            if event.poi_name and poi_name and event.poi_name != poi_name:
+                continue
+
+            # Check if should trigger
+            if event.check_each_turn and event.check_probability:
+                # Recurring check events
+                if current_turn >= event.created_turn:
+                    if dice_roller:
+                        roll_result = dice_roller.roll(event.check_die, "event check").total
+                        if event.check_recurring(roll_result):
+                            event.triggered = True
+                            event_data.update(event.to_dict())
+                            triggered.append(event_data)
+            elif event.should_trigger(current_turn):
+                # Fixed-time events
+                event.triggered = True
+                event_data.update(event.to_dict())
+                triggered.append(event_data)
+
+        return triggered
+
+    def cancel_turn_event(self, event_id: str) -> bool:
+        """
+        Cancel a pending turn event.
+
+        Args:
+            event_id: Event ID to cancel
+
+        Returns:
+            True if cancelled, False if not found
+        """
+        if not self._current_session:
+            return False
+
+        for event in self._current_session.pending_turn_events:
+            if event.get("event_id") == event_id:
+                event["cancelled"] = True
+                return True
+        return False
+
+    def cancel_poi_events(self, hex_id: str, poi_name: str) -> int:
+        """
+        Cancel all pending events at a specific POI.
+
+        Useful when party leaves the POI.
+
+        Args:
+            hex_id: Hex ID
+            poi_name: POI name
+
+        Returns:
+            Number of events cancelled
+        """
+        if not self._current_session:
+            return 0
+
+        count = 0
+        for event in self._current_session.pending_turn_events:
+            if (
+                event.get("hex_id") == hex_id
+                and event.get("poi_name") == poi_name
+                and not event.get("triggered")
+                and not event.get("cancelled")
+            ):
+                event["cancelled"] = True
+                count += 1
+        return count
+
+    def cleanup_old_turn_events(self) -> int:
+        """
+        Remove triggered and cancelled events from the list.
+
+        Returns:
+            Number of events removed
+        """
+        if not self._current_session:
+            return 0
+
+        before = len(self._current_session.pending_turn_events)
+        self._current_session.pending_turn_events = [
+            e
+            for e in self._current_session.pending_turn_events
+            if not e.get("triggered") and not e.get("cancelled")
+        ]
+        return before - len(self._current_session.pending_turn_events)
 
     # =========================================================================
     # UNIQUE ITEM REGISTRY

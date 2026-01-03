@@ -5,7 +5,7 @@
 This document tracks what aspects of hex 0105's gameplay are automated vs. require manual DM intervention.
 
 **Date:** 2026-01-03
-**Implementation Version:** 1.0 (Gaps Identified)
+**Implementation Version:** 2.0 (Core Gaps Fixed)
 
 ---
 
@@ -40,25 +40,77 @@ This document tracks what aspects of hex 0105's gameplay are automated vs. requi
 
 ---
 
-## What's NOT Playable (Gaps Identified)
+## What's NOW Playable (Fixed in v2.0)
 
-### 1. Night Hazard Trigger Detection (CRITICAL)
-**Gap:** `process_night_hazards()` only triggers on "full_moon" or "night" keywords
+### 1. Night Hazard Trigger Detection - FIXED
+**Previous Gap:** `process_night_hazards()` only triggered on "full_moon" or "night" keywords
 
-**Hex 0105's triggers:**
-- `camp_near_frost_patches` - Save vs Doom or 1d4 cold damage
-- `sleep` - Save vs Spell or exhausted (-1 to all rolls until rest elsewhere)
+**Solution Implemented:**
+- Extended `process_night_hazards()` to handle `camp_near_*` and `sleep` triggers
+- Added `_hex_has_feature()` method for feature detection
+- Updated `_resolve_hazard()` to handle Save vs Doom/Spell properly
 
-**Impact:** Neither trigger contains "full_moon" or "night", so they never fire
-**Location:** `src/hex_crawl/hex_crawl_engine.py:1889-1893`
-
-**Fix Required:** Extend `process_night_hazards()` to handle additional trigger types:
-- `camp_near_*` - Check if party is camping near specific feature
-- `sleep` - Trigger for all sleeping characters
+**Location:** `src/hex_crawl/hex_crawl_engine.py`
+**Tests:** `tests/test_hex_0105_hazards.py` (10 tests)
 
 ---
 
-### 2. Silence Effect Not Implemented
+### 2. Quest State Tracking - FIXED
+**Previous Gap:** No quest acceptance/tracking/completion system
+
+**Solution Implemented:**
+- Added `QuestState` enum (UNKNOWN, AVAILABLE, ACCEPTED, IN_PROGRESS, COMPLETED, FAILED, ABANDONED)
+- Added `ActiveQuest` dataclass with full tracking
+- Added session manager methods: `accept_quest()`, `update_quest_progress()`, `check_quest_completion()`
+- Updated hex 0105 quest hook with `target_monster: frore_gryphus`
+
+**Location:** `src/data_models.py`, `src/game_state/session_manager.py`
+**Tests:** `tests/test_quest_tracking.py` (14 tests)
+
+---
+
+### 3. Nest Turn Timer - FIXED
+**Previous Gap:** No mechanism for delayed monster arrivals
+
+**Solution Implemented:**
+- Added `PendingTurnEvent` dataclass for turn-based event scheduling
+- Added session manager methods: `schedule_turn_event()`, `process_turn_events()`
+- Updated hex 0105 nest roll table with `scheduled_event` data
+
+**Location:** `src/data_models.py`, `src/game_state/session_manager.py`
+**Tests:** `tests/test_turn_events.py` (14 tests)
+
+---
+
+### 4. Cold Aura Combat Damage - FIXED
+**Previous Gap:** Frore Gryphus cold aura not applied in combat
+
+**Solution Implemented:**
+- Added `AuraType` enum and `CombatAura` dataclass
+- Added `_process_aura_damage()` to combat engine
+- Auras parsed from `special_abilities` and applied at start of each round
+
+**Location:** `src/data_models.py`, `src/combat/combat_engine.py`
+**Tests:** `tests/test_combat_auras.py` (12 tests)
+
+---
+
+### 5. Exhausted Condition - FIXED
+**Previous Gap:** Exhausted condition existed but lacked mechanical effect
+
+**Solution Implemented:**
+- Added `CONDITION_ROLL_MODIFIERS` dict with exhausted: -1 to all rolls
+- Added `get_condition_roll_modifier()` helper function
+- Added removal method tracking (`rest_elsewhere`)
+
+**Location:** `src/data_models.py`
+**Tests:** `tests/test_exhausted_condition.py` (12 tests)
+
+---
+
+## What's NOT Playable (Remaining Gaps)
+
+### 1. Silence Effect Not Implemented
 **Gap:** Frozen Battleground has "Silence-like effect—no sounds travel more than 30 feet"
 
 **Impact:** No mechanical enforcement of sound distance limitation
@@ -66,124 +118,31 @@ This document tracks what aspects of hex 0105's gameplay are automated vs. requi
 - Communication over 30ft should be blocked
 - Listen checks should be modified
 
-**Fix Required:** Add POI-level area effect system:
-```python
-class POIAreaEffect:
-    effect_type: str  # "silence_30ft", "darkness", "cold_aura"
-    radius_feet: int
-    mechanical_effects: dict
-```
+**Fix Required:** Add POI-level area effect system
 
 ---
 
-### 3. Cold Aura Combat Mechanic Missing
-**Gap:** Frore Gryphus has "Cold Aura (creatures within 10 feet take 1 cold damage per round)"
-
-**Impact:** Automatic proximity damage not applied in combat
-
-**Stat Reference from hex data:**
-```
-Special: Cold Aura (creatures within 10 feet take 1 cold damage per round)
-```
-
-**Fix Required:** Combat engine needs per-round aura damage processing:
-```python
-def process_start_of_round_effects(self):
-    for combatant in self.combatants:
-        if combatant.has_aura("cold"):
-            for target in self.get_combatants_within(combatant, 10):
-                self.apply_damage(target, 1, "cold")
-```
-
----
-
-### 4. Nest Encounter Turn Timer
-**Gap:** No mechanism for delayed monster arrivals
-
-**From hex data:**
-- "Gryphlings Only" (roll 3-4): "Her cries will summon the mother in 1 Turn"
-- "Hunting" (roll 5-6): "Roll again each Turn; on 1-3 they return"
-
-**Impact:** DM must manually track turns and roll for arrival
-
-**Fix Required:** Turn-based event timer system:
-```python
-class PendingEvent:
-    trigger_in_turns: int
-    event_type: str  # "monster_arrival", "reinforcements"
-    check_each_turn: bool
-    check_probability: str  # "1-3 on d6"
-    monster_id: str
-```
-
----
-
-### 5. Quest Hook Trigger Mechanism
-**Gap:** Quest defined but no activation/tracking/completion system
-
-**Quest: hunt_frore_gryphus**
-- Giver: Aegnyth Cormick
-- Objective: Slay or banish the frore gryphus
-- Reward: 50gp + 1gp per sheep carcass + gratitude
-
-**Missing:**
-- Quest acceptance detection from NPC conversation
-- Quest state tracking (accepted, in_progress, completed, failed)
-- Completion detection (gryphus killed or fled hex)
-- Reward distribution
-
-**Fix Required:** Quest state machine:
-```python
-class QuestState(Enum):
-    UNKNOWN = "unknown"
-    AVAILABLE = "available"
-    ACCEPTED = "accepted"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-```
-
----
-
-### 6. Gryphling Training Mechanics
+### 2. Gryphling Training Mechanics
 **Gap:** Mentioned in secrets but no implementation
 
 **From secrets:**
 > "If the gryphlings are captured young, they can potentially be trained—though this would require fairy magic or the aid of someone who knows the Cold Prince's ways"
 
-**Missing:**
-- Gryphling capture mechanics
-- Training skill check system
-- Required knowledge check (fairy beasts / Cold Prince)
-- Training outcome effects
-
 **Priority:** Low (aspirational feature)
 
 ---
 
-### 7. Cold Prince Consequence Trigger
+### 3. Cold Prince Consequence Trigger
 **Gap:** DM notes mention consequence but no event system
 
 **From DM notes:**
 > "Consider having the Cold Prince's agents appear in later sessions if the gryphus is slain, as a consequence."
 
-**Missing:**
-- Death event trigger for frore gryphus
-- Delayed consequence scheduling
-- Cold Prince agent encounter generation
-
-**Fix Required:** World event consequence system:
-```python
-class WorldConsequence:
-    trigger_event: str  # "monster_death:frore_gryphus"
-    consequence_type: str  # "faction_agent_appearance"
-    delay_days: int
-    faction: str  # "cold_prince"
-```
+**Priority:** Low (world event system)
 
 ---
 
-### 8. Cross-Hex NPC Linkage
+### 4. Cross-Hex NPC Linkage
 **Gap:** Aegnyth references sister Marged in hex 0108, but no reciprocal data
 
 **From relationships:**
@@ -204,23 +163,29 @@ class WorldConsequence:
 
 ## Implementation Priority
 
-### High Priority (Core Gameplay)
+### Completed (v2.0)
 1. **Night Hazard Triggers** - Extend trigger detection for camp/sleep hazards
 2. **Quest State Tracking** - Basic quest acceptance and completion detection
-
-### Medium Priority (Enhanced Experience)
 3. **Nest Turn Timer** - Delayed monster arrival mechanic
 4. **Cold Aura Combat** - Per-round proximity damage in combat
+5. **Exhausted Condition** - Roll penalty system for conditions
 
 ### Low Priority (Polish/Optional)
-5. **Silence Effect** - POI area effect system
-6. **Cross-Hex NPCs** - Add Marged to hex 0108
-7. **Cold Prince Consequences** - World event system
-8. **Gryphling Training** - Aspirational feature
+1. **Silence Effect** - POI area effect system
+2. **Cross-Hex NPCs** - Add Marged to hex 0108
+3. **Cold Prince Consequences** - World event system
+4. **Gryphling Training** - Aspirational feature
 
 ---
 
 ## Test Coverage
+
+**New tests added in v2.0:**
+- `tests/test_hex_0105_hazards.py` - 10 tests for night hazard triggers
+- `tests/test_quest_tracking.py` - 14 tests for quest state management
+- `tests/test_turn_events.py` - 14 tests for turn-based event scheduling
+- `tests/test_combat_auras.py` - 12 tests for combat aura damage
+- `tests/test_exhausted_condition.py` - 12 tests for exhausted condition
 
 Existing tests in `tests/content_loader/test_hex_0105_loading.py`:
 - 32 assertions covering hex data loading
@@ -229,11 +194,7 @@ Existing tests in `tests/content_loader/test_hex_0105_loading.py`:
 - Roll table entries
 - Relationship networks
 
-**Missing Tests:**
-- Night hazard trigger activation
-- Quest state transitions
-- Combat aura damage
-- Turn timer events
+**Total Test Count:** 3659 tests passing
 
 ---
 
@@ -242,12 +203,12 @@ Existing tests in `tests/content_loader/test_hex_0105_loading.py`:
 | Feature | Hex 0107 | Hex 0105 |
 |---------|----------|----------|
 | Enchantment conditions | Implemented | N/A |
-| Time-of-day triggers | Implemented | Missing (sleep trigger) |
+| Time-of-day triggers | Implemented | **Implemented** (sleep trigger) |
 | Condition chains | Implemented | N/A |
-| Night hazards | Partial | Missing (camp trigger) |
-| Monster special abilities | N/A | Missing (cold aura) |
-| Quest hooks | N/A | Missing (no trigger) |
-| Turn timers | N/A | Missing (nest arrival) |
+| Night hazards | Partial | **Implemented** (camp trigger) |
+| Monster special abilities | N/A | **Implemented** (cold aura) |
+| Quest hooks | N/A | **Implemented** (full tracking) |
+| Turn timers | N/A | **Implemented** (nest arrival) |
 
 ---
 

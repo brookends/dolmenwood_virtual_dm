@@ -187,6 +187,8 @@
           "description": "The shepherds have lost a dozen sheep to a monstrous flying beast over the past month. Aegnyth Cormick offers a reward for anyone who can slay or drive off the creature.",
           "quest_giver": "aegnyth_cormick",
           "objective": "Slay or banish the frore gryphus",
+          "target_monster": "frore_gryphus",
+          "target_count": 1,
           "destination_npc": null,
           "destination_location": "The Nest of the Frore Gryphus",
           "reward_items": [],
@@ -220,27 +222,49 @@
               "title": "Mother Present",
               "description": "The frore gryphus is in the nest, feeding her young with a freshly-killed sheep. She screeches and attacks immediately.",
               "monsters": ["frore_gryphus"],
+              "monster_count": 1,
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Combat with frore gryphus"
+              "mechanical_effect": "Combat with frore gryphus",
+              "scheduled_event": null
             },
             {
               "roll": "3-4",
               "title": "Gryphlings Only",
               "description": "Only the five gryphlings are present. They screech warnings but do not attack unless provoked. Their cries will summon the mother in 1 Turn.",
               "monsters": ["frore_gryphling"],
+              "monster_count": 5,
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Mother arrives in 1 Turn"
+              "mechanical_effect": "Mother arrives in 1 Turn",
+              "scheduled_event": {
+                "event_type": "monster_arrival",
+                "trigger_in_turns": 1,
+                "monster_id": "frore_gryphus",
+                "monster_count": 1,
+                "monster_context": "The frore gryphus arrives, summoned by her gryphlings' cries! She descends from the sky with a screech of pure winter fury.",
+                "description": "Frore gryphus arrives (summoned by gryphlings)"
+              }
             },
             {
               "roll": "5-6",
               "title": "Hunting",
               "description": "The nest is temporarily empty—both mother and gryphlings are hunting elsewhere. Roll again each Turn; on 1-3 they return.",
               "monsters": [],
+              "monster_count": 0,
               "npcs": [],
               "items": [],
-              "mechanical_effect": "1-3 on d6 each Turn means return"
+              "mechanical_effect": "1-3 on d6 each Turn means return",
+              "scheduled_event": {
+                "event_type": "monster_arrival",
+                "check_each_turn": true,
+                "check_probability": "1-3",
+                "check_die": "d6",
+                "monster_id": "frore_gryphus",
+                "monster_count": 1,
+                "monster_context": "A shadow passes overhead—the frore gryphus and her gryphlings return from their hunt! The mother's eyes lock onto you with predatory focus.",
+                "description": "Frore gryphus returns from hunting (1-3 on d6 each turn)"
+              }
             }
           ]
         }

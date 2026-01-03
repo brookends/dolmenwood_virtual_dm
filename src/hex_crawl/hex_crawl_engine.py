@@ -1855,15 +1855,24 @@ class HexCrawlEngine:
             return False
         return self.controller.world_state.current_date.is_full_moon()
 
-    def process_night_hazards(self, hex_id: str) -> list[dict[str, Any]]:
+    def process_night_hazards(
+        self,
+        hex_id: str,
+        activity: Optional[str] = None,
+        camp_location: Optional[str] = None,
+    ) -> list[dict[str, Any]]:
         """
         Process night-specific hazards for a hex, including moon phase effects.
 
         Called when entering night at a hex or during night phases.
-        Handles hazards like hex 0107's full moon compulsion.
+        Handles hazards like:
+        - hex 0107's full moon compulsion
+        - hex 0105's camp_near_frost_patches and sleep hazards
 
         Args:
             hex_id: The hex to process night hazards for
+            activity: Current activity ("camping", "sleeping", "traveling", etc.)
+            camp_location: Specific location if camping (e.g., "frost_patches")
 
         Returns:
             List of hazard resolution results
@@ -1886,11 +1895,37 @@ class HexCrawlEngine:
             # Determine if this hazard should trigger
             should_trigger = False
 
+            # Full moon triggers
             if "full_moon" in trigger_lower and is_full_moon and is_night:
                 should_trigger = True
+
+            # Regular night triggers (not full moon specific)
             elif "night" in trigger_lower and is_night and "full_moon" not in trigger_lower:
-                # Regular night hazard (not full moon specific)
                 should_trigger = True
+
+            # Sleep triggers - fire when party is sleeping at night
+            elif trigger_lower == "sleep" and is_night:
+                if activity in ("sleeping", "resting", "camping"):
+                    should_trigger = True
+
+            # Camp triggers - check if camping and optionally near specific feature
+            elif trigger_lower.startswith("camp"):
+                if activity in ("camping", "resting"):
+                    # Check for "camp_near_X" pattern
+                    if trigger_lower.startswith("camp_near_"):
+                        # Extract the feature name (e.g., "frost_patches" from "camp_near_frost_patches")
+                        feature = trigger_lower.replace("camp_near_", "")
+                        # Trigger if camping near that specific feature
+                        if camp_location and feature in camp_location.lower():
+                            should_trigger = True
+                        # Also trigger if no specific camp location but feature exists in hex
+                        elif camp_location is None:
+                            # Check if hex has relevant POI features
+                            if self._hex_has_feature(hex_id, feature):
+                                should_trigger = True
+                    else:
+                        # Generic camp trigger
+                        should_trigger = True
 
             if should_trigger:
                 # Apply to all party members in the hex
@@ -1901,13 +1936,62 @@ class HexCrawlEngine:
                         "character_name": character.name,
                         "hazard_name": hazard.get("name", trigger),
                         "trigger": trigger,
+                        "activity": activity,
+                        "camp_location": camp_location,
                         "is_full_moon": is_full_moon,
                         "success": hazard_result.success,
                         "description": hazard_result.description,
+                        "damage_taken": hazard_result.damage_taken,
                         "conditions_applied": hazard_result.conditions_applied,
                     })
 
         return results
+
+    def _hex_has_feature(self, hex_id: str, feature: str) -> bool:
+        """
+        Check if a hex has a feature matching the given name.
+
+        Used for camp_near_X triggers to check if the hex has the relevant feature.
+        Performs word-based matching: "frost_patches" matches "Frost-covered patches".
+
+        Args:
+            hex_id: The hex to check
+            feature: Feature name to look for (e.g., "frost_patches")
+
+        Returns:
+            True if hex has the feature
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return False
+
+        # Split feature into individual words for flexible matching
+        # "frost_patches" -> ["frost", "patches"]
+        feature_words = [w.lower() for w in feature.replace("_", " ").split()]
+
+        def text_has_feature(text: str) -> bool:
+            """Check if all feature words appear in text."""
+            if not text:
+                return False
+            text_lower = text.lower()
+            return all(word in text_lower for word in feature_words)
+
+        # Check POI names and descriptions
+        for poi in hex_data.points_of_interest:
+            if text_has_feature(poi.name):
+                return True
+            if text_has_feature(poi.description):
+                return True
+            # Check special features
+            for special in (poi.special_features or []):
+                if text_has_feature(special):
+                    return True
+
+        # Check hex description
+        if text_has_feature(hex_data.description):
+            return True
+
+        return False
 
     def check_hex_night_entry(self, hex_id: str) -> dict[str, Any]:
         """
@@ -5574,8 +5658,9 @@ class HexCrawlEngine:
 
         result: HazardResult
 
-        # Route spell saves to enchantment handler
-        if save_type.lower() == "spell" or hazard_type == HazardType.ENCHANTMENT:
+        # Route explicit enchantment hazards to enchantment handler
+        # Note: save_type == "spell" alone does NOT mean enchantment (e.g., night hazards)
+        if hazard_type == HazardType.ENCHANTMENT:
             result = self.narrative_resolver.hazard_resolver.resolve_hazard(
                 hazard_type=HazardType.ENCHANTMENT,
                 character=character,
@@ -5616,27 +5701,69 @@ class HexCrawlEngine:
                 save_type=save_type,
             )
         else:
-            # Generic environmental hazard - saving throw
-            ability_mod = character.get_ability_modifier(save_type)
-            roll = self.dice.roll_d20(f"hazard save ({save_type})")
-            total = roll.total + ability_mod
-            success = total >= difficulty
+            # Generic environmental hazard
+            from src.narrative.intent_parser import ActionType
+
+            # Check for on_fail structure (used by night hazards)
+            on_fail = hazard.get("on_fail", {})
+            on_fail_damage = on_fail.get("damage_dice") or damage
+            on_fail_condition = on_fail.get("condition")
+            on_fail_effect = on_fail.get("effect", "")
+
+            # Route saving throw based on save_type
+            save_type_lower = save_type.lower() if save_type else "dex"
+            success = False
+            roll_total = 0
+
+            if save_type_lower in ("doom", "spell", "ray", "hold", "blast"):
+                # Use proper saving throw mechanism
+                if hasattr(character, "make_saving_throw"):
+                    roll_total, success = character.make_saving_throw(
+                        save_type_lower, hazard.get("modifier", 0)
+                    )
+                else:
+                    # Fallback: roll d20 against saving throw target
+                    target = 15  # Default target
+                    if hasattr(character, "saving_throws"):
+                        target = character.saving_throws.get(save_type_lower, 15)
+                    roll = self.dice.roll_d20(f"Save vs {save_type}")
+                    roll_total = roll.total + hazard.get("modifier", 0)
+                    success = roll_total >= target
+            else:
+                # Ability check
+                ability_mod = character.get_ability_modifier(save_type)
+                roll = self.dice.roll_d20(f"hazard save ({save_type})")
+                roll_total = roll.total + ability_mod
+                success = roll_total >= difficulty
 
             damage_dealt = 0
-            if not success and damage:
-                damage_roll = self.dice.roll(damage, "hazard damage")
-                damage_dealt = damage_roll.total
+            conditions_applied: list[str] = []
 
-            from src.narrative.intent_parser import ActionType
+            if not success:
+                # Apply damage from on_fail or top-level damage
+                if on_fail_damage:
+                    damage_roll = self.dice.roll(on_fail_damage, "hazard damage")
+                    damage_dealt = damage_roll.total
+
+                # Apply condition from on_fail
+                if on_fail_condition:
+                    conditions_applied.append(on_fail_condition)
+
+            # Build description including effect hint if failed
+            final_description = description if success else (on_fail.get("description") or description)
+            if not success and on_fail_effect:
+                final_description = f"{final_description} ({on_fail_effect})"
 
             result = HazardResult(
                 success=success,
                 hazard_type=hazard_type,
                 action_type=ActionType.UNKNOWN,
-                description=description,
+                description=final_description,
                 damage_dealt=damage_dealt,
-                save_made=success,
-                roll_total=total,
+                damage_type=on_fail.get("damage_type", ""),
+                check_made=True,
+                check_result=roll_total,
+                conditions_applied=conditions_applied,
             )
 
         # Apply effects to game state (damage, conditions, roll tables)
