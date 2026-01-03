@@ -273,7 +273,62 @@
         "Reports all she observes to Broobe Dogoode, the headman"
       ],
       "location_id": "2",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "desire_to_marry_a_drune",
+        "morbid_personality",
+        "reports_to_headman"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "moggles_gob_services",
+          "content": "Mogget scowls sour and scornful. 'Lodging, game stew, what else do you want? No stabling—use the barn down the way.'",
+          "keywords": ["inn", "lodging", "stew", "tavern"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "village_outsiders",
+          "content": "She cackles maniacally. 'Outsiders don't last long in Odd. The village has... ways. Stick to the tavern if you know what's good for you.'",
+          "keywords": ["odd", "village", "outsiders", "warning"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "informant_for_headman",
+          "content": "Mogget reports everything she observes to Broobe Dogoode, the Drune-appointed headman.",
+          "hint": "She watches newcomers with unusual intensity and slips away to speak with the headman.",
+          "keywords": ["informant", "headman", "broobe", "spying", "drune"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "broobe_dogoode",
+          "relationship_type": "employer",
+          "description": "Reports all observations to the Drune-appointed headman",
+          "hex_id": null,
+          "notes": "Informant relationship"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "drune",
+        "secondary_faction_ids": [],
+        "faction_role": "agent",
+        "loyalty_type": "opportunistic",
+        "loyalty_strength": 1,
+        "public_alignment": "covert",
+        "cover_story": "Simple tavern keeper",
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      }
     },
     {
       "npc_id": "philontimus_the_wizened",
@@ -306,7 +361,59 @@
       ],
       "secrets": [],
       "location_id": "3",
-      "occupation": "Sage specializing in ancient religions, legends, and folklore of Dolmenwood"
+      "occupation": "Sage specializing in ancient religions, legends, and folklore of Dolmenwood",
+      "vulnerabilities": [
+        "obsession_with_gwyrae_artifacts",
+        "love_of_fruit_pies",
+        "despises_willfully_ignorant"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "sage_services",
+          "content": "Philontimus peers near-sightedly. 'Ancient religions, legends, folklore... these are my specialties. Do you bring knowledge—or merely questions?'",
+          "keywords": ["sage", "research", "religion", "folklore", "legends"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "dolmenwood_lore",
+          "content": "His voice rises excitedly. 'Dolmenwood holds secrets older than human memory! The Gwyrae, the beast saints, the dimensional drifting—all connected!'",
+          "keywords": ["dolmenwood", "gwyrae", "beast_saints", "lore", "ancient"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        },
+        {
+          "topic_id": "artifact_desire",
+          "content": "He leans forward eagerly. 'Ancient artifacts—especially those associated with the Gwyrae religion—I pay handsomely for such items. Very handsomely.'",
+          "keywords": ["artifacts", "gwyrae", "ancient", "buying", "religious"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 9
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "hidden_treasure",
+          "content": "Under the floorboards of his study lies a locked chest containing 200 platinum, 1,200 gold, 8,000 silver, a Ring of Invisibility, and a vial of Vaporous Spirits.",
+          "hint": "He occasionally glances at a particular spot on the floor with a possessive expression.",
+          "keywords": ["treasure", "chest", "platinum", "ring", "invisibility"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "briggle",
+          "relationship_type": "kin",
+          "description": "Grandson who serves as manservant, page, and research assistant",
+          "hex_id": null,
+          "notes": "Family bond"
+        }
+      ]
     },
     {
       "npc_id": "briggle",
@@ -326,7 +433,42 @@
         "Trysting in the churchyard with a braithmaid"
       ],
       "location_id": "3",
-      "occupation": "manservant, page, and research assistant"
+      "occupation": "manservant, page, and research assistant",
+      "vulnerabilities": [
+        "youthful_indiscretion",
+        "secret_romance"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "grandfather_service",
+          "content": "Briggle nods politely. 'I assist my grandfather with his research. May I take a message or fetch him?'",
+          "keywords": ["grandfather", "philontimus", "assistant", "research"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "churchyard_tryst",
+          "content": "Briggle has been secretly meeting a braithmaid at night in the churchyard.",
+          "hint": "He sometimes slips out at odd hours and returns looking flushed.",
+          "keywords": ["tryst", "romance", "churchyard", "braithmaid", "secret"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": 10
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "philontimus_the_wizened",
+          "relationship_type": "kin",
+          "description": "Grandson serving as assistant",
+          "hex_id": null,
+          "notes": "Family bond"
+        }
+      ]
     },
     {
       "npc_id": "broobe_dogoode",
@@ -353,7 +495,92 @@
       ],
       "secrets": [],
       "location_id": "4",
-      "occupation": "Village headman and adept tracker"
+      "occupation": "Village headman and adept tracker",
+      "vulnerabilities": [
+        "desire_to_join_duke_mai_fleurs_hunt",
+        "curiosity_about_tentacle_masses",
+        "domineering_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "headman_authority",
+          "content": "Broobe scratches his stubble with a sonorous, sombre voice. 'I am headman of Odd. All matters in this village pass through me.'",
+          "keywords": ["headman", "authority", "odd", "village"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "fur_trading",
+          "content": "He gestures to the furs spread on the table. 'The finest furs in Dolmenwood. The Odd-folk are hunters without equal—even in fairy lands.'",
+          "keywords": ["furs", "trading", "hunting", "crafts"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "fairy_poaching",
+          "content": "His eyes gleam with dangerous excitement. 'Some of our bolder folk venture into Duke Mai-Fleur's lands to poach fairy beasts. Dangerous, but profitable.'",
+          "keywords": ["fairy", "poaching", "mai_fleur", "hunting", "beasts"],
+          "required_disposition": 1,
+          "category": "situation",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "drune_appointed",
+          "content": "Broobe was appointed headman by the Drune sorcerers and serves their interests in keeping the village tethered to the mortal world.",
+          "hint": "He speaks of 'those who watch over us' with unusual reverence.",
+          "keywords": ["drune", "appointed", "sorcerers", "orbstone", "tether"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "mogget_crookbone",
+          "relationship_type": "employer",
+          "description": "Receives reports from the tavern keeper about outsiders",
+          "hex_id": null,
+          "notes": "Information network"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "drune",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "covert",
+        "cover_story": "Traditional village headman",
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -2,
+          "wary_between": [-1, 1],
+          "helpful_at_or_above": 2
+        },
+        "default_reaction_modifier": -1,
+        "triggers": [
+          {
+            "trigger_id": "drune_allies",
+            "condition": "party_affiliated_with=drune",
+            "modifier_delta": 2,
+            "npc_response": "You are... known to those who watch. Speak freely."
+          },
+          {
+            "trigger_id": "church_enemies",
+            "condition": "party_affiliated_with=pluritine_church",
+            "modifier_delta": -1,
+            "npc_response": "Church folk... we worship in our own way here."
+          }
+        ]
+      }
     }
   ],
   "encounter_tables": [

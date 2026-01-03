@@ -447,7 +447,51 @@
         "Possesses prismatic crystal Talisman of Spell Reflection but unaware of its magic"
       ],
       "location_id": "village_leader",
-      "occupation": "Chief Mulcher"
+      "occupation": "Chief Mulcher",
+      "vulnerabilities": [
+        "vendetta_against_nutcaps",
+        "desire_for_elixir_of_life",
+        "narrow_minded_quick_to_judge"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chief_authority",
+          "content": "Brimbul squints suspiciously with feigned cordiality. 'I am Chief Mulcher of Orbswallow, selected by sacred oracle. What brings outsiders to our village?'",
+          "keywords": ["chief", "mulcher", "authority", "oracle"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "nutcap_threat",
+          "content": "Her tiny eyes blaze with fury. 'Nutcaps! They raid our trees, steal our fruits. My husband was slain by them! Any who drive them out will have my eternal gratitude.'",
+          "keywords": ["nutcaps", "threat", "trees", "bounty", "revenge"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 9
+        },
+        {
+          "topic_id": "three_trees",
+          "content": "She gestures protectively. 'The Milktree, Pipetree, and Moontree are our lifeblood. Lose even one, and calamity befalls us all.'",
+          "keywords": ["trees", "milktree", "pipetree", "moontree", "sacred"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "talisman_ignorance",
+          "content": "Brimbul possesses a prismatic crystal Talisman of Spell Reflection but is unaware of its magical properties.",
+          "hint": "She wears an unusual crystal pendant that she treats as a mere keepsake.",
+          "keywords": ["talisman", "crystal", "magic", "reflection"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "phrobe",
@@ -474,7 +518,32 @@
       ],
       "secrets": [],
       "location_id": "9",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "nearly_blind",
+        "confused_about_outside_world",
+        "gentle_nurturing_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "sombre_lamb_services",
+          "content": "Phrobe burbles and cackles, squinting blindly. 'Welcome to the Sombre Lamb! Lodging, Moon's Milk, Glubwob—we have it all! Are you the Duke of Brackenwoolled?'",
+          "keywords": ["inn", "lodging", "moons_milk", "glubwob", "sombre_lamb"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "duke_obsession",
+          "content": "He chuckles mysteriously. 'The Duke of Brackenwoolled—a unicorn of great majesty, they say. Oh, how I wish to meet him!'",
+          "keywords": ["duke", "brackenwoolled", "unicorn", "fantasy"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "blosquom",
@@ -504,7 +573,43 @@
         "Is a manifestation of the Myconom, unknown to the mosslings who worship it"
       ],
       "location_id": "11",
-      "occupation": "Deity/Avatar"
+      "occupation": "Deity/Avatar",
+      "vulnerabilities": [
+        "cold_iron",
+        "operates_on_cosmic_plane",
+        "no_conception_of_worldly_matters"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "cosmic_wisdom",
+          "content": "Blosquom manifests lazily, waving tiny hands. 'Ahhh... seekers of wisdom... the mould connects all things... what do you bring for the greater spread?'",
+          "keywords": ["blosquom", "mould", "wisdom", "cosmic"],
+          "required_disposition": -2,
+          "category": "lore",
+          "priority": 7
+        },
+        {
+          "topic_id": "corpse_offerings",
+          "content": "The face sighs contentedly. 'Corpses... yes, bring them to the shrine... spores will infest... the Myconom spreads...'",
+          "keywords": ["corpses", "offerings", "spores", "myconom", "shrine"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "myconom_manifestation",
+          "content": "Blosquom is a manifestation of the Myconom, spreading fungal influence throughout Dolmenwood. The mosslings who worship it are unaware of its true nature.",
+          "hint": "Those who consume the mouldy offerings at the shrine experience cryptic visions of a vast fungal network.",
+          "keywords": ["myconom", "manifestation", "fungal", "network", "spread"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     }
   ],
   "encounter_tables": [

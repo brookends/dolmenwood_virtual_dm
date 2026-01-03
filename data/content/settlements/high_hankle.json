@@ -572,7 +572,81 @@
         "Loves Baron Hogwarsh despite his well-known dalliances with noblemen and academics"
       ],
       "location_id": "2",
-      "occupation": "Knight, garrison commander"
+      "occupation": "Knight, garrison commander",
+      "vulnerabilities": [
+        "love_for_baron_hogwarsh",
+        "pride_in_griffon_herd",
+        "rakish_temperament"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "griffonry_operations",
+          "content": "Sir Waverly flashes a rakish grin. 'The Griffonry houses seven magnificent beasts—though only four reside here currently. They are the pride of the barony, reined with chains of fairy silver.'",
+          "keywords": ["griffonry", "griffons", "garrison", "fairy silver"],
+          "required_disposition": -1,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "escaped_griffons",
+          "content": "His expression darkens. 'Three griffons escaped recently. They're living wild now, terrorising the surrounding farmland. I must recapture them.'",
+          "keywords": ["escaped", "griffons", "wild", "farmland", "quest"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 8
+        },
+        {
+          "topic_id": "garrison_duties",
+          "content": "He straightens proudly. 'Sixty soldiers under my command. We protect High-Hankle and serve Baron Hogwarsh faithfully.'",
+          "keywords": ["garrison", "soldiers", "baron", "protection"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "love_for_baron",
+          "content": "His eyes soften unexpectedly. 'Despite my... dalliances with noblemen and academics, there is only one I truly love. The Baron himself. Though he seems oblivious to my feelings.'",
+          "hint": "He becomes flustered when discussing the Baron directly.",
+          "keywords": ["baron hogwarsh", "love", "feelings", "secret"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "baron_hogwarsh",
+          "relationship_type": "liege",
+          "description": "His lord and secret love",
+          "hex_id": "0512",
+          "notes": "Waverly loves Hogwarsh despite the baron's seeming obliviousness"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "house_hogwarsh",
+        "secondary_faction_ids": [],
+        "faction_role": "sworn_sword",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "house_ramius": -1,
+        "house_malbleat": 0,
+        "house_murkin": 0
+      },
+      "faction_hooks": [
+        {
+          "hook_id": "recapture_griffons",
+          "description": "Hunt down and return the three escaped griffons terrorising the farmlands",
+          "reward": "Gold and the Baron's favor",
+          "difficulty": "high"
+        }
+      ]
     },
     {
       "npc_id": "emeritus_jasquith",
@@ -600,7 +674,64 @@
         "Before taking over the Crown Cruciferous from his father, Emeritus was a monk at the Refuge of St Keye (hex 1307)"
       ],
       "location_id": "3",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "obsession_with_fine_wines",
+        "desire_for_relics_of_st_howarth",
+        "former_monastic_past"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "crown_cruciferous_services",
+          "content": "Jasquith adjusts his monocle with slow precision. 'The Crown Cruciferous offers lodgings and food of fancy quality. Rooms with a view—overlooking the Hangle Gate—cost twenty-five gold per night.'",
+          "keywords": ["crown cruciferous", "inn", "lodging", "fancy"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "wine_collection",
+          "content": "His eyes gleam. 'I seek the finest wine selection in the duchy. If you encounter rare vintages in your travels, I pay generously.'",
+          "keywords": ["wine", "collection", "rare", "vintages"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 6
+        },
+        {
+          "topic_id": "st_howarth_relics",
+          "content": "He leans forward conspiratorially. 'I collect relics of St Howarth the Accursed. Especially his hand—purported to be in the sunken ruins of Lankston, in hex 0610.'",
+          "keywords": ["st howarth", "relics", "lankston", "hand", "quest"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "former_monk",
+          "content": "Jasquith rumbles indignantly. 'Before inheriting this establishment, I was a monk at the Refuge of St Keye, in hex 1307. A... different life. I prefer not to speak of it.'",
+          "hint": "He knows Liturgic and has an unusually devout bearing for an innkeeper.",
+          "keywords": ["monk", "refuge of st keye", "past", "monastery"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 1,
+        "public_alignment": "covert",
+        "cover_story": "Simple innkeeper"
+      },
+      "faction_attitudes": {
+        "drune": -2,
+        "witches": -1
+      }
     },
     {
       "npc_id": "bagsley_corundum",
@@ -629,7 +760,76 @@
         "Has 4 unfailingly loyal bodyguard-lieutenants, 60 relatively loyal guild members"
       ],
       "location_id": "4",
-      "occupation": "Thieves' guildmaster"
+      "occupation": "Thieves' guildmaster",
+      "vulnerabilities": [
+        "desire_for_infamy",
+        "ambition_to_wed_daughter_to_baron",
+        "disfiguring_burn_scars"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "balustrade_services",
+          "content": "Corundum traces his burn scars thoughtfully. 'The Balustrade offers entertainment for all classes. The common room below, the ballrooms above. Entry to the ballrooms costs five gold per person.'",
+          "keywords": ["balustrade", "ballrooms", "entertainment", "tavern"],
+          "required_disposition": -1,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "golden_aspintheon",
+          "content": "His voice is quiet yet brutal. 'Golden aspintheon—the legendary tipple. Three-in-six chance we have it in stock. Psychedelic compounds are also available... from discreet vendors.'",
+          "keywords": ["aspintheon", "psychedelic", "drugs", "compounds"],
+          "required_disposition": 1,
+          "category": "interaction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "thieves_guild_master",
+          "content": "He leans close, his disfigured face half-hidden in his hood. 'I am Bagsley Corundum, master of the thieves' guild. I have four unfailingly loyal lieutenants and sixty guild members. The baron's lax rule has been... profitable.'",
+          "hint": "It is an open secret that he owns the Balustrade.",
+          "keywords": ["thieves guild", "master", "lieutenants", "guild"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "100gp"
+        },
+        {
+          "secret_id": "daughter_jacinth",
+          "content": "His tactical mind turns to scheming. 'My daughter Jacinth is beautiful and refined. If I could wed her to Baron Hogwarsh, my power over High-Hankle and the High Wold would be complete.'",
+          "hint": "He seems unusually interested in the baron's marital status.",
+          "keywords": ["jacinth", "daughter", "baron", "marriage", "power"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "baron_hogwarsh",
+          "relationship_type": "manipulator",
+          "description": "Seeks to marry his daughter to the baron to cement power",
+          "hex_id": "0512",
+          "notes": "Corundum's thieves' guild has grown powerful under the baron's lax rule"
+        },
+        {
+          "npc_id": "snerd_furroughby",
+          "relationship_type": "business_partner",
+          "description": "Hankle Heirlooms is affiliated with the thieves' guild",
+          "hex_id": "0512",
+          "notes": "The shop fences stolen goods"
+        }
+      ],
+      "faction_hooks": [
+        {
+          "hook_id": "guild_work",
+          "description": "Discreet work for the thieves' guild—burglary, intimidation, information gathering",
+          "reward": "Gold and guild connections",
+          "difficulty": "variable"
+        }
+      ]
     },
     {
       "npc_id": "gemrand_soliquant",
@@ -661,7 +861,73 @@
         "Secretly wishes for the Cold Prince to return to Dolmenwood, and would collude to bring this about"
       ],
       "location_id": "7",
-      "occupation": "Sage specialising in the study of Fairy"
+      "occupation": "Sage specialising in the study of Fairy",
+      "vulnerabilities": [
+        "belief_in_fairy_superiority",
+        "desire_for_cold_prince_return",
+        "collector_of_fairy_artefacts"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "florid_envoy_role",
+          "content": "Soliquant's voice is rich and effusive. 'I am the Florid Envoy—the barony's official liaison with Fairy. My library above the Griffon Gate contains extensive lore on Fairy and its inhabitants.'",
+          "keywords": ["florid envoy", "fairy", "liaison", "library"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "fairy_artefact_purchase",
+          "content": "He jangles his profusion of silver bangles. 'I purchase fairy artefacts—I have a budget of one thousand gold pieces. Bring me curiosities from the fey realms and be well compensated.'",
+          "keywords": ["fairy", "artefacts", "purchase", "budget", "quest"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 7
+        },
+        {
+          "topic_id": "cold_prince_interest",
+          "content": "His eyes widen with irreverent enthusiasm. 'I seek word of any lingering fairy presence in Hoarblight Keep, hex 0505, or the Cold Prince's embassy in hex 0504. The Cold Prince's legacy fascinates me.'",
+          "keywords": ["cold prince", "hoarblight keep", "embassy", "fairy"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "cold_prince_sympathizer",
+          "content": "His voice drops to a whisper. 'I believe fairies are superior to mortals in all respects. And I... I secretly wish for the Cold Prince to return to Dolmenwood. If you could help bring this about, I would be most grateful.'",
+          "hint": "His enthusiasm for the Cold Prince seems unusually fervent.",
+          "keywords": ["cold prince", "return", "conspiracy", "fairy"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "cold_prince",
+        "secondary_faction_ids": [],
+        "faction_role": "agent",
+        "loyalty_type": "opportunistic",
+        "loyalty_strength": 2,
+        "public_alignment": "covert",
+        "cover_story": "Official barony liaison with Fairy"
+      },
+      "faction_attitudes": {
+        "cold_prince": 3,
+        "nag_lord": -1,
+        "drune": -1
+      },
+      "faction_hooks": [
+        {
+          "hook_id": "cold_prince_return",
+          "description": "Aid in efforts to restore the Cold Prince's presence in Dolmenwood",
+          "reward": "Fairy knowledge and connections",
+          "difficulty": "very high"
+        }
+      ]
     },
     {
       "npc_id": "griselda_helmsmith",
@@ -687,7 +953,40 @@
       ],
       "secrets": [],
       "location_id": "10",
-      "occupation": "Armourer"
+      "occupation": "Armourer",
+      "vulnerabilities": [
+        "passion_for_craft",
+        "desire_for_rare_metals",
+        "drive_to_make_sales"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "helmsmith_services",
+          "content": "Griselda flexes her tattooed arms proudly. 'I am one of the finest armourers in the duchy. Standard armour at twenty-five percent above normal price—stamped with Helmsmith's prestigious hallmark.'",
+          "keywords": ["armour", "helmsmith", "smith", "forge"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "full_plate_expertise",
+          "content": "She grins. 'I have the expertise to craft full plate armour—a rare skill. Engraving with patterns, script, or runes typically doubles the cost.'",
+          "keywords": ["full plate", "engraving", "expertise", "armour"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "rare_metals_wanted",
+          "content": "Her eyes light up. 'I seek rare metals—fairy silver, Hag Iron, anything unusual. Bring me such materials and I'll offer generous trade or commission discounts.'",
+          "keywords": ["rare metals", "fairy silver", "hag iron", "materials"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "snerd_furroughby",
@@ -719,7 +1018,84 @@
         "Is a distant cousin of Lord Ramius"
       ],
       "location_id": "11",
-      "occupation": "Jeweller & Antiquarian"
+      "occupation": "Jeweller & Antiquarian",
+      "vulnerabilities": [
+        "obsession_with_treasure_maps",
+        "quest_for_dewidorts_hoard",
+        "connection_to_thieves_guild"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "hankle_heirlooms_services",
+          "content": "Furroughby's voice is smooth and sonorous. 'Hankle Heirlooms deals in jewellery and antiquities of the finest quality. Prices range from two hundred to five thousand gold.'",
+          "keywords": ["jewellery", "antiquities", "heirlooms", "shop"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "fencing_services",
+          "content": "He twitches one eye slightly. 'We maintain a... no questions asked policy. Items that might arouse suspicion elsewhere can be sold here at fifty percent of their value.'",
+          "keywords": ["fencing", "stolen goods", "no questions", "sell"],
+          "required_disposition": 1,
+          "category": "interaction",
+          "priority": 7
+        },
+        {
+          "topic_id": "treasure_maps",
+          "content": "His eyes gleam. 'I adore mysterious treasure maps and codes. Bring me such curiosities and we can negotiate a fair price—or a trade.'",
+          "keywords": ["treasure maps", "codes", "mysteries", "curiosities"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "dewidorts_hoard",
+          "content": "Furroughby leans close. 'I am obsessed with the legend of the lost hoard of Dewidort of Smerne—said to include the Hanglehorn, a lost heirloom of House Hogwarsh. Dewidort magically hid his treasures inside solid rock. I suspect his hoard is concealed within a standing stone somewhere in Dolmenwood.'",
+          "hint": "He shows unusual interest in standing stones and ancient legends.",
+          "keywords": ["dewidort", "hoard", "hanglehorn", "standing stone", "treasure"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "50gp"
+        },
+        {
+          "secret_id": "ramius_cousin",
+          "content": "He adjusts his tweed jacket. 'I am a distant cousin of Lord Ramius. A useful connection, though one I keep quiet.'",
+          "hint": "His noble bearing seems unusual for a shopkeeper.",
+          "keywords": ["lord ramius", "cousin", "nobility", "connection"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "bagsley_corundum",
+          "relationship_type": "business_partner",
+          "description": "Hankle Heirlooms is affiliated with the thieves' guild",
+          "hex_id": "0512",
+          "notes": "Eight shorthorn guards armed with crossbows lurk in corners of the shop"
+        },
+        {
+          "npc_id": "lord_ramius",
+          "relationship_type": "distant_relative",
+          "description": "Distant cousin of the longhorn noble",
+          "hex_id": null,
+          "notes": "Keeps this connection quiet"
+        }
+      ],
+      "faction_hooks": [
+        {
+          "hook_id": "find_dewidorts_hoard",
+          "description": "Locate the standing stone containing Dewidort of Smerne's hidden treasure",
+          "reward": "Share of the hoard",
+          "difficulty": "very high"
+        }
+      ]
     },
     {
       "npc_id": "sandrine_candlewick",
@@ -747,7 +1123,64 @@
         "Recently took over the Chantry, following the death of her mother"
       ],
       "location_id": "13",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "quest_for_ancestors_sainthood",
+        "recent_grief_over_mothers_death",
+        "easily_flustered"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chantry_services",
+          "content": "Sandrine speaks softly and deliberately. 'The Chantry offers lodging and food of common quality at standard price. In former times, we only accepted clergy, but now all travelers are welcome.'",
+          "keywords": ["chantry", "inn", "lodging", "travelers"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "evening_poetry",
+          "content": "She brightens slightly. 'From dinner time, bards stand before our three hearths and regale patrons with epics, folktales, poems, and parables. We are the town's busiest inn.'",
+          "keywords": ["poetry", "bards", "entertainment", "hearths"],
+          "required_disposition": 0,
+          "category": "location",
+          "priority": 4
+        },
+        {
+          "topic_id": "ancestor_abygail_grynn",
+          "content": "Her ruddy cheeks flush with passion. 'My ancestor, Abygail Grynn, achieved spiritual ascension somewhere in Dwelmfurgh. I wish to discover the exact location and petition the Church to accept her into the host of saints.'",
+          "keywords": ["abygail grynn", "ancestor", "dwelmfurgh", "saint", "quest"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "mothers_death",
+          "content": "Her eyes grow moist. 'I only recently took over the Chantry, following the death of my mother. It has been... difficult.'",
+          "hint": "She seems young and somewhat overwhelmed by her responsibilities.",
+          "keywords": ["mother", "death", "inheritance", "grief"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -2,
+        "witches": -1
+      }
     },
     {
       "npc_id": "blinghop_drooglight",
@@ -774,7 +1207,53 @@
       ],
       "secrets": [],
       "location_id": "15",
-      "occupation": "Tavern proprietor"
+      "occupation": "Tavern proprietor",
+      "vulnerabilities": [
+        "cold_iron",
+        "desire_for_secret_den",
+        "attraction_to_fairies"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "coldlanks_services",
+          "content": "Blinghop cackles hoarsely. 'Welcome to Coldlanks! We serve coldlanks—raw grated onion. Classic style marinated in mustard and beer costs two silver. Fancy variants cost three.'",
+          "keywords": ["coldlanks", "onion", "tavern", "food"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "tavern_entertainment",
+          "content": "She babbles gleefully. 'Musicians and fire jugglers enhance the raucous din of an evening! I may incite a brawl or two—keeps things lively!'",
+          "keywords": ["entertainment", "musicians", "brawls", "fire jugglers"],
+          "required_disposition": 0,
+          "category": "location",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "secret_den_plans",
+          "content": "She leans close, her bright orange ears twitching. 'I wish to establish a secret den beneath the Escalade. A private space for... special gatherings. Could use help clearing it out.'",
+          "hint": "She seems unusually interested in the lower levels of the Escalade.",
+          "keywords": ["secret den", "escalade", "underground", "gathering"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "fairy_liaisons",
+          "content": "Her weepy eyes gleam mischievously. 'I seek liaisons with broad-minded fairies of all kinds. If you know any who might be... interested, send them my way.'",
+          "hint": "She shows particular warmth toward anyone with fairy blood.",
+          "keywords": ["fairies", "liaisons", "romance", "fey"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "venerable_adreline_sumner",
@@ -804,7 +1283,76 @@
         "The Archdeacon is utterly absorbed in Church matters, and knows little of High-Hankle's recent degeneration"
       ],
       "location_id": "14",
-      "occupation": "Archdeacon"
+      "occupation": "Archdeacon",
+      "vulnerabilities": [
+        "paranoia",
+        "absorption_in_church_matters",
+        "concern_about_bishop_sanguines_zealotry"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "three_martyrs_minster",
+          "content": "Venerable Adreline speaks in wavering tones. 'The Three Martyrs Minster honors St Esther, St Hildace, and St Ingrid. Those who pray may receive one of their blessings—Aid, Sanctuary, or Command.'",
+          "keywords": ["three martyrs", "minster", "blessing", "prayer"],
+          "required_disposition": -1,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "church_hierarchy",
+          "content": "She grows contemplative. 'As Archdeacon of High-Hankle, I oversee Church matters in this region. It is a responsibility I take seriously.'",
+          "keywords": ["archdeacon", "church", "hierarchy", "clergy"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "bishop_sanguine_concerns",
+          "content": "She glances around fearfully. 'I desire private discourse with Abbot Hargle about Bishop Sanguine's waxing zealotry. The Bishop grows ever more extreme, and I fear where this path may lead.'",
+          "hint": "She seems troubled when Church politics are mentioned.",
+          "keywords": ["bishop sanguine", "zealotry", "abbot hargle", "concern"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "ignorance_of_degeneration",
+          "content": "She admits with embarrassment. 'I am utterly absorbed in Church matters. I confess I know little of High-Hankle's recent... degeneration under the Baron's rule.'",
+          "hint": "She seems oblivious to the town's moral decline.",
+          "keywords": ["ignorance", "degeneration", "baron", "town"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "joan_ablewright",
+          "relationship_type": "colleague",
+          "description": "Consults with the Order of St Signis on undead matters",
+          "hex_id": "0512",
+          "notes": "Sometimes marches to the Silent Tower at night to consult the Order"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -3,
+        "witches": -2,
+        "nag_lord": -3,
+        "cold_prince": -1
+      }
     },
     {
       "npc_id": "joan_ablewright",
@@ -822,7 +1370,62 @@
       "desires": [],
       "secrets": [],
       "location_id": "6",
-      "occupation": "Commander of religious order"
+      "occupation": "Commander of religious order",
+      "vulnerabilities": [
+        "duty_to_order",
+        "concern_about_undead_plague"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "order_of_st_signis",
+          "content": "Joan Ablewright speaks with quiet authority. 'The Silent Tower is headquarters of the Order of St Signis the Silent in Dolmenwood. Twelve clerics serve under my command, dedicated to combating the undead.'",
+          "keywords": ["order of st signis", "silent tower", "undead", "clerics"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 7
+        },
+        {
+          "topic_id": "undead_concerns",
+          "content": "Her expression grows grave. 'We have received rumours of an undead plague around the ruins of Lankston, in hex 0610. This matter requires investigation.'",
+          "keywords": ["undead", "plague", "lankston", "investigation", "quest"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "venerable_adreline_sumner",
+          "relationship_type": "colleague",
+          "description": "The Archdeacon consults with the Order on undead matters",
+          "hex_id": "0512",
+          "notes": "They coordinate efforts against supernatural threats"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "inquisitor",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -3,
+        "witches": -2,
+        "nag_lord": -3,
+        "cold_prince": -2
+      },
+      "faction_hooks": [
+        {
+          "hook_id": "investigate_lankston_undead",
+          "description": "Investigate the rumored undead plague around the ruins of Lankston",
+          "reward": "Church favor and blessing",
+          "difficulty": "high"
+        }
+      ]
     }
   ],
   "encounter_tables": [

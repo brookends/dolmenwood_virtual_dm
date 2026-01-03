@@ -363,7 +363,40 @@
       ],
       "secrets": [],
       "location_id": "3",
-      "occupation": "Smoke shop proprietor and pipeleaf expert"
+      "occupation": "Smoke shop proprietor and pipeleaf expert",
+      "vulnerabilities": [
+        "obsession_with_rare_pipes_and_weeds",
+        "desire_to_publish_treatises",
+        "enthusiastic_to_a_fault"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "smoke_shop_services",
+          "content": "Megwynne beams broadly. 'Pipes, pipeleaf, magical weeds—Marrowbold's has served the Camp for generations. You must sample these!'",
+          "keywords": ["pipes", "pipeleaf", "weeds", "smoke", "shop"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "pipeleaf_expertise",
+          "content": "Her eyes gleam. 'I've spent my life studying pipeleaf through the ages. My treatises—when published—will be the definitive work on the subject.'",
+          "keywords": ["pipeleaf", "treatise", "expertise", "research", "publishing"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 5
+        },
+        {
+          "topic_id": "magical_pipes",
+          "content": "She gestures to the peculiar pipes displayed above. 'Mossling manufacture, you see. Minor dweomers—purple smoke, wyrm-shaped rings, jingling melodies. One hundred gold each.'",
+          "keywords": ["magical", "pipes", "mossling", "enchanted", "dweomer"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 7
+        }
+      ],
+      "secret_info": [],
+      "relationships": []
     },
     {
       "npc_id": "hagbard_sundiman",
@@ -391,7 +424,51 @@
       ],
       "secrets": [],
       "location_id": "4",
-      "occupation": "Elder Woodcutter and furnging maintainer"
+      "occupation": "Elder Woodcutter and furnging maintainer",
+      "vulnerabilities": [
+        "obsession_with_woodcutter_revival",
+        "suspicion_of_outsiders",
+        "dour_god_fearing_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "woodcutter_traditions",
+          "content": "Hagbard chews pine sap grimly. 'The Woodcutters have dwelt here since antiquity. We once worked with the Drune—but those days are folk-tale now.'",
+          "keywords": ["woodcutters", "traditions", "drune", "history", "antiquity"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 7
+        },
+        {
+          "topic_id": "furnging_art",
+          "content": "His eyes harden with passion. 'Furnging—the art of coaxing magical properties from wood over generations. It is dying. Only a few of us still practice it.'",
+          "keywords": ["furnging", "wood", "magic", "craft", "dying_art"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        },
+        {
+          "topic_id": "jollie_oistace_problem",
+          "content": "He spits. 'The Jollie Oistace has grown indolent. Something possesses him. We must awaken him—or perform an exorcism.'",
+          "keywords": ["oistace", "exorcism", "possessed", "manor", "ferneddbole"],
+          "required_disposition": 2,
+          "category": "quest",
+          "priority": 9
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "exorcism_plans",
+          "content": "Hagbard and the elders sneak off at night to spy on Ferneddbole House, making plans to exorcise the Jollie Oistace from whatever possesses him.",
+          "hint": "He occasionally mentions needing 'folk of resolve' for a delicate matter.",
+          "keywords": ["exorcism", "ferneddbole", "oistace", "possessed", "manor"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "jock_furngle",
@@ -420,7 +497,43 @@
         "Has heard of the fungal infestation in Bogwitt Manor (hex 1210) and addiction of the nobles"
       ],
       "location_id": "7",
-      "occupation": "Tavern proprietor"
+      "occupation": "Tavern proprietor",
+      "vulnerabilities": [
+        "scheming_unscrupulous_nature",
+        "addiction_scheme_target",
+        "affable_facade_hides_plotting"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "stump_and_poniard",
+          "content": "Jock grins affably. 'The Stump and Poniard—food, drink, and merriment! No chairs or tables, mind—just good folk and fiddle-music.'",
+          "keywords": ["tavern", "stump", "poniard", "food", "drink"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "mocking_of_drune",
+          "content": "He chuckles. 'The Mocking of the Drune! A fine tradition. Ring the Drounbell, show no fear, buy a round. Join us some evening!'",
+          "keywords": ["drune", "mocking", "drounbell", "ritual", "tradition"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "fungal_addiction_scheme",
+          "content": "Jock plans to supply Jollie Oistace Pollard with addictive fungi from Bogwitt Manor—particularly Devil's Grease—to establish a profitable addiction.",
+          "hint": "He has been spotted furtively examining fungal specimens brought by cloaked individuals.",
+          "keywords": ["fungi", "bogwitt", "addiction", "devils_grease", "oistace"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 100
+        }
+      ],
+      "relationships": []
     },
     {
       "npc_id": "father_jymes_horsely",
@@ -449,7 +562,70 @@
         "Expert on the paths of Hag's Addle"
       ],
       "location_id": "8",
-      "occupation": "Vicar"
+      "occupation": "Vicar",
+      "vulnerabilities": [
+        "obsession_with_mapping_hags_addle",
+        "shy_prefers_books_to_people",
+        "compassion_for_suffering"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "church_services",
+          "content": "Father Horsely stammers awkwardly. 'W-welcome to the Church of St Foggarty. The f-flame in our tower guides lost travelers home.'",
+          "keywords": ["church", "foggarty", "flame", "blessing"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "hags_addle",
+          "content": "His eyes sharpen with determination. 'Hag's Addle... I've walked those paths many times with my dog Clewyd. I'm mapping it—slowly—to drive out the Hag.'",
+          "keywords": ["hags_addle", "swamp", "mapping", "hag", "paths"],
+          "required_disposition": 1,
+          "category": "quest",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "addle_expert",
+          "content": "Father Horsely is an expert on the paths of Hag's Addle and has partially mapped the treacherous swamp.",
+          "hint": "He often returns from the swamp with muddy robes and an expanding map.",
+          "keywords": ["addle", "map", "paths", "swamp", "expert"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null,
+        "signals_and_countersigns": [],
+        "authority_scope": "local"
+      },
+      "faction_attitudes": {
+        "party_standing_thresholds": {
+          "hostile_at_or_below": -4,
+          "wary_between": [-3, 0],
+          "helpful_at_or_above": 1
+        },
+        "default_reaction_modifier": 0,
+        "triggers": [
+          {
+            "trigger_id": "church_faithful",
+            "condition": "party_affiliated_with=pluritine_church",
+            "modifier_delta": 2,
+            "npc_response": "F-fellow servants! Please, come in. Would you care for tea?"
+          }
+        ]
+      }
     },
     {
       "npc_id": "clement_brancher",
@@ -480,7 +656,51 @@
         "Has no knowledge of the Woodcutter life, having moved here from Castle Brackenwold after inheriting the inn from her grandfather"
       ],
       "location_id": "10",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "outsider_baffled_by_woodcutter_ways",
+        "romantic_dreams_of_swordsman",
+        "love_of_dogs_and_cats"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "merry_mendicant",
+          "content": "Clement smiles warmly. 'Welcome to the Merry Mendicant! Lodging, Addle mead, and the finest wood-carved interior in all Dolmenwood.'",
+          "keywords": ["inn", "lodging", "mead", "mendicant"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "addle_mead",
+          "content": "She gestures to a clay jug. 'Our Addle mead—brewed from honey from our beehives in the reeds. Rich, herby, and absolutely unique.'",
+          "keywords": ["mead", "addle", "honey", "specialty"],
+          "required_disposition": 0,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "grimalkin_friends",
+          "content": "Her eyes light up at a passing cat. 'I do love grimalkins! And dogs. If you know of any magical hounds for sale, I'd pay handsomely.'",
+          "keywords": ["grimalkin", "dogs", "magical_hound", "pets"],
+          "required_disposition": 1,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "outsider_to_woodcutters",
+          "content": "Clement has no knowledge of Woodcutter traditions—she inherited the inn from her grandfather and moved here from Castle Brackenwold.",
+          "hint": "She seems baffled by local customs and occasionally asks about 'strange Woodcutter traditions.'",
+          "keywords": ["outsider", "castle_brackenwold", "inherited", "grandfather"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": []
     }
   ],
   "encounter_tables": [

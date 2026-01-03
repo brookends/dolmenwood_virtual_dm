@@ -539,7 +539,75 @@
         "Was previously Lawful, but the Atacorn's influence has swayed him to increasing passion and violence"
       ],
       "location_id": "4",
-      "occupation": "Friar and leader of religious vigilantes"
+      "occupation": "Friar and leader of religious vigilantes",
+      "vulnerabilities": [
+        "religious_fervour",
+        "desire_for_sainthood",
+        "atacorn_corruption"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "religious_mission",
+          "content": "Brother Hogbeard speaks with bombastic fervor. 'Dreg is a cesspit of sin! I came here five years ago to aid the poor, but now I see the town needs spiritual salvation above all else!'",
+          "keywords": ["religion", "sin", "dreg", "salvation"],
+          "required_disposition": -2,
+          "category": "faction",
+          "priority": 7
+        },
+        {
+          "topic_id": "zealot_activities",
+          "content": "His wide eyes blaze. 'My flock of yellow-smocked zealots patrol the markets and ports, collecting donations for our holy cause. Join us! Help purge Dreg of wickedness!'",
+          "keywords": ["zealots", "donations", "yellow smocks", "patrol"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "exorcism_kidnappings",
+          "content": "He leans close, doom-laden. 'My zealots have taken to kidnapping sinners for nighttime exorcism in the woods. Harsh measures, yes—but necessary to save their souls.'",
+          "hint": "People whisper about disappearances at night.",
+          "keywords": ["exorcism", "kidnapping", "zealots", "sinners"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "atacorn_corruption",
+          "content": "Unbeknownst to Hogbeard, the Atacorn Crewithyant's corrupting influence has turned his Lawful faith toward increasing passion and violence. His methods grow ever more extreme.",
+          "hint": "His religious fervor seems unnaturally intense, even for a zealot.",
+          "keywords": ["atacorn", "corruption", "violence", "lawful"],
+          "required_disposition": null,
+          "required_trust": null,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "reverend_mother_shandra_hadlewreath",
+          "relationship_type": "antagonist",
+          "description": "The official vicar disapproves of his extreme methods",
+          "hex_id": "1110",
+          "notes": "Hogbeard's zealotry contrasts with Hadlewreath's passive approach"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 3,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -3,
+        "witches": -3,
+        "nag_lord": -3
+      }
     },
     {
       "npc_id": "ogham_tweede",
@@ -567,7 +635,68 @@
         "Fled Redwraith Manor with One-Eyed Gil after failed burglary"
       ],
       "location_id": "2",
-      "occupation": "Bartender at Mermaid's Arms"
+      "occupation": "Bartender at Mermaid's Arms",
+      "vulnerabilities": [
+        "reformed_thief_past",
+        "longing_for_one_eyed_gil",
+        "protective_of_mother"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "mermaids_arms_services",
+          "content": "Ogham's rough face softens into a guffaw. 'The Mermaid's Arms—or the Mermaid's Arse, as we call it—offers common lodging and the best fish pie in Dreg. Three silver a meal.'",
+          "keywords": ["mermaids arms", "inn", "fish pie", "lodging"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "dreg_situation",
+          "content": "He clenches his fists on the bar. 'Violence is on the rise in Dreg. Something's wrong—folk are nastier than usual. Even I've noticed, and I've seen plenty of rough towns.'",
+          "keywords": ["violence", "dreg", "unrest", "corruption"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "reformed_thief",
+          "content": "He hushed his voice. 'I was a thief once—Level 3, if you must know. Fifteen years ago, me and One-Eyed Gil attempted a burglary at Redwraith Manor. Something went wrong. We fled and never looked back.'",
+          "hint": "His cautionary pugnacity suggests experience with violence.",
+          "keywords": ["thief", "one-eyed gil", "redwraith manor", "burglary"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "15gp"
+        },
+        {
+          "secret_id": "searching_for_gil",
+          "content": "His eyes grow distant. 'I haven't seen Gil in fifteen years—not since that night at Redwraith Manor. If you hear word of her whereabouts... I'd pay well for the information.'",
+          "hint": "He seems wistful when old thieves' haunts are mentioned.",
+          "keywords": ["one-eyed gil", "whereabouts", "search", "reunion"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "tamrin_tweede",
+          "relationship_type": "family",
+          "description": "His elderly mother, the inn proprietor and retired magician",
+          "hex_id": "1110",
+          "notes": "Protective of her despite her magical capabilities"
+        },
+        {
+          "npc_id": "one_eyed_gil",
+          "relationship_type": "former_partner",
+          "description": "His ex-flame and burglary partner, now at Castle Brackenwold",
+          "hex_id": null,
+          "notes": "Hasn't seen her in 15 years since fleeing Redwraith Manor"
+        }
+      ]
     },
     {
       "npc_id": "tamrin_tweede",
@@ -599,7 +728,61 @@
         "Possesses Ring of Energy Resistance and spell books"
       ],
       "location_id": "2",
-      "occupation": "Inn proprietor and retired magician"
+      "occupation": "Inn proprietor and retired magician",
+      "vulnerabilities": [
+        "near_sightedness",
+        "concern_about_dreg_corruption",
+        "private_nature"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "inn_proprietor",
+          "content": "Tamrin peers through tiny spectacles. 'The Mermaid's Arms is a reputable establishment. No gambling, lewdness, or sea shanties—that's my rule.'",
+          "keywords": ["mermaids arms", "inn", "rules", "reputable"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "erudite_conversation",
+          "content": "Her hushed voice grows animated. 'You seem educated. I do enjoy erudite conversation. Tell me—what news from beyond Dreg? What have you seen in your travels?'",
+          "keywords": ["conversation", "erudite", "news", "travels"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "retired_adventurer",
+          "content": "She adjusts her spectacles. 'I was an adventurer once—a Level 5 Magician. Retired now, but I still have my spell books... and a Ring of Energy Resistance. One never quite forgets the craft.'",
+          "hint": "She handles unusual visitors with unusual calm.",
+          "keywords": ["adventurer", "magician", "spells", "ring of energy resistance"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "investigating_corruption",
+          "content": "She whispers, considered. 'I suspect the growing violence and unrest in Dreg has a magical origin. Something corrupts this town. My laboratory in the attic is dedicated to uncovering the cause.'",
+          "hint": "She watches the town with unusual interest for an elderly innkeeper.",
+          "keywords": ["corruption", "magic", "investigation", "laboratory"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "ogham_tweede",
+          "relationship_type": "family",
+          "description": "Her son, the bartender and reformed thief",
+          "hex_id": "1110",
+          "notes": "Runs the inn together"
+        }
+      ]
     },
     {
       "npc_id": "berkmaster_maximilian_monocleese",
@@ -628,7 +811,74 @@
         "Secretly lusts after Madame Shantywood"
       ],
       "location_id": "5",
-      "occupation": "Berkmaster (mayor of sorts)"
+      "occupation": "Berkmaster (mayor of sorts)",
+      "vulnerabilities": [
+        "wifes_long_illness",
+        "desire_for_madame_shantywood",
+        "self_importance"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "berkmaster_role",
+          "content": "Monocleese drawls snidely. 'I am the Berkmaster—Lord Malbleat's representative in Dreg. All official matters pass through my manor.'",
+          "keywords": ["berkmaster", "lord malbleat", "dreg", "authority"],
+          "required_disposition": -1,
+          "category": "faction",
+          "priority": 6
+        },
+        {
+          "topic_id": "town_troubles",
+          "content": "He sighs with cultivated nobility. 'The town has grown... unruly of late. Violence, treachery, discord. I do what I can, but my resources are limited.'",
+          "keywords": ["unrest", "violence", "problems", "dreg"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "wifes_illness",
+          "content": "His mask of nobility cracks. 'My wife Hilda has been ill for so long... both physically and mentally. I am tired. I wish for her to either be healed or... to pass peacefully. Either would be a mercy.'",
+          "hint": "He seems worn and weary despite his pretensions.",
+          "keywords": ["wife", "hilda", "illness", "mercy"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "shantywood_attraction",
+          "content": "His eyes drift toward the island. 'If Hilda passes... I dream of marrying Madame Shantywood. She is remarkable—powerful, beautiful, commanding. I admire her greatly.'",
+          "hint": "He gazes toward Shantywood Isle with unusual longing.",
+          "keywords": ["madame shantywood", "marriage", "lust", "admiration"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "25gp"
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "madame_chandilore_shantywood",
+          "relationship_type": "admirer",
+          "description": "Secretly lusts after the lady of Shantywood Isle",
+          "hex_id": "1110",
+          "notes": "Dreams of marrying her if his wife passes"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "house_malbleat",
+        "secondary_faction_ids": [],
+        "faction_role": "retainer",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "house_murkin": 0,
+        "house_ramius": 0
+      }
     },
     {
       "npc_id": "lyren_shodgerey",
@@ -656,7 +906,61 @@
         "Turns a blind eye to thievery in the Shack in return for a small cut of the profits"
       ],
       "location_id": "7",
-      "occupation": "Inn landlord"
+      "occupation": "Inn landlord",
+      "vulnerabilities": [
+        "greed_for_easy_money",
+        "relish_for_violence",
+        "ambition_for_rival_guild"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "shodgereys_shack_services",
+          "content": "Lyren wipes sweat from his tattooed face. 'Shodgerey's Shack—cheapest doss in Dreg. Two coppers a night for a hammock. Food's poor quality but the pipeleaf's half price—if you're a sailor I like.'",
+          "keywords": ["shodgereys shack", "cheap", "hammocks", "pipeleaf"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "sailor_clientele",
+          "content": "He sneers mockingly. 'Mostly sailors here. Raucous sea shanties, dice games, tussles. Not for the faint of heart, this place.'",
+          "keywords": ["sailors", "shanties", "dice", "rough"],
+          "required_disposition": -1,
+          "category": "location",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "thievery_cut",
+          "content": "His missing teeth flash in a grin. 'I turn a blind eye to thievery in the Shack—for a small cut of the profits, of course. Easy money.'",
+          "hint": "Valuables seem to go missing from visitors who stay here.",
+          "keywords": ["thievery", "cut", "profits", "blind eye"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": "10gp"
+        },
+        {
+          "secret_id": "rival_guild_ambitions",
+          "content": "His eyes narrow with ambition. 'I'm willing to go in on any crooked scheme for easy money. But my real dream? To found a rival thieves' guild in Dreg. Competition keeps things interesting.'",
+          "hint": "He speaks dismissively of the current thieves' guild.",
+          "keywords": ["thieves guild", "rival", "ambition", "scheme"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "50gp"
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sidley_crump",
+          "relationship_type": "competitor",
+          "description": "Envies the Spawning Salmon's connection to the thieves' guild",
+          "hex_id": "1110",
+          "notes": "Dreams of founding a rival guild"
+        }
+      ]
     },
     {
       "npc_id": "reverend_mother_shandra_hadlewreath",
@@ -685,7 +989,64 @@
         "Has abandoned hope for the spiritual salvation of the people of Dreg"
       ],
       "location_id": "8",
-      "occupation": "Vicar"
+      "occupation": "Vicar",
+      "vulnerabilities": [
+        "weak_will",
+        "desire_for_peace",
+        "abandoned_hope"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "church_of_st_wick",
+          "content": "Reverend Mother Hadlewreath drones timidly. 'I am vicar of the Church of St Wick—patron saint of ferry-folk and amputees. Those who pray may receive Greater Healing.'",
+          "keywords": ["st wick", "church", "blessing", "healing"],
+          "required_disposition": -2,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "church_state",
+          "content": "She peers through her scratched monocle. 'The church is... not well attended. The folk of Dreg have a tendency toward godlessness. I do what I can.'",
+          "keywords": ["godlessness", "attendance", "dreg", "faith"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "abandoned_hope",
+          "content": "She sighs with doddery resignation. 'I have abandoned hope for the spiritual salvation of Dreg. The people here are beyond my reach. I only wish to be left in peace.'",
+          "hint": "She seems defeated and withdrawn.",
+          "keywords": ["hope", "salvation", "defeated", "peace"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "brother_rodger_hogbeard",
+          "relationship_type": "rival",
+          "description": "The zealot friar's extreme methods contrast with her passive approach",
+          "hex_id": "1110",
+          "notes": "Disapproves of Hogbeard but lacks the will to oppose him"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 1,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -2,
+        "witches": -1
+      }
     },
     {
       "npc_id": "sidley_crump",
@@ -713,7 +1074,68 @@
         "Wife is having an affair"
       ],
       "location_id": "10",
-      "occupation": "Inn landlord"
+      "occupation": "Inn landlord",
+      "vulnerabilities": [
+        "wifes_affair",
+        "thieves_guild_connection",
+        "feigned_amicability"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "spawning_salmon_services",
+          "content": "Sidley rolls up his sleeves jovially. 'The Spawning Salmon! Best gambling and grilled sausages in Dreg. Three silver for a trio of bogswine sausages in ale gravy. Lodging at standard rates.'",
+          "keywords": ["spawning salmon", "gambling", "sausages", "inn"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "viewing_balcony",
+          "content": "He winks boisterously. 'Two silver entrance to the viewing balcony—plush leather couches, its own bar. Common and uncommon spirits. Where the merchants lounge.'",
+          "keywords": ["balcony", "spirits", "merchants", "exclusive"],
+          "required_disposition": 0,
+          "category": "location",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "thieves_guild_member",
+          "content": "His jovial mask slips briefly. 'The thieves' guild headquarters is in my cellars. I'm a member—I conceal their presence from the law. It's... mutually beneficial.'",
+          "hint": "The cellars seem unusually busy for a simple inn.",
+          "keywords": ["thieves guild", "cellars", "member", "secret"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "30gp"
+        },
+        {
+          "secret_id": "wifes_affair",
+          "content": "His eyes harden callously. 'My wife Elmine makes trips to Lankshorn to visit her ailing cousin. At least, that's what she says. I suspect she's having an affair—with that Sydewich Maldwort. I need to know the truth.'",
+          "hint": "He seems suspicious when his wife is mentioned.",
+          "keywords": ["elmine", "affair", "lankshorn", "sydewich maldwort"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sydewich_maldwort",
+          "relationship_type": "rival",
+          "description": "Suspects him of having an affair with his wife",
+          "hex_id": "0611",
+          "notes": "Located in Lankshorn"
+        },
+        {
+          "npc_id": "lyren_shodgerey",
+          "relationship_type": "competitor",
+          "description": "Rival innkeeper who dreams of founding a competing thieves' guild",
+          "hex_id": "1110",
+          "notes": "Both run rough establishments"
+        }
+      ]
     },
     {
       "npc_id": "brigg_hollowhand_meagre",
@@ -741,7 +1163,79 @@
         "Plans to infiltrate Berkmaster's manor"
       ],
       "location_id": "11",
-      "occupation": "Bog-swine farmer and secret society leader"
+      "occupation": "Bog-swine farmer and secret society leader",
+      "vulnerabilities": [
+        "haunted_dreams",
+        "desire_to_rule_dreg",
+        "atacorn_manipulation"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bog_swine_farming",
+          "content": "Brigg speaks dourly. 'I raise bog-swine in the marshes north of town. Huge, bristly, black beasts. Their meat makes Dreg's famous sausages.'",
+          "keywords": ["bog-swine", "farming", "marshes", "sausages"],
+          "required_disposition": -1,
+          "category": "personal",
+          "priority": 5
+        },
+        {
+          "topic_id": "dreg_troubles",
+          "content": "His shifty eyes dart around. 'Something's wrong with Dreg. Corruption everywhere—the Berkmaster, the thieves' guild, Madame Shantywood. Someone needs to take charge.'",
+          "keywords": ["corruption", "dreg", "troubles", "leadership"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "boghouse_boys_leader",
+          "content": "He whispers conspiratorially. 'I lead the Boghouse Boys—a secret society of good, honest folk. We meet in the cellars of a burned-out farmhouse. Our goal? Dreg ruled by common folk of good sense and upstanding morality.'",
+          "hint": "He seems to have unusual knowledge of local comings and goings.",
+          "keywords": ["boghouse boys", "secret society", "meeting", "farmhouse"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "haunted_dreams",
+          "content": "His eyes grow distant. 'My dreams are haunted by visions of great evils afoot in Dreg. I see corruption seeping from the Smokehouse, darkness lurking beneath...' He shudders.",
+          "hint": "He seems troubled by nightmares.",
+          "keywords": ["dreams", "visions", "evils", "smokehouse"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "berkmaster_infiltration",
+          "content": "He clenches his wooden hand. 'The Boghouse Boys are planning to infiltrate the Berkmaster's manor. We need to know what Monocleese is hiding. Could use... outside help.'",
+          "hint": "He's been watching the Berkmaster's manor closely.",
+          "keywords": ["infiltrate", "berkmaster", "manor", "plan"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "berkmaster_maximilian_monocleese",
+          "relationship_type": "target",
+          "description": "Planning to infiltrate his manor",
+          "hex_id": "1110",
+          "notes": "Suspects the Berkmaster of corruption"
+        }
+      ],
+      "faction_hooks": [
+        {
+          "hook_id": "manor_infiltration",
+          "description": "Help the Boghouse Boys infiltrate the Berkmaster's manor",
+          "reward": "Gratitude and influence in Dreg",
+          "difficulty": "medium"
+        }
+      ]
     },
     {
       "npc_id": "madame_chandilore_shantywood",
@@ -774,7 +1268,87 @@
         "The spectral gentleman is the father of her children"
       ],
       "location_id": "14",
-      "occupation": "Ruler of independent micro-domain and manor proprietor"
+      "occupation": "Ruler of independent micro-domain and manor proprietor",
+      "vulnerabilities": [
+        "desire_for_myrrsian",
+        "hatred_of_lord_murkin",
+        "secret_of_childrens_father"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chateau_shantywood",
+          "content": "Madame Shantywood speaks with refined mischief. 'Chateau Shantywood offers gambling, lodging of fancy quality, and... companionship from my employees. From five silver per hour.'",
+          "keywords": ["chateau", "shantywood", "gambling", "companionship"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "isle_independence",
+          "content": "She applies powder to her face with a feathery puff. 'Shantywood Isle is technically an independent country—I arbitrate my own laws here. A useful distinction.'",
+          "keywords": ["independent", "laws", "isle", "sovereignty"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 5
+        },
+        {
+          "topic_id": "economic_power",
+          "content": "Her calculating eyes gleam. 'I practically run the port of Dreg due to my economic clout. The Berkmaster has no legally recognized authority over my domain.'",
+          "keywords": ["economic", "power", "port", "berkmaster"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "magic_mirror",
+          "content": "She gazes into her ivory hand mirror. 'This mirror grants access to a shadow manse—a dusty, dreamy realm ruled by a spectral gentleman. He is... the father of my children.'",
+          "hint": "She is unusually attached to her hand mirror.",
+          "keywords": ["mirror", "shadow manse", "spectral gentleman", "children"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "desire_for_myrrsian",
+          "content": "Her eyes soften unexpectedly. 'I have seen the sorceress Myrrsian in my ballroom on occasion. Her beauty, her power... I desire her amorous attentions above all else.'",
+          "hint": "She grows wistful when magic-users are discussed.",
+          "keywords": ["myrrsian", "sorceress", "desire", "love"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "lord_murkin_revenge",
+          "content": "Her voice turns callously frank. 'Lord Murkin slew my eldest daughter many years ago. I desire his painful death—and I am willing to pay well for it.'",
+          "hint": "She grows cold when longhorn nobility is mentioned.",
+          "keywords": ["lord murkin", "daughter", "revenge", "death"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "berkmaster_maximilian_monocleese",
+          "relationship_type": "admirer",
+          "description": "The Berkmaster secretly lusts after her",
+          "hex_id": "1110",
+          "notes": "She uses his infatuation to her advantage"
+        }
+      ],
+      "faction_hooks": [
+        {
+          "hook_id": "murkin_assassination",
+          "description": "Arrange the painful death of Lord Murkin",
+          "reward": "Substantial gold and Shantywood's favor",
+          "difficulty": "very high"
+        }
+      ]
     }
   ],
   "encounter_tables": [

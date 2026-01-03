@@ -341,7 +341,76 @@
         "Training workers as militia"
       ],
       "location_id": "7",
-      "occupation": "Owner of brickworks, richest person in Meagre's Reach"
+      "occupation": "Owner of brickworks, richest person in Meagre's Reach",
+      "vulnerabilities": [
+        "desire_to_see_world_beyond_the_reach",
+        "loyalty_to_ygraine",
+        "arrogance_about_wealth"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "brickworks_operations",
+          "content": "Barhaim strokes his luxuriant beard. 'My brickworks are the lifeblood of Meagre's Reach. We use clay from the Dark Mirror—a gift from Ygraine herself.'",
+          "keywords": ["brickworks", "clay", "dark mirror", "ygraine"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 6
+        },
+        {
+          "topic_id": "redhearth_conflict",
+          "content": "His eyes narrow. 'Redhearth is a fool. His rebellion would destroy everything Ygraine has given us. I will not let that happen.'",
+          "keywords": ["redhearth", "rebellion", "conflict", "ygraine"],
+          "required_disposition": 0,
+          "category": "npc",
+          "priority": 7
+        },
+        {
+          "topic_id": "curse_of_the_reach",
+          "content": "Barhaim's voice grows heavy. 'We cannot leave this hex. Those born here who cross the boundary... vanish into oblivion. Ygraine's magic saved us, but it also binds us.'",
+          "keywords": ["curse", "boundary", "hex", "ygraine", "magic"],
+          "required_disposition": 1,
+          "category": "lore",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "silver_raven_talisman",
+          "content": "Barhaim glances around, then produces a silver raven from his pocket. 'Ygraine gave me this Talisman of Dimensional Anchoring. With it, my sons and I can visit her at Chateau Mauvesse—and the Dark Mirror itself.'",
+          "hint": "He seems to travel freely despite the curse binding other villagers.",
+          "keywords": ["talisman", "silver raven", "dimensional anchoring", "ygraine", "dark mirror"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "militia_training",
+          "content": "He lowers his voice. 'In the basement of the workers' lodging, I train my workers as a militia. When Redhearth makes his move, we will be ready to defend Ygraine's gift.'",
+          "hint": "Muffled sounds of military drills can be heard from the brickyard basement at night.",
+          "keywords": ["militia", "training", "basement", "workers", "redhearth"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": "50gp"
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "benedict_redhearth",
+          "relationship_type": "rival",
+          "description": "Political enemy leading rebel faction against Ygraine's rule",
+          "hex_id": "1703",
+          "notes": "Barhaim despises Redhearth's rebellion and secretly trains militia to oppose him"
+        },
+        {
+          "npc_id": "ygraine_mordlin",
+          "relationship_type": "patron",
+          "description": "The sorceress who saved Meagre's Reach and grants Barhaim special privileges",
+          "hex_id": "1802",
+          "notes": "Barhaim is utterly loyal to Ygraine and possesses her gift—the Talisman of Dimensional Anchoring"
+        }
+      ]
     },
     {
       "npc_id": "sister_nancy_delora",
@@ -371,7 +440,84 @@
         "Vicar Hallyman left and disappeared into oblivion"
       ],
       "location_id": "2",
-      "occupation": "Nun, serves as assistant to absent Vicar Hallyman, takes confession and holds services"
+      "occupation": "Nun, serves as assistant to absent Vicar Hallyman, takes confession and holds services",
+      "vulnerabilities": [
+        "isolation_from_reality",
+        "secret_desire_to_leave",
+        "knowledge_of_vicar_hallemans_fate"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "chapel_duties",
+          "content": "Sister Delora speaks with frosty precision. 'I tend to the Chapel of the Host of Heaven's Light. The Vicar is... away. I take confession and hold services in his stead.'",
+          "keywords": ["chapel", "vicar", "confession", "services", "church"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "village_conflict",
+          "content": "She sighs wearily. 'The squabbles between Barhaim and Redhearth are of no concern to me. I wish only to be left in peace to serve the Host of Heaven.'",
+          "keywords": ["barhaim", "redhearth", "conflict", "neutral"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 4
+        },
+        {
+          "topic_id": "st_lillibeth_shrine",
+          "content": "Her eyes soften slightly. 'The wooden idol of St Lillibeth of the Sugared Breath stands upon our altar. Those who pray sincerely may receive her blessing—the gift of Lesser Healing.'",
+          "keywords": ["st lillibeth", "shrine", "blessing", "healing", "prayer"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "pilgrimage_desire",
+          "content": "Her stony facade cracks. 'I dream of walking the roads to Castle Brackenwold, of seeing the great churches beyond this place. But I know it is impossible. The curse would take me, as it took...' She falls silent.",
+          "hint": "Her eyes grow distant when travelers mention other holy sites.",
+          "keywords": ["pilgrimage", "castle brackenwold", "curse", "dream"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "vicar_hallemans_fate",
+          "content": "Sister Delora's voice becomes a whisper. 'Vicar Halleman tried to leave Meagre's Reach. He stepped beyond the hex boundary and... vanished. Into oblivion. That is why I remain here, tending to my duties.'",
+          "hint": "She never speaks of the Vicar in the present tense.",
+          "keywords": ["vicar halleman", "disappeared", "oblivion", "boundary", "curse"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lorrima_gravesby",
+          "relationship_type": "acquaintance",
+          "description": "The sage often visits the chapel for prayer and contemplation",
+          "hex_id": "1703",
+          "notes": "2-in-6 chance of encountering Lorrima Gravesby at the chapel"
+        }
+      ],
+      "faction_profile": {
+        "primary_faction_id": "pluritine_church",
+        "secondary_faction_ids": [],
+        "faction_role": "priest",
+        "loyalty_type": "loyal",
+        "loyalty_strength": 2,
+        "public_alignment": "open",
+        "cover_story": null
+      },
+      "faction_attitudes": {
+        "drune": -3,
+        "witches": -2,
+        "cold_prince": -1,
+        "nag_lord": -3
+      }
     },
     {
       "npc_id": "benedict_redhearth",
@@ -400,7 +546,76 @@
         "Claims to recall his death and the embrace of Heaven but will not speak of details"
       ],
       "location_id": "3",
-      "occupation": "Village baker and leader of rebel faction"
+      "occupation": "Village baker and leader of rebel faction",
+      "vulnerabilities": [
+        "obsession_with_freeing_village",
+        "belief_that_elders_should_return_to_heaven",
+        "memories_of_death_and_afterlife"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "bakery_business",
+          "content": "Redhearth barely looks up from his furious shoveling. 'Cookies. Spiced bread. Two silver a ration. Buy or leave—I've work to do.'",
+          "keywords": ["bakery", "bread", "cookies", "food"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 4
+        },
+        {
+          "topic_id": "rebellion_against_ygraine",
+          "content": "His eyes blaze with fire. 'Ygraine keeps us trapped here like toys in a box! We Elders were dead—at peace in Heaven—until she dragged us back. This is no life, it is imprisonment!'",
+          "keywords": ["ygraine", "rebellion", "freedom", "elders", "imprisonment"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 8
+        },
+        {
+          "topic_id": "curse_explanation",
+          "content": "He slams a loaf onto the counter. 'Those born in the Reach cannot leave hex 1703. Step beyond, and you vanish. Ygraine's so-called gift comes with chains invisible.'",
+          "keywords": ["curse", "hex", "boundary", "vanish", "ygraine"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "death_wish_for_elders",
+          "content": "Redhearth's voice drops to a hoarse whisper. 'I know that breaking Ygraine's spell will likely kill all the Elders—myself included. But that is what I want. We should not be here. We belong in Heaven, where we were before she stole us back.'",
+          "hint": "His rebellion seems less about freedom and more about something darker—a desire for finality.",
+          "keywords": ["death", "elders", "heaven", "spell", "ygraine"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "memory_of_heaven",
+          "content": "His eyes grow distant. 'I remember dying. I remember the embrace of Heaven—warmth, light, peace beyond description. And then Ygraine's magic ripped me back into this cursed flesh. I cannot speak of what I saw, but I know where we belong.'",
+          "hint": "He speaks of death with longing rather than fear.",
+          "keywords": ["heaven", "death", "memory", "afterlife", "ygraine"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "reynold_barhaim",
+          "relationship_type": "rival",
+          "description": "Political enemy who opposes the rebellion and remains loyal to Ygraine",
+          "hex_id": "1703",
+          "notes": "Quarrels with Barhaim loudly in the village square"
+        },
+        {
+          "npc_id": "sister_nancy_delora",
+          "relationship_type": "antagonist",
+          "description": "The nun who expels him from church for being a malcontent",
+          "hex_id": "1703",
+          "notes": "Sister Delora has loudly expelled Redhearth from the church"
+        }
+      ]
     },
     {
       "npc_id": "primulus_paste",
@@ -425,7 +640,48 @@
       ],
       "secrets": [],
       "location_id": "5",
-      "occupation": "Inn proprietor"
+      "occupation": "Inn proprietor",
+      "vulnerabilities": [
+        "desire_to_marry_off_daughter",
+        "miserly_nature",
+        "easily_startled"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "grizzle_and_grouse_services",
+          "content": "Paste grumbles as he wipes down the bar. 'Food and lodging at standard rates. Try the stoggy stew—fermented game fowl on beans. Three silver a plate. Local specialty.'",
+          "keywords": ["inn", "food", "lodging", "stoggy stew"],
+          "required_disposition": -2,
+          "category": "interaction",
+          "priority": 5
+        },
+        {
+          "topic_id": "daughter_pilphra",
+          "content": "His sour face brightens slightly. 'My eldest daughter Pilphra is 24, unmarried, and looking for a well-off husband. Anyone willing to settle in the Reach would do well to consider her.'",
+          "keywords": ["pilphra", "daughter", "marriage", "settle"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 7
+        },
+        {
+          "topic_id": "village_politics",
+          "content": "He shrugs dismissively. 'Barhaim and Redhearth can fight all they want. I just want to run my inn in peace and see my daughter married.'",
+          "keywords": ["barhaim", "redhearth", "politics", "neutral"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 4
+        }
+      ],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "benedict_redhearth",
+          "relationship_type": "tolerant",
+          "description": "Redhearth's Rebels regularly meet in a shadowed corner of the Grizzle and Grouse",
+          "hex_id": "1703",
+          "notes": "Paste tolerates the rebels but doesn't actively support them"
+        }
+      ]
     },
     {
       "npc_id": "lorrima_gravesby",
@@ -457,7 +713,69 @@
         "Unbeknown to any in Meagre's Reach, Gravesby is a former cleric of the Order of St Signis and retains the capabilities of that Class"
       ],
       "location_id": "6",
-      "occupation": "Sage specializing in monster lore, retired from Castle Brackenwold"
+      "occupation": "Sage specializing in monster lore, retired from Castle Brackenwold",
+      "vulnerabilities": [
+        "desire_for_erudite_companionship",
+        "collector_of_monster_specimens",
+        "former_cleric_identity"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "sage_services",
+          "content": "Gravesby speaks slowly and softly. 'I am a sage of monster lore. Bring me your questions about beasts and creatures—or better yet, specimens. Whole carcasses or parts, I accept them all.'",
+          "keywords": ["sage", "monster", "lore", "specimens", "consultation"],
+          "required_disposition": -1,
+          "category": "interaction",
+          "priority": 6
+        },
+        {
+          "topic_id": "smargs_turret",
+          "content": "She gestures to the tower around her. 'Smarg's Turret has been my home for many years. The cellars contain my collection—jarred and stuffed specimens of fairies, monsters, and fantastic beasts. The origin of the turret itself is unclear, even to the Elders.'",
+          "keywords": ["smargs turret", "collection", "specimens", "tower"],
+          "required_disposition": 0,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "lichhounds",
+          "content": "Three spectral hounds pad silently through the tower. 'Benester, Eggort, and Hollyhock—my lichhounds. Faithful companions in my studies.'",
+          "keywords": ["lichhounds", "benester", "eggort", "hollyhock", "undead"],
+          "required_disposition": 0,
+          "category": "npc",
+          "priority": 4
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "former_order_of_st_signis",
+          "content": "She removes her ornate, swan-crested silver helm briefly. 'This is a Helm of Realignment. I was once a cleric of the Order of St Signis—Lawful in alignment and devoted to destroying the undead. The helm... changed me. Now I am Neutral, but I retain my clerical capabilities.'",
+          "hint": "She wears an unusual helm and has undead companions—strange for a monster-lore sage.",
+          "keywords": ["order of st signis", "cleric", "helm of realignment", "lawful", "neutral"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        },
+        {
+          "secret_id": "silver_holy_shield",
+          "content": "In the library on the second floor, a silver Holy Shield bearing the symbol of St Signis hangs upon the wall. 'A relic of my former life. I keep it... as a reminder.'",
+          "hint": "A holy symbol of St Signis can be glimpsed in her library.",
+          "keywords": ["silver shield", "st signis", "holy", "relic"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": null
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "sister_nancy_delora",
+          "relationship_type": "acquaintance",
+          "description": "Sometimes visits the chapel for private prayer and contemplation",
+          "hex_id": "1703",
+          "notes": "2-in-6 chance of being found in prayer at the chapel"
+        }
+      ]
     }
   ],
   "encounter_tables": [
