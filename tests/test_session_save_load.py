@@ -552,3 +552,203 @@ class TestEdgeCases:
         dm2 = VirtualDM(config=config)
         dm2.load_game(slot=1)
         assert len(dm2.get_party()) == 3
+
+
+class TestGameStateRestoration:
+    """
+    Test that game state (GameState enum) is properly restored.
+
+    P0-1: These tests verify the fix for save/load state restoration
+    where the game state wasn't being properly restored to the state machine.
+    """
+
+    def test_game_state_preserved_default(self, dm_with_state, temp_save_dir):
+        """Default WILDERNESS_TRAVEL state is preserved."""
+        # dm_with_state starts in WILDERNESS_TRAVEL
+        assert dm_with_state.current_state == GameState.WILDERNESS_TRAVEL
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        assert dm2.current_state == GameState.WILDERNESS_TRAVEL
+
+    def test_dungeon_state_preserved(self, dm_with_state, temp_save_dir):
+        """DUNGEON_EXPLORATION state is properly restored."""
+        # Transition to dungeon state
+        dm_with_state.controller.state_machine.force_state(
+            GameState.DUNGEON_EXPLORATION,
+            reason="test setup",
+        )
+        assert dm_with_state.current_state == GameState.DUNGEON_EXPLORATION
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        # Should restore to DUNGEON_EXPLORATION
+        assert dm2.current_state == GameState.DUNGEON_EXPLORATION
+
+    def test_encounter_state_with_encounter_restored(self, dm_with_state, temp_save_dir):
+        """ENCOUNTER state restores controller.current_encounter."""
+        from src.encounter.encounter_engine import (
+            EncounterEngineState,
+            EncounterPhase,
+            EncounterOrigin,
+        )
+
+        # Set up encounter
+        enemy = Combatant(
+            combatant_id="orc_1",
+            name="Orc",
+            side="enemy",
+            stat_block=StatBlock(
+                armor_class=13,
+                hit_dice="1d8",
+                hp_current=7,
+                hp_max=7,
+                movement=30,
+                attacks=["axe (1d8)"],
+                morale=8,
+                save_as="F1",
+            ),
+        )
+
+        encounter = EncounterState(
+            encounter_id="test_enc",
+            encounter_type=EncounterType.MONSTER,
+            distance=60,
+            party_initiative=10,
+            enemy_initiative=8,
+            surprise_status=SurpriseStatus.NO_SURPRISE,
+            combatants=[enemy],
+        )
+
+        dm_with_state.encounter._state = EncounterEngineState(
+            encounter=encounter,
+            origin=EncounterOrigin.WILDERNESS,
+            current_phase=EncounterPhase.INITIATIVE,
+        )
+
+        # Force state to ENCOUNTER
+        dm_with_state.controller.set_encounter(encounter)
+        dm_with_state.controller.state_machine.force_state(
+            GameState.ENCOUNTER,
+            reason="test setup",
+        )
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        # Should restore ENCOUNTER state
+        assert dm2.current_state == GameState.ENCOUNTER
+        # Controller should have the encounter set
+        assert dm2.controller.get_encounter() is not None
+        assert dm2.controller.get_encounter().encounter_id == "test_enc"
+
+    def test_combat_state_restored_with_encounter(self, dm_with_state, temp_save_dir):
+        """COMBAT state restores with controller.current_encounter set."""
+        from src.combat.combat_engine import CombatState, CombatantStatus
+
+        # Set up combat
+        enemy = Combatant(
+            combatant_id="troll_1",
+            name="Troll",
+            side="enemy",
+            stat_block=StatBlock(
+                armor_class=15,
+                hit_dice="6d8",
+                hp_current=30,
+                hp_max=36,
+                movement=40,
+                attacks=["claw (1d6)", "claw (1d6)", "bite (1d10)"],
+                morale=10,
+                save_as="F6",
+            ),
+        )
+
+        encounter = EncounterState(
+            encounter_id="combat_test",
+            encounter_type=EncounterType.MONSTER,
+            combatants=[enemy],
+        )
+
+        dm_with_state.combat._combat_state = CombatState(
+            encounter=encounter,
+            round_number=3,
+            party_initiative=12,
+            enemy_initiative=8,
+        )
+        dm_with_state.combat._return_state = GameState.WILDERNESS_TRAVEL
+
+        # Force state to COMBAT
+        dm_with_state.controller.set_encounter(encounter)
+        dm_with_state.controller.state_machine.force_state(
+            GameState.COMBAT,
+            reason="test setup",
+        )
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        # Should restore COMBAT state
+        assert dm2.current_state == GameState.COMBAT
+        # Controller should have encounter set
+        assert dm2.controller.get_encounter() is not None
+
+    def test_previous_state_restored(self, dm_with_state, temp_save_dir):
+        """Previous state is preserved for return_to_previous."""
+        # Transition to dungeon, then to encounter
+        dm_with_state.controller.state_machine.force_state(
+            GameState.DUNGEON_EXPLORATION,
+            reason="test setup",
+        )
+        # Set a previous state
+        dm_with_state.controller.state_machine._previous_state = GameState.WILDERNESS_TRAVEL
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        assert dm2.current_state == GameState.DUNGEON_EXPLORATION
+        assert dm2.controller.state_machine._previous_state == GameState.WILDERNESS_TRAVEL
+
+    def test_combat_without_encounter_downgrades_gracefully(self, temp_save_dir):
+        """Loading COMBAT without encounter data downgrades to safe state."""
+        # Create a save file manually that has COMBAT but no encounter
+        import json
+
+        save_path = temp_save_dir / "slot_1.json"
+        save_data = {
+            "session_name": "Test",
+            "last_saved_at": "2024-01-01",
+            "world_state": {},
+            "party_state": {},
+            "characters": [],
+            "hex_exploration": {},
+            "custom_data": {
+                "current_game_state": "combat",
+                # No combat_state or encounter_state
+            },
+        }
+        with open(save_path, "w") as f:
+            json.dump(save_data, f)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm = VirtualDM(config=config)
+        dm.load_game(slot=1)
+
+        # Should downgrade to WILDERNESS_TRAVEL (not crash)
+        assert dm.current_state == GameState.WILDERNESS_TRAVEL

@@ -732,6 +732,12 @@ class VirtualDM:
         # Save current game state enum
         session.custom_data["current_game_state"] = self.current_state.value
 
+        # Save previous game state for return_to_previous functionality
+        if self.controller.state_machine._previous_state:
+            session.custom_data["previous_game_state"] = (
+                self.controller.state_machine._previous_state.value
+            )
+
         # Save faction state
         save_faction_state(self.factions, session.custom_data)
 
@@ -798,18 +804,38 @@ class VirtualDM:
             # Apply hex crawl state
             self.session_manager.apply_to_hex_engine(self.hex_crawl)
 
-            # Restore game state if saved
-            if "current_game_state" in session.custom_data:
-                saved_state = GameState(session.custom_data["current_game_state"])
-                self.controller._current_state = saved_state
-
-            # Restore combat state if present
-            if "combat_state" in session.custom_data:
-                self._deserialize_combat_state(session.custom_data["combat_state"])
-
-            # Restore encounter state if present
+            # Restore encounter state FIRST if present (required for ENCOUNTER/COMBAT states)
             if "encounter_state" in session.custom_data:
                 self._deserialize_encounter_state(session.custom_data["encounter_state"])
+                # Set the encounter on the controller so restore_state validation passes
+                if self.encounter._state and self.encounter._state.encounter:
+                    self.controller.set_encounter(self.encounter._state.encounter)
+
+            # Restore combat state if present (before game state, so validation passes)
+            if "combat_state" in session.custom_data:
+                self._deserialize_combat_state(session.custom_data["combat_state"])
+                # Ensure combat engine is attached to controller
+                if self.combat._combat_state:
+                    self.controller._combat_engine = self.combat
+                    self.controller._combat_engine_attached = True
+                    # Also set encounter from combat if not already set
+                    if self.combat._combat_state.encounter and not self.controller.get_encounter():
+                        self.controller.set_encounter(self.combat._combat_state.encounter)
+
+            # Restore game state using proper restore_state() method
+            if "current_game_state" in session.custom_data:
+                saved_state = GameState(session.custom_data["current_game_state"])
+                # Get previous state if saved
+                previous_state = None
+                if "previous_game_state" in session.custom_data:
+                    previous_state = GameState(session.custom_data["previous_game_state"])
+
+                restored_state, restore_warnings = self.controller.restore_state(
+                    state=saved_state,
+                    previous_state=previous_state,
+                )
+                for warning in restore_warnings:
+                    logger.warning(f"State restore warning: {warning}")
 
             # Restore faction state if present
             load_faction_state(self.factions, session.custom_data)

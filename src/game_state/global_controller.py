@@ -425,6 +425,71 @@ class GlobalController:
         """Get valid triggers/actions from current state."""
         return self.state_machine.get_valid_triggers()
 
+    def restore_state(
+        self,
+        state: GameState,
+        context: Optional[dict[str, Any]] = None,
+        previous_state: Optional[GameState] = None,
+    ) -> tuple[GameState, list[str]]:
+        """
+        Restore game state during save/load operations.
+
+        This method properly restores the state machine state during load,
+        handling validation and downgrade if required objects are missing.
+
+        Args:
+            state: The GameState to restore to
+            context: Optional context data for the state
+            previous_state: Optional previous state to restore (for return_to_previous)
+
+        Returns:
+            Tuple of (actual_restored_state, warnings) where warnings list
+            any downgrade or validation issues.
+        """
+        warnings: list[str] = []
+        context = context or {}
+
+        # States that require an active encounter
+        encounter_required_states = {GameState.ENCOUNTER, GameState.COMBAT, GameState.SOCIAL_INTERACTION}
+
+        # Validate required objects for certain states
+        if state in encounter_required_states:
+            if self._current_encounter is None:
+                warnings.append(
+                    f"Cannot restore to {state.value}: no active encounter. "
+                    f"Downgrading to WILDERNESS_TRAVEL."
+                )
+                logger.warning(warnings[-1])
+                state = GameState.WILDERNESS_TRAVEL
+
+        # Combat-specific validation
+        if state == GameState.COMBAT:
+            # Check if combat engine has valid state
+            if self._combat_engine is None:
+                warnings.append(
+                    f"Cannot restore to COMBAT: no combat engine. "
+                    f"Downgrading to ENCOUNTER if possible."
+                )
+                logger.warning(warnings[-1])
+                if self._current_encounter:
+                    state = GameState.ENCOUNTER
+                else:
+                    state = GameState.WILDERNESS_TRAVEL
+
+        # Force the state change
+        self.state_machine.force_state(
+            new_state=state,
+            reason="save/load restore",
+            context=context,
+        )
+
+        # Restore previous_state if provided (for return_to_previous functionality)
+        if previous_state is not None:
+            self.state_machine._previous_state = previous_state
+
+        logger.info(f"State restored to {state.value}")
+        return state, warnings
+
     # =========================================================================
     # TRANSITION HOOKS
     # =========================================================================
