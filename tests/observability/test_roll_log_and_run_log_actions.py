@@ -289,8 +289,8 @@ class TestMetaExportRunLog:
 class TestMetaReplayStatus:
     """Test meta:replay_status action."""
 
-    def test_replay_status_reports_not_implemented(self, offline_dm):
-        """meta:replay_status should indicate replay is not active."""
+    def test_replay_status_reports_inactive(self, offline_dm):
+        """meta:replay_status should indicate replay is not active when no session."""
         reset_registry()
         registry = get_default_registry()
 
@@ -298,9 +298,9 @@ class TestMetaReplayStatus:
 
         assert result["success"] is True
         assert "replay_active" in result
-        # Currently replay is not implemented, so should be False
+        # P10.3: Replay is now implemented but should show inactive when no session
         assert result["replay_active"] is False
-        assert "not implemented" in result["message"].lower() or "not active" in result["message"].lower()
+        assert "inactive" in result["message"].lower()
 
 
 class TestLogNamingConsistency:
