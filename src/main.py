@@ -1007,13 +1007,16 @@ class VirtualDM:
                             "filepath": str(filepath),
                         }
                     )
-                except Exception:
+                except Exception as e:
+                    # P1-7: Include truncated error for diagnostics
+                    error_msg = repr(e)[:200]
                     saves.append(
                         {
                             "slot": slot,
                             "session_name": "(corrupted)",
                             "last_saved": "Unknown",
                             "filepath": str(filepath),
+                            "error": error_msg,
                         }
                     )
             else:
