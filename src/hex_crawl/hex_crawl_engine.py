@@ -1958,6 +1958,10 @@ class HexCrawlEngine:
                 # Apply to all party members in the hex
                 for character in self.controller.get_all_characters():
                     hazard_result = self._resolve_hazard(hazard, character)
+                    # Effects are now applied automatically in _resolve_hazard
+                    effects_applied = bool(
+                        hazard_result.apply_damage or hazard_result.apply_conditions
+                    )
                     results.append({
                         "character_id": character.character_id,
                         "character_name": character.name,
@@ -1970,6 +1974,7 @@ class HexCrawlEngine:
                         "description": hazard_result.description,
                         "damage_taken": hazard_result.damage_taken,
                         "conditions_applied": hazard_result.conditions_applied,
+                        "effects_applied": effects_applied,
                     })
 
         return results
@@ -5886,6 +5891,22 @@ class HexCrawlEngine:
                 if on_fail_condition:
                     conditions_applied.append(on_fail_condition)
 
+            # Build apply lists for game state updates
+            apply_damage: list[tuple[str, int]] = []
+            apply_conditions: list[tuple[str, str]] = []
+
+            character_id = getattr(character, "character_id", None)
+            if character_id:
+                # Handle potential MagicMock values from tests
+                try:
+                    damage_val = int(damage_dealt) if damage_dealt else 0
+                    if damage_val > 0:
+                        apply_damage.append((character_id, damage_val))
+                except (TypeError, ValueError):
+                    pass
+                for condition in conditions_applied:
+                    apply_conditions.append((character_id, condition))
+
             # Build description including effect hint if failed
             final_description = description if success else (on_fail.get("description") or description)
             if not success and on_fail_effect:
@@ -5901,6 +5922,8 @@ class HexCrawlEngine:
                 check_made=True,
                 check_result=roll_total,
                 conditions_applied=conditions_applied,
+                apply_damage=apply_damage,
+                apply_conditions=apply_conditions,
             )
 
         # Apply effects to game state (damage, conditions, roll tables)
@@ -6060,11 +6083,17 @@ class HexCrawlEngine:
         results = []
         for hazard in matching_hazards:
             hazard_result = self._resolve_hazard(hazard, character)
+            # Effects are now applied automatically in _resolve_hazard
+            effects_applied = bool(
+                hazard_result.apply_damage or hazard_result.apply_conditions
+            )
             results.append({
                 "hazard_name": hazard.get("name", hazard.get("trigger", "unknown")),
                 "success": hazard_result.success,
                 "description": hazard_result.description,
+                "damage_taken": hazard_result.damage_taken,
                 "conditions_applied": hazard_result.conditions_applied,
+                "effects_applied": effects_applied,
                 "narrative_hints": hazard_result.narrative_hints,
             })
 
