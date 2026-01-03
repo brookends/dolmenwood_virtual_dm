@@ -497,6 +497,12 @@ class ConversationFacade:
 
             result = self.dm.encounter.execute_action(action, actor=actor)
             messages = [ChatMessage("system", m) for m in (result.messages or [])]
+
+            # P1-5: Pick up encounter narration from DM agent
+            narration = self.dm.get_last_encounter_narration()
+            if narration:
+                messages.append(ChatMessage("dm", narration))
+
             return self._response(messages)
 
         # ------------------------------------------------------------------

@@ -513,28 +513,72 @@ class VirtualDM:
         Narration callback for EncounterEngine.
 
         Called after encounter actions are resolved to generate LLM narration.
+        Stores narration in self._last_encounter_narration for ConversationFacade
+        to pick up and surface to the player.
 
         Args:
             action: The action taken (e.g., "parley", "evasion")
             actor: Who took the action ("party" or "enemy")
             result: Result dict from the encounter action
         """
+        # Clear previous narration
+        self._last_encounter_narration: Optional[str] = None
+
         if not self._dm_agent or not self._dm_agent.is_available():
             return
 
-        try:
-            # Build context for narration
-            context = {
-                "action": action,
-                "actor": actor,
-                "success": result.get("success", False),
-                "messages": result.get("messages", []),
-            }
+        if not self.config.enable_narration:
+            return
 
-            # For now, log encounter narration context (can be enhanced later)
-            logger.debug(f"Encounter narration context: {context}")
+        try:
+            # Build narrative hints from result messages
+            narrative_hints = result.get("messages", [])
+
+            # Map encounter actions to narrative-friendly descriptions
+            action_descriptions = {
+                "parley": "attempt to negotiate with the encountered creatures",
+                "evasion": "attempt to slip away unnoticed",
+                "attack": "engage the encountered creatures in combat",
+                "wait": "observe and wait to see what happens",
+                "flee": "attempt to flee from the encounter",
+            }
+            action_description = action_descriptions.get(
+                action.lower(),
+                f"perform {action} during the encounter"
+            )
+
+            # Generate narration using the resolved action method
+            narration = self.narrate_resolved_action(
+                action_description=action_description,
+                action_category="encounter",
+                action_type=action.lower(),
+                success=result.get("success", True),
+                partial_success=False,
+                character_name=actor if actor != "party" else "the party",
+                narrative_hints=narrative_hints,
+                location_context=self._get_current_location_name(),
+            )
+
+            if narration:
+                self._last_encounter_narration = narration
+                logger.debug(f"Encounter narration generated: {narration[:100]}...")
+
         except Exception as e:
             logger.warning(f"Encounter narration failed: {e}")
+
+    def _get_current_location_name(self) -> str:
+        """Get current location name for narration context."""
+        try:
+            loc = self.controller.party_state.location
+            return loc.name if loc.name else f"Hex {loc.location_id}"
+        except Exception:
+            return "unknown location"
+
+    def get_last_encounter_narration(self) -> Optional[str]:
+        """Get and clear the last encounter narration for surfacing to player."""
+        narration = getattr(self, "_last_encounter_narration", None)
+        self._last_encounter_narration = None
+        return narration
 
     def _parse_narrative_intent_callback(
         self,

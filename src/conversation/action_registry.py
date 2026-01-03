@@ -1424,9 +1424,14 @@ def _create_default_registry() -> ActionRegistry:
 
         result = dm.encounter.execute_action(action, actor=actor)
         messages = [m for m in (result.messages or [])]
+
+        # P1-5: Pick up encounter narration from DM agent
+        narration = dm.get_last_encounter_narration()
+
         return {
             "success": True,
             "message": "\n".join(messages) if messages else f"Executed {action_str}.",
+            "narration": narration,
         }
 
     def _settlement_action(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
