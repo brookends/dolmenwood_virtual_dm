@@ -1883,14 +1883,37 @@ def _create_default_registry() -> ActionRegistry:
             return {"success": False, "message": f"Could not enter: {e}"}
 
     def _wilderness_enter_dungeon(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
-        """Enter a dungeon from a POI."""
-        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
-        dungeon_id = p.get("dungeon_id", "")
-        entrance_room = p.get("entrance_room", "entrance")
+        """Enter a dungeon from a POI.
 
+        Mirrors the working path in ConversationFacade:
+        1. Fetch POI dungeon config via dm.hex_crawl.get_poi_dungeon_config()
+        2. Call dm.dungeon.enter_dungeon() with the config
+        """
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        dungeon_id = p.get("dungeon_id") or "dungeon"
+        entrance_room = p.get("entrance_room") or "entrance"
+
+        # Get POI dungeon config (contains dungeon-specific setup from hex content)
         try:
-            result = dm.hex_crawl.enter_dungeon(hex_id, dungeon_id, entrance_room)
-            return {"success": result.get("success", True), "message": result.get("message", "Entered dungeon.")}
+            poi_config = dm.hex_crawl.get_poi_dungeon_config(hex_id)
+            poi_config["hex_id"] = hex_id
+        except Exception:
+            poi_config = {"hex_id": hex_id}
+
+        # Enter dungeon through the dungeon engine
+        try:
+            result = dm.dungeon.enter_dungeon(
+                dungeon_id=dungeon_id,
+                entry_room=entrance_room,
+                poi_config=poi_config,
+            )
+
+            # Build response message
+            msg = result.get("message", f"Entered {dungeon_id}.")
+            if result.get("room_description"):
+                msg += f"\n\n{result['room_description']}"
+
+            return {"success": result.get("success", True), "message": msg}
         except Exception as e:
             return {"success": False, "message": f"Could not enter dungeon: {e}"}
 
