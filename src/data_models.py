@@ -8719,3 +8719,71 @@ class TransitionLog:
     to_state: str
     trigger: str
     context: dict[str, Any] = field(default_factory=dict)
+
+
+# =============================================================================
+# CONTENT LOAD REPORT (P1-6)
+# =============================================================================
+
+
+@dataclass
+class ContentLoadReport:
+    """
+    Report of content loading status, surfaced to players.
+
+    P1-6: Surfaces content-loading status (settlements, hex errors) so players
+    can see issues without reading logs.
+    """
+
+    # Summary counts
+    hexes_loaded: int = 0
+    hexes_failed: int = 0
+    settlements_loaded: int = 0
+    settlements_failed: int = 0
+    spells_loaded: int = 0
+    monsters_loaded: int = 0
+    items_loaded: int = 0
+
+    # Error and warning messages
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    # Overall status
+    success: bool = True
+
+    def add_error(self, error: str) -> None:
+        """Add an error message."""
+        self.errors.append(error)
+        self.success = False
+
+    def add_warning(self, warning: str) -> None:
+        """Add a warning message."""
+        self.warnings.append(warning)
+
+    def summary(self) -> str:
+        """Generate a human-readable summary."""
+        parts = []
+
+        # Content counts
+        if self.hexes_loaded > 0:
+            parts.append(f"{self.hexes_loaded} hexes")
+        if self.settlements_loaded > 0:
+            parts.append(f"{self.settlements_loaded} settlements")
+        if self.spells_loaded > 0:
+            parts.append(f"{self.spells_loaded} spells")
+        if self.monsters_loaded > 0:
+            parts.append(f"{self.monsters_loaded} monsters")
+
+        summary = f"Content loaded: {', '.join(parts) if parts else 'none'}"
+
+        # Errors
+        if self.hexes_failed > 0:
+            summary += f" | {self.hexes_failed} hex errors"
+        if self.settlements_failed > 0:
+            summary += f" | {self.settlements_failed} settlement errors"
+        if self.errors:
+            summary += f" | {len(self.errors)} error(s)"
+        if self.warnings:
+            summary += f" | {len(self.warnings)} warning(s)"
+
+        return summary

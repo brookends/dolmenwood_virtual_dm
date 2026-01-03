@@ -517,6 +517,94 @@ class TestMultipleSlots:
         assert dm_load2.controller.world_state.current_date.year == 5
 
 
+class TestCorruptedSaveDiagnostics:
+    """
+    Test corrupted save slot diagnostics.
+
+    P1-7: Verify that list_saves shows WHY a save slot is corrupted
+    by including a truncated error field in the metadata.
+    """
+
+    def test_corrupted_json_shows_error(self, temp_save_dir):
+        """Invalid JSON file should show (corrupted) with error field."""
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm = VirtualDM(config=config)
+
+        # Write invalid JSON to slot 1
+        slot_path = temp_save_dir / "slot_1.json"
+        slot_path.write_text("{invalid json content")
+
+        saves = dm.list_saves()
+
+        slot1 = next(s for s in saves if s["slot"] == 1)
+        assert slot1["session_name"] == "(corrupted)"
+        assert "error" in slot1
+        assert len(slot1["error"]) > 0
+        # Error should mention JSON decode issue
+        assert "JSON" in slot1["error"] or "json" in slot1["error"]
+
+    def test_corrupted_error_includes_exception_details(self, temp_save_dir):
+        """Error field should contain useful exception details."""
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm = VirtualDM(config=config)
+
+        # Write truncated JSON to slot 2
+        slot_path = temp_save_dir / "slot_2.json"
+        slot_path.write_text('{"session_name": "Test"')  # Missing closing brace
+
+        saves = dm.list_saves()
+
+        slot2 = next(s for s in saves if s["slot"] == 2)
+        assert slot2["session_name"] == "(corrupted)"
+        assert "error" in slot2
+        # Should mention the decode error
+        assert "Expecting" in slot2["error"] or "decode" in slot2["error"].lower()
+
+    def test_corrupted_error_is_truncated(self, temp_save_dir):
+        """Error field should be truncated to 200 chars max."""
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm = VirtualDM(config=config)
+
+        # Write invalid content that will cause a long error message
+        slot_path = temp_save_dir / "slot_3.json"
+        slot_path.write_text("not json at all " * 100)
+
+        saves = dm.list_saves()
+
+        slot3 = next(s for s in saves if s["slot"] == 3)
+        assert slot3["session_name"] == "(corrupted)"
+        assert "error" in slot3
+        assert len(slot3["error"]) <= 200
+
+    def test_empty_slot_has_no_error(self, temp_save_dir):
+        """Empty slot should not have error field."""
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm = VirtualDM(config=config)
+
+        saves = dm.list_saves()
+
+        # Pick any empty slot
+        empty_slot = next(s for s in saves if s["session_name"] == "(empty)")
+        assert "error" not in empty_slot
+
+    def test_valid_save_has_no_error(self, temp_save_dir):
+        """Valid save should not have error field."""
+        config = GameConfig(
+            save_dir=temp_save_dir,
+            campaign_name="Test Campaign",
+            enable_narration=False,
+            use_vector_db=False,
+        )
+        dm = VirtualDM(config=config)
+        dm.save_game(slot=1)
+
+        saves = dm.list_saves()
+
+        slot1 = next(s for s in saves if s["slot"] == 1)
+        assert slot1["session_name"] != "(corrupted)"
+        assert "error" not in slot1
+
+
 class TestEdgeCases:
     """Test edge cases for save/load."""
 
@@ -705,6 +793,11 @@ class TestGameStateRestoration:
         assert dm2.current_state == GameState.COMBAT
         # Controller should have encounter set
         assert dm2.controller.get_encounter() is not None
+        # Combat round should be restored
+        assert dm2.combat._combat_state is not None
+        assert dm2.combat._combat_state.round_number == 3
+        # Return state should be restored
+        assert dm2.combat._return_state == GameState.WILDERNESS_TRAVEL
 
     def test_previous_state_restored(self, dm_with_state, temp_save_dir):
         """Previous state is preserved for return_to_previous."""

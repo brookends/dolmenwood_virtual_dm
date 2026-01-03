@@ -98,8 +98,7 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "encounter_triggered",
         "Encounter occurs on the fairy road",
     ),
-    # TODO(Phase 5.2): Wire fairy_road_combat trigger in FairyRoadEngine
-    # when hostile fairy creatures are encountered or party attacks
+    # P2-11: Wired in FairyRoadEngine.trigger_combat_transition()
     StateTransition(
         GameState.FAIRY_ROAD_TRAVEL,
         GameState.COMBAT,
@@ -150,8 +149,7 @@ VALID_TRANSITIONS: list[StateTransition] = [
         "initiate_conversation",
         "Party initiates conversation with NPC",
     ),
-    # TODO(Phase 5.2): Wire settlement_combat trigger in SettlementEngine
-    # when party attacks NPCs or guards intervene in crimes
+    # P2-11: Wired in SettlementEngine.trigger_combat()
     StateTransition(
         GameState.SETTLEMENT_EXPLORATION,
         GameState.COMBAT,

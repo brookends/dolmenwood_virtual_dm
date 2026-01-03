@@ -50,6 +50,10 @@ from src.data_models import (
     LocationType,
     SourceReference,
     TimeOfDay,
+    EncounterState,
+    EncounterType,
+    Combatant,
+    StatBlock,
 )
 
 # Import v2 content models (JSON-backed settlements)
@@ -2669,4 +2673,154 @@ class SettlementEngine:
             "lifestyle_cost_sp_per_day": lifestyle_info["cost_per_day_sp"],
             "lifestyle_allows_healing": lifestyle_info["allows_healing"],
             "days_in_settlement": self._days_in_settlement,
+        }
+
+    # =========================================================================
+    # COMBAT TRIGGER (P2-11)
+    # =========================================================================
+
+    def trigger_combat(
+        self,
+        target_ids: list[str],
+        reason: str = "hostilities",
+    ) -> dict[str, Any]:
+        """
+        Trigger combat in the settlement.
+
+        This creates an EncounterState from the target NPCs/guards and
+        transitions to COMBAT via the settlement_combat trigger.
+
+        Per state_machine.py:
+        - SETTLEMENT_EXPLORATION -> COMBAT via "settlement_combat"
+        - Combat ends return to SETTLEMENT_EXPLORATION via "combat_end_settlement"
+
+        Args:
+            target_ids: List of NPC IDs to fight. Can be:
+                - NPC IDs from the settlement
+                - Monster IDs (for guards, bandits, etc.)
+                - Generic "guard" for settlement guards
+            reason: Reason for combat (for logging)
+
+        Returns:
+            Dict with combat trigger result
+        """
+        settlement = self.get_active_settlement()
+        if not settlement:
+            return {
+                "success": False,
+                "message": "Not in a settlement.",
+                "action": "settlement:trigger_combat",
+            }
+
+        # Validate we have targets
+        if not target_ids:
+            return {
+                "success": False,
+                "message": "No targets specified for combat.",
+                "action": "settlement:trigger_combat",
+            }
+
+        # Create combatants from target IDs
+        combatants: list[Combatant] = []
+        from src.content_loader.monster_registry import get_monster_registry
+        from uuid import uuid4
+
+        registry = get_monster_registry()
+
+        for target_id in target_ids:
+            # Try to get NPC from settlement first
+            npc = self._npcs.get(target_id)
+            if npc:
+                # Create combatant from NPC with a simple stat block
+                npc_stat_block = StatBlock(
+                    armor_class=10,
+                    hit_dice="1d8",
+                    hp_current=8,
+                    hp_max=8,
+                    movement=30,
+                    attacks=[{"name": "Unarmed", "damage": "1d4", "bonus": 0}],
+                    morale=7,
+                )
+                combatant = Combatant(
+                    combatant_id=f"npc_{target_id}_{uuid4().hex[:8]}",
+                    name=npc.name,
+                    side="enemy",
+                    stat_block=npc_stat_block,
+                )
+                combatants.append(combatant)
+            else:
+                # Try monster registry (for guards, bandits, etc.)
+                combatant = registry.create_combatant(
+                    monster_id=target_id,
+                    combatant_id=f"{target_id}_{uuid4().hex[:8]}",
+                )
+                if combatant:
+                    combatant.side = "enemy"
+                    combatants.append(combatant)
+                else:
+                    # Fallback: create generic combatant with default stats
+                    fallback_stat_block = StatBlock(
+                        armor_class=10,
+                        hit_dice="1d8",
+                        hp_current=8,
+                        hp_max=8,
+                        movement=30,
+                        attacks=[{"name": "Attack", "damage": "1d6", "bonus": 0}],
+                        morale=7,
+                    )
+                    combatants.append(
+                        Combatant(
+                            combatant_id=f"unknown_{uuid4().hex[:8]}",
+                            name=target_id,
+                            side="enemy",
+                            stat_block=fallback_stat_block,
+                        )
+                    )
+
+        if not combatants:
+            return {
+                "success": False,
+                "message": "Could not create any combatants from targets.",
+                "action": "settlement:trigger_combat",
+            }
+
+        # Create encounter state
+        encounter = EncounterState(
+            encounter_type=EncounterType.NPC,
+            actors=target_ids,
+            context=reason,
+            terrain="settlement",
+            combatants=combatants,
+        )
+
+        # Set encounter on controller
+        self.controller.set_encounter(encounter)
+
+        # Transition to combat
+        self.controller.transition(
+            "settlement_combat",
+            context={
+                "settlement_id": settlement.settlement_id,
+                "settlement_name": settlement.name,
+                "reason": reason,
+                "targets": target_ids,
+            },
+        )
+
+        # Log the event
+        _log_settlement_event("combat_triggered", {
+            "settlement_id": settlement.settlement_id,
+            "settlement_name": settlement.name,
+            "reason": reason,
+            "targets": target_ids,
+            "combatant_count": len(combatants),
+        })
+
+        return {
+            "success": True,
+            "message": f"Combat begins in {settlement.name}! Fighting {len(combatants)} opponent(s).",
+            "action": "settlement:trigger_combat",
+            "combatant_count": len(combatants),
+            "target_ids": target_ids,
+            "reason": reason,
         }

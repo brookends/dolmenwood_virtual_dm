@@ -3,10 +3,18 @@ Pytest fixtures for Dolmenwood Virtual DM test suite.
 
 Provides reusable test fixtures for game state, characters, encounters,
 and LLM mocking.
+
+P2-12: Deterministic test harness ensuring:
+- All randomness is seeded and reproducible
+- Mocked oracle/LLM for stable tests
+- VirtualDM builder for easy test setup
 """
 
 import pytest
+import tempfile
+from pathlib import Path
 from typing import Optional
+from unittest.mock import MagicMock, patch
 
 from src.data_models import (
     DiceRoller,
@@ -535,3 +543,287 @@ def create_test_encounter(
         terrain="forest",
         combatants=combatants,
     )
+
+
+# =============================================================================
+# P2-12: DETERMINISTIC TEST FIXTURES
+# =============================================================================
+
+
+@pytest.fixture(autouse=True)
+def ensure_deterministic_dice():
+    """
+    Auto-use fixture that ensures dice are reset between tests.
+
+    This runs before EVERY test to guarantee a clean dice state.
+    Tests that need specific seeding should use seeded_dice fixture.
+    """
+    DiceRoller.clear_roll_log()
+    yield
+    DiceRoller.clear_roll_log()
+
+
+@pytest.fixture
+def seeded_dice_factory():
+    """
+    Factory fixture for creating seeded dice rollers with custom seeds.
+
+    Usage:
+        def test_something(seeded_dice_factory):
+            dice = seeded_dice_factory(seed=123)
+            # dice is now seeded with 123
+    """
+    def _factory(seed: int = 42) -> DiceRoller:
+        DiceRoller.clear_roll_log()
+        DiceRoller.set_seed(seed)
+        return DiceRoller()
+
+    return _factory
+
+
+@pytest.fixture
+def temp_save_dir():
+    """Provide a temporary directory for save/load tests."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir)
+
+
+# =============================================================================
+# P2-12: MOCK ORACLE FIXTURES
+# =============================================================================
+
+
+@pytest.fixture
+def mock_mythic_oracle():
+    """
+    Mock MythicGME oracle that returns deterministic results.
+
+    Usage:
+        def test_oracle_based_action(mock_mythic_oracle):
+            mock_mythic_oracle.set_fate_result("Yes")
+            # Oracle calls will now return "Yes"
+    """
+    from dataclasses import dataclass
+
+    @dataclass
+    class MockFateResult:
+        answer: str = "Yes"
+        roll: int = 50
+        chaos_factor: int = 5
+        random_event_triggered: bool = False
+        random_event: Optional[str] = None
+        exceptional: bool = False
+
+    class MockMythicOracle:
+        def __init__(self):
+            self._fate_result = MockFateResult()
+            self._meaning_result = ("action", "descriptor")
+            self.chaos_factor = 5
+
+        def set_fate_result(
+            self,
+            answer: str = "Yes",
+            roll: int = 50,
+            exceptional: bool = False,
+            random_event: bool = False,
+        ):
+            """Configure what fate_check will return."""
+            self._fate_result = MockFateResult(
+                answer=answer,
+                roll=roll,
+                chaos_factor=self.chaos_factor,
+                random_event_triggered=random_event,
+                exceptional=exceptional,
+            )
+
+        def set_meaning_result(self, action: str, descriptor: str):
+            """Configure what meaning table lookups will return."""
+            self._meaning_result = (action, descriptor)
+
+        def fate_check(self, question: str, likelihood=None):
+            """Return configured fate result."""
+            return self._fate_result
+
+        def random_event(self):
+            """Return a mock random event."""
+            return {"focus": "NPC Action", "meaning": self._meaning_result}
+
+        def meaning_table(self, table_name: str):
+            """Return configured meaning result."""
+            return self._meaning_result
+
+        def increase_chaos(self):
+            """Increase chaos factor."""
+            self.chaos_factor = min(9, self.chaos_factor + 1)
+
+        def decrease_chaos(self):
+            """Decrease chaos factor."""
+            self.chaos_factor = max(1, self.chaos_factor - 1)
+
+    return MockMythicOracle()
+
+
+@pytest.fixture
+def patched_oracle(mock_mythic_oracle):
+    """
+    Patch the MythicGME class to use a mock oracle.
+
+    Usage:
+        def test_with_patched_oracle(patched_oracle):
+            patched_oracle.set_fate_result("No")
+            # All MythicGME instances will now use the mock
+    """
+    with patch("src.oracle.mythic_gme.MythicGME", return_value=mock_mythic_oracle):
+        with patch("src.conversation.conversation_facade.MythicGME", return_value=mock_mythic_oracle):
+            yield mock_mythic_oracle
+
+
+# =============================================================================
+# P2-12: MOCK LLM AGENT FIXTURES
+# =============================================================================
+
+
+@pytest.fixture
+def mock_dm_agent_responses():
+    """
+    Configure mock DM agent responses.
+
+    Returns a dict that can be modified to set expected responses.
+    """
+    return {
+        "narration": "The party continues their journey through the ancient forest.",
+        "intent_action_id": "unknown",
+        "intent_confidence": 0.5,
+        "description": "A mysterious location in the wilderness.",
+    }
+
+
+@pytest.fixture
+def mock_dm_agent(mock_dm_agent_responses):
+    """
+    Create a fully mocked DM agent for testing.
+
+    Usage:
+        def test_with_mock_agent(mock_dm_agent, mock_dm_agent_responses):
+            mock_dm_agent_responses["narration"] = "Custom narration"
+            # The mock agent will now return "Custom narration"
+    """
+    from src.ai.prompt_schemas import IntentParseOutput
+
+    agent = MagicMock()
+    agent.is_available.return_value = True
+
+    def narrate_side_effect(*args, **kwargs):
+        result = MagicMock()
+        result.success = True
+        result.content = mock_dm_agent_responses["narration"]
+        return result
+
+    def parse_intent_side_effect(*args, **kwargs):
+        return IntentParseOutput(
+            action_id=mock_dm_agent_responses["intent_action_id"],
+            params={},
+            confidence=mock_dm_agent_responses["intent_confidence"],
+            requires_clarification=False,
+            clarification_prompt="",
+            reasoning="Mock reasoning",
+        )
+
+    agent.narrate_resolved_action.side_effect = narrate_side_effect
+    agent.parse_intent.side_effect = parse_intent_side_effect
+
+    return agent
+
+
+# =============================================================================
+# P2-12: VIRTUAL DM BUILDER FIXTURES
+# =============================================================================
+
+
+@pytest.fixture
+def dm_builder():
+    """
+    Provide access to VirtualDMTestBuilder.
+
+    Usage:
+        def test_something(dm_builder):
+            dm = (dm_builder()
+                .with_state(GameState.DUNGEON_EXPLORATION)
+                .with_sample_party()
+                .build())
+    """
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder
+
+
+@pytest.fixture
+def offline_dm(seeded_dice):
+    """
+    A ready-to-use VirtualDM with mock LLM and seeded dice.
+
+    This is a convenience fixture for tests that just need a working
+    VirtualDM without specific setup.
+    """
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder.wilderness_dm()
+
+
+@pytest.fixture
+def dungeon_dm(seeded_dice):
+    """A ready-to-use VirtualDM in dungeon exploration state."""
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder.dungeon_dm()
+
+
+@pytest.fixture
+def settlement_dm(seeded_dice):
+    """A ready-to-use VirtualDM in settlement exploration state."""
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder.settlement_dm()
+
+
+@pytest.fixture
+def encounter_dm(seeded_dice):
+    """A ready-to-use VirtualDM in encounter state."""
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder.encounter_dm()
+
+
+@pytest.fixture
+def combat_dm(seeded_dice):
+    """A ready-to-use VirtualDM in combat state."""
+    from tests.helpers import VirtualDMTestBuilder
+    return VirtualDMTestBuilder.combat_dm()
+
+
+# =============================================================================
+# P2-12: MOCK VIRTUAL DM FIXTURES
+# =============================================================================
+
+
+@pytest.fixture
+def mock_virtual_dm():
+    """
+    Lightweight MockVirtualDM for unit testing.
+
+    Use this when you don't need full VirtualDM initialization.
+    """
+    from tests.helpers import MockVirtualDM
+    return MockVirtualDM()
+
+
+@pytest.fixture
+def mock_virtual_dm_factory():
+    """
+    Factory for creating MockVirtualDM with custom state.
+
+    Usage:
+        def test_something(mock_virtual_dm_factory):
+            dm = mock_virtual_dm_factory(GameState.DUNGEON_EXPLORATION)
+    """
+    from tests.helpers import MockVirtualDM
+
+    def _factory(state: GameState = GameState.WILDERNESS_TRAVEL) -> MockVirtualDM:
+        return MockVirtualDM(state=state)
+
+    return _factory

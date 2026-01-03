@@ -39,6 +39,7 @@ from src.data_models import (
     StatBlock,
     DiceRoller,
     LightSourceType,
+    ContentLoadReport,
 )
 from src.game_state import (
     GameState,
@@ -125,6 +126,7 @@ class GameConfig:
     content_dir: Optional[Path] = None
     ingest_pdf: Optional[Path] = None
     load_content: bool = False
+    fail_fast_on_missing_content: bool = False  # P1-6: Raise on missing content
 
     # Runtime options
     verbose: bool = False
@@ -222,6 +224,7 @@ class VirtualDM:
 
         # Load base content if requested
         self._content_loaded = False
+        self._content_load_report: Optional[ContentLoadReport] = None  # P1-6
         if self.config.load_content:
             self._load_base_content()
 
@@ -282,6 +285,8 @@ class VirtualDM:
 
         Called during initialization when config.load_content is True.
         Populates hex data in HexCrawlEngine, spells in SpellResolver, etc.
+
+        P1-6: Stores content loading status in _content_load_report for player visibility.
         """
         from src.content_loader.runtime_bootstrap import (
             load_runtime_content,
@@ -291,50 +296,72 @@ class VirtualDM:
         content_dir = self.config.content_dir or (self.config.data_dir / "content")
         logger.info(f"Loading base content from: {content_dir}")
 
+        # P1-6: Initialize content load report
+        report = ContentLoadReport()
+
         try:
             content = load_runtime_content(
                 content_root=content_dir,
                 enable_vector_db=self.config.use_vector_db,
             )
 
-            # Phase 7.2: Fail fast if there are critical parse errors
+            # P1-6: Collect hex errors/warnings instead of failing immediately
             if content.errors:
-                error_summary = "; ".join(content.errors[:5])
-                if len(content.errors) > 5:
-                    error_summary += f" ... and {len(content.errors) - 5} more errors"
-                raise RuntimeError(
-                    f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
-                )
+                for err in content.errors:
+                    report.add_error(f"Hex parse error: {err}")
+                report.hexes_failed = content.stats.hexes_failed
+
+                # Only raise if fail_fast_on_missing_content is True
+                if self.config.fail_fast_on_missing_content:
+                    error_summary = "; ".join(content.errors[:5])
+                    if len(content.errors) > 5:
+                        error_summary += f" ... and {len(content.errors) - 5} more errors"
+                    raise RuntimeError(
+                        f"Content loading failed with {len(content.errors)} error(s): {error_summary}"
+                    )
 
             # Load hex data into HexCrawlEngine
             for hex_id, hex_loc in content.hexes.items():
                 self.hex_crawl.load_hex_data(hex_id, hex_loc)
 
+            report.hexes_loaded = len(content.hexes)
             logger.info(f"Loaded {len(content.hexes)} hexes into HexCrawlEngine")
 
             # Register spells with CombatEngine's SpellResolver
             if content.spells:
                 spell_count = register_spells_with_combat(content.spells, self.combat)
+                report.spells_loaded = spell_count
                 logger.info(f"Registered {spell_count} spells with CombatEngine")
 
             # Phase 7.1: Store registries on VirtualDM for reuse
             self.monster_registry = content.monster_registry
             self.item_catalog = content.item_catalog
             self.spell_data = content.spells
+            report.monsters_loaded = content.stats.monsters_loaded
+            report.items_loaded = content.stats.items_loaded
 
             # Load settlements into SettlementEngine
-            self._load_settlements(content_dir)
+            settlements_loaded, settlements_failed, settlement_errors = self._load_settlements(content_dir)
+            report.settlements_loaded = settlements_loaded
+            report.settlements_failed = settlements_failed
+            for err in settlement_errors:
+                report.add_warning(f"Settlement: {err}")
 
-            # Log any warnings
+            # Log any warnings from runtime content
             for warning in content.warnings[:5]:  # Cap logged warnings
                 logger.warning(f"Content load warning: {warning}")
+                report.add_warning(warning)
 
-            # Phase 5: Fail fast if critical content is empty
+            # P1-6: Check for missing critical content
             if not content.hexes:
-                raise RuntimeError(
-                    f"Content loading failed: No hexes loaded from {content_dir}. "
+                msg = (
+                    f"No hexes loaded from {content_dir}. "
                     "Wilderness travel requires hex data. Check content directory structure."
                 )
+                report.add_error(msg)
+
+                if self.config.fail_fast_on_missing_content:
+                    raise RuntimeError(f"Content loading failed: {msg}")
 
             self._content_loaded = True
             logger.info(
@@ -348,21 +375,29 @@ class VirtualDM:
             raise
         except Exception as e:
             logger.error(f"Failed to load base content: {e}", exc_info=True)
+            report.add_error(f"Content load exception: {e}")
             self._content_loaded = False
 
-    def _load_settlements(self, content_dir: Path) -> None:
+        # P1-6: Store the report for player visibility
+        self._content_load_report = report
+
+    def _load_settlements(self, content_dir: Path) -> tuple[int, int, list[str]]:
         """
         Load settlement content from JSON files into SettlementEngine.
 
         Args:
             content_dir: Base content directory (contains settlements/ subdirectory)
+
+        Returns:
+            Tuple of (loaded_count, failed_count, error_messages)
         """
         from src.content_loader import SettlementLoader
 
         settlements_dir = content_dir / "settlements"
         if not settlements_dir.exists():
-            logger.warning(f"Settlements directory not found: {settlements_dir}")
-            return
+            msg = f"Settlements directory not found: {settlements_dir}"
+            logger.warning(msg)
+            return 0, 0, [msg]
 
         try:
             loader = SettlementLoader(settlements_dir)
@@ -378,8 +413,15 @@ class VirtualDM:
                 f"from {report.files_successful} files"
             )
 
+            return (
+                report.total_settlements_loaded,
+                report.total_settlements_failed,
+                report.errors,
+            )
+
         except Exception as e:
             logger.error(f"Failed to load settlements: {e}", exc_info=True)
+            return 0, 0, [str(e)]
 
     def _narrate_from_context(
         self,
@@ -396,8 +438,29 @@ class VirtualDM:
             return None
 
         # Extract damage totals from the context
-        damage_dealt = sum(context.damage_dealt.values()) if context.damage_dealt else 0
-        damage_taken = sum(context.healing_done.values()) if context.healing_done else 0
+        # P0-4: Fix damage computation - damage_taken should NOT come from healing_done
+        damage_total = sum(context.damage_dealt.values()) if context.damage_dealt else 0
+
+        # Infer actor_id by matching character_name to known characters
+        actor_id: Optional[str] = None
+        for char in self.controller.get_all_characters():
+            if char.name == character_name:
+                actor_id = char.character_id
+                break
+
+        # damage_taken = damage dealt TO the actor (self)
+        # damage_dealt = damage dealt to others
+        if actor_id and context.damage_dealt:
+            damage_taken = context.damage_dealt.get(actor_id, 0)
+            damage_dealt = max(0, damage_total - damage_taken)
+        else:
+            # No actor identified - assume all damage was dealt to others
+            damage_taken = 0
+            damage_dealt = damage_total
+
+        # healing_done is kept separate - it should not affect damage_taken
+        # Note: Currently not passed to narrate_resolved_action, but computed correctly
+        # healing_done = sum(context.healing_done.values()) if context.healing_done else 0
 
         # Get dice info if available
         dice_rolled = ""
@@ -492,28 +555,72 @@ class VirtualDM:
         Narration callback for EncounterEngine.
 
         Called after encounter actions are resolved to generate LLM narration.
+        Stores narration in self._last_encounter_narration for ConversationFacade
+        to pick up and surface to the player.
 
         Args:
             action: The action taken (e.g., "parley", "evasion")
             actor: Who took the action ("party" or "enemy")
             result: Result dict from the encounter action
         """
+        # Clear previous narration
+        self._last_encounter_narration: Optional[str] = None
+
         if not self._dm_agent or not self._dm_agent.is_available():
             return
 
-        try:
-            # Build context for narration
-            context = {
-                "action": action,
-                "actor": actor,
-                "success": result.get("success", False),
-                "messages": result.get("messages", []),
-            }
+        if not self.config.enable_narration:
+            return
 
-            # For now, log encounter narration context (can be enhanced later)
-            logger.debug(f"Encounter narration context: {context}")
+        try:
+            # Build narrative hints from result messages
+            narrative_hints = result.get("messages", [])
+
+            # Map encounter actions to narrative-friendly descriptions
+            action_descriptions = {
+                "parley": "attempt to negotiate with the encountered creatures",
+                "evasion": "attempt to slip away unnoticed",
+                "attack": "engage the encountered creatures in combat",
+                "wait": "observe and wait to see what happens",
+                "flee": "attempt to flee from the encounter",
+            }
+            action_description = action_descriptions.get(
+                action.lower(),
+                f"perform {action} during the encounter"
+            )
+
+            # Generate narration using the resolved action method
+            narration = self.narrate_resolved_action(
+                action_description=action_description,
+                action_category="encounter",
+                action_type=action.lower(),
+                success=result.get("success", True),
+                partial_success=False,
+                character_name=actor if actor != "party" else "the party",
+                narrative_hints=narrative_hints,
+                location_context=self._get_current_location_name(),
+            )
+
+            if narration:
+                self._last_encounter_narration = narration
+                logger.debug(f"Encounter narration generated: {narration[:100]}...")
+
         except Exception as e:
             logger.warning(f"Encounter narration failed: {e}")
+
+    def _get_current_location_name(self) -> str:
+        """Get current location name for narration context."""
+        try:
+            loc = self.controller.party_state.location
+            return loc.name if loc.name else f"Hex {loc.location_id}"
+        except Exception:
+            return "unknown location"
+
+    def get_last_encounter_narration(self) -> Optional[str]:
+        """Get and clear the last encounter narration for surfacing to player."""
+        narration = getattr(self, "_last_encounter_narration", None)
+        self._last_encounter_narration = None
+        return narration
 
     def _parse_narrative_intent_callback(
         self,
@@ -669,6 +776,37 @@ class VirtualDM:
             Dictionary with all game state
         """
         return self.controller.get_full_state()
+
+    def get_content_status(self) -> Optional[ContentLoadReport]:
+        """
+        Get content loading status report.
+
+        P1-6: Returns the ContentLoadReport with loading status, errors, and warnings
+        so players can see content loading issues without reading logs.
+
+        Returns:
+            ContentLoadReport if content was loaded, None otherwise
+        """
+        return self._content_load_report
+
+    def get_startup_warnings(self) -> list[str]:
+        """
+        Get startup warnings and errors for player visibility.
+
+        P1-6: Provides a simple list of warnings/errors from content loading.
+
+        Returns:
+            List of warning/error strings
+        """
+        if not self._content_load_report:
+            return []
+
+        warnings = []
+        for err in self._content_load_report.errors:
+            warnings.append(f"Error: {err}")
+        for warn in self._content_load_report.warnings:
+            warnings.append(f"Warning: {warn}")
+        return warnings
 
     def get_valid_actions(self) -> list[str]:
         """
@@ -869,13 +1007,16 @@ class VirtualDM:
                             "filepath": str(filepath),
                         }
                     )
-                except Exception:
+                except Exception as e:
+                    # P1-7: Include truncated error for diagnostics
+                    error_msg = repr(e)[:200]
                     saves.append(
                         {
                             "slot": slot,
                             "session_name": "(corrupted)",
                             "last_saved": "Unknown",
                             "filepath": str(filepath),
+                            "error": error_msg,
                         }
                     )
             else:

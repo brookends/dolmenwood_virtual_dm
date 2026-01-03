@@ -196,12 +196,13 @@ class TestVirtualDMFailsOnErrors:
             yield content_dir
 
     def test_virtual_dm_raises_on_content_errors(self, content_dir_with_error):
-        """VirtualDM should raise RuntimeError when content has errors."""
+        """VirtualDM should raise RuntimeError when content has errors and fail_fast is True."""
         config = GameConfig(
             llm_provider="mock",
             enable_narration=False,
             load_content=True,
             content_dir=content_dir_with_error,
+            fail_fast_on_missing_content=True,  # P1-6: Enable fail-fast mode
         )
 
         with pytest.raises(RuntimeError) as exc_info:

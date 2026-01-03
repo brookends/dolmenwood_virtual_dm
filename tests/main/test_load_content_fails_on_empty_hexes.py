@@ -49,7 +49,7 @@ class TestLoadContentFailsOnEmptyHexes:
     """Test that content loading fails clearly when hexes are empty."""
 
     def test_fails_with_clear_error_on_empty_hexes(self, seeded_dice, empty_content_dir):
-        """VirtualDM should raise a clear error when no hexes are loaded."""
+        """VirtualDM should raise a clear error when no hexes are loaded and fail_fast is True."""
         from src.conversation.action_registry import reset_registry
         reset_registry()
 
@@ -58,6 +58,7 @@ class TestLoadContentFailsOnEmptyHexes:
             enable_narration=False,
             load_content=True,
             content_dir=empty_content_dir,
+            fail_fast_on_missing_content=True,  # P1-6: Enable fail-fast mode
         )
 
         with pytest.raises(RuntimeError) as exc_info:

@@ -2584,128 +2584,6 @@ class HexCrawlEngine:
 
         return result
 
-    def enter_dungeon_from_poi(
-        self,
-        hex_id: str,
-        dungeon_engine: Any,
-    ) -> dict[str, Any]:
-        """
-        Enter a dungeon POI using the dungeon engine.
-
-        This bridges the hex POI data to the dungeon engine, converting the
-        POI's roll tables to the format expected by the dungeon engine.
-
-        Args:
-            hex_id: The hex containing the dungeon POI
-            dungeon_engine: The DungeonEngine instance to use
-
-        Returns:
-            Dictionary with entry results from dungeon engine
-        """
-        if not self._current_poi:
-            return {"success": False, "error": "Not at any location - approach first"}
-
-        hex_data = self._hex_data.get(hex_id)
-        if not hex_data:
-            return {"success": False, "error": "Hex data not found"}
-
-        # Find the current POI
-        poi = None
-        for p in hex_data.points_of_interest:
-            if p.name == self._current_poi:
-                poi = p
-                break
-
-        if not poi:
-            return {"success": False, "error": "Current location not found"}
-
-        if not poi.is_dungeon:
-            return {"success": False, "error": "This location is not a dungeon"}
-
-        # Check POI availability
-        availability_check = self.check_poi_availability(poi)
-        if not availability_check["available"]:
-            return {
-                "success": False,
-                "unavailable": True,
-                "message": availability_check.get("message", "This location is not accessible"),
-                "availability": availability_check,
-            }
-
-        # Build POI config for dungeon engine
-        poi_config = self._build_dungeon_poi_config(poi, hex_id)
-
-        # Generate dungeon ID from POI name
-        dungeon_id = poi.name.lower().replace(" ", "_").replace("-", "_")
-
-        # Enter dungeon via dungeon engine
-        result = dungeon_engine.enter_dungeon(
-            dungeon_id=dungeon_id,
-            entry_room="entry",
-            poi_config=poi_config,
-        )
-
-        # Track the POI visit
-        visit_key = f"{hex_id}:{poi.name}"
-        if visit_key in self._poi_visits:
-            self._poi_visits[visit_key].entered = True
-
-        # Clear hex crawl POI state (we're in dungeon mode now)
-        self._poi_state = None
-
-        return result
-
-    def _build_dungeon_poi_config(
-        self,
-        poi: PointOfInterest,
-        hex_id: str,
-    ) -> dict[str, Any]:
-        """
-        Build dungeon POI configuration from a PointOfInterest.
-
-        Converts the POI's roll_tables to the format expected by DungeonEngine,
-        extracting room_table and encounter_table by name.
-
-        Args:
-            poi: The dungeon POI
-            hex_id: The hex containing the POI
-
-        Returns:
-            Dictionary with dungeon configuration
-        """
-        config = {
-            "poi_name": poi.name,
-            "hex_id": hex_id,
-            "roll_tables": poi.roll_tables,
-            "room_table": None,
-            "encounter_table": None,
-            "dynamic_layout": poi.dynamic_layout,
-            "item_persistence": poi.item_persistence,
-            "leaving": poi.leaving,
-        }
-
-        # Extract room and encounter tables by name
-        for table in poi.roll_tables:
-            table_name = table.name.lower()
-            if table_name == "rooms" or table_name == "room":
-                config["room_table"] = table
-            elif table_name == "encounters" or table_name == "encounter":
-                config["encounter_table"] = table
-
-        # If no explicit tables found, check for dynamic_layout references
-        if config["dynamic_layout"]:
-            layout = config["dynamic_layout"]
-            room_table_name = layout.get("room_table", "Rooms")
-            encounter_table_name = layout.get("encounter_table", "Encounters")
-
-            for table in poi.roll_tables:
-                if table.name.lower() == room_table_name.lower():
-                    config["room_table"] = table
-                if table.name.lower() == encounter_table_name.lower():
-                    config["encounter_table"] = table
-
-        return config
-
     def explore_poi_feature(
         self,
         hex_id: str,
@@ -3690,6 +3568,66 @@ class HexCrawlEngine:
         )
 
         return result
+
+    def talk_to_npc_by_index(
+        self,
+        hex_id: str,
+        npc_index: int,
+    ) -> dict[str, Any]:
+        """
+        Begin interaction with an NPC at the current POI by index.
+
+        This is a convenience method for when the caller has an index
+        rather than an NPC ID (e.g., from a numbered list).
+
+        Args:
+            hex_id: Current hex
+            npc_index: 0-based index into the NPCs at POI list
+
+        Returns:
+            Dictionary with interaction result or error
+        """
+        if not self._current_poi:
+            return {
+                "success": False,
+                "error": "Not currently at a POI. Approach a location first.",
+            }
+
+        npcs = self.get_npcs_at_poi(hex_id)
+        if not npcs:
+            return {"success": False, "error": "No NPCs present at this location."}
+
+        if npc_index < 0 or npc_index >= len(npcs):
+            return {
+                "success": False,
+                "error": f"Invalid NPC index {npc_index}. Valid range: 0-{len(npcs) - 1}",
+            }
+
+        target_npc = npcs[npc_index]
+
+        # Check if this is a group/inhabitants entry (not a specific NPC)
+        if target_npc.get("is_group"):
+            return {
+                "success": False,
+                "error": (
+                    f"'{target_npc.get('inhabitants', 'Group')}' is a group, not a "
+                    "specific NPC. Use the oracle to determine who approaches, or "
+                    "trigger a social encounter."
+                ),
+                "is_group": True,
+                "inhabitants": target_npc.get("inhabitants"),
+            }
+
+        # Get the NPC ID or name to pass to interact_with_npc
+        npc_id = target_npc.get("npc_id") or target_npc.get("name")
+        if not npc_id:
+            return {
+                "success": False,
+                "error": "NPC has no identifier. Cannot initiate conversation.",
+            }
+
+        # Delegate to the main interact_with_npc method
+        return self.interact_with_npc(hex_id, npc_id)
 
     def engage_poi_npc(
         self,

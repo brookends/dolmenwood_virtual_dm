@@ -469,6 +469,53 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi,
     ))
 
+    def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.
+
+        Supports both npc_id and npc_index parameters.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.get_current_hex_id()
+        npc_id = p.get("npc_id", "")
+        npc_index = p.get("npc_index")
+
+        # Support both npc_id and npc_index
+        if npc_index is not None and not npc_id:
+            result = dm.hex_crawl.talk_to_npc_by_index(hex_id, int(npc_index))
+        elif npc_id:
+            result = dm.hex_crawl.interact_with_npc(hex_id, npc_id)
+        else:
+            # No NPC specified - return error with available NPCs
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            if not npcs:
+                return {"success": False, "message": "No NPCs present at this location."}
+            npc_list = ", ".join(n.get("name", "unknown") for n in npcs)
+            return {
+                "success": False,
+                "message": f"No NPC specified. Available: {npc_list}",
+                "available_npcs": npcs,
+            }
+
+        # Normalize error -> message for consistent response format
+        if not result.get("success") and "error" in result and "message" not in result:
+            result["message"] = result["error"]
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:talk_npc",
+        label="Talk to NPC",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "npc_id": {"type": "string", "required": False},
+            "npc_index": {"type": "integer", "required": False},
+        },
+        help="Talk to an NPC at the current POI. Transitions to SOCIAL_INTERACTION state.",
+        executor=_wilderness_talk_npc,
+    ))
+
     # -------------------------------------------------------------------------
     # Dungeon actions
     # -------------------------------------------------------------------------
@@ -1377,9 +1424,14 @@ def _create_default_registry() -> ActionRegistry:
 
         result = dm.encounter.execute_action(action, actor=actor)
         messages = [m for m in (result.messages or [])]
+
+        # P1-5: Pick up encounter narration from DM agent
+        narration = dm.get_last_encounter_narration()
+
         return {
             "success": True,
             "message": "\n".join(messages) if messages else f"Executed {action_str}.",
+            "narration": narration,
         }
 
     def _settlement_action(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
@@ -1836,14 +1888,37 @@ def _create_default_registry() -> ActionRegistry:
             return {"success": False, "message": f"Could not enter: {e}"}
 
     def _wilderness_enter_dungeon(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
-        """Enter a dungeon from a POI."""
-        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
-        dungeon_id = p.get("dungeon_id", "")
-        entrance_room = p.get("entrance_room", "entrance")
+        """Enter a dungeon from a POI.
 
+        Mirrors the working path in ConversationFacade:
+        1. Fetch POI dungeon config via dm.hex_crawl.get_poi_dungeon_config()
+        2. Call dm.dungeon.enter_dungeon() with the config
+        """
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        dungeon_id = p.get("dungeon_id") or "dungeon"
+        entrance_room = p.get("entrance_room") or "entrance"
+
+        # Get POI dungeon config (contains dungeon-specific setup from hex content)
         try:
-            result = dm.hex_crawl.enter_dungeon(hex_id, dungeon_id, entrance_room)
-            return {"success": result.get("success", True), "message": result.get("message", "Entered dungeon.")}
+            poi_config = dm.hex_crawl.get_poi_dungeon_config(hex_id)
+            poi_config["hex_id"] = hex_id
+        except Exception:
+            poi_config = {"hex_id": hex_id}
+
+        # Enter dungeon through the dungeon engine
+        try:
+            result = dm.dungeon.enter_dungeon(
+                dungeon_id=dungeon_id,
+                entry_room=entrance_room,
+                poi_config=poi_config,
+            )
+
+            # Build response message
+            msg = result.get("message", f"Entered {dungeon_id}.")
+            if result.get("room_description"):
+                msg += f"\n\n{result['room_description']}"
+
+            return {"success": result.get("success", True), "message": msg}
         except Exception as e:
             return {"success": False, "message": f"Could not enter dungeon: {e}"}
 

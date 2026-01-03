@@ -1152,16 +1152,24 @@ class GlobalController:
     # TIME MANAGEMENT
     # =========================================================================
 
-    def advance_time(self, turns: int = 1) -> dict[str, Any]:
+    def advance_time(self, turns: int = 1, reason: str = "") -> dict[str, Any]:
         """
         Advance game time and trigger any time-based effects.
 
+        This is the centralized time advancement API. All engines should use
+        this method to ensure consistent resource tracking, condition ticking,
+        and observability logging.
+
         Args:
             turns: Number of 10-minute turns to advance
+            reason: Optional description of why time is advancing
 
         Returns:
             Dictionary with time changes and effects
         """
+        # Capture old time for logging
+        old_time = str(self.time_tracker.game_time)
+
         result = self.time_tracker.advance_turn(turns)
 
         # Sync world state with time tracker
@@ -1183,6 +1191,28 @@ class GlobalController:
         if expired_conditions:
             result["expired_conditions"] = expired_conditions
 
+        # P2-10: Emit RunLog event for turn advancement
+        try:
+            from src.observability.run_log import get_run_log
+
+            run_log = get_run_log()
+            run_log.log_time_step(
+                old_time=old_time,
+                new_time=str(self.time_tracker.game_time),
+                turns_advanced=turns,
+                minutes_advanced=turns * 10,
+                reason=reason,
+                context={
+                    "days_passed": result.get("days_passed", 0),
+                    "watches_passed": result.get("watches_passed", 0),
+                    "light_extinguished": result.get("light_extinguished", False),
+                    "expired_conditions": len(expired_conditions) if expired_conditions else 0,
+                },
+            )
+        except Exception:
+            # Don't fail time advancement if logging fails
+            pass
+
         self._log_event("time_advance", result)
         return result
 
@@ -1200,7 +1230,10 @@ class GlobalController:
         """
         base_hours = 4
         actual_hours = int(base_hours * terrain_modifier)
-        return self.advance_time(actual_hours * 6)  # 6 turns per hour
+        return self.advance_time(
+            actual_hours * 6,  # 6 turns per hour
+            reason=f"travel segment ({actual_hours} hours)",
+        )
 
     # =========================================================================
     # CHARACTER MANAGEMENT
