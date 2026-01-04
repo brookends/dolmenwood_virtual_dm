@@ -491,3 +491,144 @@ class TestDanceChainIntegration:
         # Non-automatic hazard should not be returned
         drinking_hazards = poi.get_automatic_hazards_for_condition("some_condition")
         assert len(drinking_hazards) == 0
+
+
+class TestWaitUntilDawnAction:
+    """Tests for the wait_until_dawn action and its integration with the dance chain."""
+
+    def test_wait_until_dawn_action_registered(self):
+        """Verify wilderness:wait_until_dawn action is registered."""
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:wait_until_dawn")
+
+        assert spec is not None
+        assert spec.label == "Wait until dawn"
+        assert spec.requires_state == "wilderness_travel"
+        assert spec.executor is not None
+
+    def test_advance_to_time_of_day_reaches_dawn(self):
+        """Verify advance_to_time_of_day() reaches DAWN and returns correct info."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import TimeOfDay
+
+        controller = GlobalController()
+
+        # Set time to night (e.g., 22:00)
+        controller.time_tracker.game_time.hour = 22
+
+        result = controller.advance_to_time_of_day(TimeOfDay.DAWN, reason="waiting")
+
+        assert result["success"] is True
+        assert result["time_of_day"] == "dawn"
+        assert result["hours_passed"] > 0
+
+    def test_check_time_of_day_expirations_processes_dawn_conditions(self):
+        """Verify _check_time_of_day_expirations processes dawn conditions."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, Condition, ConditionType, TimeOfDay
+
+        controller = GlobalController()
+
+        # Create a character with compelled_dancing that ends at dawn
+        char = CharacterState(
+            character_id="test_dancer",
+            name="Test Dancer",
+            character_class="fighter",
+            level=1,
+            hp_current=15,
+            hp_max=20,
+            armor_class=10,
+            base_speed=40,
+            ability_scores={"str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10},
+        )
+
+        # Add dancing condition with dawn expiry and chain to magical_sleep
+        dancing = Condition(
+            condition_type=ConditionType.COMPELLED_DANCING,
+            source="The Weeping Woman",
+            ends_at_time_of_day="dawn",
+            leads_to_condition="magical_sleep",
+            healing_on_end="1d6",
+        )
+        char.conditions.append(dancing)
+        controller.add_character(char)
+
+        # Directly call the expiration check at DAWN
+        expirations = controller._check_time_of_day_expirations(TimeOfDay.DAWN)
+
+        # Verify condition expired
+        assert len(expirations) >= 1
+        expired = expirations[0]
+        assert expired["condition"] == "compelled_dancing"
+        assert expired["chained_to"] == "magical_sleep"
+
+        # Verify character now has magical_sleep instead of dancing
+        current_conditions = [c.condition_type for c in char.conditions]
+        assert ConditionType.COMPELLED_DANCING not in current_conditions
+        assert ConditionType.MAGICAL_SLEEP in current_conditions
+
+    def test_dancing_block_suggests_wait_until_dawn(self):
+        """Verify blocked action suggests wait_until_dawn when dancing."""
+        from src.narrative.narrative_resolver import NarrativeResolver
+        from src.narrative.intent_parser import ParsedIntent, ActionType, ActionCategory
+        from src.data_models import CharacterState, Condition, ConditionType
+
+        resolver = NarrativeResolver()
+
+        char = CharacterState(
+            character_id="test_char",
+            name="Test Character",
+            character_class="fighter",
+            level=1,
+            hp_current=20,
+            hp_max=20,
+            armor_class=10,
+            base_speed=40,
+            ability_scores={"str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10},
+        )
+
+        # Add dancing condition with dawn expiry
+        dancing = Condition(
+            condition_type=ConditionType.COMPELLED_DANCING,
+            source="The Weeping Woman",
+            ends_at_time_of_day="dawn",
+        )
+        char.conditions.append(dancing)
+
+        # Try to attack (which should be blocked by dancing)
+        parsed = ParsedIntent(
+            action_category=ActionCategory.COMBAT,
+            action_type=ActionType.ATTACK,
+            raw_input="I attack the monster",
+        )
+
+        result = resolver._check_condition_restrictions(char, parsed)
+
+        # Should be blocked with suggestion
+        assert result is not None
+        assert result["condition_type"] == "compelled_dancing"
+        assert result["suggested_action"] == "wilderness:wait_until_dawn"
+        assert result["suggested_action_label"] == "Wait until dawn"
+
+    def test_resolution_result_fields_exist(self):
+        """Verify ResolutionResult has suggested_action fields for blocked actions."""
+        from src.narrative.narrative_resolver import ResolutionResult, ResolutionType
+
+        # Create a result that would be returned when blocked by dancing
+        result = ResolutionResult(
+            success=False,
+            resolution_type=ResolutionType.AUTO_FAIL,
+            description="You cannot stop dancing to attack.",
+            narrative_hints=["struggles against the condition"],
+            blocked_by_condition="compelled_dancing",
+            suggested_action="wilderness:wait_until_dawn",
+            suggested_action_label="Wait until dawn",
+        )
+
+        # Verify fields are set correctly
+        assert result.success is False
+        assert result.blocked_by_condition == "compelled_dancing"
+        assert result.suggested_action == "wilderness:wait_until_dawn"
+        assert result.suggested_action_label == "Wait until dawn"

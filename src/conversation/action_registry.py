@@ -2175,6 +2175,62 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_enter_dungeon,
     ))
 
+    def _wilderness_wait_until_dawn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Wait until dawn, advancing time and processing condition expirations.
+
+        This action is particularly useful for characters under time-bound
+        enchantments like compelled_dancing that end at dawn.
+        """
+        from src.data_models import TimeOfDay
+
+        target_time = TimeOfDay.DAWN
+        reason = p.get("reason", "waiting until dawn")
+
+        result = dm.controller.advance_to_time_of_day(target_time, reason=reason)
+
+        # Build message describing what happened
+        messages = []
+        messages.append(f"Time passes... {result['hours_passed']} hours until dawn.")
+
+        if result.get("conditions_expired"):
+            for exp in result["conditions_expired"]:
+                char_name = exp.get("character_name", "A character")
+                condition = exp.get("condition", "unknown condition")
+                messages.append(f"{char_name}'s {condition} ends at dawn.")
+
+                if exp.get("healing_applied"):
+                    healing = exp["healing_applied"]
+                    messages.append(
+                        f"{char_name} heals {healing.get('actual_healing', 0)} HP."
+                    )
+
+                if exp.get("chained_to"):
+                    messages.append(
+                        f"{char_name} falls into {exp['chained_to']}."
+                    )
+
+        return {
+            "success": True,
+            "message": "\n".join(messages),
+            "hours_passed": result.get("hours_passed", 0),
+            "conditions_expired": result.get("conditions_expired", []),
+            "new_time": result.get("new_time"),
+            "time_of_day": result.get("time_of_day"),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:wait_until_dawn",
+        label="Wait until dawn",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "reason": {"type": "string", "required": False},
+        },
+        help="Wait until dawn arrives. Time-bound conditions (like compelled dancing) resolve automatically.",
+        executor=_wilderness_wait_until_dawn,
+    ))
+
     # -------------------------------------------------------------------------
     # Combat actions - Phase 4 (formerly legacy-only)
     # -------------------------------------------------------------------------
