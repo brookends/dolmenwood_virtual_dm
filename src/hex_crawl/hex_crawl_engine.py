@@ -6218,6 +6218,7 @@ class HexCrawlEngine:
         "touch": ["touch", "press", "push", "activate", "grab", "hold", "handle"],
         "enter": ["enter", "go in", "step into", "walk into", "climb into"],
         "examine": ["examine", "look at", "inspect", "study", "investigate"],
+        "climb": ["climb", "scale", "ascend", "scramble up", "climb up"],
     }
 
     def detect_poi_action(self, player_input: str) -> Optional[tuple[str, str]]:
@@ -6277,6 +6278,9 @@ class HexCrawlEngine:
                     elif action_type == "enter":
                         if any(kw in trigger for kw in ["enter", "inside", "entering"]):
                             should_match = True
+                    elif action_type == "climb":
+                        if any(kw in trigger for kw in ["climb", "scale", "ascend", "scaling"]):
+                            should_match = True
 
                     if should_match:
                         matching_hazards.append(hazard)
@@ -6327,6 +6331,12 @@ class HexCrawlEngine:
                 "reason": "No hazards match this action",
             }
 
+        # Special handling for climb actions - route through attempt_climb()
+        if action_type == "climb":
+            return self._resolve_climb_action(
+                character_id, hex_id, matching_hazards, matched_keyword
+            )
+
         # Resolve all matching hazards
         results = []
         for hazard in matching_hazards:
@@ -6352,6 +6362,114 @@ class HexCrawlEngine:
             "poi_name": self._current_poi,
             "hazard_results": results,
             "hazards_triggered": len(results),
+        }
+
+    def _resolve_climb_action(
+        self,
+        character_id: str,
+        hex_id: str,
+        matching_hazards: list[dict[str, Any]],
+        matched_keyword: str,
+    ) -> dict[str, Any]:
+        """
+        Resolve a climb action using the proper climbing mechanics.
+
+        Routes climb actions through attempt_climb() which uses the hazard resolver
+        for proper DEX checks and fall damage calculation.
+
+        Args:
+            character_id: Character performing the climb
+            hex_id: Current hex
+            matching_hazards: List of matching climbing hazards from POI
+            matched_keyword: The keyword that matched the climb action
+
+        Returns:
+            Dict with climb result including hazard resolution
+        """
+        # Get POI to find height information
+        hex_data = self._hex_data.get(hex_id)
+        poi = None
+        if hex_data:
+            for p in hex_data.points_of_interest:
+                if p.name == self._current_poi:
+                    poi = p
+                    break
+
+        # Extract height from hazard or POI data
+        height_feet = 20  # Default height
+        difficulty = 10  # Default DC
+        hazard = matching_hazards[0] if matching_hazards else {}
+
+        # Check for height in hazard
+        if hazard.get("height"):
+            height_feet = hazard.get("height")
+        # Check POI interior description for height (e.g., "100 feet tall")
+        elif poi and poi.interior:
+            import re
+            height_match = re.search(r"(\d+)\s*feet?\s*tall", poi.interior.lower())
+            if height_match:
+                height_feet = int(height_match.group(1))
+
+        # Get difficulty from hazard
+        if hazard.get("difficulty"):
+            difficulty = hazard.get("difficulty")
+
+        # Check for Climb Walls ability (thieves, etc.)
+        character = self.controller.get_character(character_id)
+        has_climb_walls = False
+        if character:
+            # Check for Climb Walls skill/ability
+            if hasattr(character, "skills") and character.skills:
+                has_climb_walls = "climb_walls" in character.skills or "Climb Walls" in character.skills
+            elif hasattr(character, "abilities") and character.abilities:
+                has_climb_walls = getattr(character.abilities, "climb_walls", False)
+
+        # If character has Climb Walls, trivial climb
+        if has_climb_walls:
+            return {
+                "triggered": True,
+                "action_type": "climb",
+                "keyword": matched_keyword,
+                "poi_name": self._current_poi,
+                "hazard_results": [{
+                    "hazard_name": hazard.get("name", "Climbing"),
+                    "success": True,
+                    "description": f"Used Climb Walls ability to scale the {height_feet}-foot climb safely",
+                    "damage_taken": 0,
+                    "conditions_applied": [],
+                    "effects_applied": False,
+                    "narrative_hints": ["character climbs easily using trained ability"],
+                }],
+                "hazards_triggered": 1,
+                "height_feet": height_feet,
+            }
+
+        # Use attempt_climb for proper climbing mechanics
+        climb_result = self.attempt_climb(
+            character_id=character_id,
+            height_feet=height_feet,
+            is_trivial=False,
+            difficulty=difficulty,
+        )
+
+        return {
+            "triggered": True,
+            "action_type": "climb",
+            "keyword": matched_keyword,
+            "poi_name": self._current_poi,
+            "hazard_results": [{
+                "hazard_name": hazard.get("name", "Climbing"),
+                "success": climb_result.success,
+                "description": climb_result.description,
+                "damage_taken": climb_result.damage_dealt,
+                "conditions_applied": climb_result.conditions_applied,
+                "effects_applied": climb_result.damage_dealt > 0,
+                "narrative_hints": climb_result.narrative_hints,
+                "check_result": climb_result.check_result,
+                "check_target": climb_result.check_target,
+            }],
+            "hazards_triggered": 1,
+            "height_feet": height_feet,
         }
 
     def _apply_hazard_effects(

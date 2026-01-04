@@ -591,6 +591,257 @@ class TestPointOfInterestSeasonalState:
         assert result is None
 
 
+class TestGraniteCragClimbHazard:
+    """Tests for Granite Crag climb hazard resolution."""
+
+    def test_detect_poi_action_matches_climb(self):
+        """Verify detect_poi_action matches climb keywords."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("I want to climb the crag")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "climb"
+
+    def test_detect_poi_action_matches_scale(self):
+        """Verify detect_poi_action matches 'scale' as climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("Let's scale the granite crag")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "scale"
+
+    def test_detect_poi_action_matches_ascend(self):
+        """Verify detect_poi_action matches 'ascend' as climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("We ascend the cliff face")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "ascend"
+
+    def test_get_matching_poi_hazards_matches_climbing_trigger(self):
+        """Verify get_matching_poi_hazards matches 'climbing' trigger."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+                "check_type": "dexterity",
+                "on_fail": {"damage_dice": "1d6", "damage_type": "falling"},
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "climb")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "climbing_check"
+
+    def test_resolve_climb_action_uses_height_from_poi(self):
+        """Verify _resolve_climb_action extracts height from POI interior."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        # Create mock POI with interior mentioning height
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall and steep-sided."
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Mock character without Climb Walls
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to None to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Mock attempt_climb to capture the call
+        climb_result = HazardResult(
+            success=True,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Climbed successfully",
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine._resolve_climb_action(
+            "test_char", "0106", mock_poi.hazards, "climb"
+        )
+
+        # Verify attempt_climb was called with 100 feet height
+        engine.attempt_climb.assert_called_once()
+        call_args = engine.attempt_climb.call_args
+        assert call_args[1]["height_feet"] == 100
+
+    def test_resolve_climb_action_with_climb_walls_skips_roll(self):
+        """Verify characters with Climb Walls ability skip the check."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [{"name": "Crag Ascent/Descent"}]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Mock character WITH Climb Walls
+        mock_char = MagicMock()
+        mock_char.skills = ["climb_walls", "hide_in_shadows"]
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+        engine.attempt_climb = MagicMock()
+
+        result = engine._resolve_climb_action(
+            "test_char", "0106", mock_poi.hazards, "climb"
+        )
+
+        # Should NOT have called attempt_climb
+        engine.attempt_climb.assert_not_called()
+
+        # Should have succeeded trivially
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is True
+        assert "Climb Walls" in result["hazard_results"][0]["description"]
+        assert result["hazard_results"][0]["damage_taken"] == 0
+
+    def test_resolve_poi_action_routes_climb_to_attempt_climb(self):
+        """Verify resolve_poi_action routes climb actions through attempt_climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Mock attempt_climb
+        climb_result = HazardResult(
+            success=False,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Failed to climb, fell 50 feet",
+            damage_dealt=15,
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine.resolve_poi_action("I climb the crag", "test_char")
+
+        assert result["triggered"] is True
+        assert result["action_type"] == "climb"
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 15
+        assert result["height_feet"] == 100
+
+    def test_resolve_climb_with_fall_damage(self):
+        """Verify failed climb results in fall damage based on height."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [
+            {"name": "Crag Ascent/Descent", "trigger": "climbing"}
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Simulate failed climb with fall damage (50 feet fall = 5d6 damage)
+        climb_result = HazardResult(
+            success=False,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Failed to climb, fell 50 feet",
+            damage_dealt=18,  # ~5d6 average
+            damage_type="falling",
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine.resolve_poi_action("Scale the crag", "test_char")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 18
+        assert result["hazard_results"][0]["effects_applied"] is True
+
+
 class TestHex0106IsWinter:
     """Tests for _is_winter helper method."""
 
