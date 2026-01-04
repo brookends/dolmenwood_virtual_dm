@@ -52,6 +52,8 @@ from src.data_models import (
     SecretStatus,
     FactionState,
     FactionRelationship,
+    PermanentSpell,
+    PermanentSpellRegistry,
 )
 from src.content_loader.monster_registry import get_monster_registry
 from src.game_state.session_manager import ActiveNPC
@@ -444,6 +446,9 @@ class HexCrawlEngine:
 
         # World-state change tracking
         self._world_state_changes: WorldStateChanges = WorldStateChanges()
+
+        # Permanent spell registry (vorpal monolith spell permanence)
+        self._permanent_spells: PermanentSpellRegistry = PermanentSpellRegistry()
 
         # Current exploration context (surface, diving, etc.)
         self._exploration_context: str = "surface"
@@ -7369,6 +7374,343 @@ class HexCrawlEngine:
             Current value or None if not changed
         """
         return self._world_state_changes.get_current_state(hex_id, state_key, poi_name)
+
+    # =========================================================================
+    # PERMANENT SPELL SYSTEM (Vorpal Monolith Spell Permanence)
+    # =========================================================================
+
+    # Spell types that can be made permanent through vorpal monoliths
+    PERMANENT_SPELL_TYPES = ["shadow", "darkness"]
+
+    def is_spell_permanence_eligible(self, spell_name: str) -> tuple[bool, str]:
+        """
+        Check if a spell can be made permanent through a vorpal monolith.
+
+        Shadow and darkness spells cast while touching a monolith in winter
+        become permanent until re-touched.
+
+        Args:
+            spell_name: Name of the spell being cast
+
+        Returns:
+            Tuple of (is_eligible, spell_type)
+        """
+        spell_lower = spell_name.lower()
+
+        # Check for darkness spells
+        darkness_keywords = ["darkness", "dark", "blackout", "shadow veil"]
+        for keyword in darkness_keywords:
+            if keyword in spell_lower:
+                return True, "darkness"
+
+        # Check for shadow spells
+        shadow_keywords = ["shadow", "shade", "umbral", "penumbra"]
+        for keyword in shadow_keywords:
+            if keyword in spell_lower:
+                return True, "shadow"
+
+        return False, ""
+
+    def make_spell_permanent(
+        self,
+        spell_name: str,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        effect_location_hex: Optional[str] = None,
+        effect_location_poi: Optional[str] = None,
+        spell_level: int = 0,
+        original_duration: str = "",
+        effect_radius_feet: int = 0,
+    ) -> Optional[PermanentSpell]:
+        """
+        Make a shadow/darkness spell permanent through a vorpal monolith.
+
+        This can only be done:
+        1. While touching a vorpal monolith
+        2. During winter (when the monolith is semi-corporeal)
+        3. With a shadow or darkness spell
+
+        Args:
+            spell_name: Name of the spell
+            caster_id: ID of the caster
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            effect_location_hex: Where the spell effect manifests
+            effect_location_poi: POI where effect manifests
+            spell_level: Level of the spell
+            original_duration: What the duration would have been
+            effect_radius_feet: Radius of the effect
+
+        Returns:
+            The PermanentSpell if successful, None if ineligible
+        """
+        # Check eligibility
+        is_eligible, spell_type = self.is_spell_permanence_eligible(spell_name)
+        if not is_eligible:
+            logger.warning(f"Spell '{spell_name}' is not eligible for permanence")
+            return None
+
+        # Get caster name
+        caster_name = ""
+        if self.controller:
+            char = self.controller.get_character(caster_id)
+            if char:
+                caster_name = char.name
+
+        # Get current date
+        current_date = None
+        if self.controller and self.controller.world_state:
+            current_date = self.controller.world_state.current_date
+
+        # Create the permanent spell
+        permanent_spell = PermanentSpell(
+            spell_name=spell_name,
+            spell_type=spell_type,
+            caster_id=caster_id,
+            caster_name=caster_name,
+            monolith_hex_id=hex_id,
+            monolith_poi_name=poi_name,
+            effect_location_hex=effect_location_hex or hex_id,
+            effect_location_poi=effect_location_poi,
+            original_duration=original_duration,
+            original_spell_level=spell_level,
+            effect_radius_feet=effect_radius_feet,
+            created_at=current_date,
+        )
+
+        # Add to registry
+        self._permanent_spells.add_spell(permanent_spell)
+
+        logger.info(
+            f"Spell '{spell_name}' made permanent at {hex_id}/{poi_name} by {caster_name}"
+        )
+
+        # Emit event
+        self._emit_run_log_event(
+            "spell_made_permanent",
+            {
+                "spell_id": permanent_spell.spell_id,
+                "spell_name": spell_name,
+                "spell_type": spell_type,
+                "caster_id": caster_id,
+                "caster_name": caster_name,
+                "monolith_hex": hex_id,
+                "monolith_poi": poi_name,
+                "effect_location_hex": permanent_spell.effect_location_hex,
+                "effect_location_poi": permanent_spell.effect_location_poi,
+            },
+        )
+
+        return permanent_spell
+
+    def end_permanent_spell(
+        self,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        spell_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        End permanent spells by touching the monolith and willing them to end.
+
+        This can only be done at the same monolith where the spell was made
+        permanent, during winter, and by the original caster.
+
+        Args:
+            caster_id: ID of the caster willing the spell to end
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            spell_name: Specific spell to end (None = all spells by this caster)
+
+        Returns:
+            List of ended PermanentSpell objects
+        """
+        # Get current date
+        current_date = None
+        if self.controller and self.controller.world_state:
+            current_date = self.controller.world_state.current_date
+
+        if not current_date:
+            logger.warning("Cannot end permanent spell: no current date available")
+            return []
+
+        # End the spells
+        ended = self._permanent_spells.end_caster_spell_at_monolith(
+            caster_id=caster_id,
+            hex_id=hex_id,
+            poi_name=poi_name,
+            current_date=current_date,
+            spell_name=spell_name,
+        )
+
+        for spell in ended:
+            logger.info(
+                f"Permanent spell '{spell.spell_name}' ended at {hex_id}/{poi_name}"
+            )
+
+            # Emit event
+            self._emit_run_log_event(
+                "permanent_spell_ended",
+                {
+                    "spell_id": spell.spell_id,
+                    "spell_name": spell.spell_name,
+                    "spell_type": spell.spell_type,
+                    "caster_id": spell.caster_id,
+                    "caster_name": spell.caster_name,
+                    "monolith_hex": hex_id,
+                    "monolith_poi": poi_name,
+                },
+            )
+
+        return ended
+
+    def get_permanent_spells_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        Get all active permanent spell effects at a location.
+
+        Args:
+            hex_id: Hex to check
+            poi_name: Specific POI (None = hex level)
+
+        Returns:
+            List of active PermanentSpell objects
+        """
+        return self._permanent_spells.get_spells_at_location(hex_id, poi_name)
+
+    def get_caster_permanent_spells(
+        self,
+        caster_id: str,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        Get all active permanent spells cast by a character.
+
+        Args:
+            caster_id: ID of the caster
+            hex_id: Filter by monolith hex (optional)
+            poi_name: Filter by monolith POI (optional)
+
+        Returns:
+            List of active PermanentSpell objects
+        """
+        spells = self._permanent_spells.get_spells_by_caster(caster_id)
+        if hex_id and poi_name:
+            spells = [
+                s for s in spells
+                if s.monolith_hex_id == hex_id and s.monolith_poi_name == poi_name
+            ]
+        return spells
+
+    def resolve_spell_permanence_hazard(
+        self,
+        character_id: str,
+        hex_id: str,
+        hazard: dict[str, Any],
+        spell_being_cast: Optional[str] = None,
+        end_spell_intent: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Resolve a spell permanence hazard (touching monolith while casting).
+
+        This handles the monolith_touching hazard when:
+        1. A caster is casting a shadow/darkness spell -> make it permanent
+        2. A caster wants to end their permanent spells -> end them
+
+        Args:
+            character_id: ID of the character touching the monolith
+            hex_id: Hex ID of the monolith
+            hazard: The hazard data from the POI
+            spell_being_cast: Name of spell being cast (if any)
+            end_spell_intent: Whether the caster intends to end permanent spells
+
+        Returns:
+            Dict with resolution results
+        """
+        poi_name = hazard.get("poi_name") or self._current_poi
+
+        result = {
+            "triggered": True,
+            "hazard_id": hazard.get("hazard_id", "spell_permanence"),
+            "hazard_name": hazard.get("name", "Spell Permanence"),
+            "effect": hazard.get("effect"),
+            "action": None,
+            "spells_affected": [],
+            "message": "",
+        }
+
+        # Check if trying to end permanent spells
+        if end_spell_intent:
+            caster_spells = self.get_caster_permanent_spells(
+                character_id, hex_id, poi_name
+            )
+            if caster_spells:
+                ended = self.end_permanent_spell(character_id, hex_id, poi_name)
+                result["action"] = "ended"
+                result["spells_affected"] = [
+                    {
+                        "spell_id": s.spell_id,
+                        "spell_name": s.spell_name,
+                        "spell_type": s.spell_type,
+                    }
+                    for s in ended
+                ]
+                result["message"] = (
+                    f"Ended {len(ended)} permanent spell(s): "
+                    + ", ".join(s.spell_name for s in ended)
+                )
+            else:
+                result["action"] = "no_spells"
+                result["message"] = "No permanent spells to end at this monolith."
+            return result
+
+        # Check if casting a spell that can be made permanent
+        if spell_being_cast:
+            is_eligible, spell_type = self.is_spell_permanence_eligible(spell_being_cast)
+            if is_eligible:
+                permanent = self.make_spell_permanent(
+                    spell_name=spell_being_cast,
+                    caster_id=character_id,
+                    hex_id=hex_id,
+                    poi_name=poi_name,
+                )
+                if permanent:
+                    result["action"] = "made_permanent"
+                    result["spells_affected"] = [
+                        {
+                            "spell_id": permanent.spell_id,
+                            "spell_name": permanent.spell_name,
+                            "spell_type": permanent.spell_type,
+                        }
+                    ]
+                    result["message"] = (
+                        f"The {spell_being_cast} spell becomes permanent! "
+                        "It can only be ended by touching this monolith again "
+                        "during winter and willing it to end."
+                    )
+                else:
+                    result["action"] = "failed"
+                    result["message"] = f"The {spell_being_cast} spell is not eligible for permanence."
+            else:
+                result["action"] = "ineligible"
+                result["message"] = (
+                    f"The {spell_being_cast} spell is not a shadow or darkness spell "
+                    "and cannot be made permanent."
+                )
+        else:
+            # Just touching without casting or ending
+            result["action"] = "touch_only"
+            result["message"] = (
+                "The monolith's surface feels like cold, sticky slime. "
+                "Shadow or darkness spells cast while touching would become permanent."
+            )
+
+        return result
 
     # =========================================================================
     # SCHEDULED EVENTS AND INVITATIONS

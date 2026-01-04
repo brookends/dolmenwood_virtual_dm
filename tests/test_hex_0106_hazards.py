@@ -1123,3 +1123,367 @@ class TestHex0106IsWinter:
         engine.controller = controller
 
         assert engine._is_winter() is False
+
+
+class TestSpellPermanenceSystem:
+    """Tests for the Vorpal Monolith spell permanence system."""
+
+    def test_is_spell_permanence_eligible_darkness(self):
+        """Verify darkness spells are eligible for permanence."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Darkness")
+        assert result is True
+        assert spell_type == "darkness"
+
+    def test_is_spell_permanence_eligible_shadow(self):
+        """Verify shadow spells are eligible for permanence."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Shadow Door")
+        assert result is True
+        assert spell_type == "shadow"
+
+    def test_is_spell_permanence_ineligible_fireball(self):
+        """Verify non-shadow/darkness spells are not eligible."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Fireball")
+        assert result is False
+        assert spell_type == ""
+
+    def test_make_spell_permanent_creates_record(self):
+        """Verify make_spell_permanent creates a PermanentSpell record."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        mock_char = MagicMock()
+        mock_char.name = "Mordecai"
+
+        controller = MagicMock()
+        controller.get_character.return_value = mock_char
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=15)
+        engine.controller = controller
+
+        result = engine.make_spell_permanent(
+            spell_name="Darkness",
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert result is not None
+        assert result.spell_name == "Darkness"
+        assert result.spell_type == "darkness"
+        assert result.caster_id == "mordecai_1"
+        assert result.caster_name == "Mordecai"
+        assert result.monolith_hex_id == "0106"
+        assert result.is_active is True
+
+        # Check it was added to registry
+        spells = engine._permanent_spells.get_active_spells()
+        assert len(spells) == 1
+        assert spells[0].spell_id == result.spell_id
+
+    def test_make_spell_permanent_rejects_ineligible(self):
+        """Verify make_spell_permanent rejects non-shadow/darkness spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine.controller = MagicMock()
+
+        result = engine.make_spell_permanent(
+            spell_name="Fireball",
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert result is None
+
+    def test_end_permanent_spell_ends_caster_spells(self):
+        """Verify end_permanent_spell ends spells by the caster at the monolith."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add a permanent spell
+        spell = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            caster_name="Mordecai",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0106",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell)
+
+        # End the spell
+        ended = engine.end_permanent_spell(
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert len(ended) == 1
+        assert ended[0].spell_name == "Darkness"
+        assert ended[0].is_active is False
+        assert ended[0].ended_at is not None
+
+    def test_end_permanent_spell_only_ends_own_spells(self):
+        """Verify end_permanent_spell only ends the caster's own spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add spells from two different casters
+        spell1 = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            caster_name="Mordecai",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        spell2 = PermanentSpell(
+            spell_name="Shadow Door",
+            spell_type="shadow",
+            caster_id="elara_2",
+            caster_name="Elara",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell1)
+        engine._permanent_spells.add_spell(spell2)
+
+        # Mordecai ends their spell
+        ended = engine.end_permanent_spell(
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert len(ended) == 1
+        assert ended[0].caster_id == "mordecai_1"
+
+        # Elara's spell should still be active
+        elara_spells = engine._permanent_spells.get_spells_by_caster("elara_2")
+        assert len(elara_spells) == 1
+        assert elara_spells[0].is_active is True
+
+    def test_resolve_spell_permanence_hazard_makes_spell_permanent(self):
+        """Verify resolve_spell_permanence_hazard makes eligible spells permanent."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        mock_char = MagicMock()
+        mock_char.name = "Mordecai"
+
+        controller = MagicMock()
+        controller.get_character.return_value = mock_char
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=15)
+        engine.controller = controller
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            spell_being_cast="Darkness",
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "made_permanent"
+        assert len(result["spells_affected"]) == 1
+        assert result["spells_affected"][0]["spell_name"] == "Darkness"
+        assert "permanent" in result["message"].lower()
+
+    def test_resolve_spell_permanence_hazard_ends_spells(self):
+        """Verify resolve_spell_permanence_hazard can end existing permanent spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add an existing permanent spell
+        spell = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell)
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            end_spell_intent=True,
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "ended"
+        assert len(result["spells_affected"]) == 1
+        assert result["spells_affected"][0]["spell_name"] == "Darkness"
+
+    def test_resolve_spell_permanence_hazard_ineligible_spell(self):
+        """Verify resolve_spell_permanence_hazard rejects ineligible spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.controller = MagicMock()
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            spell_being_cast="Fireball",
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "ineligible"
+        assert "not a shadow or darkness spell" in result["message"]
+
+    def test_resolve_spell_permanence_hazard_touch_only(self):
+        """Verify resolve_spell_permanence_hazard handles touching without casting."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.controller = MagicMock()
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "touch_only"
+        assert "cold, sticky slime" in result["message"]
+
+    def test_get_permanent_spells_at_location(self):
+        """Verify get_permanent_spells_at_location returns correct spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+
+        # Add spells at different locations
+        spell1 = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0106",
+            effect_location_poi="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        spell2 = PermanentSpell(
+            spell_name="Shadow Door",
+            spell_type="shadow",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0105",  # Different location
+            effect_location_poi=None,
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell1)
+        engine._permanent_spells.add_spell(spell2)
+
+        # Get spells at 0106 / monolith
+        spells = engine.get_permanent_spells_at_location(
+            "0106", "The Red Vorpal Monolith"
+        )
+        assert len(spells) == 1
+        assert spells[0].spell_name == "Darkness"
+
+        # Get spells at 0105 / hex level
+        spells = engine.get_permanent_spells_at_location("0105")
+        assert len(spells) == 1
+        assert spells[0].spell_name == "Shadow Door"

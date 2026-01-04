@@ -7001,6 +7001,222 @@ class AreaEffect:
 
 
 # =============================================================================
+# PERMANENT SPELL REGISTRY (Vorpal Monolith Spell Permanence)
+# =============================================================================
+
+
+@dataclass
+class PermanentSpell:
+    """
+    A spell made permanent through a vorpal monolith.
+
+    When shadow/darkness spells are cast while touching a vorpal monolith
+    during winter, they become permanent. These spells can only be ended by
+    touching the same monolith again during winter and willing the spell to end.
+    """
+
+    spell_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    spell_name: str = ""  # Name of the spell (e.g., "Darkness", "Shadow Door")
+    spell_type: str = ""  # "shadow" or "darkness"
+
+    # Caster information
+    caster_id: str = ""
+    caster_name: str = ""
+
+    # Source monolith
+    monolith_hex_id: str = ""  # e.g., "0106"
+    monolith_poi_name: str = ""  # e.g., "The Red Vorpal Monolith"
+
+    # Location where the spell effect manifests
+    effect_location_hex: str = ""
+    effect_location_poi: Optional[str] = None
+    effect_radius_feet: int = 0
+
+    # Original spell details
+    original_duration: str = ""  # What the duration would have been
+    original_spell_level: int = 0
+
+    # When the spell was made permanent
+    created_at: Optional["GameDate"] = None
+
+    # State
+    is_active: bool = True
+    ended_at: Optional["GameDate"] = None
+
+    def end_spell(self, current_date: "GameDate") -> bool:
+        """
+        End the permanent spell by touching the monolith and willing it to end.
+
+        Args:
+            current_date: Current game date
+
+        Returns:
+            True if spell was successfully ended
+        """
+        if self.is_active:
+            self.is_active = False
+            self.ended_at = current_date
+            return True
+        return False
+
+
+@dataclass
+class PermanentSpellRegistry:
+    """
+    Registry for tracking all permanent spells created through vorpal monoliths.
+
+    Spells in this registry cannot be dispelled by normal means - only by
+    touching the source monolith again during winter and willing the spell to end.
+    """
+
+    spells: list[PermanentSpell] = field(default_factory=list)
+
+    # Index by monolith for quick lookup
+    _by_monolith: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+    # Index by caster
+    _by_caster: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+    # Index by location
+    _by_location: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+
+    def add_spell(self, spell: PermanentSpell) -> None:
+        """Add a permanent spell to the registry."""
+        self.spells.append(spell)
+
+        # Update indices
+        monolith_key = f"{spell.monolith_hex_id}:{spell.monolith_poi_name}"
+        if monolith_key not in self._by_monolith:
+            self._by_monolith[monolith_key] = []
+        self._by_monolith[monolith_key].append(spell)
+
+        if spell.caster_id not in self._by_caster:
+            self._by_caster[spell.caster_id] = []
+        self._by_caster[spell.caster_id].append(spell)
+
+        location_key = f"{spell.effect_location_hex}:{spell.effect_location_poi or 'hex'}"
+        if location_key not in self._by_location:
+            self._by_location[location_key] = []
+        self._by_location[location_key].append(spell)
+
+    def get_spells_by_monolith(
+        self,
+        hex_id: str,
+        poi_name: str,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spells created at a specific monolith."""
+        key = f"{hex_id}:{poi_name}"
+        spells = self._by_monolith.get(key, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_spells_by_caster(
+        self,
+        caster_id: str,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spells cast by a specific character."""
+        spells = self._by_caster.get(caster_id, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_spells_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spell effects at a specific location."""
+        key = f"{hex_id}:{poi_name or 'hex'}"
+        spells = self._by_location.get(key, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_active_spells(self) -> list[PermanentSpell]:
+        """Get all active permanent spells."""
+        return [s for s in self.spells if s.is_active]
+
+    def end_spell(
+        self,
+        spell_id: str,
+        current_date: "GameDate",
+    ) -> Optional[PermanentSpell]:
+        """
+        End a specific permanent spell by ID.
+
+        Args:
+            spell_id: ID of the spell to end
+            current_date: Current game date
+
+        Returns:
+            The ended spell, or None if not found
+        """
+        for spell in self.spells:
+            if spell.spell_id == spell_id and spell.is_active:
+                spell.end_spell(current_date)
+                return spell
+        return None
+
+    def end_caster_spell_at_monolith(
+        self,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        current_date: "GameDate",
+        spell_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        End permanent spells by a caster at a specific monolith.
+
+        Used when a caster touches the monolith and wills their spells to end.
+
+        Args:
+            caster_id: ID of the caster
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            current_date: Current game date
+            spell_name: Optional specific spell name to end (None = all)
+
+        Returns:
+            List of ended spells
+        """
+        monolith_key = f"{hex_id}:{poi_name}"
+        ended = []
+
+        for spell in self._by_monolith.get(monolith_key, []):
+            if spell.caster_id == caster_id and spell.is_active:
+                if spell_name is None or spell.spell_name.lower() == spell_name.lower():
+                    spell.end_spell(current_date)
+                    ended.append(spell)
+
+        return ended
+
+    def is_location_affected(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+        spell_type: Optional[str] = None,
+    ) -> bool:
+        """
+        Check if a location has any active permanent spell effects.
+
+        Args:
+            hex_id: Hex ID to check
+            poi_name: POI name to check (None = hex level)
+            spell_type: Optional specific type to check ("shadow", "darkness")
+
+        Returns:
+            True if location has matching active permanent spells
+        """
+        spells = self.get_spells_at_location(hex_id, poi_name, active_only=True)
+        if spell_type:
+            return any(s.spell_type == spell_type for s in spells)
+        return len(spells) > 0
+
+
+# =============================================================================
 # BARRIER SYSTEM (Wall of Fire, Wall of Ice, etc.)
 # =============================================================================
 
