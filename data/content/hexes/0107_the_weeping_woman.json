@@ -29,9 +29,10 @@
         "save_modifier": -2,
         "description": "At night, the enchanting music is more potent. Characters within sight of the Weeping Woman who have drunk the water suffer a -2 penalty to their saving throw against the music's compulsion.",
         "on_fail": {
-          "condition": "enchanted_reverie",
+          "condition": "compelled_dancing",
           "effect": "Compelled to dance until dawn",
-          "additional": "Perceive fairy beings dancing alongside"
+          "additional": "Perceive fairy beings dancing alongside",
+          "ends_at_time_of_day": "dawn"
         }
       },
       {
@@ -40,8 +41,9 @@
         "save_modifier": -4,
         "description": "On nights of the full moon, the music can be heard throughout the hex without drinking the water. All characters must Save Versus Spell with a -4 penalty or be drawn to the Weeping Woman to dance.",
         "on_fail": {
-          "condition": "moon_dance_compulsion",
-          "effect": "Drawn to Weeping Woman, must dance until dawn"
+          "condition": "compelled_dancing",
+          "effect": "Drawn to Weeping Woman, must dance until dawn",
+          "ends_at_time_of_day": "dawn"
         }
       }
     ]
@@ -143,10 +145,10 @@
           "save_type": "spell",
           "modifier": 0,
           "on_fail": {
-            "condition": "hear_music",
+            "condition": "enchanted_hearing",
             "effect": "Perceive enchanting piping music from the Woman's eyes",
             "duration": "until save succeeds or music ends at dawn",
-            "leads_to": "enchanted_reverie"
+            "leads_to": "compelled_dancing"
           },
           "description": "The water is deliciously cold with a faint blossomy note. Those who imbibe must Save Versus Spell or hear enchanting piping music."
         },
@@ -156,10 +158,11 @@
           "trigger": "hearing the music (from drinking or full moon)",
           "save_type": "none",
           "automatic": true,
-          "condition_required": "hear_music",
+          "condition_required": "enchanted_hearing",
           "effect": {
             "condition": "compelled_dancing",
             "duration": "until dawn",
+            "ends_at_time_of_day": "dawn",
             "description": "Dancers perceive fairy beings (roll on Fairy Dance Visions table) and dance until dawn. They cannot stop willingly."
           },
           "description": "Those who hear the music fall into an enchanted reverie, dancing and capering at the Woman's feet with perceived fairy beings."
@@ -187,8 +190,9 @@
           "automatic": true,
           "long_term": true,
           "effect": {
-            "condition": "neveryon_dreams",
+            "condition": "fairy_marked",
             "duration": "6 months",
+            "source": "neveryon",
             "description": "Sporadic dreams of sly-faced elves demanding the dancer 'return the music stolen from the fairy lord of Neveryon.'"
           },
           "description": "For 6 months after dancing, the character dreams of elves demanding return of music stolen from Neveryon."
