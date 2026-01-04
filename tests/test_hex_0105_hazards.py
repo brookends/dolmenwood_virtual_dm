@@ -521,3 +521,207 @@ class TestHazardSchemaVariations:
         engine.dice.roll.assert_not_called()
         assert result.damage_dealt == 0
         assert "exhausted" in result.conditions_applied
+
+
+class TestTouchActionFrostPatchTrigger:
+    """Tests for touch action triggering frost patch hazard."""
+
+    def test_detect_poi_action_matches_touch(self):
+        """Verify detect_poi_action matches 'touch frost patches'."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("touch frost patches")
+        assert result is not None
+        assert result[0] == "touch"
+        assert result[1] == "touch"
+
+    def test_detect_poi_action_matches_touch_variants(self):
+        """Verify detect_poi_action matches various touch input variations."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        # Test various phrasings
+        test_cases = [
+            ("I touch the frozen figure", ("touch", "touch")),
+            ("Touch the frost giant", ("touch", "touch")),
+            ("I want to touch it", ("touch", "touch")),
+            ("I grab the frozen soldier", ("touch", "grab")),
+            ("Press my hand against the ice", ("touch", "press")),
+            ("I hold the frost blade", ("touch", "hold")),
+        ]
+
+        for input_text, expected in test_cases:
+            result = engine.detect_poi_action(input_text)
+            assert result == expected, f"Failed for '{input_text}'"
+
+    def test_get_matching_poi_hazards_matches_touching_trigger(self):
+        """Verify get_matching_poi_hazards matches hazard with 'touching' trigger."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Frozen Battleground"
+
+        # Create mock POI with frost_touch hazard
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        # Action type "touch" should match trigger "touching"
+        matching = engine.get_matching_poi_hazards("0105", "touch")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "frost_touch"
+
+    def test_resolve_poi_action_triggers_frost_hazard(self):
+        """Verify resolve_poi_action triggers frost hazard on touch."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = "Frozen Battleground"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=5)
+        engine.dice.roll.return_value = MagicMock(total=4)  # 4 cold damage
+        engine.narrative_resolver = MagicMock()
+
+        # Create test character
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_char"
+        char.make_saving_throw = MagicMock(return_value=(5, False))  # Failed
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = char
+        engine.controller.apply_damage = MagicMock()
+        engine.controller.apply_condition = MagicMock(return_value={"applied": True})
+
+        # Create mock POI
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        # Resolve the touch action
+        result = engine.resolve_poi_action("I touch the frozen figure", "test_char")
+
+        assert result["triggered"] is True
+        assert result["action_type"] == "touch"
+        assert result["hazards_triggered"] == 1
+        assert result["hazard_results"][0]["hazard_name"] == "Ancient Frost Magic"
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 4
+
+    def test_resolve_poi_action_with_successful_save(self):
+        """Verify resolve_poi_action handles successful saves."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = "Frozen Battleground"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=18)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_char"
+        char.make_saving_throw = MagicMock(return_value=(18, True))  # Passed
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = char
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        result = engine.resolve_poi_action("Touch the frost giant", "test_char")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is True
+        assert result["hazard_results"][0]["damage_taken"] == 0
+
+    def test_no_match_without_poi(self):
+        """Verify resolve_poi_action fails without current POI."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = None  # No POI
+
+        result = engine.resolve_poi_action("touch frost patches", "test_char")
+
+        assert result["triggered"] is False
+        assert result["reason"] == "Not at a POI"
+
+    def test_no_match_for_non_touch_hazard(self):
+        """Verify touch action doesn't match non-touch hazards."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Some POI"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Some POI"
+        mock_poi.hazards = [
+            {
+                "trigger": "entering the water",  # Not a touch trigger
+                "save_type": "doom",
+                "damage_dice": "1d6",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0105", "touch")
+
+        assert len(matching) == 0
