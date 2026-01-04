@@ -11157,7 +11157,8 @@ class HexCrawlEngine:
             result["evening_hazard"] = hazard_resolution
 
             # If hazard involves combat, rest may be interrupted
-            if hazard_resolution.get("encounter", {}).get("type") == "npc":
+            # Note: _resolve_hex_hazard_result uses "npc_arrival" for NPC encounters
+            if hazard_resolution.get("encounter", {}).get("type") == "npc_arrival":
                 npc_info = hazard_resolution["encounter"]
                 if npc_info.get("is_combatant"):
                     result["success"] = False

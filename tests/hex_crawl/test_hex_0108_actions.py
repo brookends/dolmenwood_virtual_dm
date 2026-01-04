@@ -1277,7 +1277,8 @@ class TestSleepAtPOI:
     def test_sleep_at_poi_returns_success_for_valid_poi(self, hex_0108_engine):
         """sleep_at_poi should return success for a valid POI."""
         # Set a seed to make hazard check deterministic (no hazard)
-        DiceRoller.set_seed(100)
+        # Seed 42 gives roll of 6 which fails 3-in-6 check (hazard doesn't trigger)
+        DiceRoller.set_seed(42)
         result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath")
         DiceRoller._seed = None
 
@@ -1328,8 +1329,8 @@ class TestSleepAtPOI:
         )
         hex_0108_engine.controller._characters["test_char"] = char
 
-        # Use high seed to avoid evening hazard triggering
-        DiceRoller.set_seed(100)
+        # Use seed 42 to avoid evening hazard triggering (roll of 6 fails 3-in-6)
+        DiceRoller.set_seed(42)
         result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["test_char"])
         DiceRoller._seed = None
 
@@ -1362,8 +1363,8 @@ class TestSleepAtPOI:
         char.conditions.append(restless)
         hex_0108_engine.controller._characters["restless_char"] = char
 
-        # Use high seed to avoid evening hazard
-        DiceRoller.set_seed(100)
+        # Use seed 42 to avoid evening hazard (roll of 6 fails 3-in-6)
+        DiceRoller.set_seed(42)
         result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["restless_char"])
         DiceRoller._seed = None
 
@@ -1394,7 +1395,8 @@ class TestSleepAtPOI:
         # Mock advance_time to capture call
         hex_0108_engine.controller.advance_time = MagicMock()
 
-        DiceRoller.set_seed(100)
+        # Use seed 42 to avoid evening hazard (roll of 6 fails 3-in-6)
+        DiceRoller.set_seed(42)
         hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["time_test_char"])
         DiceRoller._seed = None
 
@@ -1445,7 +1447,8 @@ class TestSleepAtPOIAction:
         registry = get_default_registry()
         spec = registry.get("wilderness:sleep_at_poi")
 
-        DiceRoller.set_seed(100)
+        # Use seed 42 to avoid evening hazard (roll of 6 fails 3-in-6)
+        DiceRoller.set_seed(42)
         result = spec.executor(mock_dm, {"hex_id": "0108", "poi_name": "The Crimson Bath"})
         DiceRoller._seed = None
 
