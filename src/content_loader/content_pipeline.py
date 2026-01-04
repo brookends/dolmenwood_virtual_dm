@@ -1175,6 +1175,30 @@ class ContentPipeline:
                 "roll_tables": [self._roll_table_to_dict(t) for t in poi.roll_tables],
                 "treasure_hoard": poi.treasure_hoard,
                 "evening_hazard": poi.evening_hazard,
+                # Advanced POI fields for automation
+                "alerts": poi.alerts,
+                "concealed_items": poi.concealed_items,
+                "locks": poi.locks,
+                "sub_locations": poi.sub_locations,
+                "entry_conditions": poi.entry_conditions,
+                "variable_inhabitants": poi.variable_inhabitants,
+                # Additional fields
+                "hidden": poi.hidden,
+                "discovered": poi.discovered,
+                "visible_from_distance": poi.visible_from_distance,
+                "approach_required": poi.approach_required,
+                # POI relationships and gated discovery
+                "parent_poi": poi.parent_poi,
+                "requires_discovery": poi.requires_discovery,
+                "child_pois": poi.child_pois,
+                "dungeon_id": poi.dungeon_id,
+                "dungeon_entrance_room": poi.dungeon_entrance_room,
+                "hazards": poi.hazards,
+                "items": poi.items,
+                "magical_effects": poi.magical_effects,
+                "quest_hooks": poi.quest_hooks,
+                "discovery_hints": poi.discovery_hints,
+                "ability_grants": poi.ability_grants,
             }
             poi_list.append(poi_dict)
 
@@ -1235,6 +1259,8 @@ class ContentPipeline:
                     "stat_reference": npc.stat_reference,
                     "is_combatant": npc.is_combatant,
                     "vulnerabilities": npc.vulnerabilities,
+                    "stat_block": npc.stat_block,
+                    "pursuit_trigger": npc.pursuit_trigger,
                     "group_count": npc.group_count,
                     "group_composition": npc.group_composition,
                     "relationships": npc.relationships,

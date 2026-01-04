@@ -247,7 +247,8 @@ class TestEngageNpcTimeGating:
         result = hex_engine.engage_poi_npc("0104", "the_dredger")
 
         assert result["success"] is True
-        assert result["combatant"]["name"] == "The Dredger"
+        assert result["combatant_count"] == 1
+        assert result["combatants"][0]["name"] == "The Dredger"
 
 
 class TestMixedNpcPresence:

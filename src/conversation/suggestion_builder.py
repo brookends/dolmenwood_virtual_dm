@@ -599,19 +599,93 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                             "type": "object",
                             "properties": {
                                 "hex_id": {"type": "string"},
-                                "payment": {"type": "string"},
+                                "payment": {"type": "integer"},
                                 "password": {"type": "string"},
-                                "approach": {"type": "string"},
+                                "social_result": {"type": "string"},
                             },
                             "required": ["hex_id"],
                         },
-                        params={"hex_id": hex_id, "payment": "", "password": "", "approach": "respectful"},
+                        params={"hex_id": hex_id, "payment": 0, "password": "", "social_result": ""},
                         safe_to_execute=False,
-                        help="Use when the location demands a toll, password, invitation, etc.",
+                        help="Use when the location demands a toll, password, social outcome, etc.",
                     ),
                     score=55,
                 )
             )
+            # Also suggest stealth entry when conditions exist
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:enter_poi_stealth",
+                        label=f"Sneak into {poi_name}",
+                        params_schema={
+                            "type": "object",
+                            "properties": {
+                                "hex_id": {"type": "string"},
+                                "stealth_modifier": {"type": "integer"},
+                            },
+                            "required": ["hex_id"],
+                        },
+                        params={"hex_id": hex_id, "stealth_modifier": 0},
+                        safe_to_execute=False,
+                        help="Attempt stealthy entry, bypassing conditions but risking detection.",
+                    ),
+                    score=50,
+                )
+            )
+            # Also suggest skill-based stealth infiltration (for guarded locations)
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:sneak_into_poi",
+                        label=f"Infiltrate {poi_name} (skill check)",
+                        params_schema={
+                            "type": "object",
+                            "properties": {
+                                "hex_id": {"type": "string"},
+                                "poi_name": {"type": "string"},
+                                "character_id": {"type": "string"},
+                                "stealth_modifier": {"type": "integer"},
+                            },
+                            "required": ["poi_name", "character_id"],
+                        },
+                        params={"hex_id": hex_id, "poi_name": poi_name, "character_id": cid, "stealth_modifier": 0},
+                        safe_to_execute=False,
+                        help="Use stealth skills to sneak past sentries. Success: enter undetected. Failure: triggers camp alarm.",
+                    ),
+                    score=48,
+                )
+            )
+
+        # Check for silenceable alarms at this POI
+        try:
+            poi_info = dm.hex_crawl.get_poi_info(hex_id)
+            if poi_info and poi_info.get("alerts"):
+                for alert in poi_info["alerts"]:
+                    if alert.get("bypass_method"):
+                        out.append(
+                            _Candidate(
+                                SuggestedAction(
+                                    id="wilderness:silence_alarm",
+                                    label=f"Silence alarm ({alert.get('alert_id', 'alarm')})",
+                                    params_schema={
+                                        "type": "object",
+                                        "properties": {
+                                            "hex_id": {"type": "string"},
+                                            "item": {"type": "string"},
+                                        },
+                                        "required": ["hex_id", "item"],
+                                    },
+                                    params={"hex_id": hex_id, "item": ""},
+                                    safe_to_execute=False,
+                                    help=f"Hint: {alert.get('bypass_method', 'Find the right item')}",
+                                ),
+                                score=45,
+                            )
+                        )
+                        break  # Only suggest once
+        except Exception:
+            pass
 
         # Talk to present NPCs
         try:
@@ -754,7 +828,30 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             )
         )
 
-        # Leave the location
+        # Leave the location (stealth option)
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="wilderness:leave_poi_stealth",
+                    label=f"Slip away from {poi_name} (stealth)",
+                    params_schema={
+                        "type": "object",
+                        "properties": {
+                            "hex_id": {"type": "string"},
+                            "character_id": {"type": "string"},
+                            "stealth_modifier": {"type": "integer"},
+                        },
+                        "required": ["character_id"],
+                    },
+                    params={"hex_id": hex_id, "character_id": cid, "stealth_modifier": 0},
+                    safe_to_execute=False,
+                    help="Leave by stealth. Failure may trigger pursuit (e.g., Brynne at the Hunting Lodge).",
+                ),
+                score=58,
+            )
+        )
+
+        # Leave the location (normal)
         out.append(
             _Candidate(
                 SuggestedAction(
@@ -766,6 +863,60 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                 score=60,
             )
         )
+
+        # Check for prisoners that can be rescued
+        try:
+            prisoners_info = dm.hex_crawl.get_prisoners_info(hex_id, poi_name)
+            if prisoners_info and prisoners_info.get("rescue_available"):
+                prisoner_count = prisoners_info.get("prisoner_count", 0)
+                guard_count = prisoners_info.get("guard_count", 0)
+                # Stealth rescue option
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:rescue_prisoners",
+                            label=f"Rescue prisoners (stealth - {prisoner_count} captive{'s' if prisoner_count != 1 else ''}, {guard_count} guard{'s' if guard_count != 1 else ''})",
+                            params_schema={
+                                "type": "object",
+                                "properties": {
+                                    "hex_id": {"type": "string"},
+                                    "character_id": {"type": "string"},
+                                    "method": {"type": "string"},
+                                    "stealth_modifier": {"type": "integer"},
+                                },
+                                "required": ["character_id"],
+                            },
+                            params={"hex_id": hex_id, "character_id": cid, "method": "stealth", "stealth_modifier": 0},
+                            safe_to_execute=False,
+                            help=f"Sneak past {guard_count} guards to free {prisoner_count} prisoner{'s' if prisoner_count != 1 else ''}. Failure triggers combat.",
+                        ),
+                        score=75,
+                    )
+                )
+                # Combat rescue option
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:rescue_prisoners",
+                            label=f"Rescue prisoners (fight guards)",
+                            params_schema={
+                                "type": "object",
+                                "properties": {
+                                    "hex_id": {"type": "string"},
+                                    "character_id": {"type": "string"},
+                                    "method": {"type": "string"},
+                                },
+                                "required": ["character_id"],
+                            },
+                            params={"hex_id": hex_id, "character_id": cid, "method": "combat"},
+                            safe_to_execute=False,
+                            help=f"Fight {guard_count} guards to free the prisoners. Direct confrontation.",
+                        ),
+                        score=73,
+                    )
+                )
+        except Exception:
+            pass  # If prisoners check fails, skip rescue suggestions
 
         return out
 
@@ -1502,6 +1653,95 @@ def _social_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             score=80,
         )
     )
+
+    # Check for bribeable secrets on the current NPC
+    try:
+        from src.data_models import SecretStatus
+
+        social_context = dm.controller.social_context
+        if social_context and social_context.participants:
+            participant = social_context.participants[0]
+            party_gold = getattr(dm.controller.party_state, "gold_gp", 0)
+
+            # Find unrevealed bribeable secrets
+            for secret in getattr(participant, "secret_info", []):
+                if (
+                    secret.can_be_bribed
+                    and secret.status != SecretStatus.REVEALED
+                    and party_gold >= secret.bribe_amount
+                ):
+                    out.append(
+                        _Candidate(
+                            SuggestedAction(
+                                id="social:offer_bribe",
+                                label=f"Offer {secret.bribe_amount} gp for secret",
+                                params={
+                                    "secret_id": secret.secret_id,
+                                    "gold_amount": secret.bribe_amount,
+                                },
+                                safe_to_execute=False,
+                                help=f"Bribe {participant.name} with {secret.bribe_amount} gold "
+                                     f"to reveal a secret. Hint: {secret.hint or 'No hint available.'}",
+                            ),
+                            score=88,
+                        )
+                    )
+                    break  # Only suggest first bribeable secret
+    except Exception:
+        pass
+
+    # Check for cross-hex relationships that suggest travel destinations
+    try:
+        social_context = dm.controller.social_context
+        if social_context and social_context.participants:
+            participant = social_context.participants[0]
+            current_hex = getattr(participant, "hex_id", None) or social_context.hex_id
+
+            # Get relationships with hex_id (cross-hex connections)
+            relationships = getattr(participant, "relationships", [])
+            cross_hex_connections = [
+                r for r in relationships
+                if r.get("hex_id") and r.get("hex_id") != current_hex
+            ]
+
+            # Add travel suggestions for each cross-hex connection
+            for rel in cross_hex_connections[:3]:  # Limit to 3 suggestions
+                target_hex = rel.get("hex_id")
+                related_npc = rel.get("npc_id", "someone")
+                rel_type = rel.get("relationship_type", "connection")
+                description = rel.get("description", "")
+
+                # Build a descriptive label
+                if rel_type == "family":
+                    label = f"Travel to hex {target_hex} ({related_npc} - family)"
+                elif rel_type == "employer":
+                    label = f"Travel to hex {target_hex} ({related_npc} - employer)"
+                elif rel_type == "secret_ally":
+                    label = f"Travel to hex {target_hex} ({related_npc} - ally)"
+                elif rel_type == "secret_correspondent":
+                    label = f"Travel to hex {target_hex} ({related_npc} - correspondent)"
+                else:
+                    label = f"Travel to hex {target_hex} ({related_npc})"
+
+                # Build help text from description
+                help_text = f"{participant.name} mentioned {related_npc}"
+                if description:
+                    help_text = f"{description[:100]}..." if len(description) > 100 else description
+
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:travel",
+                            label=label,
+                            params={"hex_id": target_hex},
+                            safe_to_execute=False,
+                            help=help_text,
+                        ),
+                        score=65,  # Lower than core social actions but notable
+                    )
+                )
+    except Exception:
+        pass
 
     return out
 

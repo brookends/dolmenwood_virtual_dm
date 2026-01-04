@@ -93,7 +93,7 @@
               "description": "A successful hunt is being celebrated with wine and song. Lady Borrid is in excellent spirits and generous to visitors.",
               "npcs": ["lady_amonie_borrid"],
               "items": [],
-              "mechanical_effect": "+1 to reaction rolls"
+              "mechanical_effect": {"type": "reaction_mod", "value": 1, "target": "all", "description": "+1 to reaction rolls"}
             },
             {
               "roll": 5,
@@ -109,7 +109,7 @@
               "description": "Lady Borrid and her companions study maps and discuss the 'cheese monstrosity' of Dwelmfurgh. Serious mood; interruptions unwelcome.",
               "npcs": ["lady_amonie_borrid"],
               "items": [],
-              "mechanical_effect": "-1 to reaction rolls"
+              "mechanical_effect": {"type": "reaction_mod", "value": -1, "target": "all", "description": "-1 to reaction rolls"}
             }
           ]
         },
@@ -153,7 +153,7 @@
               "keywords": ["horn", "blasting", "bronze", "magic"],
               "npcs": [],
               "items": ["horn_of_blasting"],
-              "mechanical_effect": "Horn of Blasting can be obtained"
+              "mechanical_effect": {"type": "item_available", "item_id": "horn_of_blasting", "description": "Horn of Blasting can be obtained"}
             },
             {
               "roll": 5,
@@ -191,6 +191,90 @@
         "chance": "4-in-6",
         "description": "If visitors have made a favorable impression, Lady Borrid invites them to dine with her. This is both an honor and an opportunity for conversation.",
         "result": "dinner_invitation"
+      },
+      "alerts": [
+        {
+          "alert_id": "moose_head_alarm",
+          "trigger": "on_enter_unauthorized",
+          "condition": "without_permission",
+          "effect": "alert_inhabitants",
+          "description": "The mounted moose head at the end of the hall bellows loudly when unauthorized visitors enter, alerting Lady Borrid and all inhabitants.",
+          "bypass_method": "Feed it acorns to silence it",
+          "triggered": false
+        }
+      ],
+      "concealed_items": [
+        {
+          "item_id": "0109:item:horn_of_blasting",
+          "name": "Horn of Blasting",
+          "hidden_in": "trophy collection",
+          "search_dc": "thorough",
+          "description": "An unassuming bronze horn hidden among the mounted trophy horns. Only a careful examination reveals its magical nature.",
+          "found": false
+        },
+        {
+          "item_id": "0109:secret:vault_door",
+          "name": "Secret Vault Door",
+          "hidden_in": "cellars",
+          "search_dc": 4,
+          "description": "A concealed stone door in the cellar wall, cunningly disguised as part of the masonry. Close inspection reveals faint seams and a hidden latch mechanism.",
+          "found": false,
+          "reveals_secret": "hidden_vault"
+        }
+      ],
+      "locks": [
+        {
+          "lock_id": "vault_door",
+          "type": "physical",
+          "requirement": "secret_door_discovery",
+          "description": "A concealed door in the cellar wall leads to a hidden vault. The door is disguised as part of the stone wall.",
+          "bypassed": false,
+          "hidden": true,
+          "detected": false
+        }
+      ],
+      "sub_locations": [
+        {
+          "name": "Trophy Room",
+          "description": "The main feasting hall lined with mounted heads, horns, and antlers from Lady Borrid's legendary hunts.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Wyrm of Odd skull", "Manticore head", "Antler wraith rack", "Various mounted horns"],
+          "items": []
+        },
+        {
+          "name": "Cellars",
+          "description": "Wine stores and provisions beneath the lodge. A concealed vault lies behind one wall.",
+          "access_condition": null,
+          "visible_from": "inside",
+          "features": ["Wine barrels", "Preserved meats", "Hidden vault entrance"],
+          "items": []
+        },
+        {
+          "name": "Secret Vault",
+          "description": "A hidden chamber containing the Borrid family treasures and documents.",
+          "access_condition": "secret_door",
+          "visible_from": "never",
+          "features": ["Chalices and jewels worth 8,000gp", "Family documents"],
+          "items": ["0109:item:fairy_shortbow", "0109:item:fairy_arrows_breggle_bane", "0109:item:vault_treasure"]
+        }
+      ],
+      "entry_conditions": {
+        "type": "permission_required",
+        "description": "Entering without permission triggers the moose head alarm. Polite visitors are welcomed by Lady Borrid if she is present.",
+        "check_type": "social",
+        "npc_id": "lady_amonie_borrid",
+        "outcomes": {
+          "success": "Lady Borrid welcomes the visitors and offers refreshments",
+          "failure": "Visitors are politely but firmly asked to leave",
+          "hostile": "Brynne the giant weasel is commanded to drive out the intruders"
+        }
+      },
+      "variable_inhabitants": {
+        "base_inhabitants": ["lady_amonie_borrid"],
+        "variable": [
+          {"roll": "1d6", "description": "hunting companions (Level 1 hunters)"}
+        ]
       },
       "is_dungeon": false,
       "dungeon_levels": null
@@ -233,7 +317,12 @@
               "description": "A patrol returns with 1d4 new 'recruits,' peasants seized from nearby hexes. They're being processed into the ranks.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Potential rescue opportunity"
+              "mechanical_effect": {
+                "type": "prisoners_present",
+                "count": "1d4",
+                "guard_count": "1d6",
+                "description": "Prisoners are being held under guard. A rescue attempt is possible."
+              }
             },
             {
               "roll": 4,
@@ -241,7 +330,7 @@
               "description": "The entire camp is marching in formation around the dell. Snidebleat rides a mule, shouting orders.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Camp is mobile; harder to sneak in"
+              "mechanical_effect": {"type": "stealth_mod", "value": -2, "target": "camp_entry", "description": "Camp is mobile; harder to sneak in"}
             },
             {
               "roll": 5,
@@ -249,7 +338,7 @@
               "description": "Many soldiers have found ale and are drinking furtively. Discipline is lax. Snidebleat is in her tent.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Soldiers distracted; easier to sneak"
+              "mechanical_effect": {"type": "stealth_mod", "value": 2, "target": "camp_entry", "description": "Soldiers distracted; easier to sneak"}
             },
             {
               "roll": 6,
@@ -257,7 +346,7 @@
               "description": "An emissary from Lord Murkin inspects the troops. Everyone is on their best behavior. Snidebleat barely conceals her contempt.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Security heightened"
+              "mechanical_effect": {"type": "stealth_mod", "value": -1, "target": "camp_entry", "description": "Security heightened"}
             }
           ]
         },
@@ -272,7 +361,7 @@
               "description": "Whispered talk of desertion or uprising. One wrong move could spark violence.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Soldiers may be recruited against Murkin"
+              "mechanical_effect": {"type": "narrative", "hook": "recruit_soldiers", "description": "Soldiers may be recruited against Murkin"}
             },
             {
               "roll": 2,
@@ -304,7 +393,7 @@
               "description": "Someone smuggled in ale. Soldiers are loud and potentially aggressive.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "-1 to reaction; may start fights"
+              "mechanical_effect": {"type": "reaction_mod", "value": -1, "target": "soldiers", "description": "-1 to reaction; may start fights"}
             },
             {
               "roll": 6,
@@ -312,7 +401,7 @@
               "description": "A successful skirmish or capture has bolstered morale. Soldiers are unusually cooperative.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "+1 to reaction with soldiers"
+              "mechanical_effect": {"type": "reaction_mod", "value": 1, "target": "soldiers", "description": "+1 to reaction with soldiers"}
             }
           ]
         }
@@ -334,6 +423,115 @@
         "description": "Staying near the camp at night risks encountering a patrol of 1d4 soldiers checking the perimeter.",
         "result": "night_patrol_encounter"
       },
+      "alerts": [
+        {
+          "alert_id": "sentry_alarm",
+          "trigger": "on_enter_unauthorized",
+          "condition": "sneaking_detected",
+          "effect": "summon_guards",
+          "description": "Sentries spot intruders and raise the alarm. 2d4 soldiers respond within minutes.",
+          "bypass_method": "Successful stealth check to avoid 2d4 sentries",
+          "triggered": false
+        }
+      ],
+      "concealed_items": [
+        {
+          "item_id": "0109:concealed:buried_coffer",
+          "name": "Buried Coffer",
+          "hidden_in": "beneath command tent",
+          "search_dc": 5,
+          "description": "Loose dirt and recently disturbed soil beneath one corner of Snidebleat's command tent conceals a small iron coffer. Inside are polished onyx gems - her secret escape fund.",
+          "found": false,
+          "items": [
+            {
+              "item_id": "0109:item:snidebleat_onyxes",
+              "name": "Sergeant Snidebleat's Onyxes",
+              "description": "A pouch containing 20 polished onyx gems, Snidebleat's personal savings for her eventual escape from Murkin's service.",
+              "value": 1000,
+              "magical": false
+            }
+          ]
+        }
+      ],
+      "sub_locations": [
+        {
+          "name": "Command Tent",
+          "description": "Snidebleat's larger tent set apart from the others. Contains maps, orders, and her personal effects.",
+          "access_condition": "permission_or_sneaking",
+          "visible_from": "always",
+          "features": ["Campaign maps", "Lord Murkin's orders", "Snidebleat's personal effects"],
+          "items": []
+        },
+        {
+          "name": "Prisoner Holding Area",
+          "description": "A roped-off section where press-ganged recruits are held under guard before being 'processed' into the army.",
+          "access_condition": null,
+          "visible_from": "inside",
+          "features": ["1d4 prisoners", "Two guards on rotation"],
+          "items": []
+        },
+        {
+          "name": "Supply Area",
+          "description": "Barrels of pickled provisions and racks of hunted game. The constantly steaming stew pot sits here.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Pickled turnips and eggs", "Hanging squirrels and rabbits", "Dubious stew pot"],
+          "items": []
+        },
+        {
+          "name": "Training Ground",
+          "description": "A makeshift area with straw dummies and pike racks where soldiers drill.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Straw dummies", "Pike racks", "Formation markers"],
+          "items": []
+        }
+      ],
+      "entry_conditions": {
+        "type": "interrogation",
+        "description": "Visitors are challenged by sentries and brought before Sergeant Snidebleat for questioning.",
+        "check_type": "social",
+        "npc_id": "sergeant_crewwin_snidebleat",
+        "outcomes": {
+          "success": "Visitors are brusquely told to move along after questioning",
+          "failure": "Visitors are escorted out of the camp with a warning",
+          "hostile": "Visitors are arrested and held for Lord Murkin's judgment"
+        }
+      },
+      "variable_inhabitants": {
+        "base_inhabitants": ["sergeant_crewwin_snidebleat"],
+        "variable": [
+          {"roll": "2d4", "description": "sentries on patrol around the dell"},
+          {"roll": "1d4", "description": "prisoners (press-gang recruits)"}
+        ]
+      },
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Lady Borrid's Hidden Vault",
+      "poi_type": "vault",
+      "description": "A hidden chamber behind a secret door in the cellars of Lady Borrid's Hunting Lodge. The vault contains the Borrid family treasures: chalices and jewels worth 8,000gp, a Fairy Shortbow carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane). Ancient family documents are also stored here.",
+      "tagline": "A secret treasure chamber containing Borrid family heirlooms",
+      "parent_poi": "Lady Borrid's Hunting Lodge",
+      "requires_discovery": "hidden_vault",
+      "entering": "The secret door swings open silently on well-oiled hinges, revealing a small stone chamber lit by the faint glow of magical preservation wards.",
+      "interior": "A 10-foot square chamber with stone shelves lining the walls. Silver chalices and loose gemstones glitter on one shelf. A giant antler bow rests in a wooden rack, accompanied by a quiver of arrows that shimmer with fey enchantment. A locked ironbound chest contains family documents.",
+      "exploring": "The treasures are openly displayed for anyone who finds this chamber. The locked chest contains legal documents regarding land inheritance and letters between Borrid family members.",
+      "leaving": "The secret door can be closed from inside or outside, returning the chamber to its hidden state.",
+      "inhabitants": null,
+      "npcs": [],
+      "special_features": [
+        "Magical preservation wards keep the contents in pristine condition",
+        "Ironbound chest with family documents (locked)",
+        "Stone shelves with treasure display"
+      ],
+      "secrets": [
+        "The documents in the chest prove Lord Murkin's father intended a more equitable division of lands, which could legally challenge Simeone's rule"
+      ],
+      "concealed_items": [],
+      "sub_locations": [],
+      "items_present": ["0109:item:fairy_shortbow", "0109:item:fairy_arrows_breggle_bane", "0109:item:vault_treasure"],
       "is_dungeon": false,
       "dungeon_levels": null
     }
@@ -725,6 +923,51 @@
         "standing": "medium",
         "notes": "Member of the Horns of Kolstoke. Loyalty is purchased, not genuine. Secretly plotting her own advancement."
       }
+    },
+    {
+      "npc_id": "brynne_giant_weasel",
+      "name": "Brynne",
+      "title": "Giant Weasel",
+      "description": "A white-furred giant weasel with intelligent, glittering eyes. Lady Borrid's unfailingly loyal animal companion for twelve years. Found as a kit after hunters killed her mother.",
+      "kindred": "Giant Weasel",
+      "alignment": "Neutral",
+      "demeanor": ["Alert vigilance", "protective of Lady Borrid"],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Protect Lady Borrid",
+        "Track intruders who flee the lodge"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Lady Borrid's Hunting Lodge",
+      "stat_reference": "Giant Weasel",
+      "is_combatant": true,
+      "stat_block": {
+        "hit_dice": "4+4",
+        "armor_class": 13,
+        "movement": 40,
+        "attacks": [
+          {"name": "Bite", "damage": "2d4", "special": "Blood drain: 2d4 automatic damage per round once attached"}
+        ],
+        "morale": 12,
+        "special_abilities": ["Keen Scent: +2 to tracking", "Blood Drain: Attaches on successful bite"]
+      },
+      "pursuit_trigger": {
+        "trigger": "stealth_departure",
+        "poi_name": "Lady Borrid's Hunting Lodge",
+        "description": "Brynne tracks those who leave the lodge by stealth, her keen nose following their trail through the forest.",
+        "tracking_bonus": 2
+      },
+      "relationships": [
+        {
+          "npc_id": "lady_amonie_borrid",
+          "relationship_type": "animal_companion",
+          "description": "Unfailingly loyal to Lady Borrid. Does not check Morale.",
+          "hex_id": "0109",
+          "notes": "Will die to protect her mistress"
+        }
+      ]
     }
   ],
   "items": [

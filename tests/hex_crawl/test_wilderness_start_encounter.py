@@ -85,10 +85,14 @@ class TestStartEncounterBasic:
         result = hex_engine.engage_poi_npc("0104", "the_dredger")
 
         assert result["success"] is True
-        assert result["combatant"]["name"] == "The Dredger"
-        assert result["combatant"]["ac"] == 14
-        assert result["combatant"]["hp"] == 45
-        assert result["combatant"]["attacks"] == 6
+        # Result now uses combatants list format
+        assert result["combatant_count"] == 1
+        assert len(result["combatants"]) == 1
+        combatant = result["combatants"][0]
+        assert combatant["name"] == "The Dredger"
+        assert combatant["ac"] == 14
+        assert combatant["hp"] == 45
+        assert combatant["attacks"] == 6
 
     def test_engage_creates_encounter_state(self, hex_engine, controller, seeded_dice):
         """Engaging creates an EncounterState on the controller."""

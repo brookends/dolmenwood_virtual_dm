@@ -170,7 +170,57 @@ result = engine.roll_on_poi_table("0109", "Camp Activities", "Murkin's Army")
 - Secrets (2 tests)
 - Runtime bootstrap parser (3 tests)
 
-**Total: 37 tests passing**
+### tests/hex_crawl/test_poi_entry_conditions.py (21 tests)
+- SocialParticipant permissions (5 tests)
+- POI entry conditions (12 tests)
+- Permission from social context (2 tests)
+- Engine integration (2 tests)
+
+### tests/hex_crawl/test_poi_alarm_system.py (23 tests)
+- POIVisit alarm tracking (2 tests)
+- Unauthorized entry alerts (4 tests)
+- Silence alarm (5 tests)
+- Stealth entry (4 tests)
+- Get POI info (4 tests)
+- Camp sentry alarm (4 tests)
+
+### tests/hex_crawl/test_poi_secret_discovery.py (19 tests)
+- Concealed items with reveals_secret (2 tests)
+- Hidden POI visibility (3 tests)
+- Search reveals secret (6 tests)
+- Navigation to discovered POI (4 tests)
+- Discovered secrets tracking (3 tests)
+- Integration flow (1 test)
+
+### tests/hex_crawl/test_poi_buried_treasure.py (13 tests)
+- Buried coffer data (2 tests)
+- Search reveals items (4 tests)
+- Take item after discovery (4 tests)
+- Integration flow (1 test)
+- Item persistence (2 tests)
+
+### tests/hex_crawl/test_stealth_camp_entry.py (24 tests)
+- Method exists (2 tests)
+- Stealth success (4 tests)
+- Stealth failure (4 tests)
+- Sentry count difficulty (4 tests)
+- Stealth modifier (2 tests)
+- Error handling (3 tests)
+- Action registry (2 tests)
+- Murkin's Army integration (3 tests)
+
+### tests/hex_crawl/test_stealth_departure.py (21 tests)
+- Method exists (2 tests)
+- Stealth success (3 tests)
+- Stealth failure (2 tests)
+- Brynne pursuit (5 tests)
+- Tracking bonus (2 tests)
+- No pursuit at other locations (1 test)
+- Error handling (2 tests)
+- Action registry (2 tests)
+- Hunting Lodge integration (2 tests)
+
+**Total: 158 tests passing**
 
 ---
 
@@ -219,20 +269,23 @@ print(f"Rest result: {rest_result['message']}")
 ## Features NOT Yet Automated (Low Priority)
 
 ### Moose Head Alarm System
-**Status:** Described in data, no automation
-- `entering` field describes moose head bellowing on unauthorized entry
-- `secrets` describes silencing with acorns
-- **Workaround:** DM narrates alarm trigger; stealth checks handled manually
+**Status:** Implemented
+- Alarm triggers on unauthorized entry via `enter_poi_with_conditions`
+- Can be silenced with acorns via `silence_poi_alarm` method
+- Stealth entry available via `enter_poi_stealth` method
 
 ### Secret Door / Vault Discovery
-**Status:** Described in data, no automation
-- Lodge cellar has concealed vault with treasure and Fairy weapons
-- **Workaround:** DM uses `wilderness:search_location` action, narrates discovery when appropriate
+**Status:** Implemented
+- `search_poi_location("cellars")` can find the Secret Vault Door
+- Finding it reveals "hidden_vault" secret via `reveals_secret` field
+- Lady Borrid's Hidden Vault POI becomes visible after discovery
+- Navigate to vault via `navigate_to_child_poi`
 
 ### Snidebleat's Buried Treasure
-**Status:** Item defined, no discovery mechanic
-- 20 onyxes buried under command tent
-- **Workaround:** DM narrates discovery after thorough search or interrogation
+**Status:** Implemented
+- `search_poi_location("command tent")` can find the Buried Coffer (DC 5)
+- Finding coffer makes onyxes takeable via `take_item`
+- Items properly tracked in POI state
 
 ### Press-Gang Rescue Mechanics
 **Status:** Described in Camp Activities table, no automation
@@ -240,14 +293,21 @@ print(f"Rest result: {rest_result['message']}")
 - **Workaround:** DM handles as roleplay/combat scenario
 
 ### Stealth/Sneaking Into Camp
-**Status:** Described in `entering`, no stealth system
-- Requires avoiding "2d4 sentries"
-- **Workaround:** DM handles stealth checks manually
+**Status:** Implemented
+- `sneak_into_poi` engine method uses skill_resolver for d6 stealth check
+- Sentry count (2d4) affects difficulty: 0-2 sentries = DC 4, 3-4 = DC 5, 5+ = DC 6
+- Success: enter POI undetected, no hazards triggered
+- Failure: triggers investigation hazard (camp_alarm)
+- Player action: `wilderness:sneak_into_poi`
 
 ### Animal Companion Tracking (Brynne)
-**Status:** Described in `leaving`, no automation
-- Giant weasel may track those who leave by stealth
-- **Workaround:** DM narrates pursuit if players sneak out
+**Status:** Implemented
+- `leave_poi_stealth` engine method for stealthy departure
+- Brynne has `pursuit_trigger` with tracking_bonus (+2 to target)
+- Stealth target at Lodge: DC 6 (base 4 + Brynne's tracking bonus 2)
+- Success: leave undetected
+- Failure: triggers Brynne pursuit encounter with stat block
+- Player action: `wilderness:leave_poi_stealth`
 
 ### mechanical_effect Application
 **Status:** Data tracked, effects not automated

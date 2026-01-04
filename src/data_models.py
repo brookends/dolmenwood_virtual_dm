@@ -4713,6 +4713,11 @@ class HexNPC:
     stat_reference: Optional[str] = None  # Reference to stat block
     is_combatant: bool = False
     vulnerabilities: list[str] = field(default_factory=list)  # e.g., ["cold_iron", "sunlight", "fire"]
+    stat_block: Optional[dict[str, Any]] = None  # Inline stat block for creatures/NPCs
+
+    # Pursuit behavior (for tracking NPCs like Brynne the giant weasel)
+    # Format: {trigger: str, poi_name: str, description: str, tracking_bonus: int}
+    pursuit_trigger: Optional[dict[str, Any]] = None
 
     # NPC groups - for NPCs that represent multiple individuals (e.g., "Murkin's Soldiers")
     # group_count: dice expression for number of individuals (e.g., "1d4+1d4", "2d6")
@@ -5100,6 +5105,8 @@ class PartyState:
     member_speeds: list[int] = field(default_factory=list)  # Encumbered speeds
     # Party shared inventory (treasure, unassigned items)
     party_inventory: list[dict[str, Any]] = field(default_factory=list)
+    # Party currency (gold pieces)
+    gold_gp: int = 0
 
     def get_movement_rate(self, base_rate: int = 40) -> int:
         """
@@ -8761,6 +8768,21 @@ class SocialParticipant:
 
     # Conversation state tracker (mutable during conversation)
     conversation: Optional[ConversationTracker] = None
+
+    # Permissions granted by this participant (POI name -> granted)
+    permissions: dict[str, bool] = field(default_factory=dict)
+
+    def grant_permission(self, poi_name: str) -> None:
+        """Grant permission to enter a POI."""
+        self.permissions[poi_name] = True
+
+    def revoke_permission(self, poi_name: str) -> None:
+        """Revoke permission to enter a POI."""
+        self.permissions[poi_name] = False
+
+    def has_permission(self, poi_name: str) -> bool:
+        """Check if permission has been granted for a POI."""
+        return self.permissions.get(poi_name, False)
 
     def __post_init__(self):
         """Initialize conversation tracker and convert legacy topics."""

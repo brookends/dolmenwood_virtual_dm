@@ -115,6 +115,13 @@ class POIVisit:
     time_spent_turns: int = 0
     # P9.4: Track resolved hazards by index to prevent re-triggering
     hazards_resolved: list[int] = field(default_factory=list)
+    # Alarm/alert tracking
+    alerts_triggered: list[str] = field(default_factory=list)  # Alert IDs that have fired
+    alarms_silenced: bool = False  # True if alarms have been silenced (e.g., with acorns)
+    entry_authorized: bool = False  # True if entry was authorized (permission/password/etc.)
+    # Active mechanical effects from roll tables
+    # Format: [{"type": "reaction_mod", "target": "murkin_soldiers", "value": -1, "source": "Camp Activities"}]
+    active_effects: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -3815,17 +3822,35 @@ class HexCrawlEngine:
             social_result=social_result,
         )
 
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
         if not entry_result.get("allowed", False):
             # Check if unauthorized entry triggers an alert
             if entry_result.get("triggers_alert"):
                 alerts = poi.get_alerts_for_trigger("on_enter_unauthorized")
-                entry_result["alerts_triggered"] = alerts
-                # Trigger the alerts
-                for i, alert in enumerate(poi.alerts):
-                    if alert.get("trigger") == "on_enter_unauthorized":
-                        poi.trigger_alert(i)
+
+                # Check if alarms have been silenced
+                if visit.alarms_silenced:
+                    entry_result["alerts_suppressed"] = True
+                    entry_result["message"] = "You slip in quietly - the alarm has been silenced."
+                else:
+                    entry_result["alerts_triggered"] = alerts
+                    # Trigger the alerts and track them
+                    for i, alert in enumerate(poi.alerts):
+                        if alert.get("trigger") == "on_enter_unauthorized":
+                            poi.trigger_alert(i)
+                            alert_id = alert.get("alert_id", f"alert_{i}")
+                            if alert_id not in visit.alerts_triggered:
+                                visit.alerts_triggered.append(alert_id)
 
             return entry_result
+
+        # Entry allowed - mark as authorized
+        visit.entry_authorized = True
 
         # Entry allowed - proceed with normal entry
         # Clear entry conditions temporarily to allow normal entry
@@ -3839,6 +3864,378 @@ class HexCrawlEngine:
             result["payment_taken"] = entry_result["payment_taken"]
 
         return result
+
+    def silence_poi_alarm(
+        self,
+        hex_id: str,
+        item_used: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to silence alarms at the current POI.
+
+        Some alarms have bypass methods (e.g., moose head silenced with acorns).
+
+        Args:
+            hex_id: The hex containing the POI
+            item_used: The item used to silence (e.g., "acorns")
+
+        Returns:
+            Dictionary with silencing results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Check if POI has any silenceable alarms
+        silenceable_alerts = []
+        for alert in poi.alerts:
+            if alert.get("bypass_method"):
+                silenceable_alerts.append(alert)
+
+        if not silenceable_alerts:
+            return {
+                "success": False,
+                "error": "No alarms at this location can be silenced",
+            }
+
+        # Check if any bypass method matches the item used
+        silenced_alerts = []
+        for alert in silenceable_alerts:
+            bypass_method = alert.get("bypass_method", "").lower()
+            if item_used and item_used.lower() in bypass_method:
+                silenced_alerts.append(alert)
+
+        if not silenced_alerts and item_used:
+            # Item doesn't match any bypass method
+            return {
+                "success": False,
+                "error": f"'{item_used}' cannot silence these alarms",
+                "hint": "Try: " + ", ".join(
+                    a.get("bypass_method", "") for a in silenceable_alerts
+                ),
+            }
+
+        # If no specific item, return info about what's needed
+        if not silenced_alerts:
+            return {
+                "success": False,
+                "requires_item": True,
+                "bypass_methods": [
+                    {
+                        "alert_id": a.get("alert_id"),
+                        "bypass_method": a.get("bypass_method"),
+                    }
+                    for a in silenceable_alerts
+                ],
+                "message": "You need the right item to silence the alarm(s).",
+            }
+
+        # Mark alarms as silenced in visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+        visit.alarms_silenced = True
+
+        return {
+            "success": True,
+            "silenced_alerts": [a.get("alert_id") for a in silenced_alerts],
+            "message": f"The alarm has been silenced using {item_used}.",
+            "description": silenced_alerts[0].get("description", ""),
+        }
+
+    def enter_poi_stealth(
+        self,
+        hex_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to enter a POI stealthily, bypassing entry conditions.
+
+        Requires avoiding sentries/guards and may trigger alerts if detected.
+
+        Args:
+            hex_id: The hex containing the POI
+            stealth_modifier: Modifier to stealth check
+
+        Returns:
+            Dictionary with stealth entry results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location - approach first"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
+        # Check if there are sentries/guards to avoid
+        stealth_dc = 10  # Base DC
+        sentry_count = 0
+
+        # Check alerts for sentry information
+        for alert in poi.alerts:
+            bypass = alert.get("bypass_method", "").lower()
+            if "stealth" in bypass or "sentry" in bypass or "avoid" in bypass:
+                # Extract sentry count if mentioned (e.g., "2d4 sentries")
+                import re
+                dice_match = re.search(r"(\d+d\d+)", bypass)
+                if dice_match:
+                    sentry_roll = self.dice.roll(dice_match.group(1))
+                    sentry_count = sentry_roll.total
+                    stealth_dc += sentry_count  # More sentries = harder
+
+        # Check entry conditions for stealth requirements
+        if poi.entry_conditions:
+            ec = poi.entry_conditions
+            if ec.get("check_type") == "stealth":
+                stealth_dc = ec.get("stealth_dc", stealth_dc)
+
+        # Roll stealth check (2d6 + modifier >= DC for success in OSE-style)
+        stealth_roll = self.dice.roll("2d6")
+        total = stealth_roll.total + stealth_modifier
+        success = total >= stealth_dc
+
+        if success:
+            # Stealthy entry successful - don't trigger alerts
+            visit.entry_authorized = False  # Not authorized, but undetected
+            visit.alarms_silenced = True  # Treat as if silenced for this entry
+
+            # Proceed with entry
+            saved_conditions = poi.entry_conditions
+            poi.entry_conditions = None
+            result = self.enter_poi(hex_id)
+            poi.entry_conditions = saved_conditions
+
+            result["stealth_success"] = True
+            result["stealth_roll"] = stealth_roll.total
+            result["stealth_dc"] = stealth_dc
+            result["sentry_count"] = sentry_count
+            result["message"] = "You slip in undetected."
+
+            return result
+        else:
+            # Detected - trigger unauthorized alerts
+            alerts = poi.get_alerts_for_trigger("on_enter_unauthorized")
+
+            for i, alert in enumerate(poi.alerts):
+                if alert.get("trigger") == "on_enter_unauthorized":
+                    poi.trigger_alert(i)
+                    alert_id = alert.get("alert_id", f"alert_{i}")
+                    if alert_id not in visit.alerts_triggered:
+                        visit.alerts_triggered.append(alert_id)
+
+            return {
+                "success": False,
+                "stealth_failed": True,
+                "stealth_roll": stealth_roll.total,
+                "stealth_dc": stealth_dc,
+                "sentry_count": sentry_count,
+                "alerts_triggered": alerts,
+                "message": "You are spotted! The alarm is raised.",
+            }
+
+    def sneak_into_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to sneak into a POI, avoiding investigation hazards and sentries.
+
+        Uses the skill resolver for a proper d6 stealth check. On success,
+        enters the POI without triggering investigation hazards. On failure,
+        triggers the camp alarm.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI to sneak into
+            character_id: The character making the stealth check
+            stealth_modifier: Modifier to the stealth roll
+
+        Returns:
+            Dictionary with stealth infiltration results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver, SkillCheckResult
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the target POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == poi_name:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": f"Location '{poi_name}' not found"}
+
+        # Check if POI is visible (in case it requires discovery)
+        if not poi.is_visible(self._discovered_secrets):
+            return {"success": False, "error": "You cannot find that location"}
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            # Create minimal character for roll if not found
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        # Determine stealth difficulty based on sentries
+        sentry_count = 0
+        base_target = 5  # Default: need 5+ on d6 (2-in-6 chance)
+
+        # Check variable inhabitants for sentry count
+        if poi.variable_inhabitants:
+            for var in poi.variable_inhabitants.get("variable", []):
+                desc = var.get("description", "").lower()
+                if "sentry" in desc or "patrol" in desc or "guard" in desc:
+                    roll_str = var.get("roll", "1d4")
+                    sentry_roll = self.dice.roll(roll_str)
+                    sentry_count = sentry_roll.total
+                    break
+
+        # Adjust target based on sentry count (more sentries = harder)
+        if sentry_count > 4:
+            base_target = 6  # 1-in-6 chance
+        elif sentry_count > 2:
+            base_target = 5  # 2-in-6 chance
+        else:
+            base_target = 4  # 3-in-6 chance
+
+        # Use skill resolver for stealth check
+        resolver = get_skill_resolver()
+
+        # Override target for this check based on our calculations
+        skill_result = resolver.resolve_skill_check(
+            character=character,
+            skill_name="stealth",
+            modifier=stealth_modifier,
+            context={"stealth_target_override": base_target},
+        )
+
+        # Check if roll succeeds against our target (not class target)
+        # Include any stealth modifiers from active effects (e.g., camp activities)
+        effect_stealth_mod = self.get_stealth_modifier_from_effects(hex_id, poi_name)
+        total_modifier = stealth_modifier + effect_stealth_mod
+        roll_value = skill_result.roll + total_modifier
+        stealth_success = roll_value >= base_target
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi_name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi_name)
+        visit = self._poi_visits[visit_key]
+
+        if stealth_success:
+            # Successful stealth - enter without triggering hazards
+            self._current_poi = poi_name
+            visit.entry_authorized = False  # Not authorized, but undetected
+            visit.alarms_silenced = True  # Treat as silenced
+
+            return {
+                "success": True,
+                "stealth_success": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effect_stealth_modifier": effect_stealth_mod,
+                "total_modifier": total_modifier,
+                "effective_roll": roll_value,
+                "sentry_count": sentry_count,
+                "character": character_id,
+                "poi_name": poi_name,
+                "poi_type": poi.poi_type,
+                "description": poi.description,
+                "interior": poi.interior,
+                "message": (
+                    f"You successfully sneak past the {sentry_count} sentries "
+                    f"and enter {poi_name} undetected."
+                    if sentry_count > 0
+                    else f"You slip into {poi_name} without being noticed."
+                ),
+            }
+        else:
+            # Stealth failed - trigger investigation hazard (camp alarm)
+            hazard_result = self.check_investigation_hazard(hex_id, "investigate_camp")
+
+            # Also trigger any unauthorized entry alerts on the POI
+            alerts_triggered = []
+            for i, alert in enumerate(poi.alerts):
+                if alert.get("trigger") == "on_enter_unauthorized":
+                    poi.trigger_alert(i)
+                    alert_id = alert.get("alert_id", f"alert_{i}")
+                    if alert_id not in visit.alerts_triggered:
+                        visit.alerts_triggered.append(alert_id)
+                    alerts_triggered.append(alert)
+
+            return {
+                "success": False,
+                "stealth_failed": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effect_stealth_modifier": effect_stealth_mod,
+                "total_modifier": total_modifier,
+                "effective_roll": roll_value,
+                "sentry_count": sentry_count,
+                "character": character_id,
+                "poi_name": poi_name,
+                "hazard_triggered": hazard_result.get("triggered", True),
+                "hazard_result": hazard_result.get("result", "camp_alarm"),
+                "hazard_description": hazard_result.get(
+                    "description",
+                    "Sentries spot you and raise the alarm!"
+                ),
+                "alerts_triggered": alerts_triggered,
+                "message": (
+                    f"You are spotted by sentries! "
+                    f"{hazard_result.get('description', 'The alarm is raised!')}"
+                ),
+            }
 
     def search_poi_location(
         self,
@@ -3883,6 +4280,35 @@ class HexCrawlEngine:
             thorough=thorough,
         )
 
+        # Check if any found items reveal secrets (e.g., secret doors, hidden POIs)
+        # or contain takeable items (e.g., buried treasure)
+        revealed_secrets = []
+        newly_available_items = []
+        for item in found_items:
+            reveals = item.get("reveals_secret")
+            if reveals and reveals not in self._discovered_secrets:
+                self._discovered_secrets.add(reveals)
+                revealed_secrets.append(reveals)
+
+                # Track in POI visit
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    if reveals not in self._poi_visits[visit_key].secrets_discovered:
+                        self._poi_visits[visit_key].secrets_discovered.append(reveals)
+
+            # Check if concealed item contains takeable items
+            contained_items = item.get("items", [])
+            for contained_item in contained_items:
+                # Add to POI items to make them takeable
+                poi.items.append(contained_item)
+                newly_available_items.append(contained_item.get("name", "unknown"))
+
+                # Track in POI visit
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    if contained_item.get("name") not in self._poi_visits[visit_key].items_found:
+                        self._poi_visits[visit_key].items_found.append(contained_item.get("name"))
+
         # Check if searching triggers any alerts
         search_alerts = poi.get_alerts_for_trigger("on_search")
         for i, alert in enumerate(poi.alerts):
@@ -3901,11 +4327,39 @@ class HexCrawlEngine:
         if search_alerts:
             result["alerts_triggered"] = search_alerts
 
+        if revealed_secrets:
+            result["secrets_revealed"] = revealed_secrets
+            # Check if any new POIs are now accessible
+            newly_visible = []
+            for p in hex_data.points_of_interest:
+                if p.requires_discovery in revealed_secrets:
+                    newly_visible.append({
+                        "name": p.name,
+                        "poi_type": p.poi_type,
+                        "description": p.description,
+                    })
+            if newly_visible:
+                result["newly_accessible_locations"] = newly_visible
+
+        if newly_available_items:
+            result["items_now_takeable"] = newly_available_items
+
         if not found_items:
             result["message"] = "You find nothing of interest."
         else:
             item_names = [item.get("name", "unknown") for item in found_items]
-            result["message"] = f"You discover: {', '.join(item_names)}"
+            if revealed_secrets:
+                result["message"] = (
+                    f"You discover: {', '.join(item_names)}. "
+                    f"This reveals a hidden location!"
+                )
+            elif newly_available_items:
+                result["message"] = (
+                    f"You discover: {', '.join(item_names)}. "
+                    f"You can now take: {', '.join(newly_available_items)}"
+                )
+            else:
+                result["message"] = f"You discover: {', '.join(item_names)}"
 
         return result
 
@@ -4088,6 +4542,181 @@ class HexCrawlEngine:
             result["description"] = poi.leaving
 
         return result
+
+    def leave_poi_stealth(
+        self,
+        hex_id: str,
+        character_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to leave the current POI by stealth.
+
+        Uses the skill resolver for a proper d6 stealth check. On success,
+        leaves the POI undetected. On failure, may trigger pursuit encounters
+        (e.g., Brynne tracking at the Hunting Lodge).
+
+        Args:
+            hex_id: The hex containing the POI
+            character_id: The character making the stealth check
+            stealth_modifier: Modifier to the stealth roll
+
+        Returns:
+            Dictionary with stealth departure results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found in hex data"}
+
+        poi_name = self._current_poi
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            # Create minimal character for roll if not found
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        # Find any NPCs that have pursuit_trigger for this POI
+        pursuit_npc = None
+        pursuit_trigger = None
+        for npc in hex_data.npcs:
+            # Handle both HexNPC objects and legacy dict format
+            if hasattr(npc, "pursuit_trigger") and npc.pursuit_trigger:
+                trigger = npc.pursuit_trigger
+                if trigger.get("poi_name") == poi_name:
+                    pursuit_npc = npc
+                    pursuit_trigger = trigger
+                    break
+            elif isinstance(npc, dict):
+                trigger = npc.get("pursuit_trigger")
+                if trigger and trigger.get("poi_name") == poi_name:
+                    pursuit_npc = npc
+                    pursuit_trigger = trigger
+                    break
+
+        # Determine stealth difficulty
+        # If there's a pursuit NPC with tracking bonus, make it harder
+        base_target = 4  # Default: need 4+ on d6 (3-in-6 chance)
+        if pursuit_trigger:
+            tracking_bonus = pursuit_trigger.get("tracking_bonus", 0)
+            base_target = min(6, base_target + tracking_bonus)  # Cap at 6
+
+        # Use skill resolver for stealth check
+        resolver = get_skill_resolver()
+
+        skill_result = resolver.resolve_skill_check(
+            character=character,
+            skill_name="stealth",
+            modifier=stealth_modifier,
+            context={"stealth_target_override": base_target},
+        )
+
+        # Check if roll succeeds against our target
+        roll_value = skill_result.roll + stealth_modifier
+        stealth_success = roll_value >= base_target
+
+        if stealth_success:
+            # Successful stealth - leave undetected
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+
+            return {
+                "success": True,
+                "stealth_success": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "character": character_id,
+                "poi_name": poi_name,
+                "message": f"You slip away from {poi_name} unnoticed.",
+                "pursuit_triggered": False,
+            }
+        else:
+            # Stealth failed - still leave but may trigger pursuit
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+
+            result = {
+                "success": True,  # Still successfully left
+                "stealth_success": False,
+                "stealth_failed": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "character": character_id,
+                "poi_name": poi_name,
+            }
+
+            # Check for pursuit encounter
+            if pursuit_npc and pursuit_trigger:
+                # Handle both HexNPC objects and legacy dict format
+                if hasattr(pursuit_npc, "name"):
+                    npc_name = pursuit_npc.name
+                    npc_id = pursuit_npc.npc_id
+                    stat_block = pursuit_npc.stat_block
+                else:
+                    npc_name = pursuit_npc.get("name", "someone")
+                    npc_id = pursuit_npc.get("npc_id", "unknown")
+                    stat_block = pursuit_npc.get("stat_block")
+
+                # Create pursuit encounter data
+                pursuit_encounter = {
+                    "triggered": True,
+                    "type": "pursuit",
+                    "pursuer_id": npc_id,
+                    "pursuer_name": npc_name,
+                    "stat_block": stat_block,
+                    "description": pursuit_trigger.get(
+                        "description",
+                        f"{npc_name} detects your departure and gives chase!"
+                    ),
+                }
+
+                result["pursuit_triggered"] = True
+                result["pursuit_encounter"] = pursuit_encounter
+                result["message"] = (
+                    f"You attempt to slip away from {poi_name}, but {npc_name} "
+                    f"detects your departure! {pursuit_trigger.get('description', '')}"
+                )
+            else:
+                result["pursuit_triggered"] = False
+                result["message"] = (
+                    f"You leave {poi_name}, but your departure was noticed. "
+                    f"Fortunately, no one gives chase."
+                )
+
+            return result
 
     def get_current_poi_state(self) -> dict[str, Any]:
         """
@@ -4551,6 +5180,44 @@ class HexCrawlEngine:
         # No time restriction - NPC is always present
         return True
 
+    def get_poi_info(self, hex_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get information about the current POI including alerts and conditions.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            Dictionary with POI information or None if not at a POI
+        """
+        if not self._current_poi:
+            return None
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                visit_key = f"{hex_id}:{poi.name}"
+                visit = self._poi_visits.get(visit_key)
+
+                return {
+                    "name": poi.name,
+                    "poi_type": poi.poi_type,
+                    "description": poi.description,
+                    "alerts": poi.alerts,
+                    "entry_conditions": poi.entry_conditions,
+                    "has_silenceable_alarms": any(
+                        a.get("bypass_method") for a in poi.alerts
+                    ),
+                    "alarms_silenced": visit.alarms_silenced if visit else False,
+                    "alerts_triggered": visit.alerts_triggered if visit else [],
+                    "entry_authorized": visit.entry_authorized if visit else False,
+                }
+
+        return None
+
     def get_npcs_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
         """
         Get NPCs present at the current POI.
@@ -4878,21 +5545,46 @@ class HexCrawlEngine:
                 "error": f"'{target_npc.name}' has no combat stats (stat_reference missing)",
             }
 
-        # Create combatant from NPC
+        # Create combatants from NPC (handles group_count)
         registry = get_monster_registry()
         import uuid
 
-        combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
-        combatant = registry.create_combatant_from_hex_npc(
-            npc=target_npc,
-            combatant_id=combatant_id,
-            side="enemy",
-        )
+        combatants: list[Combatant] = []
+        group_info = None
 
-        if not combatant:
+        # Check if this NPC represents a group
+        if getattr(target_npc, "group_count", None):
+            # Roll group size
+            group_info = self.get_npc_group_size(hex_id, target_npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+
+            # Create combatants for each member of the group
+            for i in range(total_count):
+                combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}_{i+1}"
+                combatant = registry.create_combatant_from_hex_npc(
+                    npc=target_npc,
+                    combatant_id=combatant_id,
+                    side="enemy",
+                )
+                if combatant:
+                    # Give each combatant a numbered name
+                    combatant.name = f"{target_npc.name} #{i+1}"
+                    combatants.append(combatant)
+        else:
+            # Single NPC - create one combatant
+            combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
+            combatant = registry.create_combatant_from_hex_npc(
+                npc=target_npc,
+                combatant_id=combatant_id,
+                side="enemy",
+            )
+            if combatant:
+                combatants.append(combatant)
+
+        if not combatants:
             return {
                 "success": False,
-                "error": f"Failed to create combatant from '{target_npc.name}'",
+                "error": f"Failed to create combatant(s) from '{target_npc.name}'",
             }
 
         # Check surprise
@@ -4907,8 +5599,19 @@ class HexCrawlEngine:
             actors=[target_npc.name],
             context=f"Engaging {target_npc.name} at {self._current_poi}",
             terrain=hex_data.terrain_type,
-            combatants=[combatant],
+            combatants=combatants,
         )
+
+        # Store group info in contextual_data
+        if group_info:
+            encounter.contextual_data = {
+                "source": "poi_engagement",
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "npc_id": target_npc.npc_id,
+                "is_group": True,
+                "group_info": group_info,
+            }
 
         # Set encounter on controller
         self.controller.set_encounter(encounter)
@@ -4924,16 +5627,23 @@ class HexCrawlEngine:
             },
         )
 
+        # Build combatant summary
+        combatant_summaries = []
+        for c in combatants:
+            combatant_summaries.append({
+                "id": c.combatant_id,
+                "name": c.name,
+                "ac": c.stat_block.armor_class if c.stat_block else None,
+                "hp": c.stat_block.hp_max if c.stat_block else None,
+                "attacks": len(c.stat_block.attacks) if c.stat_block else 0,
+            })
+
         return {
             "success": True,
             "encounter_id": encounter.encounter_id,
-            "combatant": {
-                "id": combatant.combatant_id,
-                "name": combatant.name,
-                "ac": combatant.stat_block.armor_class if combatant.stat_block else None,
-                "hp": combatant.stat_block.hp_max if combatant.stat_block else None,
-                "attacks": len(combatant.stat_block.attacks) if combatant.stat_block else 0,
-            },
+            "combatants": combatant_summaries,
+            "combatant_count": len(combatants),
+            "group_info": group_info,
             "distance": distance,
             "surprise": surprise_status.value if hasattr(surprise_status, "value") else str(surprise_status),
             "context": encounter.context,
@@ -6159,6 +6869,45 @@ class HexCrawlEngine:
                 hex_id, target_poi, table_name, roll.total
             )
 
+        # Store mechanical_effect in active_effects if present
+        effect_applied = False
+        if entry.mechanical_effect:
+            effect_data = entry.mechanical_effect
+            # Handle both dict (new format) and string (legacy format)
+            if isinstance(effect_data, dict):
+                effect_record = {
+                    **effect_data,
+                    "source": table_name,
+                    "roll": roll.total,
+                }
+
+                # Special handling for prisoners_present: roll dice for counts
+                if effect_data.get("type") == "prisoners_present":
+                    # Roll prisoner count
+                    count_formula = effect_data.get("count", "1d4")
+                    count_roll = self.dice.roll(count_formula, "prisoner count")
+                    effect_record["prisoner_count"] = count_roll.total
+
+                    # Roll guard count
+                    guard_formula = effect_data.get("guard_count", "1d6")
+                    guard_roll = self.dice.roll(guard_formula, "guard count")
+                    effect_record["guard_count_rolled"] = guard_roll.total
+
+                    # Add rescue availability flag
+                    effect_record["rescue_available"] = True
+            else:
+                # Legacy string format - wrap in dict
+                effect_record = {
+                    "type": "legacy",
+                    "description": effect_data,
+                    "source": table_name,
+                    "roll": roll.total,
+                }
+
+            # Store in POIVisit for this location
+            self._apply_mechanical_effect(hex_id, target_poi, effect_record)
+            effect_applied = True
+
         return {
             "roll": roll.total,
             "table": table_name,
@@ -6169,6 +6918,7 @@ class HexCrawlEngine:
             "npcs": entry.npcs,
             "items": entry.items,
             "mechanical_effect": entry.mechanical_effect,
+            "effect_applied": effect_applied,
             "sub_table": entry.sub_table,
             "quest_hook": entry.quest_hook,
         }
@@ -6477,6 +7227,428 @@ class HexCrawlEngine:
             "items_taken": visit.items_taken,
             "secrets_found": visit.secrets_discovered,
             "time_spent_turns": visit.time_spent_turns,
+            "active_effects": visit.active_effects,
+        }
+
+    # =========================================================================
+    # MECHANICAL EFFECT MANAGEMENT
+    # =========================================================================
+
+    def _apply_mechanical_effect(
+        self, hex_id: str, poi_name: str, effect: dict[str, Any]
+    ) -> None:
+        """
+        Apply a mechanical effect from a roll table to the POI's active effects.
+
+        Effects are stored in POIVisit.active_effects and can modify stealth DCs,
+        reaction rolls, and other mechanics.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI
+            effect: Effect dictionary with type, value, target, etc.
+        """
+        visit_key = f"{hex_id}:{poi_name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi_name)
+
+        visit = self._poi_visits[visit_key]
+
+        # Replace any existing effect from the same source table
+        # (only one camp activity or morale result active at a time)
+        source = effect.get("source", "")
+        visit.active_effects = [
+            e for e in visit.active_effects if e.get("source") != source
+        ]
+
+        # Add the new effect
+        visit.active_effects.append(effect)
+
+    def get_active_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get all active mechanical effects at a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            List of active effect dictionaries
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return []
+
+        visit_key = f"{hex_id}:{target_poi}"
+        visit = self._poi_visits.get(visit_key)
+        if not visit:
+            return []
+
+        return visit.active_effects
+
+    def get_stealth_modifier_from_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> int:
+        """
+        Calculate total stealth modifier from active effects.
+
+        Looks for effects with type="stealth_mod" and sums their values.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Total stealth modifier (positive = easier, negative = harder)
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        total = 0
+        for effect in effects:
+            if effect.get("type") == "stealth_mod":
+                total += effect.get("value", 0)
+        return total
+
+    def get_reaction_modifier_from_effects(
+        self, hex_id: str, poi_name: Optional[str] = None, target: str = "all"
+    ) -> int:
+        """
+        Calculate total reaction modifier from active effects.
+
+        Looks for effects with type="reaction_mod" and sums their values.
+        Can filter by target (e.g., "soldiers", "all").
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+            target: Target to match (e.g., "soldiers", "all")
+
+        Returns:
+            Total reaction modifier
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        total = 0
+        for effect in effects:
+            if effect.get("type") == "reaction_mod":
+                effect_target = effect.get("target", "all")
+                # Match if targets are the same, or if either is "all"
+                if effect_target == target or effect_target == "all" or target == "all":
+                    total += effect.get("value", 0)
+        return total
+
+    def clear_active_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> int:
+        """
+        Clear all active effects at a POI.
+
+        Useful when leaving a location or when effects expire.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Number of effects cleared
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return 0
+
+        visit_key = f"{hex_id}:{target_poi}"
+        visit = self._poi_visits.get(visit_key)
+        if not visit:
+            return 0
+
+        count = len(visit.active_effects)
+        visit.active_effects = []
+        return count
+
+    def get_prisoners_info(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get information about prisoners present at a POI.
+
+        Looks for a prisoners_present effect in active_effects and returns
+        details including prisoner count, guard count, and rescue availability.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with prisoner info if present, None otherwise
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        for effect in effects:
+            if effect.get("type") == "prisoners_present":
+                if effect.get("rescue_available", True):
+                    return {
+                        "prisoner_count": effect.get("prisoner_count", 0),
+                        "guard_count": effect.get("guard_count_rolled", 0),
+                        "description": effect.get("description", ""),
+                        "source": effect.get("source", ""),
+                        "rescue_available": True,
+                    }
+        return None
+
+    def rescue_prisoners(
+        self,
+        hex_id: str,
+        character_id: str,
+        poi_name: Optional[str] = None,
+        method: str = "stealth",
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to rescue prisoners at a POI.
+
+        Supports two methods:
+        - stealth: Skill check to sneak prisoners out undetected
+        - combat: Direct confrontation with guards (starts encounter)
+
+        Args:
+            hex_id: The hex containing the POI
+            character_id: The character leading the rescue
+            poi_name: POI name (defaults to current POI)
+            method: "stealth" or "combat"
+            stealth_modifier: Modifier to stealth roll (for stealth method)
+
+        Returns:
+            Dictionary with rescue attempt results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver
+
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Check for prisoners
+        prisoners_info = self.get_prisoners_info(hex_id, target_poi)
+        if not prisoners_info:
+            return {
+                "success": False,
+                "error": "No prisoners available for rescue at this location",
+            }
+
+        prisoner_count = prisoners_info["prisoner_count"]
+        guard_count = prisoners_info["guard_count"]
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        if method == "stealth":
+            # Stealth rescue - skill check against guard difficulty
+            # Base target: 4 + (guard_count // 2), max 6
+            base_target = min(6, 4 + (guard_count // 2))
+
+            resolver = get_skill_resolver()
+            skill_result = resolver.resolve_skill_check(
+                character=character,
+                skill_name="stealth",
+                modifier=stealth_modifier,
+                context={"stealth_target_override": base_target},
+            )
+
+            # Include effect modifiers
+            effect_stealth_mod = self.get_stealth_modifier_from_effects(hex_id, target_poi)
+            total_modifier = stealth_modifier + effect_stealth_mod
+            roll_value = skill_result.roll + total_modifier
+            stealth_success = roll_value >= base_target
+
+            if stealth_success:
+                # Successful stealth rescue
+                self._clear_prisoners_effect(hex_id, target_poi)
+
+                # Log world state change
+                self._log_rescue_success(hex_id, target_poi, prisoner_count, "stealth")
+
+                return {
+                    "success": True,
+                    "method": "stealth",
+                    "stealth_success": True,
+                    "stealth_roll": skill_result.roll,
+                    "stealth_target": base_target,
+                    "stealth_modifier": stealth_modifier,
+                    "effect_modifier": effect_stealth_mod,
+                    "total_modifier": total_modifier,
+                    "effective_roll": roll_value,
+                    "prisoners_rescued": prisoner_count,
+                    "guard_count": guard_count,
+                    "message": (
+                        f"You successfully slip past the {guard_count} guards and "
+                        f"free {prisoner_count} prisoner{'s' if prisoner_count != 1 else ''}! "
+                        f"They scatter into the woods, grateful for their freedom."
+                    ),
+                }
+            else:
+                # Stealth failed - guards alerted, combat ensues
+                return {
+                    "success": False,
+                    "method": "stealth",
+                    "stealth_failed": True,
+                    "stealth_roll": skill_result.roll,
+                    "stealth_target": base_target,
+                    "stealth_modifier": stealth_modifier,
+                    "effect_modifier": effect_stealth_mod,
+                    "total_modifier": total_modifier,
+                    "effective_roll": roll_value,
+                    "prisoners_count": prisoner_count,
+                    "guard_count": guard_count,
+                    "combat_triggered": True,
+                    "encounter": self._build_guard_encounter(guard_count, hex_id, target_poi),
+                    "message": (
+                        f"You are spotted by the guards! {guard_count} soldier{'s' if guard_count != 1 else ''} "
+                        f"move to intercept you. Combat is unavoidable!"
+                    ),
+                }
+
+        elif method == "combat":
+            # Direct combat approach - create encounter immediately
+            return {
+                "success": True,
+                "method": "combat",
+                "combat_initiated": True,
+                "prisoners_count": prisoner_count,
+                "guard_count": guard_count,
+                "encounter": self._build_guard_encounter(guard_count, hex_id, target_poi),
+                "message": (
+                    f"You charge at the {guard_count} guards protecting the prisoners. "
+                    f"Defeat them to free the {prisoner_count} captive{'s' if prisoner_count != 1 else ''}!"
+                ),
+            }
+
+        else:
+            return {"success": False, "error": f"Unknown rescue method: {method}"}
+
+    def _clear_prisoners_effect(self, hex_id: str, poi_name: str) -> None:
+        """Remove prisoners_present effect from a POI."""
+        visit_key = f"{hex_id}:{poi_name}"
+        visit = self._poi_visits.get(visit_key)
+        if visit:
+            visit.active_effects = [
+                e for e in visit.active_effects
+                if e.get("type") != "prisoners_present"
+            ]
+
+    def _log_rescue_success(
+        self, hex_id: str, poi_name: str, prisoner_count: int, method: str
+    ) -> None:
+        """Log a successful rescue to world state changes."""
+        from src.data_models import HexStateChange
+
+        change = HexStateChange(
+            change_id=f"rescue_{hex_id}_{poi_name}_{self.dice.roll('1d1000').total}",
+            hex_id=hex_id,
+            poi_name=poi_name,
+            trigger_action="rescue_prisoners",
+            trigger_details={
+                "method": method,
+                "prisoner_count": prisoner_count,
+            },
+            change_type="rescue_success",
+            before_state={"prisoners_present": True, "count": prisoner_count},
+            after_state={"prisoners_present": False, "count": 0},
+            narrative_description=(
+                f"{prisoner_count} prisoner{'s were' if prisoner_count != 1 else ' was'} "
+                f"rescued from {poi_name} via {method}."
+            ),
+            occurred_at=self.controller.world_state.current_date if hasattr(self.controller, "world_state") else None,
+            reversible=False,
+        )
+        self._world_state_changes.add_change(change)
+
+    def _build_guard_encounter(
+        self, guard_count: int, hex_id: str, poi_name: str
+    ) -> dict[str, Any]:
+        """Build an encounter with prisoner guards."""
+        return {
+            "encounter_type": "combat",
+            "name": "Prisoner Guards",
+            "creatures": [
+                {
+                    "name": "Soldier",
+                    "count": guard_count,
+                    "stat_reference": "soldier_murkin",
+                    "hit_dice": "1",
+                    "armor_class": 14,
+                    "attacks": [{"name": "Pike", "damage": "1d8"}],
+                    "morale": 7,
+                }
+            ],
+            "context": f"Guards protecting prisoners at {poi_name}",
+            "hex_id": hex_id,
+            "poi_name": poi_name,
+            "on_victory": {
+                "action": "rescue_prisoners_complete",
+                "prisoners_freed": True,
+            },
+        }
+
+    def complete_combat_rescue(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> dict[str, Any]:
+        """
+        Complete a rescue after winning combat against guards.
+
+        Call this when party wins the guard encounter to actually free prisoners.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with rescue completion results
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        prisoners_info = self.get_prisoners_info(hex_id, target_poi)
+        if not prisoners_info:
+            return {
+                "success": False,
+                "error": "No prisoners to rescue (already freed or none present)",
+            }
+
+        prisoner_count = prisoners_info["prisoner_count"]
+
+        # Clear prisoners effect
+        self._clear_prisoners_effect(hex_id, target_poi)
+
+        # Log world state change
+        self._log_rescue_success(hex_id, target_poi, prisoner_count, "combat")
+
+        return {
+            "success": True,
+            "prisoners_rescued": prisoner_count,
+            "message": (
+                f"With the guards defeated, you free the {prisoner_count} "
+                f"prisoner{'s' if prisoner_count != 1 else ''}! "
+                f"They thank you profusely before fleeing to safety."
+            ),
         }
 
     # =========================================================================
@@ -9686,7 +10858,11 @@ class HexCrawlEngine:
             return {"is_group": False, "total_count": 1}
 
         # Roll the group count - handle complex expressions like "1d4+1d4"
-        total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
+        # or static integers like 4
+        if isinstance(npc.group_count, int):
+            total_count = npc.group_count
+        else:
+            total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
 
         # Roll composition if available
         composition = {}
@@ -9981,7 +11157,8 @@ class HexCrawlEngine:
             result["evening_hazard"] = hazard_resolution
 
             # If hazard involves combat, rest may be interrupted
-            if hazard_resolution.get("encounter", {}).get("type") == "npc":
+            # Note: _resolve_hex_hazard_result uses "npc_arrival" for NPC encounters
+            if hazard_resolution.get("encounter", {}).get("type") == "npc_arrival":
                 npc_info = hazard_resolution["encounter"]
                 if npc_info.get("is_combatant"):
                     result["success"] = False

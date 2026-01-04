@@ -402,6 +402,8 @@ def _create_default_registry() -> ActionRegistry:
         # Build response message
         lines = [resolution.get("narrative", "Something happens!")]
         combatants = resolution.get("combatants", [])
+        encounter_started = False
+
         if resolution.get("encounter"):
             enc = resolution["encounter"]
             if enc.get("type") == "npc_arrival":
@@ -416,12 +418,33 @@ def _create_default_registry() -> ActionRegistry:
                             lines.append(f"  - {c.name}")
                         if len(combatants) > 5:
                             lines.append(f"  ... and {len(combatants) - 5} more")
+
+                # If combatants exist and NPC is hostile, start combat encounter
+                if combatants and enc.get("is_combatant"):
+                    encounter_state = dm.hex_crawl.create_encounter_from_hazard(
+                        hazard_result, context
+                    )
+                    if encounter_state:
+                        # Set encounter on controller and transition to combat
+                        dm.controller.set_encounter(encounter_state)
+                        dm.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "hex_id": hex_id,
+                                "source": "investigation_hazard",
+                                "npc_id": npc_id,
+                            },
+                        )
+                        encounter_started = True
+                        lines.append("Combat initiated!")
+
             elif enc.get("type") == "event":
                 lines.append(f"Event: {enc.get('event_id', 'unknown')}")
 
         return {
             "success": True,
             "hazard_triggered": True,
+            "encounter_started": encounter_started,
             "encounter": resolution.get("encounter"),
             "combatants": combatants,
             "combatant_count": len(combatants),
@@ -474,6 +497,8 @@ def _create_default_registry() -> ActionRegistry:
         # Build response message
         lines = [resolution.get("narrative", "Something happens during the night!")]
         combatants = resolution.get("combatants", [])
+        encounter_started = False
+
         if resolution.get("encounter"):
             enc = resolution["encounter"]
             if enc.get("type") == "npc_arrival":
@@ -488,9 +513,30 @@ def _create_default_registry() -> ActionRegistry:
                         if len(combatants) > 5:
                             lines.append(f"  ... and {len(combatants) - 5} more")
 
+                # If combatants exist and NPC is hostile, start combat encounter
+                if combatants and enc.get("is_combatant"):
+                    encounter_state = dm.hex_crawl.create_encounter_from_hazard(
+                        hazard_result, context
+                    )
+                    if encounter_state:
+                        # Set encounter on controller and transition to combat
+                        dm.controller.set_encounter(encounter_state)
+                        dm.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "hex_id": hex_id,
+                                "poi_name": poi_name,
+                                "source": "evening_hazard",
+                                "npc_id": npc_id,
+                            },
+                        )
+                        encounter_started = True
+                        lines.append("Combat initiated!")
+
         return {
             "success": True,
             "hazard_triggered": True,
+            "encounter_started": encounter_started,
             "encounter": resolution.get("encounter"),
             "combatants": combatants,
             "combatant_count": len(combatants),
@@ -654,6 +700,124 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="wilderness_travel",
         help="Leave the current point of interest.",
         executor=_wilderness_leave_poi,
+    ))
+
+    def _wilderness_leave_poi_stealth(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to leave the current POI by stealth."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        character_id = p.get("character_id", "")
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        if not character_id:
+            return {"success": False, "message": "Must specify which character is sneaking out."}
+
+        try:
+            result = dm.hex_crawl.leave_poi_stealth(
+                hex_id=hex_id,
+                character_id=character_id,
+                stealth_modifier=stealth_modifier,
+            )
+            if result.get("stealth_success"):
+                return {
+                    "success": True,
+                    "message": result.get("message", "You slip away unnoticed."),
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                }
+            else:
+                msg = result.get("message", "Your departure was detected!")
+                if result.get("pursuit_triggered"):
+                    encounter = result.get("pursuit_encounter", {})
+                    msg += f"\n\nPursuit: {encounter.get('pursuer_name', 'Someone')} gives chase!"
+                return {
+                    "success": True,  # Still left the POI
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "pursuit_triggered": result.get("pursuit_triggered"),
+                    "pursuit_encounter": result.get("pursuit_encounter"),
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealthy departure: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:leave_poi_stealth",
+        label="Leave POI by stealth",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to leave the current POI by stealth. On failure, may trigger pursuit (e.g., Brynne at the Hunting Lodge).",
+        executor=_wilderness_leave_poi_stealth,
+    ))
+
+    def _wilderness_rescue_prisoners(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to rescue prisoners at a POI."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        character_id = p.get("character_id", "")
+        method = p.get("method", "stealth")
+        stealth_modifier = p.get("stealth_modifier", 0)
+
+        if not character_id:
+            # Try to get first character
+            try:
+                chars = dm.controller.characters
+                if chars:
+                    character_id = chars[0].character_id
+            except Exception:
+                pass
+
+        if not character_id:
+            return {"success": False, "message": "Must specify character_id"}
+
+        try:
+            result = dm.hex_crawl.rescue_prisoners(
+                hex_id=hex_id,
+                character_id=character_id,
+                method=method,
+                stealth_modifier=stealth_modifier,
+            )
+            return result
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt rescue: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:rescue_prisoners",
+        label="Rescue prisoners",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "method": {"type": "string", "required": False, "enum": ["stealth", "combat"]},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to rescue prisoners at the current POI. Use stealth to sneak them out, or combat to fight the guards.",
+        executor=_wilderness_rescue_prisoners,
+    ))
+
+    def _wilderness_complete_combat_rescue(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Complete prisoner rescue after winning combat."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        try:
+            result = dm.hex_crawl.complete_combat_rescue(hex_id)
+            return result
+        except Exception as e:
+            return {"success": False, "message": f"Could not complete rescue: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:complete_combat_rescue",
+        label="Free prisoners after combat",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Free the prisoners after defeating the guards in combat.",
+        executor=_wilderness_complete_combat_rescue,
     ))
 
     def _wilderness_roll_poi_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
@@ -1601,6 +1765,139 @@ def _create_default_registry() -> ActionRegistry:
     ))
 
     # -------------------------------------------------------------------------
+    # Bribery action - spend gold to reveal secrets
+    # -------------------------------------------------------------------------
+    def _social_offer_bribe(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Offer a bribe to reveal a secret.
+
+        Requires:
+        - secret_id: The ID of the secret to reveal
+        - gold_amount: Amount of gold to offer (optional, defaults to required amount)
+
+        Uses SecretInfo.can_reveal() with bribe_offered parameter.
+        """
+        from src.data_models import SecretStatus
+
+        secret_id = p.get("secret_id", "")
+        gold_offered = p.get("gold_amount", 0)
+
+        if not secret_id:
+            return {
+                "success": False,
+                "error": "No secret_id specified. Use the secret's ID to offer a bribe.",
+            }
+
+        # Get social context
+        social_context = None
+        participant = None
+        try:
+            social_context = dm.controller.social_context
+            if social_context and social_context.participants:
+                participant = social_context.participants[0]
+        except Exception:
+            pass
+
+        if not participant:
+            return {
+                "success": False,
+                "error": "Not in a conversation with an NPC.",
+            }
+
+        # Find the secret
+        target_secret = None
+        for secret in getattr(participant, "secret_info", []):
+            if secret.secret_id == secret_id:
+                target_secret = secret
+                break
+
+        if not target_secret:
+            return {
+                "success": False,
+                "error": f"Secret '{secret_id}' not found on this NPC.",
+            }
+
+        # Check if already revealed
+        if target_secret.status == SecretStatus.REVEALED:
+            return {
+                "success": False,
+                "error": "This secret has already been revealed.",
+            }
+
+        # Check if secret can be bribed
+        if not target_secret.can_be_bribed:
+            return {
+                "success": False,
+                "message": f"{participant.name} cannot be bribed for this information.",
+            }
+
+        # Check required amount
+        required_amount = target_secret.bribe_amount
+        if gold_offered == 0:
+            gold_offered = required_amount
+
+        if gold_offered < required_amount:
+            return {
+                "success": False,
+                "message": f"{participant.name} is not impressed by your offer. "
+                           f"They want at least {required_amount} gold pieces.",
+                "required_amount": required_amount,
+                "offered": gold_offered,
+            }
+
+        # Check party gold
+        party_gold = getattr(dm.controller.party_state, "gold_gp", 0)
+        if party_gold < gold_offered:
+            return {
+                "success": False,
+                "error": f"Insufficient funds. Party has {party_gold} gp, "
+                         f"but need {gold_offered} gp.",
+            }
+
+        # Get disposition and trust for can_reveal check
+        current_disp = 0
+        trust_level = 0
+        if participant.conversation:
+            current_disp = getattr(participant.conversation, "disposition_numeric", 0)
+            trust_level = getattr(participant.conversation, "trust_level", 0)
+
+        # Check if bribe will work using SecretInfo.can_reveal()
+        if not target_secret.can_reveal(current_disp, trust_level, gold_offered):
+            return {
+                "success": False,
+                "message": f"{participant.name} refuses your bribe.",
+            }
+
+        # Success! Deduct gold and reveal secret
+        dm.controller.party_state.gold_gp = party_gold - gold_offered
+        target_secret.status = SecretStatus.REVEALED
+
+        return {
+            "success": True,
+            "message": f"{participant.name} accepts the {gold_offered} gold pieces and leans in "
+                       f"to whisper: \"{target_secret.content}\"",
+            "secret_revealed": {
+                "secret_id": target_secret.secret_id,
+                "content": target_secret.content,
+            },
+            "gold_spent": gold_offered,
+            "party_gold_remaining": dm.controller.party_state.gold_gp,
+        }
+
+    registry.register(ActionSpec(
+        id="social:offer_bribe",
+        label="Offer bribe for secret",
+        category=ActionCategory.SOCIAL,
+        requires_state="social_interaction",
+        params_schema={
+            "secret_id": {"type": "string", "required": True},
+            "gold_amount": {"type": "integer", "required": False},
+        },
+        help="Offer gold to an NPC in exchange for revealing a secret they know.",
+        executor=_social_offer_bribe,
+    ))
+
+    # -------------------------------------------------------------------------
     # Meta: Factions
     # -------------------------------------------------------------------------
     def _meta_factions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
@@ -2489,13 +2786,26 @@ def _create_default_registry() -> ActionRegistry:
     def _wilderness_enter_poi_with_conditions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Enter POI with special conditions (payment, password, etc.)."""
         hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
-        payment = p.get("payment", "")
-        password = p.get("password", "")
-        approach = p.get("approach", "respectful")
+        payment_offered = int(p.get("payment", 0) or 0)
+        password_given = p.get("password", "")
+        social_result = p.get("social_result", "")
+
+        # Check if permission was granted in social interaction
+        has_permission = False
+        if dm.controller.social_context:
+            for participant in dm.controller.social_context.participants:
+                poi_name = dm.hex_crawl._current_poi if dm.hex_crawl else None
+                if poi_name and participant.has_permission(poi_name):
+                    has_permission = True
+                    break
 
         try:
             result = dm.hex_crawl.enter_poi_with_conditions(
-                hex_id, payment=payment, password=password, approach=approach
+                hex_id,
+                has_permission=has_permission,
+                payment_offered=payment_offered,
+                password_given=password_given if password_given else None,
+                social_result=social_result if social_result else None,
             )
             return {"success": result.get("success", True), "message": result.get("message", "Entry attempted.")}
         except Exception as e:
@@ -2599,11 +2909,11 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="wilderness_travel",
         params_schema={
             "hex_id": {"type": "string", "required": False},
-            "payment": {"type": "string", "required": False},
+            "payment": {"type": "integer", "required": False},
             "password": {"type": "string", "required": False},
-            "approach": {"type": "string", "required": False},
+            "social_result": {"type": "string", "required": False},
         },
-        help="Enter a POI with special conditions (payment, password, etc.).",
+        help="Enter a POI with special conditions (payment, password, social outcome).",
         executor=_wilderness_enter_poi_with_conditions,
     ))
 
@@ -2619,6 +2929,133 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Enter a dungeon from a point of interest.",
         executor=_wilderness_enter_dungeon,
+    ))
+
+    def _wilderness_silence_alarm(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Silence an alarm at the current POI using an item."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        item_used = p.get("item", "")
+
+        try:
+            result = dm.hex_crawl.silence_poi_alarm(hex_id, item_used=item_used)
+            if result.get("success"):
+                return {"success": True, "message": result.get("message", "Alarm silenced.")}
+            elif result.get("requires_item"):
+                bypass_info = result.get("bypass_methods", [])
+                hints = [b.get("bypass_method", "") for b in bypass_info]
+                return {
+                    "success": False,
+                    "message": result.get("message", "Need the right item."),
+                    "hints": hints,
+                }
+            else:
+                return {"success": False, "message": result.get("error", "Cannot silence alarm.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not silence alarm: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:silence_alarm",
+        label="Silence alarm",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "item": {"type": "string", "required": True},
+        },
+        help="Silence an alarm using the correct item (e.g., acorns for moose head).",
+        executor=_wilderness_silence_alarm,
+    ))
+
+    def _wilderness_enter_poi_stealth(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt stealthy entry into a POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        try:
+            result = dm.hex_crawl.enter_poi_stealth(hex_id, stealth_modifier=stealth_modifier)
+            if result.get("success") or result.get("stealth_success"):
+                msg = result.get("message", "You slip in undetected.")
+                if result.get("description"):
+                    msg += f"\n\n{result['description']}"
+                return {"success": True, "message": msg}
+            else:
+                msg = result.get("message", "You are spotted!")
+                if result.get("alerts_triggered"):
+                    alert_names = [a.get("description", "") for a in result["alerts_triggered"]]
+                    msg += " " + " ".join(alert_names)
+                return {"success": False, "message": msg}
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealth entry: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:enter_poi_stealth",
+        label="Enter stealthily",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to sneak into a POI, bypassing entry conditions.",
+        executor=_wilderness_enter_poi_stealth,
+    ))
+
+    def _wilderness_sneak_into_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to sneak into a POI using skill-based stealth check."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        poi_name = p.get("poi_name", "")
+        character_id = p.get("character_id", "")
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        if not poi_name:
+            return {"success": False, "message": "Must specify which POI to sneak into."}
+        if not character_id:
+            return {"success": False, "message": "Must specify which character is sneaking."}
+
+        try:
+            result = dm.hex_crawl.sneak_into_poi(
+                hex_id=hex_id,
+                poi_name=poi_name,
+                character_id=character_id,
+                stealth_modifier=stealth_modifier,
+            )
+            if result.get("success"):
+                msg = result.get("message", "You slip in undetected.")
+                if result.get("interior"):
+                    msg += f"\n\n{result['interior']}"
+                return {
+                    "success": True,
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "sentry_count": result.get("sentry_count"),
+                }
+            else:
+                msg = result.get("message", "You are spotted!")
+                return {
+                    "success": False,
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "sentry_count": result.get("sentry_count"),
+                    "hazard_result": result.get("hazard_result"),
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealth infiltration: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:sneak_into_poi",
+        label="Sneak into location",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "poi_name": {"type": "string", "required": True},
+            "character_id": {"type": "string", "required": True},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to sneak into a POI using a stealth skill check. On success, enter without triggering investigation hazards. On failure, the camp alarm is raised.",
+        executor=_wilderness_sneak_into_poi,
     ))
 
     def _wilderness_wait_until_dawn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
