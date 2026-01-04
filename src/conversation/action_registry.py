@@ -707,6 +707,84 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_roll_poi_table,
     ))
 
+    def _wilderness_roll_hex_encounter_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Roll on the hex's custom encounter table (debug/play aid).
+
+        Some hexes have custom encounter tables that override or supplement
+        the standard regional tables. This action lets players explicitly roll
+        on these tables for verification or play purposes.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+
+        result = dm.hex_crawl.roll_hex_encounter_table(hex_id)
+
+        if not result.get("has_table"):
+            return {
+                "success": True,
+                "message": f"Hex {hex_id} has no custom encounter table. Use the standard regional tables.",
+                "has_table": False,
+            }
+
+        # Build descriptive message
+        roll = result.get("roll", "?")
+        table_name = result.get("table_name", "Unknown Table")
+        result_id = result.get("result", "unknown")
+        description = result.get("description", "")
+
+        message = f"**{table_name}** (rolled {roll}): {description}"
+
+        # Build suggested actions based on result
+        suggested_actions = []
+
+        # Check if result implies an encounter (e.g., NPC id or creature)
+        # "standard" means use regional tables, not an encounter
+        if result_id and result_id != "standard":
+            # Check if this NPC/creature can be encountered
+            hex_data = dm.hex_crawl._hex_data.get(hex_id)
+            npc_match = None
+            if hex_data:
+                for npc in hex_data.npcs:
+                    if npc.npc_id == result_id or result_id in npc.npc_id:
+                        npc_match = npc
+                        break
+
+            if npc_match:
+                if npc_match.is_combatant:
+                    suggested_actions.append({
+                        "id": "wilderness:start_encounter",
+                        "label": f"Start encounter with {npc_match.name}",
+                        "params": {"hex_id": hex_id, "npc_id": npc_match.npc_id},
+                    })
+                suggested_actions.append({
+                    "id": "wilderness:talk_npc",
+                    "label": f"Talk to {npc_match.name}",
+                    "params": {"hex_id": hex_id, "npc_id": npc_match.npc_id},
+                })
+
+        return {
+            "success": True,
+            "message": message,
+            "has_table": True,
+            "roll": roll,
+            "result": result_id,
+            "description": description,
+            "table_name": table_name,
+            "suggested_actions": suggested_actions,
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:roll_hex_encounter_table",
+        label="Roll hex encounter table",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Roll on this hex's custom encounter table (for play verification or triggering encounters).",
+        executor=_wilderness_roll_hex_encounter_table,
+    ))
+
     def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.

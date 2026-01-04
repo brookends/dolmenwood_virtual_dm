@@ -185,7 +185,7 @@ participant = controller._build_participant_from_intelligence(
 - NPC group size engine method (5 tests)
 - Chance check helper (3 tests)
 
-### tests/hex_crawl/test_hex_0108_actions.py (46 tests)
+### tests/hex_crawl/test_hex_0108_actions.py (54 tests)
 - Hazard resolution helper (8 tests)
 - Integration with hazard checks (2 tests)
 - Wilderness investigate action (5 tests)
@@ -193,8 +193,10 @@ participant = controller._build_participant_from_intelligence(
 - Multi-actor group encounters (8 tests)
 - NPC intelligence serialization (5 tests)
 - NPC intelligence in social context (7 tests)
+- Roll hex encounter table action (6 tests)
+- Roll hex encounter table suggestion (2 tests)
 
-**Total: 108 tests passing**
+**Total: 116 tests passing**
 
 ---
 

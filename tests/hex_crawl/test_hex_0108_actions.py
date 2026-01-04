@@ -1062,3 +1062,205 @@ class TestNPCIntelligenceInSocialContext:
         for rel in participant.relationships:
             assert isinstance(rel, dict)
             assert "npc_id" in rel or "relationship_type" in rel
+
+
+# =============================================================================
+# Task 6: Roll Hex Encounter Table Action
+# =============================================================================
+
+
+class TestRollHexEncounterTableAction:
+    """Test the wilderness:roll_hex_encounter_table action."""
+
+    def test_action_registered(self):
+        """wilderness:roll_hex_encounter_table should be registered."""
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+        assert spec is not None
+        assert spec.id == "wilderness:roll_hex_encounter_table"
+        assert spec.label == "Roll hex encounter table"
+
+    def test_action_returns_table_result_for_hex_with_table(self, hex_0108_engine):
+        """Action should return table result for hex with custom table."""
+        from unittest.mock import MagicMock
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+
+        DiceRoller.set_seed(42)
+        params = {"hex_id": "0108"}
+        result = spec.executor(mock_dm, params)
+        DiceRoller._seed = None
+
+        assert result["success"] is True
+        assert result["has_table"] is True
+        assert "roll" in result
+        assert "result" in result
+        assert "table_name" in result
+        assert "message" in result
+
+    def test_action_returns_no_table_for_hex_without_table(self, hex_0108_engine):
+        """Action should indicate no table for hex without custom table."""
+        from unittest.mock import MagicMock
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+
+        # Hex 0100 doesn't exist in our fixture
+        params = {"hex_id": "0100"}
+        result = spec.executor(mock_dm, params)
+
+        assert result["success"] is True
+        assert result["has_table"] is False
+        assert "no custom encounter table" in result["message"].lower()
+
+    def test_action_suggests_encounter_for_npc_result(self, hex_0108_engine):
+        """When result is NPC, should suggest start encounter action."""
+        from unittest.mock import MagicMock, patch
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+
+        # Mock roll_hex_encounter_table to return NPC result
+        with patch.object(
+            hex_0108_engine,
+            "roll_hex_encounter_table",
+            return_value={
+                "has_table": True,
+                "roll": 1,
+                "result": "murkins_soldiers",
+                "description": "A gang of Murkin's soldiers approach.",
+                "table_name": "Hex 0108 Encounters",
+            },
+        ):
+            params = {"hex_id": "0108"}
+            result = spec.executor(mock_dm, params)
+
+        assert result["success"] is True
+        assert result["result"] == "murkins_soldiers"
+        assert "suggested_actions" in result
+        # Should suggest start encounter for combatant NPC
+        action_ids = [a["id"] for a in result["suggested_actions"]]
+        assert "wilderness:start_encounter" in action_ids
+
+    def test_action_suggests_talk_for_npc_result(self, hex_0108_engine):
+        """When result is NPC, should suggest talk action."""
+        from unittest.mock import MagicMock, patch
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+
+        # Mock roll_hex_encounter_table to return NPC result
+        with patch.object(
+            hex_0108_engine,
+            "roll_hex_encounter_table",
+            return_value={
+                "has_table": True,
+                "roll": 1,
+                "result": "murkins_soldiers",
+                "description": "A gang of Murkin's soldiers approach.",
+                "table_name": "Hex 0108 Encounters",
+            },
+        ):
+            params = {"hex_id": "0108"}
+            result = spec.executor(mock_dm, params)
+
+        # Should suggest talk action for any NPC
+        action_ids = [a["id"] for a in result["suggested_actions"]]
+        assert "wilderness:talk_npc" in action_ids
+
+    def test_action_no_suggestions_for_standard_result(self, hex_0108_engine):
+        """When result is 'standard', should have no NPC suggestions."""
+        from unittest.mock import MagicMock, patch
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:roll_hex_encounter_table")
+
+        # Mock roll_hex_encounter_table to return standard result
+        with patch.object(
+            hex_0108_engine,
+            "roll_hex_encounter_table",
+            return_value={
+                "has_table": True,
+                "roll": 3,
+                "result": "standard",
+                "description": "Roll on standard regional table.",
+                "table_name": "Hex 0108 Encounters",
+            },
+        ):
+            params = {"hex_id": "0108"}
+            result = spec.executor(mock_dm, params)
+
+        assert result["success"] is True
+        assert result["result"] == "standard"
+        # No NPC-related suggestions for standard
+        assert len(result.get("suggested_actions", [])) == 0
+
+
+class TestRollHexEncounterTableSuggestion:
+    """Test that roll_hex_encounter_table appears in suggestions."""
+
+    def test_suggestion_appears_for_hex_with_encounter_table(self, hex_0108_engine):
+        """Suggestion should appear for hex with custom encounter table."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+        mock_dm.get_valid_actions.return_value = []
+
+        suggestions = build_suggestions(mock_dm, limit=20)
+        action_ids = [s.id for s in suggestions]
+
+        assert "wilderness:roll_hex_encounter_table" in action_ids
+
+    def test_suggestion_has_table_name_in_label(self, hex_0108_engine):
+        """Suggestion label should include the table name."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+        mock_dm.get_valid_actions.return_value = []
+
+        suggestions = build_suggestions(mock_dm, limit=20)
+        encounter_suggestion = next(
+            (s for s in suggestions if s.id == "wilderness:roll_hex_encounter_table"),
+            None,
+        )
+
+        assert encounter_suggestion is not None
+        # Label should contain "Roll" and some table reference
+        assert "Roll" in encounter_suggestion.label

@@ -812,6 +812,32 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     except Exception:
         pass
 
+    # Custom encounter table: show roll action if hex has one
+    try:
+        hex_data = dm.hex_crawl.get_hex_data(hex_id)
+        if (
+            hex_data
+            and hasattr(hex_data, "procedural")
+            and hex_data.procedural
+            and getattr(hex_data.procedural, "encounter_table", None)
+        ):
+            table = hex_data.procedural.encounter_table
+            table_name = getattr(table, "name", "Hex Encounter Table")
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:roll_hex_encounter_table",
+                        label=f"Roll {table_name}",
+                        params={"hex_id": hex_id},
+                        safe_to_execute=True,
+                        help=f"Roll on this hex's custom encounter table ({table_name}).",
+                    ),
+                    score=68,
+                )
+            )
+    except Exception:
+        pass
+
     visible = dm.hex_crawl.get_visible_pois(hex_id)
     for idx, poi in enumerate(visible[:4]):
         poi_type = poi.get("type", "location")
