@@ -1259,6 +1259,8 @@ class ContentPipeline:
                     "stat_reference": npc.stat_reference,
                     "is_combatant": npc.is_combatant,
                     "vulnerabilities": npc.vulnerabilities,
+                    "stat_block": npc.stat_block,
+                    "pursuit_trigger": npc.pursuit_trigger,
                     "group_count": npc.group_count,
                     "group_composition": npc.group_composition,
                     "relationships": npc.relationships,

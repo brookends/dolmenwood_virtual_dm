@@ -209,7 +209,18 @@ result = engine.roll_on_poi_table("0109", "Camp Activities", "Murkin's Army")
 - Action registry (2 tests)
 - Murkin's Army integration (3 tests)
 
-**Total: 137 tests passing**
+### tests/hex_crawl/test_stealth_departure.py (21 tests)
+- Method exists (2 tests)
+- Stealth success (3 tests)
+- Stealth failure (2 tests)
+- Brynne pursuit (5 tests)
+- Tracking bonus (2 tests)
+- No pursuit at other locations (1 test)
+- Error handling (2 tests)
+- Action registry (2 tests)
+- Hunting Lodge integration (2 tests)
+
+**Total: 158 tests passing**
 
 ---
 
@@ -290,9 +301,13 @@ print(f"Rest result: {rest_result['message']}")
 - Player action: `wilderness:sneak_into_poi`
 
 ### Animal Companion Tracking (Brynne)
-**Status:** Described in `leaving`, no automation
-- Giant weasel may track those who leave by stealth
-- **Workaround:** DM narrates pursuit if players sneak out
+**Status:** Implemented
+- `leave_poi_stealth` engine method for stealthy departure
+- Brynne has `pursuit_trigger` with tracking_bonus (+2 to target)
+- Stealth target at Lodge: DC 6 (base 4 + Brynne's tracking bonus 2)
+- Success: leave undetected
+- Failure: triggers Brynne pursuit encounter with stat block
+- Player action: `wilderness:leave_poi_stealth`
 
 ### mechanical_effect Application
 **Status:** Data tracked, effects not automated

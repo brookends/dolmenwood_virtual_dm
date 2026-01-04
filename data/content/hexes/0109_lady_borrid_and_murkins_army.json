@@ -918,6 +918,51 @@
         "standing": "medium",
         "notes": "Member of the Horns of Kolstoke. Loyalty is purchased, not genuine. Secretly plotting her own advancement."
       }
+    },
+    {
+      "npc_id": "brynne_giant_weasel",
+      "name": "Brynne",
+      "title": "Giant Weasel",
+      "description": "A white-furred giant weasel with intelligent, glittering eyes. Lady Borrid's unfailingly loyal animal companion for twelve years. Found as a kit after hunters killed her mother.",
+      "kindred": "Giant Weasel",
+      "alignment": "Neutral",
+      "demeanor": ["Alert vigilance", "protective of Lady Borrid"],
+      "speech": null,
+      "languages": [],
+      "desires": [
+        "Protect Lady Borrid",
+        "Track intruders who flee the lodge"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Lady Borrid's Hunting Lodge",
+      "stat_reference": "Giant Weasel",
+      "is_combatant": true,
+      "stat_block": {
+        "hit_dice": "4+4",
+        "armor_class": 13,
+        "movement": 40,
+        "attacks": [
+          {"name": "Bite", "damage": "2d4", "special": "Blood drain: 2d4 automatic damage per round once attached"}
+        ],
+        "morale": 12,
+        "special_abilities": ["Keen Scent: +2 to tracking", "Blood Drain: Attaches on successful bite"]
+      },
+      "pursuit_trigger": {
+        "trigger": "stealth_departure",
+        "poi_name": "Lady Borrid's Hunting Lodge",
+        "description": "Brynne tracks those who leave the lodge by stealth, her keen nose following their trail through the forest.",
+        "tracking_bonus": 2
+      },
+      "relationships": [
+        {
+          "npc_id": "lady_amonie_borrid",
+          "relationship_type": "animal_companion",
+          "description": "Unfailingly loyal to Lady Borrid. Does not check Morale.",
+          "hex_id": "0109",
+          "notes": "Will die to protect her mistress"
+        }
+      ]
     }
   ],
   "items": [

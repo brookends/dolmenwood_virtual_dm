@@ -4533,6 +4533,181 @@ class HexCrawlEngine:
 
         return result
 
+    def leave_poi_stealth(
+        self,
+        hex_id: str,
+        character_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to leave the current POI by stealth.
+
+        Uses the skill resolver for a proper d6 stealth check. On success,
+        leaves the POI undetected. On failure, may trigger pursuit encounters
+        (e.g., Brynne tracking at the Hunting Lodge).
+
+        Args:
+            hex_id: The hex containing the POI
+            character_id: The character making the stealth check
+            stealth_modifier: Modifier to the stealth roll
+
+        Returns:
+            Dictionary with stealth departure results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver
+
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found in hex data"}
+
+        poi_name = self._current_poi
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            # Create minimal character for roll if not found
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        # Find any NPCs that have pursuit_trigger for this POI
+        pursuit_npc = None
+        pursuit_trigger = None
+        for npc in hex_data.npcs:
+            # Handle both HexNPC objects and legacy dict format
+            if hasattr(npc, "pursuit_trigger") and npc.pursuit_trigger:
+                trigger = npc.pursuit_trigger
+                if trigger.get("poi_name") == poi_name:
+                    pursuit_npc = npc
+                    pursuit_trigger = trigger
+                    break
+            elif isinstance(npc, dict):
+                trigger = npc.get("pursuit_trigger")
+                if trigger and trigger.get("poi_name") == poi_name:
+                    pursuit_npc = npc
+                    pursuit_trigger = trigger
+                    break
+
+        # Determine stealth difficulty
+        # If there's a pursuit NPC with tracking bonus, make it harder
+        base_target = 4  # Default: need 4+ on d6 (3-in-6 chance)
+        if pursuit_trigger:
+            tracking_bonus = pursuit_trigger.get("tracking_bonus", 0)
+            base_target = min(6, base_target + tracking_bonus)  # Cap at 6
+
+        # Use skill resolver for stealth check
+        resolver = get_skill_resolver()
+
+        skill_result = resolver.resolve_skill_check(
+            character=character,
+            skill_name="stealth",
+            modifier=stealth_modifier,
+            context={"stealth_target_override": base_target},
+        )
+
+        # Check if roll succeeds against our target
+        roll_value = skill_result.roll + stealth_modifier
+        stealth_success = roll_value >= base_target
+
+        if stealth_success:
+            # Successful stealth - leave undetected
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+
+            return {
+                "success": True,
+                "stealth_success": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "character": character_id,
+                "poi_name": poi_name,
+                "message": f"You slip away from {poi_name} unnoticed.",
+                "pursuit_triggered": False,
+            }
+        else:
+            # Stealth failed - still leave but may trigger pursuit
+            self._current_poi = None
+            self._poi_state = POIExplorationState.DISTANT
+
+            result = {
+                "success": True,  # Still successfully left
+                "stealth_success": False,
+                "stealth_failed": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "character": character_id,
+                "poi_name": poi_name,
+            }
+
+            # Check for pursuit encounter
+            if pursuit_npc and pursuit_trigger:
+                # Handle both HexNPC objects and legacy dict format
+                if hasattr(pursuit_npc, "name"):
+                    npc_name = pursuit_npc.name
+                    npc_id = pursuit_npc.npc_id
+                    stat_block = pursuit_npc.stat_block
+                else:
+                    npc_name = pursuit_npc.get("name", "someone")
+                    npc_id = pursuit_npc.get("npc_id", "unknown")
+                    stat_block = pursuit_npc.get("stat_block")
+
+                # Create pursuit encounter data
+                pursuit_encounter = {
+                    "triggered": True,
+                    "type": "pursuit",
+                    "pursuer_id": npc_id,
+                    "pursuer_name": npc_name,
+                    "stat_block": stat_block,
+                    "description": pursuit_trigger.get(
+                        "description",
+                        f"{npc_name} detects your departure and gives chase!"
+                    ),
+                }
+
+                result["pursuit_triggered"] = True
+                result["pursuit_encounter"] = pursuit_encounter
+                result["message"] = (
+                    f"You attempt to slip away from {poi_name}, but {npc_name} "
+                    f"detects your departure! {pursuit_trigger.get('description', '')}"
+                )
+            else:
+                result["pursuit_triggered"] = False
+                result["message"] = (
+                    f"You leave {poi_name}, but your departure was noticed. "
+                    f"Fortunately, no one gives chase."
+                )
+
+            return result
+
     def get_current_poi_state(self) -> dict[str, Any]:
         """
         Get the current POI exploration state.

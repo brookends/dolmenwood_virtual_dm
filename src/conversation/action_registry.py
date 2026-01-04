@@ -656,6 +656,58 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi,
     ))
 
+    def _wilderness_leave_poi_stealth(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to leave the current POI by stealth."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        character_id = p.get("character_id", "")
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        if not character_id:
+            return {"success": False, "message": "Must specify which character is sneaking out."}
+
+        try:
+            result = dm.hex_crawl.leave_poi_stealth(
+                hex_id=hex_id,
+                character_id=character_id,
+                stealth_modifier=stealth_modifier,
+            )
+            if result.get("stealth_success"):
+                return {
+                    "success": True,
+                    "message": result.get("message", "You slip away unnoticed."),
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                }
+            else:
+                msg = result.get("message", "Your departure was detected!")
+                if result.get("pursuit_triggered"):
+                    encounter = result.get("pursuit_encounter", {})
+                    msg += f"\n\nPursuit: {encounter.get('pursuer_name', 'Someone')} gives chase!"
+                return {
+                    "success": True,  # Still left the POI
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "pursuit_triggered": result.get("pursuit_triggered"),
+                    "pursuit_encounter": result.get("pursuit_encounter"),
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealthy departure: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:leave_poi_stealth",
+        label="Leave POI by stealth",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to leave the current POI by stealth. On failure, may trigger pursuit (e.g., Brynne at the Hunting Lodge).",
+        executor=_wilderness_leave_poi_stealth,
+    ))
+
     def _wilderness_roll_poi_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Roll on a POI's roll table (like 'Leavings in the Mud')."""
         table_name = p.get("table_name", "")

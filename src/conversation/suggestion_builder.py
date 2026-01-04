@@ -828,7 +828,30 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             )
         )
 
-        # Leave the location
+        # Leave the location (stealth option)
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="wilderness:leave_poi_stealth",
+                    label=f"Slip away from {poi_name} (stealth)",
+                    params_schema={
+                        "type": "object",
+                        "properties": {
+                            "hex_id": {"type": "string"},
+                            "character_id": {"type": "string"},
+                            "stealth_modifier": {"type": "integer"},
+                        },
+                        "required": ["character_id"],
+                    },
+                    params={"hex_id": hex_id, "character_id": cid, "stealth_modifier": 0},
+                    safe_to_execute=False,
+                    help="Leave by stealth. Failure may trigger pursuit (e.g., Brynne at the Hunting Lodge).",
+                ),
+                score=58,
+            )
+        )
+
+        # Leave the location (normal)
         out.append(
             _Candidate(
                 SuggestedAction(

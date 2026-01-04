@@ -4713,6 +4713,11 @@ class HexNPC:
     stat_reference: Optional[str] = None  # Reference to stat block
     is_combatant: bool = False
     vulnerabilities: list[str] = field(default_factory=list)  # e.g., ["cold_iron", "sunlight", "fire"]
+    stat_block: Optional[dict[str, Any]] = None  # Inline stat block for creatures/NPCs
+
+    # Pursuit behavior (for tracking NPCs like Brynne the giant weasel)
+    # Format: {trigger: str, poi_name: str, description: str, tracking_bonus: int}
+    pursuit_trigger: Optional[dict[str, Any]] = None
 
     # NPC groups - for NPCs that represent multiple individuals (e.g., "Murkin's Soldiers")
     # group_count: dice expression for number of individuals (e.g., "1d4+1d4", "2d6")

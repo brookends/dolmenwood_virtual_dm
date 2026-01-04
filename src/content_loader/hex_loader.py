@@ -573,6 +573,8 @@ class HexDataLoader:
             stat_reference=data.get("stat_reference"),
             is_combatant=data.get("is_combatant", False),
             vulnerabilities=data.get("vulnerabilities", []),
+            stat_block=data.get("stat_block"),
+            pursuit_trigger=data.get("pursuit_trigger"),
             group_count=data.get("group_count"),
             group_composition=data.get("group_composition"),
             faction=data.get("faction"),

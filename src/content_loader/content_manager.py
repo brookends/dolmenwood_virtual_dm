@@ -786,6 +786,8 @@ class ContentManager:
                     stat_reference=npc_data.get("stat_reference"),
                     is_combatant=npc_data.get("is_combatant", False),
                     vulnerabilities=npc_data.get("vulnerabilities", []),
+                    stat_block=npc_data.get("stat_block"),
+                    pursuit_trigger=npc_data.get("pursuit_trigger"),
                     group_count=npc_data.get("group_count"),
                     group_composition=npc_data.get("group_composition"),
                     relationships=npc_data.get("relationships", []),
