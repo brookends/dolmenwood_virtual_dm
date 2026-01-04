@@ -66,13 +66,15 @@ class TestHex0109Loading:
         assert hex_data.name == "Lady Borrid and Murkin's Army"
         assert hex_data.region == "High Wold"
 
-    def test_hex_has_two_pois(self, pipeline):
-        """Hex should have both Lady Borrid's Lodge and Murkin's Army."""
+    def test_hex_has_pois(self, pipeline):
+        """Hex should have Lady Borrid's Lodge, Murkin's Army, and Hidden Vault."""
         hex_data = pipeline.get_hex("0109")
-        assert len(hex_data.points_of_interest) == 2
+        # 2 visible POIs + 1 hidden vault (requires discovery)
+        assert len(hex_data.points_of_interest) == 3
         poi_names = [p.name for p in hex_data.points_of_interest]
         assert "Lady Borrid's Hunting Lodge" in poi_names
         assert "Murkin's Army" in poi_names
+        assert "Lady Borrid's Hidden Vault" in poi_names
 
     def test_hex_has_two_npcs(self, pipeline):
         """Hex should have Lady Borrid and Sergeant Snidebleat."""

@@ -211,6 +211,15 @@
           "search_dc": "thorough",
           "description": "An unassuming bronze horn hidden among the mounted trophy horns. Only a careful examination reveals its magical nature.",
           "found": false
+        },
+        {
+          "item_id": "0109:secret:vault_door",
+          "name": "Secret Vault Door",
+          "hidden_in": "cellars",
+          "search_dc": 4,
+          "description": "A concealed stone door in the cellar wall, cunningly disguised as part of the masonry. Close inspection reveals faint seams and a hidden latch mechanism.",
+          "found": false,
+          "reveals_secret": "hidden_vault"
         }
       ],
       "locks": [
@@ -482,6 +491,33 @@
           {"roll": "1d4", "description": "prisoners (press-gang recruits)"}
         ]
       },
+      "is_dungeon": false,
+      "dungeon_levels": null
+    },
+    {
+      "name": "Lady Borrid's Hidden Vault",
+      "poi_type": "vault",
+      "description": "A hidden chamber behind a secret door in the cellars of Lady Borrid's Hunting Lodge. The vault contains the Borrid family treasures: chalices and jewels worth 8,000gp, a Fairy Shortbow carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane). Ancient family documents are also stored here.",
+      "tagline": "A secret treasure chamber containing Borrid family heirlooms",
+      "parent_poi": "Lady Borrid's Hunting Lodge",
+      "requires_discovery": "hidden_vault",
+      "entering": "The secret door swings open silently on well-oiled hinges, revealing a small stone chamber lit by the faint glow of magical preservation wards.",
+      "interior": "A 10-foot square chamber with stone shelves lining the walls. Silver chalices and loose gemstones glitter on one shelf. A giant antler bow rests in a wooden rack, accompanied by a quiver of arrows that shimmer with fey enchantment. A locked ironbound chest contains family documents.",
+      "exploring": "The treasures are openly displayed for anyone who finds this chamber. The locked chest contains legal documents regarding land inheritance and letters between Borrid family members.",
+      "leaving": "The secret door can be closed from inside or outside, returning the chamber to its hidden state.",
+      "inhabitants": null,
+      "npcs": [],
+      "special_features": [
+        "Magical preservation wards keep the contents in pristine condition",
+        "Ironbound chest with family documents (locked)",
+        "Stone shelves with treasure display"
+      ],
+      "secrets": [
+        "The documents in the chest prove Lord Murkin's father intended a more equitable division of lands, which could legally challenge Simeone's rule"
+      ],
+      "concealed_items": [],
+      "sub_locations": [],
+      "items_present": ["0109:item:fairy_shortbow", "0109:item:fairy_arrows_breggle_bane", "0109:item:vault_treasure"],
       "is_dungeon": false,
       "dungeon_levels": null
     }

@@ -170,7 +170,29 @@ result = engine.roll_on_poi_table("0109", "Camp Activities", "Murkin's Army")
 - Secrets (2 tests)
 - Runtime bootstrap parser (3 tests)
 
-**Total: 37 tests passing**
+### tests/hex_crawl/test_poi_entry_conditions.py (21 tests)
+- SocialParticipant permissions (5 tests)
+- POI entry conditions (12 tests)
+- Permission from social context (2 tests)
+- Engine integration (2 tests)
+
+### tests/hex_crawl/test_poi_alarm_system.py (23 tests)
+- POIVisit alarm tracking (2 tests)
+- Unauthorized entry alerts (4 tests)
+- Silence alarm (5 tests)
+- Stealth entry (4 tests)
+- Get POI info (4 tests)
+- Camp sentry alarm (4 tests)
+
+### tests/hex_crawl/test_poi_secret_discovery.py (19 tests)
+- Concealed items with reveals_secret (2 tests)
+- Hidden POI visibility (3 tests)
+- Search reveals secret (6 tests)
+- Navigation to discovered POI (4 tests)
+- Discovered secrets tracking (3 tests)
+- Integration flow (1 test)
+
+**Total: 100 tests passing**
 
 ---
 
@@ -219,15 +241,17 @@ print(f"Rest result: {rest_result['message']}")
 ## Features NOT Yet Automated (Low Priority)
 
 ### Moose Head Alarm System
-**Status:** Described in data, no automation
-- `entering` field describes moose head bellowing on unauthorized entry
-- `secrets` describes silencing with acorns
-- **Workaround:** DM narrates alarm trigger; stealth checks handled manually
+**Status:** Implemented
+- Alarm triggers on unauthorized entry via `enter_poi_with_conditions`
+- Can be silenced with acorns via `silence_poi_alarm` method
+- Stealth entry available via `enter_poi_stealth` method
 
 ### Secret Door / Vault Discovery
-**Status:** Described in data, no automation
-- Lodge cellar has concealed vault with treasure and Fairy weapons
-- **Workaround:** DM uses `wilderness:search_location` action, narrates discovery when appropriate
+**Status:** Implemented
+- `search_poi_location("cellars")` can find the Secret Vault Door
+- Finding it reveals "hidden_vault" secret via `reveals_secret` field
+- Lady Borrid's Hidden Vault POI becomes visible after discovery
+- Navigate to vault via `navigate_to_child_poi`
 
 ### Snidebleat's Buried Treasure
 **Status:** Item defined, no discovery mechanic

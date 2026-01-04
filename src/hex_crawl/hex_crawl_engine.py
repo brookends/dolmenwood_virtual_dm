@@ -4101,6 +4101,20 @@ class HexCrawlEngine:
             thorough=thorough,
         )
 
+        # Check if any found items reveal secrets (e.g., secret doors, hidden POIs)
+        revealed_secrets = []
+        for item in found_items:
+            reveals = item.get("reveals_secret")
+            if reveals and reveals not in self._discovered_secrets:
+                self._discovered_secrets.add(reveals)
+                revealed_secrets.append(reveals)
+
+                # Track in POI visit
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    if reveals not in self._poi_visits[visit_key].secrets_discovered:
+                        self._poi_visits[visit_key].secrets_discovered.append(reveals)
+
         # Check if searching triggers any alerts
         search_alerts = poi.get_alerts_for_trigger("on_search")
         for i, alert in enumerate(poi.alerts):
@@ -4119,11 +4133,31 @@ class HexCrawlEngine:
         if search_alerts:
             result["alerts_triggered"] = search_alerts
 
+        if revealed_secrets:
+            result["secrets_revealed"] = revealed_secrets
+            # Check if any new POIs are now accessible
+            newly_visible = []
+            for p in hex_data.points_of_interest:
+                if p.requires_discovery in revealed_secrets:
+                    newly_visible.append({
+                        "name": p.name,
+                        "poi_type": p.poi_type,
+                        "description": p.description,
+                    })
+            if newly_visible:
+                result["newly_accessible_locations"] = newly_visible
+
         if not found_items:
             result["message"] = "You find nothing of interest."
         else:
             item_names = [item.get("name", "unknown") for item in found_items]
-            result["message"] = f"You discover: {', '.join(item_names)}"
+            if revealed_secrets:
+                result["message"] = (
+                    f"You discover: {', '.join(item_names)}. "
+                    f"This reveals a hidden location!"
+                )
+            else:
+                result["message"] = f"You discover: {', '.join(item_names)}"
 
         return result
 

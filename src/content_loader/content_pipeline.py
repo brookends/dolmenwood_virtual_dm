@@ -1187,6 +1187,10 @@ class ContentPipeline:
                 "discovered": poi.discovered,
                 "visible_from_distance": poi.visible_from_distance,
                 "approach_required": poi.approach_required,
+                # POI relationships and gated discovery
+                "parent_poi": poi.parent_poi,
+                "requires_discovery": poi.requires_discovery,
+                "child_pois": poi.child_pois,
                 "dungeon_id": poi.dungeon_id,
                 "dungeon_entrance_room": poi.dungeon_entrance_room,
                 "hazards": poi.hazards,

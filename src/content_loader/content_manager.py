@@ -926,6 +926,10 @@ class ContentManager:
             discovered=data.get("discovered", False),
             visible_from_distance=data.get("visible_from_distance", True),
             approach_required=data.get("approach_required", True),
+            # POI relationships and gated discovery
+            parent_poi=data.get("parent_poi"),
+            requires_discovery=data.get("requires_discovery"),
+            child_pois=data.get("child_pois", []),
             dungeon_id=data.get("dungeon_id"),
             dungeon_entrance_room=data.get("dungeon_entrance_room"),
             hazards=data.get("hazards", []),
