@@ -1052,3 +1052,247 @@ class TestQuestHookIntegration:
         assert action.id == "poi:accept_quest"
         assert action.label == "Accept Quest"
         assert "quest_id" in action.params_schema
+
+
+class TestHiddenNestDiscovery:
+    """Tests for hidden nest POI discovery via search_hex."""
+
+    def test_search_hex_finds_hidden_poi_on_high_roll(self):
+        """Verify search_hex discovers hidden POI when roll succeeds (5-6)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        # Mock dice to return 5 (success)
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=5)
+
+        # Create hidden nest POI
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.poi_type = "nest"
+        nest_poi.tagline = "(Hidden)"
+        nest_poi.description = "Concealed within the copse..."
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        assert len(result["pois_found"]) == 1
+        assert result["pois_found"][0]["name"] == "The Nest of the Frore Gryphus"
+        assert result["pois_found"][0]["poi_type"] == "nest"
+        nest_poi.mark_discovered.assert_called_once()
+
+    def test_search_hex_does_not_find_hidden_poi_on_low_roll(self):
+        """Verify search_hex does NOT discover hidden POI when roll fails (1-4)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        # Mock dice to return 4 (failure)
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=4)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        assert len(result["pois_found"]) == 0
+        nest_poi.mark_discovered.assert_not_called()
+
+    def test_search_hex_skips_already_discovered_poi(self):
+        """Verify search_hex skips POIs that are already discovered."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=6)  # Would succeed
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.hidden = True
+        nest_poi.discovered = True  # Already discovered!
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        # Should not find it again
+        assert len(result["pois_found"]) == 0
+        nest_poi.mark_discovered.assert_not_called()
+
+    def test_search_hex_skips_non_hidden_poi(self):
+        """Verify search_hex only rolls for hidden POIs."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        engine.dice = MagicMock()
+
+        # Non-hidden POI
+        camp_poi = MagicMock(spec=PointOfInterest)
+        camp_poi.name = "Shepherd Encampment"
+        camp_poi.hidden = False  # Not hidden
+        camp_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [camp_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        # Should not have rolled for non-hidden POI
+        engine.dice.roll_d6.assert_not_called()
+        assert len(result["pois_found"]) == 0
+
+    def test_search_hex_emits_discovery_event(self):
+        """Verify search_hex emits poi_discovered event when finding hidden POI."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+
+        emitted_events = []
+
+        def capture_event(event_type, data):
+            emitted_events.append({"type": event_type, "data": data})
+
+        engine._emit_run_log_event = capture_event
+
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=6)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.poi_type = "nest"
+        nest_poi.tagline = "(Hidden)"
+        nest_poi.description = "Concealed..."
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        engine.search_hex("0105")
+
+        assert len(emitted_events) == 1
+        assert emitted_events[0]["type"] == "poi_discovered"
+        assert emitted_events[0]["data"]["poi_name"] == "The Nest of the Frore Gryphus"
+        assert emitted_events[0]["data"]["was_hidden"] is True
+
+    def test_search_hex_requires_travel_points(self):
+        """Verify search_hex fails when not enough travel points."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 1  # Not enough
+
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)  # Costs 2
+        )
+
+        result = engine.search_hex("0105")
+
+        assert result["success"] is False
+        assert "Not enough Travel Points" in result["message"]
+
+    def test_discover_poi_marks_poi_as_discovered(self):
+        """Verify discover_poi marks a specific POI as discovered."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+
+        result = engine.discover_poi("0105", "The Nest of the Frore Gryphus")
+
+        assert result is True
+        nest_poi.mark_discovered.assert_called_once()
+
+    def test_discover_poi_case_insensitive(self):
+        """Verify discover_poi matches POI names case-insensitively."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+
+        # Use lowercase name
+        result = engine.discover_poi("0105", "the nest of the frore gryphus")
+
+        assert result is True
+        nest_poi.mark_discovered.assert_called_once()

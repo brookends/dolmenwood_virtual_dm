@@ -1275,6 +1275,7 @@ class HexCrawlEngine:
             "features_found": [],
             "lairs_found": [],
             "landmarks_found": [],
+            "pois_found": [],
             "travel_points_spent": cost,
             "travel_points_remaining": self._travel_points_remaining,
         }
@@ -1291,6 +1292,30 @@ class HexCrawlEngine:
                 if roll.total >= 5:
                     feature.discovered = True
                     result["features_found"].append(feature.name)
+
+        # Search for hidden POIs (2-in-6 base chance)
+        for poi in hex_data.points_of_interest:
+            if poi.hidden and not poi.discovered:
+                roll = self.dice.roll_d6(1, f"search for hidden POI")
+                if roll.total >= 5:  # 5-6 succeeds (2-in-6)
+                    poi.mark_discovered()
+                    result["pois_found"].append({
+                        "name": poi.name,
+                        "poi_type": poi.poi_type,
+                        "tagline": poi.tagline,
+                        "description": poi.description,
+                    })
+
+                    # Emit discovery event
+                    self._emit_run_log_event(
+                        "poi_discovered",
+                        {
+                            "hex_id": hex_id,
+                            "poi_name": poi.name,
+                            "poi_type": poi.poi_type,
+                            "was_hidden": True,
+                        },
+                    )
 
         # Check for lairs (1-in-6)
         for lair in getattr(hex_data, "lairs", []):
