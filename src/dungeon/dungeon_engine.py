@@ -752,6 +752,27 @@ class DungeonEngine:
                 # Mark room as having had encounter generated
                 new_room.searched = True
 
+                # If encounter requires state transition, create EncounterState
+                if encounter_result.get("requires_transition"):
+                    encounter_state = self._create_encounter_from_table_result(
+                        encounter_result
+                    )
+                    if encounter_state:
+                        result["encounter_state"] = encounter_state
+                        self.controller.set_encounter(encounter_state)
+                        self.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "dungeon_id": self._dungeon_state.dungeon_id,
+                                "room_id": self._dungeon_state.current_room,
+                                "source": "room_entry",
+                                "roll_tables": self._dungeon_state.roll_tables,
+                                "poi_name": self._dungeon_state.poi_name,
+                                "hex_id": self._dungeon_state.hex_id,
+                                "encounter_data": encounter_result,
+                            },
+                        )
+
         if trap_results:
             result["traps_triggered"] = trap_results
             result["noise"] = 3  # Increase noise due to trap
@@ -2426,6 +2447,18 @@ class DungeonEngine:
         for item_name in entry.items:
             room.treasure.append({"name": item_name, "found": False})
 
+        # Add mechanical effect as a feature if present
+        if entry.mechanical_effect:
+            feature = Feature(
+                feature_id=f"{room_id}_effect",
+                name=entry.title or f"Room Effect",
+                description=entry.mechanical_effect,
+                searchable=False,
+                hidden=False,
+                discovered=True,  # Mechanical effects are immediately visible
+            )
+            room.features.append(feature)
+
         # Store the room
         self._dungeon_state.rooms[room_id] = room
 
@@ -2570,6 +2603,64 @@ class DungeonEngine:
 
         # Ambient: everything else (atmospheric descriptions)
         return ("ambient", False, False)
+
+    def _create_encounter_from_table_result(
+        self,
+        encounter_result: dict[str, Any],
+    ) -> Optional[EncounterState]:
+        """
+        Create an EncounterState from a roll table encounter result.
+
+        Used when dynamically generated encounters need to transition
+        to the ENCOUNTER state for combat or social interaction.
+
+        Args:
+            encounter_result: Result from generate_room_encounter()
+
+        Returns:
+            EncounterState if encounter should trigger, None otherwise
+        """
+        encounter_type_str = encounter_result.get("encounter_type", "ambient")
+
+        # Map string type to EncounterType enum
+        type_mapping = {
+            "monster": EncounterType.MONSTER,
+            "npc": EncounterType.NPC,
+        }
+
+        encounter_type = type_mapping.get(encounter_type_str)
+        if not encounter_type:
+            return None
+
+        # Roll for surprise
+        surprise = self._check_dungeon_surprise()
+
+        # Roll for distance
+        distance = self._roll_dungeon_distance(
+            mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE
+        )
+
+        # Combine monsters and NPCs into actors list
+        actors = encounter_result.get("monsters", []) + encounter_result.get("npcs", [])
+
+        # Create encounter state
+        encounter = EncounterState(
+            encounter_type=encounter_type,
+            distance=distance,
+            surprise_status=surprise,
+            context="room_entry",
+            actors=actors,
+            contextual_data={
+                "description": encounter_result.get("description", ""),
+                "source": "room_table",
+                "roll": encounter_result.get("roll"),
+                "title": encounter_result.get("title"),
+                "items": encounter_result.get("items", []),
+                "allows_social": encounter_result.get("allows_social", False),
+            },
+        )
+
+        return encounter
 
     # =========================================================================
     # ITEM PERSISTENCE (for locations like The Spectral Manse)

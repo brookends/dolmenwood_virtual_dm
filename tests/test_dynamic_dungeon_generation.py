@@ -135,7 +135,13 @@ def dungeon_engine(mock_dice, dynamic_dungeon_state):
     engine = DungeonEngine.__new__(DungeonEngine)
     engine.dice = mock_dice
     engine._dungeon_state = dynamic_dungeon_state
-    engine.controller = MagicMock()
+
+    # Set up controller with properly mocked party_state
+    controller = MagicMock()
+    controller.party_state.active_light_source = True
+    controller.party_state.light_remaining_turns = 10
+    engine.controller = controller
+
     return engine
 
 
@@ -264,7 +270,13 @@ class TestHandleMoveWithDynamicGeneration:
         mock_dice.roll.side_effect = [
             MagicMock(total=2),  # Lounge
             MagicMock(total=2),  # 2 connections
-            MagicMock(total=1),  # Encounter roll (if triggered)
+            MagicMock(total=1),  # Encounter roll -> NPC (Lord Hobbled)
+            MagicMock(total=30),  # Distance roll (for encounter state)
+        ]
+        # Surprise rolls for encounter state creation
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # NPC surprise
         ]
 
         # Move north from entry to room_1
@@ -283,7 +295,12 @@ class TestHandleMoveWithDynamicGeneration:
         mock_dice.roll.side_effect = [
             MagicMock(total=3),  # Dining room
             MagicMock(total=1),  # 1 connection
-            MagicMock(total=1),  # Encounter roll
+            MagicMock(total=1),  # Encounter roll -> NPC
+            MagicMock(total=30),  # Distance roll
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # NPC surprise
         ]
 
         result = dungeon_engine._handle_move({"direction": "north"})
@@ -296,7 +313,12 @@ class TestHandleMoveWithDynamicGeneration:
         mock_dice.roll.side_effect = [
             MagicMock(total=1),  # Study
             MagicMock(total=2),  # 2 additional connections
-            MagicMock(total=1),  # Encounter roll
+            MagicMock(total=1),  # Encounter roll -> NPC
+            MagicMock(total=30),  # Distance roll
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # NPC surprise
         ]
 
         result = dungeon_engine._handle_move({"direction": "north"})
@@ -310,7 +332,12 @@ class TestHandleMoveWithDynamicGeneration:
         mock_dice.roll.side_effect = [
             MagicMock(total=1),  # Study room
             MagicMock(total=1),  # 1 connection
-            MagicMock(total=1),  # Encounter: Lord Hobbled
+            MagicMock(total=1),  # Encounter: Lord Hobbled (NPC)
+            MagicMock(total=30),  # Distance roll
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # NPC surprise
         ]
 
         result = dungeon_engine._handle_move({"direction": "north"})
@@ -324,20 +351,29 @@ class TestMultiRoomExploration:
 
     def test_explore_three_rooms(self, dungeon_engine, mock_dice):
         """Verify exploring 3+ rooms each has description and exits."""
-        # Configure dice for 3 room generations
+        # Configure dice for 3 room generations, each with encounter and state transition
         mock_dice.roll.side_effect = [
             # Room 1: Study with 2 connections
-            MagicMock(total=1),
-            MagicMock(total=2),
-            MagicMock(total=1),  # Encounter
+            MagicMock(total=1),  # Room table
+            MagicMock(total=2),  # Connections
+            MagicMock(total=1),  # Encounter (NPC)
+            MagicMock(total=30),  # Distance
             # Room 2: Lounge with 2 connections
-            MagicMock(total=2),
-            MagicMock(total=2),
-            MagicMock(total=2),  # Encounter
+            MagicMock(total=2),  # Room table
+            MagicMock(total=2),  # Connections
+            MagicMock(total=2),  # Encounter (monster)
+            MagicMock(total=30),  # Distance
             # Room 3: Dining room with 1 connection
-            MagicMock(total=3),
-            MagicMock(total=1),
-            MagicMock(total=1),  # Encounter
+            MagicMock(total=3),  # Room table
+            MagicMock(total=1),  # Connections
+            MagicMock(total=1),  # Encounter (NPC)
+            MagicMock(total=30),  # Distance
+        ]
+        # Surprise rolls for each encounter
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3), MagicMock(total=3),  # Room 1
+            MagicMock(total=3), MagicMock(total=3),  # Room 2
+            MagicMock(total=3), MagicMock(total=3),  # Room 3
         ]
 
         # Move to room 1
@@ -380,9 +416,15 @@ class TestMultiRoomExploration:
         """Verify each generated room has a unique ID."""
         mock_dice.roll.side_effect = [
             MagicMock(total=1), MagicMock(total=3),  # Room 1 with 3 exits
-            MagicMock(total=1),  # Encounter
+            MagicMock(total=1),  # Encounter (NPC)
+            MagicMock(total=30),  # Distance
             MagicMock(total=2), MagicMock(total=2),  # Room 2
-            MagicMock(total=1),  # Encounter
+            MagicMock(total=1),  # Encounter (NPC)
+            MagicMock(total=30),  # Distance
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3), MagicMock(total=3),  # Room 1 surprise
+            MagicMock(total=3), MagicMock(total=3),  # Room 2 surprise
         ]
 
         dungeon_engine._handle_move({"direction": "north"})
@@ -475,3 +517,320 @@ class TestRoomTableMissing:
         assert result["success"] is True
         # Should have created empty fallback room
         assert "room_1" in engine._dungeon_state.rooms
+
+
+class TestSeededDiceRoomGeneration:
+    """Tests for seeded dice producing specific room content from tables."""
+
+    def test_each_room_roll_produces_correct_room(self, dungeon_engine, mock_dice):
+        """Verify each dice roll produces the corresponding room from table."""
+        # Test all 6 room types
+        expected_rooms = [
+            (1, "Study", "Books of frost elf poetry, stag heads, ice hearth."),
+            (2, "Lounge", "Velvet couches, ice candles, wolf-skin rugs."),
+            (3, "Dining room", "Exquisite foods, frozen solid."),
+            (4, "Winter garden", "Hoar-clad roses drip blood if touched."),
+            (5, "Pantry", "Bottled emotions, iced fruits, frozen game."),
+            (6, "Bedroom", "Ice-block bed, furs, tundra tapestries."),
+        ]
+
+        for roll_value, expected_name, expected_description in expected_rooms:
+            # Reset state for each test
+            dungeon_engine._dungeon_state.rooms = {"entry": dungeon_engine._dungeon_state.rooms["entry"]}
+
+            mock_dice.roll.side_effect = [
+                MagicMock(total=roll_value),  # Room table roll
+                MagicMock(total=1),  # Connections roll
+            ]
+
+            room = dungeon_engine._generate_dynamic_room(f"room_{roll_value}")
+
+            assert room is not None, f"Failed for roll {roll_value}"
+            assert room.name == expected_name, f"Expected {expected_name}, got {room.name}"
+            assert room.description == expected_description, (
+                f"Expected {expected_description}, got {room.description}"
+            )
+
+    def test_room_features_from_mechanical_effect(self, mock_dice):
+        """Verify rooms with mechanical_effect get a Feature added."""
+        engine = DungeonEngine.__new__(DungeonEngine)
+        engine.dice = mock_dice
+
+        # Create room table with mechanical_effect
+        entries = [
+            RollTableEntry(
+                roll=1,
+                title="Danger Room",
+                description="A room with hazards.",
+                mechanical_effect="Roses drip blood if touched, causing 1 damage",
+            ),
+        ]
+        room_table = RollTable(
+            name="Rooms",
+            die_type="d6",
+            description="Test rooms",
+            entries=entries,
+        )
+
+        state = DungeonState(
+            dungeon_id="test",
+            dynamic_layout={"connections_per_room": "1d3"},
+            room_table=room_table,
+        )
+        state.rooms = {}
+        engine._dungeon_state = state
+
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+        ]
+
+        room = engine._generate_dynamic_room("room_1")
+
+        assert room is not None
+        assert len(room.features) == 1
+        feature = room.features[0]
+        assert feature.feature_id == "room_1_effect"
+        assert feature.name == "Danger Room"
+        assert "Roses drip blood" in feature.description
+        assert feature.discovered is True
+
+
+class TestEncounterStateTransition:
+    """Tests for encounter table rolling and state transitions."""
+
+    def test_monster_encounter_creates_encounter_state(self, dungeon_engine, mock_dice):
+        """Verify monster encounter creates EncounterState and triggers transition."""
+        # Roll 2 = silver hounds (monster encounter)
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+            MagicMock(total=2),  # Encounter: silver hounds
+            MagicMock(total=30),  # Distance roll
+        ]
+        # Rolls for surprise
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise roll (not surprised)
+            MagicMock(total=3),  # Monster surprise roll (not surprised)
+        ]
+
+        result = dungeon_engine._handle_move({"direction": "north"})
+
+        assert result["success"] is True
+        assert "encounter" in result
+        assert result["encounter"]["encounter_type"] == "monster"
+        assert result["encounter"]["requires_transition"] is True
+
+        # Verify encounter state was created and transition was called
+        assert "encounter_state" in result
+        dungeon_engine.controller.set_encounter.assert_called_once()
+        dungeon_engine.controller.transition.assert_called_once()
+
+        # Check transition was called with correct event
+        call_args = dungeon_engine.controller.transition.call_args
+        assert call_args[0][0] == "encounter_triggered"
+        assert call_args[1]["context"]["source"] == "room_entry"
+
+    def test_npc_encounter_creates_encounter_state(self, mock_dice):
+        """Verify NPC encounter creates EncounterState with social option."""
+        engine = DungeonEngine.__new__(DungeonEngine)
+        engine.dice = mock_dice
+
+        # Set up controller with properly mocked party_state
+        controller = MagicMock()
+        controller.party_state.active_light_source = True
+        controller.party_state.light_remaining_turns = 10
+        engine.controller = controller
+
+        # Create room and encounter tables
+        room_entries = [
+            RollTableEntry(roll=1, title="Hall", description="A grand hall."),
+        ]
+        room_table = RollTable(
+            name="Rooms",
+            die_type="d6",
+            entries=room_entries,
+        )
+
+        encounter_entries = [
+            RollTableEntry(
+                roll=1,
+                description="A spectral lord appears.",
+                npcs=["spectral_lord"],
+            ),
+        ]
+        encounter_table = RollTable(
+            name="Encounters",
+            die_type="d6",
+            entries=encounter_entries,
+        )
+
+        state = DungeonState(
+            dungeon_id="test",
+            current_room="entry",
+            dynamic_layout={"connections_per_room": "1d3"},
+            room_table=room_table,
+            encounter_table=encounter_table,
+        )
+        entry_room = DungeonRoom(room_id="entry", exits={"north": "room_1"})
+        entry_room.doors["entry_north"] = DoorState.CLOSED
+        state.rooms = {"entry": entry_room}
+        engine._dungeon_state = state
+
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+            MagicMock(total=1),  # Encounter: spectral lord
+            MagicMock(total=30),  # Distance roll
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # NPC surprise
+        ]
+
+        result = engine._handle_move({"direction": "north"})
+
+        assert "encounter" in result
+        assert result["encounter"]["encounter_type"] == "npc"
+        assert result["encounter"]["allows_social"] is True
+        assert result["encounter"]["requires_transition"] is True
+
+        # Verify transition was triggered
+        engine.controller.transition.assert_called_once()
+
+    def test_ambient_encounter_no_state_transition(self, mock_dice):
+        """Verify ambient encounters do not trigger state transitions."""
+        engine = DungeonEngine.__new__(DungeonEngine)
+        engine.dice = mock_dice
+        engine.controller = MagicMock()
+
+        # Create encounter table with ambient entry (no monsters/npcs)
+        room_entries = [
+            RollTableEntry(roll=1, title="Hall", description="A grand hall."),
+        ]
+        room_table = RollTable(
+            name="Rooms",
+            die_type="d6",
+            entries=room_entries,
+        )
+
+        encounter_entries = [
+            RollTableEntry(
+                roll=1,
+                description="A cold wind blows through the corridor.",
+            ),
+        ]
+        encounter_table = RollTable(
+            name="Encounters",
+            die_type="d6",
+            entries=encounter_entries,
+        )
+
+        state = DungeonState(
+            dungeon_id="test",
+            current_room="entry",
+            dynamic_layout={"connections_per_room": "1d3"},
+            room_table=room_table,
+            encounter_table=encounter_table,
+        )
+        entry_room = DungeonRoom(room_id="entry", exits={"north": "room_1"})
+        entry_room.doors["entry_north"] = DoorState.CLOSED
+        state.rooms = {"entry": entry_room}
+        engine._dungeon_state = state
+
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+            MagicMock(total=1),  # Encounter: ambient
+        ]
+
+        result = engine._handle_move({"direction": "north"})
+
+        assert "encounter" in result
+        assert result["encounter"]["encounter_type"] == "ambient"
+        assert result["encounter"]["requires_transition"] is False
+
+        # Verify NO transition was triggered
+        engine.controller.transition.assert_not_called()
+        engine.controller.set_encounter.assert_not_called()
+
+    def test_item_encounter_no_state_transition(self, mock_dice):
+        """Verify item discovery encounters do not trigger state transitions."""
+        engine = DungeonEngine.__new__(DungeonEngine)
+        engine.dice = mock_dice
+        engine.controller = MagicMock()
+
+        room_entries = [
+            RollTableEntry(roll=1, title="Hall", description="A hall."),
+        ]
+        room_table = RollTable(name="Rooms", die_type="d6", entries=room_entries)
+
+        encounter_entries = [
+            RollTableEntry(
+                roll=1,
+                description="A glittering gem rests on a pedestal.",
+                items=["glittering gem"],
+            ),
+        ]
+        encounter_table = RollTable(
+            name="Encounters",
+            die_type="d6",
+            entries=encounter_entries,
+        )
+
+        state = DungeonState(
+            dungeon_id="test",
+            current_room="entry",
+            dynamic_layout={"connections_per_room": "1d3"},
+            room_table=room_table,
+            encounter_table=encounter_table,
+        )
+        entry_room = DungeonRoom(room_id="entry", exits={"north": "room_1"})
+        entry_room.doors["entry_north"] = DoorState.CLOSED
+        state.rooms = {"entry": entry_room}
+        engine._dungeon_state = state
+
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+            MagicMock(total=1),  # Encounter: item
+        ]
+
+        result = engine._handle_move({"direction": "north"})
+
+        assert "encounter" in result
+        assert result["encounter"]["encounter_type"] == "item"
+        assert result["encounter"]["requires_transition"] is False
+
+        # Verify NO transition was triggered
+        engine.controller.transition.assert_not_called()
+
+    def test_encounter_transition_includes_context(self, dungeon_engine, mock_dice):
+        """Verify encounter transition includes required context for EncounterEngine."""
+        # Set up dungeon state with POI info
+        dungeon_engine._dungeon_state.poi_name = "The Spectral Manse"
+        dungeon_engine._dungeon_state.hex_id = "0101"
+
+        mock_dice.roll.side_effect = [
+            MagicMock(total=1),  # Room table roll
+            MagicMock(total=1),  # Connections roll
+            MagicMock(total=2),  # Encounter: monster
+            MagicMock(total=30),  # Distance roll
+        ]
+        mock_dice.roll_d6.side_effect = [
+            MagicMock(total=3),  # Party surprise
+            MagicMock(total=3),  # Monster surprise
+        ]
+
+        dungeon_engine._handle_move({"direction": "north"})
+
+        # Verify transition context
+        call_args = dungeon_engine.controller.transition.call_args
+        context = call_args[1]["context"]
+
+        assert context["dungeon_id"] == "spectral_manse"
+        assert context["room_id"] == "room_1"
+        assert context["source"] == "room_entry"
+        assert context["poi_name"] == "The Spectral Manse"
+        assert context["hex_id"] == "0101"
+        assert "encounter_data" in context
