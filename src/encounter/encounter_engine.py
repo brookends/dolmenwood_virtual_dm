@@ -170,6 +170,10 @@ class EncounterEngineState:
     # Format: [{save_type: "Hold", destination: "Prince's Road", triggered: False}]
     pending_transportation: list[dict[str, Any]] = field(default_factory=list)
 
+    # Reaction roll modifier from POI active effects (e.g., morale effects)
+    # Set from hex_crawl_engine.get_reaction_modifier_from_effects() when starting encounter
+    reaction_modifier: int = 0
+
 
 class EncounterEngine:
     """
@@ -760,14 +764,24 @@ class EncounterEngine:
 
         # Roll 2d6 reaction per Dolmenwood Player's Book
         reaction_roll = self.dice.roll_2d6("reaction roll")
-        result.reaction_roll = reaction_roll.total
 
-        # Interpret reaction using canonical function
-        result.reaction_result = interpret_reaction(reaction_roll.total)
+        # Apply reaction modifier from active POI effects (e.g., morale)
+        modifier = self._state.reaction_modifier
+        modified_total = reaction_roll.total + modifier
+        result.reaction_roll = modified_total
+
+        # Interpret reaction using canonical function (with modifier applied)
+        result.reaction_result = interpret_reaction(modified_total)
+
+        # Format roll display (show modifier if non-zero)
+        if modifier != 0:
+            roll_display = f"{reaction_roll.total}{modifier:+d}={modified_total}"
+        else:
+            roll_display = str(reaction_roll.total)
 
         # Handle reaction outcomes per official table
         if result.reaction_result == ReactionResult.ATTACKS:
-            result.messages.append(f"Attacks! ({reaction_roll.total}) - They attack immediately!")
+            result.messages.append(f"Attacks! ({roll_display}) - They attack immediately!")
             result.encounter_ended = True
             result.end_reason = "hostile_reaction"
             result.transition_to = "encounter_to_combat"
@@ -775,19 +789,19 @@ class EncounterEngine:
                 "encounter_to_combat", context={"reason": "hostile_reaction"}
             )
         elif result.reaction_result == ReactionResult.HOSTILE:
-            result.messages.append(f"Hostile ({reaction_roll.total}) - They may attack")
+            result.messages.append(f"Hostile ({roll_display}) - They may attack")
             # May escalate or allow further parley
         elif result.reaction_result == ReactionResult.UNCERTAIN:
-            result.messages.append(f"Uncertain ({reaction_roll.total}) - They are wary")
+            result.messages.append(f"Uncertain ({roll_display}) - They are wary")
         elif result.reaction_result == ReactionResult.INDIFFERENT:
-            result.messages.append(f"Indifferent ({reaction_roll.total}) - They may negotiate")
+            result.messages.append(f"Indifferent ({roll_display}) - They may negotiate")
             result.encounter_ended = True
             result.end_reason = "parley_success"
             result.transition_to = "encounter_to_parley"
             self.controller.transition("encounter_to_parley", context={"reaction": "indifferent"})
         else:  # FRIENDLY (12+)
             result.messages.append(
-                f"Friendly ({reaction_roll.total}) - They are eager and friendly!"
+                f"Friendly ({roll_display}) - They are eager and friendly!"
             )
             result.encounter_ended = True
             result.end_reason = "parley_success"

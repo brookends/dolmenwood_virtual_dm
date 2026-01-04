@@ -119,6 +119,9 @@ class POIVisit:
     alerts_triggered: list[str] = field(default_factory=list)  # Alert IDs that have fired
     alarms_silenced: bool = False  # True if alarms have been silenced (e.g., with acorns)
     entry_authorized: bool = False  # True if entry was authorized (permission/password/etc.)
+    # Active mechanical effects from roll tables
+    # Format: [{"type": "reaction_mod", "target": "murkin_soldiers", "value": -1, "source": "Camp Activities"}]
+    active_effects: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -4155,7 +4158,10 @@ class HexCrawlEngine:
         )
 
         # Check if roll succeeds against our target (not class target)
-        roll_value = skill_result.roll + stealth_modifier
+        # Include any stealth modifiers from active effects (e.g., camp activities)
+        effect_stealth_mod = self.get_stealth_modifier_from_effects(hex_id, poi_name)
+        total_modifier = stealth_modifier + effect_stealth_mod
+        roll_value = skill_result.roll + total_modifier
         stealth_success = roll_value >= base_target
 
         # Get or create visit tracking
@@ -4176,6 +4182,8 @@ class HexCrawlEngine:
                 "stealth_roll": skill_result.roll,
                 "stealth_target": base_target,
                 "stealth_modifier": stealth_modifier,
+                "effect_stealth_modifier": effect_stealth_mod,
+                "total_modifier": total_modifier,
                 "effective_roll": roll_value,
                 "sentry_count": sentry_count,
                 "character": character_id,
@@ -4210,6 +4218,8 @@ class HexCrawlEngine:
                 "stealth_roll": skill_result.roll,
                 "stealth_target": base_target,
                 "stealth_modifier": stealth_modifier,
+                "effect_stealth_modifier": effect_stealth_mod,
+                "total_modifier": total_modifier,
                 "effective_roll": roll_value,
                 "sentry_count": sentry_count,
                 "character": character_id,
@@ -6816,6 +6826,30 @@ class HexCrawlEngine:
                 hex_id, target_poi, table_name, roll.total
             )
 
+        # Store mechanical_effect in active_effects if present
+        effect_applied = False
+        if entry.mechanical_effect:
+            effect_data = entry.mechanical_effect
+            # Handle both dict (new format) and string (legacy format)
+            if isinstance(effect_data, dict):
+                effect_record = {
+                    **effect_data,
+                    "source": table_name,
+                    "roll": roll.total,
+                }
+            else:
+                # Legacy string format - wrap in dict
+                effect_record = {
+                    "type": "legacy",
+                    "description": effect_data,
+                    "source": table_name,
+                    "roll": roll.total,
+                }
+
+            # Store in POIVisit for this location
+            self._apply_mechanical_effect(hex_id, target_poi, effect_record)
+            effect_applied = True
+
         return {
             "roll": roll.total,
             "table": table_name,
@@ -6826,6 +6860,7 @@ class HexCrawlEngine:
             "npcs": entry.npcs,
             "items": entry.items,
             "mechanical_effect": entry.mechanical_effect,
+            "effect_applied": effect_applied,
             "sub_table": entry.sub_table,
             "quest_hook": entry.quest_hook,
         }
@@ -7134,7 +7169,143 @@ class HexCrawlEngine:
             "items_taken": visit.items_taken,
             "secrets_found": visit.secrets_discovered,
             "time_spent_turns": visit.time_spent_turns,
+            "active_effects": visit.active_effects,
         }
+
+    # =========================================================================
+    # MECHANICAL EFFECT MANAGEMENT
+    # =========================================================================
+
+    def _apply_mechanical_effect(
+        self, hex_id: str, poi_name: str, effect: dict[str, Any]
+    ) -> None:
+        """
+        Apply a mechanical effect from a roll table to the POI's active effects.
+
+        Effects are stored in POIVisit.active_effects and can modify stealth DCs,
+        reaction rolls, and other mechanics.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI
+            effect: Effect dictionary with type, value, target, etc.
+        """
+        visit_key = f"{hex_id}:{poi_name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi_name)
+
+        visit = self._poi_visits[visit_key]
+
+        # Replace any existing effect from the same source table
+        # (only one camp activity or morale result active at a time)
+        source = effect.get("source", "")
+        visit.active_effects = [
+            e for e in visit.active_effects if e.get("source") != source
+        ]
+
+        # Add the new effect
+        visit.active_effects.append(effect)
+
+    def get_active_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get all active mechanical effects at a POI.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            List of active effect dictionaries
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return []
+
+        visit_key = f"{hex_id}:{target_poi}"
+        visit = self._poi_visits.get(visit_key)
+        if not visit:
+            return []
+
+        return visit.active_effects
+
+    def get_stealth_modifier_from_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> int:
+        """
+        Calculate total stealth modifier from active effects.
+
+        Looks for effects with type="stealth_mod" and sums their values.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Total stealth modifier (positive = easier, negative = harder)
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        total = 0
+        for effect in effects:
+            if effect.get("type") == "stealth_mod":
+                total += effect.get("value", 0)
+        return total
+
+    def get_reaction_modifier_from_effects(
+        self, hex_id: str, poi_name: Optional[str] = None, target: str = "all"
+    ) -> int:
+        """
+        Calculate total reaction modifier from active effects.
+
+        Looks for effects with type="reaction_mod" and sums their values.
+        Can filter by target (e.g., "soldiers", "all").
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+            target: Target to match (e.g., "soldiers", "all")
+
+        Returns:
+            Total reaction modifier
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        total = 0
+        for effect in effects:
+            if effect.get("type") == "reaction_mod":
+                effect_target = effect.get("target", "all")
+                # Match if targets are the same, or if either is "all"
+                if effect_target == target or effect_target == "all" or target == "all":
+                    total += effect.get("value", 0)
+        return total
+
+    def clear_active_effects(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> int:
+        """
+        Clear all active effects at a POI.
+
+        Useful when leaving a location or when effects expire.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Number of effects cleared
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return 0
+
+        visit_key = f"{hex_id}:{target_poi}"
+        visit = self._poi_visits.get(visit_key)
+        if not visit:
+            return 0
+
+        count = len(visit.active_effects)
+        visit.active_effects = []
+        return count
 
     # =========================================================================
     # AUTOMATIC HAZARD TRIGGERS

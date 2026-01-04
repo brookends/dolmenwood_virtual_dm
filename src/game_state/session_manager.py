@@ -2107,9 +2107,19 @@ class SessionManager:
         for key, visit in engine._poi_visits.items():
             self._current_session.poi_visits[key] = {
                 "poi_name": visit.poi_name,
+                "state": visit.state.value if hasattr(visit.state, "value") else visit.state,
                 "entered": visit.entered,
-                "items_taken": visit.items_taken.copy(),
                 "rooms_explored": visit.rooms_explored.copy(),
+                "npcs_encountered": visit.npcs_encountered.copy(),
+                "items_found": visit.items_found.copy(),
+                "items_taken": visit.items_taken.copy(),
+                "secrets_discovered": visit.secrets_discovered.copy(),
+                "time_spent_turns": visit.time_spent_turns,
+                "hazards_resolved": visit.hazards_resolved.copy(),
+                "alerts_triggered": visit.alerts_triggered.copy(),
+                "alarms_silenced": visit.alarms_silenced,
+                "entry_authorized": visit.entry_authorized,
+                "active_effects": [e.copy() for e in visit.active_effects],
             }
 
         # World changes
@@ -2323,15 +2333,32 @@ class SessionManager:
         # Met NPCs
         engine._met_npcs = set(self._current_session.met_npcs)
 
-        # POI visits - need to import POIVisit
-        from src.hex_crawl.hex_crawl_engine import POIVisit
+        # POI visits - need to import POIVisit and POIExplorationState
+        from src.hex_crawl.hex_crawl_engine import POIVisit, POIExplorationState
 
         for key, visit_data in self._current_session.poi_visits.items():
+            # Parse state enum from saved value
+            state_value = visit_data.get("state", "distant")
+            try:
+                state = POIExplorationState(state_value)
+            except ValueError:
+                state = POIExplorationState.DISTANT
+
             engine._poi_visits[key] = POIVisit(
                 poi_name=visit_data["poi_name"],
+                state=state,
                 entered=visit_data.get("entered", False),
-                items_taken=visit_data.get("items_taken", []),
                 rooms_explored=visit_data.get("rooms_explored", []),
+                npcs_encountered=visit_data.get("npcs_encountered", []),
+                items_found=visit_data.get("items_found", []),
+                items_taken=visit_data.get("items_taken", []),
+                secrets_discovered=visit_data.get("secrets_discovered", []),
+                time_spent_turns=visit_data.get("time_spent_turns", 0),
+                hazards_resolved=visit_data.get("hazards_resolved", []),
+                alerts_triggered=visit_data.get("alerts_triggered", []),
+                alarms_silenced=visit_data.get("alarms_silenced", False),
+                entry_authorized=visit_data.get("entry_authorized", False),
+                active_effects=visit_data.get("active_effects", []),
             )
 
         # World changes

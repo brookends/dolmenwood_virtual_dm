@@ -93,7 +93,7 @@
               "description": "A successful hunt is being celebrated with wine and song. Lady Borrid is in excellent spirits and generous to visitors.",
               "npcs": ["lady_amonie_borrid"],
               "items": [],
-              "mechanical_effect": "+1 to reaction rolls"
+              "mechanical_effect": {"type": "reaction_mod", "value": 1, "target": "all", "description": "+1 to reaction rolls"}
             },
             {
               "roll": 5,
@@ -109,7 +109,7 @@
               "description": "Lady Borrid and her companions study maps and discuss the 'cheese monstrosity' of Dwelmfurgh. Serious mood; interruptions unwelcome.",
               "npcs": ["lady_amonie_borrid"],
               "items": [],
-              "mechanical_effect": "-1 to reaction rolls"
+              "mechanical_effect": {"type": "reaction_mod", "value": -1, "target": "all", "description": "-1 to reaction rolls"}
             }
           ]
         },
@@ -153,7 +153,7 @@
               "keywords": ["horn", "blasting", "bronze", "magic"],
               "npcs": [],
               "items": ["horn_of_blasting"],
-              "mechanical_effect": "Horn of Blasting can be obtained"
+              "mechanical_effect": {"type": "item_available", "item_id": "horn_of_blasting", "description": "Horn of Blasting can be obtained"}
             },
             {
               "roll": 5,
@@ -317,7 +317,7 @@
               "description": "A patrol returns with 1d4 new 'recruits,' peasants seized from nearby hexes. They're being processed into the ranks.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Potential rescue opportunity"
+              "mechanical_effect": {"type": "narrative", "hook": "rescue_opportunity", "description": "Potential rescue opportunity"}
             },
             {
               "roll": 4,
@@ -325,7 +325,7 @@
               "description": "The entire camp is marching in formation around the dell. Snidebleat rides a mule, shouting orders.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Camp is mobile; harder to sneak in"
+              "mechanical_effect": {"type": "stealth_mod", "value": -2, "target": "camp_entry", "description": "Camp is mobile; harder to sneak in"}
             },
             {
               "roll": 5,
@@ -333,7 +333,7 @@
               "description": "Many soldiers have found ale and are drinking furtively. Discipline is lax. Snidebleat is in her tent.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Soldiers distracted; easier to sneak"
+              "mechanical_effect": {"type": "stealth_mod", "value": 2, "target": "camp_entry", "description": "Soldiers distracted; easier to sneak"}
             },
             {
               "roll": 6,
@@ -341,7 +341,7 @@
               "description": "An emissary from Lord Murkin inspects the troops. Everyone is on their best behavior. Snidebleat barely conceals her contempt.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": "Security heightened"
+              "mechanical_effect": {"type": "stealth_mod", "value": -1, "target": "camp_entry", "description": "Security heightened"}
             }
           ]
         },
@@ -356,7 +356,7 @@
               "description": "Whispered talk of desertion or uprising. One wrong move could spark violence.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "Soldiers may be recruited against Murkin"
+              "mechanical_effect": {"type": "narrative", "hook": "recruit_soldiers", "description": "Soldiers may be recruited against Murkin"}
             },
             {
               "roll": 2,
@@ -388,7 +388,7 @@
               "description": "Someone smuggled in ale. Soldiers are loud and potentially aggressive.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "-1 to reaction; may start fights"
+              "mechanical_effect": {"type": "reaction_mod", "value": -1, "target": "soldiers", "description": "-1 to reaction; may start fights"}
             },
             {
               "roll": 6,
@@ -396,7 +396,7 @@
               "description": "A successful skirmish or capture has bolstered morale. Soldiers are unusually cooperative.",
               "npcs": [],
               "items": [],
-              "mechanical_effect": "+1 to reaction with soldiers"
+              "mechanical_effect": {"type": "reaction_mod", "value": 1, "target": "soldiers", "description": "+1 to reaction with soldiers"}
             }
           ]
         }
