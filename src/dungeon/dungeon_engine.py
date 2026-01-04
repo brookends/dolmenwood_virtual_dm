@@ -707,7 +707,18 @@ class DungeonEngine:
 
         # Create room if doesn't exist
         if exit_target not in self._dungeon_state.rooms:
-            self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
+            if self._dungeon_state.dynamic_layout:
+                # Generate a dynamic room using roll tables
+                generated_room = self._generate_dynamic_room(
+                    exit_target,
+                    from_room_id=current_room.room_id,
+                    from_direction=direction,
+                )
+                if not generated_room:
+                    # Fallback to empty room if generation fails
+                    self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
+            else:
+                self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
 
         # Update party location
         self.controller.set_party_location(
@@ -724,6 +735,22 @@ class DungeonEngine:
             "new_room": exit_target,
             "noise": 1,  # Normal movement noise
         }
+
+        # Include room details in result
+        if new_room.name:
+            result["room_name"] = new_room.name
+        if new_room.description:
+            result["room_description"] = new_room.description
+        if new_room.exits:
+            result["exits"] = list(new_room.exits.keys())
+
+        # For dynamic dungeons, generate an encounter when entering a new room
+        if self._dungeon_state.dynamic_layout and not new_room.searched:
+            encounter_result = self.generate_room_encounter()
+            if encounter_result:
+                result["encounter"] = encounter_result
+                # Mark room as having had encounter generated
+                new_room.searched = True
 
         if trap_results:
             result["traps_triggered"] = trap_results
@@ -2316,7 +2343,12 @@ class DungeonEngine:
     # DYNAMIC ROOM GENERATION (for POIs like The Spectral Manse)
     # =========================================================================
 
-    def _generate_dynamic_room(self, room_id: str) -> Optional[DungeonRoom]:
+    def _generate_dynamic_room(
+        self,
+        room_id: str,
+        from_room_id: Optional[str] = None,
+        from_direction: Optional[str] = None,
+    ) -> Optional[DungeonRoom]:
         """
         Generate a room dynamically using the POI's room table.
 
@@ -2325,6 +2357,8 @@ class DungeonEngine:
 
         Args:
             room_id: The room ID to generate
+            from_room_id: The room we're coming from (for bidirectional exit)
+            from_direction: The direction we moved (to compute return direction)
 
         Returns:
             Generated DungeonRoom or None if generation fails
@@ -2354,19 +2388,39 @@ class DungeonEngine:
             room_id=room_id,
             name=entry.title or f"Room {roll.total}",
             description=entry.description,
+            visited=True,  # Mark as visited since we just entered
         )
 
-        # Generate exits based on dynamic layout
-        connections_dice = dynamic_layout.get("connections_per_room", "1d3")
-        num_exits = self.dice.roll(connections_dice, "room connections").total
+        # Track used directions to avoid conflicts
+        used_directions: set[str] = set()
 
-        # Create exits to new rooms
-        directions = ["north", "south", "east", "west", "up", "down"]
-        for i in range(min(num_exits, len(directions))):
-            direction = directions[i]
-            new_room_id = f"room_{len(self._dungeon_state.rooms) + i + 1}"
+        # Add bidirectional exit back to the room we came from
+        if from_room_id and from_direction:
+            opposite_direction = self._get_opposite_direction(from_direction)
+            if opposite_direction:
+                room.exits[opposite_direction] = from_room_id
+                room.doors[f"{room_id}_{opposite_direction}"] = DoorState.OPEN
+                used_directions.add(opposite_direction)
+
+        # Generate additional exits based on dynamic layout
+        connections_dice = dynamic_layout.get("connections_per_room", "1d3")
+        num_additional_exits = self.dice.roll(connections_dice, "room connections").total
+
+        # Available directions (excluding the one we came from)
+        all_directions = ["north", "south", "east", "west", "up", "down"]
+        available_directions = [d for d in all_directions if d not in used_directions]
+
+        # Create exits to new unexplored rooms
+        exits_created = 0
+        for direction in available_directions:
+            if exits_created >= num_additional_exits:
+                break
+
+            # Generate unique room ID based on total rooms
+            new_room_id = f"room_{len(self._dungeon_state.rooms) + exits_created + 1}"
             room.exits[direction] = new_room_id
             room.doors[f"{room_id}_{direction}"] = DoorState.CLOSED
+            exits_created += 1
 
         # Add items from the entry
         for item_name in entry.items:
@@ -2376,6 +2430,18 @@ class DungeonEngine:
         self._dungeon_state.rooms[room_id] = room
 
         return room
+
+    def _get_opposite_direction(self, direction: str) -> Optional[str]:
+        """Get the opposite direction for bidirectional exits."""
+        opposites = {
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east",
+            "up": "down",
+            "down": "up",
+        }
+        return opposites.get(direction.lower())
 
     def generate_room_encounter(self) -> Optional[dict[str, Any]]:
         """
