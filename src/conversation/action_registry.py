@@ -418,6 +418,55 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_end_day,
     ))
 
+    def _wilderness_camp(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Make camp and sleep through the night.
+
+        Advances time to dusk, processes night hazards (like 0102's dreamless
+        sleep or full moon effects), then advances to dawn.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        activity = p.get("activity", "sleeping")
+
+        result = dm.hex_crawl.camp(hex_id=hex_id, activity=activity)
+
+        if not result.get("success"):
+            return {"success": False, "message": result.get("message", "Could not make camp")}
+
+        # Build response message
+        parts = [result.get("narrative", "The party makes camp.")]
+
+        hazard_results = result.get("hazard_results", [])
+        if hazard_results:
+            failed = [h for h in hazard_results if not h.get("success", True)]
+            if failed:
+                parts.append(f"\n{len(failed)} character(s) were affected by night hazards:")
+                for h in failed:
+                    char_name = h.get("character_name", "Unknown")
+                    condition = h.get("condition_applied", h.get("effect", "unknown effect"))
+                    parts.append(f"- {char_name}: {condition}")
+
+        return {
+            "success": True,
+            "message": "\n".join(parts),
+            "hazard_results": hazard_results,
+            "characters_affected": result.get("characters_affected", 0),
+            "suggested_actions": result.get("suggested_actions", []),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:camp",
+        label="Camp / Sleep through night",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "activity": {"type": "string", "required": False},
+        },
+        help="Make camp and sleep through the night. Processes night hazards like dreamless sleep in hex 0102.",
+        executor=_wilderness_camp,
+    ))
+
     def _wilderness_approach_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Approach a point of interest."""
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id

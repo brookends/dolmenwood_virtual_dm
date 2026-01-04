@@ -2087,6 +2087,113 @@ class HexCrawlEngine:
 
         return result
 
+    def camp(
+        self,
+        hex_id: Optional[str] = None,
+        activity: str = "sleeping",
+    ) -> dict[str, Any]:
+        """
+        Make camp and rest through the night in a hex.
+
+        This action:
+        1. Advances time to DUSK (if not already night)
+        2. Processes any night hazards (sleep hazards, full moon effects, etc.)
+        3. Advances time to DAWN (next morning)
+        4. Returns results including any hazard outcomes
+
+        Night hazards like hex 0102's "dreamless" mist or hex 0107's full moon
+        compulsion are automatically processed based on the hex's procedural data.
+
+        Args:
+            hex_id: Hex to camp in (defaults to current hex)
+            activity: Activity during the night ("sleeping", "watching", etc.)
+
+        Returns:
+            Dictionary with camp results including:
+            - success: Whether camping was possible
+            - time_advanced: Time advancement details
+            - hazard_results: Any night hazard effects
+            - characters_affected: Characters who suffered hazard effects
+        """
+        target_hex = hex_id or self._current_hex
+        if not target_hex:
+            return {"success": False, "message": "No current hex set"}
+
+        hex_data = self._hex_data.get(target_hex)
+        if not hex_data:
+            return {"success": False, "message": f"Hex {target_hex} not loaded"}
+
+        result: dict[str, Any] = {
+            "success": True,
+            "hex_id": target_hex,
+            "hex_name": hex_data.name,
+            "activity": activity,
+            "time_advanced": {},
+            "hazard_results": [],
+            "characters_affected": 0,
+        }
+
+        # Phase 1: Advance to DUSK if not already night
+        if not self._is_night():
+            dusk_result = self.controller.advance_to_time_of_day(
+                TimeOfDay.DUSK, reason="making camp"
+            )
+            result["time_advanced"]["to_dusk"] = dusk_result
+
+        # Phase 2: Process night hazards
+        # These are triggered by sleeping in the hex (e.g., 0102's dreamless mist)
+        hazard_results = self.process_night_hazards(
+            target_hex, activity=activity
+        )
+        result["hazard_results"] = hazard_results
+        result["characters_affected"] = len(hazard_results)
+
+        # Phase 3: Advance to DAWN (morning)
+        dawn_result = self.controller.advance_to_time_of_day(
+            TimeOfDay.DAWN, reason="sleeping through night"
+        )
+        result["time_advanced"]["to_dawn"] = dawn_result
+
+        # Build narrative description
+        hex_description = hex_data.terrain_description or hex_data.terrain_type
+        if hazard_results:
+            failed_saves = [h for h in hazard_results if not h.get("success", True)]
+            if failed_saves:
+                result["narrative"] = (
+                    f"The party makes camp in {hex_data.name} ({hex_description}). "
+                    f"During the night, {len(failed_saves)} character(s) are affected "
+                    f"by the night hazards of this hex."
+                )
+            else:
+                result["narrative"] = (
+                    f"The party makes camp in {hex_data.name} ({hex_description}). "
+                    f"Though the night holds dangers, all characters resist the effects."
+                )
+        else:
+            result["narrative"] = (
+                f"The party makes camp in {hex_data.name} ({hex_description}). "
+                f"The night passes uneventfully."
+            )
+
+        # Emit run log event
+        self._emit_run_log_event("wilderness_camp", result)
+
+        # Add suggested actions for the next morning
+        result["suggested_actions"] = [
+            {
+                "action_id": "wilderness:travel",
+                "label": "Continue traveling",
+                "params": {},
+            },
+            {
+                "action_id": "wilderness:forage",
+                "label": "Forage for food",
+                "params": {"hex_id": target_hex},
+            },
+        ]
+
+        return result
+
     def _get_terrain_difficulty_description(self, terrain: TerrainType) -> str:
         """Get human-readable terrain difficulty description."""
         terrain_info = self.get_terrain_info(terrain)
