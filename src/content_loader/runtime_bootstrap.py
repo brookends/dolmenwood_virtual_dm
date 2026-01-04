@@ -433,6 +433,8 @@ def _parse_point_of_interest(data: dict[str, Any]) -> Any:
         item_persistence=data.get("item_persistence"),
         # Dynamic layout for procedural dungeons
         dynamic_layout=data.get("dynamic_layout"),
+        # Raw data for future schema expansion (read-only by convention)
+        raw_data=data,
     )
 
 

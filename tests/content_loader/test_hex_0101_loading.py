@@ -430,3 +430,52 @@ class TestPOIFieldsDirectParsing:
         assert poi.dungeon_levels is None  # Spectral Manse uses dynamic layout instead
         assert poi.dynamic_layout is not None
         assert poi.item_persistence is not None
+
+
+class TestPOIRawDataEscapeHatch:
+    """Tests for POI raw_data field that preserves original JSON for future schema expansion."""
+
+    def test_raw_data_contains_original_json(self, hex_0101_data):
+        """Verify raw_data contains the original POI JSON data."""
+        poi_data = hex_0101_data["points_of_interest"][0]
+        poi = _parse_point_of_interest(poi_data)
+
+        assert hasattr(poi, "raw_data")
+        assert isinstance(poi.raw_data, dict)
+        assert poi.raw_data is poi_data  # Should be the same dict reference
+
+    def test_raw_data_name_matches_parsed_name(self, hex_0101_data):
+        """Verify poi.raw_data.get('name') == poi.name as per acceptance criteria."""
+        poi_data = hex_0101_data["points_of_interest"][0]
+        poi = _parse_point_of_interest(poi_data)
+
+        assert poi.raw_data.get("name") == poi.name
+
+    def test_raw_data_preserves_all_original_fields(self, hex_0101_data):
+        """Verify raw_data contains all original fields from JSON."""
+        poi_data = hex_0101_data["points_of_interest"][0]
+        poi = _parse_point_of_interest(poi_data)
+
+        # Check several fields exist in raw_data
+        assert poi.raw_data.get("poi_type") == "manse"
+        assert poi.raw_data.get("is_dungeon") is True
+        assert "dynamic_layout" in poi.raw_data
+        assert "roll_tables" in poi.raw_data
+
+    def test_raw_data_allows_access_to_unparsed_fields(self, spectral_manse_poi):
+        """Verify raw_data allows access to fields not yet formally parsed."""
+        # raw_data allows engines to access new fields before formal support
+        assert spectral_manse_poi.raw_data is not None
+
+        # Can access existing fields via raw_data
+        assert spectral_manse_poi.raw_data.get("poi_type") == spectral_manse_poi.poi_type
+
+    def test_raw_data_available_on_loaded_hex_poi(self, hex_0101):
+        """Verify raw_data is available on POIs loaded through full hex parsing."""
+        poi = next(
+            (p for p in hex_0101.points_of_interest if p.name == "The Spectral Manse"),
+            None
+        )
+        assert poi is not None
+        assert hasattr(poi, "raw_data")
+        assert poi.raw_data.get("name") == "The Spectral Manse"

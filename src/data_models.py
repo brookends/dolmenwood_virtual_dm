@@ -3028,6 +3028,11 @@ class PointOfInterest:
     # Enables randomly generated room connections instead of fixed maps
     dynamic_layout: Optional[dict[str, Any]] = None
 
+    # Raw JSON data for future schema expansion
+    # Allows access to new fields before formal parsing support is added
+    # Read-only by convention: engines should not mutate this field
+    raw_data: dict[str, Any] = field(default_factory=dict)
+
     def is_visible(self, discovered_secrets: Optional[set[str]] = None) -> bool:
         """
         Check if POI is currently visible to players.
