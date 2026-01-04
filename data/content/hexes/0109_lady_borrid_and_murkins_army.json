@@ -317,7 +317,12 @@
               "description": "A patrol returns with 1d4 new 'recruits,' peasants seized from nearby hexes. They're being processed into the ranks.",
               "npcs": ["sergeant_crewwin_snidebleat"],
               "items": [],
-              "mechanical_effect": {"type": "narrative", "hook": "rescue_opportunity", "description": "Potential rescue opportunity"}
+              "mechanical_effect": {
+                "type": "prisoners_present",
+                "count": "1d4",
+                "guard_count": "1d6",
+                "description": "Prisoners are being held under guard. A rescue attempt is possible."
+              }
             },
             {
               "roll": 4,

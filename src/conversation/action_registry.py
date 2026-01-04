@@ -708,6 +708,72 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi_stealth,
     ))
 
+    def _wilderness_rescue_prisoners(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to rescue prisoners at a POI."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        character_id = p.get("character_id", "")
+        method = p.get("method", "stealth")
+        stealth_modifier = p.get("stealth_modifier", 0)
+
+        if not character_id:
+            # Try to get first character
+            try:
+                chars = dm.controller.characters
+                if chars:
+                    character_id = chars[0].character_id
+            except Exception:
+                pass
+
+        if not character_id:
+            return {"success": False, "message": "Must specify character_id"}
+
+        try:
+            result = dm.hex_crawl.rescue_prisoners(
+                hex_id=hex_id,
+                character_id=character_id,
+                method=method,
+                stealth_modifier=stealth_modifier,
+            )
+            return result
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt rescue: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:rescue_prisoners",
+        label="Rescue prisoners",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "method": {"type": "string", "required": False, "enum": ["stealth", "combat"]},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to rescue prisoners at the current POI. Use stealth to sneak them out, or combat to fight the guards.",
+        executor=_wilderness_rescue_prisoners,
+    ))
+
+    def _wilderness_complete_combat_rescue(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Complete prisoner rescue after winning combat."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        try:
+            result = dm.hex_crawl.complete_combat_rescue(hex_id)
+            return result
+        except Exception as e:
+            return {"success": False, "message": f"Could not complete rescue: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:complete_combat_rescue",
+        label="Free prisoners after combat",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Free the prisoners after defeating the guards in combat.",
+        executor=_wilderness_complete_combat_rescue,
+    ))
+
     def _wilderness_roll_poi_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Roll on a POI's roll table (like 'Leavings in the Mud')."""
         table_name = p.get("table_name", "")

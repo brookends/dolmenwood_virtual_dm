@@ -6837,6 +6837,21 @@ class HexCrawlEngine:
                     "source": table_name,
                     "roll": roll.total,
                 }
+
+                # Special handling for prisoners_present: roll dice for counts
+                if effect_data.get("type") == "prisoners_present":
+                    # Roll prisoner count
+                    count_formula = effect_data.get("count", "1d4")
+                    count_roll = self.dice.roll(count_formula, "prisoner count")
+                    effect_record["prisoner_count"] = count_roll.total
+
+                    # Roll guard count
+                    guard_formula = effect_data.get("guard_count", "1d6")
+                    guard_roll = self.dice.roll(guard_formula, "guard count")
+                    effect_record["guard_count_rolled"] = guard_roll.total
+
+                    # Add rescue availability flag
+                    effect_record["rescue_available"] = True
             else:
                 # Legacy string format - wrap in dict
                 effect_record = {
@@ -7306,6 +7321,292 @@ class HexCrawlEngine:
         count = len(visit.active_effects)
         visit.active_effects = []
         return count
+
+    def get_prisoners_info(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get information about prisoners present at a POI.
+
+        Looks for a prisoners_present effect in active_effects and returns
+        details including prisoner count, guard count, and rescue availability.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with prisoner info if present, None otherwise
+        """
+        effects = self.get_active_effects(hex_id, poi_name)
+        for effect in effects:
+            if effect.get("type") == "prisoners_present":
+                if effect.get("rescue_available", True):
+                    return {
+                        "prisoner_count": effect.get("prisoner_count", 0),
+                        "guard_count": effect.get("guard_count_rolled", 0),
+                        "description": effect.get("description", ""),
+                        "source": effect.get("source", ""),
+                        "rescue_available": True,
+                    }
+        return None
+
+    def rescue_prisoners(
+        self,
+        hex_id: str,
+        character_id: str,
+        poi_name: Optional[str] = None,
+        method: str = "stealth",
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to rescue prisoners at a POI.
+
+        Supports two methods:
+        - stealth: Skill check to sneak prisoners out undetected
+        - combat: Direct confrontation with guards (starts encounter)
+
+        Args:
+            hex_id: The hex containing the POI
+            character_id: The character leading the rescue
+            poi_name: POI name (defaults to current POI)
+            method: "stealth" or "combat"
+            stealth_modifier: Modifier to stealth roll (for stealth method)
+
+        Returns:
+            Dictionary with rescue attempt results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver
+
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Check for prisoners
+        prisoners_info = self.get_prisoners_info(hex_id, target_poi)
+        if not prisoners_info:
+            return {
+                "success": False,
+                "error": "No prisoners available for rescue at this location",
+            }
+
+        prisoner_count = prisoners_info["prisoner_count"]
+        guard_count = prisoners_info["guard_count"]
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        if method == "stealth":
+            # Stealth rescue - skill check against guard difficulty
+            # Base target: 4 + (guard_count // 2), max 6
+            base_target = min(6, 4 + (guard_count // 2))
+
+            resolver = get_skill_resolver()
+            skill_result = resolver.resolve_skill_check(
+                character=character,
+                skill_name="stealth",
+                modifier=stealth_modifier,
+                context={"stealth_target_override": base_target},
+            )
+
+            # Include effect modifiers
+            effect_stealth_mod = self.get_stealth_modifier_from_effects(hex_id, target_poi)
+            total_modifier = stealth_modifier + effect_stealth_mod
+            roll_value = skill_result.roll + total_modifier
+            stealth_success = roll_value >= base_target
+
+            if stealth_success:
+                # Successful stealth rescue
+                self._clear_prisoners_effect(hex_id, target_poi)
+
+                # Log world state change
+                self._log_rescue_success(hex_id, target_poi, prisoner_count, "stealth")
+
+                return {
+                    "success": True,
+                    "method": "stealth",
+                    "stealth_success": True,
+                    "stealth_roll": skill_result.roll,
+                    "stealth_target": base_target,
+                    "stealth_modifier": stealth_modifier,
+                    "effect_modifier": effect_stealth_mod,
+                    "total_modifier": total_modifier,
+                    "effective_roll": roll_value,
+                    "prisoners_rescued": prisoner_count,
+                    "guard_count": guard_count,
+                    "message": (
+                        f"You successfully slip past the {guard_count} guards and "
+                        f"free {prisoner_count} prisoner{'s' if prisoner_count != 1 else ''}! "
+                        f"They scatter into the woods, grateful for their freedom."
+                    ),
+                }
+            else:
+                # Stealth failed - guards alerted, combat ensues
+                return {
+                    "success": False,
+                    "method": "stealth",
+                    "stealth_failed": True,
+                    "stealth_roll": skill_result.roll,
+                    "stealth_target": base_target,
+                    "stealth_modifier": stealth_modifier,
+                    "effect_modifier": effect_stealth_mod,
+                    "total_modifier": total_modifier,
+                    "effective_roll": roll_value,
+                    "prisoners_count": prisoner_count,
+                    "guard_count": guard_count,
+                    "combat_triggered": True,
+                    "encounter": self._build_guard_encounter(guard_count, hex_id, target_poi),
+                    "message": (
+                        f"You are spotted by the guards! {guard_count} soldier{'s' if guard_count != 1 else ''} "
+                        f"move to intercept you. Combat is unavoidable!"
+                    ),
+                }
+
+        elif method == "combat":
+            # Direct combat approach - create encounter immediately
+            return {
+                "success": True,
+                "method": "combat",
+                "combat_initiated": True,
+                "prisoners_count": prisoner_count,
+                "guard_count": guard_count,
+                "encounter": self._build_guard_encounter(guard_count, hex_id, target_poi),
+                "message": (
+                    f"You charge at the {guard_count} guards protecting the prisoners. "
+                    f"Defeat them to free the {prisoner_count} captive{'s' if prisoner_count != 1 else ''}!"
+                ),
+            }
+
+        else:
+            return {"success": False, "error": f"Unknown rescue method: {method}"}
+
+    def _clear_prisoners_effect(self, hex_id: str, poi_name: str) -> None:
+        """Remove prisoners_present effect from a POI."""
+        visit_key = f"{hex_id}:{poi_name}"
+        visit = self._poi_visits.get(visit_key)
+        if visit:
+            visit.active_effects = [
+                e for e in visit.active_effects
+                if e.get("type") != "prisoners_present"
+            ]
+
+    def _log_rescue_success(
+        self, hex_id: str, poi_name: str, prisoner_count: int, method: str
+    ) -> None:
+        """Log a successful rescue to world state changes."""
+        from src.data_models import HexStateChange
+
+        change = HexStateChange(
+            change_id=f"rescue_{hex_id}_{poi_name}_{self.dice.roll('1d1000').total}",
+            hex_id=hex_id,
+            poi_name=poi_name,
+            trigger_action="rescue_prisoners",
+            trigger_details={
+                "method": method,
+                "prisoner_count": prisoner_count,
+            },
+            change_type="rescue_success",
+            before_state={"prisoners_present": True, "count": prisoner_count},
+            after_state={"prisoners_present": False, "count": 0},
+            narrative_description=(
+                f"{prisoner_count} prisoner{'s were' if prisoner_count != 1 else ' was'} "
+                f"rescued from {poi_name} via {method}."
+            ),
+            occurred_at=self.controller.world_state.current_date if hasattr(self.controller, "world_state") else None,
+            reversible=False,
+        )
+        self._world_state_changes.add_change(change)
+
+    def _build_guard_encounter(
+        self, guard_count: int, hex_id: str, poi_name: str
+    ) -> dict[str, Any]:
+        """Build an encounter with prisoner guards."""
+        return {
+            "encounter_type": "combat",
+            "name": "Prisoner Guards",
+            "creatures": [
+                {
+                    "name": "Soldier",
+                    "count": guard_count,
+                    "stat_reference": "soldier_murkin",
+                    "hit_dice": "1",
+                    "armor_class": 14,
+                    "attacks": [{"name": "Pike", "damage": "1d8"}],
+                    "morale": 7,
+                }
+            ],
+            "context": f"Guards protecting prisoners at {poi_name}",
+            "hex_id": hex_id,
+            "poi_name": poi_name,
+            "on_victory": {
+                "action": "rescue_prisoners_complete",
+                "prisoners_freed": True,
+            },
+        }
+
+    def complete_combat_rescue(
+        self, hex_id: str, poi_name: Optional[str] = None
+    ) -> dict[str, Any]:
+        """
+        Complete a rescue after winning combat against guards.
+
+        Call this when party wins the guard encounter to actually free prisoners.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: POI name (defaults to current POI)
+
+        Returns:
+            Dictionary with rescue completion results
+        """
+        target_poi = poi_name or self._current_poi
+        if not target_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        prisoners_info = self.get_prisoners_info(hex_id, target_poi)
+        if not prisoners_info:
+            return {
+                "success": False,
+                "error": "No prisoners to rescue (already freed or none present)",
+            }
+
+        prisoner_count = prisoners_info["prisoner_count"]
+
+        # Clear prisoners effect
+        self._clear_prisoners_effect(hex_id, target_poi)
+
+        # Log world state change
+        self._log_rescue_success(hex_id, target_poi, prisoner_count, "combat")
+
+        return {
+            "success": True,
+            "prisoners_rescued": prisoner_count,
+            "message": (
+                f"With the guards defeated, you free the {prisoner_count} "
+                f"prisoner{'s' if prisoner_count != 1 else ''}! "
+                f"They thank you profusely before fleeing to safety."
+            ),
+        }
 
     # =========================================================================
     # AUTOMATIC HAZARD TRIGGERS

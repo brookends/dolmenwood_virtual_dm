@@ -864,6 +864,60 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             )
         )
 
+        # Check for prisoners that can be rescued
+        try:
+            prisoners_info = dm.hex_crawl.get_prisoners_info(hex_id, poi_name)
+            if prisoners_info and prisoners_info.get("rescue_available"):
+                prisoner_count = prisoners_info.get("prisoner_count", 0)
+                guard_count = prisoners_info.get("guard_count", 0)
+                # Stealth rescue option
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:rescue_prisoners",
+                            label=f"Rescue prisoners (stealth - {prisoner_count} captive{'s' if prisoner_count != 1 else ''}, {guard_count} guard{'s' if guard_count != 1 else ''})",
+                            params_schema={
+                                "type": "object",
+                                "properties": {
+                                    "hex_id": {"type": "string"},
+                                    "character_id": {"type": "string"},
+                                    "method": {"type": "string"},
+                                    "stealth_modifier": {"type": "integer"},
+                                },
+                                "required": ["character_id"],
+                            },
+                            params={"hex_id": hex_id, "character_id": cid, "method": "stealth", "stealth_modifier": 0},
+                            safe_to_execute=False,
+                            help=f"Sneak past {guard_count} guards to free {prisoner_count} prisoner{'s' if prisoner_count != 1 else ''}. Failure triggers combat.",
+                        ),
+                        score=75,
+                    )
+                )
+                # Combat rescue option
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:rescue_prisoners",
+                            label=f"Rescue prisoners (fight guards)",
+                            params_schema={
+                                "type": "object",
+                                "properties": {
+                                    "hex_id": {"type": "string"},
+                                    "character_id": {"type": "string"},
+                                    "method": {"type": "string"},
+                                },
+                                "required": ["character_id"],
+                            },
+                            params={"hex_id": hex_id, "character_id": cid, "method": "combat"},
+                            safe_to_execute=False,
+                            help=f"Fight {guard_count} guards to free the prisoners. Direct confrontation.",
+                        ),
+                        score=73,
+                    )
+                )
+        except Exception:
+            pass  # If prisoners check fails, skip rescue suggestions
+
         return out
 
     # ------------------------------------------------------------------
