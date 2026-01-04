@@ -2949,7 +2949,130 @@ class HexCrawlEngine:
             result["npcs_present"] = True
             result["npc_count"] = len(poi.npcs)
 
+        # Check for available quest hooks at this POI
+        available_quests = self._get_available_quest_hooks(poi, hex_id)
+        if available_quests:
+            result["quest_hooks"] = available_quests
+            result["suggested_actions"] = result.get("suggested_actions", [])
+            for quest in available_quests:
+                result["suggested_actions"].append({
+                    "action_id": "poi:accept_quest",
+                    "label": f"Accept Quest: {quest.get('title', quest.get('quest_id', 'Unknown'))}",
+                    "params": {"quest_id": quest.get("quest_id")},
+                })
+
         return result
+
+    def _get_available_quest_hooks(
+        self, poi: "PointOfInterest", hex_id: str
+    ) -> list[dict[str, Any]]:
+        """
+        Get quest hooks available at this POI that haven't been accepted or completed.
+
+        Filters out quests that are already active or completed in the session.
+
+        Args:
+            poi: The POI to check for quest hooks
+            hex_id: The hex ID for tracking
+
+        Returns:
+            List of available quest hook definitions
+        """
+        if not poi.quest_hooks:
+            return []
+
+        available = []
+        session_mgr = self.controller.session_manager if self.controller else None
+
+        for quest_hook in poi.quest_hooks:
+            quest_id = quest_hook.get("quest_id")
+            if not quest_id:
+                continue
+
+            # Check if already active or completed
+            if session_mgr:
+                if session_mgr.get_active_quest(quest_id):
+                    continue
+                if session_mgr._current_session and quest_id in session_mgr._current_session.completed_quests:
+                    continue
+
+            available.append(quest_hook)
+
+        return available
+
+    def accept_poi_quest(
+        self, hex_id: str, quest_id: str
+    ) -> dict[str, Any]:
+        """
+        Accept a quest from the current POI.
+
+        Args:
+            hex_id: The hex ID
+            quest_id: The quest ID to accept
+
+        Returns:
+            Dictionary with acceptance result
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current POI not found"}
+
+        # Find the quest hook
+        quest_hook = None
+        for qh in poi.quest_hooks:
+            if qh.get("quest_id") == quest_id:
+                quest_hook = qh
+                break
+
+        if not quest_hook:
+            return {"success": False, "error": f"Quest '{quest_id}' not found at this location"}
+
+        # Find quest giver NPC if specified
+        npc_id = quest_hook.get("quest_giver")
+
+        # Accept the quest via session manager
+        session_mgr = self.controller.session_manager if self.controller else None
+        if not session_mgr:
+            return {"success": False, "error": "Session manager not available"}
+
+        result = session_mgr.accept_quest(quest_hook, npc_id=npc_id, hex_id=hex_id)
+        if not result:
+            return {"success": False, "error": "Quest already active or completed"}
+
+        # Emit event for logging
+        self._emit_run_log_event(
+            "quest_accepted",
+            {
+                "quest_id": quest_id,
+                "title": quest_hook.get("title", quest_id),
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "quest_giver": npc_id,
+            },
+        )
+
+        return {
+            "success": True,
+            "quest_id": quest_id,
+            "title": quest_hook.get("title", quest_id),
+            "description": quest_hook.get("description", ""),
+            "objective": quest_hook.get("objective", ""),
+            "reward_description": quest_hook.get("reward_description", ""),
+            "message": f"Quest accepted: {quest_hook.get('title', quest_id)}",
+        }
 
     def explore_poi_feature(
         self,

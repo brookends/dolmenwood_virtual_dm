@@ -2232,6 +2232,51 @@ def _create_default_registry() -> ActionRegistry:
     ))
 
     # -------------------------------------------------------------------------
+    # POI actions
+    # -------------------------------------------------------------------------
+    def _poi_accept_quest(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Accept a quest from the current POI.
+
+        Called when player selects "Accept Quest" from suggested actions.
+        """
+        quest_id = p.get("quest_id")
+        if not quest_id:
+            return {"success": False, "message": "No quest_id specified."}
+
+        hex_crawl = dm.controller.hex_crawl_engine
+        if not hex_crawl:
+            return {"success": False, "message": "Hex crawl engine not available."}
+
+        current_hex = hex_crawl._current_hex
+        if not current_hex:
+            return {"success": False, "message": "Not in a hex."}
+
+        result = hex_crawl.accept_poi_quest(current_hex, quest_id)
+
+        if result.get("success"):
+            msg = result.get("message", "Quest accepted.")
+            if result.get("objective"):
+                msg += f"\n\nObjective: {result['objective']}"
+            if result.get("reward_description"):
+                msg += f"\n\nReward: {result['reward_description']}"
+            return {"success": True, "message": msg}
+        else:
+            return {"success": False, "message": result.get("error", "Failed to accept quest.")}
+
+    registry.register(ActionSpec(
+        id="poi:accept_quest",
+        label="Accept Quest",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "quest_id": {"type": "string", "required": True},
+        },
+        help="Accept a quest from the current location.",
+        executor=_poi_accept_quest,
+    ))
+
+    # -------------------------------------------------------------------------
     # Combat actions - Phase 4 (formerly legacy-only)
     # -------------------------------------------------------------------------
     def _combat_resolve_round(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
