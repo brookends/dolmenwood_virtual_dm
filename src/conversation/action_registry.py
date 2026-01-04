@@ -469,6 +469,57 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi,
     ))
 
+    def _wilderness_roll_poi_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Roll on a POI's roll table (like 'Leavings in the Mud')."""
+        table_name = p.get("table_name", "")
+        if not table_name:
+            return {"success": False, "message": "Must specify table_name"}
+
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        if not dm.hex_crawl._current_poi:
+            return {"success": False, "message": "Must be at a POI to roll on tables"}
+
+        result = dm.hex_crawl.roll_on_poi_table(hex_id, table_name)
+        if result is None:
+            return {"success": False, "message": f"Table '{table_name}' not found at this location"}
+
+        if result.get("exhausted"):
+            return {"success": True, "exhausted": True, "message": result.get("message")}
+
+        # Format the result message
+        parts = [f"Rolling on {table_name}: {result.get('roll')}"]
+        if result.get("title"):
+            parts.append(f"**{result['title']}**")
+        if result.get("description"):
+            parts.append(result["description"])
+        if result.get("items"):
+            parts.append(f"Items: {', '.join(result['items'])}")
+        if result.get("monsters"):
+            parts.append(f"Monsters: {', '.join(result['monsters'])}")
+        if result.get("npcs"):
+            parts.append(f"NPCs: {', '.join(result['npcs'])}")
+        if result.get("mechanical_effect"):
+            parts.append(f"Effect: {result['mechanical_effect']}")
+
+        return {
+            "success": True,
+            "message": "\n".join(parts),
+            "roll_result": result,
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:roll_poi_table",
+        label="Roll on POI table",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "table_name": {"type": "string", "required": True},
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Roll on a point of interest's roll table (e.g., treasure tables).",
+        executor=_wilderness_roll_poi_table,
+    ))
+
     def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.

@@ -2991,6 +2991,25 @@ class HexCrawlEngine:
                     "params": {"quest_id": quest.get("quest_id")},
                 })
 
+        # Include available roll tables at this POI
+        if poi.roll_tables:
+            result["available_tables"] = [
+                {
+                    "name": table.name,
+                    "die_type": table.die_type,
+                    "description": table.description,
+                    "unique_entries": table.unique_entries,
+                }
+                for table in poi.roll_tables
+            ]
+            result["suggested_actions"] = result.get("suggested_actions", [])
+            for table in poi.roll_tables:
+                result["suggested_actions"].append({
+                    "action_id": "wilderness:roll_poi_table",
+                    "label": f"Roll on: {table.name}",
+                    "params": {"table_name": table.name},
+                })
+
         return result
 
     def _get_available_quest_hooks(
