@@ -2810,6 +2810,18 @@ class HexProcedural:
     #           description: "Wisps of mauve mist drift from the mire..."}]
     night_hazards: list[dict[str, Any]] = field(default_factory=list)
 
+    # Hex-specific encounter table (embedded, not a reference)
+    # Format: {name: str, die_type: str, entries: [{roll, result, description}]}
+    # Used when this hex has custom encounter probabilities (e.g., "1 = Murkin's Soldiers")
+    encounter_table: Optional["RollTable"] = None
+
+    # Investigation hazards - triggered when players investigate specific features
+    # Format: {trigger: str, chance: str, description: str, result: str}
+    # trigger: what action triggers this (e.g., "investigate_cabbages")
+    # chance: probability string (e.g., "2-in-6")
+    # result: what happens (creature/event ID or description)
+    investigation_hazard: Optional[dict[str, Any]] = None
+
 
 @dataclass
 class RollTableEntry:
@@ -2928,6 +2940,13 @@ class PointOfInterest:
     # trigger: "on_approach", "on_enter", "on_exit", "always"
     # hazard_type: "swimming", "climbing", "jumping", "trap", "environmental"
     hazards: list[dict[str, Any]] = field(default_factory=list)
+
+    # Time-based hazards - events that may occur when staying at this POI
+    # Format: {trigger: str, chance: str, description: str, result: str}
+    # trigger: "evening_stay", "overnight", "morning", "any_time"
+    # chance: probability string (e.g., "3-in-6")
+    # result: what happens (creature/event ID or description)
+    evening_hazard: Optional[dict[str, Any]] = None
 
     # Locks/barriers preventing access
     # Format: [{type, requirement, description, bypassed, hidden, detected, magic_school}]
@@ -4695,6 +4714,12 @@ class HexNPC:
     is_combatant: bool = False
     vulnerabilities: list[str] = field(default_factory=list)  # e.g., ["cold_iron", "sunlight", "fire"]
 
+    # NPC groups - for NPCs that represent multiple individuals (e.g., "Murkin's Soldiers")
+    # group_count: dice expression for number of individuals (e.g., "1d4+1d4", "2d6")
+    # group_composition: breakdown by type (e.g., {"humans": "1d4", "shorthorns": "1d4"})
+    group_count: Optional[str] = None
+    group_composition: Optional[dict[str, str]] = None
+
     # Relationship network
     # Format: [{npc_id, relationship_type, description, hex_id}]
     # relationship_type: "family", "employer", "ally", "rival", "enemy", "subordinate"
@@ -4708,6 +4733,12 @@ class HexNPC:
     faction: Optional[str] = None
     loyalty: str = "loyal"
     personal_feelings: Optional[str] = None  # e.g., "loathes employer"
+
+    # Extended faction profile - detailed faction role information
+    # Format: {faction_id: str, role: str, standing: str, notes: str}
+    # role: "enforcer", "spy", "leader", "diplomat", "soldier", etc.
+    # standing: "high", "medium", "low", "outcast"
+    faction_profile: Optional[dict[str, Any]] = None
 
     # Magical binding or imprisonment
     # Format: {bound_to: "The Spectral Manse", release_condition: "Ygraine's intervention",

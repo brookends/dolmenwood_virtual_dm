@@ -1150,6 +1150,8 @@ class ContentPipeline:
                 "encounter_modifiers": hex_data.procedural.encounter_modifiers,
                 "lost_behavior": hex_data.procedural.lost_behavior,
                 "night_hazards": hex_data.procedural.night_hazards,
+                "encounter_table": self._roll_table_to_dict(hex_data.procedural.encounter_table) if hex_data.procedural.encounter_table else None,
+                "investigation_hazard": hex_data.procedural.investigation_hazard,
             }
 
         # Convert points of interest
@@ -1172,6 +1174,7 @@ class ContentPipeline:
                 "dungeon_levels": poi.dungeon_levels,
                 "roll_tables": [self._roll_table_to_dict(t) for t in poi.roll_tables],
                 "treasure_hoard": poi.treasure_hoard,
+                "evening_hazard": poi.evening_hazard,
             }
             poi_list.append(poi_dict)
 
@@ -1232,9 +1235,12 @@ class ContentPipeline:
                     "stat_reference": npc.stat_reference,
                     "is_combatant": npc.is_combatant,
                     "vulnerabilities": npc.vulnerabilities,
+                    "group_count": npc.group_count,
+                    "group_composition": npc.group_composition,
                     "relationships": npc.relationships,
                     "faction": npc.faction,
                     "loyalty": npc.loyalty,
+                    "faction_profile": npc.faction_profile,
                     "personal_feelings": npc.personal_feelings,
                     "binding": npc.binding,
                 }

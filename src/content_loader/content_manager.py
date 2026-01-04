@@ -693,6 +693,11 @@ class ContentManager:
         procedural = None
         proc_data = data.get("procedural")
         if proc_data and isinstance(proc_data, dict):
+            # Parse embedded encounter table if present
+            encounter_table = None
+            if proc_data.get("encounter_table"):
+                encounter_table = self._dict_to_roll_table(proc_data["encounter_table"])
+
             procedural = HexProcedural(
                 lost_chance=proc_data.get("lost_chance", "1-in-6"),
                 encounter_chance=proc_data.get("encounter_chance", "1-in-6"),
@@ -702,6 +707,8 @@ class ContentManager:
                 encounter_modifiers=proc_data.get("encounter_modifiers", []),
                 lost_behavior=proc_data.get("lost_behavior"),
                 night_hazards=proc_data.get("night_hazards", []),
+                encounter_table=encounter_table,
+                investigation_hazard=proc_data.get("investigation_hazard"),
             )
 
         # Parse points of interest (new format)
@@ -779,9 +786,12 @@ class ContentManager:
                     stat_reference=npc_data.get("stat_reference"),
                     is_combatant=npc_data.get("is_combatant", False),
                     vulnerabilities=npc_data.get("vulnerabilities", []),
+                    group_count=npc_data.get("group_count"),
+                    group_composition=npc_data.get("group_composition"),
                     relationships=npc_data.get("relationships", []),
                     faction=npc_data.get("faction"),
                     loyalty=npc_data.get("loyalty", "loyal"),
+                    faction_profile=npc_data.get("faction_profile"),
                     personal_feelings=npc_data.get("personal_feelings"),
                     binding=npc_data.get("binding"),
                 )
@@ -899,6 +909,7 @@ class ContentManager:
             dungeon_levels=data.get("dungeon_levels"),
             hidden=is_hidden,
             treasure_hoard=data.get("treasure_hoard"),
+            evening_hazard=data.get("evening_hazard"),
             quest_hooks=data.get("quest_hooks", []),
             encounter_modifiers=data.get("encounter_modifiers", []),
             item_persistence=data.get("item_persistence"),

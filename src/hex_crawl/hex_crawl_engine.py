@@ -8992,3 +8992,292 @@ class HexCrawlEngine:
         start_total = (start.year - 1) * 360 + (start.month - 1) * 30 + start.day
         end_total = (end.year - 1) * 360 + (end.month - 1) * 30 + end.day
         return end_total - start_total
+
+    # =========================================================================
+    # HEX 0108+ FEATURES: Investigation Hazards, Evening Hazards, Encounter Tables
+    # =========================================================================
+
+    def check_investigation_hazard(
+        self,
+        hex_id: str,
+        trigger: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an investigation hazard triggers when players investigate something.
+
+        Investigation hazards are hex-level hazards triggered by specific player
+        actions like "investigate_cabbages" in hex 0108.
+
+        Args:
+            hex_id: The hex being investigated
+            trigger: The investigation action (e.g., "investigate_cabbages")
+
+        Returns:
+            Dictionary with hazard result:
+            - triggered: bool - whether the hazard occurred
+            - description: str - what happens
+            - result: str - creature/event ID that appears
+            - chance: str - the probability that was rolled against
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.procedural:
+            return {"triggered": False, "description": "No hazards in this hex."}
+
+        investigation_hazard = hex_data.procedural.investigation_hazard
+        if not investigation_hazard:
+            return {"triggered": False, "description": "No investigation hazards."}
+
+        # Check if the trigger matches
+        hazard_trigger = investigation_hazard.get("trigger", "")
+        if hazard_trigger.lower() != trigger.lower():
+            return {"triggered": False, "description": f"No hazard for '{trigger}'."}
+
+        # Parse chance (e.g., "2-in-6")
+        chance_str = investigation_hazard.get("chance", "1-in-6")
+        triggered = self._check_chance(chance_str)
+
+        if triggered:
+            return {
+                "triggered": True,
+                "description": investigation_hazard.get("description", "A hazard occurs!"),
+                "result": investigation_hazard.get("result", "unknown"),
+                "chance": chance_str,
+            }
+        else:
+            return {
+                "triggered": False,
+                "description": "Nothing unusual happens.",
+                "chance": chance_str,
+            }
+
+    def check_evening_hazard(
+        self,
+        hex_id: str,
+        poi_name: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an evening hazard triggers when staying at a POI.
+
+        Evening hazards are POI-level events that may occur when players
+        spend time at a location (e.g., Murkin's Soldiers visiting the inn).
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: The name of the POI being visited
+
+        Returns:
+            Dictionary with hazard result:
+            - triggered: bool - whether the hazard occurred
+            - description: str - what happens
+            - result: str - creature/event ID
+            - chance: str - the probability rolled against
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"triggered": False, "description": "Hex not found."}
+
+        # Find the POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi:
+            return {"triggered": False, "description": "POI not found."}
+
+        evening_hazard = poi.evening_hazard
+        if not evening_hazard:
+            return {"triggered": False, "description": "No evening hazards at this location."}
+
+        # Parse chance
+        chance_str = evening_hazard.get("chance", "1-in-6")
+        triggered = self._check_chance(chance_str)
+
+        if triggered:
+            return {
+                "triggered": True,
+                "description": evening_hazard.get("description", "Something happens!"),
+                "result": evening_hazard.get("result", "unknown"),
+                "trigger_type": evening_hazard.get("trigger", "evening_stay"),
+                "chance": chance_str,
+            }
+        else:
+            return {
+                "triggered": False,
+                "description": "The evening passes uneventfully.",
+                "chance": chance_str,
+            }
+
+    def roll_hex_encounter_table(
+        self,
+        hex_id: str,
+    ) -> dict[str, Any]:
+        """
+        Roll on a hex's custom encounter table if it has one.
+
+        Some hexes have embedded encounter tables in their procedural section
+        that override or supplement the standard regional encounter tables.
+
+        Args:
+            hex_id: The hex to roll encounters for
+
+        Returns:
+            Dictionary with encounter result:
+            - has_table: bool - whether the hex has a custom table
+            - roll: int - the die roll
+            - result: str - creature/event ID
+            - description: str - what the encounter entails
+            - table_name: str - name of the table rolled on
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.procedural:
+            return {"has_table": False, "description": "No custom encounter table."}
+
+        encounter_table = hex_data.procedural.encounter_table
+        if not encounter_table:
+            return {"has_table": False, "description": "No custom encounter table."}
+
+        # Roll on the table
+        die_type = encounter_table.die_type  # e.g., "d6"
+        die_max = int(die_type.replace("d", ""))
+        roll_result = self.dice.roll(die_type, "hex_encounter").total
+
+        # Find matching entry
+        for entry in encounter_table.entries:
+            # Handle roll ranges like "2-6"
+            roll_str = str(entry.roll)
+            if "-" in roll_str and not roll_str.startswith("-"):
+                parts = roll_str.split("-")
+                low, high = int(parts[0]), int(parts[1])
+                if low <= roll_result <= high:
+                    return {
+                        "has_table": True,
+                        "roll": roll_result,
+                        "result": getattr(entry, "result", entry.title) if hasattr(entry, "result") else entry.title,
+                        "description": entry.description,
+                        "table_name": encounter_table.name,
+                    }
+            elif int(roll_str) == roll_result:
+                return {
+                    "has_table": True,
+                    "roll": roll_result,
+                    "result": getattr(entry, "result", entry.title) if hasattr(entry, "result") else entry.title,
+                    "description": entry.description,
+                    "table_name": encounter_table.name,
+                }
+
+        # No matching entry (shouldn't happen with valid table)
+        return {
+            "has_table": True,
+            "roll": roll_result,
+            "result": "standard",
+            "description": "Roll on standard regional table.",
+            "table_name": encounter_table.name,
+        }
+
+    def get_npc_group_size(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Roll for NPC group size when the NPC represents multiple individuals.
+
+        Some NPCs (like "Murkin's Soldiers") represent variable-sized groups
+        with dice expressions for their count.
+
+        Args:
+            hex_id: The hex containing the NPC
+            npc_id: The NPC's identifier
+
+        Returns:
+            Dictionary with group information:
+            - is_group: bool - whether this NPC represents a group
+            - total_count: int - total number of individuals
+            - composition: dict - breakdown by type with counts
+            - group_count_expression: str - the original dice expression
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"is_group": False, "total_count": 1}
+
+        # Find the NPC
+        npc = None
+        for n in hex_data.npcs:
+            if n.npc_id == npc_id:
+                npc = n
+                break
+
+        if not npc:
+            return {"is_group": False, "total_count": 1}
+
+        if not npc.group_count:
+            return {"is_group": False, "total_count": 1}
+
+        # Roll the group count - handle complex expressions like "1d4+1d4"
+        total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
+
+        # Roll composition if available
+        composition = {}
+        if npc.group_composition:
+            for kind, dice_expr in npc.group_composition.items():
+                composition[kind] = self._roll_complex_dice(dice_expr, f"group_{kind}")
+
+        return {
+            "is_group": True,
+            "total_count": total_count,
+            "composition": composition,
+            "group_count_expression": npc.group_count,
+        }
+
+    def _roll_complex_dice(self, expression: str, reason: str) -> int:
+        """
+        Roll a complex dice expression that may contain multiple dice terms.
+
+        Handles expressions like "1d4+1d4" or "2d6+1d4+2".
+
+        Args:
+            expression: Dice expression (e.g., "1d4+1d4", "2d6+3")
+            reason: Logging reason
+
+        Returns:
+            Total rolled value
+        """
+        total = 0
+        # Split on + but keep track of signs
+        # For simplicity, only handle + for now
+        parts = expression.replace(" ", "").split("+")
+        for part in parts:
+            if "d" in part.lower():
+                # It's a dice expression
+                total += self.dice.roll(part, reason).total
+            else:
+                # It's a constant modifier
+                total += int(part)
+        return total
+
+    def _check_chance(self, chance_str: str) -> bool:
+        """
+        Check if a probability expressed as 'X-in-Y' succeeds.
+
+        Args:
+            chance_str: Probability string like "2-in-6" or "1-in-6"
+
+        Returns:
+            True if the check succeeds (hazard triggers)
+        """
+        # Parse "X-in-Y" format
+        try:
+            parts = chance_str.lower().replace(" ", "").split("-in-")
+            if len(parts) == 2:
+                threshold = int(parts[0])
+                die_size = int(parts[1])
+                roll = self.dice.roll(f"d{die_size}", "chance_check").total
+                return roll <= threshold
+        except (ValueError, IndexError):
+            pass
+
+        # Default: 1-in-6
+        roll = self.dice.roll("d6", "chance_check").total
+        return roll == 1
