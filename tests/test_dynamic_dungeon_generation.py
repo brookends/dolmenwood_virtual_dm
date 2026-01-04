@@ -140,6 +140,7 @@ def dungeon_engine(mock_dice, dynamic_dungeon_state):
     controller = MagicMock()
     controller.party_state.active_light_source = True
     controller.party_state.light_remaining_turns = 10
+    controller.party_state.party_inventory = []  # Real list for treasure tests
     engine.controller = controller
 
     return engine
@@ -928,3 +929,123 @@ class TestTreasureDiscovery:
         result = dungeon_engine._handle_search({})
 
         assert result["found_treasure"][0]["quantity"] == 1
+
+
+class TestTakeTreasure:
+    """Tests for taking treasure from rooms."""
+
+    def test_take_treasure_removes_from_room(self, dungeon_engine, mock_dice):
+        """Verify taking treasure removes it from the room."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gold coins", "value": 50, "found": True},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({})
+
+        assert result["success"] is True
+        assert len(current_room.treasure) == 0
+        assert "Gold coins" in result["message"]
+
+    def test_take_treasure_adds_to_party_inventory(self, dungeon_engine, mock_dice):
+        """Verify taking treasure adds it to party inventory."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Ruby", "value": 100, "found": True},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({})
+
+        assert result["success"] is True
+        assert len(dungeon_engine.controller.party_state.party_inventory) == 1
+        assert dungeon_engine.controller.party_state.party_inventory[0]["name"] == "Ruby"
+        assert dungeon_engine.controller.party_state.party_inventory[0]["value"] == 100
+
+    def test_take_treasure_requires_discovered(self, dungeon_engine, mock_dice):
+        """Verify cannot take treasure that hasn't been discovered."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Hidden gold", "value": 50, "found": False},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({})
+
+        assert result["success"] is False
+        assert "Search the room first" in result["message"]
+        assert len(current_room.treasure) == 1
+
+    def test_take_all_treasure(self, dungeon_engine, mock_dice):
+        """Verify take_all takes all discovered treasure."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gold coins", "value": 50, "found": True},
+            {"name": "Silver dagger", "value": 25, "found": True},
+            {"name": "Hidden gem", "value": 200, "found": False},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({"take_all": True})
+
+        assert result["success"] is True
+        assert len(result["items_taken"]) == 2
+        # Hidden gem should remain
+        assert len(current_room.treasure) == 1
+        assert current_room.treasure[0]["name"] == "Hidden gem"
+
+    def test_take_treasure_by_name(self, dungeon_engine, mock_dice):
+        """Verify taking treasure by name."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gold coins", "value": 50, "found": True},
+            {"name": "Silver dagger", "value": 25, "found": True},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({"item_name": "Silver dagger"})
+
+        assert result["success"] is True
+        assert len(result["items_taken"]) == 1
+        assert result["items_taken"][0]["name"] == "Silver dagger"
+        # Gold coins should remain
+        assert len(current_room.treasure) == 1
+        assert current_room.treasure[0]["name"] == "Gold coins"
+
+    def test_take_treasure_by_index(self, dungeon_engine, mock_dice):
+        """Verify taking treasure by index."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gold coins", "value": 50, "found": True},
+            {"name": "Silver dagger", "value": 25, "found": True},
+        ]
+
+        result = dungeon_engine._handle_take_treasure({"item_index": 1})
+
+        assert result["success"] is True
+        assert result["items_taken"][0]["name"] == "Silver dagger"
+        assert len(current_room.treasure) == 1
+
+    def test_take_treasure_logs_event(self, dungeon_engine, mock_dice):
+        """Verify taking treasure logs an event."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Ancient artifact", "value": 500, "found": True},
+        ]
+
+        dungeon_engine._handle_take_treasure({})
+
+        dungeon_engine.controller.log_event.assert_called_once()
+        call_args = dungeon_engine.controller.log_event.call_args
+        assert call_args[0][0] == "treasure_taken"
+        assert "items" in call_args[0][1]
+
+    def test_take_treasure_includes_source(self, dungeon_engine, mock_dice):
+        """Verify taken treasure includes source location."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gem", "value": 75, "found": True},
+        ]
+
+        dungeon_engine._handle_take_treasure({})
+
+        inventory = dungeon_engine.controller.party_state.party_inventory
+        assert len(inventory) == 1
+        assert "source" in inventory[0]
+        assert "entry" in inventory[0]["source"]

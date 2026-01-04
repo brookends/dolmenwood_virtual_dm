@@ -91,6 +91,7 @@ class DungeonActionType(str, Enum):
     CAST_SPELL = "cast_spell"  # Cast a spell
     MAP = "map"  # Map the current area
     FAST_TRAVEL = "fast_travel"  # Use established safe path (p162)
+    TAKE_TREASURE = "take_treasure"  # Take treasure from room
 
 
 class DungeonDoomResult(str, Enum):
@@ -666,6 +667,7 @@ class DungeonEngine:
             DungeonActionType.CAST_SPELL: self._handle_cast_spell,
             DungeonActionType.MAP: self._handle_map,
             DungeonActionType.FAST_TRAVEL: self._handle_fast_travel,
+            DungeonActionType.TAKE_TREASURE: self._handle_take_treasure,
         }
 
         handler = handlers.get(action)
@@ -1562,6 +1564,113 @@ class DungeonEngine:
             "message": f"Traveled safely to {route[-1]} ({turns_required} Turns)",
             "turns_used": turns_required,
             "destination": route[-1],
+            "noise": 0,
+        }
+
+    def _handle_take_treasure(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Handle taking treasure from the current room.
+
+        Takes discovered treasure from the room and adds it to party inventory.
+
+        Args:
+            params: May include:
+                - item_index: Index of treasure in room.treasure list (0-based)
+                - item_name: Name of treasure to take (matches first found)
+                - take_all: If True, take all discovered treasure
+
+        Returns:
+            Result with taken items and messages
+        """
+        current_room = self._dungeon_state.rooms.get(self._dungeon_state.current_room)
+        if not current_room:
+            return {"success": False, "message": "Current room unknown", "noise": 0}
+
+        item_index = params.get("item_index")
+        item_name = params.get("item_name")
+        take_all = params.get("take_all", False)
+
+        # Find discovered treasure to take
+        discovered = [
+            (i, t) for i, t in enumerate(current_room.treasure)
+            if t.get("found", False)
+        ]
+
+        if not discovered:
+            return {
+                "success": False,
+                "message": "No discovered treasure to take. Search the room first.",
+                "noise": 0,
+            }
+
+        items_to_take: list[tuple[int, dict[str, Any]]] = []
+
+        if take_all:
+            items_to_take = discovered
+        elif item_index is not None:
+            # Find by index in original list
+            if 0 <= item_index < len(current_room.treasure):
+                item = current_room.treasure[item_index]
+                if item.get("found", False):
+                    items_to_take = [(item_index, item)]
+                else:
+                    return {
+                        "success": False,
+                        "message": "That treasure has not been discovered yet.",
+                        "noise": 0,
+                    }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Invalid treasure index: {item_index}",
+                    "noise": 0,
+                }
+        elif item_name:
+            # Find by name
+            for i, item in discovered:
+                if item.get("name", "").lower() == item_name.lower():
+                    items_to_take = [(i, item)]
+                    break
+            if not items_to_take:
+                return {
+                    "success": False,
+                    "message": f"No discovered treasure named '{item_name}'",
+                    "noise": 0,
+                }
+        else:
+            # Take first discovered item
+            items_to_take = [discovered[0]]
+
+        # Remove from room and add to party inventory
+        taken_items = []
+        # Sort by index descending to remove from end first (preserve indices)
+        for idx, item in sorted(items_to_take, key=lambda x: x[0], reverse=True):
+            current_room.treasure.remove(item)
+            # Add to party inventory (without 'found' flag)
+            inventory_item = {
+                "name": item.get("name", "Unknown treasure"),
+                "value": item.get("value"),
+                "quantity": item.get("quantity", 1),
+                "source": f"{self._dungeon_state.name}:{current_room.room_id}",
+            }
+            self.controller.party_state.party_inventory.append(inventory_item)
+            taken_items.append(inventory_item)
+
+        # Log event
+        item_names = ", ".join(t["name"] for t in taken_items)
+        self.controller.log_event(
+            "treasure_taken",
+            {
+                "dungeon": self._dungeon_state.dungeon_id,
+                "room": current_room.room_id,
+                "items": taken_items,
+            },
+        )
+
+        return {
+            "success": True,
+            "message": f"Took: {item_names}",
+            "items_taken": taken_items,
             "noise": 0,
         }
 

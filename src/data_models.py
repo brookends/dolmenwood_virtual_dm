@@ -4973,6 +4973,8 @@ class PartyState:
     light_remaining_turns: int = 0
     # Member encumbrance tracking (p148-149)
     member_speeds: list[int] = field(default_factory=list)  # Encumbered speeds
+    # Party shared inventory (treasure, unassigned items)
+    party_inventory: list[dict[str, Any]] = field(default_factory=list)
 
     def get_movement_rate(self, base_rate: int = 40) -> int:
         """

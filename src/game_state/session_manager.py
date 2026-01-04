@@ -641,6 +641,9 @@ class SerializablePartyState:
     # Conditions affecting whole party
     party_conditions: list[dict[str, Any]] = field(default_factory=list)
 
+    # Party shared inventory (treasure, unassigned items)
+    party_inventory: list[dict[str, Any]] = field(default_factory=list)
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -2066,6 +2069,7 @@ class SessionManager:
                 {"type": c.condition_type.value, "duration": c.duration_remaining}
                 for c in party_state.active_conditions
             ],
+            party_inventory=[item.copy() for item in party_state.party_inventory],
         )
 
     def extract_characters(self, characters: list) -> list[SerializableCharacter]:
@@ -2281,6 +2285,11 @@ class SessionManager:
                 duration_remaining=c.get("duration", -1),
             )
             for c in saved.party_conditions
+        ]
+
+        # Restore party inventory
+        party_state.party_inventory = [
+            item.copy() for item in saved.party_inventory
         ]
 
     def get_characters(self) -> list[CharacterState]:

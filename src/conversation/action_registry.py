@@ -633,6 +633,20 @@ def _create_default_registry() -> ActionRegistry:
         executor=_make_dungeon_executor("FAST_TRAVEL"),
     ))
 
+    registry.register(ActionSpec(
+        id="dungeon:take_treasure",
+        label="Take treasure",
+        category=ActionCategory.DUNGEON,
+        requires_state="dungeon_exploration",
+        params_schema={
+            "item_index": {"type": "integer", "required": False},
+            "item_name": {"type": "string", "required": False},
+            "take_all": {"type": "boolean", "required": False},
+        },
+        help="Take discovered treasure from the current room.",
+        executor=_make_dungeon_executor("TAKE_TREASURE"),
+    ))
+
     def _dungeon_exit(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Exit the dungeon."""
         result = dm.dungeon.exit_dungeon()
