@@ -3823,6 +3823,40 @@ class PointOfInterest:
         """Check if this POI has any quest hooks."""
         return len(self.quest_hooks) > 0
 
+    def get_poi_seasonal_state(self, current_month: str) -> Optional[dict[str, Any]]:
+        """
+        Get the seasonal state for this POI based on the current month.
+
+        POIs with seasonal_behavior have different states depending on the time of year.
+        For example, the Red Vorpal Monolith is intangible most of the year but becomes
+        semi-corporeal during winter months.
+
+        Args:
+            current_month: The name of the current month (e.g., "Grimvold", "Haggryme")
+
+        Returns:
+            The seasonal state dictionary containing:
+            - state: The POI's current state (e.g., "semi-corporeal", "intangible")
+            - effects_active: List of effects currently active
+            - description: Description of the POI in this state
+            - months: List of months this state applies to
+
+            Returns None if this POI has no seasonal behavior.
+        """
+        if not self.seasonal_behavior:
+            return None
+
+        # Check if current month is in winter months
+        winter_data = self.seasonal_behavior.get("winter", {})
+        winter_months = winter_data.get("months", [])
+
+        if current_month in winter_months:
+            return winter_data
+
+        # Otherwise return non-winter state
+        non_winter_data = self.seasonal_behavior.get("non_winter", {})
+        return non_winter_data if non_winter_data else None
+
 
 @dataclass
 class HexStateChange:

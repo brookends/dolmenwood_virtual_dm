@@ -444,6 +444,153 @@ class TestHex0106ArcaneCasterModifier:
         assert call_args[0][1] == 0  # No bonus for fighter
 
 
+class TestPointOfInterestSeasonalState:
+    """Tests for PointOfInterest.get_poi_seasonal_state() method."""
+
+    def test_get_poi_seasonal_state_returns_winter_for_winter_month(self):
+        """Verify get_poi_seasonal_state returns winter state for winter months."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura", "spell_permanence"],
+                    "description": "The monolith becomes tangible.",
+                },
+                "non_winter": {
+                    "months": ["Symswald", "Harchment", "Iggwyld"],
+                    "state": "intangible",
+                    "effects_active": ["spectral_chill_only"],
+                    "description": "The monolith is a shimmering figment.",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        assert result is not None
+        assert result["state"] == "semi-corporeal"
+        assert "terror_aura" in result["effects_active"]
+        assert "spell_permanence" in result["effects_active"]
+
+    def test_get_poi_seasonal_state_returns_non_winter_for_non_winter_month(self):
+        """Verify get_poi_seasonal_state returns non-winter state for other months."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura", "spell_permanence"],
+                },
+                "non_winter": {
+                    "state": "intangible",
+                    "effects_active": ["spectral_chill_only"],
+                    "description": "The monolith is a shimmering figment.",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Chysting")  # Summer month
+
+        assert result is not None
+        assert result["state"] == "intangible"
+        assert "spectral_chill_only" in result["effects_active"]
+
+    def test_get_poi_seasonal_state_returns_none_for_no_seasonal_behavior(self):
+        """Verify get_poi_seasonal_state returns None when POI has no seasonal behavior."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Shepherd Encampment",
+            poi_type="encampment",
+            description="A small camp of shepherds.",
+            seasonal_behavior=None,
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        assert result is None
+
+    def test_get_poi_seasonal_state_checks_all_winter_months(self):
+        """Verify all winter months return winter state."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura"],
+                },
+                "non_winter": {
+                    "state": "intangible",
+                    "effects_active": [],
+                },
+            },
+        )
+
+        for month in ["Grimvold", "Lymewald", "Haggryme"]:
+            result = poi.get_poi_seasonal_state(month)
+            assert result["state"] == "semi-corporeal", f"Failed for month {month}"
+
+    def test_get_poi_seasonal_state_returns_non_winter_for_empty_winter_months(self):
+        """Verify non-winter is returned when winter.months is empty."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Test POI",
+            poi_type="landmark",
+            description="Test",
+            seasonal_behavior={
+                "winter": {
+                    "months": [],
+                    "state": "active",
+                },
+                "non_winter": {
+                    "state": "dormant",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        # Since Grimvold is not in the empty winter months list, should return non_winter
+        assert result["state"] == "dormant"
+
+    def test_get_poi_seasonal_state_returns_none_for_missing_non_winter(self):
+        """Verify None is returned if not winter and no non_winter defined."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Test POI",
+            poi_type="landmark",
+            description="Test",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold"],
+                    "state": "active",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Chysting")
+
+        assert result is None
+
+
 class TestHex0106IsWinter:
     """Tests for _is_winter helper method."""
 
