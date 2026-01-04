@@ -46,6 +46,18 @@ class TestConditionRollModifiers:
         """Verify restless_sleep blocks spell memorization."""
         assert CONDITION_ROLL_MODIFIERS["restless_sleep"]["spell_memorization"] is False
 
+    def test_nauseated_has_saving_throw_penalty(self):
+        """Verify nauseated condition has -1 to saving throws."""
+        assert get_condition_roll_modifier("nauseated", "saving_throws") == -1
+
+    def test_nauseated_has_attack_roll_penalty(self):
+        """Verify nauseated condition has -1 to attack rolls."""
+        assert get_condition_roll_modifier("nauseated", "attack_rolls") == -1
+
+    def test_nauseated_removal_method(self):
+        """Verify nauseated condition is removed by leaving the area."""
+        assert CONDITION_ROLL_MODIFIERS["nauseated"]["removal"] == "leave_area"
+
 
 class TestCharacterConditionModifierIntegration:
     """Tests for get_total_condition_modifier on CharacterState."""
@@ -96,6 +108,33 @@ class TestCharacterConditionModifierIntegration:
         )
         # Total should be -3
         assert character.get_total_condition_modifier("saving_throws") == -3
+
+    def test_nauseated_applies_saving_throw_penalty(self, character):
+        """Verify nauseated condition applies -1 to saving throws."""
+        character.conditions.append(
+            Condition(condition_type=ConditionType.NAUSEATED, source="charnel_stench")
+        )
+        assert character.get_total_condition_modifier("saving_throws") == -1
+
+    def test_nauseated_applies_attack_roll_penalty(self, character):
+        """Verify nauseated condition applies -1 to attack rolls."""
+        character.conditions.append(
+            Condition(condition_type=ConditionType.NAUSEATED, source="charnel_stench")
+        )
+        assert character.get_total_condition_modifier("attack_rolls") == -1
+
+    def test_nauseated_stacks_with_other_conditions(self, character):
+        """Verify nauseated stacks with other conditions."""
+        # Add nauseated (-1 saving_throws)
+        character.conditions.append(
+            Condition(condition_type=ConditionType.NAUSEATED, source="charnel_stench")
+        )
+        # Add exhausted (-1 saving_throws)
+        character.conditions.append(
+            Condition(condition_type=ConditionType.EXHAUSTED, source="nightmares")
+        )
+        # Total should be -2
+        assert character.get_total_condition_modifier("saving_throws") == -2
 
 
 class TestSavingThrowConditionModifier:
@@ -175,6 +214,34 @@ class TestSavingThrowConditionModifier:
             # Target is 14, so 14 >= 14 = success
             assert roll_total == 14
             assert success is True
+
+    def test_nauseated_reduces_save_result(self, character_with_save):
+        """
+        Deterministic test: character with nauseated makes saving throw with reduced modifier.
+
+        Given:
+        - Character has nauseated condition (-1 to saving throws)
+        - Character makes a doom save (target 14)
+        - Dice roll is mocked to return 14
+
+        Expected:
+        - Total = 14 (roll) + 0 (modifier) + -1 (condition) = 13
+        - Result should be FAIL (13 < 14)
+        """
+        character_with_save.conditions.append(
+            Condition(condition_type=ConditionType.NAUSEATED, source="charnel_stench")
+        )
+
+        # Mock dice roll to return exactly 14
+        with patch("src.data_models.DiceRoller.roll_d20") as mock_roll:
+            mock_roll.return_value = MagicMock(total=14)
+
+            roll_total, success = character_with_save.make_saving_throw("doom", modifier=0)
+
+            # Roll was 14, condition penalty is -1, so total is 13
+            # Target is 14, so 13 < 14 = fail
+            assert roll_total == 13
+            assert success is False
 
 
 class TestRestlessSleepEffects:
