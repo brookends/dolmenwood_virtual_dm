@@ -402,6 +402,8 @@ def _create_default_registry() -> ActionRegistry:
         # Build response message
         lines = [resolution.get("narrative", "Something happens!")]
         combatants = resolution.get("combatants", [])
+        encounter_started = False
+
         if resolution.get("encounter"):
             enc = resolution["encounter"]
             if enc.get("type") == "npc_arrival":
@@ -416,12 +418,33 @@ def _create_default_registry() -> ActionRegistry:
                             lines.append(f"  - {c.name}")
                         if len(combatants) > 5:
                             lines.append(f"  ... and {len(combatants) - 5} more")
+
+                # If combatants exist and NPC is hostile, start combat encounter
+                if combatants and enc.get("is_combatant"):
+                    encounter_state = dm.hex_crawl.create_encounter_from_hazard(
+                        hazard_result, context
+                    )
+                    if encounter_state:
+                        # Set encounter on controller and transition to combat
+                        dm.controller.set_encounter(encounter_state)
+                        dm.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "hex_id": hex_id,
+                                "source": "investigation_hazard",
+                                "npc_id": npc_id,
+                            },
+                        )
+                        encounter_started = True
+                        lines.append("Combat initiated!")
+
             elif enc.get("type") == "event":
                 lines.append(f"Event: {enc.get('event_id', 'unknown')}")
 
         return {
             "success": True,
             "hazard_triggered": True,
+            "encounter_started": encounter_started,
             "encounter": resolution.get("encounter"),
             "combatants": combatants,
             "combatant_count": len(combatants),
@@ -474,6 +497,8 @@ def _create_default_registry() -> ActionRegistry:
         # Build response message
         lines = [resolution.get("narrative", "Something happens during the night!")]
         combatants = resolution.get("combatants", [])
+        encounter_started = False
+
         if resolution.get("encounter"):
             enc = resolution["encounter"]
             if enc.get("type") == "npc_arrival":
@@ -488,9 +513,30 @@ def _create_default_registry() -> ActionRegistry:
                         if len(combatants) > 5:
                             lines.append(f"  ... and {len(combatants) - 5} more")
 
+                # If combatants exist and NPC is hostile, start combat encounter
+                if combatants and enc.get("is_combatant"):
+                    encounter_state = dm.hex_crawl.create_encounter_from_hazard(
+                        hazard_result, context
+                    )
+                    if encounter_state:
+                        # Set encounter on controller and transition to combat
+                        dm.controller.set_encounter(encounter_state)
+                        dm.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "hex_id": hex_id,
+                                "poi_name": poi_name,
+                                "source": "evening_hazard",
+                                "npc_id": npc_id,
+                            },
+                        )
+                        encounter_started = True
+                        lines.append("Combat initiated!")
+
         return {
             "success": True,
             "hazard_triggered": True,
+            "encounter_started": encounter_started,
             "encounter": resolution.get("encounter"),
             "combatants": combatants,
             "combatant_count": len(combatants),

@@ -5545,21 +5545,46 @@ class HexCrawlEngine:
                 "error": f"'{target_npc.name}' has no combat stats (stat_reference missing)",
             }
 
-        # Create combatant from NPC
+        # Create combatants from NPC (handles group_count)
         registry = get_monster_registry()
         import uuid
 
-        combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
-        combatant = registry.create_combatant_from_hex_npc(
-            npc=target_npc,
-            combatant_id=combatant_id,
-            side="enemy",
-        )
+        combatants: list[Combatant] = []
+        group_info = None
 
-        if not combatant:
+        # Check if this NPC represents a group
+        if getattr(target_npc, "group_count", None):
+            # Roll group size
+            group_info = self.get_npc_group_size(hex_id, target_npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+
+            # Create combatants for each member of the group
+            for i in range(total_count):
+                combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}_{i+1}"
+                combatant = registry.create_combatant_from_hex_npc(
+                    npc=target_npc,
+                    combatant_id=combatant_id,
+                    side="enemy",
+                )
+                if combatant:
+                    # Give each combatant a numbered name
+                    combatant.name = f"{target_npc.name} #{i+1}"
+                    combatants.append(combatant)
+        else:
+            # Single NPC - create one combatant
+            combatant_id = f"{target_npc.npc_id}_{uuid.uuid4().hex[:8]}"
+            combatant = registry.create_combatant_from_hex_npc(
+                npc=target_npc,
+                combatant_id=combatant_id,
+                side="enemy",
+            )
+            if combatant:
+                combatants.append(combatant)
+
+        if not combatants:
             return {
                 "success": False,
-                "error": f"Failed to create combatant from '{target_npc.name}'",
+                "error": f"Failed to create combatant(s) from '{target_npc.name}'",
             }
 
         # Check surprise
@@ -5574,8 +5599,19 @@ class HexCrawlEngine:
             actors=[target_npc.name],
             context=f"Engaging {target_npc.name} at {self._current_poi}",
             terrain=hex_data.terrain_type,
-            combatants=[combatant],
+            combatants=combatants,
         )
+
+        # Store group info in contextual_data
+        if group_info:
+            encounter.contextual_data = {
+                "source": "poi_engagement",
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "npc_id": target_npc.npc_id,
+                "is_group": True,
+                "group_info": group_info,
+            }
 
         # Set encounter on controller
         self.controller.set_encounter(encounter)
@@ -5591,16 +5627,23 @@ class HexCrawlEngine:
             },
         )
 
+        # Build combatant summary
+        combatant_summaries = []
+        for c in combatants:
+            combatant_summaries.append({
+                "id": c.combatant_id,
+                "name": c.name,
+                "ac": c.stat_block.armor_class if c.stat_block else None,
+                "hp": c.stat_block.hp_max if c.stat_block else None,
+                "attacks": len(c.stat_block.attacks) if c.stat_block else 0,
+            })
+
         return {
             "success": True,
             "encounter_id": encounter.encounter_id,
-            "combatant": {
-                "id": combatant.combatant_id,
-                "name": combatant.name,
-                "ac": combatant.stat_block.armor_class if combatant.stat_block else None,
-                "hp": combatant.stat_block.hp_max if combatant.stat_block else None,
-                "attacks": len(combatant.stat_block.attacks) if combatant.stat_block else 0,
-            },
+            "combatants": combatant_summaries,
+            "combatant_count": len(combatants),
+            "group_info": group_info,
             "distance": distance,
             "surprise": surprise_status.value if hasattr(surprise_status, "value") else str(surprise_status),
             "context": encounter.context,
@@ -10815,7 +10858,11 @@ class HexCrawlEngine:
             return {"is_group": False, "total_count": 1}
 
         # Roll the group count - handle complex expressions like "1d4+1d4"
-        total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
+        # or static integers like 4
+        if isinstance(npc.group_count, int):
+            total_count = npc.group_count
+        else:
+            total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
 
         # Roll composition if available
         composition = {}
