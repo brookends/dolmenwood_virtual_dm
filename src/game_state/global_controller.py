@@ -2025,12 +2025,10 @@ class GlobalController:
         """
         Get total attack roll modifier from active conditions.
 
-        Condition effects (per Dolmenwood/OSE rules):
-        - BLINDED: -4 to attack
-        - POISONED: -2 to attack
-        - PRONE: -4 to melee attacks
-        - FRIGHTENED: -2 to attacks while source visible
-        - EXHAUSTED: -1 per exhaustion level
+        Uses CONDITION_ROLL_MODIFIERS for standard conditions (poisoned, exhausted,
+        frightened, nauseated, etc.) plus special cases for:
+        - BLINDED: -4 to attack (not in CONDITION_ROLL_MODIFIERS)
+        - PRONE: -4 to melee attacks (not in CONDITION_ROLL_MODIFIERS)
 
         Args:
             character_id: The character to check
@@ -2042,19 +2040,15 @@ class GlobalController:
         if not character:
             return 0
 
-        modifier = 0
+        # Get modifiers from CONDITION_ROLL_MODIFIERS (poisoned, exhausted, nauseated, etc.)
+        modifier = character.get_total_condition_modifier("attack_rolls")
+
+        # Add special cases not in CONDITION_ROLL_MODIFIERS
         for cond in character.conditions:
             if cond.condition_type == ConditionType.BLINDED:
                 modifier -= 4
-            elif cond.condition_type == ConditionType.POISONED:
-                modifier -= 2
             elif cond.condition_type == ConditionType.PRONE:
                 modifier -= 4  # Melee attacks; ranged would be different
-            elif cond.condition_type == ConditionType.FRIGHTENED:
-                modifier -= 2
-            elif cond.condition_type == ConditionType.EXHAUSTED:
-                # Exhaustion stacks; check exhaustion_level if tracked
-                modifier -= 1
 
         return modifier
 

@@ -339,3 +339,72 @@ class TestHazardResolverConditionModifiers:
         # So roll_total = 12 - 0 (modifier) - (-1) (condition) = 13
         # Success if 13 <= 14 (dexterity) = True
         assert result.success is True
+
+
+class TestCombatAttackConditionModifiers:
+    """Tests for condition modifier application in combat attack rolls."""
+
+    @pytest.fixture
+    def controller(self):
+        """Create a GlobalController with test character."""
+        from src.game_state.global_controller import GlobalController
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="fighter_1",
+            name="Test Fighter",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+        )
+        controller.add_character(char)
+        return controller
+
+    def test_no_condition_no_attack_modifier(self, controller):
+        """Verify no attack modifier when character has no conditions."""
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        assert modifier == 0
+
+    def test_nauseated_applies_attack_penalty(self, controller):
+        """Verify nauseated condition applies -1 to attack rolls."""
+        controller.apply_condition("fighter_1", "nauseated", source="charnel_stench")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        assert modifier == -1
+
+    def test_poisoned_applies_attack_penalty(self, controller):
+        """Verify poisoned condition applies -2 to attack rolls."""
+        controller.apply_condition("fighter_1", "poisoned", source="venom")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        assert modifier == -2
+
+    def test_exhausted_applies_attack_penalty(self, controller):
+        """Verify exhausted condition applies -1 to attack rolls."""
+        controller.apply_condition("fighter_1", "exhausted", source="nightmares")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        assert modifier == -1
+
+    def test_blinded_applies_attack_penalty(self, controller):
+        """Verify blinded condition applies -4 to attack rolls (special case)."""
+        controller.apply_condition("fighter_1", "blinded", source="spell")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        assert modifier == -4
+
+    def test_multiple_conditions_stack(self, controller):
+        """Verify multiple conditions stack their attack penalties."""
+        controller.apply_condition("fighter_1", "nauseated", source="charnel_stench")
+        controller.apply_condition("fighter_1", "exhausted", source="nightmares")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        # nauseated (-1) + exhausted (-1) = -2
+        assert modifier == -2
+
+    def test_nauseated_plus_blinded_stack(self, controller):
+        """Verify nauseated and blinded conditions stack."""
+        controller.apply_condition("fighter_1", "nauseated", source="charnel_stench")
+        controller.apply_condition("fighter_1", "blinded", source="spell")
+        modifier = controller.get_condition_attack_modifier("fighter_1")
+        # nauseated (-1) + blinded (-4) = -5
+        assert modifier == -5
