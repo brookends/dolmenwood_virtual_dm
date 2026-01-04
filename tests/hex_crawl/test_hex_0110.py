@@ -314,6 +314,22 @@ class TestLordGnarlgruffSpirit:
         )
         assert "cold_iron" in spirit.vulnerabilities
 
+    def test_spirit_has_time_presence(self, hex_0110):
+        """Spirit should have time_presence for moon phase availability."""
+        spirit = next(
+            (n for n in hex_0110.npcs if n.npc_id == "lord_gnarlgruff_spirit"), None
+        )
+        assert spirit.time_presence is not None
+        assert spirit.time_presence["type"] == "moon_phase"
+        assert spirit.time_presence["phase"] == "full"
+
+    def test_devil_goats_no_time_presence(self, hex_0110):
+        """Devil Goats should not have time_presence (always present)."""
+        devil_goats = next(
+            (n for n in hex_0110.npcs if n.npc_id == "devil_goats"), None
+        )
+        assert devil_goats.time_presence is None
+
 
 # =============================================================================
 # ITEMS AND SECRETS TESTS

@@ -4758,6 +4758,12 @@ class HexNPC:
     # NPCs with binding cannot leave their bound location until condition is met
     binding: Optional[dict[str, Any]] = None
 
+    # Time-based presence restrictions
+    # Format: {type: "moon_phase", phase: "full", description: "Only appears on full moon"}
+    # type: "moon_phase", "time_of_day", "season", "weather"
+    # For spirits, fey, or creatures with temporal restrictions
+    time_presence: Optional[dict[str, Any]] = None
+
     def get_relationship(self, npc_id: str) -> Optional[dict[str, Any]]:
         """Get relationship to a specific NPC."""
         for rel in self.relationships:

@@ -555,6 +555,8 @@ def _parse_hex_npc(data: dict[str, Any]) -> Any:
         relationships=data.get("relationships", []),
         # Binding/imprisonment
         binding=data.get("binding"),
+        # Time-based presence restrictions
+        time_presence=data.get("time_presence"),
     )
 
 

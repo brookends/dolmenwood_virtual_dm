@@ -1269,6 +1269,7 @@ class ContentPipeline:
                     "faction_profile": npc.faction_profile,
                     "personal_feelings": npc.personal_feelings,
                     "binding": npc.binding,
+                    "time_presence": npc.time_presence,
                 }
                 # Only include enhanced fields if they have data
                 if known_topics_list:

@@ -796,6 +796,7 @@ class ContentManager:
                     faction_profile=npc_data.get("faction_profile"),
                     personal_feelings=npc_data.get("personal_feelings"),
                     binding=npc_data.get("binding"),
+                    time_presence=npc_data.get("time_presence"),
                 )
                 npcs.append(npc)
             else:
