@@ -1,9 +1,6 @@
 {
   "hex_id": "0109",
-  "coordinates": [
-    1,
-    9
-  ],
+  "coordinates": [1, 9],
   "name": "Lady Borrid and Murkin's Army",
   "tagline": "Ancient coppices of hazel and chestnut. North-south paths are trampled with bootprints.",
   "region": "High Wold",
@@ -13,9 +10,40 @@
   "procedural": {
     "lost_chance": "2-in-6",
     "encounter_chance": "2-in-6",
-    "encounter_notes": null,
-    "foraging_results": null,
-    "foraging_special": []
+    "encounter_notes": "Military patrols from Murkin's Army are common on the forest paths.",
+    "encounter_table": {
+      "name": "Hex 0109 Encounters",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": "1",
+          "result": "murkins_patrol",
+          "description": "A patrol of 1d4+1 soldiers (mixed humans and shorthorns) marching in formation. They demand to know the party's business and may attempt press-ganging."
+        },
+        {
+          "roll": "2",
+          "result": "hunting_party",
+          "description": "Lady Borrid and 1d4 hunting companions tracking game through the woods. She is courteous to travelers who do not impede her hunt."
+        },
+        {
+          "roll": "3-6",
+          "result": "standard",
+          "description": "Roll on standard High Wold encounter table"
+        }
+      ]
+    },
+    "foraging_results": "Successful foraging yields hazelnuts (1d6 portions), chestnuts (1d4 portions), or forest mushrooms (1d4 portions, 1-in-6 chance of mild hallucination if not properly prepared)",
+    "foraging_special": [
+      "Hazelnuts (1d6 portions)",
+      "Chestnuts (1d4 portions)",
+      "Forest mushrooms (1d4 portions, some hallucinogenic)"
+    ],
+    "investigation_hazard": {
+      "trigger": "investigate_camp",
+      "chance": "3-in-6",
+      "description": "Sneaking near or investigating Murkin's Army camp risks discovery. There is a 3-in-6 chance sentries spot the party and raise the alarm.",
+      "result": "camp_alarm"
+    }
   },
   "description": "Ancient coppices of hazel and chestnut. North-south paths are trampled with bootprints.",
   "points_of_interest": [
@@ -23,23 +51,147 @@
       "name": "Lady Borrid's Hunting Lodge",
       "poi_type": "lodge",
       "description": "Among the thickets of blackthorn in the north of the hex is a small, high-gabled brick manor, replete with pointed turrets and balconies surveying the woods.",
-      "tagline": null,
+      "tagline": "A hunter's retreat filled with trophies of legendary beasts",
       "entering": "An unlocked front door engraved with hunting motifs leads to a wood-panelled hall, at the far end of which hangs a mighty moose head. Entering without permission causes the moose head to bellow, alerting all within to the intrusion.",
       "interior": "Feasting hall with plush, ivy-carved wooden furnishings and decked with the taxidermied heads, horns, and antlers of a multitude of fearsome beasts, including a manticore's head, an antler wraith's antlers, and a 5′ wide wyrm's skull with the inscription 'The Wyrm of Odd.' Upper floor has bedroom suites furnished in a luxurious but modest style.",
-      "exploring": null,
-      "leaving": null,
+      "exploring": "The lodge has three floors: the ground floor feasting hall and kitchens, the upper floor bedchambers, and cellars below. A careful search of the trophy room reveals the Horn of Blasting among the mounted horns. The cellars contain wine stores and a concealed vault.",
+      "leaving": "Lady Borrid sees guests off personally if they depart on good terms. Those who leave by stealth may be tracked by Brynne, her giant weasel companion.",
       "inhabitants": "Lady Borrid, her animal companion Brynne—a white-furred giant weasel (DMB—unfailingly loyal to Lady Borrid, does not check Morale), and 1d6 hunting companions (Level 1 hunters—DMB).",
-      "roll_tables": [],
-      "npcs": [
-        "lady_amonie_borrid"
+      "roll_tables": [
+        {
+          "name": "Hunting Companions Present",
+          "die_type": "d6",
+          "description": "Roll to determine which hunting companions are at the lodge",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Empty Lodge",
+              "description": "Lady Borrid is out hunting with all companions. Only servants remain. The lodge is lightly guarded.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Recovering Hunter",
+              "description": "One injured companion rests by the fire, nursing a wound from a recent hunt. They speak freely of Lady Borrid's activities.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Preparing for Hunt",
+              "description": "Lady Borrid and 1d4 companions prepare weapons and provisions for an expedition. They may invite skilled-looking travelers to join.",
+              "npcs": ["lady_amonie_borrid"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Celebrating a Kill",
+              "description": "A successful hunt is being celebrated with wine and song. Lady Borrid is in excellent spirits and generous to visitors.",
+              "npcs": ["lady_amonie_borrid"],
+              "items": [],
+              "mechanical_effect": "+1 to reaction rolls"
+            },
+            {
+              "roll": 5,
+              "title": "Taxidermy Session",
+              "description": "Lady Borrid oversees the mounting of a fresh trophy. She speaks at length of the creature's powers and the hunt's dangers.",
+              "npcs": ["lady_amonie_borrid"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Strategy Meeting",
+              "description": "Lady Borrid and her companions study maps and discuss the 'cheese monstrosity' of Dwelmfurgh. Serious mood; interruptions unwelcome.",
+              "npcs": ["lady_amonie_borrid"],
+              "items": [],
+              "mechanical_effect": "-1 to reaction rolls"
+            }
+          ]
+        },
+        {
+          "name": "Trophy Room Curiosities",
+          "die_type": "d6",
+          "description": "Notable items among the hunting trophies (one per visit)",
+          "unique_entries": true,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "The Wyrm of Odd",
+              "description": "A 5-foot-wide skull of a blood wyrm, with the inscription 'The Wyrm of Odd.' Lady Borrid slew this beast in her youth, earning her fame throughout Dolmenwood.",
+              "keywords": ["wyrm", "odd", "skull", "famous", "slew"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Manticore Head",
+              "description": "A fearsome manticore's head, jaws frozen in a snarl. The eyes seem to follow visitors. Some claim it still speaks prophecy on moonless nights.",
+              "keywords": ["manticore", "prophecy", "eyes"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Antler Wraith Rack",
+              "description": "The ethereal-seeming antlers of an antler wraith, mounted in silver. They glow faintly in darkness and feel cold to the touch.",
+              "keywords": ["antler", "wraith", "glow", "cold"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Horn of Blasting",
+              "description": "Among the mounted horns, an unassuming bronze horn that is actually a Horn of Blasting (p407). Lady Borrid considers it a mere curiosity.",
+              "keywords": ["horn", "blasting", "bronze", "magic"],
+              "npcs": [],
+              "items": ["horn_of_blasting"],
+              "mechanical_effect": "Horn of Blasting can be obtained"
+            },
+            {
+              "roll": 5,
+              "title": "Painted Hunting Scenes",
+              "description": "A series of paintings depicting Lady Borrid's greatest hunts. One shows Lord Murkin as a young man, before he grew cruel. She rarely speaks of it.",
+              "keywords": ["painting", "murkin", "young", "cousin"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Map of Dwelmfurgh",
+              "description": "A detailed map showing the central reaches of Dwelmfurgh, with a location marked 'Cheese Thing?' Lady Borrid's next quarry.",
+              "keywords": ["map", "dwelmfurgh", "cheese", "hunt"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
       ],
+      "npcs": ["lady_amonie_borrid"],
       "special_features": [
         "Horn of Blasting concealed among trophies",
+        "Magical moose head alarm: bellows when unauthorized entry occurs",
         "Secret chamber in cellars with vault containing chalices and jewels worth 8,000gp, a Fairy Shortbow carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane)"
       ],
       "secrets": [
-        "Secret door in the cellars leads to a vault containing chalices and jewels worth 8,000gp, a Fairy Shortbow (p412) carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane, p412)"
+        "Secret door in the cellars leads to a vault containing chalices and jewels worth 8,000gp, a Fairy Shortbow (p412) carved from a giant antler, and a quiver of 12 Fairy Arrows (Breggle Bane, p412)",
+        "The moose head alarm can be silenced by feeding it acorns—known only to Lady Borrid and her closest companions"
       ],
+      "evening_hazard": {
+        "trigger": "evening_stay",
+        "chance": "4-in-6",
+        "description": "If visitors have made a favorable impression, Lady Borrid invites them to dine with her. This is both an honor and an opportunity for conversation.",
+        "result": "dinner_invitation"
+      },
       "is_dungeon": false,
       "dungeon_levels": null
     },
@@ -47,22 +199,141 @@
       "name": "Murkin's Army",
       "poi_type": "military camp",
       "description": "In a secluded dell in the south of the hex, a mile into the woods, can be found a ring of canvas tents, sloppily camouflaged with sprays of bracken and oak. Clustered to one side are tables, log stools, barrels of pickled turnips and eggs, and racks of hanging squirrels and rabbits.",
-      "tagline": null,
-      "entering": "Visitors are brought before Snidebleat for questioning, then brusquely told to move along.",
-      "interior": null,
-      "exploring": null,
-      "leaving": null,
+      "tagline": "A sullen military camp of press-ganged soldiers and scheming knights",
+      "entering": "Visitors are challenged by sentries at the camp perimeter. Those who identify themselves are brought before Sergeant Snidebleat for questioning, then brusquely told to move along. Sneaking in requires avoiding the 2d4 sentries posted around the dell.",
+      "interior": "The camp consists of 12 canvas tents arranged in a rough circle around a central fire pit. Snidebleat's command tent is larger and set apart. A supply area holds barrels of pickled provisions and racks of hunted game. A makeshift training ground features straw dummies and pike racks.",
+      "exploring": "Exploring the camp openly is forbidden—Snidebleat will have intruders escorted out or arrested. Sneaking reveals low morale among troops, whispered complaints about Lord Murkin, and the location of pressed recruits held under guard.",
+      "leaving": "Visitors are escorted to the edge of the dell by two soldiers. Those who were arrested are released at the hex border with a warning. Press-ganged recruits who escape face pursuit.",
       "inhabitants": "18 shorthorns (DMB) and 22 humans (Level 1 fighters—DMB) under the command of the longhorn Sergeant Snidebleat. The troops' morale is low, many of them having been press-ganged into service.",
-      "roll_tables": [],
-      "npcs": [
-        "sergeant_crewwin_snidebleat"
+      "roll_tables": [
+        {
+          "name": "Camp Activities",
+          "die_type": "d6",
+          "description": "What's happening at the camp when PCs arrive",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Pike Drill",
+              "description": "Soldiers train with pikes under Snidebleat's critical eye. She berates them for sloppiness while clearly bored.",
+              "npcs": ["sergeant_crewwin_snidebleat"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Mess Time",
+              "description": "Soldiers eat from the constantly steaming stew pot. Complaints about the food (and everything else) are audible.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Press-Gang Returns",
+              "description": "A patrol returns with 1d4 new 'recruits,' peasants seized from nearby hexes. They're being processed into the ranks.",
+              "npcs": ["sergeant_crewwin_snidebleat"],
+              "items": [],
+              "mechanical_effect": "Potential rescue opportunity"
+            },
+            {
+              "roll": 4,
+              "title": "Formation March",
+              "description": "The entire camp is marching in formation around the dell. Snidebleat rides a mule, shouting orders.",
+              "npcs": ["sergeant_crewwin_snidebleat"],
+              "items": [],
+              "mechanical_effect": "Camp is mobile; harder to sneak in"
+            },
+            {
+              "roll": 5,
+              "title": "Furtive Drinking",
+              "description": "Many soldiers have found ale and are drinking furtively. Discipline is lax. Snidebleat is in her tent.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Soldiers distracted; easier to sneak"
+            },
+            {
+              "roll": 6,
+              "title": "Inspection Day",
+              "description": "An emissary from Lord Murkin inspects the troops. Everyone is on their best behavior. Snidebleat barely conceals her contempt.",
+              "npcs": ["sergeant_crewwin_snidebleat"],
+              "items": [],
+              "mechanical_effect": "Security heightened"
+            }
+          ]
+        },
+        {
+          "name": "Soldier Morale",
+          "die_type": "d6",
+          "description": "The current mood of the troops",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Near Mutiny",
+              "description": "Whispered talk of desertion or uprising. One wrong move could spark violence.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "Soldiers may be recruited against Murkin"
+            },
+            {
+              "roll": 2,
+              "title": "Deeply Resentful",
+              "description": "Sullen compliance. Soldiers obey orders but do the minimum. Open grumbling.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Resigned",
+              "description": "Soldiers have accepted their fate. They follow orders mechanically without complaint or enthusiasm.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Cautiously Hopeful",
+              "description": "Rumors of pay increases or the war ending soon have lifted spirits slightly.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Drunk and Rowdy",
+              "description": "Someone smuggled in ale. Soldiers are loud and potentially aggressive.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "-1 to reaction; may start fights"
+            },
+            {
+              "roll": 6,
+              "title": "Fresh Victory",
+              "description": "A successful skirmish or capture has bolstered morale. Soldiers are unusually cooperative.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": "+1 to reaction with soldiers"
+            }
+          ]
+        }
       ],
+      "npcs": ["sergeant_crewwin_snidebleat"],
       "special_features": [
-        "Pike training",
-        "Marching in formation",
-        "Constantly steaming pot of stew"
+        "Pike training ground with straw dummies",
+        "Marching formation practice area",
+        "Constantly steaming pot of stew (dubious quality)",
+        "Prisoner holding area for press-gang recruits"
       ],
-      "secrets": [],
+      "secrets": [
+        "Most soldiers would desert if given the chance and guaranteed safety",
+        "Snidebleat keeps a hidden cache of her personal wealth (20 onyxes worth 50gp each) buried beneath her tent"
+      ],
+      "evening_hazard": {
+        "trigger": "evening_stay",
+        "chance": "2-in-6",
+        "description": "Staying near the camp at night risks encountering a patrol of 1d4 soldiers checking the perimeter.",
+        "result": "night_patrol_encounter"
+      },
       "is_dungeon": false,
       "dungeon_levels": null
     }
@@ -76,29 +347,187 @@
       "description": "A limber human woman in her 50s, with arched brows, chestnut eyes, and a blonde braid down her back. Dresses in a green woollen tunic and brown leather breeches. While she spent her youth roaming the deep woods, avoiding political matters, Borrid now follows the manoeuvrings of the High Wold noble houses with concern. She is famed throughout Dolmenwood for having slain a mighty blood wyrm that terrorised Odd.",
       "kindred": "Human",
       "alignment": "Lawful",
-      "demeanor": [
-        "Quiet vigilance",
-        "broken with gentle laughter"
-      ],
+      "demeanor": ["Quiet vigilance", "broken with gentle laughter"],
       "speech": "Precise, considered. Woldish, Gaffe.",
-      "languages": [
-        "Woldish",
-        "Gaffe"
-      ],
+      "languages": ["Woldish", "Gaffe"],
       "desires": [
         "To turn back the tides of war in the High Wold",
         "Views Lord Ramius (p65) as potential peacemaker"
       ],
-      "secrets": [
-        "Maternal cousin of Lord Murkin (p65)"
-      ],
+      "secrets": ["Maternal cousin of Lord Murkin (p65)"],
       "possessions": [
         "A cloak of autumnal leaves (grants +2 AC)",
         "A Bag of Holding (p420) containing 2,000gp"
       ],
       "location": "Lady Borrid's Hunting Lodge",
       "stat_reference": "Level 9 Hunter",
-      "is_combatant": true
+      "is_combatant": true,
+      "vulnerabilities": [
+        "mention_of_cousin_murkin",
+        "hint_of_war_casualties",
+        "tales_of_legendary_beasts",
+        "threat_to_the_common_folk"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "welcome_guests",
+          "content": "Lady Borrid rises gracefully, her hand resting on the giant weasel at her side. 'Travelers in my woods are always welcome, provided they come in peace. Brynne here will tell me if you don't.' The weasel's eyes glitter intelligently.",
+          "keywords": ["welcome", "guest", "visitor", "hello", "greet"],
+          "required_disposition": -5,
+          "category": "interaction",
+          "priority": 10
+        },
+        {
+          "topic_id": "the_hunt",
+          "content": "Her eyes light up. 'The hunt is life itself—the patience, the tracking, the moment of confrontation. I've stalked antler wraiths through frozen mists and cornered a manticore in its lair. The forest has no secrets from a true hunter.'",
+          "keywords": ["hunt", "hunting", "forest", "track", "prey", "beast"],
+          "required_disposition": -3,
+          "category": "personal",
+          "priority": 8
+        },
+        {
+          "topic_id": "wyrm_of_odd",
+          "content": "She gestures to the massive skull on the wall. 'The Wyrm of Odd. Thirty years ago, it terrorized the village, taking livestock and children. I tracked it for three months through Dwelmfurgh before I found its lair. That was the fight of my life.'",
+          "keywords": ["wyrm", "odd", "skull", "dragon", "famous", "fame", "killed"],
+          "required_disposition": -2,
+          "category": "lore",
+          "priority": 9
+        },
+        {
+          "topic_id": "cousin_murkin",
+          "content": "Her expression clouds. 'Simeone is my cousin, yes. We were close as children—before his father died and bitterness consumed him. I barely recognize the man he's become. Cruel, grasping, obsessed with conquest.'",
+          "keywords": ["murkin", "cousin", "simeone", "lord", "family"],
+          "required_disposition": 0,
+          "category": "npc",
+          "priority": 7
+        },
+        {
+          "topic_id": "war_concerns",
+          "content": "'This war with Nodlock will destroy us all. Simeone cannot see that even victory would leave the High Wold weakened. And if he turns his soldiers on the common folk...' She shakes her head. 'Someone must broker peace.'",
+          "keywords": ["war", "nodlock", "peace", "fight", "battle", "army"],
+          "required_disposition": 0,
+          "category": "situation",
+          "priority": 8
+        },
+        {
+          "topic_id": "lord_ramius",
+          "content": "'Lord Ramius of Everdusk understands balance. He protects Nodlock from Simeone's aggression—not out of love, but wisdom. If anyone can bring the longhorn lords to reason, it is he. I've written to him, but received no reply.'",
+          "keywords": ["ramius", "everdusk", "peace", "longhorn", "protection"],
+          "required_disposition": 1,
+          "category": "npc",
+          "priority": 6
+        },
+        {
+          "topic_id": "local_woods",
+          "content": "'These woods I know better than my own lodge. Every deer trail, every badger sett. The hazel coppices are ancient—older than any human settlement. Walk carefully and listen; the forest speaks to those who attend.'",
+          "keywords": ["woods", "forest", "trees", "hazel", "nature", "area"],
+          "required_disposition": -3,
+          "category": "location",
+          "priority": 5
+        },
+        {
+          "topic_id": "brynne_companion",
+          "content": "She strokes the giant weasel's fur. 'Brynne has been with me for twelve years. I found her as a kit, abandoned after hunters killed her mother. She's saved my life more times than I can count.'",
+          "keywords": ["brynne", "weasel", "pet", "companion", "animal", "white"],
+          "required_disposition": -2,
+          "category": "personal",
+          "priority": 4
+        },
+        {
+          "topic_id": "cheese_monstrosity",
+          "content": "'My next hunt takes me north, to central Dwelmfurgh. There are tales of a... cheese monstrosity? It sounds absurd, but hunters have vanished. Whatever it is, I intend to find it.' A gleam enters her eye.",
+          "keywords": ["cheese", "dwelmfurgh", "hunt", "north", "monster", "next"],
+          "required_disposition": 0,
+          "category": "quest",
+          "priority": 7
+        },
+        {
+          "topic_id": "faction_high_wold_politics",
+          "content": "'The longhorn lords squabble like children while the real threats—the Drune, the creatures of the deep wood—go unchecked. I stay out of politics, but politics will not stay out of these woods.'",
+          "keywords": ["politics", "longhorn", "lords", "nobility", "drune"],
+          "required_disposition": 1,
+          "category": "faction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "rebellion_sympathy",
+          "content": "Lady Borrid secretly sympathizes with the rebellion against her cousin. She has never met Timilda Brumble, but approves of the Cabbage Plot as a peaceful form of resistance that may draw Duke Brackenwold's attention.",
+          "hint": "She speaks of 'the troubles in Murkin's domain' with a hint of satisfaction rather than concern.",
+          "keywords": ["rebellion", "cabbage", "plot", "resistance", "sympathy", "approve"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "timilda_messages",
+          "content": "Timilda Brumble has sent messages to Lady Borrid through trusted travelers, asking for her support. Borrid has not replied directly but has allowed her lodge to be used as a waypoint for those fleeing Murkin's soldiers.",
+          "hint": "She asks pointed questions about travelers' origins and seems unsurprised by news from hex 0108.",
+          "keywords": ["timilda", "message", "support", "contact", "brumble", "crimson"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "peacemaker_plan",
+          "content": "Borrid has been quietly working to arrange a meeting between Lord Ramius and representatives of House Nodlock, hoping to create a united front against Murkin before he starts a war. The meeting would be held at her lodge.",
+          "hint": "She has been preparing extra guest chambers and speaks of 'important visitors expected soon.'",
+          "keywords": ["peace", "meeting", "ramius", "nodlock", "plan", "unite"],
+          "required_disposition": 4,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "vault_location",
+          "content": "The secret vault in her cellars contains not just wealth but also family documents proving Murkin's father intended a more equitable division of lands. This could be used to legally challenge Simeone's rule.",
+          "hint": "When discussing her cellar, she hesitates and changes the subject.",
+          "keywords": ["vault", "secret", "cellar", "documents", "inheritance", "legal"],
+          "required_disposition": 4,
+          "required_trust": 3,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lord_murkin",
+          "relationship_type": "family",
+          "description": "Maternal cousin of Lord Simeone Murkin. They were close as children but have grown apart due to his cruelty.",
+          "hex_id": "0208",
+          "notes": "Borrid disapproves of Murkin but maintains minimal contact"
+        },
+        {
+          "npc_id": "timilda_brumble",
+          "relationship_type": "secret_ally",
+          "description": "Has received messages from Timilda regarding the rebellion. Quietly supports the cause without direct involvement.",
+          "hex_id": "0108",
+          "notes": "Communication through trusted travelers"
+        },
+        {
+          "npc_id": "sergeant_crewwin_snidebleat",
+          "relationship_type": "neutral",
+          "description": "Snidebleat commands the army in this hex. Borrid views her with wary respect—a dangerous woman with her own agenda.",
+          "hex_id": "0109",
+          "notes": "They maintain polite distance"
+        },
+        {
+          "npc_id": "lord_ramius",
+          "relationship_type": "hopeful_ally",
+          "description": "Borrid sees Lord Ramius as the only noble capable of brokering peace. She has written to him seeking an audience.",
+          "hex_id": null,
+          "notes": "No reply received yet"
+        }
+      ],
+      "faction_profile": {
+        "faction_id": "house_murkin",
+        "role": "dissident_family",
+        "standing": "high",
+        "notes": "Cousin to Lord Murkin but opposes his policies. Maintains formal ties while working quietly against his war plans."
+      }
     },
     {
       "npc_id": "sergeant_crewwin_snidebleat",
@@ -107,44 +536,272 @@
       "description": "A longhorn woman with russet fur, amber eyes, and 2′-long, outward curving horns. Dresses in burnished plate mail with a full visor helm. Snidebleat is a member of Lord Murkin's (p65) knightly retinue, the Horns of Kolstoke. Her loyalty is bought—she loathes Murkin and his pompous schemes.",
       "kindred": "Longhorn",
       "alignment": "Neutral",
-      "demeanor": [
-        "Air of refinement",
-        "enjoys humiliating her lessers"
-      ],
+      "demeanor": ["Air of refinement", "enjoys humiliating her lessers"],
       "speech": "Eloquent, husky. Woldish, Caprice, Gaffe.",
-      "languages": [
-        "Woldish",
-        "Caprice",
-        "Gaffe"
-      ],
+      "languages": ["Woldish", "Caprice", "Gaffe"],
       "desires": [
         "To see Murkin ridiculed",
         "Glory in easily-won skirmishes",
         "Ascent to a position of aristocracy and wealth",
         "Assistance in brokering a potential alliance with Red Gwen (hex 0311) to accomplish said goals"
       ],
-      "secrets": [
-        "She loathes Murkin and his pompous schemes"
-      ],
+      "secrets": ["She loathes Murkin and his pompous schemes"],
       "possessions": [
         "A Ring of Energy Resistance (Fire, p410), searing to the touch",
         "A pouch of 20 onyxes (50gp each)"
       ],
       "location": "Murkin's Army",
       "stat_reference": "Level 4 Knight",
-      "is_combatant": true
+      "is_combatant": true,
+      "vulnerabilities": [
+        "bribery",
+        "promise_of_glory",
+        "mention_of_red_gwen",
+        "insult_to_murkin",
+        "threat_to_personal_wealth"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "challenge_visitors",
+          "content": "She looks down her long muzzle at you. 'State your business. This is Lord Murkin's camp—the army that will soon crush House Nodlock. Unauthorized visitors are... unwelcome.'",
+          "keywords": ["business", "here", "camp", "visitor", "who"],
+          "required_disposition": -5,
+          "category": "interaction",
+          "priority": 10
+        },
+        {
+          "topic_id": "camp_orders",
+          "content": "'We train. We drill. We wait for Lord Murkin to decide the time is right.' Her tone suggests she finds this tedious. 'The glory of battle awaits—eventually.'",
+          "keywords": ["orders", "mission", "duty", "purpose", "doing"],
+          "required_disposition": -3,
+          "category": "situation",
+          "priority": 8
+        },
+        {
+          "topic_id": "troop_strength",
+          "content": "'Forty soldiers. Shorthorns and humans, pressed into service or bought with promises of plunder. They're adequate.' Her dismissiveness suggests she thinks them barely sufficient.",
+          "keywords": ["soldiers", "troops", "army", "strength", "how many"],
+          "required_disposition": -2,
+          "category": "situation",
+          "priority": 7
+        },
+        {
+          "topic_id": "murkin_plans",
+          "content": "'Lord Murkin dreams of conquest. Nodlock Castle, then the High Wold entire.' She sounds bored. 'Grand ambitions for a half-breed with more chin-locks than sense.'",
+          "keywords": ["murkin", "plans", "war", "conquest", "lord"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 8
+        },
+        {
+          "topic_id": "nodlock_war",
+          "content": "'House Nodlock is weak, protected only by Lord Ramius's favor. When that protection fails—and it will—we march. A week's campaign at most.'",
+          "keywords": ["nodlock", "war", "attack", "when", "invasion"],
+          "required_disposition": 0,
+          "category": "faction",
+          "priority": 7
+        },
+        {
+          "topic_id": "horns_of_kolstoke",
+          "content": "'I am of the Horns of Kolstoke—Murkin's personal retinue. Twelve longhorn knights, the finest warriors in his service.' Pride flickers briefly before returning to boredom.",
+          "keywords": ["horns", "kolstoke", "knight", "retinue", "elite"],
+          "required_disposition": -2,
+          "category": "faction",
+          "priority": 6
+        },
+        {
+          "topic_id": "personal_ambition",
+          "content": "'I serve where glory awaits. When this war is won, there will be lands and titles to distribute. I intend to claim my share—and more.'",
+          "keywords": ["ambition", "glory", "future", "reward", "lands"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 5
+        },
+        {
+          "topic_id": "lady_borrid",
+          "content": "'The hunter? She keeps to her lodge, playing with her pets and trophies. A waste of noble blood. She could be a power in the High Wold if she chose.'",
+          "keywords": ["borrid", "lady", "hunter", "lodge", "cousin"],
+          "required_disposition": -2,
+          "category": "npc",
+          "priority": 4
+        },
+        {
+          "topic_id": "red_gwen_interest",
+          "content": "Her ears prick up. 'Red Gwen? The bandit queen of hex 0311?' She pauses carefully. 'I've heard she commands considerable forces. Interesting.'",
+          "keywords": ["gwen", "red", "bandit", "0311", "outlaw"],
+          "required_disposition": 1,
+          "category": "npc",
+          "priority": 7
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "loathes_murkin",
+          "content": "Snidebleat genuinely despises Lord Murkin. She finds him pompous, cruel, and incompetent. She serves only because the position offers opportunity for personal advancement.",
+          "hint": "Her praise of Murkin is always delivered in a flat, perfunctory tone. She never uses his name with respect.",
+          "keywords": ["hate", "murkin", "loyal", "serve", "truly", "really"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        },
+        {
+          "secret_id": "bribable_for_passage",
+          "content": "For sufficient gold (100gp), Snidebleat will allow travelers to pass through the camp unmolested, 'forget' to report suspicious activities, or provide information about Murkin's plans.",
+          "hint": "She eyes valuable equipment and jewelry with calculating interest.",
+          "keywords": ["bribe", "gold", "pay", "coin", "deal", "arrangement"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": true,
+          "bribe_amount": 100
+        },
+        {
+          "secret_id": "red_gwen_alliance",
+          "content": "Snidebleat has been secretly corresponding with Red Gwen, proposing an alliance. She believes that with the bandit queen's forces, she could carve out her own domain when the war weakens both Murkin and Nodlock.",
+          "hint": "She asks too many questions about the roads south and seems interested in anyone who has traveled from hex 0311.",
+          "keywords": ["gwen", "alliance", "secret", "plan", "own", "domain"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": true,
+          "bribe_amount": 200
+        },
+        {
+          "secret_id": "troop_morale_fragile",
+          "content": "The army's morale is dangerously low. Many soldiers were press-ganged and would desert given the opportunity. A few words in the right ears could spark mass desertion or even mutiny.",
+          "hint": "She seems unconcerned about discipline issues, as if expecting the army to fall apart anyway.",
+          "keywords": ["morale", "desert", "mutiny", "loyal", "troops", "flee"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": true,
+          "bribe_amount": 50
+        },
+        {
+          "secret_id": "hidden_wealth",
+          "content": "Snidebleat has buried her personal wealth (the 20 onyxes worth 1,000gp total) beneath her command tent. She plans to flee with it if the war turns against Murkin.",
+          "hint": "She never leaves camp for long and always returns to check her tent first.",
+          "keywords": ["wealth", "treasure", "hidden", "onyx", "bury", "tent"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lord_murkin",
+          "relationship_type": "employer",
+          "description": "Serves Lord Murkin as a knight of the Horns of Kolstoke. Privately loathes him.",
+          "hex_id": "0208",
+          "notes": "Loyalty is purely transactional"
+        },
+        {
+          "npc_id": "red_gwen",
+          "relationship_type": "secret_correspondent",
+          "description": "Has been secretly corresponding with Red Gwen about a potential alliance.",
+          "hex_id": "0311",
+          "notes": "Hopes to establish independent domain"
+        },
+        {
+          "npc_id": "lady_amonie_borrid",
+          "relationship_type": "wary_neighbor",
+          "description": "Maintains polite distance from Lady Borrid. Respects her hunting prowess but considers her politically naive.",
+          "hex_id": "0109",
+          "notes": "No direct conflict"
+        },
+        {
+          "npc_id": "murkins_soldiers",
+          "relationship_type": "commander",
+          "description": "Commands the 40 soldiers at the camp. Views them as tools rather than people.",
+          "hex_id": "0109",
+          "notes": "Low morale among troops"
+        }
+      ],
+      "faction": "house_murkin",
+      "loyalty": "bought",
+      "personal_feelings": "loathes employer",
+      "faction_profile": {
+        "faction_id": "house_murkin",
+        "role": "knight",
+        "standing": "medium",
+        "notes": "Member of the Horns of Kolstoke. Loyalty is purchased, not genuine. Secretly plotting her own advancement."
+      }
     }
   ],
-  "items": [],
-  "secrets": [],
-  "dm_notes": "Making ready for the hunt: Borrid and her companions are preparing to venture north to hunt down the cheese monstrosity rumoured to lair in central Dwelmfurgh (see hex 0405). Friendly PCs may be invited to join the hunt. Activities at Murkin's Army: Mustering for war against House Nodlock (see Human Nobility, p56). For now, this consists mainly of pike training, marching in formation, and furtive swilling of ale.",
-  "adjacent_hexes": [],
+  "items": [
+    {
+      "item_id": "0109:item:horn_of_blasting",
+      "name": "Horn of Blasting",
+      "description": "An unassuming bronze horn hidden among Lady Borrid's trophy collection. When blown, it produces a devastating blast of sound.",
+      "location": "Lady Borrid's Hunting Lodge - Trophy Room",
+      "value": 5000,
+      "magical": true,
+      "reference": "p407",
+      "acquisition_condition": "Hidden among trophies; requires careful search to identify as magical"
+    },
+    {
+      "item_id": "0109:item:fairy_shortbow",
+      "name": "Fairy Shortbow",
+      "description": "A shortbow carved from a giant antler, imbued with fairy magic. Stored in Lady Borrid's secret vault.",
+      "location": "Lady Borrid's Hunting Lodge - Secret Vault",
+      "value": 3000,
+      "magical": true,
+      "reference": "p412",
+      "acquisition_condition": "In locked vault behind secret door in cellars"
+    },
+    {
+      "item_id": "0109:item:fairy_arrows_breggle_bane",
+      "name": "Fairy Arrows (Breggle Bane)",
+      "description": "A quiver of 12 arrows enchanted with fairy magic specifically harmful to breggles. Stored in Lady Borrid's secret vault.",
+      "location": "Lady Borrid's Hunting Lodge - Secret Vault",
+      "value": 1200,
+      "magical": true,
+      "reference": "p412",
+      "quantity": 12,
+      "acquisition_condition": "In locked vault behind secret door in cellars"
+    },
+    {
+      "item_id": "0109:item:vault_treasure",
+      "name": "Vault Chalices and Jewels",
+      "description": "A collection of ornate chalices and loose gemstones accumulated by generations of the Borrid family.",
+      "location": "Lady Borrid's Hunting Lodge - Secret Vault",
+      "value": 8000,
+      "magical": false,
+      "acquisition_condition": "In locked vault behind secret door in cellars"
+    },
+    {
+      "item_id": "0109:item:snidebleat_onyxes",
+      "name": "Sergeant Snidebleat's Onyxes",
+      "description": "A pouch containing 20 polished onyx gems, Snidebleat's personal savings for her eventual escape from Murkin's service.",
+      "location": "Murkin's Army - Buried under Snidebleat's tent",
+      "value": 1000,
+      "magical": false,
+      "acquisition_condition": "Buried beneath Snidebleat's command tent; requires extensive search"
+    },
+    {
+      "item_id": "0109:item:ring_fire_resistance",
+      "name": "Ring of Energy Resistance (Fire)",
+      "description": "A ring that grants resistance to fire damage. The metal is always uncomfortably warm to the touch. Worn by Sergeant Snidebleat.",
+      "location": "Worn by Sergeant Snidebleat",
+      "value": 2500,
+      "magical": true,
+      "reference": "p410",
+      "acquisition_condition": "Worn by Snidebleat; must be obtained from her"
+    }
+  ],
+  "secrets": [
+    "Lady Borrid secretly sympathizes with the rebellion in hex 0108 and has allowed her lodge to shelter those fleeing Murkin's soldiers",
+    "The army's morale is dangerously low; most soldiers were press-ganged and would desert if given safe passage",
+    "Sergeant Snidebleat is in secret correspondence with Red Gwen (hex 0311), planning to establish her own domain after the war",
+    "Lady Borrid's cellar contains a hidden vault with treasure and legal documents that could challenge Murkin's rule",
+    "Lady Borrid is attempting to arrange a peace summit between Lord Ramius and House Nodlock at her lodge"
+  ],
+  "dm_notes": "Making ready for the hunt: Borrid and her companions are preparing to venture north to hunt down the cheese monstrosity rumoured to lair in central Dwelmfurgh (see hex 0405). Friendly PCs may be invited to join the hunt. Activities at Murkin's Army: Mustering for war against House Nodlock (see Human Nobility, p56). For now, this consists mainly of pike training, marching in formation, and furtive swilling of ale. Key plot hooks: (1) PCs can help Lady Borrid hunt the cheese monstrosity; (2) PCs can infiltrate the camp and free press-ganged prisoners; (3) PCs can broker between Borrid and the rebellion in 0108; (4) PCs can be hired by Snidebleat to carry messages to Red Gwen; (5) PCs can discover the vault documents and use them politically.",
+  "adjacent_hexes": ["0108", "0110", "0209", "0208"],
   "roads": [],
   "_metadata": {
     "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [
-      200
-    ],
-    "extraction_note": "Review and correct this data before importing"
+    "pages": [200],
+    "extraction_note": "Enriched with full NPC interactions, roll tables, and faction integration",
+    "enrichment_version": "1.0"
   }
 }

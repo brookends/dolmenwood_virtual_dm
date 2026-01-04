@@ -523,6 +523,7 @@ class HexDataLoader:
             group_composition=data.get("group_composition"),
             faction=data.get("faction"),
             loyalty=data.get("loyalty", "loyal"),
+            personal_feelings=data.get("personal_feelings"),
             faction_profile=data.get("faction_profile"),
             known_topics=known_topics,
             secret_info=secret_info,

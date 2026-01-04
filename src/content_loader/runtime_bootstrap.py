@@ -429,6 +429,8 @@ def _parse_point_of_interest(data: dict[str, Any]) -> Any:
         seasonal_behavior=data.get("seasonal_behavior"),
         # Encounter modifiers
         encounter_modifiers=data.get("encounter_modifiers", []),
+        # Evening hazard (time-based events when staying at POI)
+        evening_hazard=data.get("evening_hazard"),
         # Item persistence rules
         item_persistence=data.get("item_persistence"),
         # Dynamic layout for procedural dungeons
@@ -536,8 +538,14 @@ def _parse_hex_npc(data: dict[str, Any]) -> Any:
         stat_reference=data.get("stat_reference"),
         is_combatant=data.get("is_combatant", False),
         vulnerabilities=data.get("vulnerabilities", []),
+        # NPC groups - for NPCs that represent multiple individuals
+        group_count=data.get("group_count"),
+        group_composition=data.get("group_composition"),
+        # Faction affiliation
         faction=data.get("faction"),
         loyalty=data.get("loyalty", "loyal"),
+        personal_feelings=data.get("personal_feelings"),
+        faction_profile=data.get("faction_profile"),
         # Enhanced topic intelligence
         known_topics=known_topics,
         secret_info=secret_info,
