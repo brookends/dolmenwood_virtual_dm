@@ -390,12 +390,18 @@ def _create_default_registry() -> ActionRegistry:
                 ),
             }
 
-        # Hazard triggered - resolve using the helper
-        context = {"hex_id": hex_id, "trigger_type": "investigation", "trigger": trigger}
+        # Hazard triggered - resolve using the helper with combatant creation
+        context = {
+            "hex_id": hex_id,
+            "trigger_type": "investigation",
+            "trigger": trigger,
+            "create_combatants": True,  # Create actual combatants for group NPCs
+        }
         resolution = dm.hex_crawl._resolve_hex_hazard_result(hazard_result, context)
 
         # Build response message
         lines = [resolution.get("narrative", "Something happens!")]
+        combatants = resolution.get("combatants", [])
         if resolution.get("encounter"):
             enc = resolution["encounter"]
             if enc.get("type") == "npc_arrival":
@@ -403,7 +409,13 @@ def _create_default_registry() -> ActionRegistry:
                 lines.append(f"Encounter: {npc_id.replace('_', ' ').title()}")
                 if resolution.get("npc_group", {}).get("is_group"):
                     count = resolution["npc_group"].get("total_count", 1)
-                    lines.append(f"Group size: {count}")
+                    lines.append(f"Group size: {count} combatants")
+                    # List individual combatants
+                    if combatants:
+                        for c in combatants[:5]:  # Show first 5
+                            lines.append(f"  - {c.name}")
+                        if len(combatants) > 5:
+                            lines.append(f"  ... and {len(combatants) - 5} more")
             elif enc.get("type") == "event":
                 lines.append(f"Event: {enc.get('event_id', 'unknown')}")
 
@@ -411,6 +423,8 @@ def _create_default_registry() -> ActionRegistry:
             "success": True,
             "hazard_triggered": True,
             "encounter": resolution.get("encounter"),
+            "combatants": combatants,
+            "combatant_count": len(combatants),
             "npc_group": resolution.get("npc_group"),
             "rolls_made": resolution.get("rolls_made", []),
             "suggested_actions": resolution.get("suggested_actions", []),
@@ -425,6 +439,75 @@ def _create_default_registry() -> ActionRegistry:
         help="Investigate a specific feature, potentially triggering hazards.",
         params_schema={"trigger": {"type": "string", "default": "investigate"}},
         executor=_wilderness_investigate,
+    ))
+
+    def _wilderness_evening_stay(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Spend the evening at a POI, checking for evening hazards."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        poi_name = p.get("poi_name", "")
+
+        if not poi_name:
+            return {
+                "success": False,
+                "message": "You must specify a POI name to stay at.",
+            }
+
+        # Check for evening hazard
+        hazard_result = dm.hex_crawl.check_evening_hazard(hex_id, poi_name)
+
+        if not hazard_result.get("triggered"):
+            return {
+                "success": True,
+                "hazard_triggered": False,
+                "message": f"The evening at {poi_name} passes peacefully.",
+            }
+
+        # Hazard triggered - resolve with combatant creation
+        context = {
+            "hex_id": hex_id,
+            "trigger_type": "evening_stay",
+            "poi_name": poi_name,
+            "create_combatants": True,
+        }
+        resolution = dm.hex_crawl._resolve_hex_hazard_result(hazard_result, context)
+
+        # Build response message
+        lines = [resolution.get("narrative", "Something happens during the night!")]
+        combatants = resolution.get("combatants", [])
+        if resolution.get("encounter"):
+            enc = resolution["encounter"]
+            if enc.get("type") == "npc_arrival":
+                npc_id = enc.get("npc_id", "unknown")
+                lines.append(f"Visitors: {npc_id.replace('_', ' ').title()}")
+                if resolution.get("npc_group", {}).get("is_group"):
+                    count = resolution["npc_group"].get("total_count", 1)
+                    lines.append(f"Group size: {count}")
+                    if combatants:
+                        for c in combatants[:5]:
+                            lines.append(f"  - {c.name}")
+                        if len(combatants) > 5:
+                            lines.append(f"  ... and {len(combatants) - 5} more")
+
+        return {
+            "success": True,
+            "hazard_triggered": True,
+            "encounter": resolution.get("encounter"),
+            "combatants": combatants,
+            "combatant_count": len(combatants),
+            "npc_group": resolution.get("npc_group"),
+            "rolls_made": resolution.get("rolls_made", []),
+            "suggested_actions": resolution.get("suggested_actions", []),
+            "message": "\n".join(lines),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:evening_stay",
+        label="Spend the evening",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        help="Spend the evening at a POI, checking for evening hazards.",
+        params_schema={"poi_name": {"type": "string", "required": True}},
+        executor=_wilderness_evening_stay,
     ))
 
     def _wilderness_forage(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:

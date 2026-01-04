@@ -582,3 +582,199 @@ class TestCustomEncounterTableGeneration:
         if encounter.contextual_data:
             assert encounter.contextual_data.get("source") == "hex_encounter_table"
             assert encounter.contextual_data.get("npc_id") == "murkins_soldiers"
+
+
+# =============================================================================
+# MULTI-ACTOR GROUP ENCOUNTER TESTS (Task 4)
+# =============================================================================
+
+
+class TestMultiActorGroupEncounters:
+    """Test that group NPCs spawn multiple actors/combatants."""
+
+    def test_resolve_hex_hazard_creates_combatants_when_requested(self, hex_0108_engine):
+        """_resolve_hex_hazard_result should create combatants when create_combatants=True."""
+        from unittest.mock import patch
+
+        hazard_result = {
+            "triggered": True,
+            "description": "Soldiers arrive.",
+            "result": "murkins_soldiers",
+            "chance": "2-in-6",
+        }
+        context = {
+            "hex_id": "0108",
+            "trigger_type": "investigation",
+            "create_combatants": True,
+        }
+
+        DiceRoller.set_seed(42)
+        result = hex_0108_engine._resolve_hex_hazard_result(hazard_result, context)
+        DiceRoller._seed = None
+
+        assert "combatants" in result
+        assert isinstance(result["combatants"], list)
+        assert len(result["combatants"]) > 0  # Group NPC creates multiple
+
+    def test_each_combatant_has_unique_id(self, hex_0108_engine):
+        """Each combatant in a group should have a unique ID."""
+        hazard_result = {
+            "triggered": True,
+            "description": "Soldiers arrive.",
+            "result": "murkins_soldiers",
+            "chance": "2-in-6",
+        }
+        context = {
+            "hex_id": "0108",
+            "trigger_type": "investigation",
+            "create_combatants": True,
+        }
+
+        DiceRoller.set_seed(42)
+        result = hex_0108_engine._resolve_hex_hazard_result(hazard_result, context)
+        DiceRoller._seed = None
+
+        combatants = result.get("combatants", [])
+        combatant_ids = [c.combatant_id for c in combatants]
+
+        # All IDs should be unique
+        assert len(combatant_ids) == len(set(combatant_ids))
+
+        # IDs should follow pattern like "murkins_soldiers_1", "murkins_soldiers_2"
+        for i, cid in enumerate(combatant_ids):
+            assert "murkins_soldiers" in cid
+            assert str(i + 1) in cid
+
+    def test_combatant_count_matches_group_size(self, hex_0108_engine):
+        """Number of combatants should match the rolled group size."""
+        hazard_result = {
+            "triggered": True,
+            "description": "Soldiers arrive.",
+            "result": "murkins_soldiers",
+            "chance": "2-in-6",
+        }
+        context = {
+            "hex_id": "0108",
+            "trigger_type": "investigation",
+            "create_combatants": True,
+        }
+
+        DiceRoller.set_seed(42)
+        result = hex_0108_engine._resolve_hex_hazard_result(hazard_result, context)
+        DiceRoller._seed = None
+
+        combatants = result.get("combatants", [])
+        npc_group = result.get("npc_group", {})
+
+        # Combatant count should match group size
+        assert len(combatants) == npc_group.get("total_count", 1)
+
+    def test_create_combatants_for_hazard_npc_creates_group(self, hex_0108_engine):
+        """_create_combatants_for_hazard_npc should create correct number of combatants."""
+        hex_data = hex_0108_engine._hex_data.get("0108")
+        soldiers_npc = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers_npc = npc
+                break
+
+        assert soldiers_npc is not None
+
+        # Roll group size
+        DiceRoller.set_seed(42)
+        group_info = hex_0108_engine.get_npc_group_size("0108", "murkins_soldiers")
+        combatants = hex_0108_engine._create_combatants_for_hazard_npc(
+            soldiers_npc, "0108", group_info
+        )
+        DiceRoller._seed = None
+
+        assert len(combatants) == group_info["total_count"]
+        assert all(c.side == "enemy" for c in combatants)
+
+    def test_investigate_action_returns_combatants(self, hex_0108_engine):
+        """wilderness:investigate action should return combatants when hazard triggers."""
+        from unittest.mock import MagicMock, patch
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+
+        with patch.object(hex_0108_engine, "_check_chance", return_value=True):
+            DiceRoller.set_seed(42)
+            params = {"hex_id": "0108", "trigger": "investigate_cabbages"}
+            result = spec.executor(mock_dm, params)
+            DiceRoller._seed = None
+
+        assert result["hazard_triggered"] is True
+        assert "combatants" in result
+        assert result["combatant_count"] > 0
+        assert len(result["combatants"]) == result["combatant_count"]
+
+    def test_evening_stay_action_returns_combatants(self, hex_0108_engine):
+        """wilderness:evening_stay action should return combatants when hazard triggers."""
+        from unittest.mock import MagicMock, patch
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:evening_stay")
+
+        with patch.object(hex_0108_engine, "_check_chance", return_value=True):
+            DiceRoller.set_seed(42)
+            params = {"hex_id": "0108", "poi_name": "The Crimson Bath"}
+            result = spec.executor(mock_dm, params)
+            DiceRoller._seed = None
+
+        assert result["hazard_triggered"] is True
+        assert "combatants" in result
+        assert result["combatant_count"] > 0
+
+    def test_create_encounter_from_hazard_creates_multi_actor_encounter(
+        self, hex_0108_engine
+    ):
+        """create_encounter_from_hazard should create EncounterState with multiple combatants."""
+        from unittest.mock import patch
+
+        hazard_result = {
+            "triggered": True,
+            "description": "Soldiers arrive.",
+            "result": "murkins_soldiers",
+            "chance": "2-in-6",
+        }
+        context = {"hex_id": "0108", "trigger_type": "investigation"}
+
+        DiceRoller.set_seed(42)
+        encounter = hex_0108_engine.create_encounter_from_hazard(hazard_result, context)
+        DiceRoller._seed = None
+
+        assert encounter is not None
+        assert len(encounter.combatants) > 0
+        assert encounter.contextual_data.get("is_group") is True
+
+    def test_group_encounter_combatants_are_combat_ready(self, hex_0108_engine):
+        """Combatants in group encounter should have stat blocks for combat."""
+        hazard_result = {
+            "triggered": True,
+            "description": "Soldiers arrive.",
+            "result": "murkins_soldiers",
+            "chance": "2-in-6",
+        }
+        context = {
+            "hex_id": "0108",
+            "trigger_type": "investigation",
+            "create_combatants": True,
+        }
+
+        DiceRoller.set_seed(42)
+        result = hex_0108_engine._resolve_hex_hazard_result(hazard_result, context)
+        DiceRoller._seed = None
+
+        for combatant in result.get("combatants", []):
+            assert combatant.stat_block is not None
+            assert combatant.stat_block.armor_class > 0
+            assert combatant.stat_block.hp_max > 0

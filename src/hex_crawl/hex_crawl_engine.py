@@ -1324,6 +1324,111 @@ class HexCrawlEngine:
             side="enemy",
         )
 
+    def _create_combatants_for_hazard_npc(
+        self,
+        npc: "HexNPC",
+        hex_id: str,
+        group_info: Optional[dict[str, Any]] = None,
+    ) -> list[Combatant]:
+        """
+        Create combatants for a hazard-triggered NPC encounter.
+
+        Handles both individual NPCs and group NPCs. For group NPCs,
+        creates multiple combatants based on group_info.
+
+        Args:
+            npc: The HexNPC that triggered the hazard
+            hex_id: The hex where this occurred
+            group_info: Pre-rolled group info (from get_npc_group_size), or None
+
+        Returns:
+            List of Combatant objects ready for combat
+        """
+        combatants: list[Combatant] = []
+
+        # Determine how many combatants to create
+        if npc.group_count and group_info:
+            # Group NPC - create multiple combatants
+            total_count = group_info.get("total_count", 1)
+        elif npc.group_count:
+            # Group NPC but no pre-rolled info - roll now
+            group_info = self.get_npc_group_size(hex_id, npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+        else:
+            # Single NPC
+            total_count = 1
+
+        # Create each combatant
+        for i in range(total_count):
+            combatant = self._create_npc_combatant(npc, i + 1)
+            if combatant:
+                combatants.append(combatant)
+
+        return combatants
+
+    def create_encounter_from_hazard(
+        self,
+        hazard_result: dict[str, Any],
+        context: dict[str, Any],
+    ) -> Optional["EncounterState"]:
+        """
+        Create a full EncounterState from a hazard result.
+
+        This method bridges hazard results to the encounter system, creating
+        proper combatants and EncounterState objects that can be used by
+        the encounter engine.
+
+        Args:
+            hazard_result: Result from check_investigation_hazard or similar
+            context: Context including hex_id, trigger_type, etc.
+
+        Returns:
+            EncounterState if hazard triggered an NPC encounter, None otherwise
+        """
+        if not hazard_result.get("triggered"):
+            return None
+
+        hex_id = context.get("hex_id") or self.get_current_hex_id() or "0000"
+        result_id = hazard_result.get("result", "")
+
+        # Find matching NPC
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        npc_match = self._find_npc_by_id(hex_data, result_id)
+        if not npc_match:
+            return None
+
+        # Get terrain and create encounter
+        terrain = TerrainType.FARMLAND  # Default, could be pulled from hex_data
+        if hex_data and hasattr(hex_data, "terrain_type"):
+            try:
+                terrain = TerrainType(hex_data.terrain_type)
+            except (ValueError, KeyError):
+                terrain = TerrainType.FARMLAND
+
+        # Roll surprise and distance
+        surprise = self._check_surprise()
+        distance = self._roll_encounter_distance(surprise)
+
+        # Create the encounter using existing method
+        encounter = self._create_npc_encounter(
+            hex_id=hex_id,
+            npc=npc_match,
+            terrain=terrain,
+            distance=distance,
+            surprise=surprise,
+            description=hazard_result.get("description", ""),
+        )
+
+        # Add source info
+        if encounter.contextual_data:
+            encounter.contextual_data["source"] = "hazard"
+            encounter.contextual_data["trigger_type"] = context.get("trigger_type", "unknown")
+
+        return encounter
+
     def _create_narrative_encounter(
         self,
         result_id: str,
@@ -9662,6 +9767,15 @@ class HexCrawlEngine:
                 # Caller can request automatic encounter start
                 result["encounter"]["ready_for_combat"] = True
                 result["encounter"]["stat_reference"] = npc_match.stat_reference
+
+            # Create actual combatants if requested
+            if context.get("create_combatants", False):
+                combatants = self._create_combatants_for_hazard_npc(
+                    npc_match, hex_id, result.get("npc_group")
+                )
+                result["combatants"] = combatants
+                result["encounter"]["combatant_count"] = len(combatants)
+                result["encounter"]["combatant_ids"] = [c.combatant_id for c in combatants]
 
         else:
             # Not an NPC encounter - treat as narrative event
