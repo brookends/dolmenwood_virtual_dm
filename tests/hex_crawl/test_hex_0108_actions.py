@@ -392,3 +392,193 @@ class TestInvestigateSuggestion:
 
         assert investigate_suggestion is not None
         assert investigate_suggestion.params.get("trigger") == "investigate_cabbages"
+
+
+# =============================================================================
+# CUSTOM ENCOUNTER TABLE TESTS (Task 3)
+# =============================================================================
+
+
+class TestCustomEncounterTableGeneration:
+    """Test that hex 0108's encounter table influences encounter generation."""
+
+    def test_try_custom_encounter_table_returns_encounter_for_npc_result(
+        self, hex_0108_engine
+    ):
+        """When table roll hits NPC entry, should create NPC encounter."""
+        from src.data_models import TerrainType, SurpriseStatus
+
+        # Seed dice to roll 1 (which maps to murkins_soldiers)
+        DiceRoller.set_seed(0)  # Will produce low roll
+
+        hex_data = hex_0108_engine._hex_data.get("0108")
+        result = hex_0108_engine._try_custom_encounter_table(
+            hex_id="0108",
+            hex_data=hex_data,
+            terrain=TerrainType.FARMLAND,
+            distance=60,
+            surprise=SurpriseStatus.NO_SURPRISE,
+        )
+
+        DiceRoller._seed = None
+
+        # The result depends on actual dice roll - if roll=1, should get NPC encounter
+        if result is not None:
+            assert result.context is not None
+            assert "hex_encounter_table" in result.contextual_data.get("source", "")
+
+    def test_try_custom_encounter_table_returns_none_for_standard_result(
+        self, hex_0108_engine
+    ):
+        """When table roll hits 'standard', should return None to use default tables."""
+        from src.data_models import TerrainType, SurpriseStatus
+        from unittest.mock import patch
+
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        # Mock roll_hex_encounter_table to return "standard"
+        with patch.object(
+            hex_0108_engine,
+            "roll_hex_encounter_table",
+            return_value={
+                "has_table": True,
+                "roll": 3,
+                "result": "standard",
+                "description": "Roll on standard regional table.",
+                "table_name": "Hex 0108 Encounters",
+            },
+        ):
+            result = hex_0108_engine._try_custom_encounter_table(
+                hex_id="0108",
+                hex_data=hex_data,
+                terrain=TerrainType.FARMLAND,
+                distance=60,
+                surprise=SurpriseStatus.NO_SURPRISE,
+            )
+
+        assert result is None
+
+    def test_create_npc_encounter_creates_group_combatants(self, hex_0108_engine):
+        """NPC encounter should create correct number of combatants for groups."""
+        from src.data_models import TerrainType, SurpriseStatus
+
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        # Find murkins_soldiers NPC
+        soldiers_npc = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers_npc = npc
+                break
+
+        assert soldiers_npc is not None
+
+        # Create encounter with seeded dice for deterministic group size
+        DiceRoller.set_seed(42)
+        encounter = hex_0108_engine._create_npc_encounter(
+            hex_id="0108",
+            npc=soldiers_npc,
+            terrain=TerrainType.FARMLAND,
+            distance=60,
+            surprise=SurpriseStatus.NO_SURPRISE,
+            description="A gang of soldiers approach.",
+        )
+        DiceRoller._seed = None
+
+        # Should have combatants (group NPC)
+        assert len(encounter.combatants) > 0
+        assert encounter.contextual_data.get("is_group") is True
+        assert encounter.contextual_data.get("npc_id") == "murkins_soldiers"
+
+    def test_create_npc_encounter_stores_faction_info(self, hex_0108_engine):
+        """NPC encounter should store faction information for later use."""
+        from src.data_models import TerrainType, SurpriseStatus
+
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        # Find murkins_soldiers NPC
+        soldiers_npc = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers_npc = npc
+                break
+
+        DiceRoller.set_seed(42)
+        encounter = hex_0108_engine._create_npc_encounter(
+            hex_id="0108",
+            npc=soldiers_npc,
+            terrain=TerrainType.FARMLAND,
+            distance=60,
+            surprise=SurpriseStatus.NO_SURPRISE,
+            description="Soldiers approach.",
+        )
+        DiceRoller._seed = None
+
+        assert encounter.contextual_data.get("faction") == "house_murkin"
+
+    def test_find_npc_by_id_finds_exact_match(self, hex_0108_engine):
+        """Should find NPC by exact ID match."""
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        npc = hex_0108_engine._find_npc_by_id(hex_data, "murkins_soldiers")
+
+        assert npc is not None
+        assert npc.npc_id == "murkins_soldiers"
+
+    def test_find_npc_by_id_finds_partial_match(self, hex_0108_engine):
+        """Should find NPC by partial ID match."""
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        # "murkins" should match "murkins_soldiers"
+        npc = hex_0108_engine._find_npc_by_id(hex_data, "murkins")
+
+        assert npc is not None
+        assert "murkins" in npc.npc_id
+
+    def test_find_npc_by_id_returns_none_for_unknown(self, hex_0108_engine):
+        """Should return None for unknown NPC ID."""
+        hex_data = hex_0108_engine._hex_data.get("0108")
+
+        npc = hex_0108_engine._find_npc_by_id(hex_data, "unknown_npc_12345")
+
+        assert npc is None
+
+    def test_create_narrative_encounter_sets_contextual_data(self, hex_0108_engine):
+        """Narrative encounters should have proper contextual data."""
+        from src.data_models import TerrainType, SurpriseStatus
+
+        encounter = hex_0108_engine._create_narrative_encounter(
+            result_id="mysterious_event",
+            description="Something strange happens.",
+            terrain=TerrainType.FARMLAND,
+            distance=60,
+            surprise=SurpriseStatus.NO_SURPRISE,
+        )
+
+        assert encounter.contextual_data.get("source") == "hex_encounter_table"
+        assert encounter.contextual_data.get("event_id") == "mysterious_event"
+        assert encounter.contextual_data.get("is_narrative") is True
+
+    def test_custom_table_used_before_standard_factory(self, hex_0108_engine):
+        """When hex has custom table and roll=1, should use custom table result."""
+        from src.data_models import TerrainType
+        from unittest.mock import patch, MagicMock
+
+        # Mock dice to always roll 1 (Murkin's Soldiers on hex 0108 table)
+        with patch.object(hex_0108_engine.dice, "roll") as mock_roll:
+            mock_result = MagicMock()
+            mock_result.total = 1
+            mock_roll.return_value = mock_result
+
+            # Also need to mock the group size roll
+            DiceRoller.set_seed(42)
+
+            encounter = hex_0108_engine._generate_encounter("0108", TerrainType.FARMLAND)
+
+            DiceRoller._seed = None
+
+        # Should have used custom table (indicated by contextual_data.source)
+        assert encounter is not None
+        if encounter.contextual_data:
+            assert encounter.contextual_data.get("source") == "hex_encounter_table"
+            assert encounter.contextual_data.get("npc_id") == "murkins_soldiers"

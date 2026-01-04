@@ -981,11 +981,19 @@ class HexCrawlEngine:
                     "speech": modifier.get("speech", ""),
                 }
         else:
+            # Check for custom hex encounter table first
+            hex_data = self._get_hex_data(hex_id)
+            custom_encounter = self._try_custom_encounter_table(
+                hex_id, hex_data, terrain, distance, surprise
+            )
+            if custom_encounter:
+                self.controller.set_encounter(custom_encounter)
+                return custom_encounter
+
             # Standard encounter - use encounter tables via factory
             from src.encounter.encounter_factory import start_wilderness_encounter
 
             # Get hex data for region
-            hex_data = self._get_hex_data(hex_id)
             region = hex_data.region.lower().replace(" ", "_") if hex_data and hex_data.region else "tithelands"
 
             # Determine context for encounter
@@ -1098,6 +1106,259 @@ class HexCrawlEngine:
             return 0
         except (ValueError, IndexError):
             return 0
+
+    def _try_custom_encounter_table(
+        self,
+        hex_id: str,
+        hex_data: Optional["HexItem"],
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+    ) -> Optional["EncounterState"]:
+        """
+        Check if hex has a custom encounter table and roll on it.
+
+        If the result is "standard", returns None to fall back to normal
+        encounter generation. Otherwise creates an encounter from the
+        table result.
+
+        Args:
+            hex_id: The current hex ID
+            hex_data: The hex data (may be None)
+            terrain: Terrain type for the encounter
+            distance: Pre-rolled encounter distance
+            surprise: Pre-rolled surprise status
+
+        Returns:
+            EncounterState if custom table produces an encounter, None otherwise
+        """
+        if not hex_data or not hex_data.procedural:
+            return None
+
+        if not hex_data.procedural.encounter_table:
+            return None
+
+        # Roll on the custom encounter table
+        table_result = self.roll_hex_encounter_table(hex_id)
+        if not table_result.get("has_table"):
+            return None
+
+        result_id = table_result.get("result") or ""
+        description = table_result.get("description") or ""
+
+        # "standard" means fall back to regional encounter tables
+        if not result_id or result_id.lower() == "standard":
+            return None
+
+        # Check if result matches an NPC in this hex
+        npc = self._find_npc_by_id(hex_data, result_id)
+        if npc:
+            return self._create_npc_encounter(
+                hex_id=hex_id,
+                npc=npc,
+                terrain=terrain,
+                distance=distance,
+                surprise=surprise,
+                description=description,
+            )
+
+        # Check if it's a monster reference (could extend later)
+        # For now, treat unknown results as narrative events
+        return self._create_narrative_encounter(
+            result_id=result_id,
+            description=description,
+            terrain=terrain,
+            distance=distance,
+            surprise=surprise,
+        )
+
+    def _find_npc_by_id(
+        self,
+        hex_data: "HexItem",
+        result_id: str,
+    ) -> Optional["HexNPC"]:
+        """
+        Find an NPC in the hex data by ID or partial match.
+
+        Args:
+            hex_data: The hex data containing NPCs
+            result_id: The ID to match (can be partial, e.g., "murkins_soldiers")
+
+        Returns:
+            The matching HexNPC or None
+        """
+        for npc in hex_data.npcs:
+            # Exact match
+            if npc.npc_id == result_id:
+                return npc
+            # Partial match (e.g., "murkins_soldiers" matches "murkins_soldiers")
+            if result_id in npc.npc_id or npc.npc_id in result_id:
+                return npc
+        return None
+
+    def _create_npc_encounter(
+        self,
+        hex_id: str,
+        npc: "HexNPC",
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+        description: str,
+    ) -> "EncounterState":
+        """
+        Create an encounter from a hex NPC.
+
+        Handles group NPCs by rolling for group size and composition.
+
+        Args:
+            hex_id: The hex ID
+            npc: The NPC data
+            terrain: Terrain type
+            distance: Encounter distance
+            surprise: Surprise status
+            description: Encounter description from table
+
+        Returns:
+            EncounterState configured for this NPC encounter
+        """
+        combatants: list[Combatant] = []
+        group_info = None
+
+        # Roll group size if this is a group NPC
+        if npc.group_count:
+            group_info = self.get_npc_group_size(hex_id, npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+
+            # Create combatants for each member of the group
+            if npc.is_combatant:
+                for i in range(total_count):
+                    combatant = self._create_npc_combatant(npc, i + 1)
+                    if combatant:
+                        combatants.append(combatant)
+        elif npc.is_combatant:
+            # Single NPC combatant
+            combatant = self._create_npc_combatant(npc, 1)
+            if combatant:
+                combatants.append(combatant)
+
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER if npc.is_combatant else EncounterType.NPC,
+            distance=distance,
+            surprise_status=surprise,
+            terrain=terrain.value,
+            context=description,
+            actors=[npc.name],
+            combatants=combatants,
+        )
+
+        # Store group info and NPC data for later use
+        encounter.contextual_data = {
+            "source": "hex_encounter_table",
+            "hex_id": hex_id,
+            "npc_id": npc.npc_id,
+            "npc_name": npc.name,
+            "is_group": bool(npc.group_count),
+            "group_info": group_info,
+            "faction": npc.faction,
+        }
+
+        return encounter
+
+    def _create_npc_combatant(
+        self,
+        npc: "HexNPC",
+        index: int,
+    ) -> Optional[Combatant]:
+        """
+        Create a single combatant from NPC data.
+
+        Args:
+            npc: The NPC data
+            index: Index for naming (e.g., "Soldier 1")
+
+        Returns:
+            Combatant or None if creation fails
+        """
+        combatant_id = f"{npc.npc_id}_{index}"
+        name = f"{npc.name} #{index}" if npc.group_count else npc.name
+
+        # Try to create from hex NPC using registry
+        registry = get_monster_registry()
+        combatant = registry.create_combatant_from_hex_npc(
+            npc=npc,
+            combatant_id=combatant_id,
+            side="enemy",
+        )
+        if combatant:
+            combatant.name = name
+            return combatant
+
+        # Try to create from stat_reference as monster ID
+        if npc.stat_reference:
+            combatant = registry.create_combatant(
+                monster_id=npc.stat_reference.lower().replace(" ", "_"),
+                combatant_id=combatant_id,
+                side="enemy",
+            )
+            if combatant:
+                combatant.name = name
+                return combatant
+
+        # Fallback: create a basic combatant with generic stats
+        from src.data_models import Combatant, StatBlock
+
+        stat_block = StatBlock(
+            armor_class=10,
+            hit_dice="1d8",
+            hp_current=8,
+            hp_max=8,
+            movement=30,
+            attacks=[{"name": "Attack", "damage": "1d6", "bonus": 0}],
+            morale=7,
+        )
+
+        return Combatant(
+            combatant_id=combatant_id,
+            name=name,
+            stat_block=stat_block,
+            side="enemy",
+        )
+
+    def _create_narrative_encounter(
+        self,
+        result_id: str,
+        description: str,
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+    ) -> "EncounterState":
+        """
+        Create a narrative/event encounter that doesn't involve combat.
+
+        Args:
+            result_id: The event/creature ID from the table
+            description: Description of the encounter
+            terrain: Terrain type
+            distance: Encounter distance
+            surprise: Surprise status
+
+        Returns:
+            EncounterState configured as a narrative event
+        """
+        return EncounterState(
+            encounter_type=EncounterType.NPC,  # Non-combat narrative encounter
+            distance=distance,
+            surprise_status=surprise,
+            terrain=terrain.value,
+            context=description,
+            actors=[result_id.replace("_", " ").title()],
+            combatants=[],
+            contextual_data={
+                "source": "hex_encounter_table",
+                "event_id": result_id,
+                "is_narrative": True,
+            },
+        )
 
     def _create_contextual_combatants(
         self,
