@@ -8762,6 +8762,21 @@ class SocialParticipant:
     # Conversation state tracker (mutable during conversation)
     conversation: Optional[ConversationTracker] = None
 
+    # Permissions granted by this participant (POI name -> granted)
+    permissions: dict[str, bool] = field(default_factory=dict)
+
+    def grant_permission(self, poi_name: str) -> None:
+        """Grant permission to enter a POI."""
+        self.permissions[poi_name] = True
+
+    def revoke_permission(self, poi_name: str) -> None:
+        """Revoke permission to enter a POI."""
+        self.permissions[poi_name] = False
+
+    def has_permission(self, poi_name: str) -> bool:
+        """Check if permission has been granted for a POI."""
+        return self.permissions.get(poi_name, False)
+
     def __post_init__(self):
         """Initialize conversation tracker and convert legacy topics."""
         # Initialize conversation tracker if not present

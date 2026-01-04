@@ -2489,13 +2489,26 @@ def _create_default_registry() -> ActionRegistry:
     def _wilderness_enter_poi_with_conditions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Enter POI with special conditions (payment, password, etc.)."""
         hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
-        payment = p.get("payment", "")
-        password = p.get("password", "")
-        approach = p.get("approach", "respectful")
+        payment_offered = int(p.get("payment", 0) or 0)
+        password_given = p.get("password", "")
+        social_result = p.get("social_result", "")
+
+        # Check if permission was granted in social interaction
+        has_permission = False
+        if dm.controller.social_context:
+            for participant in dm.controller.social_context.participants:
+                poi_name = dm.hex_crawl._current_poi if dm.hex_crawl else None
+                if poi_name and participant.has_permission(poi_name):
+                    has_permission = True
+                    break
 
         try:
             result = dm.hex_crawl.enter_poi_with_conditions(
-                hex_id, payment=payment, password=password, approach=approach
+                hex_id,
+                has_permission=has_permission,
+                payment_offered=payment_offered,
+                password_given=password_given if password_given else None,
+                social_result=social_result if social_result else None,
             )
             return {"success": result.get("success", True), "message": result.get("message", "Entry attempted.")}
         except Exception as e:
@@ -2599,11 +2612,11 @@ def _create_default_registry() -> ActionRegistry:
         requires_state="wilderness_travel",
         params_schema={
             "hex_id": {"type": "string", "required": False},
-            "payment": {"type": "string", "required": False},
+            "payment": {"type": "integer", "required": False},
             "password": {"type": "string", "required": False},
-            "approach": {"type": "string", "required": False},
+            "social_result": {"type": "string", "required": False},
         },
-        help="Enter a POI with special conditions (payment, password, etc.).",
+        help="Enter a POI with special conditions (payment, password, social outcome).",
         executor=_wilderness_enter_poi_with_conditions,
     ))
 
