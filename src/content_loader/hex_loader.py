@@ -33,9 +33,11 @@ from src.data_models import (
     HexLocation,
     HexNPC,
     HexProcedural,
+    KnownTopic,
     PointOfInterest,
     RollTable,
     RollTableEntry,
+    SecretInfo,
     SourceReference,
     SourceType,
 )
@@ -464,6 +466,34 @@ class HexDataLoader:
 
     def _parse_hex_npc(self, data: dict[str, Any]) -> HexNPC:
         """Parse an NPC from JSON."""
+        # Parse known_topics
+        known_topics = []
+        for topic_data in data.get("known_topics", []):
+            topic = KnownTopic(
+                topic_id=topic_data.get("topic_id", ""),
+                content=topic_data.get("content", ""),
+                keywords=topic_data.get("keywords", []),
+                required_disposition=topic_data.get("required_disposition", -5),
+                category=topic_data.get("category", "general"),
+                priority=topic_data.get("priority", 5),
+            )
+            known_topics.append(topic)
+
+        # Parse secret_info
+        secret_info = []
+        for secret_data in data.get("secret_info", []):
+            secret = SecretInfo(
+                secret_id=secret_data.get("secret_id", ""),
+                content=secret_data.get("content", ""),
+                hint=secret_data.get("hint", ""),
+                keywords=secret_data.get("keywords", []),
+                required_disposition=secret_data.get("required_disposition", 3),
+                required_trust=secret_data.get("required_trust", 2),
+                can_be_bribed=secret_data.get("can_be_bribed", False),
+                bribe_amount=secret_data.get("bribe_amount", 0),
+            )
+            secret_info.append(secret)
+
         return HexNPC(
             npc_id=data.get("npc_id", "unknown"),
             name=data.get("name", "Unknown NPC"),
@@ -483,6 +513,9 @@ class HexDataLoader:
             vulnerabilities=data.get("vulnerabilities", []),
             faction=data.get("faction"),
             loyalty=data.get("loyalty", "loyal"),
+            known_topics=known_topics,
+            secret_info=secret_info,
+            relationships=data.get("relationships", []),
         )
 
     def scan_directory(self, directory: Path) -> list[Path]:
