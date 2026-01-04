@@ -238,3 +238,157 @@ class TestIntegrationWithHazardChecks:
             assert resolution["encounter"] is not None
 
         DiceRoller._seed = None
+
+
+# =============================================================================
+# WILDERNESS:INVESTIGATE ACTION TESTS
+# =============================================================================
+
+
+class TestWildernessInvestigateAction:
+    """Test the wilderness:investigate action in the action registry."""
+
+    def test_action_registered(self):
+        """wilderness:investigate should be registered in the action registry."""
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+        assert spec is not None
+        assert spec.id == "wilderness:investigate"
+        assert spec.label == "Investigate the area"
+
+    def test_action_executor_returns_no_hazard_for_wrong_trigger(self, hex_0108_engine):
+        """Executor should return no hazard for non-matching trigger."""
+        from unittest.mock import MagicMock
+
+        # Create mock VirtualDM with hex_crawl pointing to our engine
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+
+        params = {"hex_id": "0108", "trigger": "investigate_trees"}
+        result = spec.executor(mock_dm, params)
+
+        assert result["success"] is True
+        assert result["hazard_triggered"] is False
+        assert "message" in result
+
+    def test_action_executor_returns_hazard_when_triggered(self, hex_0108_engine):
+        """Executor should return encounter info when hazard triggers."""
+        from unittest.mock import MagicMock, patch
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+
+        # Force hazard to trigger
+        with patch.object(hex_0108_engine, "_check_chance", return_value=True):
+            DiceRoller.set_seed(42)
+            params = {"hex_id": "0108", "trigger": "investigate_cabbages"}
+            result = spec.executor(mock_dm, params)
+            DiceRoller._seed = None
+
+        assert result["success"] is True
+        assert result["hazard_triggered"] is True
+        assert result["encounter"] is not None
+        assert "message" in result
+
+    def test_action_executor_includes_group_info(self, hex_0108_engine):
+        """Executor should include NPC group info when hazard triggers NPC arrival."""
+        from unittest.mock import MagicMock, patch
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+
+        with patch.object(hex_0108_engine, "_check_chance", return_value=True):
+            DiceRoller.set_seed(42)
+            params = {"hex_id": "0108", "trigger": "investigate_cabbages"}
+            result = spec.executor(mock_dm, params)
+            DiceRoller._seed = None
+
+        assert result.get("npc_group") is not None
+        assert result["npc_group"]["is_group"] is True
+        assert result["npc_group"]["total_count"] > 0
+
+    def test_action_executor_includes_suggested_actions(self, hex_0108_engine):
+        """Executor should include suggested follow-up actions."""
+        from unittest.mock import MagicMock, patch
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:investigate")
+
+        with patch.object(hex_0108_engine, "_check_chance", return_value=True):
+            DiceRoller.set_seed(42)
+            params = {"hex_id": "0108", "trigger": "investigate_cabbages"}
+            result = spec.executor(mock_dm, params)
+            DiceRoller._seed = None
+
+        assert "suggested_actions" in result
+        assert isinstance(result["suggested_actions"], list)
+        assert len(result["suggested_actions"]) > 0
+
+
+class TestInvestigateSuggestion:
+    """Test that wilderness:investigate appears in suggestions for hex 0108."""
+
+    def test_suggestion_appears_for_hex_with_investigation_hazard(self, hex_0108_engine):
+        """Suggestion should appear for hex with investigation_hazard."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+
+        # get_valid_actions returns empty list
+        mock_dm.get_valid_actions.return_value = []
+
+        suggestions = build_suggestions(mock_dm, limit=15)
+        action_ids = [s.id for s in suggestions]
+
+        assert "wilderness:investigate" in action_ids
+
+    def test_suggestion_has_correct_trigger(self, hex_0108_engine):
+        """Suggestion should have the trigger from the hazard definition."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+        mock_dm.get_valid_actions.return_value = []
+
+        suggestions = build_suggestions(mock_dm, limit=15)
+        investigate_suggestion = next(
+            (s for s in suggestions if s.id == "wilderness:investigate"), None
+        )
+
+        assert investigate_suggestion is not None
+        assert investigate_suggestion.params.get("trigger") == "investigate_cabbages"

@@ -785,6 +785,33 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
         )
     )
 
+    # Investigation hazard: show investigate action if hex has one
+    try:
+        hex_data = dm.hex_crawl.get_hex_data(hex_id)
+        if (
+            hex_data
+            and hasattr(hex_data, "procedural")
+            and hex_data.procedural
+            and getattr(hex_data.procedural, "investigation_hazard", None)
+        ):
+            hazard = hex_data.procedural.investigation_hazard
+            trigger = hazard.get("trigger", "investigate")
+            desc = hazard.get("description", "Investigate the area for hidden dangers")
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:investigate",
+                        label="Investigate the area",
+                        params={"hex_id": hex_id, "trigger": trigger},
+                        safe_to_execute=True,
+                        help=desc,
+                    ),
+                    score=72,
+                )
+            )
+    except Exception:
+        pass
+
     visible = dm.hex_crawl.get_visible_pois(hex_id)
     for idx, poi in enumerate(visible[:4]):
         poi_type = poi.get("type", "location")

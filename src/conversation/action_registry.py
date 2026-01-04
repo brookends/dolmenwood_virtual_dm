@@ -372,6 +372,61 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_search_hex,
     ))
 
+    def _wilderness_investigate(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Investigate a specific feature in the current hex."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        trigger = p.get("trigger", "investigate")
+
+        # Check for investigation hazard
+        hazard_result = dm.hex_crawl.check_investigation_hazard(hex_id, trigger)
+
+        if not hazard_result.get("triggered"):
+            # No hazard triggered - return calm investigation result
+            return {
+                "success": True,
+                "hazard_triggered": False,
+                "message": hazard_result.get(
+                    "description", "Your investigation reveals nothing unusual."
+                ),
+            }
+
+        # Hazard triggered - resolve using the helper
+        context = {"hex_id": hex_id, "trigger_type": "investigation", "trigger": trigger}
+        resolution = dm.hex_crawl._resolve_hex_hazard_result(hazard_result, context)
+
+        # Build response message
+        lines = [resolution.get("narrative", "Something happens!")]
+        if resolution.get("encounter"):
+            enc = resolution["encounter"]
+            if enc.get("type") == "npc_arrival":
+                npc_id = enc.get("npc_id", "unknown")
+                lines.append(f"Encounter: {npc_id.replace('_', ' ').title()}")
+                if resolution.get("npc_group", {}).get("is_group"):
+                    count = resolution["npc_group"].get("total_count", 1)
+                    lines.append(f"Group size: {count}")
+            elif enc.get("type") == "event":
+                lines.append(f"Event: {enc.get('event_id', 'unknown')}")
+
+        return {
+            "success": True,
+            "hazard_triggered": True,
+            "encounter": resolution.get("encounter"),
+            "npc_group": resolution.get("npc_group"),
+            "rolls_made": resolution.get("rolls_made", []),
+            "suggested_actions": resolution.get("suggested_actions", []),
+            "message": "\n".join(lines),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:investigate",
+        label="Investigate the area",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        help="Investigate a specific feature, potentially triggering hazards.",
+        params_schema={"trigger": {"type": "string", "default": "investigate"}},
+        executor=_wilderness_investigate,
+    ))
+
     def _wilderness_forage(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Forage for food/water."""
         character_id = p.get("character_id")
