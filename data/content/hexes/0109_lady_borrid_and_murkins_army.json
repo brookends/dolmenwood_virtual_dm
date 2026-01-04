@@ -431,12 +431,21 @@
       ],
       "concealed_items": [
         {
-          "item_id": "0109:item:snidebleat_onyxes",
-          "name": "Sergeant Snidebleat's Onyxes",
-          "hidden_in": "buried under command tent",
-          "search_dc": "extensive",
-          "description": "A pouch of 20 polished onyx gems buried beneath Snidebleat's command tent. Her escape fund.",
-          "found": false
+          "item_id": "0109:concealed:buried_coffer",
+          "name": "Buried Coffer",
+          "hidden_in": "beneath command tent",
+          "search_dc": 5,
+          "description": "Loose dirt and recently disturbed soil beneath one corner of Snidebleat's command tent conceals a small iron coffer. Inside are polished onyx gems - her secret escape fund.",
+          "found": false,
+          "items": [
+            {
+              "item_id": "0109:item:snidebleat_onyxes",
+              "name": "Sergeant Snidebleat's Onyxes",
+              "description": "A pouch containing 20 polished onyx gems, Snidebleat's personal savings for her eventual escape from Murkin's service.",
+              "value": 1000,
+              "magical": false
+            }
+          ]
         }
       ],
       "sub_locations": [

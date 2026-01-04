@@ -4102,7 +4102,9 @@ class HexCrawlEngine:
         )
 
         # Check if any found items reveal secrets (e.g., secret doors, hidden POIs)
+        # or contain takeable items (e.g., buried treasure)
         revealed_secrets = []
+        newly_available_items = []
         for item in found_items:
             reveals = item.get("reveals_secret")
             if reveals and reveals not in self._discovered_secrets:
@@ -4114,6 +4116,19 @@ class HexCrawlEngine:
                 if visit_key in self._poi_visits:
                     if reveals not in self._poi_visits[visit_key].secrets_discovered:
                         self._poi_visits[visit_key].secrets_discovered.append(reveals)
+
+            # Check if concealed item contains takeable items
+            contained_items = item.get("items", [])
+            for contained_item in contained_items:
+                # Add to POI items to make them takeable
+                poi.items.append(contained_item)
+                newly_available_items.append(contained_item.get("name", "unknown"))
+
+                # Track in POI visit
+                visit_key = f"{hex_id}:{self._current_poi}"
+                if visit_key in self._poi_visits:
+                    if contained_item.get("name") not in self._poi_visits[visit_key].items_found:
+                        self._poi_visits[visit_key].items_found.append(contained_item.get("name"))
 
         # Check if searching triggers any alerts
         search_alerts = poi.get_alerts_for_trigger("on_search")
@@ -4147,6 +4162,9 @@ class HexCrawlEngine:
             if newly_visible:
                 result["newly_accessible_locations"] = newly_visible
 
+        if newly_available_items:
+            result["items_now_takeable"] = newly_available_items
+
         if not found_items:
             result["message"] = "You find nothing of interest."
         else:
@@ -4155,6 +4173,11 @@ class HexCrawlEngine:
                 result["message"] = (
                     f"You discover: {', '.join(item_names)}. "
                     f"This reveals a hidden location!"
+                )
+            elif newly_available_items:
+                result["message"] = (
+                    f"You discover: {', '.join(item_names)}. "
+                    f"You can now take: {', '.join(newly_available_items)}"
                 )
             else:
                 result["message"] = f"You discover: {', '.join(item_names)}"

@@ -192,7 +192,14 @@ result = engine.roll_on_poi_table("0109", "Camp Activities", "Murkin's Army")
 - Discovered secrets tracking (3 tests)
 - Integration flow (1 test)
 
-**Total: 100 tests passing**
+### tests/hex_crawl/test_poi_buried_treasure.py (13 tests)
+- Buried coffer data (2 tests)
+- Search reveals items (4 tests)
+- Take item after discovery (4 tests)
+- Integration flow (1 test)
+- Item persistence (2 tests)
+
+**Total: 113 tests passing**
 
 ---
 
@@ -254,9 +261,10 @@ print(f"Rest result: {rest_result['message']}")
 - Navigate to vault via `navigate_to_child_poi`
 
 ### Snidebleat's Buried Treasure
-**Status:** Item defined, no discovery mechanic
-- 20 onyxes buried under command tent
-- **Workaround:** DM narrates discovery after thorough search or interrogation
+**Status:** Implemented
+- `search_poi_location("command tent")` can find the Buried Coffer (DC 5)
+- Finding coffer makes onyxes takeable via `take_item`
+- Items properly tracked in POI state
 
 ### Press-Gang Rescue Mechanics
 **Status:** Described in Camp Activities table, no automation
