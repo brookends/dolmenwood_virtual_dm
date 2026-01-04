@@ -6219,6 +6219,7 @@ class HexCrawlEngine:
         "enter": ["enter", "go in", "step into", "walk into", "climb into"],
         "examine": ["examine", "look at", "inspect", "study", "investigate"],
         "climb": ["climb", "scale", "ascend", "scramble up", "climb up"],
+        "view": ["view", "behold", "gaze", "stare", "look upon", "observe"],
     }
 
     def detect_poi_action(self, player_input: str) -> Optional[tuple[str, str]]:
@@ -6245,6 +6246,9 @@ class HexCrawlEngine:
     ) -> list[dict[str, Any]]:
         """
         Get POI hazards that match a specific action type.
+
+        Hazards with effect_required are only included if that effect is
+        currently active (based on seasonal behavior).
 
         Args:
             hex_id: Current hex
@@ -6281,8 +6285,17 @@ class HexCrawlEngine:
                     elif action_type == "climb":
                         if any(kw in trigger for kw in ["climb", "scale", "ascend", "scaling"]):
                             should_match = True
+                    elif action_type == "view":
+                        if any(kw in trigger for kw in ["view", "behold", "gaze", "look"]):
+                            should_match = True
 
                     if should_match:
+                        # Check if hazard requires a specific effect to be active
+                        effect_required = hazard.get("effect_required")
+                        if effect_required:
+                            if not self.is_poi_effect_active(hex_id, poi.name, effect_required):
+                                # Effect is not active, skip this hazard
+                                continue
                         matching_hazards.append(hazard)
 
         return matching_hazards

@@ -842,6 +842,242 @@ class TestGraniteCragClimbHazard:
         assert result["hazard_results"][0]["effects_applied"] is True
 
 
+class TestMonolithSeasonalEffectGating:
+    """Tests for monolith hazard gating by seasonal effects."""
+
+    def test_terror_hazard_triggers_in_winter(self):
+        """Verify terror hazard matches when terror_aura effect is active (winter)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock winter season where terror_aura is active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "months": ["Grimvold", "Lymewald", "Haggryme"],
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "view")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_viewing"
+
+    def test_terror_hazard_blocked_outside_winter(self):
+        """Verify terror hazard is NOT matched when terror_aura is inactive (summer)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock summer season where terror_aura is NOT active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.SUMMER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "months": ["Grimvold", "Lymewald", "Haggryme"],
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "view")
+
+        # Should NOT match because terror_aura is not active in summer
+        assert len(matching) == 0
+
+    def test_spectral_chill_only_triggers_outside_winter(self):
+        """Verify spectral chill hazard triggers when spectral_chill_only is active."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock summer season where spectral_chill_only is active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.SUMMER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_chill",
+                "name": "Spectral Chill (Non-Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spectral_chill_only",
+                "save_type": "none",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "touch")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_chill"
+
+    def test_hazard_without_effect_required_always_matches(self):
+        """Verify hazards without effect_required always match."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.seasonal_behavior = None  # No seasonal behavior
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing the crag",
+                # No effect_required field
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "climb")
+
+        # Should match since no effect_required
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "climbing_check"
+
+    def test_view_action_detected(self):
+        """Verify view action pattern is detected."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        test_cases = [
+            ("I gaze upon the monolith", ("view", "gaze")),
+            ("I stare at the crimson light", ("view", "stare")),
+            ("I view the monolith", ("view", "view")),
+            ("look upon the ancient stone", ("view", "look upon")),
+            ("observe the crimson glow", ("view", "observe")),
+        ]
+
+        for input_text, expected in test_cases:
+            result = engine.detect_poi_action(input_text)
+            assert result == expected, f"Failed for '{input_text}'"
+
+    def test_multiple_hazards_with_different_effects(self):
+        """Verify only hazards with active effects are matched."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Winter: terror_aura and spell_permanence active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_touching",
+                "name": "Spell Permanence (Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spell_permanence",
+            },
+            {
+                "hazard_id": "monolith_chill",
+                "name": "Spectral Chill (Non-Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spectral_chill_only",
+            },
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "touch")
+
+        # Only spell_permanence hazard should match (winter)
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_touching"
+
+
 class TestHex0106IsWinter:
     """Tests for _is_winter helper method."""
 
