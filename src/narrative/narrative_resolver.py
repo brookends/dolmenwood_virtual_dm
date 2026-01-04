@@ -509,11 +509,22 @@ class NarrativeResolver:
             if restriction:
                 blocked_categories = restriction.get("blocked", [])
                 if action_category in blocked_categories:
-                    return {
+                    result = {
                         "condition_type": condition_key,
                         "message": restriction.get("message", f"You cannot act due to {condition_key}."),
                         "blocked_categories": blocked_categories,
                     }
+                    # Include forced action info if present
+                    if "forced_action" in restriction:
+                        result["forced_action"] = restriction["forced_action"]
+                        result["forced_action_description"] = restriction.get(
+                            "forced_action_description", ""
+                        )
+                    if "ends_at" in restriction:
+                        result["ends_at"] = restriction["ends_at"]
+                    if "can_be_restrained" in restriction:
+                        result["can_be_restrained"] = restriction["can_be_restrained"]
+                    return result
 
         return None
 

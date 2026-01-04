@@ -215,6 +215,9 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard"],
         "allowed": ["narrative", "social"],  # Can speak while dancing
         "message": "You cannot stop dancing! The enchanting music compels you to continue.",
+        "forced_action": "dance",
+        "forced_action_description": "You dance to the fairy music until dawn breaks.",
+        "ends_at": "dawn",
     },
     "magical_sleep": {
         "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative"],
@@ -265,11 +268,16 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "blocked": ["combat", "spell", "exploration", "social", "inventory", "creative"],
         "allowed": ["movement", "hazard"],  # Can only flee
         "message": "Overwhelming terror compels you to flee! You cannot take any action except running away.",
+        "forced_action": "flee",
+        "forced_action_description": "You must flee from the source of your terror!",
     },
     "compelled": {
         "blocked": ["combat", "spell", "exploration", "survival", "social", "inventory", "creative"],
         "allowed": ["movement"],  # Must move toward target
         "message": "A supernatural compulsion forces you toward the monolith. You cannot resist unless restrained.",
+        "forced_action": "move_toward_target",
+        "forced_action_description": "The compulsion draws you inexorably toward the monolith.",
+        "can_be_restrained": True,
     },
 }
 
