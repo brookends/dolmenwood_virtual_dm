@@ -1654,6 +1654,42 @@ def _social_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
         )
     )
 
+    # Check for bribeable secrets on the current NPC
+    try:
+        from src.data_models import SecretStatus
+
+        social_context = dm.controller.social_context
+        if social_context and social_context.participants:
+            participant = social_context.participants[0]
+            party_gold = getattr(dm.controller.party_state, "gold_gp", 0)
+
+            # Find unrevealed bribeable secrets
+            for secret in getattr(participant, "secret_info", []):
+                if (
+                    secret.can_be_bribed
+                    and secret.status != SecretStatus.REVEALED
+                    and party_gold >= secret.bribe_amount
+                ):
+                    out.append(
+                        _Candidate(
+                            SuggestedAction(
+                                id="social:offer_bribe",
+                                label=f"Offer {secret.bribe_amount} gp for secret",
+                                params={
+                                    "secret_id": secret.secret_id,
+                                    "gold_amount": secret.bribe_amount,
+                                },
+                                safe_to_execute=False,
+                                help=f"Bribe {participant.name} with {secret.bribe_amount} gold "
+                                     f"to reveal a secret. Hint: {secret.hint or 'No hint available.'}",
+                            ),
+                            score=88,
+                        )
+                    )
+                    break  # Only suggest first bribeable secret
+    except Exception:
+        pass
+
     return out
 
 

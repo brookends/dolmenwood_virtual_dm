@@ -644,12 +644,18 @@ class SerializablePartyState:
     # Party shared inventory (treasure, unassigned items)
     party_inventory: list[dict[str, Any]] = field(default_factory=list)
 
+    # Party currency (gold pieces)
+    gold_gp: int = 0
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SerializablePartyState":
-        return cls(**data)
+        # Filter out unknown fields for backwards compatibility
+        known_fields = {f.name for f in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in known_fields}
+        return cls(**filtered_data)
 
 
 @dataclass
@@ -2070,6 +2076,7 @@ class SessionManager:
                 for c in party_state.active_conditions
             ],
             party_inventory=[item.copy() for item in party_state.party_inventory],
+            gold_gp=getattr(party_state, "gold_gp", 0),
         )
 
     def extract_characters(self, characters: list) -> list[SerializableCharacter]:
@@ -2301,6 +2308,9 @@ class SessionManager:
         party_state.party_inventory = [
             item.copy() for item in saved.party_inventory
         ]
+
+        # Restore gold
+        party_state.gold_gp = saved.gold_gp
 
     def get_characters(self) -> list[CharacterState]:
         """

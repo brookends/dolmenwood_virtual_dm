@@ -5105,6 +5105,8 @@ class PartyState:
     member_speeds: list[int] = field(default_factory=list)  # Encumbered speeds
     # Party shared inventory (treasure, unassigned items)
     party_inventory: list[dict[str, Any]] = field(default_factory=list)
+    # Party currency (gold pieces)
+    gold_gp: int = 0
 
     def get_movement_rate(self, base_rate: int = 40) -> int:
         """

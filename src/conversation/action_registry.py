@@ -1719,6 +1719,139 @@ def _create_default_registry() -> ActionRegistry:
     ))
 
     # -------------------------------------------------------------------------
+    # Bribery action - spend gold to reveal secrets
+    # -------------------------------------------------------------------------
+    def _social_offer_bribe(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Offer a bribe to reveal a secret.
+
+        Requires:
+        - secret_id: The ID of the secret to reveal
+        - gold_amount: Amount of gold to offer (optional, defaults to required amount)
+
+        Uses SecretInfo.can_reveal() with bribe_offered parameter.
+        """
+        from src.data_models import SecretStatus
+
+        secret_id = p.get("secret_id", "")
+        gold_offered = p.get("gold_amount", 0)
+
+        if not secret_id:
+            return {
+                "success": False,
+                "error": "No secret_id specified. Use the secret's ID to offer a bribe.",
+            }
+
+        # Get social context
+        social_context = None
+        participant = None
+        try:
+            social_context = dm.controller.social_context
+            if social_context and social_context.participants:
+                participant = social_context.participants[0]
+        except Exception:
+            pass
+
+        if not participant:
+            return {
+                "success": False,
+                "error": "Not in a conversation with an NPC.",
+            }
+
+        # Find the secret
+        target_secret = None
+        for secret in getattr(participant, "secret_info", []):
+            if secret.secret_id == secret_id:
+                target_secret = secret
+                break
+
+        if not target_secret:
+            return {
+                "success": False,
+                "error": f"Secret '{secret_id}' not found on this NPC.",
+            }
+
+        # Check if already revealed
+        if target_secret.status == SecretStatus.REVEALED:
+            return {
+                "success": False,
+                "error": "This secret has already been revealed.",
+            }
+
+        # Check if secret can be bribed
+        if not target_secret.can_be_bribed:
+            return {
+                "success": False,
+                "message": f"{participant.name} cannot be bribed for this information.",
+            }
+
+        # Check required amount
+        required_amount = target_secret.bribe_amount
+        if gold_offered == 0:
+            gold_offered = required_amount
+
+        if gold_offered < required_amount:
+            return {
+                "success": False,
+                "message": f"{participant.name} is not impressed by your offer. "
+                           f"They want at least {required_amount} gold pieces.",
+                "required_amount": required_amount,
+                "offered": gold_offered,
+            }
+
+        # Check party gold
+        party_gold = getattr(dm.controller.party_state, "gold_gp", 0)
+        if party_gold < gold_offered:
+            return {
+                "success": False,
+                "error": f"Insufficient funds. Party has {party_gold} gp, "
+                         f"but need {gold_offered} gp.",
+            }
+
+        # Get disposition and trust for can_reveal check
+        current_disp = 0
+        trust_level = 0
+        if participant.conversation:
+            current_disp = getattr(participant.conversation, "disposition_numeric", 0)
+            trust_level = getattr(participant.conversation, "trust_level", 0)
+
+        # Check if bribe will work using SecretInfo.can_reveal()
+        if not target_secret.can_reveal(current_disp, trust_level, gold_offered):
+            return {
+                "success": False,
+                "message": f"{participant.name} refuses your bribe.",
+            }
+
+        # Success! Deduct gold and reveal secret
+        dm.controller.party_state.gold_gp = party_gold - gold_offered
+        target_secret.status = SecretStatus.REVEALED
+
+        return {
+            "success": True,
+            "message": f"{participant.name} accepts the {gold_offered} gold pieces and leans in "
+                       f"to whisper: \"{target_secret.content}\"",
+            "secret_revealed": {
+                "secret_id": target_secret.secret_id,
+                "content": target_secret.content,
+            },
+            "gold_spent": gold_offered,
+            "party_gold_remaining": dm.controller.party_state.gold_gp,
+        }
+
+    registry.register(ActionSpec(
+        id="social:offer_bribe",
+        label="Offer bribe for secret",
+        category=ActionCategory.SOCIAL,
+        requires_state="social_interaction",
+        params_schema={
+            "secret_id": {"type": "string", "required": True},
+            "gold_amount": {"type": "integer", "required": False},
+        },
+        help="Offer gold to an NPC in exchange for revealing a secret they know.",
+        executor=_social_offer_bribe,
+    ))
+
+    # -------------------------------------------------------------------------
     # Meta: Factions
     # -------------------------------------------------------------------------
     def _meta_factions(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
