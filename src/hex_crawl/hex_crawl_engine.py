@@ -4058,9 +4058,43 @@ class HexCrawlEngine:
     # NPC INTERACTION AT POIs
     # =========================================================================
 
+    def _is_npc_present_at_time(self, npc: "HexNPC", is_night: bool) -> bool:
+        """
+        Check if an NPC is present based on time-of-day conditions.
+
+        Parses the NPC's location field for time-based keywords:
+        - "(nighttime only)" or "(nighttime)" -> Only present at night
+        - "(daytime only)" or "(daytime)" -> Only present during day
+        - No time keyword -> Present at all times
+
+        Args:
+            npc: The HexNPC to check
+            is_night: Whether it's currently nighttime
+
+        Returns:
+            True if the NPC is present at the current time
+        """
+        location = getattr(npc, "location", "") or ""
+        location_lower = location.lower()
+
+        # Check for nighttime-only presence
+        if "(nighttime only)" in location_lower or "(nighttime)" in location_lower:
+            return is_night
+
+        # Check for daytime-only presence
+        if "(daytime only)" in location_lower or "(daytime)" in location_lower:
+            return not is_night
+
+        # No time restriction - NPC is always present
+        return True
+
     def get_npcs_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
         """
         Get NPCs present at the current POI.
+
+        NPCs are filtered based on time-of-day conditions in their location field.
+        For example, the Dredger in hex 0104 has location "Lighthouse lantern room
+        (nighttime only)" and will only appear at night.
 
         Args:
             hex_id: Current hex
@@ -4090,12 +4124,17 @@ class HexCrawlEngine:
                             break
 
                     if npc_data:
+                        # Check time-based presence
+                        if not self._is_npc_present_at_time(npc_data, is_night):
+                            continue  # Skip this NPC - not present at current time
+
                         npc_info = {
                             "npc_id": npc_data.npc_id,
                             "name": npc_data.name,
                             "description": npc_data.description,
                             "kindred": npc_data.kindred,
                             "met_before": npc_data.npc_id in self._met_npcs,
+                            "is_combatant": getattr(npc_data, "is_combatant", False),
                         }
                         if npc_data.title:
                             npc_info["title"] = npc_data.title
@@ -4345,6 +4384,15 @@ class HexCrawlEngine:
 
         if not target_npc:
             return {"success": False, "error": f"NPC '{npc_id}' not found in hex data"}
+
+        # Check time-based presence
+        is_night = self._is_night()
+        if not self._is_npc_present_at_time(target_npc, is_night):
+            time_period = "nighttime" if is_night else "daytime"
+            return {
+                "success": False,
+                "error": f"NPC '{npc_id}' not at this POI (not present during {time_period})",
+            }
 
         # Check if NPC is a combatant
         if not getattr(target_npc, "is_combatant", False):

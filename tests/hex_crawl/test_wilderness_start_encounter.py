@@ -42,6 +42,8 @@ def hex_0104(hex_pipeline):
 def controller():
     """Create a GlobalController for state transitions."""
     ctrl = GlobalController()
+    # Set time to night so the Dredger is present (it's nighttime-only)
+    ctrl.world_state.current_time.hour = 22
     # Controller starts in WILDERNESS_TRAVEL state by default
     return ctrl
 

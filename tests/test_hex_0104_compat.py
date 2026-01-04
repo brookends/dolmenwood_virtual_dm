@@ -46,6 +46,8 @@ def hex_0104(hex_pipeline):
 def hex_engine(hex_0104):
     """Create a HexCrawlEngine with hex 0104 loaded."""
     controller = GlobalController()
+    # Set time to night so the Dredger is present (it's nighttime-only)
+    controller.world_state.current_time.hour = 22
     engine = HexCrawlEngine(controller)
     engine._hex_data["0104"] = hex_0104
     return engine
