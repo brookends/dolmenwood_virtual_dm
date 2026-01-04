@@ -354,6 +354,7 @@ class TestHex0106AbilityCheck:
 
         # Mock character with dexterity
         character = MagicMock()
+        character.ability_scores = {"DEX": 14, "STR": 10, "INT": 10, "WIS": 10, "CON": 10, "CHA": 10}
         character.abilities = MagicMock()
         character.abilities.dexterity = 14
 

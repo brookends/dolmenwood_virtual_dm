@@ -6379,6 +6379,30 @@ class CharacterState:
     # CLASS AND COMBAT METHODS
     # =========================================================================
 
+    def get_total_condition_modifier(self, roll_type: str) -> int:
+        """
+        Get the total modifier from all active conditions for a roll type.
+
+        Sums up modifiers from CONDITION_ROLL_MODIFIERS for each active condition.
+
+        Args:
+            roll_type: Type of roll ("saving_throws", "attack_rolls", "ability_checks",
+                      "initiative", "armor_class", "all_rolls")
+
+        Returns:
+            Total modifier (usually negative for penalties)
+        """
+        total = 0
+        for condition in self.conditions:
+            # Get the string name of the condition type
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            total += get_condition_roll_modifier(condition_name, roll_type)
+        return total
+
     def get_saving_throw(self, save_type: str) -> int:
         """
         Get the saving throw target for a specific save type.
@@ -6395,16 +6419,23 @@ class CharacterState:
         """
         Roll a saving throw.
 
+        Automatically applies condition modifiers from CONDITION_ROLL_MODIFIERS
+        for any active conditions (e.g., exhausted applies -1 to saving_throws).
+
         Args:
             save_type: Type of save
-            modifier: Bonus/penalty to the roll
+            modifier: Bonus/penalty to the roll (in addition to condition modifiers)
 
         Returns:
             Tuple of (roll_total, success)
         """
         result = DiceRoller.roll_d20(f"Saving throw ({save_type})")
         roll = result.total
-        total = roll + modifier
+
+        # Apply condition modifiers for saving throws
+        condition_mod = self.get_total_condition_modifier("saving_throws")
+
+        total = roll + modifier + condition_mod
         target = self.get_saving_throw(save_type)
         return total, total >= target
 
@@ -6441,6 +6472,57 @@ class CharacterState:
         """Restore all spell slots (after rest)."""
         if self.spell_slots:
             self.spell_slots.restore_all()
+
+    def can_recover_hp(self) -> bool:
+        """
+        Check if character can recover HP from rest.
+
+        Returns False if character has restless_sleep condition.
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            if condition_name == "restless_sleep":
+                return False
+        return True
+
+    def can_memorize_spells(self) -> bool:
+        """
+        Check if character can memorize spells during rest.
+
+        Returns False if character has restless_sleep condition.
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            if condition_name == "restless_sleep":
+                return False
+        return True
+
+    def get_hp_recovery_modifier(self) -> float:
+        """
+        Get the HP recovery modifier based on conditions.
+
+        Returns:
+            Multiplier for HP recovery (0.0 = no recovery, 1.0 = normal)
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            mods = CONDITION_ROLL_MODIFIERS.get(condition_name, {})
+            if "hp_recovery" in mods:
+                # Return 0 for no recovery
+                return float(mods["hp_recovery"])
+        return 1.0
 
     def get_skill_target(self, skill_name: str) -> Optional[int]:
         """

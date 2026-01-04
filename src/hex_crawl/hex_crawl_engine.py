@@ -5902,13 +5902,40 @@ class HexCrawlEngine:
             if check_type:
                 check_type_lower = check_type.lower() if check_type else "dexterity"
                 ability_score = 10  # Default
-                if hasattr(character, "abilities") and character.abilities:
+
+                # Map check type to ability score key (e.g., "dexterity" -> "DEX")
+                ability_key_map = {
+                    "strength": "STR", "str": "STR",
+                    "intelligence": "INT", "int": "INT",
+                    "wisdom": "WIS", "wis": "WIS",
+                    "dexterity": "DEX", "dex": "DEX",
+                    "constitution": "CON", "con": "CON",
+                    "charisma": "CHA", "cha": "CHA",
+                }
+                ability_key = ability_key_map.get(check_type_lower, check_type_lower.upper())
+
+                # Check for ability_scores dict (CharacterState uses this)
+                if hasattr(character, "ability_scores") and character.ability_scores:
+                    ability_score = character.ability_scores.get(ability_key, 10)
+                elif hasattr(character, "abilities") and character.abilities:
                     ability_score = getattr(character.abilities, check_type_lower, 10)
                 elif hasattr(character, check_type_lower):
                     ability_score = getattr(character, check_type_lower, 10)
+
+                # Get condition modifier for ability checks (e.g., exhausted = -1)
+                # For ability checks, penalties INCREASE the roll (success is <= ability)
+                condition_mod = 0
+                if hasattr(character, "get_total_condition_modifier"):
+                    try:
+                        mod = character.get_total_condition_modifier("ability_checks")
+                        condition_mod = int(mod) if mod else 0
+                    except (TypeError, ValueError):
+                        pass  # MagicMock or invalid value, use 0
+
                 # OSE/Dolmenwood ability check: roll d20, success if <= ability score
                 roll = self.dice.roll_d20(f"{check_type_lower} check")
-                roll_total = roll.total - modifier  # Negative modifier makes it harder
+                # Penalties (negative condition_mod) increase roll, making it harder
+                roll_total = roll.total - modifier - condition_mod
                 success = roll_total <= ability_score
             elif save_type_lower in ("doom", "spell", "ray", "hold", "blast"):
                 # Use proper saving throw mechanism
@@ -5921,14 +5948,34 @@ class HexCrawlEngine:
                     target = 15  # Default target
                     if hasattr(character, "saving_throws"):
                         target = character.saving_throws.get(save_type_lower, 15)
+
+                    # Get condition modifier for saving throws
+                    condition_mod = 0
+                    if hasattr(character, "get_total_condition_modifier"):
+                        try:
+                            mod = character.get_total_condition_modifier("saving_throws")
+                            condition_mod = int(mod) if mod else 0
+                        except (TypeError, ValueError):
+                            pass  # MagicMock or invalid value, use 0
+
                     roll = self.dice.roll_d20(f"Save vs {save_type}")
-                    roll_total = roll.total + modifier
+                    roll_total = roll.total + modifier + condition_mod
                     success = roll_total >= target
             else:
                 # Ability check (legacy path)
                 ability_mod = character.get_ability_modifier(save_type)
+
+                # Get condition modifier for ability checks
+                condition_mod = 0
+                if hasattr(character, "get_total_condition_modifier"):
+                    try:
+                        mod = character.get_total_condition_modifier("ability_checks")
+                        condition_mod = int(mod) if mod else 0
+                    except (TypeError, ValueError):
+                        pass  # MagicMock or invalid value, use 0
+
                 roll = self.dice.roll_d20(f"hazard save ({save_type})")
-                roll_total = roll.total + ability_mod
+                roll_total = roll.total + ability_mod + condition_mod
                 success = roll_total >= difficulty
 
             damage_dealt = 0
