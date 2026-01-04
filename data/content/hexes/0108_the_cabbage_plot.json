@@ -14,8 +14,32 @@
     "lost_chance": "1-in-6",
     "encounter_chance": "1-in-6",
     "encounter_notes": "Encounters are 1-in-6 likely to be with a gang of Murkin's Soldiers",
-    "foraging_results": null,
-    "foraging_special": null
+    "encounter_table": {
+      "name": "Hex 0108 Encounters",
+      "die_type": "d6",
+      "entries": [
+        {
+          "roll": "1",
+          "result": "murkins_soldiers",
+          "description": "A gang of 1d4 human fighters and 1d4 shorthorn fighters approach, demanding to know the party's business."
+        },
+        {
+          "roll": "2-6",
+          "result": "standard",
+          "description": "Roll on standard High Wold encounter table"
+        }
+      ]
+    },
+    "foraging_results": "Successful foraging yields 1d4 portions of edible turnips, leeks, or radishes (free rations for a day)",
+    "foraging_special": [
+      "Edible vegetables (1d4 portions)"
+    ],
+    "investigation_hazard": {
+      "trigger": "investigate_cabbages",
+      "chance": "2-in-6",
+      "description": "If PCs linger near the rotting cabbage fields, there is a 2-in-6 chance of a gang of Murkin's Soldiers arriving to harass them on suspicion of destroying the valuable crops.",
+      "result": "murkins_soldiers_arrive"
+    }
   },
   "description": "A patchwork of fields, country lanes, farms, and little clusters of dwellings crowds this hex in the domain of the cruel Lord Murkin. Blackened, rotting cabbages with an unusual crown-like shape notably fill a number of fields bordering the West Road. The common folk of this area, angered by Lord Murkin's petty laws and crippling taxes, are on the verge of revolt. Timilda Brumble has led a secret plot to destroy this year's harvest of crown cabbages, in an attempt to draw the duke's attention to Lord Murkin's tyranny.",
   "points_of_interest": [
@@ -23,24 +47,200 @@
       "name": "The Crimson Bath",
       "poi_type": "inn",
       "description": "Two miles from the gates of Kolstoke Keep (0208), the West Road passes through a cluster of dwellings and outbuildings known as the hamlet of Shrivelbyne. At the centre of the hamlet is a tall, wonky inn.",
-      "tagline": null,
-      "entering": null,
-      "interior": "A poky, smoke-filled room lit only by the grate opposite the entrance. Miniature portraits of bears dressed as nobility dot the walls. Timilda Brumble and her husband Grerg—a human from Dreg—serve from a tree-trunk bar. An acrid reek occasionally wafts up from the cellar, when the door is opened.",
-      "exploring": null,
-      "leaving": null,
+      "tagline": "A ramshackle inn at the heart of a brewing rebellion",
+      "entering": "The Crimson Bath leans at an angle that seems to defy physics, its timber frame weathered to a dark grey. A painted sign depicts a portly longhorn gentleman—the previous Lord Murkin—relaxing in a bath of red wine. The door hangs slightly ajar, and the sound of raucous laughter and clinking mugs spills out into the evening air.",
+      "interior": "A poky, smoke-filled room lit only by the grate opposite the entrance. Miniature portraits of bears dressed as nobility dot the walls—a subtle mockery of the longhorn lords. Timilda Brumble and her husband Grerg serve from a tree-trunk bar worn smooth by generations of elbows. An acrid reek occasionally wafts up from the cellar when the door is opened. The floorboards creak ominously, and the ceiling beams are blackened with decades of hearth-smoke.",
+      "exploring": "The common room seats perhaps thirty, though it's rarely that full. A narrow staircase leads to the leaning bedrooms above. Behind the bar, a locked door leads to the cellar. Regular patrons seem to fall silent whenever Murkin's name is mentioned, exchanging meaningful glances.",
+      "leaving": "As you step out into the cool evening air, you notice farmhands gathered in small knots along the lane, speaking in hushed voices. They fall silent and nod respectfully as you pass, but their eyes hold a spark of something—hope, or perhaps conspiracy.",
       "inhabitants": "Rowdy farmhands, a mix of humans and shorthorns. The mood veers between tomfoolery, raucous jigs, conspiratorial whispering, and drunken screeds against Murkin. A gang of Murkin's Soldiers drops by to harass the inn's patrons most evenings.",
-      "roll_tables": [],
+      "roll_tables": [
+        {
+          "name": "Current Patrons",
+          "die_type": "d6",
+          "description": "Roll to see who's drinking at the Crimson Bath tonight",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Harvest Crew",
+              "description": "A tired crew of 2d4 farmhands fresh from the fields, covered in mud and smelling of earth. They complain bitterly about Murkin's new 'field inspection tax.'",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Travelling Merchant",
+              "description": "A nervous-looking human merchant heading to Kolstoke Keep, hoping to sell cloth. He's heard rumors of 'trouble in the fields' and asks pointed questions.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Local Elders",
+              "description": "Three elderly shorthorns nursing ales by the fire, speaking in hushed Gaffe about 'the old days' when Lord Murkin's father ruled.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Celebrating Youths",
+              "description": "A group of 1d6 young humans and shorthorns celebrating an engagement, temporarily drowning their sorrows about the future in ale.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Sullen Laborer",
+              "description": "A solitary human farmhand with bandaged hands, staring into his drink. He was beaten by Murkin's Soldiers yesterday for 'looking suspicious.'",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Suspicious Stranger",
+              "description": "A well-dressed shorthorn who doesn't fit in, watching the room carefully. Could be a spy for Murkin, or perhaps an agent of Lady Borrid (0109).",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Crimson Bath Rumors",
+          "die_type": "d6",
+          "description": "Rumors heard while drinking. Each can only be heard once per visit.",
+          "unique_entries": true,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Crown Cabbages",
+              "description": "'Those crown cabbages are worth a fortune—Duke Brackenwold himself orders 'em special. But someone's been poisoning the lot. Murkin's furious.'",
+              "keywords": ["cabbage", "duke", "poison", "murkin"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 2,
+              "title": "Lady Borrid",
+              "description": "'Lord Murkin's cousin, Lady Borrid, lives out in hex 0109. She's nothing like him—fair and reasonable. Some say she should be ruling instead.'",
+              "keywords": ["borrid", "cousin", "0109", "fair"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Press Gangs",
+              "description": "'Keep your young ones hidden. Murkin's Soldiers have been press-ganging anyone who looks fit to fight. They're building an army for something.'",
+              "keywords": ["soldiers", "press", "gang", "army"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 4,
+              "title": "Timilda's Pies",
+              "description": "'You haven't lived until you've tried Timilda's poodden pie. Best in the High Wold. Don't ask what else she brews in that cellar, though.'",
+              "keywords": ["timilda", "pie", "poodden", "cellar"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "The Previous Lord",
+              "description": "'Old Lord Murkin—the father, not this cur—he was stern but fair. That's him on the sign. Things were better then.'",
+              "keywords": ["father", "old", "murkin", "sign"],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Rebellion Whispers",
+              "description": "'Shh! Not so loud! But... there are those planning to do something about Murkin. Something big. Ask no more.'",
+              "keywords": ["rebellion", "plot", "secret", "planning"],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        },
+        {
+          "name": "Evening Events",
+          "die_type": "d6",
+          "description": "What happens if PCs spend the evening at the Crimson Bath",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Murkin's Soldiers Arrive",
+              "description": "1d4 human and 1d4 shorthorn soldiers swagger in, demanding free ale and harassing patrons. They question strangers about the cabbage sabotage.",
+              "npcs": ["murkins_soldiers"],
+              "items": [],
+              "mechanical_effect": "Encounter with Murkin's Soldiers"
+            },
+            {
+              "roll": 2,
+              "title": "Drunken Fight",
+              "description": "A disagreement about Murkin escalates into a brawl between farmhands. Timilda breaks it up with practiced efficiency.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 3,
+              "title": "Secret Meeting",
+              "description": "Timilda slips away to the cellar with two trusted patrons. If followed, PCs might glimpse the vat of poison and overhear plotting.",
+              "npcs": ["timilda_brumble"],
+              "items": [],
+              "mechanical_effect": "Chance to discover the plot"
+            },
+            {
+              "roll": 4,
+              "title": "Musical Night",
+              "description": "A local musician plays traditional High Wold songs. One is a thinly-veiled satire of Lord Murkin. Everyone pretends not to notice.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 5,
+              "title": "Quiet Evening",
+              "description": "An unusually quiet night. Patrons seem nervous, speaking in whispers. Something is planned for tomorrow.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            },
+            {
+              "roll": 6,
+              "title": "Traveler's Tales",
+              "description": "A merchant shares news from Brackenwold: Duke Brackenwold has noticed the shortage of crown cabbages and is asking questions.",
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": null
+            }
+          ]
+        }
+      ],
       "npcs": [
-        "timilda_brumble"
+        "timilda_brumble",
+        "grerg_brumble"
       ],
       "special_features": [
         "Sign: A portly longhorn gentleman relaxing in a bath of red wine. The gentleman depicted is the previous Lord Murkin (the current Lord Murkin's father).",
-        "The cellar: Concealed behind a stack of barrels is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot.",
-        "Services: Lodgings and food of poor quality. Bedrooms lean noticeably and creak disconcertingly. Poodden pie: Timilda's speciality: a pie of blackberries, apple, and custard. Significantly surpasses the quality of all other food available here. 2sp a serving."
+        "The cellar: Concealed behind a stack of barrels is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot. The concealment requires a careful search to discover.",
+        "Bear portraits: Miniature portraits of bears dressed as nobility dot the walls—a subtle mockery of the longhorn ruling class that goes unnoticed by most.",
+        "Services: Lodgings (1sp/night, poor quality—bedrooms lean noticeably and creak disconcertingly), Meals (2cp, basic), Poodden pie (2sp—Timilda's specialty pie of blackberries, apple, and custard; significantly surpasses all other food available)."
       ],
       "secrets": [
-        "Concealed behind a stack of barrels is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot"
+        "Concealed behind a stack of barrels in the cellar is a vat of acrid, black liquid—a vegetable poison brewed by Timilda for use in the Cabbage Plot",
+        "The bear portraits mocking longhorn nobility are Timilda's quiet act of defiance"
       ],
+      "evening_hazard": {
+        "trigger": "evening_stay",
+        "chance": "3-in-6",
+        "description": "Most evenings, a gang of Murkin's Soldiers drops by to harass the inn's patrons. There is a 3-in-6 chance they arrive during the PCs' stay.",
+        "result": "murkins_soldiers_harassment"
+      },
       "is_dungeon": false,
       "dungeon_levels": null
     }
@@ -67,27 +267,392 @@
       ],
       "desires": [
         "The dethronement of Lord Murkin, preferably to be replaced by his cousin Lady Borrid (0109)",
-        "To keep the plots against Murkin from deteriorating into violence"
+        "To keep the plots against Murkin from deteriorating into violence",
+        "To protect her community from Murkin's tyranny"
       ],
       "secrets": [
         "Secret leader of the plots against Lord Murkin",
         "Brews vegetable poison for the Cabbage Plot"
       ],
       "possessions": [
-        "Vat of acrid, black liquid—a vegetable poison"
+        "Vat of acrid, black liquid—a vegetable poison",
+        "Keys to all rooms in the inn",
+        "A small lockbox with 23gp saved from inn profits"
       ],
       "location": "The Crimson Bath inn",
       "stat_reference": null,
-      "is_combatant": false
+      "is_combatant": false,
+      "vulnerabilities": [
+        "protection_of_patrons",
+        "threat_to_rebellion",
+        "mention_of_old_lord_murkin",
+        "threat_to_grerg"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "welcome_to_inn",
+          "content": "Timilda wipes her hands on her apron and smiles warmly, revealing her missing teeth. 'Welcome to the Crimson Bath, travelers. Looking for a bed, a meal, or just a drink? All three, if you've the coin.'",
+          "keywords": ["inn", "welcome", "drink", "food", "bed", "room", "stay"],
+          "required_disposition": -5,
+          "category": "location",
+          "priority": 10
+        },
+        {
+          "topic_id": "poodden_pie",
+          "content": "Her eyes light up with pride. 'My poodden pie? Blackberries, apple, and custard, baked fresh. Two silver, and worth every penny. Folk come from Kolstoke just for a slice.'",
+          "keywords": ["pie", "poodden", "food", "specialty", "famous"],
+          "required_disposition": -5,
+          "category": "location",
+          "priority": 8
+        },
+        {
+          "topic_id": "local_troubles",
+          "content": "Her smile fades slightly. 'Times are hard, friends. Lord Murkin's taxes grow heavier each season, and his soldiers...' She trails off, glancing at the door. '...they make themselves unwelcome.'",
+          "keywords": ["murkin", "taxes", "soldiers", "trouble", "problems", "hard"],
+          "required_disposition": -3,
+          "category": "situation",
+          "priority": 7
+        },
+        {
+          "topic_id": "crown_cabbages",
+          "content": "She lowers her voice. 'Aye, you've seen the fields? Terrible business. Someone's been poisoning the crown cabbages—Duke Brackenwold's favorite. Lord Murkin is beside himself.' A hint of satisfaction flickers across her face.",
+          "keywords": ["cabbage", "cabbages", "crown", "poison", "fields", "crops"],
+          "required_disposition": -2,
+          "category": "situation",
+          "priority": 9
+        },
+        {
+          "topic_id": "lady_borrid",
+          "content": "'Lady Borrid? Murkin's cousin, lives out in the woods in hex 0109. A good soul—nothing like her cousin. If only she ruled instead...' Timilda catches herself and busies with a mug.",
+          "keywords": ["borrid", "lady", "cousin", "0109", "woods"],
+          "required_disposition": 0,
+          "category": "npc",
+          "priority": 6
+        },
+        {
+          "topic_id": "old_lord_murkin",
+          "content": "She glances at the sign outside. 'That's the old lord on the sign—this one's father. Stern man, but fair. You knew where you stood with him. His son...' She shakes her head sadly.",
+          "keywords": ["father", "old", "sign", "previous", "lord"],
+          "required_disposition": -2,
+          "category": "lore",
+          "priority": 4
+        },
+        {
+          "topic_id": "grerg_husband",
+          "content": "'That's my Grerg.' She nods toward the burly man behind the bar. 'Human, from Dreg originally. Came to the Wold twenty years past, and never left. Good with the barrels and better with troublemakers.'",
+          "keywords": ["grerg", "husband", "man", "dreg", "human"],
+          "required_disposition": -3,
+          "category": "npc",
+          "priority": 5
+        },
+        {
+          "topic_id": "faction_rebellion_hints",
+          "content": "Timilda's eyes harden momentarily. 'The folk here have long memories, and longer patience. But even patience has its limits. Change is coming to the High Wold, one way or another.'",
+          "keywords": ["rebellion", "revolt", "change", "resistance", "fight"],
+          "required_disposition": 1,
+          "category": "faction",
+          "priority": 8
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "cabbage_plot_leader",
+          "content": "Timilda is the secret leader of the 'Cabbage Plot'—a conspiracy to destroy Lord Murkin's crown cabbage harvest and draw Duke Brackenwold's attention to his tyranny. She personally brews the vegetable poison in her cellar.",
+          "hint": "She seems remarkably unsurprised by the crop failures, and her cellar door is always kept locked.",
+          "keywords": ["plot", "leader", "poison", "cellar", "conspiracy", "organize"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "borrid_alliance",
+          "content": "Timilda has secret contact with Lady Borrid (hex 0109), who quietly supports the rebellion and hopes to replace her cousin as lord. Messages are passed through trusted travelers.",
+          "hint": "She asks many questions about travelers' destinations, especially those heading west.",
+          "keywords": ["borrid", "contact", "support", "alliance", "replace", "message"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "fear_of_violence",
+          "content": "Timilda fears the rebellion will turn violent. She has seen what Murkin's Soldiers do to suspected rebels, and worries that open conflict would mean massacre. She seeks a political solution through the Duke.",
+          "hint": "When talk turns to fighting Murkin, her smile grows strained and she changes the subject.",
+          "keywords": ["violence", "fight", "afraid", "fear", "blood", "war"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "grerg_brumble",
+          "relationship_type": "spouse",
+          "description": "Married to Grerg for over fifteen years. He knows of and supports the rebellion.",
+          "hex_id": "0108",
+          "notes": null
+        },
+        {
+          "npc_id": "lady_borrid",
+          "relationship_type": "secret_ally",
+          "description": "Secretly communicates with Lady Borrid, who supports replacing Lord Murkin.",
+          "hex_id": "0109",
+          "notes": "Messages passed through trusted travelers"
+        },
+        {
+          "npc_id": "lord_murkin",
+          "relationship_type": "enemy",
+          "description": "Leads the secret rebellion against Lord Murkin's tyranny.",
+          "hex_id": "0208",
+          "notes": "Must maintain facade of loyal subject"
+        }
+      ]
+    },
+    {
+      "npc_id": "grerg_brumble",
+      "name": "Grerg Brumble",
+      "title": "Crimson Bath Barkeep",
+      "description": "A broad-shouldered human man in his forties with a shaved head, thick arms, and a stoic demeanor. Originally from Dreg, he came to the High Wold as a young man and married Timilda. He handles the heavy work of the inn and keeps order when patrons get rowdy.",
+      "kindred": "Human",
+      "alignment": "Lawful",
+      "demeanor": [
+        "Quiet",
+        "watchful",
+        "protective",
+        "speaks rarely but meaningfully"
+      ],
+      "speech": "Deep voice, few words, slight Dreg accent",
+      "languages": [
+        "Woldish",
+        "Common"
+      ],
+      "desires": [
+        "To protect Timilda and see her rebellion succeed",
+        "A peaceful life free of Murkin's oppression",
+        "To someday visit Dreg again"
+      ],
+      "secrets": [
+        "Knows about and helps with the Cabbage Plot",
+        "Was once a soldier in Dreg before deserting"
+      ],
+      "possessions": [
+        "Heavy cudgel behind the bar",
+        "A worn silver ring from Dreg"
+      ],
+      "location": "The Crimson Bath inn",
+      "stat_reference": "Level 2 fighter (DMB)",
+      "is_combatant": true,
+      "vulnerabilities": [
+        "threat_to_timilda",
+        "mention_of_dreg_military"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "drinks_available",
+          "content": "Grerg grunts and gestures at the kegs. 'Ale. Cider. Wine if you've coin. Food's Timilda's business.'",
+          "keywords": ["drink", "ale", "cider", "wine", "beer"],
+          "required_disposition": -5,
+          "category": "location",
+          "priority": 8
+        },
+        {
+          "topic_id": "about_dreg",
+          "content": "'Dreg?' His eyes grow distant. 'Long way east. Left twenty winters past. Better not to ask why.'",
+          "keywords": ["dreg", "home", "east", "where", "from"],
+          "required_disposition": 0,
+          "category": "personal",
+          "priority": 4
+        },
+        {
+          "topic_id": "murkins_soldiers",
+          "content": "His jaw tightens. 'They come. They drink. They don't pay. We smile and wait for them to leave.' The way he grips his cudgel suggests he'd prefer a different response.",
+          "keywords": ["soldiers", "murkin", "trouble", "problem"],
+          "required_disposition": -2,
+          "category": "situation",
+          "priority": 6
+        },
+        {
+          "topic_id": "timilda_praise",
+          "content": "His stoic face softens slightly. 'Best woman in the Wold. Smartest too. Whatever she's planning, it'll work.'",
+          "keywords": ["timilda", "wife", "woman"],
+          "required_disposition": 0,
+          "category": "npc",
+          "priority": 5
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "rebellion_helper",
+          "content": "Grerg helps with the Cabbage Plot by transporting poison under cover of normal deliveries and keeping watch for Murkin's spies at the inn.",
+          "hint": "He makes frequent trips with the cart, sometimes returning with barrels that never go on tap.",
+          "keywords": ["help", "plot", "poison", "transport", "watch"],
+          "required_disposition": 2,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "dreg_deserter",
+          "content": "Grerg deserted from the Dreg military after refusing an order to massacre civilians. He fled to the Wold to escape justice and has never returned.",
+          "hint": "He tenses at any mention of Dreg's military or justice system.",
+          "keywords": ["dreg", "soldier", "desert", "flee", "past", "military"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "timilda_brumble",
+          "relationship_type": "spouse",
+          "description": "Devoted to Timilda and her cause. Would die to protect her.",
+          "hex_id": "0108",
+          "notes": null
+        }
+      ]
+    },
+    {
+      "npc_id": "murkins_soldiers",
+      "name": "Murkin's Soldiers",
+      "title": null,
+      "description": "Unruly gangs composed of 1d4 humans (Level 1 fighters) and 1d4 shorthorns (Level 1 fighters). Tasked with recruitment (press-gang working class youths) and rooting out rebels (capture those responsible for the Cabbage Plot). They wear Murkin's colors—black and crimson—and carry clubs and short swords.",
+      "kindred": "Mixed (Human and Shorthorn)",
+      "alignment": "Chaotic",
+      "demeanor": [
+        "Bullying",
+        "entitled",
+        "cruel when they have the advantage",
+        "cowardly when outnumbered"
+      ],
+      "speech": "Rough, demanding. Woldish.",
+      "languages": [
+        "Woldish"
+      ],
+      "desires": [
+        "Free drinks and food from locals",
+        "Finding rebels to impress Lord Murkin",
+        "Avoiding actual danger"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Roaming hex 0108, especially The Crimson Bath in evenings",
+      "stat_reference": "Level 1 fighter (DMB). Gang of 1d4 humans + 1d4 shorthorns.",
+      "is_combatant": true,
+      "group_count": "1d4+1d4",
+      "group_composition": {
+        "humans": "1d4",
+        "shorthorns": "1d4"
+      },
+      "faction": "house_murkin",
+      "loyalty": "loyal",
+      "vulnerabilities": [
+        "authority_figures",
+        "threat_of_lord_murkins_displeasure",
+        "bribery",
+        "being_outnumbered"
+      ],
+      "known_topics": [
+        {
+          "topic_id": "demand_drinks",
+          "content": "'Lord Murkin's business! Ale, now, and make it quick. Don't expect us to pay—service to the lord is payment enough for the likes of you.'",
+          "keywords": ["drink", "ale", "pay", "business"],
+          "required_disposition": -5,
+          "category": "interaction",
+          "priority": 10
+        },
+        {
+          "topic_id": "cabbage_investigation",
+          "content": "'Someone's been poisoning Lord Murkin's crown cabbages. Know anything about that, do you? Anyone acting suspicious? There's a reward for information—and punishment for those who withhold it.'",
+          "keywords": ["cabbage", "poison", "investigate", "rebel", "suspicious"],
+          "required_disposition": -5,
+          "category": "situation",
+          "priority": 9
+        },
+        {
+          "topic_id": "press_gang_threat",
+          "content": "'You look fit and strong. Lord Murkin has need of soldiers. Volunteer now and receive a whole silver piece. Refuse...' The soldier grins unpleasantly. '...and we'll find other ways to convince you.'",
+          "keywords": ["recruit", "soldier", "join", "fight", "army"],
+          "required_disposition": -5,
+          "category": "interaction",
+          "priority": 8
+        },
+        {
+          "topic_id": "murkin_loyalty",
+          "content": "'Lord Murkin is the rightful lord of these lands. Those who defy him are traitors to be dealt with accordingly. Duke Brackenwold supports him, as do we.'",
+          "keywords": ["murkin", "lord", "loyal", "traitor"],
+          "required_disposition": -5,
+          "category": "faction",
+          "priority": 6
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "cowardice",
+          "content": "For all their bluster, Murkin's Soldiers are poorly trained and quick to flee when facing real opposition. They rely on intimidating unarmed peasants, not fighting adventurers.",
+          "hint": "They eye the party's weapons nervously and position themselves near exits.",
+          "keywords": ["fight", "coward", "run", "flee", "brave"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": true,
+          "bribe_amount": 10
+        },
+        {
+          "secret_id": "camp_location",
+          "content": "The soldiers are based at a camp in hex 0109. Captured rebels and pressed recruits are taken there for 'processing.'",
+          "hint": "They occasionally mention needing to 'get back to camp before morning.'",
+          "keywords": ["camp", "base", "0109", "where", "stay", "headquarters"],
+          "required_disposition": 0,
+          "required_trust": 0,
+          "can_be_bribed": true,
+          "bribe_amount": 5
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lord_murkin",
+          "relationship_type": "liege",
+          "description": "Serve Lord Murkin, though more out of fear of punishment than genuine loyalty.",
+          "hex_id": "0208",
+          "notes": null
+        }
+      ],
+      "faction_profile": {
+        "faction_id": "house_murkin",
+        "role": "enforcers",
+        "standing": "low",
+        "notes": "Expendable troops used for oppression and press-ganging"
+      }
     }
   ],
-  "items": [],
+  "items": [
+    {
+      "item_id": "0108:item:vegetable_poison",
+      "name": "Timilda's Vegetable Poison",
+      "description": "An acrid, black liquid brewed specifically to destroy crown cabbages. Harmless to humans and animals but devastatingly effective on the prized vegetables.",
+      "value": null,
+      "location": "Crimson Bath cellar (concealed)",
+      "mechanical_effect": {
+        "target": "crown_cabbages",
+        "effect": "destruction",
+        "notes": "Plot device for the Cabbage Plot rebellion"
+      }
+    }
+  ],
   "secrets": [
     "The cabbages have been secretly poisoned by locals rebelling against Murkin's tyranny",
-    "Natives of the High Wold recognise these as 'crown cabbages,' a highly prized export of the region, especially beloved by Duke Brackenwold"
+    "Natives of the High Wold recognise these as 'crown cabbages,' a highly prized export of the region, especially beloved by Duke Brackenwold",
+    "Timilda Brumble leads the rebellion, with secret support from Lady Borrid in hex 0109",
+    "The rebellion aims to draw Duke Brackenwold's attention to Lord Murkin's cruelty"
   ],
-  "dm_notes": "Investigating the cabbages: If PCs linger, there is a 2-in-6 chance of a gang of Murkin's Soldiers arriving to harass them on suspicion of destroying the valuable crops. Murkin's Soldiers: Unruly gangs composed of 1d4 humans (Level 1 fighters—DMB) and 1d4 shorthorns (DMB). Tasked with recruitment (press-gang working class youths) and rooting out rebels (capture those responsible for the Cabbage Plot). Any successfully recruited are taken to the camp in hex 0109.",
-  "adjacent_hexes": [],
+  "dm_notes": "Investigating the cabbages: If PCs linger, there is a 2-in-6 chance of a gang of Murkin's Soldiers arriving to harass them on suspicion of destroying the valuable crops. Murkin's Soldiers: Unruly gangs composed of 1d4 humans (Level 1 fighters—DMB) and 1d4 shorthorns (DMB). Tasked with recruitment (press-gang working class youths) and rooting out rebels (capture those responsible for the Cabbage Plot). Any successfully recruited are taken to the camp in hex 0109. Plot hooks: PCs could help or hinder the rebellion; they might be mistaken for rebels; they could carry messages to Lady Borrid; they could expose the plot to Murkin for reward.",
+  "adjacent_hexes": [
+    "0107",
+    "0109",
+    "0208"
+  ],
   "roads": [
     "West Road"
   ],
@@ -96,6 +661,7 @@
     "pages": [
       199
     ],
-    "extraction_note": "Review and correct this data before importing"
+    "extraction_note": "Enriched with full NPC interactions, roll tables, and faction integration",
+    "enrichment_version": "1.0"
   }
 }
