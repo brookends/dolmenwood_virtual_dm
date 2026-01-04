@@ -2919,6 +2919,10 @@ class PointOfInterest:
     # Items and treasures at this location
     items: list[dict[str, Any]] = field(default_factory=list)  # [{name, description, value, taken}]
 
+    # Structured treasure hoard (coins + items + worthless description)
+    # Format: {coins: {cp, sp, gp, pp}, items: [{item_id, name, quantity, value_gp, ...}], worthless: str}
+    treasure_hoard: Optional[dict[str, Any]] = None
+
     # Automatic hazards triggered on approach/entry
     # Format: [{trigger, hazard_type, difficulty, description, save_type, damage}]
     # trigger: "on_approach", "on_enter", "on_exit", "always"

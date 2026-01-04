@@ -1171,6 +1171,7 @@ class ContentPipeline:
                 "is_dungeon": poi.is_dungeon,
                 "dungeon_levels": poi.dungeon_levels,
                 "roll_tables": [self._roll_table_to_dict(t) for t in poi.roll_tables],
+                "treasure_hoard": poi.treasure_hoard,
             }
             poi_list.append(poi_dict)
 

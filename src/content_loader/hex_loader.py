@@ -435,6 +435,7 @@ class HexDataLoader:
             is_dungeon=data.get("is_dungeon", False),
             dungeon_levels=data.get("dungeon_levels"),
             hidden=is_hidden,
+            treasure_hoard=data.get("treasure_hoard"),
         )
 
     def _parse_roll_table(self, data: dict[str, Any]) -> RollTable:
