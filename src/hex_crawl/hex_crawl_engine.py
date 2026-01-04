@@ -6211,6 +6211,7 @@ class HexCrawlEngine:
         result: HazardResult,
         character: CharacterState,
         hazard_data: Optional[dict[str, Any]] = None,
+        trigger_chains: bool = True,
     ) -> dict[str, Any]:
         """
         Apply damage and conditions from a hazard result to game state.
@@ -6253,7 +6254,131 @@ class HexCrawlEngine:
                 if table_result:
                     applied["roll_table_results"].append(table_result)
 
+            # Trigger automatic chain hazards for this condition
+            # (but not if we're already processing a chain to avoid recursion)
+            if trigger_chains and apply_result.get("applied"):
+                chain_results = self._trigger_chain_hazards(character, condition_str)
+                if chain_results:
+                    applied["chain_hazards_triggered"] = chain_results
+
         return applied
+
+    def _trigger_chain_hazards(
+        self,
+        character: CharacterState,
+        condition: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Trigger automatic hazards that chain from a newly applied condition.
+
+        This implements the dance chain model where applying one condition
+        (e.g., enchanted_hearing) automatically triggers hazards that require
+        that condition (e.g., enchanted_reverie → compelled_dancing).
+
+        Args:
+            character: The character with the newly applied condition
+            condition: The condition type that was just applied
+
+        Returns:
+            List of chain hazard results
+        """
+        results = []
+
+        # Get current POI hazards
+        hex_id = self._current_hex
+        if not hex_id or not self._current_poi:
+            return results
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return results
+
+        # Find POI and get automatic hazards for this condition
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return results
+
+        # Get automatic hazards that require this condition
+        chain_hazards = poi.get_automatic_hazards_for_condition(condition)
+
+        for hazard in chain_hazards:
+            # Resolve the automatic hazard (no save required for automatic hazards)
+            hazard_result = self._resolve_automatic_hazard(hazard, character)
+
+            # Apply effects (with trigger_chains=False to prevent infinite recursion)
+            effect_result = self._apply_hazard_effects(
+                hazard_result, character, hazard_data=hazard, trigger_chains=False
+            )
+
+            results.append({
+                "hazard_name": hazard.get("name", hazard.get("hazard_id", "chain_hazard")),
+                "triggered_by_condition": condition,
+                "success": not hazard_result.success,  # For auto-hazards, "success" means effect applied
+                "conditions_applied": hazard_result.conditions_applied,
+                "effects_applied": effect_result,
+            })
+
+        return results
+
+    def _resolve_automatic_hazard(
+        self,
+        hazard: dict[str, Any],
+        character: CharacterState,
+    ) -> HazardResult:
+        """
+        Resolve an automatic hazard (no save required).
+
+        Automatic hazards trigger when their condition_required is met
+        and apply their effect immediately.
+
+        Args:
+            hazard: The automatic hazard definition
+            character: The character affected
+
+        Returns:
+            HazardResult with the automatic effect applied
+        """
+        from src.narrative.hazard_resolver import HazardResult, HazardType, ActionType
+
+        # Extract effect data
+        effect = hazard.get("effect", {})
+        condition_on_fail = effect.get("condition") or hazard.get("condition")
+        description = hazard.get("description", "An automatic effect triggers.")
+
+        # Build conditions list
+        conditions_applied = []
+        apply_conditions = []
+        if condition_on_fail:
+            conditions_applied.append(condition_on_fail)
+            if hasattr(character, "character_id"):
+                apply_conditions.append((character.character_id, condition_on_fail))
+
+        # Extract additional metadata
+        ends_at = effect.get("ends_at_time_of_day") or hazard.get("ends_at_time_of_day")
+        effect_description = effect.get("description", "")
+
+        narrative_hints = [
+            "automatic effect",
+            effect_description if effect_description else description,
+        ]
+        if ends_at:
+            narrative_hints.append(f"until {ends_at}")
+
+        return HazardResult(
+            success=False,  # False means the effect applies (character "failed" to avoid)
+            hazard_type=HazardType.ENCHANTMENT,
+            action_type=ActionType.NARRATIVE_ACTION,
+            description=description,
+            conditions_applied=conditions_applied,
+            apply_conditions=apply_conditions,
+            narrative_hints=narrative_hints,
+            effect_applied=condition_on_fail if condition_on_fail else "",
+        )
 
     def _create_condition_from_hazard(
         self,

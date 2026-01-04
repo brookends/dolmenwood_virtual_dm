@@ -3080,6 +3080,24 @@ class PointOfInterest:
             h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"
         ]
 
+    def get_automatic_hazards_for_condition(self, condition: str) -> list[dict[str, Any]]:
+        """
+        Get automatic hazards that trigger when a specific condition is applied.
+
+        These are hazards with `automatic: true` and `condition_required` matching
+        the given condition. Used for chained effects like the dance chain.
+
+        Args:
+            condition: The condition type that was just applied (e.g., "enchanted_hearing")
+
+        Returns:
+            List of hazard definitions that should trigger automatically
+        """
+        return [
+            h for h in self.hazards
+            if h.get("automatic") is True and h.get("condition_required") == condition
+        ]
+
     def get_active_locks(self, include_hidden: bool = False) -> list[dict[str, Any]]:
         """
         Get locks that haven't been bypassed.
