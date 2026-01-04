@@ -915,6 +915,24 @@ class ContentManager:
             item_persistence=data.get("item_persistence"),
             dynamic_layout=data.get("dynamic_layout"),
             availability=data.get("availability"),
+            # Advanced POI fields for automation
+            alerts=data.get("alerts", []),
+            concealed_items=data.get("concealed_items", []),
+            locks=data.get("locks", []),
+            sub_locations=data.get("sub_locations", []),
+            entry_conditions=data.get("entry_conditions"),
+            variable_inhabitants=data.get("variable_inhabitants"),
+            # Additional fields
+            discovered=data.get("discovered", False),
+            visible_from_distance=data.get("visible_from_distance", True),
+            approach_required=data.get("approach_required", True),
+            dungeon_id=data.get("dungeon_id"),
+            dungeon_entrance_room=data.get("dungeon_entrance_room"),
+            hazards=data.get("hazards", []),
+            items=data.get("items", []),
+            magical_effects=data.get("magical_effects", []),
+            discovery_hints=data.get("discovery_hints", {}),
+            ability_grants=data.get("ability_grants", []),
         )
 
     def _dict_to_roll_table(self, data: dict) -> RollTable:

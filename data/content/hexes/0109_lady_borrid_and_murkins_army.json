@@ -192,6 +192,81 @@
         "description": "If visitors have made a favorable impression, Lady Borrid invites them to dine with her. This is both an honor and an opportunity for conversation.",
         "result": "dinner_invitation"
       },
+      "alerts": [
+        {
+          "alert_id": "moose_head_alarm",
+          "trigger": "on_enter_unauthorized",
+          "condition": "without_permission",
+          "effect": "alert_inhabitants",
+          "description": "The mounted moose head at the end of the hall bellows loudly when unauthorized visitors enter, alerting Lady Borrid and all inhabitants.",
+          "bypass_method": "Feed it acorns to silence it",
+          "triggered": false
+        }
+      ],
+      "concealed_items": [
+        {
+          "item_id": "0109:item:horn_of_blasting",
+          "name": "Horn of Blasting",
+          "hidden_in": "trophy collection",
+          "search_dc": "thorough",
+          "description": "An unassuming bronze horn hidden among the mounted trophy horns. Only a careful examination reveals its magical nature.",
+          "found": false
+        }
+      ],
+      "locks": [
+        {
+          "lock_id": "vault_door",
+          "type": "physical",
+          "requirement": "secret_door_discovery",
+          "description": "A concealed door in the cellar wall leads to a hidden vault. The door is disguised as part of the stone wall.",
+          "bypassed": false,
+          "hidden": true,
+          "detected": false
+        }
+      ],
+      "sub_locations": [
+        {
+          "name": "Trophy Room",
+          "description": "The main feasting hall lined with mounted heads, horns, and antlers from Lady Borrid's legendary hunts.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Wyrm of Odd skull", "Manticore head", "Antler wraith rack", "Various mounted horns"],
+          "items": []
+        },
+        {
+          "name": "Cellars",
+          "description": "Wine stores and provisions beneath the lodge. A concealed vault lies behind one wall.",
+          "access_condition": null,
+          "visible_from": "inside",
+          "features": ["Wine barrels", "Preserved meats", "Hidden vault entrance"],
+          "items": []
+        },
+        {
+          "name": "Secret Vault",
+          "description": "A hidden chamber containing the Borrid family treasures and documents.",
+          "access_condition": "secret_door",
+          "visible_from": "never",
+          "features": ["Chalices and jewels worth 8,000gp", "Family documents"],
+          "items": ["0109:item:fairy_shortbow", "0109:item:fairy_arrows_breggle_bane", "0109:item:vault_treasure"]
+        }
+      ],
+      "entry_conditions": {
+        "type": "permission_required",
+        "description": "Entering without permission triggers the moose head alarm. Polite visitors are welcomed by Lady Borrid if she is present.",
+        "check_type": "social",
+        "npc_id": "lady_amonie_borrid",
+        "outcomes": {
+          "success": "Lady Borrid welcomes the visitors and offers refreshments",
+          "failure": "Visitors are politely but firmly asked to leave",
+          "hostile": "Brynne the giant weasel is commanded to drive out the intruders"
+        }
+      },
+      "variable_inhabitants": {
+        "base_inhabitants": ["lady_amonie_borrid"],
+        "variable": [
+          {"roll": "1d6", "description": "hunting companions (Level 1 hunters)"}
+        ]
+      },
       "is_dungeon": false,
       "dungeon_levels": null
     },
@@ -333,6 +408,79 @@
         "chance": "2-in-6",
         "description": "Staying near the camp at night risks encountering a patrol of 1d4 soldiers checking the perimeter.",
         "result": "night_patrol_encounter"
+      },
+      "alerts": [
+        {
+          "alert_id": "sentry_alarm",
+          "trigger": "on_enter_unauthorized",
+          "condition": "sneaking_detected",
+          "effect": "summon_guards",
+          "description": "Sentries spot intruders and raise the alarm. 2d4 soldiers respond within minutes.",
+          "bypass_method": "Successful stealth check to avoid 2d4 sentries",
+          "triggered": false
+        }
+      ],
+      "concealed_items": [
+        {
+          "item_id": "0109:item:snidebleat_onyxes",
+          "name": "Sergeant Snidebleat's Onyxes",
+          "hidden_in": "buried under command tent",
+          "search_dc": "extensive",
+          "description": "A pouch of 20 polished onyx gems buried beneath Snidebleat's command tent. Her escape fund.",
+          "found": false
+        }
+      ],
+      "sub_locations": [
+        {
+          "name": "Command Tent",
+          "description": "Snidebleat's larger tent set apart from the others. Contains maps, orders, and her personal effects.",
+          "access_condition": "permission_or_sneaking",
+          "visible_from": "always",
+          "features": ["Campaign maps", "Lord Murkin's orders", "Snidebleat's personal effects"],
+          "items": []
+        },
+        {
+          "name": "Prisoner Holding Area",
+          "description": "A roped-off section where press-ganged recruits are held under guard before being 'processed' into the army.",
+          "access_condition": null,
+          "visible_from": "inside",
+          "features": ["1d4 prisoners", "Two guards on rotation"],
+          "items": []
+        },
+        {
+          "name": "Supply Area",
+          "description": "Barrels of pickled provisions and racks of hunted game. The constantly steaming stew pot sits here.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Pickled turnips and eggs", "Hanging squirrels and rabbits", "Dubious stew pot"],
+          "items": []
+        },
+        {
+          "name": "Training Ground",
+          "description": "A makeshift area with straw dummies and pike racks where soldiers drill.",
+          "access_condition": null,
+          "visible_from": "always",
+          "features": ["Straw dummies", "Pike racks", "Formation markers"],
+          "items": []
+        }
+      ],
+      "entry_conditions": {
+        "type": "interrogation",
+        "description": "Visitors are challenged by sentries and brought before Sergeant Snidebleat for questioning.",
+        "check_type": "social",
+        "npc_id": "sergeant_crewwin_snidebleat",
+        "outcomes": {
+          "success": "Visitors are brusquely told to move along after questioning",
+          "failure": "Visitors are escorted out of the camp with a warning",
+          "hostile": "Visitors are arrested and held for Lord Murkin's judgment"
+        }
+      },
+      "variable_inhabitants": {
+        "base_inhabitants": ["sergeant_crewwin_snidebleat"],
+        "variable": [
+          {"roll": "2d4", "description": "sentries on patrol around the dell"},
+          {"roll": "1d4", "description": "prisoners (press-gang recruits)"}
+        ]
       },
       "is_dungeon": false,
       "dungeon_levels": null
