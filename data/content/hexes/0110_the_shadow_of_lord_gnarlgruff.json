@@ -1,9 +1,6 @@
 {
   "hex_id": "0110",
-  "coordinates": [
-    1,
-    10
-  ],
+  "coordinates": [1, 10],
   "name": "The Shadow of Lord Gnarlgruff",
   "tagline": "Shadowy woods of holly and hawthorn. Life here is creeping and vigilant, as if avoiding some looming terror.",
   "region": "High Wold",
@@ -14,8 +11,66 @@
     "lost_chance": "2-in-6",
     "encounter_chance": "2-in-6",
     "encounter_notes": "Encounters are 2-in-6 likely to be with 1d3 devil goats (DMB)",
-    "foraging_results": null,
-    "foraging_special": []
+    "encounter_modifiers": [
+      {
+        "chance": "2-in-6",
+        "monster_id": "devil_goat",
+        "result": "devil_goat_pack",
+        "number_appearing": "1d3",
+        "context": "A pack of devil goats emerges from the shadowy undergrowth, their ember-red eyes gleaming with malice. They bleat in a mockery of normal goat sounds—guttural, threatening notes that seem to carry dark promises.",
+        "behavior": "hostile",
+        "demeanor": ["aggressive", "territorial", "bloodthirsty"],
+        "speech": "Mocking bleats that sometimes form distorted words in Caprice",
+        "topic_intelligence": {
+          "known_topics": [
+            {
+              "topic_id": "territory_warning",
+              "content": "The devil goats make clear through gestures and threatening bleats that the glade to the north is their domain. Intruders will be destroyed.",
+              "keywords": ["glade", "territory", "domain", "north", "warning"],
+              "required_disposition": -5,
+              "category": "situation",
+              "priority": 10
+            }
+          ],
+          "secret_info": []
+        }
+      }
+    ],
+    "foraging_results": "Successful foraging yields 1d4 portions of holly berries (mildly toxic if unprepared, -1 to saves for 1d4 hours) or 1d2 clusters of hawthorn berries (edible). Shadow mushrooms can be found on a 1-in-6 chance (valuable alchemical component, 5gp each).",
+    "foraging_special": [
+      "Holly berries (1d4 portions, mildly toxic if unprepared)",
+      "Hawthorn berries (1d2 clusters, edible)",
+      "Shadow mushrooms (1-in-6 chance, 5gp each, alchemical component)"
+    ],
+    "lost_behavior": {
+      "type": "disorienting",
+      "description": "The shadowy woods seem to shift and twist. Paths that seemed clear moments ago vanish into tangles of holly and hawthorn. A faint charnel stench lingers on the wind, always seeming to come from a different direction.",
+      "escape_requires": "successful_lost_check"
+    },
+    "night_hazards": [
+      {
+        "trigger": "sleep",
+        "chance": "3-in-6",
+        "save_type": null,
+        "description": "Devil goats prowl the hex at night, drawn by the scent of living flesh. There is a 3-in-6 chance a pack of 1d3 devil goats discovers a sleeping camp.",
+        "on_fail": {
+          "encounter": "devil_goats",
+          "surprise": "2-in-6",
+          "description": "The devil goats attack with bloodcurdling bleats, attempting to drag victims into the darkness."
+        }
+      },
+      {
+        "trigger": "full_moon",
+        "chance": "automatic",
+        "save_type": "spell",
+        "description": "On nights of the full moon, characters sleeping in this hex hear a moaning voice on the wind, speaking fragments of Caprice. They must Save Versus Spell or be drawn toward the monolith in Devil Goats' Glade in a dreamlike trance.",
+        "on_fail": {
+          "condition": "drawn_to_monolith",
+          "destination": "Devil Goats' Glade",
+          "description": "The character awakens standing before the monolith, the violet aura flickering around them."
+        }
+      }
+    ]
   },
   "description": "Shadowy woods of holly and hawthorn. Life here is creeping and vigilant, as if avoiding some looming terror.",
   "points_of_interest": [
@@ -23,19 +78,186 @@
       "name": "Devil Goats' Glade",
       "poi_type": "glade",
       "description": "An awful charnel stench permeates a large section of the wood. Following it to its source leads to a shadowy glade ringed with sighing, black-leafed poplars. At the centre of the glade stands a blackened, roughly shaped monolith, draped with rotting entrails, amid a mound of bones.",
-      "tagline": null,
-      "entering": "The devil goats suffer none but longhorn breggles to enter the glade.",
-      "interior": "2d4 devil goats (DMB) mill about the glade, devouring corpses among the pile of bones, rearing up to drape fresh entrails over the monolith, and licking the gore that streaks the stone's surface.",
-      "exploring": "Examining the bones: Scattered among the remains of shorthorns, humans, and forest animals can be found 15gp, 155sp, a silver dagger, a silver necklace with a single grey ioun (250gp, p394), a gold ring with a red garnet engraved with the letter E (400gp), and a hip flask containing a dose of Philtre of Wondrous Vitality (p414). Examining the monolith: Its crumbling surface is carved with ancient Caprice script, now only partially legible. The following intact fragments can be deciphered by any who can read Caprice: \"I bind my spirit to this stone\" … \"wander restless through benighted realms\" … \"to manifest when the full moon rises.\"",
-      "leaving": null,
+      "tagline": "A charnel glade where devil goats worship at an ancient monolith",
+      "entering": "The devil goats suffer none but longhorn breggles to enter the glade. Non-breggles who approach are attacked immediately by the resident devil goats. Longhorns are regarded with wariness but permitted to approach the monolith.",
+      "interior": "2d4 devil goats (DMB) mill about the glade, devouring corpses among the pile of bones, rearing up to drape fresh entrails over the monolith, and licking the gore that streaks the stone's surface. The air is thick with the stench of decay and a palpable sense of dread.",
+      "exploring": "Examining the bones: Scattered among the remains of shorthorns, humans, and forest animals can be found treasures (roll on Bone Pile Discoveries table). Examining the monolith: Its crumbling surface is carved with ancient Caprice script, now only partially legible. The following intact fragments can be deciphered by any who can read Caprice: \"I bind my spirit to this stone\" … \"wander restless through benighted realms\" … \"to manifest when the full moon rises.\"",
+      "leaving": "Leaving the glade unmolested requires moving slowly and avoiding sudden movements. The devil goats watch departing visitors with ember-red eyes but do not pursue those who retreat peacefully.",
       "inhabitants": "2d4 devil goats (DMB) mill about the glade",
-      "roll_tables": [],
-      "npcs": [],
+      "entry_conditions": {
+        "type": "kindred_restricted",
+        "description": "Only longhorn breggles may enter the glade without provoking attack. All others are attacked by the devil goats.",
+        "check_type": "kindred",
+        "allowed_kindred": ["longhorn breggle"],
+        "outcomes": {
+          "success": "The devil goats watch warily but allow passage to the monolith",
+          "failure": "The devil goats attack immediately with bloodcurdling bleats",
+          "stealth": "Sneaking in requires avoiding 2d4 devil goats (Stealth vs their Perception)"
+        }
+      },
+      "hazards": [
+        {
+          "hazard_id": "devil_goat_attack",
+          "trigger": "on_enter",
+          "condition": "not_longhorn_breggle",
+          "effect": "combat",
+          "description": "Devil goats attack any non-longhorn who enters the glade",
+          "encounter": "devil_goats"
+        },
+        {
+          "hazard_id": "charnel_stench",
+          "trigger": "on_enter",
+          "condition": "always",
+          "effect": "save",
+          "save_type": "death",
+          "description": "The overwhelming stench of decay causes nausea. Save Versus Death or suffer -1 to attacks and saves while in the glade.",
+          "on_fail": {
+            "condition": "nauseated",
+            "penalty": "-1 to attacks and saves",
+            "duration": "while_in_glade"
+          }
+        }
+      ],
+      "discovery_hints": {
+        "smell": "An awful charnel stench can be detected from up to a mile away when downwind. The smell intensifies as one approaches.",
+        "sound": "Occasional bleating can be heard from the glade—unnatural, guttural sounds that seem to mock the listener.",
+        "visual": "Black-leafed poplars are visible from a distance, their leaves sighing in a wind that affects no other trees."
+      },
+      "availability": {
+        "type": "always",
+        "description": "The glade is always present, but the monolith manifests special properties during the full moon.",
+        "full_moon_effect": "On nights of the full moon, the monolith is wreathed with a flickering, violet aura and Lord Gnarlgruff's spirit may be contacted."
+      },
+      "evening_hazard": {
+        "trigger": "evening_stay",
+        "chance": "4-in-6",
+        "description": "Staying at the glade past dusk is extremely dangerous. There is a 4-in-6 chance additional devil goats arrive to join the night's feeding.",
+        "result": "devil_goat_reinforcements",
+        "reinforcement_count": "1d4"
+      },
+      "roll_tables": [
+        {
+          "name": "Bone Pile Discoveries",
+          "die_type": "d6",
+          "description": "Roll when characters search the bone pile. Each entry can only be found once.",
+          "unique_entries": true,
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Scattered Coins",
+              "description": "Among the gnawed bones, 15gp and 155sp can be recovered with patient searching.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["coins_15gp_155sp"],
+              "mechanical_effect": {"type": "treasure", "gp": 15, "sp": 155}
+            },
+            {
+              "roll": 2,
+              "title": "Silver Dagger",
+              "description": "A fine silver dagger, partially buried beneath a ribcage. Still sharp and serviceable despite its grim resting place.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["silver_dagger"],
+              "mechanical_effect": {"type": "item_available", "item_id": "0110:item:silver_dagger"}
+            },
+            {
+              "roll": 3,
+              "title": "Silver Necklace with Ioun",
+              "description": "A silver necklace with a single grey ioun stone (250gp). The stone's magic persists despite the corruption of this place.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["silver_necklace_ioun"],
+              "mechanical_effect": {"type": "item_available", "item_id": "0110:item:silver_necklace_ioun", "value": 250}
+            },
+            {
+              "roll": 4,
+              "title": "Garnet Ring",
+              "description": "A gold ring with a red garnet, engraved with the letter 'E' (400gp). Perhaps the sigil of a noble house now forgotten.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["garnet_ring"],
+              "mechanical_effect": {"type": "item_available", "item_id": "0110:item:garnet_ring", "value": 400}
+            },
+            {
+              "roll": 5,
+              "title": "Philtre of Wondrous Vitality",
+              "description": "A hip flask containing a dose of Philtre of Wondrous Vitality (p414). The flask is tarnished but intact.",
+              "monsters": [],
+              "npcs": [],
+              "items": ["philtre_wondrous_vitality"],
+              "mechanical_effect": {"type": "item_available", "item_id": "0110:item:philtre_wondrous_vitality"}
+            },
+            {
+              "roll": 6,
+              "title": "Devil Goat Attack!",
+              "description": "While searching, a devil goat notices and attacks! The character must fight alone until companions can reach them.",
+              "monsters": ["devil_goat"],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": {"type": "combat", "encounter": "single_devil_goat", "surprise": "automatic"}
+            }
+          ]
+        },
+        {
+          "name": "Monolith Events",
+          "die_type": "d4",
+          "description": "Roll when a character examines or touches the monolith",
+          "entries": [
+            {
+              "roll": 1,
+              "title": "Caprice Whispers",
+              "description": "The character hears faint whispers in ancient Caprice. If they understand Caprice, they catch fragments: \"...the blood of my blood...\" \"...Malbleat knows...\" \"...the Book holds the key...\"",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": {"type": "lore_hint", "topic": "gnarlgruff_resurrection"}
+            },
+            {
+              "roll": 2,
+              "title": "Vision of the Past",
+              "description": "For a moment, the character sees the glade as it once was—a necromancer's laboratory, with Lord Gnarlgruff himself standing before the monolith, performing dark rituals.",
+              "monsters": [],
+              "npcs": ["lord_gnarlgruff_spirit"],
+              "items": [],
+              "mechanical_effect": {"type": "vision", "scene": "gnarlgruff_laboratory"}
+            },
+            {
+              "roll": 3,
+              "title": "Cold Touch",
+              "description": "A chill runs through the character's body. For the next hour, they can see faint spectral traces—the ghosts of victims sacrificed here long ago.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": {"type": "temporary_ability", "ability": "see_spirits", "duration": "1 hour"}
+            },
+            {
+              "roll": 4,
+              "title": "Nothing... Yet",
+              "description": "The monolith is cold and silent. But that night, the character dreams of a gaunt longhorn in ancient robes, pointing eastward and mouthing words they cannot hear.",
+              "monsters": [],
+              "npcs": [],
+              "items": [],
+              "mechanical_effect": {"type": "dream", "content": "eastward_direction_hint"}
+            }
+          ]
+        }
+      ],
+      "npcs": ["devil_goats", "lord_gnarlgruff_spirit"],
       "special_features": [
         {
           "name": "Nights of the Full Moon",
           "description": "On nights of the full moon, the monolith is wreathed with a flickering, violet aura and a faint, moaning voice can be heard on the wind. The voice rants in disjointed Caprice of an ancient mode. Any who understand Caprice can pick out the following snippets: \"in time I shall return\" … \"the workings of Malbleat, scion of House Gnarlgruff\" … \"the Book of Foul Wonders.\"",
-          "mechanical_effect": "Voice can be heard on full moon nights"
+          "mechanical_effect": "Voice can be heard on full moon nights. Lord Gnarlgruff's spirit can be contacted."
+        },
+        {
+          "name": "The Blackened Monolith",
+          "description": "A roughly shaped stone pillar, blackened by age and dark rituals. Caprice script covers its surface, most now illegible. The stone radiates an aura of necromantic power.",
+          "mechanical_effect": "Detect Magic reveals strong necromancy. Touching it may trigger Monolith Events."
+        },
+        {
+          "name": "The Bone Mound",
+          "description": "A 10-foot-wide mound of gnawed bones—shorthorns, humans, forest animals, and stranger things. The devil goats add to it constantly.",
+          "mechanical_effect": "Searchable for treasures (Bone Pile Discoveries table)"
         }
       ],
       "secrets": [
@@ -47,42 +269,266 @@
     }
   ],
   "roll_tables": [],
-  "npcs": [],
-  "items": [
+  "npcs": [
     {
-      "name": "Silver dagger",
-      "description": "Found among the bones in Devil Goats' Glade",
-      "value": null,
-      "location": "Devil Goats' Glade"
+      "npc_id": "devil_goats",
+      "name": "Devil Goats",
+      "title": null,
+      "description": "Goat-like demons with ember-red eyes, twisted horns, and a hunger for flesh. They dwell in the glade, worshipping at the monolith and feeding on any who trespass. Their bleats carry mocking, malicious undertones.",
+      "kindred": "Demon",
+      "alignment": "Chaotic",
+      "demeanor": ["bloodthirsty", "territorial", "mockingly cruel"],
+      "speech": "Bleating that sometimes forms distorted words in Caprice",
+      "languages": ["Caprice (limited)"],
+      "desires": ["Feed on flesh", "Protect the monolith", "Spread terror"],
+      "secrets": [],
+      "possessions": [],
+      "location": "Devil Goats' Glade",
+      "stat_reference": "Devil Goat (DMB)",
+      "is_combatant": true,
+      "group_count": "2d4",
+      "group_composition": null,
+      "vulnerabilities": ["holy_symbols", "blessed_weapons", "holy_water"],
+      "time_presence": null,
+      "known_topics": [],
+      "secret_info": [],
+      "relationships": [
+        {
+          "npc_id": "lord_gnarlgruff_spirit",
+          "relationship_type": "worshipper",
+          "description": "The devil goats seem drawn to the monolith and the spirit's lingering presence, as if bound by ancient pact.",
+          "hex_id": "0110",
+          "notes": "The relationship predates living memory"
+        }
+      ]
     },
     {
-      "name": "Silver necklace with grey ioun",
-      "description": "A silver necklace with a single grey ioun",
-      "value": "250gp",
-      "location": "Devil Goats' Glade"
-    },
-    {
-      "name": "Gold ring with red garnet",
-      "description": "A gold ring with a red garnet engraved with the letter E",
-      "value": "400gp",
-      "location": "Devil Goats' Glade"
-    },
-    {
-      "name": "Hip flask with Philtre of Wondrous Vitality",
-      "description": "A hip flask containing a dose of Philtre of Wondrous Vitality",
-      "value": null,
-      "location": "Devil Goats' Glade"
+      "npc_id": "lord_gnarlgruff_spirit",
+      "name": "Lord Gnarlgruff",
+      "title": "The Lingering Spirit",
+      "description": "A fragment of the spirit of Lord Gnarlgruff, an ancient longhorn necromancer whose laboratory once stood where the monolith now rises. He appears as a gaunt, spectral longhorn in rotting ceremonial robes, his eyes burning with frustrated ambition.",
+      "kindred": "Spirit",
+      "alignment": "Chaotic",
+      "demeanor": ["imperious", "desperate", "scheming"],
+      "speech": "Ancient Caprice, halting and fragmented, as if speaking through a great distance",
+      "languages": ["Caprice", "Woldish (archaic)"],
+      "desires": [
+        "To be resurrected by his descendant Lord Malbleat",
+        "To recover the Book of Foul Wonders",
+        "To return to the world of the living"
+      ],
+      "secrets": [],
+      "possessions": [],
+      "location": "Devil Goats' Glade (monolith, full moon only)",
+      "stat_reference": null,
+      "is_combatant": false,
+      "vulnerabilities": ["cold_iron", "dispel_magic", "exorcism"],
+      "time_presence": {
+        "type": "moon_phase",
+        "phase": "full",
+        "description": "Lord Gnarlgruff's spirit can only manifest on nights of the full moon"
+      },
+      "faction": null,
+      "loyalty": null,
+      "known_topics": [
+        {
+          "topic_id": "identity",
+          "content": "I am Lord Gnarlgruff, master of the dark arts, scion of the Gnarlgruff line from which both Malbleat and Ramius descend. This was my place of power... before my enemies struck me down.",
+          "keywords": ["who", "name", "gnarlgruff", "identity", "yourself"],
+          "required_disposition": -5,
+          "category": "personal",
+          "priority": 10
+        },
+        {
+          "topic_id": "malbleat_connection",
+          "content": "Malbleat... my blood runs in his veins. He dabbles in the occult, but he lacks the vision I possessed. Still, he may be the key to my return. Seek him at Redwraith Manor in the Shadholme.",
+          "keywords": ["malbleat", "descendant", "family", "heir", "blood"],
+          "required_disposition": -3,
+          "category": "faction",
+          "priority": 9
+        },
+        {
+          "topic_id": "ramius_connection",
+          "content": "Ramius too bears my bloodline, though he has turned from the old ways. Cold and calculating, that one. He would not aid my resurrection—he fears what I might reclaim.",
+          "keywords": ["ramius", "descendant", "family", "heir"],
+          "required_disposition": -2,
+          "category": "faction",
+          "priority": 8
+        },
+        {
+          "topic_id": "resurrection_desire",
+          "content": "I bound my spirit to this stone so that I might one day return. My remains lie beneath the Shadholme—the manor of Malbleat. With the proper rituals, I could live again!",
+          "keywords": ["resurrection", "return", "live", "body", "remains", "ritual"],
+          "required_disposition": -1,
+          "category": "personal",
+          "priority": 7
+        },
+        {
+          "topic_id": "book_of_foul_wonders",
+          "content": "The Book of Foul Wonders! 'Ghrehraird frengl Llaindr' in the old tongue. It contains the secrets of longhorn necromancy, including the means of true resurrection. A rival stole it from me... carried it eastward, beyond the wood.",
+          "keywords": ["book", "foul", "wonders", "tome", "necromancy", "ghrehraird"],
+          "required_disposition": 0,
+          "category": "lore",
+          "priority": 6
+        },
+        {
+          "topic_id": "devil_goats",
+          "content": "The devil goats... they were my servants once, bound by pact to guard this place. Now they are merely beasts, but they still sense my presence and pay homage in their crude way.",
+          "keywords": ["devil", "goats", "goat", "creatures", "guards", "servants"],
+          "required_disposition": -4,
+          "category": "situation",
+          "priority": 5
+        },
+        {
+          "topic_id": "monolith_purpose",
+          "content": "This stone is my anchor to the mortal world. I carved the binding sigils myself, in the old Caprice script. As long as it stands, a fragment of my spirit persists.",
+          "keywords": ["monolith", "stone", "anchor", "binding", "carving", "sigils"],
+          "required_disposition": -3,
+          "category": "lore",
+          "priority": 4
+        },
+        {
+          "topic_id": "laboratory_destruction",
+          "content": "My laboratory stood here once—a place of great power and terrible knowledge. My enemies razed it after my death, but they could not destroy the monolith. The old magic is too strong.",
+          "keywords": ["laboratory", "tower", "building", "destroyed", "razed", "enemies"],
+          "required_disposition": -2,
+          "category": "location",
+          "priority": 3
+        }
+      ],
+      "secret_info": [
+        {
+          "secret_id": "remains_location",
+          "content": "My bones lie in a hidden crypt beneath the Shadholme—Lord Malbleat's manor in hex 0709. He knows not what rests below his own floors. If you would do me a service, tell him... or bring my remains here, and I shall reward you beyond measure.",
+          "hint": "The spirit's gaze drifts southward when he speaks of returning to life, as if seeing something far beyond the glade.",
+          "keywords": ["bones", "remains", "body", "crypt", "shadholme", "buried", "where"],
+          "required_disposition": 1,
+          "required_trust": 1,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "book_thief_identity",
+          "content": "The one who stole my book was Yrzanthruul, a sorcerer of the eastern reaches. He fled beyond the Dolmenwood, to a tower in the wastes. Whether he still lives, I cannot say—but the Book would have preserved him if he mastered its secrets.",
+          "hint": "When the Book is mentioned, the spirit's form flickers with rage, and he points a spectral claw toward the rising sun.",
+          "keywords": ["thief", "stole", "who", "took", "yrzanthruul", "sorcerer", "eastern"],
+          "required_disposition": 2,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        },
+        {
+          "secret_id": "resurrection_ritual",
+          "content": "The ritual to restore me requires three things: my bones, the Book of Foul Wonders, and the blood of my bloodline—willingly given. Malbleat could do it, if he knew how. Or Ramius, though he never would.",
+          "hint": "The spirit seems reluctant to share the full details, as if afraid the information might be used against him.",
+          "keywords": ["ritual", "how", "restore", "resurrect", "requirements", "blood"],
+          "required_disposition": 3,
+          "required_trust": 2,
+          "can_be_bribed": false,
+          "bribe_amount": 0
+        }
+      ],
+      "relationships": [
+        {
+          "npc_id": "lord_malbleat",
+          "relationship_type": "descendant",
+          "description": "Lord Gryphius Malbleat is Gnarlgruff's distant descendant and potential resurrector. Gnarlgruff watches him with desperate hope.",
+          "hex_id": "0709",
+          "notes": "See Campaign Book p64 for Lord Malbleat"
+        },
+        {
+          "npc_id": "lord_ramius",
+          "relationship_type": "descendant",
+          "description": "Lord Shadgore Ramius also descends from Gnarlgruff but has rejected the necromantic heritage. Gnarlgruff views him with contempt.",
+          "hex_id": "0410",
+          "notes": "See Campaign Book p65 for Lord Ramius"
+        },
+        {
+          "npc_id": "devil_goats",
+          "relationship_type": "former_master",
+          "description": "The devil goats were once bound servants of Gnarlgruff. The pact has degraded over centuries, but they still sense and honor his presence.",
+          "hex_id": "0110",
+          "notes": "The bond is instinctual rather than commanded"
+        }
+      ],
+      "binding": {
+        "bound_to": "The Blackened Monolith",
+        "release_condition": "Destruction of the monolith or successful resurrection",
+        "captor": "Self-imposed",
+        "can_leave": false,
+        "description": "Lord Gnarlgruff bound his own spirit to the monolith to persist beyond death. He can only manifest on full moon nights and cannot leave the glade."
+      }
     }
   ],
-  "secrets": [],
-  "dm_notes": "",
-  "adjacent_hexes": [],
+  "items": [
+    {
+      "item_id": "0110:item:silver_dagger",
+      "name": "Silver Dagger",
+      "description": "A fine silver dagger found among the bones in Devil Goats' Glade. Despite its grim resting place, it remains sharp and serviceable.",
+      "value": "30gp",
+      "location": "Devil Goats' Glade (bone pile)",
+      "magical": false,
+      "weight": 10
+    },
+    {
+      "item_id": "0110:item:silver_necklace_ioun",
+      "name": "Silver Necklace with Grey Ioun",
+      "description": "A silver necklace with a single grey ioun stone. The stone's magic persists despite the corruption of Devil Goats' Glade.",
+      "value": "250gp",
+      "location": "Devil Goats' Glade (bone pile)",
+      "magical": true,
+      "reference": "p394",
+      "weight": 5
+    },
+    {
+      "item_id": "0110:item:garnet_ring",
+      "name": "Gold Ring with Red Garnet",
+      "description": "A gold ring with a red garnet, engraved with the letter 'E'. Perhaps the sigil of a noble house now forgotten—or a victim whose family might pay for its return.",
+      "value": "400gp",
+      "location": "Devil Goats' Glade (bone pile)",
+      "magical": false,
+      "weight": 1
+    },
+    {
+      "item_id": "0110:item:philtre_wondrous_vitality",
+      "name": "Hip Flask with Philtre of Wondrous Vitality",
+      "description": "A tarnished hip flask containing a dose of Philtre of Wondrous Vitality. The potion remains potent despite its age.",
+      "value": null,
+      "location": "Devil Goats' Glade (bone pile)",
+      "magical": true,
+      "reference": "p414",
+      "weight": 5
+    }
+  ],
+  "secrets": [
+    {
+      "secret_id": "gnarlgruff_laboratory",
+      "content": "The glade was once the site of Lord Gnarlgruff's necromantic laboratory. The monolith is all that remains after his enemies razed the structure following his death.",
+      "keywords": ["laboratory", "monolith", "gnarlgruff", "necromancer"]
+    },
+    {
+      "secret_id": "gnarlgruff_remains",
+      "content": "Lord Gnarlgruff's remains lie in a hidden crypt beneath the Shadholme (0709), the manor now occupied by his descendant Lord Malbleat.",
+      "keywords": ["remains", "bones", "shadholme", "crypt", "malbleat"]
+    },
+    {
+      "secret_id": "book_of_foul_wonders",
+      "content": "The Book of Foul Wonders ('Ghrehraird frengl Llaindr' in Caprice), containing the secrets of longhorn necromancy, was stolen by a rival sorcerer and taken east beyond Dolmenwood.",
+      "keywords": ["book", "foul", "wonders", "necromancy", "stolen", "east"]
+    },
+    {
+      "secret_id": "devil_goat_pact",
+      "content": "The devil goats are bound to the glade by an ancient pact with Lord Gnarlgruff. They were once his servants and still instinctively worship at the monolith.",
+      "keywords": ["devil", "goat", "pact", "bound", "servants"]
+    }
+  ],
+  "dm_notes": "This hex connects to the larger House Malbleat/Ramius storyline. Lord Gnarlgruff is an ancestor of both noble houses, and his spirit's desire for resurrection could be a major plot hook. The Book of Foul Wonders provides a quest leading beyond Dolmenwood. The devil goats are hostile to all but longhorn breggles, making this hex particularly dangerous. Full moon visits are required to contact Gnarlgruff's spirit. Consider using this location to introduce players to the longhorn nobility and the occult underpinnings of the High Wold.",
+  "adjacent_hexes": ["0109", "0209", "0210", "0211", "0111"],
   "roads": [],
   "_metadata": {
     "source_file": "../data/pdfs/core/Dolmenwood_Campaign_Book.pdf",
-    "pages": [
-      201
-    ],
-    "extraction_note": "Review and correct this data before importing"
+    "pages": [201],
+    "extraction_note": "Enriched with NPCs, roll tables, entry conditions, and faction connections",
+    "enrichment_date": "2024-01-04"
   }
 }
