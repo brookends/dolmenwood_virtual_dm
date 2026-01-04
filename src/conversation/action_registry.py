@@ -2703,6 +2703,64 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_enter_poi_stealth,
     ))
 
+    def _wilderness_sneak_into_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt to sneak into a POI using skill-based stealth check."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        poi_name = p.get("poi_name", "")
+        character_id = p.get("character_id", "")
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        if not poi_name:
+            return {"success": False, "message": "Must specify which POI to sneak into."}
+        if not character_id:
+            return {"success": False, "message": "Must specify which character is sneaking."}
+
+        try:
+            result = dm.hex_crawl.sneak_into_poi(
+                hex_id=hex_id,
+                poi_name=poi_name,
+                character_id=character_id,
+                stealth_modifier=stealth_modifier,
+            )
+            if result.get("success"):
+                msg = result.get("message", "You slip in undetected.")
+                if result.get("interior"):
+                    msg += f"\n\n{result['interior']}"
+                return {
+                    "success": True,
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "sentry_count": result.get("sentry_count"),
+                }
+            else:
+                msg = result.get("message", "You are spotted!")
+                return {
+                    "success": False,
+                    "message": msg,
+                    "stealth_roll": result.get("stealth_roll"),
+                    "stealth_target": result.get("stealth_target"),
+                    "sentry_count": result.get("sentry_count"),
+                    "hazard_result": result.get("hazard_result"),
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealth infiltration: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:sneak_into_poi",
+        label="Sneak into location",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "poi_name": {"type": "string", "required": True},
+            "character_id": {"type": "string", "required": True},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to sneak into a POI using a stealth skill check. On success, enter without triggering investigation hazards. On failure, the camp alarm is raised.",
+        executor=_wilderness_sneak_into_poi,
+    ))
+
     def _wilderness_wait_until_dawn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Wait until dawn, advancing time and processing condition expirations.

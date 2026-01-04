@@ -633,6 +633,29 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                     score=50,
                 )
             )
+            # Also suggest skill-based stealth infiltration (for guarded locations)
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:sneak_into_poi",
+                        label=f"Infiltrate {poi_name} (skill check)",
+                        params_schema={
+                            "type": "object",
+                            "properties": {
+                                "hex_id": {"type": "string"},
+                                "poi_name": {"type": "string"},
+                                "character_id": {"type": "string"},
+                                "stealth_modifier": {"type": "integer"},
+                            },
+                            "required": ["poi_name", "character_id"],
+                        },
+                        params={"hex_id": hex_id, "poi_name": poi_name, "character_id": cid, "stealth_modifier": 0},
+                        safe_to_execute=False,
+                        help="Use stealth skills to sneak past sentries. Success: enter undetected. Failure: triggers camp alarm.",
+                    ),
+                    score=48,
+                )
+            )
 
         # Check for silenceable alarms at this POI
         try:

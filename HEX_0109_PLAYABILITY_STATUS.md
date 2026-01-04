@@ -199,7 +199,17 @@ result = engine.roll_on_poi_table("0109", "Camp Activities", "Murkin's Army")
 - Integration flow (1 test)
 - Item persistence (2 tests)
 
-**Total: 113 tests passing**
+### tests/hex_crawl/test_stealth_camp_entry.py (24 tests)
+- Method exists (2 tests)
+- Stealth success (4 tests)
+- Stealth failure (4 tests)
+- Sentry count difficulty (4 tests)
+- Stealth modifier (2 tests)
+- Error handling (3 tests)
+- Action registry (2 tests)
+- Murkin's Army integration (3 tests)
+
+**Total: 137 tests passing**
 
 ---
 
@@ -272,9 +282,12 @@ print(f"Rest result: {rest_result['message']}")
 - **Workaround:** DM handles as roleplay/combat scenario
 
 ### Stealth/Sneaking Into Camp
-**Status:** Described in `entering`, no stealth system
-- Requires avoiding "2d4 sentries"
-- **Workaround:** DM handles stealth checks manually
+**Status:** Implemented
+- `sneak_into_poi` engine method uses skill_resolver for d6 stealth check
+- Sentry count (2d4) affects difficulty: 0-2 sentries = DC 4, 3-4 = DC 5, 5+ = DC 6
+- Success: enter POI undetected, no hazards triggered
+- Failure: triggers investigation hazard (camp_alarm)
+- Player action: `wilderness:sneak_into_poi`
 
 ### Animal Companion Tracking (Brynne)
 **Status:** Described in `leaving`, no automation

@@ -111,11 +111,16 @@ class TestConcealedItemsParsing:
         assert len(camp_poi.concealed_items) >= 1
 
     def test_camp_concealed_item_structure(self, camp_poi):
-        """Camp concealed item should have proper structure."""
+        """Camp concealed item should have proper structure (Buried Coffer containing onyxes)."""
         item = camp_poi.concealed_items[0]
-        assert item.get("item_id") == "0109:item:snidebleat_onyxes"
-        assert "buried" in item.get("hidden_in", "").lower()
-        assert item.get("search_dc") == "extensive"
+        assert item.get("item_id") == "0109:concealed:buried_coffer"
+        assert item.get("name") == "Buried Coffer"
+        assert "buried" in item.get("hidden_in", "").lower() or "tent" in item.get("hidden_in", "").lower()
+        # The coffer contains the onyxes
+        contained_items = item.get("items", [])
+        assert len(contained_items) >= 1
+        onyx_item = contained_items[0]
+        assert "onyx" in onyx_item.get("name", "").lower()
 
 
 # =============================================================================

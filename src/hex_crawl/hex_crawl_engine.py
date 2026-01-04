@@ -4058,6 +4058,175 @@ class HexCrawlEngine:
                 "message": "You are spotted! The alarm is raised.",
             }
 
+    def sneak_into_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to sneak into a POI, avoiding investigation hazards and sentries.
+
+        Uses the skill resolver for a proper d6 stealth check. On success,
+        enters the POI without triggering investigation hazards. On failure,
+        triggers the camp alarm.
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI to sneak into
+            character_id: The character making the stealth check
+            stealth_modifier: Modifier to the stealth roll
+
+        Returns:
+            Dictionary with stealth infiltration results
+        """
+        from src.resolution.skill_resolver import get_skill_resolver, SkillCheckResult
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the target POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == poi_name:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": f"Location '{poi_name}' not found"}
+
+        # Check if POI is visible (in case it requires discovery)
+        if not poi.is_visible(self._discovered_secrets):
+            return {"success": False, "error": "You cannot find that location"}
+
+        # Get character for skill check
+        character = None
+        if hasattr(self.controller, "get_character"):
+            character = self.controller.get_character(character_id)
+
+        if not character:
+            # Create minimal character for roll if not found
+            from src.data_models import CharacterState
+            character = CharacterState(
+                character_id=character_id,
+                name=character_id,
+                character_class="Fighter",
+                level=1,
+                ability_scores={"STR": 10, "INT": 10, "WIS": 10, "DEX": 10, "CON": 10, "CHA": 10},
+                hp_current=8,
+                hp_max=8,
+                armor_class=10,
+                base_speed=40,
+            )
+
+        # Determine stealth difficulty based on sentries
+        sentry_count = 0
+        base_target = 5  # Default: need 5+ on d6 (2-in-6 chance)
+
+        # Check variable inhabitants for sentry count
+        if poi.variable_inhabitants:
+            for var in poi.variable_inhabitants.get("variable", []):
+                desc = var.get("description", "").lower()
+                if "sentry" in desc or "patrol" in desc or "guard" in desc:
+                    roll_str = var.get("roll", "1d4")
+                    sentry_roll = self.dice.roll(roll_str)
+                    sentry_count = sentry_roll.total
+                    break
+
+        # Adjust target based on sentry count (more sentries = harder)
+        if sentry_count > 4:
+            base_target = 6  # 1-in-6 chance
+        elif sentry_count > 2:
+            base_target = 5  # 2-in-6 chance
+        else:
+            base_target = 4  # 3-in-6 chance
+
+        # Use skill resolver for stealth check
+        resolver = get_skill_resolver()
+
+        # Override target for this check based on our calculations
+        skill_result = resolver.resolve_skill_check(
+            character=character,
+            skill_name="stealth",
+            modifier=stealth_modifier,
+            context={"stealth_target_override": base_target},
+        )
+
+        # Check if roll succeeds against our target (not class target)
+        roll_value = skill_result.roll + stealth_modifier
+        stealth_success = roll_value >= base_target
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi_name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi_name)
+        visit = self._poi_visits[visit_key]
+
+        if stealth_success:
+            # Successful stealth - enter without triggering hazards
+            self._current_poi = poi_name
+            visit.entry_authorized = False  # Not authorized, but undetected
+            visit.alarms_silenced = True  # Treat as silenced
+
+            return {
+                "success": True,
+                "stealth_success": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "sentry_count": sentry_count,
+                "character": character_id,
+                "poi_name": poi_name,
+                "poi_type": poi.poi_type,
+                "description": poi.description,
+                "interior": poi.interior,
+                "message": (
+                    f"You successfully sneak past the {sentry_count} sentries "
+                    f"and enter {poi_name} undetected."
+                    if sentry_count > 0
+                    else f"You slip into {poi_name} without being noticed."
+                ),
+            }
+        else:
+            # Stealth failed - trigger investigation hazard (camp alarm)
+            hazard_result = self.check_investigation_hazard(hex_id, "investigate_camp")
+
+            # Also trigger any unauthorized entry alerts on the POI
+            alerts_triggered = []
+            for i, alert in enumerate(poi.alerts):
+                if alert.get("trigger") == "on_enter_unauthorized":
+                    poi.trigger_alert(i)
+                    alert_id = alert.get("alert_id", f"alert_{i}")
+                    if alert_id not in visit.alerts_triggered:
+                        visit.alerts_triggered.append(alert_id)
+                    alerts_triggered.append(alert)
+
+            return {
+                "success": False,
+                "stealth_failed": True,
+                "stealth_roll": skill_result.roll,
+                "stealth_target": base_target,
+                "stealth_modifier": stealth_modifier,
+                "effective_roll": roll_value,
+                "sentry_count": sentry_count,
+                "character": character_id,
+                "poi_name": poi_name,
+                "hazard_triggered": hazard_result.get("triggered", True),
+                "hazard_result": hazard_result.get("result", "camp_alarm"),
+                "hazard_description": hazard_result.get(
+                    "description",
+                    "Sentries spot you and raise the alarm!"
+                ),
+                "alerts_triggered": alerts_triggered,
+                "message": (
+                    f"You are spotted by sentries! "
+                    f"{hazard_result.get('description', 'The alarm is raised!')}"
+                ),
+            }
+
     def search_poi_location(
         self,
         hex_id: str,
