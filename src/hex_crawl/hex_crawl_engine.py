@@ -9281,3 +9281,146 @@ class HexCrawlEngine:
         # Default: 1-in-6
         roll = self.dice.roll("d6", "chance_check").total
         return roll == 1
+
+    def _resolve_hex_hazard_result(
+        self,
+        hazard_result: dict[str, Any],
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Resolve a hazard result into a consistent narrative + encounter structure.
+
+        This is the central handler for hazard outcomes from check_investigation_hazard(),
+        check_evening_hazard(), and similar methods. It bridges hazard triggers to either:
+        - An encounter (if result references an NPC/monster)
+        - A narrative event (if result is descriptive only)
+
+        Args:
+            hazard_result: Result from check_investigation_hazard/check_evening_hazard
+                - triggered: bool
+                - description: str
+                - result: str (NPC/event ID)
+                - chance: str
+            context: Additional context for resolution
+                - hex_id: str (required)
+                - poi_name: str (optional, for POI-specific hazards)
+                - trigger_type: str (e.g., "investigation", "evening_stay")
+
+        Returns:
+            Structured dict with:
+            - resolved: bool - whether resolution completed
+            - hazard_triggered: bool - whether the original hazard fired
+            - encounter: Optional[dict] - encounter details if NPC encounter
+            - narrative: str - description of what happened
+            - rolls_made: list[dict] - any dice rolls made during resolution
+            - suggested_actions: list[str] - what the party might do next
+            - npc_group: Optional[dict] - group size info if NPC group encountered
+        """
+        hex_id = context.get("hex_id") or self.get_current_hex_id() or "0000"
+
+        # Base result structure
+        result: dict[str, Any] = {
+            "resolved": True,
+            "hazard_triggered": hazard_result.get("triggered", False),
+            "encounter": None,
+            "narrative": hazard_result.get("description", "Nothing happens."),
+            "rolls_made": [],
+            "suggested_actions": [],
+            "npc_group": None,
+        }
+
+        # If hazard didn't trigger, return early with safe suggestions
+        if not hazard_result.get("triggered", False):
+            result["suggested_actions"] = [
+                "Continue exploring",
+                "Rest here",
+                "Move to another location",
+            ]
+            return result
+
+        # Hazard triggered - determine what the result references
+        result_id = hazard_result.get("result", "unknown")
+
+        # Check if result references an NPC in this hex
+        hex_data = self._hex_data.get(hex_id)
+        npc_match = None
+        if hex_data:
+            for npc in hex_data.npcs:
+                # Match by npc_id or partial match (e.g., "murkins_soldiers" in "murkins_soldiers_arrive")
+                if npc.npc_id == result_id or npc.npc_id in result_id:
+                    npc_match = npc
+                    break
+
+        if npc_match:
+            # This is an NPC encounter
+            result["encounter"] = {
+                "type": "npc_arrival",
+                "npc_id": npc_match.npc_id,
+                "npc_name": npc_match.name,
+                "is_combatant": npc_match.is_combatant,
+                "faction": npc_match.faction,
+                "description": hazard_result.get("description", ""),
+            }
+
+            # If NPC is a group, roll group size
+            if npc_match.group_count:
+                group_info = self.get_npc_group_size(hex_id, npc_match.npc_id)
+                result["npc_group"] = group_info
+                result["rolls_made"].append({
+                    "type": "group_size",
+                    "expression": npc_match.group_count,
+                    "total": group_info.get("total_count", 1),
+                    "composition": group_info.get("composition", {}),
+                })
+
+                # Update narrative with group size
+                if group_info.get("composition"):
+                    comp_parts = [f"{v} {k}" for k, v in group_info["composition"].items()]
+                    result["narrative"] = (
+                        f"{hazard_result.get('description', '')} "
+                        f"({group_info['total_count']} total: {', '.join(comp_parts)})"
+                    )
+
+            # Set encounter-appropriate suggestions
+            if npc_match.is_combatant:
+                result["suggested_actions"] = [
+                    "Attempt to negotiate",
+                    "Prepare for combat",
+                    "Try to flee",
+                    "Hide and observe",
+                ]
+            else:
+                result["suggested_actions"] = [
+                    "Speak with them",
+                    "Observe from a distance",
+                    "Ignore and continue",
+                ]
+
+            # If combatant NPC, prepare encounter state transition
+            if npc_match.is_combatant and context.get("auto_start_encounter", False):
+                # Caller can request automatic encounter start
+                result["encounter"]["ready_for_combat"] = True
+                result["encounter"]["stat_reference"] = npc_match.stat_reference
+
+        else:
+            # Not an NPC encounter - treat as narrative event
+            result["encounter"] = {
+                "type": "event",
+                "event_id": result_id,
+                "description": hazard_result.get("description", ""),
+            }
+            result["suggested_actions"] = [
+                "Investigate further",
+                "React to the event",
+                "Continue as planned",
+            ]
+
+        # Record the chance roll that triggered this
+        if hazard_result.get("chance"):
+            result["rolls_made"].insert(0, {
+                "type": "hazard_trigger",
+                "chance": hazard_result["chance"],
+                "succeeded": True,
+            })
+
+        return result
