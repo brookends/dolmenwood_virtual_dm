@@ -778,3 +778,287 @@ class TestMultiActorGroupEncounters:
             assert combatant.stat_block is not None
             assert combatant.stat_block.armor_class > 0
             assert combatant.stat_block.hp_max > 0
+
+
+# =============================================================================
+# Task 5: NPC Intelligence in Social Context
+# =============================================================================
+
+
+class TestNPCIntelligenceSerialization:
+    """Test _serialize_npc_intelligence method for social context."""
+
+    def test_serialize_npc_intelligence_includes_known_topics(self, hex_0108_engine):
+        """Should serialize known_topics from HexNPC."""
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        assert timilda is not None, "Timilda should exist in hex 0108"
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+
+        assert "known_topics" in intel
+        assert len(intel["known_topics"]) > 0
+        # Check topic structure
+        for topic in intel["known_topics"]:
+            assert "topic_id" in topic
+            assert "content" in topic
+            assert "keywords" in topic
+
+    def test_serialize_npc_intelligence_includes_secret_info(self, hex_0108_engine):
+        """Should serialize secret_info with bribery data from HexNPC."""
+        hex_data = hex_0108_engine._hex_data["0108"]
+        soldiers = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers = npc
+                break
+
+        assert soldiers is not None, "Murkin's soldiers should exist"
+        intel = hex_0108_engine._serialize_npc_intelligence(soldiers)
+
+        assert "secret_info" in intel
+        # Check for bribery fields
+        bribable_secrets = [s for s in intel["secret_info"] if s.get("can_be_bribed")]
+        assert len(bribable_secrets) > 0, "Should have bribable secrets"
+
+    def test_serialize_npc_intelligence_includes_faction_profile(self, hex_0108_engine):
+        """Should serialize faction_profile for faction NPCs."""
+        hex_data = hex_0108_engine._hex_data["0108"]
+        soldiers = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers = npc
+                break
+
+        assert soldiers is not None
+        intel = hex_0108_engine._serialize_npc_intelligence(soldiers)
+
+        assert "faction" in intel
+        assert intel["faction"] == "house_murkin"
+        assert "faction_profile" in intel
+        assert intel["faction_profile"]["role"] == "enforcers"
+
+    def test_serialize_npc_intelligence_includes_relationships(self, hex_0108_engine):
+        """Should serialize relationships for NPCs with connections."""
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        assert timilda is not None
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+
+        assert "relationships" in intel
+        assert len(intel["relationships"]) > 0
+
+    def test_serialize_npc_intelligence_includes_vulnerabilities(self, hex_0108_engine):
+        """Should serialize vulnerabilities for NPC manipulation hints."""
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        assert timilda is not None
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+
+        assert "vulnerabilities" in intel
+        assert len(intel["vulnerabilities"]) > 0
+
+
+class TestNPCIntelligenceInSocialContext:
+    """Test that NPC intelligence flows into social context participants."""
+
+    def test_interact_with_npc_includes_intelligence_in_context(self, hex_0108_engine):
+        """interact_with_npc should include npc_intelligence in transition context."""
+        # Setup engine state
+        hex_0108_engine._current_hex = "0108"
+        hex_0108_engine._current_poi = "The Crimson Bath"
+
+        # Capture the context passed to transition
+        captured_context = {}
+
+        def capture_transition(trigger, context=None):
+            captured_context.update(context or {})
+
+        hex_0108_engine.controller.transition = capture_transition
+
+        # Call interact_with_npc
+        result = hex_0108_engine.interact_with_npc("0108", "timilda_brumble")
+
+        assert result["success"] is True
+        assert "npc_intelligence" in captured_context
+        intel = captured_context["npc_intelligence"]
+
+        # Verify intelligence structure
+        assert intel["npc_id"] == "timilda_brumble"
+        assert "known_topics" in intel
+        assert "secret_info" in intel
+
+    def test_build_participant_from_intelligence_creates_rich_participant(
+        self, hex_0108_engine
+    ):
+        """_build_participant_from_intelligence should create participant with full intelligence."""
+        from src.game_state.global_controller import GlobalController
+
+        # Get intelligence data
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+
+        # Build participant
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="timilda_brumble",
+            npc_name="Timilda Brumble",
+            npc_intel=intel,
+            context={"hex_id": "0108", "poi_name": "The Crimson Bath", "disposition": 0},
+        )
+
+        # Verify participant has intelligence
+        assert participant.participant_id == "timilda_brumble"
+        assert participant.name == "Timilda Brumble"
+        assert len(participant.known_topics) > 0
+        assert len(participant.secret_info) > 0
+        assert participant.hex_id == "0108"
+
+    def test_participant_known_topics_are_structured(self, hex_0108_engine):
+        """Participant's known_topics should be KnownTopic objects with proper fields."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import KnownTopic
+
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="timilda_brumble",
+            npc_name="Timilda Brumble",
+            npc_intel=intel,
+            context={"hex_id": "0108", "disposition": 0},
+        )
+
+        # Verify topics are proper KnownTopic objects
+        for topic in participant.known_topics:
+            assert isinstance(topic, KnownTopic)
+            assert topic.topic_id != ""
+            assert topic.content != ""
+
+    def test_participant_secret_info_includes_bribery(self, hex_0108_engine):
+        """Participant's secret_info should include bribery hints from source NPC."""
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import SecretInfo
+
+        hex_data = hex_0108_engine._hex_data["0108"]
+        soldiers = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(soldiers)
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="murkins_soldiers",
+            npc_name="Murkin's Soldiers",
+            npc_intel=intel,
+            context={"hex_id": "0108", "disposition": 0},
+        )
+
+        # Check for bribable secrets
+        bribable = [s for s in participant.secret_info if s.can_be_bribed]
+        assert len(bribable) > 0, "Should have bribable secrets"
+        for secret in bribable:
+            assert isinstance(secret, SecretInfo)
+            assert secret.bribe_amount >= 0
+
+    def test_participant_faction_profile_in_personality(self, hex_0108_engine):
+        """Participant's personality should include faction profile info."""
+        from src.game_state.global_controller import GlobalController
+
+        hex_data = hex_0108_engine._hex_data["0108"]
+        soldiers = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "murkins_soldiers":
+                soldiers = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(soldiers)
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="murkins_soldiers",
+            npc_name="Murkin's Soldiers",
+            npc_intel=intel,
+            context={"hex_id": "0108", "disposition": 0},
+        )
+
+        # Faction profile should be reflected in personality
+        assert participant.faction == "house_murkin"
+        assert "enforcer" in participant.personality.lower()
+
+    def test_participant_vulnerabilities_in_secrets(self, hex_0108_engine):
+        """Participant's secrets list should include vulnerability hints."""
+        from src.game_state.global_controller import GlobalController
+
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="timilda_brumble",
+            npc_name="Timilda Brumble",
+            npc_intel=intel,
+            context={"hex_id": "0108", "disposition": 0},
+        )
+
+        # Vulnerabilities should be in secrets list
+        vuln_secrets = [s for s in participant.secrets if "Vulnerable to:" in s]
+        assert len(vuln_secrets) > 0, "Should have vulnerability hints in secrets"
+
+    def test_participant_relationships_preserved(self, hex_0108_engine):
+        """Participant's relationships should be preserved from source NPC."""
+        from src.game_state.global_controller import GlobalController
+
+        hex_data = hex_0108_engine._hex_data["0108"]
+        timilda = None
+        for npc in hex_data.npcs:
+            if npc.npc_id == "timilda_brumble":
+                timilda = npc
+                break
+
+        intel = hex_0108_engine._serialize_npc_intelligence(timilda)
+        controller = GlobalController()
+        participant = controller._build_participant_from_intelligence(
+            npc_id="timilda_brumble",
+            npc_name="Timilda Brumble",
+            npc_intel=intel,
+            context={"hex_id": "0108", "disposition": 0},
+        )
+
+        assert len(participant.relationships) > 0
+        # Check relationship structure
+        for rel in participant.relationships:
+            assert isinstance(rel, dict)
+            assert "npc_id" in rel or "relationship_type" in rel

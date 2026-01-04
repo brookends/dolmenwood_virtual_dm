@@ -73,6 +73,35 @@ result = engine.get_npc_group_size("0108", "murkins_soldiers")
 # Returns: {is_group: True, total_count: 5, composition: {humans: 2, shorthorns: 3}, group_count_expression: "1d4+1d4"}
 ```
 
+### _serialize_npc_intelligence(npc)
+- Serializes a HexNPC's intelligence data for social context
+- Extracts known_topics, secret_info, relationships, faction_profile, vulnerabilities
+- Used when transitioning to SOCIAL_INTERACTION state
+
+**Example:**
+```python
+intel = engine._serialize_npc_intelligence(npc)
+# Returns: {known_topics: [...], secret_info: [...], faction_profile: {...}, relationships: [...]}
+```
+
+## GlobalController Methods (src/game_state/global_controller.py)
+
+### _build_participant_from_intelligence(npc_id, npc_name, npc_intel, context)
+- Creates SocialParticipant from serialized NPC intelligence
+- Populates known_topics, secret_info, relationships, faction profile
+- Stores vulnerabilities as DM hints in secrets list
+
+**Example:**
+```python
+participant = controller._build_participant_from_intelligence(
+    npc_id="timilda_brumble",
+    npc_name="Timilda Brumble",
+    npc_intel=intel,
+    context={"hex_id": "0108", "disposition": 0}
+)
+# Returns: SocialParticipant with full intelligence
+```
+
 ---
 
 ## Hex 0108 Content
@@ -156,7 +185,16 @@ result = engine.get_npc_group_size("0108", "murkins_soldiers")
 - NPC group size engine method (5 tests)
 - Chance check helper (3 tests)
 
-**Total: 62 tests passing**
+### tests/hex_crawl/test_hex_0108_actions.py (46 tests)
+- Hazard resolution helper (8 tests)
+- Integration with hazard checks (2 tests)
+- Wilderness investigate action (5 tests)
+- Custom encounter table generation (9 tests)
+- Multi-actor group encounters (8 tests)
+- NPC intelligence serialization (5 tests)
+- NPC intelligence in social context (7 tests)
+
+**Total: 108 tests passing**
 
 ---
 

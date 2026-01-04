@@ -1366,6 +1366,103 @@ class HexCrawlEngine:
 
         return combatants
 
+    def _serialize_npc_intelligence(self, npc: "HexNPC") -> dict[str, Any]:
+        """
+        Serialize a HexNPC's intelligence data for social context.
+
+        Extracts known_topics, secret_info, relationships, faction_profile,
+        vulnerabilities, and other roleplay-relevant data.
+
+        Args:
+            npc: The HexNPC to serialize
+
+        Returns:
+            Dictionary with serialized intelligence fields
+        """
+        result: dict[str, Any] = {
+            "npc_id": npc.npc_id,
+            "name": npc.name,
+            "description": npc.description,
+            "kindred": npc.kindred,
+            "alignment": npc.alignment,
+        }
+
+        # Core roleplay attributes
+        if npc.demeanor:
+            result["demeanor"] = list(npc.demeanor)
+        if npc.speech:
+            result["speech"] = npc.speech
+        if npc.languages:
+            result["languages"] = list(npc.languages)
+        if npc.desires:
+            result["desires"] = list(npc.desires)
+        if npc.possessions:
+            result["possessions"] = list(npc.possessions)
+
+        # Known topics - serialize to dicts for context transfer
+        if npc.known_topics:
+            result["known_topics"] = [
+                {
+                    "topic_id": t.topic_id,
+                    "content": t.content,
+                    "keywords": list(t.keywords) if t.keywords else [],
+                    "required_disposition": t.required_disposition,
+                    "category": t.category,
+                    "shared": t.shared,
+                    "priority": t.priority,
+                }
+                for t in npc.known_topics
+            ]
+
+        # Secret info - includes bribery hints
+        if npc.secret_info:
+            result["secret_info"] = [
+                {
+                    "secret_id": s.secret_id,
+                    "content": s.content,
+                    "hint": s.hint,
+                    "keywords": list(s.keywords) if s.keywords else [],
+                    "required_disposition": s.required_disposition,
+                    "required_trust": s.required_trust,
+                    "can_be_bribed": s.can_be_bribed,
+                    "bribe_amount": s.bribe_amount,
+                    "status": s.status.value if hasattr(s.status, "value") else str(s.status),
+                }
+                for s in npc.secret_info
+            ]
+
+        # Vulnerabilities (for DM to know what can sway the NPC)
+        if npc.vulnerabilities:
+            result["vulnerabilities"] = list(npc.vulnerabilities)
+
+        # Relationships - for cross-references and faction context
+        if npc.relationships:
+            result["relationships"] = [dict(r) for r in npc.relationships]
+
+        # Faction info
+        if npc.faction:
+            result["faction"] = npc.faction
+            result["loyalty"] = npc.loyalty
+            if npc.personal_feelings:
+                result["personal_feelings"] = npc.personal_feelings
+
+        # Faction profile - extended role info
+        if npc.faction_profile:
+            result["faction_profile"] = dict(npc.faction_profile)
+
+        # Combat reference (for context)
+        if npc.stat_reference:
+            result["stat_reference"] = npc.stat_reference
+        result["is_combatant"] = npc.is_combatant
+
+        # Group NPC info
+        if npc.group_count:
+            result["group_count"] = npc.group_count
+            if npc.group_composition:
+                result["group_composition"] = dict(npc.group_composition)
+
+        return result
+
     def create_encounter_from_hazard(
         self,
         hazard_result: dict[str, Any],
@@ -4624,20 +4721,27 @@ class HexCrawlEngine:
 
         # Trigger transition to SOCIAL_INTERACTION
         # P9.4: Include disposition in context so SocialContext can use it
+        transition_context = {
+            "npc_id": npc_id,
+            "npc_name": npc_name,
+            "hex_id": hex_id,
+            "poi_name": self._current_poi,
+            "return_to": "wilderness",
+            "first_meeting": first_meeting,
+            # P9.4: Pass disposition for SocialParticipant/SocialContext
+            "disposition": computed_disposition,
+            "base_disposition": base_disposition,
+            "npc_default_disposition": npc_default_disposition,
+        }
+
+        # Task 5: Include full NPC intelligence for social context
+        if npc_data:
+            npc_intelligence = self._serialize_npc_intelligence(npc_data)
+            transition_context["npc_intelligence"] = npc_intelligence
+
         self.controller.transition(
             "initiate_conversation",
-            context={
-                "npc_id": npc_id,
-                "npc_name": npc_name,
-                "hex_id": hex_id,
-                "poi_name": self._current_poi,
-                "return_to": "wilderness",
-                "first_meeting": first_meeting,
-                # P9.4: Pass disposition for SocialParticipant/SocialContext
-                "disposition": computed_disposition,
-                "base_disposition": base_disposition,
-                "npc_default_disposition": npc_default_disposition,
-            },
+            context=transition_context,
         )
 
         return result
