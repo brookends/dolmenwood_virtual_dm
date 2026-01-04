@@ -612,6 +612,57 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                     score=55,
                 )
             )
+            # Also suggest stealth entry when conditions exist
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:enter_poi_stealth",
+                        label=f"Sneak into {poi_name}",
+                        params_schema={
+                            "type": "object",
+                            "properties": {
+                                "hex_id": {"type": "string"},
+                                "stealth_modifier": {"type": "integer"},
+                            },
+                            "required": ["hex_id"],
+                        },
+                        params={"hex_id": hex_id, "stealth_modifier": 0},
+                        safe_to_execute=False,
+                        help="Attempt stealthy entry, bypassing conditions but risking detection.",
+                    ),
+                    score=50,
+                )
+            )
+
+        # Check for silenceable alarms at this POI
+        try:
+            poi_info = dm.hex_crawl.get_poi_info(hex_id)
+            if poi_info and poi_info.get("alerts"):
+                for alert in poi_info["alerts"]:
+                    if alert.get("bypass_method"):
+                        out.append(
+                            _Candidate(
+                                SuggestedAction(
+                                    id="wilderness:silence_alarm",
+                                    label=f"Silence alarm ({alert.get('alert_id', 'alarm')})",
+                                    params_schema={
+                                        "type": "object",
+                                        "properties": {
+                                            "hex_id": {"type": "string"},
+                                            "item": {"type": "string"},
+                                        },
+                                        "required": ["hex_id", "item"],
+                                    },
+                                    params={"hex_id": hex_id, "item": ""},
+                                    safe_to_execute=False,
+                                    help=f"Hint: {alert.get('bypass_method', 'Find the right item')}",
+                                ),
+                                score=45,
+                            )
+                        )
+                        break  # Only suggest once
+        except Exception:
+            pass
 
         # Talk to present NPCs
         try:

@@ -115,6 +115,10 @@ class POIVisit:
     time_spent_turns: int = 0
     # P9.4: Track resolved hazards by index to prevent re-triggering
     hazards_resolved: list[int] = field(default_factory=list)
+    # Alarm/alert tracking
+    alerts_triggered: list[str] = field(default_factory=list)  # Alert IDs that have fired
+    alarms_silenced: bool = False  # True if alarms have been silenced (e.g., with acorns)
+    entry_authorized: bool = False  # True if entry was authorized (permission/password/etc.)
 
 
 @dataclass
@@ -3815,17 +3819,35 @@ class HexCrawlEngine:
             social_result=social_result,
         )
 
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
         if not entry_result.get("allowed", False):
             # Check if unauthorized entry triggers an alert
             if entry_result.get("triggers_alert"):
                 alerts = poi.get_alerts_for_trigger("on_enter_unauthorized")
-                entry_result["alerts_triggered"] = alerts
-                # Trigger the alerts
-                for i, alert in enumerate(poi.alerts):
-                    if alert.get("trigger") == "on_enter_unauthorized":
-                        poi.trigger_alert(i)
+
+                # Check if alarms have been silenced
+                if visit.alarms_silenced:
+                    entry_result["alerts_suppressed"] = True
+                    entry_result["message"] = "You slip in quietly - the alarm has been silenced."
+                else:
+                    entry_result["alerts_triggered"] = alerts
+                    # Trigger the alerts and track them
+                    for i, alert in enumerate(poi.alerts):
+                        if alert.get("trigger") == "on_enter_unauthorized":
+                            poi.trigger_alert(i)
+                            alert_id = alert.get("alert_id", f"alert_{i}")
+                            if alert_id not in visit.alerts_triggered:
+                                visit.alerts_triggered.append(alert_id)
 
             return entry_result
+
+        # Entry allowed - mark as authorized
+        visit.entry_authorized = True
 
         # Entry allowed - proceed with normal entry
         # Clear entry conditions temporarily to allow normal entry
@@ -3839,6 +3861,202 @@ class HexCrawlEngine:
             result["payment_taken"] = entry_result["payment_taken"]
 
         return result
+
+    def silence_poi_alarm(
+        self,
+        hex_id: str,
+        item_used: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Attempt to silence alarms at the current POI.
+
+        Some alarms have bypass methods (e.g., moose head silenced with acorns).
+
+        Args:
+            hex_id: The hex containing the POI
+            item_used: The item used to silence (e.g., "acorns")
+
+        Returns:
+            Dictionary with silencing results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Check if POI has any silenceable alarms
+        silenceable_alerts = []
+        for alert in poi.alerts:
+            if alert.get("bypass_method"):
+                silenceable_alerts.append(alert)
+
+        if not silenceable_alerts:
+            return {
+                "success": False,
+                "error": "No alarms at this location can be silenced",
+            }
+
+        # Check if any bypass method matches the item used
+        silenced_alerts = []
+        for alert in silenceable_alerts:
+            bypass_method = alert.get("bypass_method", "").lower()
+            if item_used and item_used.lower() in bypass_method:
+                silenced_alerts.append(alert)
+
+        if not silenced_alerts and item_used:
+            # Item doesn't match any bypass method
+            return {
+                "success": False,
+                "error": f"'{item_used}' cannot silence these alarms",
+                "hint": "Try: " + ", ".join(
+                    a.get("bypass_method", "") for a in silenceable_alerts
+                ),
+            }
+
+        # If no specific item, return info about what's needed
+        if not silenced_alerts:
+            return {
+                "success": False,
+                "requires_item": True,
+                "bypass_methods": [
+                    {
+                        "alert_id": a.get("alert_id"),
+                        "bypass_method": a.get("bypass_method"),
+                    }
+                    for a in silenceable_alerts
+                ],
+                "message": "You need the right item to silence the alarm(s).",
+            }
+
+        # Mark alarms as silenced in visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+        visit.alarms_silenced = True
+
+        return {
+            "success": True,
+            "silenced_alerts": [a.get("alert_id") for a in silenced_alerts],
+            "message": f"The alarm has been silenced using {item_used}.",
+            "description": silenced_alerts[0].get("description", ""),
+        }
+
+    def enter_poi_stealth(
+        self,
+        hex_id: str,
+        stealth_modifier: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Attempt to enter a POI stealthily, bypassing entry conditions.
+
+        Requires avoiding sentries/guards and may trigger alerts if detected.
+
+        Args:
+            hex_id: The hex containing the POI
+            stealth_modifier: Modifier to stealth check
+
+        Returns:
+            Dictionary with stealth entry results
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at any location - approach first"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current location not found"}
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
+        # Check if there are sentries/guards to avoid
+        stealth_dc = 10  # Base DC
+        sentry_count = 0
+
+        # Check alerts for sentry information
+        for alert in poi.alerts:
+            bypass = alert.get("bypass_method", "").lower()
+            if "stealth" in bypass or "sentry" in bypass or "avoid" in bypass:
+                # Extract sentry count if mentioned (e.g., "2d4 sentries")
+                import re
+                dice_match = re.search(r"(\d+d\d+)", bypass)
+                if dice_match:
+                    sentry_roll = self.dice.roll(dice_match.group(1))
+                    sentry_count = sentry_roll.total
+                    stealth_dc += sentry_count  # More sentries = harder
+
+        # Check entry conditions for stealth requirements
+        if poi.entry_conditions:
+            ec = poi.entry_conditions
+            if ec.get("check_type") == "stealth":
+                stealth_dc = ec.get("stealth_dc", stealth_dc)
+
+        # Roll stealth check (2d6 + modifier >= DC for success in OSE-style)
+        stealth_roll = self.dice.roll("2d6")
+        total = stealth_roll.total + stealth_modifier
+        success = total >= stealth_dc
+
+        if success:
+            # Stealthy entry successful - don't trigger alerts
+            visit.entry_authorized = False  # Not authorized, but undetected
+            visit.alarms_silenced = True  # Treat as if silenced for this entry
+
+            # Proceed with entry
+            saved_conditions = poi.entry_conditions
+            poi.entry_conditions = None
+            result = self.enter_poi(hex_id)
+            poi.entry_conditions = saved_conditions
+
+            result["stealth_success"] = True
+            result["stealth_roll"] = stealth_roll.total
+            result["stealth_dc"] = stealth_dc
+            result["sentry_count"] = sentry_count
+            result["message"] = "You slip in undetected."
+
+            return result
+        else:
+            # Detected - trigger unauthorized alerts
+            alerts = poi.get_alerts_for_trigger("on_enter_unauthorized")
+
+            for i, alert in enumerate(poi.alerts):
+                if alert.get("trigger") == "on_enter_unauthorized":
+                    poi.trigger_alert(i)
+                    alert_id = alert.get("alert_id", f"alert_{i}")
+                    if alert_id not in visit.alerts_triggered:
+                        visit.alerts_triggered.append(alert_id)
+
+            return {
+                "success": False,
+                "stealth_failed": True,
+                "stealth_roll": stealth_roll.total,
+                "stealth_dc": stealth_dc,
+                "sentry_count": sentry_count,
+                "alerts_triggered": alerts,
+                "message": "You are spotted! The alarm is raised.",
+            }
 
     def search_poi_location(
         self,
@@ -4550,6 +4768,44 @@ class HexCrawlEngine:
 
         # No time restriction - NPC is always present
         return True
+
+    def get_poi_info(self, hex_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get information about the current POI including alerts and conditions.
+
+        Args:
+            hex_id: Current hex
+
+        Returns:
+            Dictionary with POI information or None if not at a POI
+        """
+        if not self._current_poi:
+            return None
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        for poi in hex_data.points_of_interest:
+            if poi.name == self._current_poi:
+                visit_key = f"{hex_id}:{poi.name}"
+                visit = self._poi_visits.get(visit_key)
+
+                return {
+                    "name": poi.name,
+                    "poi_type": poi.poi_type,
+                    "description": poi.description,
+                    "alerts": poi.alerts,
+                    "entry_conditions": poi.entry_conditions,
+                    "has_silenceable_alarms": any(
+                        a.get("bypass_method") for a in poi.alerts
+                    ),
+                    "alarms_silenced": visit.alarms_silenced if visit else False,
+                    "alerts_triggered": visit.alerts_triggered if visit else [],
+                    "entry_authorized": visit.entry_authorized if visit else False,
+                }
+
+        return None
 
     def get_npcs_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
         """

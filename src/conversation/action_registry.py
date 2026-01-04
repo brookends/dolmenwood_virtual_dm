@@ -2634,6 +2634,75 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_enter_dungeon,
     ))
 
+    def _wilderness_silence_alarm(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Silence an alarm at the current POI using an item."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        item_used = p.get("item", "")
+
+        try:
+            result = dm.hex_crawl.silence_poi_alarm(hex_id, item_used=item_used)
+            if result.get("success"):
+                return {"success": True, "message": result.get("message", "Alarm silenced.")}
+            elif result.get("requires_item"):
+                bypass_info = result.get("bypass_methods", [])
+                hints = [b.get("bypass_method", "") for b in bypass_info]
+                return {
+                    "success": False,
+                    "message": result.get("message", "Need the right item."),
+                    "hints": hints,
+                }
+            else:
+                return {"success": False, "message": result.get("error", "Cannot silence alarm.")}
+        except Exception as e:
+            return {"success": False, "message": f"Could not silence alarm: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:silence_alarm",
+        label="Silence alarm",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "item": {"type": "string", "required": True},
+        },
+        help="Silence an alarm using the correct item (e.g., acorns for moose head).",
+        executor=_wilderness_silence_alarm,
+    ))
+
+    def _wilderness_enter_poi_stealth(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Attempt stealthy entry into a POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        stealth_modifier = int(p.get("stealth_modifier", 0) or 0)
+
+        try:
+            result = dm.hex_crawl.enter_poi_stealth(hex_id, stealth_modifier=stealth_modifier)
+            if result.get("success") or result.get("stealth_success"):
+                msg = result.get("message", "You slip in undetected.")
+                if result.get("description"):
+                    msg += f"\n\n{result['description']}"
+                return {"success": True, "message": msg}
+            else:
+                msg = result.get("message", "You are spotted!")
+                if result.get("alerts_triggered"):
+                    alert_names = [a.get("description", "") for a in result["alerts_triggered"]]
+                    msg += " " + " ".join(alert_names)
+                return {"success": False, "message": msg}
+        except Exception as e:
+            return {"success": False, "message": f"Could not attempt stealth entry: {e}"}
+
+    registry.register(ActionSpec(
+        id="wilderness:enter_poi_stealth",
+        label="Enter stealthily",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "stealth_modifier": {"type": "integer", "required": False},
+        },
+        help="Attempt to sneak into a POI, bypassing entry conditions.",
+        executor=_wilderness_enter_poi_stealth,
+    ))
+
     def _wilderness_wait_until_dawn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Wait until dawn, advancing time and processing condition expirations.
