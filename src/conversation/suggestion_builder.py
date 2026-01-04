@@ -1690,6 +1690,59 @@ def _social_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     except Exception:
         pass
 
+    # Check for cross-hex relationships that suggest travel destinations
+    try:
+        social_context = dm.controller.social_context
+        if social_context and social_context.participants:
+            participant = social_context.participants[0]
+            current_hex = getattr(participant, "hex_id", None) or social_context.hex_id
+
+            # Get relationships with hex_id (cross-hex connections)
+            relationships = getattr(participant, "relationships", [])
+            cross_hex_connections = [
+                r for r in relationships
+                if r.get("hex_id") and r.get("hex_id") != current_hex
+            ]
+
+            # Add travel suggestions for each cross-hex connection
+            for rel in cross_hex_connections[:3]:  # Limit to 3 suggestions
+                target_hex = rel.get("hex_id")
+                related_npc = rel.get("npc_id", "someone")
+                rel_type = rel.get("relationship_type", "connection")
+                description = rel.get("description", "")
+
+                # Build a descriptive label
+                if rel_type == "family":
+                    label = f"Travel to hex {target_hex} ({related_npc} - family)"
+                elif rel_type == "employer":
+                    label = f"Travel to hex {target_hex} ({related_npc} - employer)"
+                elif rel_type == "secret_ally":
+                    label = f"Travel to hex {target_hex} ({related_npc} - ally)"
+                elif rel_type == "secret_correspondent":
+                    label = f"Travel to hex {target_hex} ({related_npc} - correspondent)"
+                else:
+                    label = f"Travel to hex {target_hex} ({related_npc})"
+
+                # Build help text from description
+                help_text = f"{participant.name} mentioned {related_npc}"
+                if description:
+                    help_text = f"{description[:100]}..." if len(description) > 100 else description
+
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:travel",
+                            label=label,
+                            params={"hex_id": target_hex},
+                            safe_to_execute=False,
+                            help=help_text,
+                        ),
+                        score=65,  # Lower than core social actions but notable
+                    )
+                )
+    except Exception:
+        pass
+
     return out
 
 
