@@ -460,3 +460,101 @@ class TestHex0110Integration:
         assert len(pois) >= 1
         # Check that the glade POI is found (type='glade')
         assert any(poi.get("type") == "glade" for poi in pois)
+
+
+# =============================================================================
+# TIME_PRESENCE ENFORCEMENT TESTS
+# =============================================================================
+
+
+class TestTimePresenceEnforcement:
+    """Test that NPCs with time_presence are filtered correctly."""
+
+    def test_gnarlgruff_absent_on_non_full_moon(self, hex_0110):
+        """Lord Gnarlgruff should NOT appear on non-full moon nights."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import GameDate, GameTime, TimeOfDay
+
+        controller = GlobalController()
+        # Set to day 10 (waxing moon) at midnight (night)
+        controller.world_state.current_date = GameDate(year=1, month=3, day=10)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Verify it's night but NOT full moon
+        assert engine._is_night() is True
+        assert engine._is_full_moon() is False
+
+        # Get NPCs at POI
+        npcs = engine.get_npcs_at_poi("0110")
+
+        # Devil goats should be present (no time_presence)
+        devil_goats = [n for n in npcs if n.get("npc_id") == "devil_goats"]
+        assert len(devil_goats) == 1, "Devil goats should always be present"
+
+        # Gnarlgruff should NOT be present (requires full moon night)
+        gnarlgruff = [n for n in npcs if n.get("npc_id") == "lord_gnarlgruff_spirit"]
+        assert len(gnarlgruff) == 0, "Gnarlgruff should NOT appear on non-full moon"
+
+    def test_gnarlgruff_absent_on_full_moon_day(self, hex_0110):
+        """Lord Gnarlgruff should NOT appear during daytime even on full moon."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import GameDate, GameTime, TimeOfDay
+
+        controller = GlobalController()
+        # Set to day 15 (full moon) at noon (day)
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=12, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Verify it's full moon but NOT night
+        assert engine._is_night() is False
+        assert engine._is_full_moon() is True
+
+        # Get NPCs at POI
+        npcs = engine.get_npcs_at_poi("0110")
+
+        # Gnarlgruff should NOT be present (requires night)
+        gnarlgruff = [n for n in npcs if n.get("npc_id") == "lord_gnarlgruff_spirit"]
+        assert len(gnarlgruff) == 0, "Gnarlgruff should NOT appear during day"
+
+    def test_gnarlgruff_present_on_full_moon_night(self, hex_0110):
+        """Lord Gnarlgruff SHOULD appear on full moon nights."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import GameDate, GameTime, TimeOfDay
+
+        controller = GlobalController()
+        # Set to day 15 (full moon) at midnight (night)
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Verify it's full moon AND night
+        assert engine._is_night() is True
+        assert engine._is_full_moon() is True
+
+        # Get NPCs at POI
+        npcs = engine.get_npcs_at_poi("0110")
+
+        # Both NPCs should be present
+        devil_goats = [n for n in npcs if n.get("npc_id") == "devil_goats"]
+        assert len(devil_goats) == 1, "Devil goats should be present"
+
+        gnarlgruff = [n for n in npcs if n.get("npc_id") == "lord_gnarlgruff_spirit"]
+        assert len(gnarlgruff) == 1, "Gnarlgruff SHOULD appear on full moon night"
+        assert gnarlgruff[0]["name"] == "Lord Gnarlgruff"

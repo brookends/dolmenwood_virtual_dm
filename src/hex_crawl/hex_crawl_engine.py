@@ -2355,6 +2355,14 @@ class HexCrawlEngine:
             return False
         return self.controller.world_state.current_date.is_full_moon()
 
+    def _is_new_moon(self) -> bool:
+        """Check if it's currently a new moon."""
+        if not self.controller.world_state:
+            return False
+        if not self.controller.world_state.current_date:
+            return False
+        return self.controller.world_state.current_date.is_new_moon()
+
     def _is_winter(self) -> bool:
         """Check if it's currently winter season."""
         if not self.controller.world_state:
@@ -5152,12 +5160,14 @@ class HexCrawlEngine:
 
     def _is_npc_present_at_time(self, npc: "HexNPC", is_night: bool) -> bool:
         """
-        Check if an NPC is present based on time-of-day conditions.
+        Check if an NPC is present based on time-of-day and time_presence conditions.
 
-        Parses the NPC's location field for time-based keywords:
-        - "(nighttime only)" or "(nighttime)" -> Only present at night
-        - "(daytime only)" or "(daytime)" -> Only present during day
-        - No time keyword -> Present at all times
+        Checks:
+        1. Location field for time-based keywords:
+           - "(nighttime only)" or "(nighttime)" -> Only present at night
+           - "(daytime only)" or "(daytime)" -> Only present during day
+        2. time_presence field for structured restrictions:
+           - {type: "moon_phase", phase: "full"} -> Only present on full moon nights
 
         Args:
             npc: The HexNPC to check
@@ -5166,6 +5176,35 @@ class HexCrawlEngine:
         Returns:
             True if the NPC is present at the current time
         """
+        # First check time_presence field (structured time restrictions)
+        time_presence = getattr(npc, "time_presence", None)
+        if time_presence:
+            presence_type = time_presence.get("type")
+
+            if presence_type == "moon_phase":
+                required_phase = time_presence.get("phase", "").lower()
+                if required_phase == "full":
+                    # Full moon NPCs only appear on full moon nights
+                    if not is_night:
+                        return False
+                    if not self._is_full_moon():
+                        return False
+                elif required_phase == "new":
+                    # New moon NPCs only appear on new moon nights
+                    if not is_night:
+                        return False
+                    if not self._is_new_moon():
+                        return False
+                # Other moon phases could be added here
+
+            elif presence_type == "time_of_day":
+                required_time = time_presence.get("required", "").lower()
+                if required_time == "night" and not is_night:
+                    return False
+                elif required_time == "day" and is_night:
+                    return False
+
+        # Then check location field for legacy time-based keywords
         location = getattr(npc, "location", "") or ""
         location_lower = location.lower()
 
@@ -5177,7 +5216,7 @@ class HexCrawlEngine:
         if "(daytime only)" in location_lower or "(daytime)" in location_lower:
             return not is_night
 
-        # No time restriction - NPC is always present
+        # No time restriction - NPC is present
         return True
 
     def get_poi_info(self, hex_id: str) -> Optional[dict[str, Any]]:
