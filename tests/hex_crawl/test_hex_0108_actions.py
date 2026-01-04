@@ -1264,3 +1264,257 @@ class TestRollHexEncounterTableSuggestion:
         assert encounter_suggestion is not None
         # Label should contain "Roll" and some table reference
         assert "Roll" in encounter_suggestion.label
+
+
+# =============================================================================
+# Task 7: Sleep at POI (Inn Rest) Action
+# =============================================================================
+
+
+class TestSleepAtPOI:
+    """Test the sleep_at_poi method for inn rest mechanics."""
+
+    def test_sleep_at_poi_returns_success_for_valid_poi(self, hex_0108_engine):
+        """sleep_at_poi should return success for a valid POI."""
+        # Set a seed to make hazard check deterministic (no hazard)
+        DiceRoller.set_seed(100)
+        result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath")
+        DiceRoller._seed = None
+
+        assert result["success"] is True
+        assert result["poi_name"] == "The Crimson Bath"
+        assert result["hex_id"] == "0108"
+        assert result["time_advanced"] == 8
+
+    def test_sleep_at_poi_returns_error_for_invalid_hex(self, hex_0108_engine):
+        """sleep_at_poi should return error for nonexistent hex."""
+        result = hex_0108_engine.sleep_at_poi("9999", "Some Inn")
+
+        assert result["success"] is False
+        assert "not found" in result["message"].lower()
+
+    def test_sleep_at_poi_returns_error_for_invalid_poi(self, hex_0108_engine):
+        """sleep_at_poi should return error for nonexistent POI."""
+        result = hex_0108_engine.sleep_at_poi("0108", "Nonexistent Tavern")
+
+        assert result["success"] is False
+        assert "not found" in result["message"].lower()
+
+    def test_sleep_at_poi_checks_evening_hazard(self, hex_0108_engine):
+        """sleep_at_poi should check for evening hazards."""
+        # Seed to trigger hazard (3-in-6 for Crimson Bath)
+        DiceRoller.set_seed(1)  # Roll 1 triggers hazard
+        result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath")
+        DiceRoller._seed = None
+
+        # Hazard should be recorded in result
+        assert "evening_hazard" in result
+
+    def test_sleep_at_poi_heals_characters(self, hex_0108_engine):
+        """sleep_at_poi should heal characters who can recover HP."""
+        from src.data_models import CharacterState
+
+        # Create a test character with reduced HP
+        char = CharacterState(
+            character_id="test_char",
+            name="Test Fighter",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=5,
+            hp_max=10,
+            armor_class=14,
+            base_speed=40,
+        )
+        hex_0108_engine.controller._characters["test_char"] = char
+
+        # Use high seed to avoid evening hazard triggering
+        DiceRoller.set_seed(100)
+        result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["test_char"])
+        DiceRoller._seed = None
+
+        assert result["success"] is True
+        assert len(result["rest_results"]) == 1
+        char_result = result["rest_results"][0]
+        assert char_result["character_id"] == "test_char"
+        assert char_result["hp_recovered"] == 1  # 1 HP per Dolmenwood rules
+
+    def test_sleep_at_poi_respects_restless_sleep_condition(self, hex_0108_engine):
+        """sleep_at_poi should not heal characters with restless_sleep condition."""
+        from src.data_models import CharacterState, Condition, ConditionType
+
+        # Create a character with restless_sleep
+        char = CharacterState(
+            character_id="restless_char",
+            name="Restless Sleeper",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=5,
+            hp_max=10,
+            armor_class=14,
+            base_speed=40,
+        )
+        restless = Condition(
+            condition_type=ConditionType.RESTLESS_SLEEP,
+            source="hex_effect",
+        )
+        char.conditions.append(restless)
+        hex_0108_engine.controller._characters["restless_char"] = char
+
+        # Use high seed to avoid evening hazard
+        DiceRoller.set_seed(100)
+        result = hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["restless_char"])
+        DiceRoller._seed = None
+
+        assert result["success"] is True
+        char_result = result["rest_results"][0]
+        assert char_result["hp_recovered"] == 0
+        assert "restless_sleep" in char_result["conditions_blocking"]
+
+    def test_sleep_at_poi_advances_time(self, hex_0108_engine):
+        """sleep_at_poi should advance game time by 8 hours."""
+        from unittest.mock import MagicMock
+        from src.data_models import CharacterState
+
+        # Create a test character so rest proceeds
+        char = CharacterState(
+            character_id="time_test_char",
+            name="Time Tester",
+            character_class="Fighter",
+            level=1,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=10,
+            hp_max=10,
+            armor_class=14,
+            base_speed=40,
+        )
+        hex_0108_engine.controller._characters["time_test_char"] = char
+
+        # Mock advance_time to capture call
+        hex_0108_engine.controller.advance_time = MagicMock()
+
+        DiceRoller.set_seed(100)
+        hex_0108_engine.sleep_at_poi("0108", "The Crimson Bath", ["time_test_char"])
+        DiceRoller._seed = None
+
+        # 48 turns = 8 hours (6 turns per hour)
+        hex_0108_engine.controller.advance_time.assert_called_with(48)
+
+
+class TestSleepAtPOIAction:
+    """Test the wilderness:sleep_at_poi action registration."""
+
+    def test_action_registered(self):
+        """wilderness:sleep_at_poi should be registered."""
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:sleep_at_poi")
+        assert spec is not None
+        assert spec.id == "wilderness:sleep_at_poi"
+        assert "Sleep" in spec.label or "sleep" in spec.label.lower()
+
+    def test_action_requires_poi_name(self, hex_0108_engine):
+        """Action should require poi_name parameter."""
+        from unittest.mock import MagicMock
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.hex_crawl.current_hex_id = "0108"
+        mock_dm.hex_crawl._current_poi = None  # No current POI
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:sleep_at_poi")
+
+        result = spec.executor(mock_dm, {})  # No poi_name
+
+        assert result["success"] is False
+        assert "poi_name" in result["message"].lower() or "no poi" in result["message"].lower()
+
+    def test_action_calls_sleep_at_poi_engine_method(self, hex_0108_engine):
+        """Action should call engine's sleep_at_poi method."""
+        from unittest.mock import MagicMock
+        from src.conversation.action_registry import get_default_registry
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.hex_crawl.current_hex_id = "0108"
+
+        registry = get_default_registry()
+        spec = registry.get("wilderness:sleep_at_poi")
+
+        DiceRoller.set_seed(100)
+        result = spec.executor(mock_dm, {"hex_id": "0108", "poi_name": "The Crimson Bath"})
+        DiceRoller._seed = None
+
+        assert result["success"] is True
+        assert result["poi_name"] == "The Crimson Bath"
+
+
+class TestSleepAtPOISuggestion:
+    """Test that sleep_at_poi appears in suggestions."""
+
+    def test_suggestion_appears_when_at_poi(self, hex_0108_engine):
+        """Suggestion should appear when party is at a POI."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.hex_crawl._current_poi = "The Crimson Bath"
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+        mock_dm.get_valid_actions.return_value = []
+
+        # Set up POI state
+        def mock_get_poi_state(hex_id):
+            return {
+                "at_poi": True,
+                "poi_name": "The Crimson Bath",
+                "can_enter": True,
+                "requires_hazard_resolution": False,
+            }
+        mock_dm.hex_crawl.get_poi_state = mock_get_poi_state
+
+        suggestions = build_suggestions(mock_dm, limit=30)
+        action_ids = [s.id for s in suggestions]
+
+        assert "wilderness:sleep_at_poi" in action_ids
+
+    def test_suggestion_includes_poi_name(self, hex_0108_engine):
+        """Suggestion should include the POI name in the label."""
+        from unittest.mock import MagicMock
+        from src.conversation.suggestion_builder import build_suggestions
+        from src.game_state.state_machine import GameState
+
+        mock_dm = MagicMock()
+        mock_dm.hex_crawl = hex_0108_engine
+        mock_dm.hex_crawl._current_poi = "The Crimson Bath"
+        mock_dm.current_state = GameState.WILDERNESS_TRAVEL
+        mock_dm.controller.party_state.location.location_id = "0108"
+        mock_dm.controller.get_active_characters.return_value = []
+        mock_dm.controller.get_all_characters.return_value = []
+        mock_dm.get_valid_actions.return_value = []
+
+        def mock_get_poi_state(hex_id):
+            return {
+                "at_poi": True,
+                "poi_name": "The Crimson Bath",
+                "can_enter": True,
+                "requires_hazard_resolution": False,
+            }
+        mock_dm.hex_crawl.get_poi_state = mock_get_poi_state
+
+        suggestions = build_suggestions(mock_dm, limit=30)
+        sleep_suggestion = next(
+            (s for s in suggestions if s.id == "wilderness:sleep_at_poi"),
+            None,
+        )
+
+        assert sleep_suggestion is not None
+        assert "Crimson Bath" in sleep_suggestion.label

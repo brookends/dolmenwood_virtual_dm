@@ -9903,3 +9903,161 @@ class HexCrawlEngine:
             })
 
         return result
+
+    def sleep_at_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_ids: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Sleep at a POI (inn, safe shelter) for the night.
+
+        This handles resting at established locations like The Crimson Bath inn.
+        Inn rest is comfortable - no Constitution check required (unlike camping).
+        However, evening hazards still apply before sleep.
+
+        The process:
+        1. Check for evening hazards (e.g., Murkin's Soldiers visiting)
+        2. If no hazard or hazard resolved peacefully, proceed to sleep
+        3. Apply rest effects respecting character conditions:
+           - can_recover_hp() checks for restless_sleep
+           - can_memorize_spells() checks for restless_sleep
+        4. Advance time by 8 hours
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI to sleep at
+            character_ids: Specific characters (default: all party members)
+
+        Returns:
+            Dictionary with rest results:
+            - success: bool - whether rest was completed
+            - evening_hazard: Optional[dict] - any evening hazard that occurred
+            - rest_results: list[dict] - per-character rest outcomes
+            - time_advanced: int - hours passed
+            - message: str - narrative summary
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {
+                "success": False,
+                "message": f"Hex {hex_id} not found.",
+                "rest_results": [],
+            }
+
+        # Find the POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi:
+            return {
+                "success": False,
+                "message": f"POI '{poi_name}' not found in hex {hex_id}.",
+                "rest_results": [],
+            }
+
+        result: dict[str, Any] = {
+            "success": True,
+            "evening_hazard": None,
+            "rest_results": [],
+            "time_advanced": 8,
+            "message": "",
+            "poi_name": poi_name,
+            "hex_id": hex_id,
+        }
+
+        # Step 1: Check for evening hazard
+        evening_check = self.check_evening_hazard(hex_id, poi_name)
+        if evening_check.get("triggered"):
+            # Hazard occurred - resolve it
+            hazard_resolution = self._resolve_hex_hazard_result(
+                evening_check,
+                {"hex_id": hex_id, "poi_name": poi_name, "trigger_type": "evening_stay"},
+            )
+            result["evening_hazard"] = hazard_resolution
+
+            # If hazard involves combat, rest may be interrupted
+            if hazard_resolution.get("encounter", {}).get("type") == "npc":
+                npc_info = hazard_resolution["encounter"]
+                if npc_info.get("is_combatant"):
+                    result["success"] = False
+                    result["message"] = (
+                        f"Rest interrupted! {hazard_resolution.get('narrative', 'Encounter occurred.')}"
+                    )
+                    result["rest_interrupted"] = True
+                    return result
+
+        # Step 2: Get characters to rest
+        if character_ids:
+            characters = [
+                self.controller.get_character(cid)
+                for cid in character_ids
+                if self.controller.get_character(cid)
+            ]
+        else:
+            characters = self.controller.get_all_characters()
+
+        if not characters:
+            result["message"] = "No characters to rest."
+            return result
+
+        # Step 3: Apply rest effects for each character
+        rest_messages = []
+        for character in characters:
+            if not character:
+                continue
+
+            char_result = {
+                "character_id": character.character_id,
+                "name": character.name,
+                "hp_recovered": 0,
+                "spells_recovered": False,
+                "conditions_blocking": [],
+            }
+
+            # Check if character can recover HP
+            if character.can_recover_hp():
+                # Inn rest heals 1 HP (Dolmenwood rules p159)
+                heal_result = self.controller.heal_character(character.character_id, 1)
+                char_result["hp_recovered"] = heal_result.get("healing_received", 0)
+                char_result["new_hp"] = heal_result.get("hp_current", character.hp_current)
+                if char_result["hp_recovered"] > 0:
+                    rest_messages.append(f"{character.name} recovers 1 HP")
+            else:
+                char_result["conditions_blocking"].append("restless_sleep")
+                rest_messages.append(f"{character.name} cannot recover HP (restless sleep)")
+
+            # Check if character can memorize spells
+            if character.can_memorize_spells():
+                # Recover cast spells
+                spells_recovered = 0
+                for spell in character.spells:
+                    if hasattr(spell, 'cast_today') and spell.cast_today:
+                        spell.cast_today = False
+                        spells_recovered += 1
+                if spells_recovered > 0:
+                    char_result["spells_recovered"] = True
+                    char_result["spells_count"] = spells_recovered
+                    rest_messages.append(f"{character.name} recovers {spells_recovered} spell(s)")
+            else:
+                if "restless_sleep" not in char_result["conditions_blocking"]:
+                    char_result["conditions_blocking"].append("restless_sleep")
+                rest_messages.append(f"{character.name} cannot memorize spells (restless sleep)")
+
+            result["rest_results"].append(char_result)
+
+        # Step 4: Advance time by 8 hours (48 turns)
+        self.controller.advance_time(48)
+
+        # Build summary message
+        if result.get("evening_hazard"):
+            hazard_msg = result["evening_hazard"].get("narrative", "An event occurred during the evening.")
+            result["message"] = f"{hazard_msg} After dealing with it, the party rests. {'. '.join(rest_messages)}."
+        else:
+            result["message"] = f"The party spends a peaceful night at {poi_name}. {'. '.join(rest_messages)}."
+
+        return result

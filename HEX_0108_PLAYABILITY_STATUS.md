@@ -84,6 +84,19 @@ intel = engine._serialize_npc_intelligence(npc)
 # Returns: {known_topics: [...], secret_info: [...], faction_profile: {...}, relationships: [...]}
 ```
 
+### sleep_at_poi(hex_id, poi_name, character_ids)
+- Sleep at a POI (inn, shelter) for the night
+- Checks for evening hazards first, then applies rest effects
+- Inn rest is comfortable - no Constitution check required
+- Respects can_recover_hp() and can_memorize_spells() (blocked by restless_sleep)
+- Advances time by 8 hours
+
+**Example:**
+```python
+result = engine.sleep_at_poi("0108", "The Crimson Bath")
+# Returns: {success: True, evening_hazard: {...}, rest_results: [...], time_advanced: 8, message: "..."}
+```
+
 ## GlobalController Methods (src/game_state/global_controller.py)
 
 ### _build_participant_from_intelligence(npc_id, npc_name, npc_intel, context)
@@ -185,7 +198,7 @@ participant = controller._build_participant_from_intelligence(
 - NPC group size engine method (5 tests)
 - Chance check helper (3 tests)
 
-### tests/hex_crawl/test_hex_0108_actions.py (54 tests)
+### tests/hex_crawl/test_hex_0108_actions.py (66 tests)
 - Hazard resolution helper (8 tests)
 - Integration with hazard checks (2 tests)
 - Wilderness investigate action (5 tests)
@@ -195,8 +208,11 @@ participant = controller._build_participant_from_intelligence(
 - NPC intelligence in social context (7 tests)
 - Roll hex encounter table action (6 tests)
 - Roll hex encounter table suggestion (2 tests)
+- Sleep at POI engine method (7 tests)
+- Sleep at POI action (3 tests)
+- Sleep at POI suggestion (2 tests)
 
-**Total: 116 tests passing**
+**Total: 128 tests passing**
 
 ---
 
@@ -232,6 +248,12 @@ if evening["triggered"]:
 encounter = engine.roll_hex_encounter_table("0108")
 if encounter["has_table"]:
     print(f"Rolled {encounter['roll']}: {encounter['result']} - {encounter['description']}")
+
+# 5. Party sleeps at the inn (integrates evening hazard + rest mechanics)
+rest_result = engine.sleep_at_poi("0108", "The Crimson Bath")
+print(f"Rest result: {rest_result['message']}")
+for char_rest in rest_result["rest_results"]:
+    print(f"  {char_rest['name']}: HP recovered={char_rest['hp_recovered']}")
 ```
 
 ---

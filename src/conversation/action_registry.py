@@ -899,6 +899,55 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_start_encounter,
     ))
 
+    def _wilderness_sleep_at_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Sleep at a POI (inn, safe shelter) for the night.
+
+        This action allows the party to rest at established locations like inns.
+        Inn rest is comfortable (no Constitution check needed, unlike wilderness camping).
+        The action:
+        1. Checks for evening hazards first
+        2. If hazard triggers and involves combat, rest is interrupted
+        3. Otherwise, applies rest effects (HP recovery, spell recovery)
+        4. Respects conditions like restless_sleep that block recovery
+        5. Advances time by 8 hours
+
+        Per Dolmenwood rules (p159), a good night's rest heals 1 HP
+        and allows spell-casters to prepare spells.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        poi_name = p.get("poi_name", "")
+        character_ids = p.get("character_ids")
+
+        if not poi_name:
+            # Try to get current POI from context
+            current_poi = getattr(dm.hex_crawl, '_current_poi', None)
+            if current_poi:
+                poi_name = current_poi
+            else:
+                return {
+                    "success": False,
+                    "message": "No POI specified. Use poi_name parameter to specify where to rest.",
+                }
+
+        result = dm.hex_crawl.sleep_at_poi(hex_id, poi_name, character_ids)
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:sleep_at_poi",
+        label="Sleep at this location",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "poi_name": {"type": "string", "required": True},
+            "character_ids": {"type": "array", "required": False},
+        },
+        help="Rest overnight at a POI (inn, shelter). Checks for evening hazards, then applies rest effects. Heals 1 HP and recovers spells (unless conditions prevent it).",
+        executor=_wilderness_sleep_at_poi,
+    ))
+
     # -------------------------------------------------------------------------
     # Dungeon actions
     # -------------------------------------------------------------------------

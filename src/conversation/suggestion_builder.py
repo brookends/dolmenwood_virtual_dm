@@ -739,6 +739,21 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             )
         )
 
+        # Sleep at the location (inn rest)
+        # This is especially relevant for inns, taverns, and sheltered locations
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="wilderness:sleep_at_poi",
+                    label=f"Sleep at {poi_name} (rest overnight)",
+                    params={"hex_id": hex_id, "poi_name": poi_name},
+                    safe_to_execute=True,
+                    help="Rest overnight at this location. Checks for evening hazards, then applies rest effects (1 HP heal, spell recovery).",
+                ),
+                score=65,
+            )
+        )
+
         # Leave the location
         out.append(
             _Candidate(
