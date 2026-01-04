@@ -4022,6 +4022,7 @@ class EventType(str, Enum):
     FESTIVAL = "festival"  # Seasonal or Wysenday festival
     TRANSFORMATION = "transformation"  # Time-triggered transformation
     QUEST_DEADLINE = "quest_deadline"  # Quest timer expires
+    ITEM_DECAY = "item_decay"  # Item expires/transforms (e.g., Golden Egg → dust)
 
 
 @dataclass
@@ -4299,6 +4300,95 @@ class EventScheduler:
             for e in self.events
             if e.event_type == EventType.INVITATION and e.is_active(current_date)
         ]
+
+    def schedule_item_decay(
+        self,
+        item_id: str,
+        item_name: str,
+        decay_dice: str,
+        current_date: "GameDate",
+        source_hex_id: Optional[str] = None,
+        source_poi_name: Optional[str] = None,
+        decay_result: str = "dust",
+        player_message: Optional[str] = None,
+    ) -> ScheduledEvent:
+        """
+        Schedule an item to decay/transform after a rolled number of days.
+
+        Used for items like Golden Eggs that collapse into dust after 4d6 days.
+
+        Args:
+            item_id: Unique ID of the item in party_inventory
+            item_name: Human-readable item name
+            decay_dice: Dice expression for days until decay (e.g., "4d6")
+            current_date: When the item was acquired
+            source_hex_id: Where the item came from
+            source_poi_name: POI where the item came from
+            decay_result: What the item becomes (e.g., "dust", "rotten")
+            player_message: Optional message shown when item decays
+
+        Returns:
+            The created ScheduledEvent
+        """
+        # Roll the decay time using DiceRoller
+        days_until_decay = DiceRoller.roll(decay_dice, "item_decay_timer").total
+        trigger_date = current_date.advance_days(days_until_decay)
+
+        if player_message is None:
+            player_message = f"The {item_name} has crumbled to {decay_result}."
+
+        event = ScheduledEvent(
+            event_type=EventType.ITEM_DECAY,
+            created_at=current_date,
+            source_hex_id=source_hex_id,
+            source_poi_name=source_poi_name,
+            trigger_date=trigger_date,
+            days_until_trigger=days_until_decay,
+            title=f"{item_name} Decay",
+            description=f"The {item_name} will decay into {decay_result}.",
+            player_message=player_message,
+            effect_type="item_decay",
+            effect_details={
+                "item_id": item_id,
+                "item_name": item_name,
+                "decay_result": decay_result,
+                "days_rolled": days_until_decay,
+            },
+        )
+
+        self.add_event(event)
+        return event
+
+    def get_pending_item_decays(self, current_date: "GameDate") -> list[ScheduledEvent]:
+        """Get all pending item decay events."""
+        return [
+            e
+            for e in self.events
+            if e.event_type == EventType.ITEM_DECAY and e.is_active(current_date)
+        ]
+
+    def check_item_decays(
+        self,
+        current_date: "GameDate",
+    ) -> list[dict[str, Any]]:
+        """
+        Check for item decay events that should trigger today.
+
+        Returns:
+            List of triggered decay effects with item details
+        """
+        triggered = []
+
+        for event in self.events:
+            if event.event_type != EventType.ITEM_DECAY:
+                continue
+            if not event.is_active(current_date):
+                continue
+            if event.trigger_date and event._date_compare(current_date, event.trigger_date) >= 0:
+                effect = event.trigger(current_date)
+                triggered.append(effect)
+
+        return triggered
 
 
 # =============================================================================

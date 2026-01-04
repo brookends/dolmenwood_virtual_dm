@@ -8002,9 +8002,8 @@ class HexCrawlEngine:
 
     def _get_current_date(self) -> GameDate:
         """Get the current game date from the controller."""
-        world_state = self.controller.get_world_state()
-        if world_state and world_state.date:
-            return world_state.date
+        if self.controller.world_state and self.controller.world_state.current_date:
+            return self.controller.world_state.current_date
         # Default date if not set
         return GameDate(year=1, month=1, day=1)
 
@@ -8836,3 +8835,160 @@ class HexCrawlEngine:
 
         # Filter out taken items
         return [item for item in poi_items if not item.get("taken", False)]
+
+    # =========================================================================
+    # ITEM ACQUISITION AND DECAY
+    # =========================================================================
+
+    def acquire_item(
+        self,
+        hex_id: str,
+        item: dict[str, Any],
+        poi_name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Acquire an item and add it to party inventory.
+
+        If the item has decay properties (decay_dice, decay_unit), schedules
+        a decay event. For example, Golden Eggs decay after 4d6 days.
+
+        Args:
+            hex_id: Source hex
+            item: Item data dict with name, item_id, value, and optional decay properties
+            poi_name: Source POI
+
+        Returns:
+            Dict with acquisition details and any scheduled decay
+        """
+        import uuid
+
+        # Generate unique instance ID for this specific item
+        instance_id = f"{item.get('item_id', 'unknown')}_{str(uuid.uuid4())[:8]}"
+
+        # Create inventory entry
+        inventory_item = {
+            "instance_id": instance_id,
+            "item_id": item.get("item_id", ""),
+            "name": item.get("name", "Unknown Item"),
+            "quantity": item.get("quantity", 1),
+            "value_gp": item.get("value_gp"),
+            "magical": item.get("magical", False),
+            "notes": item.get("notes", ""),
+            "source_hex": hex_id,
+            "source_poi": poi_name,
+            "acquired_date": str(self._get_current_date()),
+            "decayed": False,
+        }
+
+        # Add to party inventory
+        party_state = self.controller.party_state
+        party_state.party_inventory.append(inventory_item)
+
+        result = {
+            "success": True,
+            "item": inventory_item,
+            "instance_id": instance_id,
+            "scheduled_decay": None,
+        }
+
+        # Check for decay properties
+        decay_dice = item.get("decay_dice")
+        if decay_dice:
+            decay_unit = item.get("decay_unit", "days")
+            if decay_unit == "days":
+                current_date = self._get_current_date()
+                decay_event = self._event_scheduler.schedule_item_decay(
+                    item_id=instance_id,
+                    item_name=inventory_item["name"],
+                    decay_dice=decay_dice,
+                    current_date=current_date,
+                    source_hex_id=hex_id,
+                    source_poi_name=poi_name,
+                    decay_result="dust",
+                    player_message=f"The {inventory_item['name']} crumbles to dust in your hands.",
+                )
+
+                result["scheduled_decay"] = {
+                    "event_id": decay_event.event_id,
+                    "days_until": decay_event.days_until_trigger,
+                    "trigger_date": str(decay_event.trigger_date),
+                }
+
+        return result
+
+    def process_item_decays(self) -> list[dict[str, Any]]:
+        """
+        Process any item decay events that should trigger.
+
+        Called on day advance to check for items that have expired.
+        Updates party inventory to mark decayed items.
+
+        Returns:
+            List of triggered decay events with narrative hints
+        """
+        current_date = self._get_current_date()
+        triggered = self._event_scheduler.check_item_decays(current_date)
+
+        results = []
+        party_state = self.controller.party_state
+
+        for decay_effect in triggered:
+            item_id = decay_effect.get("effect_details", {}).get("item_id")
+            item_name = decay_effect.get("effect_details", {}).get("item_name", "item")
+            decay_result = decay_effect.get("effect_details", {}).get("decay_result", "dust")
+
+            # Find and update the item in inventory
+            for inv_item in party_state.party_inventory:
+                if inv_item.get("instance_id") == item_id:
+                    inv_item["decayed"] = True
+                    inv_item["decay_result"] = decay_result
+                    inv_item["decayed_date"] = str(current_date)
+                    break
+
+            results.append({
+                "item_id": item_id,
+                "item_name": item_name,
+                "decay_result": decay_result,
+                "message": decay_effect.get("player_message", f"The {item_name} has decayed."),
+                "narrative_hints": [
+                    f"The {item_name} has crumbled to {decay_result}.",
+                    "The party should update their inventory accordingly.",
+                ],
+            })
+
+        return results
+
+    def get_active_decay_timers(self) -> list[dict[str, Any]]:
+        """
+        Get all active item decay timers for display.
+
+        Returns:
+            List of pending decay events with time remaining
+        """
+        current_date = self._get_current_date()
+        pending = self._event_scheduler.get_pending_item_decays(current_date)
+
+        timers = []
+        for event in pending:
+            if event.trigger_date and event.created_at:
+                # Calculate days remaining from total days and elapsed days
+                total_days = event.days_until_trigger or 0
+                # Calculate days elapsed since creation
+                days_elapsed = self._calculate_days_between(event.created_at, current_date)
+                days_remaining = max(0, total_days - days_elapsed)
+                timers.append({
+                    "event_id": event.event_id,
+                    "item_id": event.effect_details.get("item_id"),
+                    "item_name": event.effect_details.get("item_name"),
+                    "days_remaining": days_remaining,
+                    "trigger_date": str(event.trigger_date),
+                })
+
+        return timers
+
+    def _calculate_days_between(self, start: GameDate, end: GameDate) -> int:
+        """Calculate number of days between two dates."""
+        # Simple calculation assuming 30 days per month
+        start_total = (start.year - 1) * 360 + (start.month - 1) * 30 + start.day
+        end_total = (end.year - 1) * 360 + (end.month - 1) * 30 + end.day
+        return end_total - start_total
