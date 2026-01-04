@@ -28,6 +28,7 @@ from src.data_models import (
     EncounterState,
     GameDate,
     GameTime,
+    TimeOfDay,
     Season,
     Weather,
     Location,
@@ -1191,6 +1192,12 @@ class GlobalController:
         if expired_conditions:
             result["expired_conditions"] = expired_conditions
 
+        # Check for time-of-day condition expirations (for "until dawn" style conditions)
+        current_time_of_day = self.time_tracker.game_time.get_time_of_day()
+        time_expired = self._process_time_of_day_condition_ends(current_time_of_day)
+        if time_expired:
+            result["time_of_day_expired"] = time_expired
+
         # P2-10: Emit RunLog event for turn advancement
         try:
             from src.observability.run_log import get_run_log
@@ -1350,20 +1357,26 @@ class GlobalController:
         return expired
 
     def _apply_condition_end_healing(
-        self, character: CharacterState, healing_data: dict[str, Any]
+        self, character: CharacterState, healing_data: Union[str, dict[str, Any]]
     ) -> dict[str, Any]:
         """
         Apply healing when a condition ends.
 
         Args:
             character: The character to heal
-            healing_data: Dict with dice formula and condition
+            healing_data: Either a dice formula string (e.g., "1d6") or
+                          a dict with "dice" and optional "condition" keys
 
         Returns:
             Dict with healing amount and result
         """
-        dice_formula = healing_data.get("dice", "1d6")
-        condition = healing_data.get("condition", "")
+        # Handle both string and dict formats
+        if isinstance(healing_data, str):
+            dice_formula = healing_data
+            condition = ""
+        else:
+            dice_formula = healing_data.get("dice", "1d6")
+            condition = healing_data.get("condition", "")
 
         # Roll healing dice
         roll = DiceRoller.roll(dice_formula, f"healing from {condition}")
@@ -1382,19 +1395,25 @@ class GlobalController:
         }
 
     def _create_chained_condition(
-        self, chain_data: dict[str, Any]
+        self, chain_data: Union[str, dict[str, Any]]
     ) -> "Condition":
         """
         Create the next condition in a chain.
 
         Args:
-            chain_data: Dict with condition_type and source
+            chain_data: Either a condition type string (e.g., "magical_sleep") or
+                        a dict with "condition_type" and optional "source" keys
 
         Returns:
             New Condition object
         """
-        condition_type_str = chain_data.get("condition_type", "")
-        source = chain_data.get("source", "condition_chain")
+        # Handle both string and dict formats
+        if isinstance(chain_data, str):
+            condition_type_str = chain_data
+            source = "condition_chain"
+        else:
+            condition_type_str = chain_data.get("condition_type", "")
+            source = chain_data.get("source", "condition_chain")
 
         try:
             condition_type = ConditionType(condition_type_str)
@@ -6263,6 +6282,73 @@ class GlobalController:
                 character.conditions.append(cond)
 
         return effects
+
+    def _process_time_of_day_condition_ends(
+        self, current_time: "TimeOfDay"
+    ) -> list[dict[str, Any]]:
+        """
+        Process conditions that end at a specific time of day.
+
+        This handles "until dawn" style conditions like compelled_dancing.
+        When the specified time is reached:
+        1. The condition expires
+        2. Healing is applied if specified
+        3. Chain conditions are applied (e.g., compelled_dancing → magical_sleep)
+
+        Args:
+            current_time: Current TimeOfDay value
+
+        Returns:
+            List of condition end events with healing/chain info
+        """
+        events = []
+
+        for character in self._characters.values():
+            still_active = []
+            conditions_to_add = []
+
+            for condition in character.conditions:
+                # Check if this condition should end at this time
+                if condition.should_end_at_time(current_time):
+                    # Get transition effects before removal
+                    transition = condition.get_end_transition()
+
+                    event = {
+                        "character_id": character.character_id,
+                        "character_name": character.name,
+                        "condition": condition.condition_type.value,
+                        "ended_at": current_time.value,
+                        "healing_applied": None,
+                        "chained_to": None,
+                    }
+
+                    # Apply healing if specified
+                    if transition and transition.get("healing"):
+                        healing_result = self._apply_condition_end_healing(
+                            character, transition["healing"]
+                        )
+                        event["healing_applied"] = healing_result
+
+                    # Create chained condition if specified
+                    if transition and transition.get("next_condition"):
+                        next_cond = self._create_chained_condition(
+                            transition["next_condition"]
+                        )
+                        conditions_to_add.append(next_cond)
+                        event["chained_to"] = next_cond.condition_type.value
+
+                    events.append(event)
+                else:
+                    still_active.append(condition)
+
+            # Update character conditions
+            character.conditions = still_active
+
+            # Add chained conditions
+            for cond in conditions_to_add:
+                character.conditions.append(cond)
+
+        return events
 
     def _log_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Log an event to the session log."""

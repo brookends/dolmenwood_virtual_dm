@@ -521,3 +521,778 @@ class TestHazardSchemaVariations:
         engine.dice.roll.assert_not_called()
         assert result.damage_dealt == 0
         assert "exhausted" in result.conditions_applied
+
+
+class TestTouchActionFrostPatchTrigger:
+    """Tests for touch action triggering frost patch hazard."""
+
+    def test_detect_poi_action_matches_touch(self):
+        """Verify detect_poi_action matches 'touch frost patches'."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("touch frost patches")
+        assert result is not None
+        assert result[0] == "touch"
+        assert result[1] == "touch"
+
+    def test_detect_poi_action_matches_touch_variants(self):
+        """Verify detect_poi_action matches various touch input variations."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        # Test various phrasings
+        test_cases = [
+            ("I touch the frozen figure", ("touch", "touch")),
+            ("Touch the frost giant", ("touch", "touch")),
+            ("I want to touch it", ("touch", "touch")),
+            ("I grab the frozen soldier", ("touch", "grab")),
+            ("Press my hand against the ice", ("touch", "press")),
+            ("I hold the frost blade", ("touch", "hold")),
+        ]
+
+        for input_text, expected in test_cases:
+            result = engine.detect_poi_action(input_text)
+            assert result == expected, f"Failed for '{input_text}'"
+
+    def test_get_matching_poi_hazards_matches_touching_trigger(self):
+        """Verify get_matching_poi_hazards matches hazard with 'touching' trigger."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Frozen Battleground"
+
+        # Create mock POI with frost_touch hazard
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        # Action type "touch" should match trigger "touching"
+        matching = engine.get_matching_poi_hazards("0105", "touch")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "frost_touch"
+
+    def test_resolve_poi_action_triggers_frost_hazard(self):
+        """Verify resolve_poi_action triggers frost hazard on touch."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = "Frozen Battleground"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=5)
+        engine.dice.roll.return_value = MagicMock(total=4)  # 4 cold damage
+        engine.narrative_resolver = MagicMock()
+
+        # Create test character
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_char"
+        char.make_saving_throw = MagicMock(return_value=(5, False))  # Failed
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = char
+        engine.controller.apply_damage = MagicMock()
+        engine.controller.apply_condition = MagicMock(return_value={"applied": True})
+
+        # Create mock POI
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        # Resolve the touch action
+        result = engine.resolve_poi_action("I touch the frozen figure", "test_char")
+
+        assert result["triggered"] is True
+        assert result["action_type"] == "touch"
+        assert result["hazards_triggered"] == 1
+        assert result["hazard_results"][0]["hazard_name"] == "Ancient Frost Magic"
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 4
+
+    def test_resolve_poi_action_with_successful_save(self):
+        """Verify resolve_poi_action handles successful saves."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = "Frozen Battleground"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=18)
+        engine.narrative_resolver = MagicMock()
+
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_char"
+        char.make_saving_throw = MagicMock(return_value=(18, True))  # Passed
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = char
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Frozen Battleground"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "frost_touch",
+                "name": "Ancient Frost Magic",
+                "trigger": "touching frozen figures or frost giant",
+                "save_type": "doom",
+                "damage_dice": "1d6",
+                "damage_type": "cold",
+                "description": "Ancient battle-magic lashes out",
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        result = engine.resolve_poi_action("Touch the frost giant", "test_char")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is True
+        assert result["hazard_results"][0]["damage_taken"] == 0
+
+    def test_no_match_without_poi(self):
+        """Verify resolve_poi_action fails without current POI."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0105"
+        engine._current_poi = None  # No POI
+
+        result = engine.resolve_poi_action("touch frost patches", "test_char")
+
+        assert result["triggered"] is False
+        assert result["reason"] == "Not at a POI"
+
+    def test_no_match_for_non_touch_hazard(self):
+        """Verify touch action doesn't match non-touch hazards."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Some POI"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Some POI"
+        mock_poi.hazards = [
+            {
+                "trigger": "entering the water",  # Not a touch trigger
+                "save_type": "doom",
+                "damage_dice": "1d6",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0105", "touch")
+
+        assert len(matching) == 0
+
+
+class TestQuestHookIntegration:
+    """Tests for quest hook integration with POI entry."""
+
+    def test_enter_poi_returns_quest_hooks(self):
+        """Verify enter_poi returns available quest hooks from Shepherd Encampment."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine, POIExplorationState
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._poi_state = POIExplorationState.APPROACHING
+        engine._poi_visits = {}
+        engine.dice = MagicMock()
+
+        # Mock controller with session manager
+        session_mgr = MagicMock()
+        session_mgr.get_active_quest.return_value = None  # Quest not active
+        session_mgr._current_session = MagicMock()
+        session_mgr._current_session.completed_quests = []  # Quest not completed
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+        engine.controller.world_state = MagicMock()
+        engine.controller.world_state.current_time = MagicMock()
+        engine.controller.world_state.current_time.get_time_of_day.return_value = MagicMock(
+            value="afternoon"
+        )
+
+        # Create mock POI with quest hook (like Shepherd Encampment)
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.poi_type = "encampment"
+        mock_poi.is_dungeon = False
+        mock_poi.has_entry_conditions = MagicMock(return_value=False)
+        mock_poi.get_entering_description = MagicMock(return_value="Welcome to the camp.")
+        mock_poi.get_interior_description = MagicMock(return_value="A cluster of tents.")
+        mock_poi.get_hazards_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_alerts_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_current_inhabitants = MagicMock(return_value=None)
+        mock_poi.special_features = []
+        mock_poi.npcs = ["aegnyth_cormick"]
+        mock_poi.quest_hooks = [
+            {
+                "quest_id": "hunt_frore_gryphus",
+                "title": "The Winged Terror",
+                "description": "The shepherds have lost a dozen sheep...",
+                "quest_giver": "aegnyth_cormick",
+                "objective": "Slay or banish the frore gryphus",
+                "reward_description": "50gp pooled from the shepherds",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+        engine.check_poi_availability = MagicMock(return_value={"available": True})
+
+        result = engine.enter_poi("0105")
+
+        assert result["success"] is True
+        assert "quest_hooks" in result
+        assert len(result["quest_hooks"]) == 1
+        assert result["quest_hooks"][0]["quest_id"] == "hunt_frore_gryphus"
+        assert result["quest_hooks"][0]["title"] == "The Winged Terror"
+
+    def test_enter_poi_returns_suggested_accept_quest_action(self):
+        """Verify enter_poi includes suggested action to accept quest."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine, POIExplorationState
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._poi_state = POIExplorationState.APPROACHING
+        engine._poi_visits = {}
+        engine.dice = MagicMock()
+
+        session_mgr = MagicMock()
+        session_mgr.get_active_quest.return_value = None
+        session_mgr._current_session = MagicMock()
+        session_mgr._current_session.completed_quests = []
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+        engine.controller.world_state = MagicMock()
+        engine.controller.world_state.current_time = MagicMock()
+        engine.controller.world_state.current_time.get_time_of_day.return_value = MagicMock(
+            value="afternoon"
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.poi_type = "encampment"
+        mock_poi.is_dungeon = False
+        mock_poi.has_entry_conditions = MagicMock(return_value=False)
+        mock_poi.get_entering_description = MagicMock(return_value="")
+        mock_poi.get_interior_description = MagicMock(return_value="")
+        mock_poi.get_hazards_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_alerts_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_current_inhabitants = MagicMock(return_value=None)
+        mock_poi.special_features = []
+        mock_poi.npcs = []
+        mock_poi.quest_hooks = [
+            {
+                "quest_id": "hunt_frore_gryphus",
+                "title": "The Winged Terror",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+        engine.check_poi_availability = MagicMock(return_value={"available": True})
+
+        result = engine.enter_poi("0105")
+
+        assert "suggested_actions" in result
+        assert len(result["suggested_actions"]) == 1
+        assert result["suggested_actions"][0]["action_id"] == "poi:accept_quest"
+        assert result["suggested_actions"][0]["params"]["quest_id"] == "hunt_frore_gryphus"
+        assert "The Winged Terror" in result["suggested_actions"][0]["label"]
+
+    def test_accept_poi_quest_calls_session_manager(self):
+        """Verify accept_poi_quest calls session_manager.accept_quest correctly."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._current_hex = "0105"
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        session_mgr = MagicMock()
+        session_mgr.accept_quest.return_value = {"quest_id": "hunt_frore_gryphus", "state": "accepted"}
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.quest_hooks = [
+            {
+                "quest_id": "hunt_frore_gryphus",
+                "title": "The Winged Terror",
+                "description": "The shepherds have lost sheep",
+                "quest_giver": "aegnyth_cormick",
+                "objective": "Slay or banish the frore gryphus",
+                "reward_description": "50gp",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        result = engine.accept_poi_quest("0105", "hunt_frore_gryphus")
+
+        assert result["success"] is True
+        assert result["quest_id"] == "hunt_frore_gryphus"
+        assert result["title"] == "The Winged Terror"
+        assert result["objective"] == "Slay or banish the frore gryphus"
+
+        # Verify session_manager.accept_quest was called
+        session_mgr.accept_quest.assert_called_once()
+        call_args = session_mgr.accept_quest.call_args
+        assert call_args[1]["npc_id"] == "aegnyth_cormick"
+        assert call_args[1]["hex_id"] == "0105"
+
+    def test_accept_poi_quest_emits_event(self):
+        """Verify accept_poi_quest emits quest_accepted event."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._current_hex = "0105"
+
+        emitted_events = []
+
+        def capture_event(event_type, data):
+            emitted_events.append({"type": event_type, "data": data})
+
+        engine._emit_run_log_event = capture_event
+
+        session_mgr = MagicMock()
+        session_mgr.accept_quest.return_value = {"quest_id": "hunt_frore_gryphus"}
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.quest_hooks = [
+            {
+                "quest_id": "hunt_frore_gryphus",
+                "title": "The Winged Terror",
+                "quest_giver": "aegnyth_cormick",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+
+        engine.accept_poi_quest("0105", "hunt_frore_gryphus")
+
+        assert len(emitted_events) == 1
+        assert emitted_events[0]["type"] == "quest_accepted"
+        assert emitted_events[0]["data"]["quest_id"] == "hunt_frore_gryphus"
+        assert emitted_events[0]["data"]["poi_name"] == "Shepherd Encampment"
+        assert emitted_events[0]["data"]["quest_giver"] == "aegnyth_cormick"
+
+    def test_quest_hooks_filtered_when_already_active(self):
+        """Verify quest hooks are not shown when already accepted."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine, POIExplorationState
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._poi_state = POIExplorationState.APPROACHING
+        engine._poi_visits = {}
+        engine.dice = MagicMock()
+
+        # Session manager says quest is already active
+        session_mgr = MagicMock()
+        session_mgr.get_active_quest.return_value = {"quest_id": "hunt_frore_gryphus"}  # Already active!
+        session_mgr._current_session = MagicMock()
+        session_mgr._current_session.completed_quests = []
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+        engine.controller.world_state = MagicMock()
+        engine.controller.world_state.current_time = MagicMock()
+        engine.controller.world_state.current_time.get_time_of_day.return_value = MagicMock(
+            value="afternoon"
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.poi_type = "encampment"
+        mock_poi.is_dungeon = False
+        mock_poi.has_entry_conditions = MagicMock(return_value=False)
+        mock_poi.get_entering_description = MagicMock(return_value="")
+        mock_poi.get_interior_description = MagicMock(return_value="")
+        mock_poi.get_hazards_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_alerts_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_current_inhabitants = MagicMock(return_value=None)
+        mock_poi.special_features = []
+        mock_poi.npcs = []
+        mock_poi.quest_hooks = [
+            {"quest_id": "hunt_frore_gryphus", "title": "The Winged Terror"}
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+        engine.check_poi_availability = MagicMock(return_value={"available": True})
+
+        result = engine.enter_poi("0105")
+
+        # Quest hooks should NOT be in result since already active
+        assert "quest_hooks" not in result or len(result.get("quest_hooks", [])) == 0
+
+    def test_quest_hooks_filtered_when_completed(self):
+        """Verify quest hooks are not shown when already completed."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine, POIExplorationState
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Shepherd Encampment"
+        engine._poi_state = POIExplorationState.APPROACHING
+        engine._poi_visits = {}
+        engine.dice = MagicMock()
+
+        # Session manager says quest is completed
+        session_mgr = MagicMock()
+        session_mgr.get_active_quest.return_value = None
+        session_mgr._current_session = MagicMock()
+        session_mgr._current_session.completed_quests = ["hunt_frore_gryphus"]  # Already done!
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+        engine.controller.world_state = MagicMock()
+        engine.controller.world_state.current_time = MagicMock()
+        engine.controller.world_state.current_time.get_time_of_day.return_value = MagicMock(
+            value="afternoon"
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Shepherd Encampment"
+        mock_poi.poi_type = "encampment"
+        mock_poi.is_dungeon = False
+        mock_poi.has_entry_conditions = MagicMock(return_value=False)
+        mock_poi.get_entering_description = MagicMock(return_value="")
+        mock_poi.get_interior_description = MagicMock(return_value="")
+        mock_poi.get_hazards_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_alerts_for_trigger = MagicMock(return_value=[])
+        mock_poi.get_current_inhabitants = MagicMock(return_value=None)
+        mock_poi.special_features = []
+        mock_poi.npcs = []
+        mock_poi.quest_hooks = [
+            {"quest_id": "hunt_frore_gryphus", "title": "The Winged Terror"}
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0105": mock_hex}
+        engine.check_poi_availability = MagicMock(return_value={"available": True})
+
+        result = engine.enter_poi("0105")
+
+        # Quest hooks should NOT be in result since already completed
+        assert "quest_hooks" not in result or len(result.get("quest_hooks", [])) == 0
+
+    def test_poi_accept_quest_action_registered(self):
+        """Verify poi:accept_quest action is registered."""
+        from src.conversation.action_registry import get_default_registry
+
+        registry = get_default_registry()
+        action = registry.get("poi:accept_quest")
+
+        assert action is not None
+        assert action.id == "poi:accept_quest"
+        assert action.label == "Accept Quest"
+        assert "quest_id" in action.params_schema
+
+
+class TestHiddenNestDiscovery:
+    """Tests for hidden nest POI discovery via search_hex."""
+
+    def test_search_hex_finds_hidden_poi_on_high_roll(self):
+        """Verify search_hex discovers hidden POI when roll succeeds (5-6)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        # Mock dice to return 5 (success)
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=5)
+
+        # Create hidden nest POI
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.poi_type = "nest"
+        nest_poi.tagline = "(Hidden)"
+        nest_poi.description = "Concealed within the copse..."
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        assert len(result["pois_found"]) == 1
+        assert result["pois_found"][0]["name"] == "The Nest of the Frore Gryphus"
+        assert result["pois_found"][0]["poi_type"] == "nest"
+        nest_poi.mark_discovered.assert_called_once()
+
+    def test_search_hex_does_not_find_hidden_poi_on_low_roll(self):
+        """Verify search_hex does NOT discover hidden POI when roll fails (1-4)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        # Mock dice to return 4 (failure)
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=4)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        assert len(result["pois_found"]) == 0
+        nest_poi.mark_discovered.assert_not_called()
+
+    def test_search_hex_skips_already_discovered_poi(self):
+        """Verify search_hex skips POIs that are already discovered."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=6)  # Would succeed
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.hidden = True
+        nest_poi.discovered = True  # Already discovered!
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        # Should not find it again
+        assert len(result["pois_found"]) == 0
+        nest_poi.mark_discovered.assert_not_called()
+
+    def test_search_hex_skips_non_hidden_poi(self):
+        """Verify search_hex only rolls for hidden POIs."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+        engine._emit_run_log_event = MagicMock()
+
+        engine.dice = MagicMock()
+
+        # Non-hidden POI
+        camp_poi = MagicMock(spec=PointOfInterest)
+        camp_poi.name = "Shepherd Encampment"
+        camp_poi.hidden = False  # Not hidden
+        camp_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [camp_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        result = engine.search_hex("0105")
+
+        # Should not have rolled for non-hidden POI
+        engine.dice.roll_d6.assert_not_called()
+        assert len(result["pois_found"]) == 0
+
+    def test_search_hex_emits_discovery_event(self):
+        """Verify search_hex emits poi_discovered event when finding hidden POI."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 10
+
+        emitted_events = []
+
+        def capture_event(event_type, data):
+            emitted_events.append({"type": event_type, "data": data})
+
+        engine._emit_run_log_event = capture_event
+
+        engine.dice = MagicMock()
+        engine.dice.roll_d6.return_value = MagicMock(total=6)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+        nest_poi.poi_type = "nest"
+        nest_poi.tagline = "(Hidden)"
+        nest_poi.description = "Concealed..."
+        nest_poi.hidden = True
+        nest_poi.discovered = False
+
+        mock_hex = MagicMock()
+        mock_hex.features = []
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)
+        )
+
+        engine.search_hex("0105")
+
+        assert len(emitted_events) == 1
+        assert emitted_events[0]["type"] == "poi_discovered"
+        assert emitted_events[0]["data"]["poi_name"] == "The Nest of the Frore Gryphus"
+        assert emitted_events[0]["data"]["was_hidden"] is True
+
+    def test_search_hex_requires_travel_points(self):
+        """Verify search_hex fails when not enough travel points."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import TerrainType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._travel_points_remaining = 1  # Not enough
+
+        engine.get_terrain_for_hex = MagicMock(return_value=TerrainType.MEADOW)
+        engine.get_terrain_info = MagicMock(
+            return_value=MagicMock(travel_point_cost=2)  # Costs 2
+        )
+
+        result = engine.search_hex("0105")
+
+        assert result["success"] is False
+        assert "Not enough Travel Points" in result["message"]
+
+    def test_discover_poi_marks_poi_as_discovered(self):
+        """Verify discover_poi marks a specific POI as discovered."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+
+        result = engine.discover_poi("0105", "The Nest of the Frore Gryphus")
+
+        assert result is True
+        nest_poi.mark_discovered.assert_called_once()
+
+    def test_discover_poi_case_insensitive(self):
+        """Verify discover_poi matches POI names case-insensitively."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        nest_poi = MagicMock(spec=PointOfInterest)
+        nest_poi.name = "The Nest of the Frore Gryphus"
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [nest_poi]
+
+        engine._hex_data = {"0105": mock_hex}
+
+        # Use lowercase name
+        result = engine.discover_poi("0105", "the nest of the frore gryphus")
+
+        assert result is True
+        nest_poi.mark_discovered.assert_called_once()

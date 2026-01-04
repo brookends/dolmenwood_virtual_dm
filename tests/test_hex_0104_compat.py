@@ -46,6 +46,8 @@ def hex_0104(hex_pipeline):
 def hex_engine(hex_0104):
     """Create a HexCrawlEngine with hex 0104 loaded."""
     controller = GlobalController()
+    # Set time to night so the Dredger is present (it's nighttime-only)
+    controller.world_state.current_time.hour = 22
     engine = HexCrawlEngine(controller)
     engine._hex_data["0104"] = hex_0104
     return engine
@@ -566,6 +568,94 @@ class TestFactionRelationshipTracking:
 # =============================================================================
 # VULNERABILITY-BASED LIKELIHOOD TESTS
 # =============================================================================
+
+
+# =============================================================================
+# TREASURE HOARD TESTS (Task 6.1)
+# =============================================================================
+
+
+class TestTreasureHoardLoading:
+    """Test that treasure_hoard fields are preserved during loading."""
+
+    def test_crocus_cave_has_treasure_hoard(self, hex_0103_engine):
+        """Crocus's Cave POI should have treasure_hoard loaded."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus_cave = None
+        for poi in hex_data.points_of_interest:
+            if poi.name == "Crocus's Cave":
+                crocus_cave = poi
+                break
+
+        assert crocus_cave is not None, "Crocus's Cave POI not found"
+        assert crocus_cave.treasure_hoard is not None, "treasure_hoard not loaded"
+
+    def test_treasure_hoard_has_coins(self, hex_0103_engine):
+        """Treasure hoard should have coins structured correctly."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus_cave = next(
+            (poi for poi in hex_data.points_of_interest if poi.name == "Crocus's Cave"),
+            None,
+        )
+
+        assert crocus_cave is not None
+        hoard = crocus_cave.treasure_hoard
+        assert "coins" in hoard
+        assert hoard["coins"]["cp"] == 673
+        assert hoard["coins"]["sp"] == 432
+        assert hoard["coins"]["gp"] == 925
+
+    def test_treasure_hoard_has_items(self, hex_0103_engine):
+        """Treasure hoard should have items array."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus_cave = next(
+            (poi for poi in hex_data.points_of_interest if poi.name == "Crocus's Cave"),
+            None,
+        )
+
+        assert crocus_cave is not None
+        hoard = crocus_cave.treasure_hoard
+        assert "items" in hoard
+        assert len(hoard["items"]) == 2  # Golden eggs and talisman
+
+        # Check golden eggs
+        golden_eggs = next(
+            (item for item in hoard["items"] if item["name"] == "Golden Egg"), None
+        )
+        assert golden_eggs is not None
+        assert golden_eggs["quantity"] == 4
+        assert golden_eggs["value_gp"] == 40
+
+        # Check talisman
+        talisman = next(
+            (item for item in hoard["items"] if "Talisman" in item["name"]), None
+        )
+        assert talisman is not None
+        assert talisman["magical"] is True
+
+    def test_treasure_hoard_has_worthless(self, hex_0103_engine):
+        """Treasure hoard should have worthless description."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        crocus_cave = next(
+            (poi for poi in hex_data.points_of_interest if poi.name == "Crocus's Cave"),
+            None,
+        )
+
+        assert crocus_cave is not None
+        hoard = crocus_cave.treasure_hoard
+        assert "worthless" in hoard
+        assert "broken glass" in hoard["worthless"]
+
+    def test_sidney_company_has_no_treasure_hoard(self, hex_0103_engine):
+        """Sidney's Company POI should have no treasure_hoard (it's None)."""
+        hex_data = hex_0103_engine._hex_data["0103"]
+        sidney_company = next(
+            (poi for poi in hex_data.points_of_interest if poi.name == "Sidney's Company"),
+            None,
+        )
+
+        assert sidney_company is not None
+        assert sidney_company.treasure_hoard is None
 
 
 class TestVulnerabilityBasedLikelihood:

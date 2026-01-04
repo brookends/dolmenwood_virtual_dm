@@ -898,6 +898,7 @@ class ContentManager:
             is_dungeon=data.get("is_dungeon", False),
             dungeon_levels=data.get("dungeon_levels"),
             hidden=is_hidden,
+            treasure_hoard=data.get("treasure_hoard"),
             quest_hooks=data.get("quest_hooks", []),
             encounter_modifiers=data.get("encounter_modifiers", []),
             item_persistence=data.get("item_persistence"),

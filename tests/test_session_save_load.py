@@ -315,6 +315,27 @@ class TestWorldStatePreservation:
 
         assert dm2.current_state == GameState.WILDERNESS_TRAVEL
 
+    def test_party_inventory_preserved(self, dm_with_state, temp_save_dir):
+        """Party inventory (collected treasure) is preserved."""
+        # Add treasure to party inventory
+        dm_with_state.controller.party_state.party_inventory = [
+            {"name": "Gold coins", "value": 100, "quantity": 50, "source": "dungeon:room1"},
+            {"name": "Ruby", "value": 500, "quantity": 1, "source": "dungeon:room2"},
+        ]
+
+        dm_with_state.save_game(slot=1)
+
+        config = GameConfig(save_dir=temp_save_dir, enable_narration=False, use_vector_db=False)
+        dm2 = VirtualDM(config=config)
+        dm2.load_game(slot=1)
+
+        inventory = dm2.controller.party_state.party_inventory
+        assert len(inventory) == 2
+        assert inventory[0]["name"] == "Gold coins"
+        assert inventory[0]["value"] == 100
+        assert inventory[1]["name"] == "Ruby"
+        assert inventory[1]["source"] == "dungeon:room2"
+
 
 class TestExplorationPreservation:
     """Test exploration state is preserved through save/load."""

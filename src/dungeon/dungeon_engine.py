@@ -91,6 +91,7 @@ class DungeonActionType(str, Enum):
     CAST_SPELL = "cast_spell"  # Cast a spell
     MAP = "map"  # Map the current area
     FAST_TRAVEL = "fast_travel"  # Use established safe path (p162)
+    TAKE_TREASURE = "take_treasure"  # Take treasure from room
 
 
 class DungeonDoomResult(str, Enum):
@@ -666,6 +667,7 @@ class DungeonEngine:
             DungeonActionType.CAST_SPELL: self._handle_cast_spell,
             DungeonActionType.MAP: self._handle_map,
             DungeonActionType.FAST_TRAVEL: self._handle_fast_travel,
+            DungeonActionType.TAKE_TREASURE: self._handle_take_treasure,
         }
 
         handler = handlers.get(action)
@@ -707,7 +709,18 @@ class DungeonEngine:
 
         # Create room if doesn't exist
         if exit_target not in self._dungeon_state.rooms:
-            self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
+            if self._dungeon_state.dynamic_layout:
+                # Generate a dynamic room using roll tables
+                generated_room = self._generate_dynamic_room(
+                    exit_target,
+                    from_room_id=current_room.room_id,
+                    from_direction=direction,
+                )
+                if not generated_room:
+                    # Fallback to empty room if generation fails
+                    self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
+            else:
+                self._dungeon_state.rooms[exit_target] = DungeonRoom(room_id=exit_target)
 
         # Update party location
         self.controller.set_party_location(
@@ -724,6 +737,43 @@ class DungeonEngine:
             "new_room": exit_target,
             "noise": 1,  # Normal movement noise
         }
+
+        # Include room details in result
+        if new_room.name:
+            result["room_name"] = new_room.name
+        if new_room.description:
+            result["room_description"] = new_room.description
+        if new_room.exits:
+            result["exits"] = list(new_room.exits.keys())
+
+        # For dynamic dungeons, generate an encounter when entering a new room
+        if self._dungeon_state.dynamic_layout and not new_room.searched:
+            encounter_result = self.generate_room_encounter()
+            if encounter_result:
+                result["encounter"] = encounter_result
+                # Mark room as having had encounter generated
+                new_room.searched = True
+
+                # If encounter requires state transition, create EncounterState
+                if encounter_result.get("requires_transition"):
+                    encounter_state = self._create_encounter_from_table_result(
+                        encounter_result
+                    )
+                    if encounter_state:
+                        result["encounter_state"] = encounter_state
+                        self.controller.set_encounter(encounter_state)
+                        self.controller.transition(
+                            "encounter_triggered",
+                            context={
+                                "dungeon_id": self._dungeon_state.dungeon_id,
+                                "room_id": self._dungeon_state.current_room,
+                                "source": "room_entry",
+                                "roll_tables": self._dungeon_state.roll_tables,
+                                "poi_name": self._dungeon_state.poi_name,
+                                "hex_id": self._dungeon_state.hex_id,
+                                "encounter_data": encounter_result,
+                            },
+                        )
 
         if trap_results:
             result["traps_triggered"] = trap_results
@@ -754,6 +804,7 @@ class DungeonEngine:
             "found_features": [],
             "found_traps": [],
             "found_secret_doors": [],
+            "found_treasure": [],
             "exploration_clues": [],  # Hints about undetected traps
             "noise": 1,
         }
@@ -875,6 +926,17 @@ class DungeonEngine:
                         "type": clue["type"],
                         "area": f"near {secret_door.location.value.replace('_', ' ')}",
                     })
+
+        # Discover treasure in the room
+        # Treasure is automatically found when searching - no roll needed
+        for treasure_item in current_room.treasure:
+            if not treasure_item.get("found", False):
+                treasure_item["found"] = True
+                results["found_treasure"].append({
+                    "name": treasure_item.get("name", "Unknown treasure"),
+                    "value": treasure_item.get("value"),
+                    "quantity": treasure_item.get("quantity", 1),
+                })
 
         current_room.searched = True
         return results
@@ -1502,6 +1564,113 @@ class DungeonEngine:
             "message": f"Traveled safely to {route[-1]} ({turns_required} Turns)",
             "turns_used": turns_required,
             "destination": route[-1],
+            "noise": 0,
+        }
+
+    def _handle_take_treasure(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Handle taking treasure from the current room.
+
+        Takes discovered treasure from the room and adds it to party inventory.
+
+        Args:
+            params: May include:
+                - item_index: Index of treasure in room.treasure list (0-based)
+                - item_name: Name of treasure to take (matches first found)
+                - take_all: If True, take all discovered treasure
+
+        Returns:
+            Result with taken items and messages
+        """
+        current_room = self._dungeon_state.rooms.get(self._dungeon_state.current_room)
+        if not current_room:
+            return {"success": False, "message": "Current room unknown", "noise": 0}
+
+        item_index = params.get("item_index")
+        item_name = params.get("item_name")
+        take_all = params.get("take_all", False)
+
+        # Find discovered treasure to take
+        discovered = [
+            (i, t) for i, t in enumerate(current_room.treasure)
+            if t.get("found", False)
+        ]
+
+        if not discovered:
+            return {
+                "success": False,
+                "message": "No discovered treasure to take. Search the room first.",
+                "noise": 0,
+            }
+
+        items_to_take: list[tuple[int, dict[str, Any]]] = []
+
+        if take_all:
+            items_to_take = discovered
+        elif item_index is not None:
+            # Find by index in original list
+            if 0 <= item_index < len(current_room.treasure):
+                item = current_room.treasure[item_index]
+                if item.get("found", False):
+                    items_to_take = [(item_index, item)]
+                else:
+                    return {
+                        "success": False,
+                        "message": "That treasure has not been discovered yet.",
+                        "noise": 0,
+                    }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Invalid treasure index: {item_index}",
+                    "noise": 0,
+                }
+        elif item_name:
+            # Find by name
+            for i, item in discovered:
+                if item.get("name", "").lower() == item_name.lower():
+                    items_to_take = [(i, item)]
+                    break
+            if not items_to_take:
+                return {
+                    "success": False,
+                    "message": f"No discovered treasure named '{item_name}'",
+                    "noise": 0,
+                }
+        else:
+            # Take first discovered item
+            items_to_take = [discovered[0]]
+
+        # Remove from room and add to party inventory
+        taken_items = []
+        # Sort by index descending to remove from end first (preserve indices)
+        for idx, item in sorted(items_to_take, key=lambda x: x[0], reverse=True):
+            current_room.treasure.remove(item)
+            # Add to party inventory (without 'found' flag)
+            inventory_item = {
+                "name": item.get("name", "Unknown treasure"),
+                "value": item.get("value"),
+                "quantity": item.get("quantity", 1),
+                "source": f"{self._dungeon_state.name}:{current_room.room_id}",
+            }
+            self.controller.party_state.party_inventory.append(inventory_item)
+            taken_items.append(inventory_item)
+
+        # Log event
+        item_names = ", ".join(t["name"] for t in taken_items)
+        self.controller.log_event(
+            "treasure_taken",
+            {
+                "dungeon": self._dungeon_state.dungeon_id,
+                "room": current_room.room_id,
+                "items": taken_items,
+            },
+        )
+
+        return {
+            "success": True,
+            "message": f"Took: {item_names}",
+            "items_taken": taken_items,
             "noise": 0,
         }
 
@@ -2316,7 +2485,12 @@ class DungeonEngine:
     # DYNAMIC ROOM GENERATION (for POIs like The Spectral Manse)
     # =========================================================================
 
-    def _generate_dynamic_room(self, room_id: str) -> Optional[DungeonRoom]:
+    def _generate_dynamic_room(
+        self,
+        room_id: str,
+        from_room_id: Optional[str] = None,
+        from_direction: Optional[str] = None,
+    ) -> Optional[DungeonRoom]:
         """
         Generate a room dynamically using the POI's room table.
 
@@ -2325,6 +2499,8 @@ class DungeonEngine:
 
         Args:
             room_id: The room ID to generate
+            from_room_id: The room we're coming from (for bidirectional exit)
+            from_direction: The direction we moved (to compute return direction)
 
         Returns:
             Generated DungeonRoom or None if generation fails
@@ -2354,28 +2530,72 @@ class DungeonEngine:
             room_id=room_id,
             name=entry.title or f"Room {roll.total}",
             description=entry.description,
+            visited=True,  # Mark as visited since we just entered
         )
 
-        # Generate exits based on dynamic layout
-        connections_dice = dynamic_layout.get("connections_per_room", "1d3")
-        num_exits = self.dice.roll(connections_dice, "room connections").total
+        # Track used directions to avoid conflicts
+        used_directions: set[str] = set()
 
-        # Create exits to new rooms
-        directions = ["north", "south", "east", "west", "up", "down"]
-        for i in range(min(num_exits, len(directions))):
-            direction = directions[i]
-            new_room_id = f"room_{len(self._dungeon_state.rooms) + i + 1}"
+        # Add bidirectional exit back to the room we came from
+        if from_room_id and from_direction:
+            opposite_direction = self._get_opposite_direction(from_direction)
+            if opposite_direction:
+                room.exits[opposite_direction] = from_room_id
+                room.doors[f"{room_id}_{opposite_direction}"] = DoorState.OPEN
+                used_directions.add(opposite_direction)
+
+        # Generate additional exits based on dynamic layout
+        connections_dice = dynamic_layout.get("connections_per_room", "1d3")
+        num_additional_exits = self.dice.roll(connections_dice, "room connections").total
+
+        # Available directions (excluding the one we came from)
+        all_directions = ["north", "south", "east", "west", "up", "down"]
+        available_directions = [d for d in all_directions if d not in used_directions]
+
+        # Create exits to new unexplored rooms
+        exits_created = 0
+        for direction in available_directions:
+            if exits_created >= num_additional_exits:
+                break
+
+            # Generate unique room ID based on total rooms
+            new_room_id = f"room_{len(self._dungeon_state.rooms) + exits_created + 1}"
             room.exits[direction] = new_room_id
             room.doors[f"{room_id}_{direction}"] = DoorState.CLOSED
+            exits_created += 1
 
         # Add items from the entry
         for item_name in entry.items:
             room.treasure.append({"name": item_name, "found": False})
 
+        # Add mechanical effect as a feature if present
+        if entry.mechanical_effect:
+            feature = Feature(
+                feature_id=f"{room_id}_effect",
+                name=entry.title or f"Room Effect",
+                description=entry.mechanical_effect,
+                searchable=False,
+                hidden=False,
+                discovered=True,  # Mechanical effects are immediately visible
+            )
+            room.features.append(feature)
+
         # Store the room
         self._dungeon_state.rooms[room_id] = room
 
         return room
+
+    def _get_opposite_direction(self, direction: str) -> Optional[str]:
+        """Get the opposite direction for bidirectional exits."""
+        opposites = {
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east",
+            "up": "down",
+            "down": "up",
+        }
+        return opposites.get(direction.lower())
 
     def generate_room_encounter(self) -> Optional[dict[str, Any]]:
         """
@@ -2504,6 +2724,64 @@ class DungeonEngine:
 
         # Ambient: everything else (atmospheric descriptions)
         return ("ambient", False, False)
+
+    def _create_encounter_from_table_result(
+        self,
+        encounter_result: dict[str, Any],
+    ) -> Optional[EncounterState]:
+        """
+        Create an EncounterState from a roll table encounter result.
+
+        Used when dynamically generated encounters need to transition
+        to the ENCOUNTER state for combat or social interaction.
+
+        Args:
+            encounter_result: Result from generate_room_encounter()
+
+        Returns:
+            EncounterState if encounter should trigger, None otherwise
+        """
+        encounter_type_str = encounter_result.get("encounter_type", "ambient")
+
+        # Map string type to EncounterType enum
+        type_mapping = {
+            "monster": EncounterType.MONSTER,
+            "npc": EncounterType.NPC,
+        }
+
+        encounter_type = type_mapping.get(encounter_type_str)
+        if not encounter_type:
+            return None
+
+        # Roll for surprise
+        surprise = self._check_dungeon_surprise()
+
+        # Roll for distance
+        distance = self._roll_dungeon_distance(
+            mutual_surprise=surprise == SurpriseStatus.MUTUAL_SURPRISE
+        )
+
+        # Combine monsters and NPCs into actors list
+        actors = encounter_result.get("monsters", []) + encounter_result.get("npcs", [])
+
+        # Create encounter state
+        encounter = EncounterState(
+            encounter_type=encounter_type,
+            distance=distance,
+            surprise_status=surprise,
+            context="room_entry",
+            actors=actors,
+            contextual_data={
+                "description": encounter_result.get("description", ""),
+                "source": "room_table",
+                "roll": encounter_result.get("roll"),
+                "title": encounter_result.get("title"),
+                "items": encounter_result.get("items", []),
+                "allows_social": encounter_result.get("allows_social", False),
+            },
+        )
+
+        return encounter
 
     # =========================================================================
     # ITEM PERSISTENCE (for locations like The Spectral Manse)

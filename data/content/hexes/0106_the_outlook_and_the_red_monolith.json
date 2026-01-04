@@ -194,6 +194,7 @@
           "hazard_id": "monolith_viewing",
           "name": "Monolith Terror (Winter)",
           "trigger": "viewing the monolith in winter",
+          "effect_required": "terror_aura",
           "save_type": "spell",
           "modifier_arcane_casters": 2,
           "on_fail": {
@@ -208,6 +209,7 @@
           "hazard_id": "monolith_touching",
           "name": "Spell Permanence (Winter)",
           "trigger": "touching the monolith in winter while casting shadow/darkness spell",
+          "effect_required": "spell_permanence",
           "save_type": "none",
           "effect": "spell_permanence",
           "spell_types": ["shadow", "darkness"],
@@ -217,6 +219,7 @@
           "hazard_id": "monolith_chill",
           "name": "Spectral Chill (Non-Winter)",
           "trigger": "touching the monolith in spring/summer/autumn",
+          "effect_required": "spectral_chill_only",
           "save_type": "none",
           "effect": "cosmetic",
           "description": "Touching the intangible monolith produces a momentary sensation of winter cold, but no mechanical effect"

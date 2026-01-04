@@ -354,6 +354,7 @@ class TestHex0106AbilityCheck:
 
         # Mock character with dexterity
         character = MagicMock()
+        character.ability_scores = {"DEX": 14, "STR": 10, "INT": 10, "WIS": 10, "CON": 10, "CHA": 10}
         character.abilities = MagicMock()
         character.abilities.dexterity = 14
 
@@ -443,6 +444,640 @@ class TestHex0106ArcaneCasterModifier:
         assert call_args[0][1] == 0  # No bonus for fighter
 
 
+class TestPointOfInterestSeasonalState:
+    """Tests for PointOfInterest.get_poi_seasonal_state() method."""
+
+    def test_get_poi_seasonal_state_returns_winter_for_winter_month(self):
+        """Verify get_poi_seasonal_state returns winter state for winter months."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura", "spell_permanence"],
+                    "description": "The monolith becomes tangible.",
+                },
+                "non_winter": {
+                    "months": ["Symswald", "Harchment", "Iggwyld"],
+                    "state": "intangible",
+                    "effects_active": ["spectral_chill_only"],
+                    "description": "The monolith is a shimmering figment.",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        assert result is not None
+        assert result["state"] == "semi-corporeal"
+        assert "terror_aura" in result["effects_active"]
+        assert "spell_permanence" in result["effects_active"]
+
+    def test_get_poi_seasonal_state_returns_non_winter_for_non_winter_month(self):
+        """Verify get_poi_seasonal_state returns non-winter state for other months."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura", "spell_permanence"],
+                },
+                "non_winter": {
+                    "state": "intangible",
+                    "effects_active": ["spectral_chill_only"],
+                    "description": "The monolith is a shimmering figment.",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Chysting")  # Summer month
+
+        assert result is not None
+        assert result["state"] == "intangible"
+        assert "spectral_chill_only" in result["effects_active"]
+
+    def test_get_poi_seasonal_state_returns_none_for_no_seasonal_behavior(self):
+        """Verify get_poi_seasonal_state returns None when POI has no seasonal behavior."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Shepherd Encampment",
+            poi_type="encampment",
+            description="A small camp of shepherds.",
+            seasonal_behavior=None,
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        assert result is None
+
+    def test_get_poi_seasonal_state_checks_all_winter_months(self):
+        """Verify all winter months return winter state."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="The Red Vorpal Monolith",
+            poi_type="landmark",
+            description="A towering red crystal monolith",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold", "Lymewald", "Haggryme"],
+                    "state": "semi-corporeal",
+                    "effects_active": ["terror_aura"],
+                },
+                "non_winter": {
+                    "state": "intangible",
+                    "effects_active": [],
+                },
+            },
+        )
+
+        for month in ["Grimvold", "Lymewald", "Haggryme"]:
+            result = poi.get_poi_seasonal_state(month)
+            assert result["state"] == "semi-corporeal", f"Failed for month {month}"
+
+    def test_get_poi_seasonal_state_returns_non_winter_for_empty_winter_months(self):
+        """Verify non-winter is returned when winter.months is empty."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Test POI",
+            poi_type="landmark",
+            description="Test",
+            seasonal_behavior={
+                "winter": {
+                    "months": [],
+                    "state": "active",
+                },
+                "non_winter": {
+                    "state": "dormant",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Grimvold")
+
+        # Since Grimvold is not in the empty winter months list, should return non_winter
+        assert result["state"] == "dormant"
+
+    def test_get_poi_seasonal_state_returns_none_for_missing_non_winter(self):
+        """Verify None is returned if not winter and no non_winter defined."""
+        from src.data_models import PointOfInterest
+
+        poi = PointOfInterest(
+            name="Test POI",
+            poi_type="landmark",
+            description="Test",
+            seasonal_behavior={
+                "winter": {
+                    "months": ["Grimvold"],
+                    "state": "active",
+                },
+            },
+        )
+
+        result = poi.get_poi_seasonal_state("Chysting")
+
+        assert result is None
+
+
+class TestGraniteCragClimbHazard:
+    """Tests for Granite Crag climb hazard resolution."""
+
+    def test_detect_poi_action_matches_climb(self):
+        """Verify detect_poi_action matches climb keywords."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("I want to climb the crag")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "climb"
+
+    def test_detect_poi_action_matches_scale(self):
+        """Verify detect_poi_action matches 'scale' as climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("Let's scale the granite crag")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "scale"
+
+    def test_detect_poi_action_matches_ascend(self):
+        """Verify detect_poi_action matches 'ascend' as climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result = engine.detect_poi_action("We ascend the cliff face")
+        assert result is not None
+        assert result[0] == "climb"
+        assert result[1] == "ascend"
+
+    def test_get_matching_poi_hazards_matches_climbing_trigger(self):
+        """Verify get_matching_poi_hazards matches 'climbing' trigger."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+                "check_type": "dexterity",
+                "on_fail": {"damage_dice": "1d6", "damage_type": "falling"},
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "climb")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "climbing_check"
+
+    def test_resolve_climb_action_uses_height_from_poi(self):
+        """Verify _resolve_climb_action extracts height from POI interior."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        # Create mock POI with interior mentioning height
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall and steep-sided."
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Mock character without Climb Walls
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to None to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Mock attempt_climb to capture the call
+        climb_result = HazardResult(
+            success=True,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Climbed successfully",
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine._resolve_climb_action(
+            "test_char", "0106", mock_poi.hazards, "climb"
+        )
+
+        # Verify attempt_climb was called with 100 feet height
+        engine.attempt_climb.assert_called_once()
+        call_args = engine.attempt_climb.call_args
+        assert call_args[1]["height_feet"] == 100
+
+    def test_resolve_climb_action_with_climb_walls_skips_roll(self):
+        """Verify characters with Climb Walls ability skip the check."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [{"name": "Crag Ascent/Descent"}]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Mock character WITH Climb Walls
+        mock_char = MagicMock()
+        mock_char.skills = ["climb_walls", "hide_in_shadows"]
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+        engine.attempt_climb = MagicMock()
+
+        result = engine._resolve_climb_action(
+            "test_char", "0106", mock_poi.hazards, "climb"
+        )
+
+        # Should NOT have called attempt_climb
+        engine.attempt_climb.assert_not_called()
+
+        # Should have succeeded trivially
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is True
+        assert "Climb Walls" in result["hazard_results"][0]["description"]
+        assert result["hazard_results"][0]["damage_taken"] == 0
+
+    def test_resolve_poi_action_routes_climb_to_attempt_climb(self):
+        """Verify resolve_poi_action routes climb actions through attempt_climb."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing without Climb Walls ability",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Mock attempt_climb
+        climb_result = HazardResult(
+            success=False,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Failed to climb, fell 50 feet",
+            damage_dealt=15,
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine.resolve_poi_action("I climb the crag", "test_char")
+
+        assert result["triggered"] is True
+        assert result["action_type"] == "climb"
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 15
+        assert result["height_feet"] == 100
+
+    def test_resolve_climb_with_fall_damage(self):
+        """Verify failed climb results in fall damage based on height."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+        from src.narrative.hazard_resolver import HazardResult, HazardType
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.interior = "The crag is 100 feet tall."
+        mock_poi.hazards = [
+            {"name": "Crag Ascent/Descent", "trigger": "climbing"}
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        mock_char = MagicMock()
+        mock_char.skills = []
+        mock_char.abilities = None  # Explicitly set to avoid MagicMock truthy issues
+
+        engine.controller = MagicMock()
+        engine.controller.get_character.return_value = mock_char
+
+        # Simulate failed climb with fall damage (50 feet fall = 5d6 damage)
+        climb_result = HazardResult(
+            success=False,
+            hazard_type=HazardType.CLIMBING,
+            action_type=MagicMock(),
+            description="Failed to climb, fell 50 feet",
+            damage_dealt=18,  # ~5d6 average
+            damage_type="falling",
+        )
+        engine.attempt_climb = MagicMock(return_value=climb_result)
+
+        result = engine.resolve_poi_action("Scale the crag", "test_char")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is False
+        assert result["hazard_results"][0]["damage_taken"] == 18
+        assert result["hazard_results"][0]["effects_applied"] is True
+
+
+class TestMonolithSeasonalEffectGating:
+    """Tests for monolith hazard gating by seasonal effects."""
+
+    def test_terror_hazard_triggers_in_winter(self):
+        """Verify terror hazard matches when terror_aura effect is active (winter)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock winter season where terror_aura is active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "months": ["Grimvold", "Lymewald", "Haggryme"],
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "view")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_viewing"
+
+    def test_terror_hazard_blocked_outside_winter(self):
+        """Verify terror hazard is NOT matched when terror_aura is inactive (summer)."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock summer season where terror_aura is NOT active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.SUMMER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "months": ["Grimvold", "Lymewald", "Haggryme"],
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "view")
+
+        # Should NOT match because terror_aura is not active in summer
+        assert len(matching) == 0
+
+    def test_spectral_chill_only_triggers_outside_winter(self):
+        """Verify spectral chill hazard triggers when spectral_chill_only is active."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Mock summer season where spectral_chill_only is active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.SUMMER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_chill",
+                "name": "Spectral Chill (Non-Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spectral_chill_only",
+                "save_type": "none",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "touch")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_chill"
+
+    def test_hazard_without_effect_required_always_matches(self):
+        """Verify hazards without effect_required always match."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "Granite Crag"
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Granite Crag"
+        mock_poi.seasonal_behavior = None  # No seasonal behavior
+        mock_poi.hazards = [
+            {
+                "hazard_id": "climbing_check",
+                "name": "Crag Ascent/Descent",
+                "trigger": "climbing the crag",
+                # No effect_required field
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "climb")
+
+        # Should match since no effect_required
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "climbing_check"
+
+    def test_view_action_detected(self):
+        """Verify view action pattern is detected."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        test_cases = [
+            ("I gaze upon the monolith", ("view", "gaze")),
+            ("I stare at the crimson light", ("view", "stare")),
+            ("I view the monolith", ("view", "view")),
+            ("look upon the ancient stone", ("view", "look upon")),
+            ("observe the crimson glow", ("view", "observe")),
+        ]
+
+        for input_text, expected in test_cases:
+            result = engine.detect_poi_action(input_text)
+            assert result == expected, f"Failed for '{input_text}'"
+
+    def test_multiple_hazards_with_different_effects(self):
+        """Verify only hazards with active effects are matched."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        # Winter: terror_aura and spell_permanence active
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_touching",
+                "name": "Spell Permanence (Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spell_permanence",
+            },
+            {
+                "hazard_id": "monolith_chill",
+                "name": "Spectral Chill (Non-Winter)",
+                "trigger": "touching the monolith",
+                "effect_required": "spectral_chill_only",
+            },
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        matching = engine.get_matching_poi_hazards("0106", "touch")
+
+        # Only spell_permanence hazard should match (winter)
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_touching"
+
+
 class TestHex0106IsWinter:
     """Tests for _is_winter helper method."""
 
@@ -488,3 +1123,367 @@ class TestHex0106IsWinter:
         engine.controller = controller
 
         assert engine._is_winter() is False
+
+
+class TestSpellPermanenceSystem:
+    """Tests for the Vorpal Monolith spell permanence system."""
+
+    def test_is_spell_permanence_eligible_darkness(self):
+        """Verify darkness spells are eligible for permanence."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Darkness")
+        assert result is True
+        assert spell_type == "darkness"
+
+    def test_is_spell_permanence_eligible_shadow(self):
+        """Verify shadow spells are eligible for permanence."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Shadow Door")
+        assert result is True
+        assert spell_type == "shadow"
+
+    def test_is_spell_permanence_ineligible_fireball(self):
+        """Verify non-shadow/darkness spells are not eligible."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        result, spell_type = engine.is_spell_permanence_eligible("Fireball")
+        assert result is False
+        assert spell_type == ""
+
+    def test_make_spell_permanent_creates_record(self):
+        """Verify make_spell_permanent creates a PermanentSpell record."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        mock_char = MagicMock()
+        mock_char.name = "Mordecai"
+
+        controller = MagicMock()
+        controller.get_character.return_value = mock_char
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=15)
+        engine.controller = controller
+
+        result = engine.make_spell_permanent(
+            spell_name="Darkness",
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert result is not None
+        assert result.spell_name == "Darkness"
+        assert result.spell_type == "darkness"
+        assert result.caster_id == "mordecai_1"
+        assert result.caster_name == "Mordecai"
+        assert result.monolith_hex_id == "0106"
+        assert result.is_active is True
+
+        # Check it was added to registry
+        spells = engine._permanent_spells.get_active_spells()
+        assert len(spells) == 1
+        assert spells[0].spell_id == result.spell_id
+
+    def test_make_spell_permanent_rejects_ineligible(self):
+        """Verify make_spell_permanent rejects non-shadow/darkness spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine.controller = MagicMock()
+
+        result = engine.make_spell_permanent(
+            spell_name="Fireball",
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert result is None
+
+    def test_end_permanent_spell_ends_caster_spells(self):
+        """Verify end_permanent_spell ends spells by the caster at the monolith."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add a permanent spell
+        spell = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            caster_name="Mordecai",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0106",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell)
+
+        # End the spell
+        ended = engine.end_permanent_spell(
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert len(ended) == 1
+        assert ended[0].spell_name == "Darkness"
+        assert ended[0].is_active is False
+        assert ended[0].ended_at is not None
+
+    def test_end_permanent_spell_only_ends_own_spells(self):
+        """Verify end_permanent_spell only ends the caster's own spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add spells from two different casters
+        spell1 = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            caster_name="Mordecai",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        spell2 = PermanentSpell(
+            spell_name="Shadow Door",
+            spell_type="shadow",
+            caster_id="elara_2",
+            caster_name="Elara",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell1)
+        engine._permanent_spells.add_spell(spell2)
+
+        # Mordecai ends their spell
+        ended = engine.end_permanent_spell(
+            caster_id="mordecai_1",
+            hex_id="0106",
+            poi_name="The Red Vorpal Monolith",
+        )
+
+        assert len(ended) == 1
+        assert ended[0].caster_id == "mordecai_1"
+
+        # Elara's spell should still be active
+        elara_spells = engine._permanent_spells.get_spells_by_caster("elara_2")
+        assert len(elara_spells) == 1
+        assert elara_spells[0].is_active is True
+
+    def test_resolve_spell_permanence_hazard_makes_spell_permanent(self):
+        """Verify resolve_spell_permanence_hazard makes eligible spells permanent."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        mock_char = MagicMock()
+        mock_char.name = "Mordecai"
+
+        controller = MagicMock()
+        controller.get_character.return_value = mock_char
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=15)
+        engine.controller = controller
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            spell_being_cast="Darkness",
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "made_permanent"
+        assert len(result["spells_affected"]) == 1
+        assert result["spells_affected"][0]["spell_name"] == "Darkness"
+        assert "permanent" in result["message"].lower()
+
+    def test_resolve_spell_permanence_hazard_ends_spells(self):
+        """Verify resolve_spell_permanence_hazard can end existing permanent spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry, GameDate
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = GameDate(year=1, month=12, day=20)
+        engine.controller = controller
+
+        # Add an existing permanent spell
+        spell = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell)
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            end_spell_intent=True,
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "ended"
+        assert len(result["spells_affected"]) == 1
+        assert result["spells_affected"][0]["spell_name"] == "Darkness"
+
+    def test_resolve_spell_permanence_hazard_ineligible_spell(self):
+        """Verify resolve_spell_permanence_hazard rejects ineligible spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.controller = MagicMock()
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+            spell_being_cast="Fireball",
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "ineligible"
+        assert "not a shadow or darkness spell" in result["message"]
+
+    def test_resolve_spell_permanence_hazard_touch_only(self):
+        """Verify resolve_spell_permanence_hazard handles touching without casting."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.controller = MagicMock()
+
+        hazard = {
+            "hazard_id": "monolith_touching",
+            "name": "Spell Permanence (Winter)",
+            "effect": "spell_permanence",
+        }
+
+        result = engine.resolve_spell_permanence_hazard(
+            character_id="mordecai_1",
+            hex_id="0106",
+            hazard=hazard,
+        )
+
+        assert result["triggered"] is True
+        assert result["action"] == "touch_only"
+        assert "cold, sticky slime" in result["message"]
+
+    def test_get_permanent_spells_at_location(self):
+        """Verify get_permanent_spells_at_location returns correct spells."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PermanentSpell, PermanentSpellRegistry
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._permanent_spells = PermanentSpellRegistry()
+
+        # Add spells at different locations
+        spell1 = PermanentSpell(
+            spell_name="Darkness",
+            spell_type="darkness",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0106",
+            effect_location_poi="The Red Vorpal Monolith",
+            is_active=True,
+        )
+        spell2 = PermanentSpell(
+            spell_name="Shadow Door",
+            spell_type="shadow",
+            caster_id="mordecai_1",
+            monolith_hex_id="0106",
+            monolith_poi_name="The Red Vorpal Monolith",
+            effect_location_hex="0105",  # Different location
+            effect_location_poi=None,
+            is_active=True,
+        )
+        engine._permanent_spells.add_spell(spell1)
+        engine._permanent_spells.add_spell(spell2)
+
+        # Get spells at 0106 / monolith
+        spells = engine.get_permanent_spells_at_location(
+            "0106", "The Red Vorpal Monolith"
+        )
+        assert len(spells) == 1
+        assert spells[0].spell_name == "Darkness"
+
+        # Get spells at 0105 / hex level
+        spells = engine.get_permanent_spells_at_location("0105")
+        assert len(spells) == 1
+        assert spells[0].spell_name == "Shadow Door"

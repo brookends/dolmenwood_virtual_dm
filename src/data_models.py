@@ -215,6 +215,9 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard"],
         "allowed": ["narrative", "social"],  # Can speak while dancing
         "message": "You cannot stop dancing! The enchanting music compels you to continue.",
+        "forced_action": "dance",
+        "forced_action_description": "You dance to the fairy music until dawn breaks.",
+        "ends_at": "dawn",
     },
     "magical_sleep": {
         "blocked": ["combat", "spell", "movement", "exploration", "survival", "hazard", "social", "inventory", "creative"],
@@ -265,11 +268,16 @@ CONDITION_BLOCKED_ACTIONS: dict[str, dict[str, Any]] = {
         "blocked": ["combat", "spell", "exploration", "social", "inventory", "creative"],
         "allowed": ["movement", "hazard"],  # Can only flee
         "message": "Overwhelming terror compels you to flee! You cannot take any action except running away.",
+        "forced_action": "flee",
+        "forced_action_description": "You must flee from the source of your terror!",
     },
     "compelled": {
         "blocked": ["combat", "spell", "exploration", "survival", "social", "inventory", "creative"],
         "allowed": ["movement"],  # Must move toward target
         "message": "A supernatural compulsion forces you toward the monolith. You cannot resist unless restrained.",
+        "forced_action": "move_toward_target",
+        "forced_action_description": "The compulsion draws you inexorably toward the monolith.",
+        "can_be_restrained": True,
     },
 }
 
@@ -2911,6 +2919,10 @@ class PointOfInterest:
     # Items and treasures at this location
     items: list[dict[str, Any]] = field(default_factory=list)  # [{name, description, value, taken}]
 
+    # Structured treasure hoard (coins + items + worthless description)
+    # Format: {coins: {cp, sp, gp, pp}, items: [{item_id, name, quantity, value_gp, ...}], worthless: str}
+    treasure_hoard: Optional[dict[str, Any]] = None
+
     # Automatic hazards triggered on approach/entry
     # Format: [{trigger, hazard_type, difficulty, description, save_type, damage}]
     # trigger: "on_approach", "on_enter", "on_exit", "always"
@@ -3020,6 +3032,11 @@ class PointOfInterest:
     # Enables randomly generated room connections instead of fixed maps
     dynamic_layout: Optional[dict[str, Any]] = None
 
+    # Raw JSON data for future schema expansion
+    # Allows access to new fields before formal parsing support is added
+    # Read-only by convention: engines should not mutate this field
+    raw_data: dict[str, Any] = field(default_factory=dict)
+
     def is_visible(self, discovered_secrets: Optional[set[str]] = None) -> bool:
         """
         Check if POI is currently visible to players.
@@ -3070,6 +3087,24 @@ class PointOfInterest:
         """
         return [
             h for h in self.hazards if h.get("trigger") == trigger or h.get("trigger") == "always"
+        ]
+
+    def get_automatic_hazards_for_condition(self, condition: str) -> list[dict[str, Any]]:
+        """
+        Get automatic hazards that trigger when a specific condition is applied.
+
+        These are hazards with `automatic: true` and `condition_required` matching
+        the given condition. Used for chained effects like the dance chain.
+
+        Args:
+            condition: The condition type that was just applied (e.g., "enchanted_hearing")
+
+        Returns:
+            List of hazard definitions that should trigger automatically
+        """
+        return [
+            h for h in self.hazards
+            if h.get("automatic") is True and h.get("condition_required") == condition
         ]
 
     def get_active_locks(self, include_hidden: bool = False) -> list[dict[str, Any]]:
@@ -3797,6 +3832,40 @@ class PointOfInterest:
         """Check if this POI has any quest hooks."""
         return len(self.quest_hooks) > 0
 
+    def get_poi_seasonal_state(self, current_month: str) -> Optional[dict[str, Any]]:
+        """
+        Get the seasonal state for this POI based on the current month.
+
+        POIs with seasonal_behavior have different states depending on the time of year.
+        For example, the Red Vorpal Monolith is intangible most of the year but becomes
+        semi-corporeal during winter months.
+
+        Args:
+            current_month: The name of the current month (e.g., "Grimvold", "Haggryme")
+
+        Returns:
+            The seasonal state dictionary containing:
+            - state: The POI's current state (e.g., "semi-corporeal", "intangible")
+            - effects_active: List of effects currently active
+            - description: Description of the POI in this state
+            - months: List of months this state applies to
+
+            Returns None if this POI has no seasonal behavior.
+        """
+        if not self.seasonal_behavior:
+            return None
+
+        # Check if current month is in winter months
+        winter_data = self.seasonal_behavior.get("winter", {})
+        winter_months = winter_data.get("months", [])
+
+        if current_month in winter_months:
+            return winter_data
+
+        # Otherwise return non-winter state
+        non_winter_data = self.seasonal_behavior.get("non_winter", {})
+        return non_winter_data if non_winter_data else None
+
 
 @dataclass
 class HexStateChange:
@@ -3953,6 +4022,7 @@ class EventType(str, Enum):
     FESTIVAL = "festival"  # Seasonal or Wysenday festival
     TRANSFORMATION = "transformation"  # Time-triggered transformation
     QUEST_DEADLINE = "quest_deadline"  # Quest timer expires
+    ITEM_DECAY = "item_decay"  # Item expires/transforms (e.g., Golden Egg → dust)
 
 
 @dataclass
@@ -4230,6 +4300,95 @@ class EventScheduler:
             for e in self.events
             if e.event_type == EventType.INVITATION and e.is_active(current_date)
         ]
+
+    def schedule_item_decay(
+        self,
+        item_id: str,
+        item_name: str,
+        decay_dice: str,
+        current_date: "GameDate",
+        source_hex_id: Optional[str] = None,
+        source_poi_name: Optional[str] = None,
+        decay_result: str = "dust",
+        player_message: Optional[str] = None,
+    ) -> ScheduledEvent:
+        """
+        Schedule an item to decay/transform after a rolled number of days.
+
+        Used for items like Golden Eggs that collapse into dust after 4d6 days.
+
+        Args:
+            item_id: Unique ID of the item in party_inventory
+            item_name: Human-readable item name
+            decay_dice: Dice expression for days until decay (e.g., "4d6")
+            current_date: When the item was acquired
+            source_hex_id: Where the item came from
+            source_poi_name: POI where the item came from
+            decay_result: What the item becomes (e.g., "dust", "rotten")
+            player_message: Optional message shown when item decays
+
+        Returns:
+            The created ScheduledEvent
+        """
+        # Roll the decay time using DiceRoller
+        days_until_decay = DiceRoller.roll(decay_dice, "item_decay_timer").total
+        trigger_date = current_date.advance_days(days_until_decay)
+
+        if player_message is None:
+            player_message = f"The {item_name} has crumbled to {decay_result}."
+
+        event = ScheduledEvent(
+            event_type=EventType.ITEM_DECAY,
+            created_at=current_date,
+            source_hex_id=source_hex_id,
+            source_poi_name=source_poi_name,
+            trigger_date=trigger_date,
+            days_until_trigger=days_until_decay,
+            title=f"{item_name} Decay",
+            description=f"The {item_name} will decay into {decay_result}.",
+            player_message=player_message,
+            effect_type="item_decay",
+            effect_details={
+                "item_id": item_id,
+                "item_name": item_name,
+                "decay_result": decay_result,
+                "days_rolled": days_until_decay,
+            },
+        )
+
+        self.add_event(event)
+        return event
+
+    def get_pending_item_decays(self, current_date: "GameDate") -> list[ScheduledEvent]:
+        """Get all pending item decay events."""
+        return [
+            e
+            for e in self.events
+            if e.event_type == EventType.ITEM_DECAY and e.is_active(current_date)
+        ]
+
+    def check_item_decays(
+        self,
+        current_date: "GameDate",
+    ) -> list[dict[str, Any]]:
+        """
+        Check for item decay events that should trigger today.
+
+        Returns:
+            List of triggered decay effects with item details
+        """
+        triggered = []
+
+        for event in self.events:
+            if event.event_type != EventType.ITEM_DECAY:
+                continue
+            if not event.is_active(current_date):
+                continue
+            if event.trigger_date and event._date_compare(current_date, event.trigger_date) >= 0:
+                effect = event.trigger(current_date)
+                triggered.append(effect)
+
+        return triggered
 
 
 # =============================================================================
@@ -4908,6 +5067,8 @@ class PartyState:
     light_remaining_turns: int = 0
     # Member encumbrance tracking (p148-149)
     member_speeds: list[int] = field(default_factory=list)  # Encumbered speeds
+    # Party shared inventory (treasure, unassigned items)
+    party_inventory: list[dict[str, Any]] = field(default_factory=list)
 
     def get_movement_rate(self, base_rate: int = 40) -> int:
         """
@@ -6379,6 +6540,30 @@ class CharacterState:
     # CLASS AND COMBAT METHODS
     # =========================================================================
 
+    def get_total_condition_modifier(self, roll_type: str) -> int:
+        """
+        Get the total modifier from all active conditions for a roll type.
+
+        Sums up modifiers from CONDITION_ROLL_MODIFIERS for each active condition.
+
+        Args:
+            roll_type: Type of roll ("saving_throws", "attack_rolls", "ability_checks",
+                      "initiative", "armor_class", "all_rolls")
+
+        Returns:
+            Total modifier (usually negative for penalties)
+        """
+        total = 0
+        for condition in self.conditions:
+            # Get the string name of the condition type
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            total += get_condition_roll_modifier(condition_name, roll_type)
+        return total
+
     def get_saving_throw(self, save_type: str) -> int:
         """
         Get the saving throw target for a specific save type.
@@ -6395,16 +6580,23 @@ class CharacterState:
         """
         Roll a saving throw.
 
+        Automatically applies condition modifiers from CONDITION_ROLL_MODIFIERS
+        for any active conditions (e.g., exhausted applies -1 to saving_throws).
+
         Args:
             save_type: Type of save
-            modifier: Bonus/penalty to the roll
+            modifier: Bonus/penalty to the roll (in addition to condition modifiers)
 
         Returns:
             Tuple of (roll_total, success)
         """
         result = DiceRoller.roll_d20(f"Saving throw ({save_type})")
         roll = result.total
-        total = roll + modifier
+
+        # Apply condition modifiers for saving throws
+        condition_mod = self.get_total_condition_modifier("saving_throws")
+
+        total = roll + modifier + condition_mod
         target = self.get_saving_throw(save_type)
         return total, total >= target
 
@@ -6441,6 +6633,57 @@ class CharacterState:
         """Restore all spell slots (after rest)."""
         if self.spell_slots:
             self.spell_slots.restore_all()
+
+    def can_recover_hp(self) -> bool:
+        """
+        Check if character can recover HP from rest.
+
+        Returns False if character has restless_sleep condition.
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            if condition_name == "restless_sleep":
+                return False
+        return True
+
+    def can_memorize_spells(self) -> bool:
+        """
+        Check if character can memorize spells during rest.
+
+        Returns False if character has restless_sleep condition.
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            if condition_name == "restless_sleep":
+                return False
+        return True
+
+    def get_hp_recovery_modifier(self) -> float:
+        """
+        Get the HP recovery modifier based on conditions.
+
+        Returns:
+            Multiplier for HP recovery (0.0 = no recovery, 1.0 = normal)
+        """
+        for condition in self.conditions:
+            condition_name = (
+                condition.condition_type.value
+                if hasattr(condition.condition_type, "value")
+                else str(condition.condition_type)
+            )
+            mods = CONDITION_ROLL_MODIFIERS.get(condition_name, {})
+            if "hp_recovery" in mods:
+                # Return 0 for no recovery
+                return float(mods["hp_recovery"])
+        return 1.0
 
     def get_skill_target(self, skill_name: str) -> Optional[int]:
         """
@@ -6856,6 +7099,222 @@ class AreaEffect:
         if self.blocks_magic:
             blocks.append("magic")
         return blocks
+
+
+# =============================================================================
+# PERMANENT SPELL REGISTRY (Vorpal Monolith Spell Permanence)
+# =============================================================================
+
+
+@dataclass
+class PermanentSpell:
+    """
+    A spell made permanent through a vorpal monolith.
+
+    When shadow/darkness spells are cast while touching a vorpal monolith
+    during winter, they become permanent. These spells can only be ended by
+    touching the same monolith again during winter and willing the spell to end.
+    """
+
+    spell_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    spell_name: str = ""  # Name of the spell (e.g., "Darkness", "Shadow Door")
+    spell_type: str = ""  # "shadow" or "darkness"
+
+    # Caster information
+    caster_id: str = ""
+    caster_name: str = ""
+
+    # Source monolith
+    monolith_hex_id: str = ""  # e.g., "0106"
+    monolith_poi_name: str = ""  # e.g., "The Red Vorpal Monolith"
+
+    # Location where the spell effect manifests
+    effect_location_hex: str = ""
+    effect_location_poi: Optional[str] = None
+    effect_radius_feet: int = 0
+
+    # Original spell details
+    original_duration: str = ""  # What the duration would have been
+    original_spell_level: int = 0
+
+    # When the spell was made permanent
+    created_at: Optional["GameDate"] = None
+
+    # State
+    is_active: bool = True
+    ended_at: Optional["GameDate"] = None
+
+    def end_spell(self, current_date: "GameDate") -> bool:
+        """
+        End the permanent spell by touching the monolith and willing it to end.
+
+        Args:
+            current_date: Current game date
+
+        Returns:
+            True if spell was successfully ended
+        """
+        if self.is_active:
+            self.is_active = False
+            self.ended_at = current_date
+            return True
+        return False
+
+
+@dataclass
+class PermanentSpellRegistry:
+    """
+    Registry for tracking all permanent spells created through vorpal monoliths.
+
+    Spells in this registry cannot be dispelled by normal means - only by
+    touching the source monolith again during winter and willing the spell to end.
+    """
+
+    spells: list[PermanentSpell] = field(default_factory=list)
+
+    # Index by monolith for quick lookup
+    _by_monolith: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+    # Index by caster
+    _by_caster: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+    # Index by location
+    _by_location: dict[str, list[PermanentSpell]] = field(default_factory=dict)
+
+    def add_spell(self, spell: PermanentSpell) -> None:
+        """Add a permanent spell to the registry."""
+        self.spells.append(spell)
+
+        # Update indices
+        monolith_key = f"{spell.monolith_hex_id}:{spell.monolith_poi_name}"
+        if monolith_key not in self._by_monolith:
+            self._by_monolith[monolith_key] = []
+        self._by_monolith[monolith_key].append(spell)
+
+        if spell.caster_id not in self._by_caster:
+            self._by_caster[spell.caster_id] = []
+        self._by_caster[spell.caster_id].append(spell)
+
+        location_key = f"{spell.effect_location_hex}:{spell.effect_location_poi or 'hex'}"
+        if location_key not in self._by_location:
+            self._by_location[location_key] = []
+        self._by_location[location_key].append(spell)
+
+    def get_spells_by_monolith(
+        self,
+        hex_id: str,
+        poi_name: str,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spells created at a specific monolith."""
+        key = f"{hex_id}:{poi_name}"
+        spells = self._by_monolith.get(key, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_spells_by_caster(
+        self,
+        caster_id: str,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spells cast by a specific character."""
+        spells = self._by_caster.get(caster_id, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_spells_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+        active_only: bool = True,
+    ) -> list[PermanentSpell]:
+        """Get all permanent spell effects at a specific location."""
+        key = f"{hex_id}:{poi_name or 'hex'}"
+        spells = self._by_location.get(key, [])
+        if active_only:
+            return [s for s in spells if s.is_active]
+        return spells
+
+    def get_active_spells(self) -> list[PermanentSpell]:
+        """Get all active permanent spells."""
+        return [s for s in self.spells if s.is_active]
+
+    def end_spell(
+        self,
+        spell_id: str,
+        current_date: "GameDate",
+    ) -> Optional[PermanentSpell]:
+        """
+        End a specific permanent spell by ID.
+
+        Args:
+            spell_id: ID of the spell to end
+            current_date: Current game date
+
+        Returns:
+            The ended spell, or None if not found
+        """
+        for spell in self.spells:
+            if spell.spell_id == spell_id and spell.is_active:
+                spell.end_spell(current_date)
+                return spell
+        return None
+
+    def end_caster_spell_at_monolith(
+        self,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        current_date: "GameDate",
+        spell_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        End permanent spells by a caster at a specific monolith.
+
+        Used when a caster touches the monolith and wills their spells to end.
+
+        Args:
+            caster_id: ID of the caster
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            current_date: Current game date
+            spell_name: Optional specific spell name to end (None = all)
+
+        Returns:
+            List of ended spells
+        """
+        monolith_key = f"{hex_id}:{poi_name}"
+        ended = []
+
+        for spell in self._by_monolith.get(monolith_key, []):
+            if spell.caster_id == caster_id and spell.is_active:
+                if spell_name is None or spell.spell_name.lower() == spell_name.lower():
+                    spell.end_spell(current_date)
+                    ended.append(spell)
+
+        return ended
+
+    def is_location_affected(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+        spell_type: Optional[str] = None,
+    ) -> bool:
+        """
+        Check if a location has any active permanent spell effects.
+
+        Args:
+            hex_id: Hex ID to check
+            poi_name: POI name to check (None = hex level)
+            spell_type: Optional specific type to check ("shadow", "darkness")
+
+        Returns:
+            True if location has matching active permanent spells
+        """
+        spells = self.get_spells_at_location(hex_id, poi_name, active_only=True)
+        if spell_type:
+            return any(s.spell_type == spell_type for s in spells)
+        return len(spells) > 0
 
 
 # =============================================================================

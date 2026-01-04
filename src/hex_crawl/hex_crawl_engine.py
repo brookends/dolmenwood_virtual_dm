@@ -52,6 +52,8 @@ from src.data_models import (
     SecretStatus,
     FactionState,
     FactionRelationship,
+    PermanentSpell,
+    PermanentSpellRegistry,
 )
 from src.content_loader.monster_registry import get_monster_registry
 from src.game_state.session_manager import ActiveNPC
@@ -444,6 +446,9 @@ class HexCrawlEngine:
 
         # World-state change tracking
         self._world_state_changes: WorldStateChanges = WorldStateChanges()
+
+        # Permanent spell registry (vorpal monolith spell permanence)
+        self._permanent_spells: PermanentSpellRegistry = PermanentSpellRegistry()
 
         # Current exploration context (surface, diving, etc.)
         self._exploration_context: str = "surface"
@@ -1275,6 +1280,7 @@ class HexCrawlEngine:
             "features_found": [],
             "lairs_found": [],
             "landmarks_found": [],
+            "pois_found": [],
             "travel_points_spent": cost,
             "travel_points_remaining": self._travel_points_remaining,
         }
@@ -1291,6 +1297,30 @@ class HexCrawlEngine:
                 if roll.total >= 5:
                     feature.discovered = True
                     result["features_found"].append(feature.name)
+
+        # Search for hidden POIs (2-in-6 base chance)
+        for poi in hex_data.points_of_interest:
+            if poi.hidden and not poi.discovered:
+                roll = self.dice.roll_d6(1, f"search for hidden POI")
+                if roll.total >= 5:  # 5-6 succeeds (2-in-6)
+                    poi.mark_discovered()
+                    result["pois_found"].append({
+                        "name": poi.name,
+                        "poi_type": poi.poi_type,
+                        "tagline": poi.tagline,
+                        "description": poi.description,
+                    })
+
+                    # Emit discovery event
+                    self._emit_run_log_event(
+                        "poi_discovered",
+                        {
+                            "hex_id": hex_id,
+                            "poi_name": poi.name,
+                            "poi_type": poi.poi_type,
+                            "was_hidden": True,
+                        },
+                    )
 
         # Check for lairs (1-in-6)
         for lair in getattr(hex_data, "lairs", []):
@@ -2054,6 +2084,113 @@ class HexCrawlEngine:
         # Emit event for narration
         if hazard_results:
             self._emit_run_log_event("night_hazards_triggered", result)
+
+        return result
+
+    def camp(
+        self,
+        hex_id: Optional[str] = None,
+        activity: str = "sleeping",
+    ) -> dict[str, Any]:
+        """
+        Make camp and rest through the night in a hex.
+
+        This action:
+        1. Advances time to DUSK (if not already night)
+        2. Processes any night hazards (sleep hazards, full moon effects, etc.)
+        3. Advances time to DAWN (next morning)
+        4. Returns results including any hazard outcomes
+
+        Night hazards like hex 0102's "dreamless" mist or hex 0107's full moon
+        compulsion are automatically processed based on the hex's procedural data.
+
+        Args:
+            hex_id: Hex to camp in (defaults to current hex)
+            activity: Activity during the night ("sleeping", "watching", etc.)
+
+        Returns:
+            Dictionary with camp results including:
+            - success: Whether camping was possible
+            - time_advanced: Time advancement details
+            - hazard_results: Any night hazard effects
+            - characters_affected: Characters who suffered hazard effects
+        """
+        target_hex = hex_id or self._current_hex
+        if not target_hex:
+            return {"success": False, "message": "No current hex set"}
+
+        hex_data = self._hex_data.get(target_hex)
+        if not hex_data:
+            return {"success": False, "message": f"Hex {target_hex} not loaded"}
+
+        result: dict[str, Any] = {
+            "success": True,
+            "hex_id": target_hex,
+            "hex_name": hex_data.name,
+            "activity": activity,
+            "time_advanced": {},
+            "hazard_results": [],
+            "characters_affected": 0,
+        }
+
+        # Phase 1: Advance to DUSK if not already night
+        if not self._is_night():
+            dusk_result = self.controller.advance_to_time_of_day(
+                TimeOfDay.DUSK, reason="making camp"
+            )
+            result["time_advanced"]["to_dusk"] = dusk_result
+
+        # Phase 2: Process night hazards
+        # These are triggered by sleeping in the hex (e.g., 0102's dreamless mist)
+        hazard_results = self.process_night_hazards(
+            target_hex, activity=activity
+        )
+        result["hazard_results"] = hazard_results
+        result["characters_affected"] = len(hazard_results)
+
+        # Phase 3: Advance to DAWN (morning)
+        dawn_result = self.controller.advance_to_time_of_day(
+            TimeOfDay.DAWN, reason="sleeping through night"
+        )
+        result["time_advanced"]["to_dawn"] = dawn_result
+
+        # Build narrative description
+        hex_description = hex_data.terrain_description or hex_data.terrain_type
+        if hazard_results:
+            failed_saves = [h for h in hazard_results if not h.get("success", True)]
+            if failed_saves:
+                result["narrative"] = (
+                    f"The party makes camp in {hex_data.name} ({hex_description}). "
+                    f"During the night, {len(failed_saves)} character(s) are affected "
+                    f"by the night hazards of this hex."
+                )
+            else:
+                result["narrative"] = (
+                    f"The party makes camp in {hex_data.name} ({hex_description}). "
+                    f"Though the night holds dangers, all characters resist the effects."
+                )
+        else:
+            result["narrative"] = (
+                f"The party makes camp in {hex_data.name} ({hex_description}). "
+                f"The night passes uneventfully."
+            )
+
+        # Emit run log event
+        self._emit_run_log_event("wilderness_camp", result)
+
+        # Add suggested actions for the next morning
+        result["suggested_actions"] = [
+            {
+                "action_id": "wilderness:travel",
+                "label": "Continue traveling",
+                "params": {},
+            },
+            {
+                "action_id": "wilderness:forage",
+                "label": "Forage for food",
+                "params": {"hex_id": target_hex},
+            },
+        ]
 
         return result
 
@@ -2949,7 +3086,149 @@ class HexCrawlEngine:
             result["npcs_present"] = True
             result["npc_count"] = len(poi.npcs)
 
+        # Check for available quest hooks at this POI
+        available_quests = self._get_available_quest_hooks(poi, hex_id)
+        if available_quests:
+            result["quest_hooks"] = available_quests
+            result["suggested_actions"] = result.get("suggested_actions", [])
+            for quest in available_quests:
+                result["suggested_actions"].append({
+                    "action_id": "poi:accept_quest",
+                    "label": f"Accept Quest: {quest.get('title', quest.get('quest_id', 'Unknown'))}",
+                    "params": {"quest_id": quest.get("quest_id")},
+                })
+
+        # Include available roll tables at this POI
+        if poi.roll_tables:
+            result["available_tables"] = [
+                {
+                    "name": table.name,
+                    "die_type": table.die_type,
+                    "description": table.description,
+                    "unique_entries": table.unique_entries,
+                }
+                for table in poi.roll_tables
+            ]
+            result["suggested_actions"] = result.get("suggested_actions", [])
+            for table in poi.roll_tables:
+                result["suggested_actions"].append({
+                    "action_id": "wilderness:roll_poi_table",
+                    "label": f"Roll on: {table.name}",
+                    "params": {"table_name": table.name},
+                })
+
         return result
+
+    def _get_available_quest_hooks(
+        self, poi: "PointOfInterest", hex_id: str
+    ) -> list[dict[str, Any]]:
+        """
+        Get quest hooks available at this POI that haven't been accepted or completed.
+
+        Filters out quests that are already active or completed in the session.
+
+        Args:
+            poi: The POI to check for quest hooks
+            hex_id: The hex ID for tracking
+
+        Returns:
+            List of available quest hook definitions
+        """
+        if not poi.quest_hooks:
+            return []
+
+        available = []
+        session_mgr = self.controller.session_manager if self.controller else None
+
+        for quest_hook in poi.quest_hooks:
+            quest_id = quest_hook.get("quest_id")
+            if not quest_id:
+                continue
+
+            # Check if already active or completed
+            if session_mgr:
+                if session_mgr.get_active_quest(quest_id):
+                    continue
+                if session_mgr._current_session and quest_id in session_mgr._current_session.completed_quests:
+                    continue
+
+            available.append(quest_hook)
+
+        return available
+
+    def accept_poi_quest(
+        self, hex_id: str, quest_id: str
+    ) -> dict[str, Any]:
+        """
+        Accept a quest from the current POI.
+
+        Args:
+            hex_id: The hex ID
+            quest_id: The quest ID to accept
+
+        Returns:
+            Dictionary with acceptance result
+        """
+        if not self._current_poi:
+            return {"success": False, "error": "Not at a POI"}
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": "Hex data not found"}
+
+        # Find the current POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": "Current POI not found"}
+
+        # Find the quest hook
+        quest_hook = None
+        for qh in poi.quest_hooks:
+            if qh.get("quest_id") == quest_id:
+                quest_hook = qh
+                break
+
+        if not quest_hook:
+            return {"success": False, "error": f"Quest '{quest_id}' not found at this location"}
+
+        # Find quest giver NPC if specified
+        npc_id = quest_hook.get("quest_giver")
+
+        # Accept the quest via session manager
+        session_mgr = self.controller.session_manager if self.controller else None
+        if not session_mgr:
+            return {"success": False, "error": "Session manager not available"}
+
+        result = session_mgr.accept_quest(quest_hook, npc_id=npc_id, hex_id=hex_id)
+        if not result:
+            return {"success": False, "error": "Quest already active or completed"}
+
+        # Emit event for logging
+        self._emit_run_log_event(
+            "quest_accepted",
+            {
+                "quest_id": quest_id,
+                "title": quest_hook.get("title", quest_id),
+                "hex_id": hex_id,
+                "poi_name": self._current_poi,
+                "quest_giver": npc_id,
+            },
+        )
+
+        return {
+            "success": True,
+            "quest_id": quest_id,
+            "title": quest_hook.get("title", quest_id),
+            "description": quest_hook.get("description", ""),
+            "objective": quest_hook.get("objective", ""),
+            "reward_description": quest_hook.get("reward_description", ""),
+            "message": f"Quest accepted: {quest_hook.get('title', quest_id)}",
+        }
 
     def explore_poi_feature(
         self,
@@ -3779,9 +4058,43 @@ class HexCrawlEngine:
     # NPC INTERACTION AT POIs
     # =========================================================================
 
+    def _is_npc_present_at_time(self, npc: "HexNPC", is_night: bool) -> bool:
+        """
+        Check if an NPC is present based on time-of-day conditions.
+
+        Parses the NPC's location field for time-based keywords:
+        - "(nighttime only)" or "(nighttime)" -> Only present at night
+        - "(daytime only)" or "(daytime)" -> Only present during day
+        - No time keyword -> Present at all times
+
+        Args:
+            npc: The HexNPC to check
+            is_night: Whether it's currently nighttime
+
+        Returns:
+            True if the NPC is present at the current time
+        """
+        location = getattr(npc, "location", "") or ""
+        location_lower = location.lower()
+
+        # Check for nighttime-only presence
+        if "(nighttime only)" in location_lower or "(nighttime)" in location_lower:
+            return is_night
+
+        # Check for daytime-only presence
+        if "(daytime only)" in location_lower or "(daytime)" in location_lower:
+            return not is_night
+
+        # No time restriction - NPC is always present
+        return True
+
     def get_npcs_at_poi(self, hex_id: str) -> list[dict[str, Any]]:
         """
         Get NPCs present at the current POI.
+
+        NPCs are filtered based on time-of-day conditions in their location field.
+        For example, the Dredger in hex 0104 has location "Lighthouse lantern room
+        (nighttime only)" and will only appear at night.
 
         Args:
             hex_id: Current hex
@@ -3811,12 +4124,17 @@ class HexCrawlEngine:
                             break
 
                     if npc_data:
+                        # Check time-based presence
+                        if not self._is_npc_present_at_time(npc_data, is_night):
+                            continue  # Skip this NPC - not present at current time
+
                         npc_info = {
                             "npc_id": npc_data.npc_id,
                             "name": npc_data.name,
                             "description": npc_data.description,
                             "kindred": npc_data.kindred,
                             "met_before": npc_data.npc_id in self._met_npcs,
+                            "is_combatant": getattr(npc_data, "is_combatant", False),
                         }
                         if npc_data.title:
                             npc_info["title"] = npc_data.title
@@ -4066,6 +4384,15 @@ class HexCrawlEngine:
 
         if not target_npc:
             return {"success": False, "error": f"NPC '{npc_id}' not found in hex data"}
+
+        # Check time-based presence
+        is_night = self._is_night()
+        if not self._is_npc_present_at_time(target_npc, is_night):
+            time_period = "nighttime" if is_night else "daytime"
+            return {
+                "success": False,
+                "error": f"NPC '{npc_id}' not at this POI (not present during {time_period})",
+            }
 
         # Check if NPC is a combatant
         if not getattr(target_npc, "is_combatant", False):
@@ -5902,13 +6229,40 @@ class HexCrawlEngine:
             if check_type:
                 check_type_lower = check_type.lower() if check_type else "dexterity"
                 ability_score = 10  # Default
-                if hasattr(character, "abilities") and character.abilities:
+
+                # Map check type to ability score key (e.g., "dexterity" -> "DEX")
+                ability_key_map = {
+                    "strength": "STR", "str": "STR",
+                    "intelligence": "INT", "int": "INT",
+                    "wisdom": "WIS", "wis": "WIS",
+                    "dexterity": "DEX", "dex": "DEX",
+                    "constitution": "CON", "con": "CON",
+                    "charisma": "CHA", "cha": "CHA",
+                }
+                ability_key = ability_key_map.get(check_type_lower, check_type_lower.upper())
+
+                # Check for ability_scores dict (CharacterState uses this)
+                if hasattr(character, "ability_scores") and character.ability_scores:
+                    ability_score = character.ability_scores.get(ability_key, 10)
+                elif hasattr(character, "abilities") and character.abilities:
                     ability_score = getattr(character.abilities, check_type_lower, 10)
                 elif hasattr(character, check_type_lower):
                     ability_score = getattr(character, check_type_lower, 10)
+
+                # Get condition modifier for ability checks (e.g., exhausted = -1)
+                # For ability checks, penalties INCREASE the roll (success is <= ability)
+                condition_mod = 0
+                if hasattr(character, "get_total_condition_modifier"):
+                    try:
+                        mod = character.get_total_condition_modifier("ability_checks")
+                        condition_mod = int(mod) if mod else 0
+                    except (TypeError, ValueError):
+                        pass  # MagicMock or invalid value, use 0
+
                 # OSE/Dolmenwood ability check: roll d20, success if <= ability score
                 roll = self.dice.roll_d20(f"{check_type_lower} check")
-                roll_total = roll.total - modifier  # Negative modifier makes it harder
+                # Penalties (negative condition_mod) increase roll, making it harder
+                roll_total = roll.total - modifier - condition_mod
                 success = roll_total <= ability_score
             elif save_type_lower in ("doom", "spell", "ray", "hold", "blast"):
                 # Use proper saving throw mechanism
@@ -5921,14 +6275,34 @@ class HexCrawlEngine:
                     target = 15  # Default target
                     if hasattr(character, "saving_throws"):
                         target = character.saving_throws.get(save_type_lower, 15)
+
+                    # Get condition modifier for saving throws
+                    condition_mod = 0
+                    if hasattr(character, "get_total_condition_modifier"):
+                        try:
+                            mod = character.get_total_condition_modifier("saving_throws")
+                            condition_mod = int(mod) if mod else 0
+                        except (TypeError, ValueError):
+                            pass  # MagicMock or invalid value, use 0
+
                     roll = self.dice.roll_d20(f"Save vs {save_type}")
-                    roll_total = roll.total + modifier
+                    roll_total = roll.total + modifier + condition_mod
                     success = roll_total >= target
             else:
                 # Ability check (legacy path)
                 ability_mod = character.get_ability_modifier(save_type)
+
+                # Get condition modifier for ability checks
+                condition_mod = 0
+                if hasattr(character, "get_total_condition_modifier"):
+                    try:
+                        mod = character.get_total_condition_modifier("ability_checks")
+                        condition_mod = int(mod) if mod else 0
+                    except (TypeError, ValueError):
+                        pass  # MagicMock or invalid value, use 0
+
                 roll = self.dice.roll_d20(f"hazard save ({save_type})")
-                roll_total = roll.total + ability_mod
+                roll_total = roll.total + ability_mod + condition_mod
                 success = roll_total >= difficulty
 
             damage_dealt = 0
@@ -6023,6 +6397,8 @@ class HexCrawlEngine:
         "touch": ["touch", "press", "push", "activate", "grab", "hold", "handle"],
         "enter": ["enter", "go in", "step into", "walk into", "climb into"],
         "examine": ["examine", "look at", "inspect", "study", "investigate"],
+        "climb": ["climb", "scale", "ascend", "scramble up", "climb up"],
+        "view": ["view", "behold", "gaze", "stare", "look upon", "observe"],
     }
 
     def detect_poi_action(self, player_input: str) -> Optional[tuple[str, str]]:
@@ -6049,6 +6425,9 @@ class HexCrawlEngine:
     ) -> list[dict[str, Any]]:
         """
         Get POI hazards that match a specific action type.
+
+        Hazards with effect_required are only included if that effect is
+        currently active (based on seasonal behavior).
 
         Args:
             hex_id: Current hex
@@ -6082,8 +6461,20 @@ class HexCrawlEngine:
                     elif action_type == "enter":
                         if any(kw in trigger for kw in ["enter", "inside", "entering"]):
                             should_match = True
+                    elif action_type == "climb":
+                        if any(kw in trigger for kw in ["climb", "scale", "ascend", "scaling"]):
+                            should_match = True
+                    elif action_type == "view":
+                        if any(kw in trigger for kw in ["view", "behold", "gaze", "look"]):
+                            should_match = True
 
                     if should_match:
+                        # Check if hazard requires a specific effect to be active
+                        effect_required = hazard.get("effect_required")
+                        if effect_required:
+                            if not self.is_poi_effect_active(hex_id, poi.name, effect_required):
+                                # Effect is not active, skip this hazard
+                                continue
                         matching_hazards.append(hazard)
 
         return matching_hazards
@@ -6132,6 +6523,12 @@ class HexCrawlEngine:
                 "reason": "No hazards match this action",
             }
 
+        # Special handling for climb actions - route through attempt_climb()
+        if action_type == "climb":
+            return self._resolve_climb_action(
+                character_id, hex_id, matching_hazards, matched_keyword
+            )
+
         # Resolve all matching hazards
         results = []
         for hazard in matching_hazards:
@@ -6159,11 +6556,120 @@ class HexCrawlEngine:
             "hazards_triggered": len(results),
         }
 
+    def _resolve_climb_action(
+        self,
+        character_id: str,
+        hex_id: str,
+        matching_hazards: list[dict[str, Any]],
+        matched_keyword: str,
+    ) -> dict[str, Any]:
+        """
+        Resolve a climb action using the proper climbing mechanics.
+
+        Routes climb actions through attempt_climb() which uses the hazard resolver
+        for proper DEX checks and fall damage calculation.
+
+        Args:
+            character_id: Character performing the climb
+            hex_id: Current hex
+            matching_hazards: List of matching climbing hazards from POI
+            matched_keyword: The keyword that matched the climb action
+
+        Returns:
+            Dict with climb result including hazard resolution
+        """
+        # Get POI to find height information
+        hex_data = self._hex_data.get(hex_id)
+        poi = None
+        if hex_data:
+            for p in hex_data.points_of_interest:
+                if p.name == self._current_poi:
+                    poi = p
+                    break
+
+        # Extract height from hazard or POI data
+        height_feet = 20  # Default height
+        difficulty = 10  # Default DC
+        hazard = matching_hazards[0] if matching_hazards else {}
+
+        # Check for height in hazard
+        if hazard.get("height"):
+            height_feet = hazard.get("height")
+        # Check POI interior description for height (e.g., "100 feet tall")
+        elif poi and poi.interior:
+            import re
+            height_match = re.search(r"(\d+)\s*feet?\s*tall", poi.interior.lower())
+            if height_match:
+                height_feet = int(height_match.group(1))
+
+        # Get difficulty from hazard
+        if hazard.get("difficulty"):
+            difficulty = hazard.get("difficulty")
+
+        # Check for Climb Walls ability (thieves, etc.)
+        character = self.controller.get_character(character_id)
+        has_climb_walls = False
+        if character:
+            # Check for Climb Walls skill/ability
+            if hasattr(character, "skills") and character.skills:
+                has_climb_walls = "climb_walls" in character.skills or "Climb Walls" in character.skills
+            elif hasattr(character, "abilities") and character.abilities:
+                has_climb_walls = getattr(character.abilities, "climb_walls", False)
+
+        # If character has Climb Walls, trivial climb
+        if has_climb_walls:
+            return {
+                "triggered": True,
+                "action_type": "climb",
+                "keyword": matched_keyword,
+                "poi_name": self._current_poi,
+                "hazard_results": [{
+                    "hazard_name": hazard.get("name", "Climbing"),
+                    "success": True,
+                    "description": f"Used Climb Walls ability to scale the {height_feet}-foot climb safely",
+                    "damage_taken": 0,
+                    "conditions_applied": [],
+                    "effects_applied": False,
+                    "narrative_hints": ["character climbs easily using trained ability"],
+                }],
+                "hazards_triggered": 1,
+                "height_feet": height_feet,
+            }
+
+        # Use attempt_climb for proper climbing mechanics
+        climb_result = self.attempt_climb(
+            character_id=character_id,
+            height_feet=height_feet,
+            is_trivial=False,
+            difficulty=difficulty,
+        )
+
+        return {
+            "triggered": True,
+            "action_type": "climb",
+            "keyword": matched_keyword,
+            "poi_name": self._current_poi,
+            "hazard_results": [{
+                "hazard_name": hazard.get("name", "Climbing"),
+                "success": climb_result.success,
+                "description": climb_result.description,
+                "damage_taken": climb_result.damage_dealt,
+                "conditions_applied": climb_result.conditions_applied,
+                "effects_applied": climb_result.damage_dealt > 0,
+                "narrative_hints": climb_result.narrative_hints,
+                "check_result": climb_result.check_result,
+                "check_target": climb_result.check_target,
+            }],
+            "hazards_triggered": 1,
+            "height_feet": height_feet,
+        }
+
     def _apply_hazard_effects(
         self,
         result: HazardResult,
         character: CharacterState,
         hazard_data: Optional[dict[str, Any]] = None,
+        trigger_chains: bool = True,
     ) -> dict[str, Any]:
         """
         Apply damage and conditions from a hazard result to game state.
@@ -6206,7 +6712,131 @@ class HexCrawlEngine:
                 if table_result:
                     applied["roll_table_results"].append(table_result)
 
+            # Trigger automatic chain hazards for this condition
+            # (but not if we're already processing a chain to avoid recursion)
+            if trigger_chains and apply_result.get("applied"):
+                chain_results = self._trigger_chain_hazards(character, condition_str)
+                if chain_results:
+                    applied["chain_hazards_triggered"] = chain_results
+
         return applied
+
+    def _trigger_chain_hazards(
+        self,
+        character: CharacterState,
+        condition: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Trigger automatic hazards that chain from a newly applied condition.
+
+        This implements the dance chain model where applying one condition
+        (e.g., enchanted_hearing) automatically triggers hazards that require
+        that condition (e.g., enchanted_reverie → compelled_dancing).
+
+        Args:
+            character: The character with the newly applied condition
+            condition: The condition type that was just applied
+
+        Returns:
+            List of chain hazard results
+        """
+        results = []
+
+        # Get current POI hazards
+        hex_id = self._current_hex
+        if not hex_id or not self._current_poi:
+            return results
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return results
+
+        # Find POI and get automatic hazards for this condition
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return results
+
+        # Get automatic hazards that require this condition
+        chain_hazards = poi.get_automatic_hazards_for_condition(condition)
+
+        for hazard in chain_hazards:
+            # Resolve the automatic hazard (no save required for automatic hazards)
+            hazard_result = self._resolve_automatic_hazard(hazard, character)
+
+            # Apply effects (with trigger_chains=False to prevent infinite recursion)
+            effect_result = self._apply_hazard_effects(
+                hazard_result, character, hazard_data=hazard, trigger_chains=False
+            )
+
+            results.append({
+                "hazard_name": hazard.get("name", hazard.get("hazard_id", "chain_hazard")),
+                "triggered_by_condition": condition,
+                "success": not hazard_result.success,  # For auto-hazards, "success" means effect applied
+                "conditions_applied": hazard_result.conditions_applied,
+                "effects_applied": effect_result,
+            })
+
+        return results
+
+    def _resolve_automatic_hazard(
+        self,
+        hazard: dict[str, Any],
+        character: CharacterState,
+    ) -> HazardResult:
+        """
+        Resolve an automatic hazard (no save required).
+
+        Automatic hazards trigger when their condition_required is met
+        and apply their effect immediately.
+
+        Args:
+            hazard: The automatic hazard definition
+            character: The character affected
+
+        Returns:
+            HazardResult with the automatic effect applied
+        """
+        from src.narrative.hazard_resolver import HazardResult, HazardType, ActionType
+
+        # Extract effect data
+        effect = hazard.get("effect", {})
+        condition_on_fail = effect.get("condition") or hazard.get("condition")
+        description = hazard.get("description", "An automatic effect triggers.")
+
+        # Build conditions list
+        conditions_applied = []
+        apply_conditions = []
+        if condition_on_fail:
+            conditions_applied.append(condition_on_fail)
+            if hasattr(character, "character_id"):
+                apply_conditions.append((character.character_id, condition_on_fail))
+
+        # Extract additional metadata
+        ends_at = effect.get("ends_at_time_of_day") or hazard.get("ends_at_time_of_day")
+        effect_description = effect.get("description", "")
+
+        narrative_hints = [
+            "automatic effect",
+            effect_description if effect_description else description,
+        ]
+        if ends_at:
+            narrative_hints.append(f"until {ends_at}")
+
+        return HazardResult(
+            success=False,  # False means the effect applies (character "failed" to avoid)
+            hazard_type=HazardType.ENCHANTMENT,
+            action_type=ActionType.NARRATIVE_ACTION,
+            description=description,
+            conditions_applied=conditions_applied,
+            apply_conditions=apply_conditions,
+            narrative_hints=narrative_hints,
+            effect_applied=condition_on_fail if condition_on_fail else "",
+        )
 
     def _create_condition_from_hazard(
         self,
@@ -6293,12 +6923,16 @@ class HexCrawlEngine:
         """
         Roll on a POI's roll table and store result for narration.
 
+        Supports unique_entries tables where each entry can only be rolled once.
+        Uses session_manager to track which entries have been found.
+
         Args:
             character: The character experiencing the effect
             table_name: Name of the roll table to use
 
         Returns:
-            Dict with roll result, or None if table not found
+            Dict with roll result, or None if table not found.
+            Returns {"exhausted": True} if all unique entries have been found.
         """
         if not self._current_poi or not self._current_hex:
             return None
@@ -6309,23 +6943,63 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                # Look for the roll table
-                for table in getattr(poi, "roll_tables", []) or []:
-                    if table.get("name") == table_name:
-                        # Roll on the table
-                        die_type = table.get("die_type", "1d6")
-                        roll = self.dice.roll(die_type, table_name)
+                # Look for the roll table (RollTable dataclass instances)
+                for table in poi.roll_tables or []:
+                    if table.name == table_name:
+                        # Handle unique_entries tables with deduplication
+                        session_mgr = self.controller.session_manager
+                        if table.unique_entries and session_mgr:
+                            all_roll_values = [e.roll for e in table.entries]
+                            unfound = session_mgr.get_unfound_roll_table_entries(
+                                self._current_hex,
+                                self._current_poi,
+                                table_name,
+                                all_roll_values,
+                            )
+                            if not unfound:
+                                return {
+                                    "exhausted": True,
+                                    "table": table_name,
+                                    "poi": self._current_poi,
+                                    "message": f"All entries in {table_name} have been found.",
+                                }
+                            # Roll until we get an unfound entry
+                            max_attempts = 20
+                            for _ in range(max_attempts):
+                                roll = self.dice.roll(
+                                    f"1{table.die_type}", f"roll on {table_name}"
+                                )
+                                if roll.total in unfound:
+                                    break
+                            else:
+                                # Fallback: pick first unfound
+                                roll_total = unfound[0]
+                                roll = type(
+                                    "MockRoll", (), {"total": roll_total}
+                                )()
+                        else:
+                            # Regular roll (no dedup needed)
+                            roll = self.dice.roll(
+                                f"1{table.die_type}", f"roll on {table_name}"
+                            )
 
-                        # Find matching entry
-                        entries = table.get("entries", [])
+                        # Find matching entry (RollTableEntry dataclass)
                         result_entry = None
-                        for entry in entries:
-                            roll_range = entry.get("roll", "")
-                            if self._matches_roll_range(roll.total, roll_range):
+                        for entry in table.entries:
+                            if entry.roll == roll.total:
                                 result_entry = entry
                                 break
 
                         if result_entry:
+                            # Mark entry as found for unique tables
+                            if table.unique_entries and session_mgr:
+                                session_mgr.mark_roll_table_entry_found(
+                                    self._current_hex,
+                                    self._current_poi,
+                                    table_name,
+                                    roll.total,
+                                )
+
                             # Store event for narration
                             self._emit_run_log_event(
                                 "roll_table_result",
@@ -6333,15 +7007,23 @@ class HexCrawlEngine:
                                     "character_id": character.character_id,
                                     "table": table_name,
                                     "roll": roll.total,
-                                    "result": result_entry.get("title", ""),
-                                    "description": result_entry.get("description", ""),
+                                    "result": result_entry.title or "",
+                                    "description": result_entry.description,
                                 },
                             )
 
                             return {
                                 "table": table_name,
                                 "roll": roll.total,
-                                "entry": result_entry,
+                                "entry": {
+                                    "roll": result_entry.roll,
+                                    "title": result_entry.title,
+                                    "description": result_entry.description,
+                                    "monsters": result_entry.monsters,
+                                    "npcs": result_entry.npcs,
+                                    "items": result_entry.items,
+                                    "mechanical_effect": result_entry.mechanical_effect,
+                                },
                             }
 
         return None
@@ -6868,6 +7550,343 @@ class HexCrawlEngine:
         return self._world_state_changes.get_current_state(hex_id, state_key, poi_name)
 
     # =========================================================================
+    # PERMANENT SPELL SYSTEM (Vorpal Monolith Spell Permanence)
+    # =========================================================================
+
+    # Spell types that can be made permanent through vorpal monoliths
+    PERMANENT_SPELL_TYPES = ["shadow", "darkness"]
+
+    def is_spell_permanence_eligible(self, spell_name: str) -> tuple[bool, str]:
+        """
+        Check if a spell can be made permanent through a vorpal monolith.
+
+        Shadow and darkness spells cast while touching a monolith in winter
+        become permanent until re-touched.
+
+        Args:
+            spell_name: Name of the spell being cast
+
+        Returns:
+            Tuple of (is_eligible, spell_type)
+        """
+        spell_lower = spell_name.lower()
+
+        # Check for darkness spells
+        darkness_keywords = ["darkness", "dark", "blackout", "shadow veil"]
+        for keyword in darkness_keywords:
+            if keyword in spell_lower:
+                return True, "darkness"
+
+        # Check for shadow spells
+        shadow_keywords = ["shadow", "shade", "umbral", "penumbra"]
+        for keyword in shadow_keywords:
+            if keyword in spell_lower:
+                return True, "shadow"
+
+        return False, ""
+
+    def make_spell_permanent(
+        self,
+        spell_name: str,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        effect_location_hex: Optional[str] = None,
+        effect_location_poi: Optional[str] = None,
+        spell_level: int = 0,
+        original_duration: str = "",
+        effect_radius_feet: int = 0,
+    ) -> Optional[PermanentSpell]:
+        """
+        Make a shadow/darkness spell permanent through a vorpal monolith.
+
+        This can only be done:
+        1. While touching a vorpal monolith
+        2. During winter (when the monolith is semi-corporeal)
+        3. With a shadow or darkness spell
+
+        Args:
+            spell_name: Name of the spell
+            caster_id: ID of the caster
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            effect_location_hex: Where the spell effect manifests
+            effect_location_poi: POI where effect manifests
+            spell_level: Level of the spell
+            original_duration: What the duration would have been
+            effect_radius_feet: Radius of the effect
+
+        Returns:
+            The PermanentSpell if successful, None if ineligible
+        """
+        # Check eligibility
+        is_eligible, spell_type = self.is_spell_permanence_eligible(spell_name)
+        if not is_eligible:
+            logger.warning(f"Spell '{spell_name}' is not eligible for permanence")
+            return None
+
+        # Get caster name
+        caster_name = ""
+        if self.controller:
+            char = self.controller.get_character(caster_id)
+            if char:
+                caster_name = char.name
+
+        # Get current date
+        current_date = None
+        if self.controller and self.controller.world_state:
+            current_date = self.controller.world_state.current_date
+
+        # Create the permanent spell
+        permanent_spell = PermanentSpell(
+            spell_name=spell_name,
+            spell_type=spell_type,
+            caster_id=caster_id,
+            caster_name=caster_name,
+            monolith_hex_id=hex_id,
+            monolith_poi_name=poi_name,
+            effect_location_hex=effect_location_hex or hex_id,
+            effect_location_poi=effect_location_poi,
+            original_duration=original_duration,
+            original_spell_level=spell_level,
+            effect_radius_feet=effect_radius_feet,
+            created_at=current_date,
+        )
+
+        # Add to registry
+        self._permanent_spells.add_spell(permanent_spell)
+
+        logger.info(
+            f"Spell '{spell_name}' made permanent at {hex_id}/{poi_name} by {caster_name}"
+        )
+
+        # Emit event
+        self._emit_run_log_event(
+            "spell_made_permanent",
+            {
+                "spell_id": permanent_spell.spell_id,
+                "spell_name": spell_name,
+                "spell_type": spell_type,
+                "caster_id": caster_id,
+                "caster_name": caster_name,
+                "monolith_hex": hex_id,
+                "monolith_poi": poi_name,
+                "effect_location_hex": permanent_spell.effect_location_hex,
+                "effect_location_poi": permanent_spell.effect_location_poi,
+            },
+        )
+
+        return permanent_spell
+
+    def end_permanent_spell(
+        self,
+        caster_id: str,
+        hex_id: str,
+        poi_name: str,
+        spell_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        End permanent spells by touching the monolith and willing them to end.
+
+        This can only be done at the same monolith where the spell was made
+        permanent, during winter, and by the original caster.
+
+        Args:
+            caster_id: ID of the caster willing the spell to end
+            hex_id: Hex ID of the monolith
+            poi_name: POI name of the monolith
+            spell_name: Specific spell to end (None = all spells by this caster)
+
+        Returns:
+            List of ended PermanentSpell objects
+        """
+        # Get current date
+        current_date = None
+        if self.controller and self.controller.world_state:
+            current_date = self.controller.world_state.current_date
+
+        if not current_date:
+            logger.warning("Cannot end permanent spell: no current date available")
+            return []
+
+        # End the spells
+        ended = self._permanent_spells.end_caster_spell_at_monolith(
+            caster_id=caster_id,
+            hex_id=hex_id,
+            poi_name=poi_name,
+            current_date=current_date,
+            spell_name=spell_name,
+        )
+
+        for spell in ended:
+            logger.info(
+                f"Permanent spell '{spell.spell_name}' ended at {hex_id}/{poi_name}"
+            )
+
+            # Emit event
+            self._emit_run_log_event(
+                "permanent_spell_ended",
+                {
+                    "spell_id": spell.spell_id,
+                    "spell_name": spell.spell_name,
+                    "spell_type": spell.spell_type,
+                    "caster_id": spell.caster_id,
+                    "caster_name": spell.caster_name,
+                    "monolith_hex": hex_id,
+                    "monolith_poi": poi_name,
+                },
+            )
+
+        return ended
+
+    def get_permanent_spells_at_location(
+        self,
+        hex_id: str,
+        poi_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        Get all active permanent spell effects at a location.
+
+        Args:
+            hex_id: Hex to check
+            poi_name: Specific POI (None = hex level)
+
+        Returns:
+            List of active PermanentSpell objects
+        """
+        return self._permanent_spells.get_spells_at_location(hex_id, poi_name)
+
+    def get_caster_permanent_spells(
+        self,
+        caster_id: str,
+        hex_id: Optional[str] = None,
+        poi_name: Optional[str] = None,
+    ) -> list[PermanentSpell]:
+        """
+        Get all active permanent spells cast by a character.
+
+        Args:
+            caster_id: ID of the caster
+            hex_id: Filter by monolith hex (optional)
+            poi_name: Filter by monolith POI (optional)
+
+        Returns:
+            List of active PermanentSpell objects
+        """
+        spells = self._permanent_spells.get_spells_by_caster(caster_id)
+        if hex_id and poi_name:
+            spells = [
+                s for s in spells
+                if s.monolith_hex_id == hex_id and s.monolith_poi_name == poi_name
+            ]
+        return spells
+
+    def resolve_spell_permanence_hazard(
+        self,
+        character_id: str,
+        hex_id: str,
+        hazard: dict[str, Any],
+        spell_being_cast: Optional[str] = None,
+        end_spell_intent: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Resolve a spell permanence hazard (touching monolith while casting).
+
+        This handles the monolith_touching hazard when:
+        1. A caster is casting a shadow/darkness spell -> make it permanent
+        2. A caster wants to end their permanent spells -> end them
+
+        Args:
+            character_id: ID of the character touching the monolith
+            hex_id: Hex ID of the monolith
+            hazard: The hazard data from the POI
+            spell_being_cast: Name of spell being cast (if any)
+            end_spell_intent: Whether the caster intends to end permanent spells
+
+        Returns:
+            Dict with resolution results
+        """
+        poi_name = hazard.get("poi_name") or self._current_poi
+
+        result = {
+            "triggered": True,
+            "hazard_id": hazard.get("hazard_id", "spell_permanence"),
+            "hazard_name": hazard.get("name", "Spell Permanence"),
+            "effect": hazard.get("effect"),
+            "action": None,
+            "spells_affected": [],
+            "message": "",
+        }
+
+        # Check if trying to end permanent spells
+        if end_spell_intent:
+            caster_spells = self.get_caster_permanent_spells(
+                character_id, hex_id, poi_name
+            )
+            if caster_spells:
+                ended = self.end_permanent_spell(character_id, hex_id, poi_name)
+                result["action"] = "ended"
+                result["spells_affected"] = [
+                    {
+                        "spell_id": s.spell_id,
+                        "spell_name": s.spell_name,
+                        "spell_type": s.spell_type,
+                    }
+                    for s in ended
+                ]
+                result["message"] = (
+                    f"Ended {len(ended)} permanent spell(s): "
+                    + ", ".join(s.spell_name for s in ended)
+                )
+            else:
+                result["action"] = "no_spells"
+                result["message"] = "No permanent spells to end at this monolith."
+            return result
+
+        # Check if casting a spell that can be made permanent
+        if spell_being_cast:
+            is_eligible, spell_type = self.is_spell_permanence_eligible(spell_being_cast)
+            if is_eligible:
+                permanent = self.make_spell_permanent(
+                    spell_name=spell_being_cast,
+                    caster_id=character_id,
+                    hex_id=hex_id,
+                    poi_name=poi_name,
+                )
+                if permanent:
+                    result["action"] = "made_permanent"
+                    result["spells_affected"] = [
+                        {
+                            "spell_id": permanent.spell_id,
+                            "spell_name": permanent.spell_name,
+                            "spell_type": permanent.spell_type,
+                        }
+                    ]
+                    result["message"] = (
+                        f"The {spell_being_cast} spell becomes permanent! "
+                        "It can only be ended by touching this monolith again "
+                        "during winter and willing it to end."
+                    )
+                else:
+                    result["action"] = "failed"
+                    result["message"] = f"The {spell_being_cast} spell is not eligible for permanence."
+            else:
+                result["action"] = "ineligible"
+                result["message"] = (
+                    f"The {spell_being_cast} spell is not a shadow or darkness spell "
+                    "and cannot be made permanent."
+                )
+        else:
+            # Just touching without casting or ending
+            result["action"] = "touch_only"
+            result["message"] = (
+                "The monolith's surface feels like cold, sticky slime. "
+                "Shadow or darkness spells cast while touching would become permanent."
+            )
+
+        return result
+
+    # =========================================================================
     # SCHEDULED EVENTS AND INVITATIONS
     # =========================================================================
 
@@ -6983,9 +8002,8 @@ class HexCrawlEngine:
 
     def _get_current_date(self) -> GameDate:
         """Get the current game date from the controller."""
-        world_state = self.controller.get_world_state()
-        if world_state and world_state.date:
-            return world_state.date
+        if self.controller.world_state and self.controller.world_state.current_date:
+            return self.controller.world_state.current_date
         # Default date if not set
         return GameDate(year=1, month=1, day=1)
 
@@ -7817,3 +8835,160 @@ class HexCrawlEngine:
 
         # Filter out taken items
         return [item for item in poi_items if not item.get("taken", False)]
+
+    # =========================================================================
+    # ITEM ACQUISITION AND DECAY
+    # =========================================================================
+
+    def acquire_item(
+        self,
+        hex_id: str,
+        item: dict[str, Any],
+        poi_name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Acquire an item and add it to party inventory.
+
+        If the item has decay properties (decay_dice, decay_unit), schedules
+        a decay event. For example, Golden Eggs decay after 4d6 days.
+
+        Args:
+            hex_id: Source hex
+            item: Item data dict with name, item_id, value, and optional decay properties
+            poi_name: Source POI
+
+        Returns:
+            Dict with acquisition details and any scheduled decay
+        """
+        import uuid
+
+        # Generate unique instance ID for this specific item
+        instance_id = f"{item.get('item_id', 'unknown')}_{str(uuid.uuid4())[:8]}"
+
+        # Create inventory entry
+        inventory_item = {
+            "instance_id": instance_id,
+            "item_id": item.get("item_id", ""),
+            "name": item.get("name", "Unknown Item"),
+            "quantity": item.get("quantity", 1),
+            "value_gp": item.get("value_gp"),
+            "magical": item.get("magical", False),
+            "notes": item.get("notes", ""),
+            "source_hex": hex_id,
+            "source_poi": poi_name,
+            "acquired_date": str(self._get_current_date()),
+            "decayed": False,
+        }
+
+        # Add to party inventory
+        party_state = self.controller.party_state
+        party_state.party_inventory.append(inventory_item)
+
+        result = {
+            "success": True,
+            "item": inventory_item,
+            "instance_id": instance_id,
+            "scheduled_decay": None,
+        }
+
+        # Check for decay properties
+        decay_dice = item.get("decay_dice")
+        if decay_dice:
+            decay_unit = item.get("decay_unit", "days")
+            if decay_unit == "days":
+                current_date = self._get_current_date()
+                decay_event = self._event_scheduler.schedule_item_decay(
+                    item_id=instance_id,
+                    item_name=inventory_item["name"],
+                    decay_dice=decay_dice,
+                    current_date=current_date,
+                    source_hex_id=hex_id,
+                    source_poi_name=poi_name,
+                    decay_result="dust",
+                    player_message=f"The {inventory_item['name']} crumbles to dust in your hands.",
+                )
+
+                result["scheduled_decay"] = {
+                    "event_id": decay_event.event_id,
+                    "days_until": decay_event.days_until_trigger,
+                    "trigger_date": str(decay_event.trigger_date),
+                }
+
+        return result
+
+    def process_item_decays(self) -> list[dict[str, Any]]:
+        """
+        Process any item decay events that should trigger.
+
+        Called on day advance to check for items that have expired.
+        Updates party inventory to mark decayed items.
+
+        Returns:
+            List of triggered decay events with narrative hints
+        """
+        current_date = self._get_current_date()
+        triggered = self._event_scheduler.check_item_decays(current_date)
+
+        results = []
+        party_state = self.controller.party_state
+
+        for decay_effect in triggered:
+            item_id = decay_effect.get("effect_details", {}).get("item_id")
+            item_name = decay_effect.get("effect_details", {}).get("item_name", "item")
+            decay_result = decay_effect.get("effect_details", {}).get("decay_result", "dust")
+
+            # Find and update the item in inventory
+            for inv_item in party_state.party_inventory:
+                if inv_item.get("instance_id") == item_id:
+                    inv_item["decayed"] = True
+                    inv_item["decay_result"] = decay_result
+                    inv_item["decayed_date"] = str(current_date)
+                    break
+
+            results.append({
+                "item_id": item_id,
+                "item_name": item_name,
+                "decay_result": decay_result,
+                "message": decay_effect.get("player_message", f"The {item_name} has decayed."),
+                "narrative_hints": [
+                    f"The {item_name} has crumbled to {decay_result}.",
+                    "The party should update their inventory accordingly.",
+                ],
+            })
+
+        return results
+
+    def get_active_decay_timers(self) -> list[dict[str, Any]]:
+        """
+        Get all active item decay timers for display.
+
+        Returns:
+            List of pending decay events with time remaining
+        """
+        current_date = self._get_current_date()
+        pending = self._event_scheduler.get_pending_item_decays(current_date)
+
+        timers = []
+        for event in pending:
+            if event.trigger_date and event.created_at:
+                # Calculate days remaining from total days and elapsed days
+                total_days = event.days_until_trigger or 0
+                # Calculate days elapsed since creation
+                days_elapsed = self._calculate_days_between(event.created_at, current_date)
+                days_remaining = max(0, total_days - days_elapsed)
+                timers.append({
+                    "event_id": event.event_id,
+                    "item_id": event.effect_details.get("item_id"),
+                    "item_name": event.effect_details.get("item_name"),
+                    "days_remaining": days_remaining,
+                    "trigger_date": str(event.trigger_date),
+                })
+
+        return timers
+
+    def _calculate_days_between(self, start: GameDate, end: GameDate) -> int:
+        """Calculate number of days between two dates."""
+        # Simple calculation assuming 30 days per month
+        start_total = (start.year - 1) * 360 + (start.month - 1) * 30 + start.day
+        end_total = (end.year - 1) * 360 + (end.month - 1) * 30 + end.day
+        return end_total - start_total

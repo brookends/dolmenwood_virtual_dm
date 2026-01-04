@@ -347,6 +347,8 @@ class ResolutionResult:
 
     # Condition blocking
     blocked_by_condition: Optional[str] = None
+    suggested_action: Optional[str] = None  # Suggested action when blocked (e.g., "wait_until_dawn")
+    suggested_action_label: Optional[str] = None  # Human-readable label for suggested action
 
     # LLM-generated narration (if callback was set)
     narration: Optional[str] = None
@@ -451,6 +453,8 @@ class NarrativeResolver:
                 description=restriction["message"],
                 narrative_hints=["struggles against the condition", "cannot act"],
                 blocked_by_condition=restriction.get("condition_type"),
+                suggested_action=restriction.get("suggested_action"),
+                suggested_action_label=restriction.get("suggested_action_label"),
             )
 
         # Step 2: Route to appropriate resolver
@@ -509,11 +513,26 @@ class NarrativeResolver:
             if restriction:
                 blocked_categories = restriction.get("blocked", [])
                 if action_category in blocked_categories:
-                    return {
+                    result = {
                         "condition_type": condition_key,
                         "message": restriction.get("message", f"You cannot act due to {condition_key}."),
                         "blocked_categories": blocked_categories,
                     }
+                    # Include forced action info if present
+                    if "forced_action" in restriction:
+                        result["forced_action"] = restriction["forced_action"]
+                        result["forced_action_description"] = restriction.get(
+                            "forced_action_description", ""
+                        )
+                    if "ends_at" in restriction:
+                        result["ends_at"] = restriction["ends_at"]
+                        # Suggest wait_until_dawn for conditions that end at dawn
+                        if restriction["ends_at"] == "dawn":
+                            result["suggested_action"] = "wilderness:wait_until_dawn"
+                            result["suggested_action_label"] = "Wait until dawn"
+                    if "can_be_restrained" in restriction:
+                        result["can_be_restrained"] = restriction["can_be_restrained"]
+                    return result
 
         return None
 

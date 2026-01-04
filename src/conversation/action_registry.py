@@ -418,6 +418,55 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_end_day,
     ))
 
+    def _wilderness_camp(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Make camp and sleep through the night.
+
+        Advances time to dusk, processes night hazards (like 0102's dreamless
+        sleep or full moon effects), then advances to dawn.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        activity = p.get("activity", "sleeping")
+
+        result = dm.hex_crawl.camp(hex_id=hex_id, activity=activity)
+
+        if not result.get("success"):
+            return {"success": False, "message": result.get("message", "Could not make camp")}
+
+        # Build response message
+        parts = [result.get("narrative", "The party makes camp.")]
+
+        hazard_results = result.get("hazard_results", [])
+        if hazard_results:
+            failed = [h for h in hazard_results if not h.get("success", True)]
+            if failed:
+                parts.append(f"\n{len(failed)} character(s) were affected by night hazards:")
+                for h in failed:
+                    char_name = h.get("character_name", "Unknown")
+                    condition = h.get("condition_applied", h.get("effect", "unknown effect"))
+                    parts.append(f"- {char_name}: {condition}")
+
+        return {
+            "success": True,
+            "message": "\n".join(parts),
+            "hazard_results": hazard_results,
+            "characters_affected": result.get("characters_affected", 0),
+            "suggested_actions": result.get("suggested_actions", []),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:camp",
+        label="Camp / Sleep through night",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "activity": {"type": "string", "required": False},
+        },
+        help="Make camp and sleep through the night. Processes night hazards like dreamless sleep in hex 0102.",
+        executor=_wilderness_camp,
+    ))
+
     def _wilderness_approach_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Approach a point of interest."""
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
@@ -469,6 +518,57 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_leave_poi,
     ))
 
+    def _wilderness_roll_poi_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Roll on a POI's roll table (like 'Leavings in the Mud')."""
+        table_name = p.get("table_name", "")
+        if not table_name:
+            return {"success": False, "message": "Must specify table_name"}
+
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        if not dm.hex_crawl._current_poi:
+            return {"success": False, "message": "Must be at a POI to roll on tables"}
+
+        result = dm.hex_crawl.roll_on_poi_table(hex_id, table_name)
+        if result is None:
+            return {"success": False, "message": f"Table '{table_name}' not found at this location"}
+
+        if result.get("exhausted"):
+            return {"success": True, "exhausted": True, "message": result.get("message")}
+
+        # Format the result message
+        parts = [f"Rolling on {table_name}: {result.get('roll')}"]
+        if result.get("title"):
+            parts.append(f"**{result['title']}**")
+        if result.get("description"):
+            parts.append(result["description"])
+        if result.get("items"):
+            parts.append(f"Items: {', '.join(result['items'])}")
+        if result.get("monsters"):
+            parts.append(f"Monsters: {', '.join(result['monsters'])}")
+        if result.get("npcs"):
+            parts.append(f"NPCs: {', '.join(result['npcs'])}")
+        if result.get("mechanical_effect"):
+            parts.append(f"Effect: {result['mechanical_effect']}")
+
+        return {
+            "success": True,
+            "message": "\n".join(parts),
+            "roll_result": result,
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:roll_poi_table",
+        label="Roll on POI table",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "table_name": {"type": "string", "required": True},
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Roll on a point of interest's roll table (e.g., treasure tables).",
+        executor=_wilderness_roll_poi_table,
+    ))
+
     def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.
@@ -514,6 +614,73 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Talk to an NPC at the current POI. Transitions to SOCIAL_INTERACTION state.",
         executor=_wilderness_talk_npc,
+    ))
+
+    def _wilderness_start_encounter(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Start combat encounter with an NPC at the current POI.
+
+        Initiates combat with combatant NPCs like the Dredger in hex 0104.
+        Transitions to ENCOUNTER state.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.get_current_hex_id()
+        npc_id = p.get("npc_id", "")
+        npc_index = p.get("npc_index")
+
+        # Support both npc_id and npc_index
+        if npc_index is not None and not npc_id:
+            # Get NPC by index
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            if not npcs:
+                return {"success": False, "message": "No NPCs present at this location."}
+            if npc_index < 0 or npc_index >= len(npcs):
+                return {"success": False, "message": f"Invalid NPC index. Valid range: 0-{len(npcs) - 1}"}
+            npc_id = npcs[npc_index].get("npc_id") or npcs[npc_index].get("name", "")
+
+        if not npc_id:
+            # No NPC specified - return error with available combatant NPCs
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            combatants = [n for n in npcs if n.get("is_combatant")]
+            if not combatants:
+                return {"success": False, "message": "No combatant NPCs present at this location."}
+            npc_list = ", ".join(n.get("name", "unknown") for n in combatants)
+            return {
+                "success": False,
+                "message": f"No NPC specified. Available combatants: {npc_list}",
+                "available_combatants": combatants,
+            }
+
+        result = dm.hex_crawl.engage_poi_npc(hex_id, npc_id)
+
+        # Normalize error -> message for consistent response format
+        if not result.get("success") and "error" in result and "message" not in result:
+            result["message"] = result["error"]
+        elif result.get("success"):
+            # Build combat initiation message
+            combatant = result.get("combatant", {})
+            parts = [
+                f"Combat initiated with {combatant.get('name', npc_id)}!",
+                f"Distance: {result.get('distance', 60)} feet",
+                f"Surprise: {result.get('surprise', 'none')}",
+            ]
+            if combatant.get("ac"):
+                parts.append(f"AC: {combatant['ac']}, HP: {combatant.get('hp', '?')}")
+            result["message"] = "\n".join(parts)
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:start_encounter",
+        label="Attack NPC / Start Encounter",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "npc_id": {"type": "string", "required": False},
+            "npc_index": {"type": "integer", "required": False},
+        },
+        help="Initiate combat with a combatant NPC at the current POI (e.g., confront the Dredger in hex 0104).",
+        executor=_wilderness_start_encounter,
     ))
 
     # -------------------------------------------------------------------------
@@ -631,6 +798,20 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Quickly travel to a previously explored room.",
         executor=_make_dungeon_executor("FAST_TRAVEL"),
+    ))
+
+    registry.register(ActionSpec(
+        id="dungeon:take_treasure",
+        label="Take treasure",
+        category=ActionCategory.DUNGEON,
+        requires_state="dungeon_exploration",
+        params_schema={
+            "item_index": {"type": "integer", "required": False},
+            "item_name": {"type": "string", "required": False},
+            "take_all": {"type": "boolean", "required": False},
+        },
+        help="Take discovered treasure from the current room.",
+        executor=_make_dungeon_executor("TAKE_TREASURE"),
     ))
 
     def _dungeon_exit(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
@@ -2173,6 +2354,107 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Enter a dungeon from a point of interest.",
         executor=_wilderness_enter_dungeon,
+    ))
+
+    def _wilderness_wait_until_dawn(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Wait until dawn, advancing time and processing condition expirations.
+
+        This action is particularly useful for characters under time-bound
+        enchantments like compelled_dancing that end at dawn.
+        """
+        from src.data_models import TimeOfDay
+
+        target_time = TimeOfDay.DAWN
+        reason = p.get("reason", "waiting until dawn")
+
+        result = dm.controller.advance_to_time_of_day(target_time, reason=reason)
+
+        # Build message describing what happened
+        messages = []
+        messages.append(f"Time passes... {result['hours_passed']} hours until dawn.")
+
+        if result.get("conditions_expired"):
+            for exp in result["conditions_expired"]:
+                char_name = exp.get("character_name", "A character")
+                condition = exp.get("condition", "unknown condition")
+                messages.append(f"{char_name}'s {condition} ends at dawn.")
+
+                if exp.get("healing_applied"):
+                    healing = exp["healing_applied"]
+                    messages.append(
+                        f"{char_name} heals {healing.get('actual_healing', 0)} HP."
+                    )
+
+                if exp.get("chained_to"):
+                    messages.append(
+                        f"{char_name} falls into {exp['chained_to']}."
+                    )
+
+        return {
+            "success": True,
+            "message": "\n".join(messages),
+            "hours_passed": result.get("hours_passed", 0),
+            "conditions_expired": result.get("conditions_expired", []),
+            "new_time": result.get("new_time"),
+            "time_of_day": result.get("time_of_day"),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:wait_until_dawn",
+        label="Wait until dawn",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "reason": {"type": "string", "required": False},
+        },
+        help="Wait until dawn arrives. Time-bound conditions (like compelled dancing) resolve automatically.",
+        executor=_wilderness_wait_until_dawn,
+    ))
+
+    # -------------------------------------------------------------------------
+    # POI actions
+    # -------------------------------------------------------------------------
+    def _poi_accept_quest(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Accept a quest from the current POI.
+
+        Called when player selects "Accept Quest" from suggested actions.
+        """
+        quest_id = p.get("quest_id")
+        if not quest_id:
+            return {"success": False, "message": "No quest_id specified."}
+
+        hex_crawl = dm.controller.hex_crawl_engine
+        if not hex_crawl:
+            return {"success": False, "message": "Hex crawl engine not available."}
+
+        current_hex = hex_crawl._current_hex
+        if not current_hex:
+            return {"success": False, "message": "Not in a hex."}
+
+        result = hex_crawl.accept_poi_quest(current_hex, quest_id)
+
+        if result.get("success"):
+            msg = result.get("message", "Quest accepted.")
+            if result.get("objective"):
+                msg += f"\n\nObjective: {result['objective']}"
+            if result.get("reward_description"):
+                msg += f"\n\nReward: {result['reward_description']}"
+            return {"success": True, "message": msg}
+        else:
+            return {"success": False, "message": result.get("error", "Failed to accept quest.")}
+
+    registry.register(ActionSpec(
+        id="poi:accept_quest",
+        label="Accept Quest",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "quest_id": {"type": "string", "required": True},
+        },
+        help="Accept a quest from the current location.",
+        executor=_poi_accept_quest,
     ))
 
     # -------------------------------------------------------------------------
