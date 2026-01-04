@@ -802,6 +802,7 @@ class DungeonEngine:
             "found_features": [],
             "found_traps": [],
             "found_secret_doors": [],
+            "found_treasure": [],
             "exploration_clues": [],  # Hints about undetected traps
             "noise": 1,
         }
@@ -923,6 +924,17 @@ class DungeonEngine:
                         "type": clue["type"],
                         "area": f"near {secret_door.location.value.replace('_', ' ')}",
                     })
+
+        # Discover treasure in the room
+        # Treasure is automatically found when searching - no roll needed
+        for treasure_item in current_room.treasure:
+            if not treasure_item.get("found", False):
+                treasure_item["found"] = True
+                results["found_treasure"].append({
+                    "name": treasure_item.get("name", "Unknown treasure"),
+                    "value": treasure_item.get("value"),
+                    "quantity": treasure_item.get("quantity", 1),
+                })
 
         current_room.searched = True
         return results

@@ -834,3 +834,97 @@ class TestEncounterStateTransition:
         assert context["poi_name"] == "The Spectral Manse"
         assert context["hex_id"] == "0101"
         assert "encounter_data" in context
+
+
+class TestTreasureDiscovery:
+    """Tests for treasure discovery during search."""
+
+    def test_search_reveals_treasure(self, dungeon_engine, mock_dice):
+        """Verify searching a room reveals unfound treasure."""
+        # Set up room with treasure
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Gold coins", "value": 50, "found": False},
+            {"name": "Silver dagger", "value": 25, "found": False},
+        ]
+
+        # Mock any dice rolls for hidden features/traps (roll 6 = fail to find hidden stuff)
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        result = dungeon_engine._handle_search({})
+
+        assert result["success"] is True
+        assert len(result["found_treasure"]) == 2
+        assert result["found_treasure"][0]["name"] == "Gold coins"
+        assert result["found_treasure"][0]["value"] == 50
+        assert result["found_treasure"][1]["name"] == "Silver dagger"
+
+    def test_search_marks_treasure_as_found(self, dungeon_engine, mock_dice):
+        """Verify found treasure is marked to prevent duplicates."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Ruby", "value": 100, "found": False},
+        ]
+
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        dungeon_engine._handle_search({})
+
+        # Treasure should be marked as found
+        assert current_room.treasure[0]["found"] is True
+
+    def test_repeated_search_no_duplicate_treasure(self, dungeon_engine, mock_dice):
+        """Verify repeated searches don't report already-found treasure."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Ancient tome", "value": 200, "found": False},
+        ]
+
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        # First search finds treasure
+        result1 = dungeon_engine._handle_search({})
+        assert len(result1["found_treasure"]) == 1
+
+        # Second search finds nothing new
+        result2 = dungeon_engine._handle_search({})
+        assert len(result2["found_treasure"]) == 0
+
+    def test_search_empty_room_no_treasure(self, dungeon_engine, mock_dice):
+        """Verify searching a room with no treasure reports empty list."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = []
+
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        result = dungeon_engine._handle_search({})
+
+        assert result["success"] is True
+        assert result["found_treasure"] == []
+
+    def test_treasure_quantity_included(self, dungeon_engine, mock_dice):
+        """Verify treasure quantity is included in results."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Copper pieces", "value": 10, "quantity": 50, "found": False},
+        ]
+
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        result = dungeon_engine._handle_search({})
+
+        assert len(result["found_treasure"]) == 1
+        assert result["found_treasure"][0]["quantity"] == 50
+
+    def test_treasure_default_quantity_is_one(self, dungeon_engine, mock_dice):
+        """Verify treasure without quantity defaults to 1."""
+        current_room = dungeon_engine._dungeon_state.rooms["entry"]
+        current_room.treasure = [
+            {"name": "Magic wand", "found": False},  # No quantity specified
+        ]
+
+        mock_dice.roll_d6.return_value = MagicMock(total=6)
+
+        result = dungeon_engine._handle_search({})
+
+        assert result["found_treasure"][0]["quantity"] == 1
