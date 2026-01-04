@@ -915,13 +915,15 @@ class GlobalController:
             npc_id = context["npc_id"]
             npc_name = context.get("npc_name", npc_id)
 
-            # Create a basic participant from context
-            participant = SocialParticipant(
-                participant_id=npc_id,
-                name=npc_name,
-                participant_type=SocialParticipantType.NPC,
-                hex_id=context.get("hex_id"),
-                poi_name=context.get("poi_name"),
+            # Check for full NPC intelligence data from hex crawl
+            npc_intel = context.get("npc_intelligence", {})
+
+            # Create participant with intelligence data if available
+            participant = self._build_participant_from_intelligence(
+                npc_id=npc_id,
+                npc_name=npc_name,
+                npc_intel=npc_intel,
+                context=context,
             )
             participants.append(participant)
 
@@ -1085,6 +1087,123 @@ class GlobalController:
             f"Applied contextual topic intelligence to {participant.name}: "
             f"{len(participant.known_topics)} topics, {len(participant.secret_info)} secrets"
         )
+
+    def _build_participant_from_intelligence(
+        self,
+        npc_id: str,
+        npc_name: str,
+        npc_intel: dict[str, Any],
+        context: dict[str, Any],
+    ) -> SocialParticipant:
+        """
+        Build a SocialParticipant from NPC intelligence data.
+
+        Creates a rich participant with known_topics, secret_info, relationships,
+        faction profile, and other roleplay data from hex NPC intelligence.
+
+        Args:
+            npc_id: The NPC's ID
+            npc_name: The NPC's name
+            npc_intel: Serialized NPC intelligence from hex crawl engine
+            context: The transition context (for hex_id, poi_name, disposition)
+
+        Returns:
+            A fully populated SocialParticipant
+        """
+        # Build known_topics from intelligence data
+        known_topics = []
+        for topic_data in npc_intel.get("known_topics", []):
+            topic = KnownTopic(
+                topic_id=topic_data.get("topic_id", ""),
+                content=topic_data.get("content", ""),
+                keywords=topic_data.get("keywords", []),
+                required_disposition=topic_data.get("required_disposition", -5),
+                category=topic_data.get("category", "general"),
+                shared=topic_data.get("shared", False),
+                priority=topic_data.get("priority", 0),
+            )
+            known_topics.append(topic)
+
+        # Build secret_info from intelligence data
+        secret_info = []
+        for secret_data in npc_intel.get("secret_info", []):
+            status_str = secret_data.get("status", "unknown")
+            try:
+                status = SecretStatus(status_str)
+            except ValueError:
+                status = SecretStatus.UNKNOWN
+
+            secret = SecretInfo(
+                secret_id=secret_data.get("secret_id", ""),
+                content=secret_data.get("content", ""),
+                hint=secret_data.get("hint", ""),
+                keywords=secret_data.get("keywords", []),
+                required_disposition=secret_data.get("required_disposition", 3),
+                required_trust=secret_data.get("required_trust", 2),
+                can_be_bribed=secret_data.get("can_be_bribed", False),
+                bribe_amount=secret_data.get("bribe_amount", 0),
+                status=status,
+            )
+            secret_info.append(secret)
+
+        # Get disposition from context
+        disposition = context.get("disposition", 0)
+
+        # Create the participant with all intelligence
+        participant = SocialParticipant(
+            participant_id=npc_id,
+            name=npc_name,
+            participant_type=SocialParticipantType.NPC,
+            hex_id=context.get("hex_id"),
+            poi_name=context.get("poi_name"),
+            # Core attributes
+            alignment=npc_intel.get("alignment", "Neutral"),
+            languages=npc_intel.get("languages", []),
+            # Personality
+            demeanor=npc_intel.get("demeanor", []),
+            speech=npc_intel.get("speech"),
+            # Motivation
+            desires=npc_intel.get("desires", []),
+            possessions=npc_intel.get("possessions", []),
+            # Intelligence - structured topics and secrets
+            known_topics=known_topics,
+            secret_info=secret_info,
+            # Relationships and faction
+            relationships=npc_intel.get("relationships", []),
+            faction=npc_intel.get("faction"),
+            # Combat reference
+            stat_reference=npc_intel.get("stat_reference"),
+            # Disposition
+            disposition=disposition,
+        )
+
+        # Store vulnerabilities in participant's secrets list (legacy format)
+        # for DM reference on what can sway the NPC
+        vulnerabilities = npc_intel.get("vulnerabilities", [])
+        if vulnerabilities:
+            for vuln in vulnerabilities:
+                participant.secrets.append(f"Vulnerable to: {vuln}")
+
+        # Store faction profile in participant for DM context
+        faction_profile = npc_intel.get("faction_profile")
+        if faction_profile:
+            # Add faction context to personality for narrative
+            role = faction_profile.get("role", "member")
+            standing = faction_profile.get("standing", "")
+            faction_id = faction_profile.get("faction_id", participant.faction or "unknown")
+            participant.personality = (
+                f"{role.title()} of {faction_id}"
+                + (f" ({standing} standing)" if standing else "")
+            )
+
+        # Log for debugging
+        logger.debug(
+            f"Built participant from intelligence: {npc_name} with "
+            f"{len(known_topics)} topics, {len(secret_info)} secrets, "
+            f"{len(npc_intel.get('relationships', []))} relationships"
+        )
+
+        return participant
 
     def _determine_exploration_return_state(self, context: dict[str, Any]) -> GameState:
         """

@@ -981,11 +981,19 @@ class HexCrawlEngine:
                     "speech": modifier.get("speech", ""),
                 }
         else:
+            # Check for custom hex encounter table first
+            hex_data = self._get_hex_data(hex_id)
+            custom_encounter = self._try_custom_encounter_table(
+                hex_id, hex_data, terrain, distance, surprise
+            )
+            if custom_encounter:
+                self.controller.set_encounter(custom_encounter)
+                return custom_encounter
+
             # Standard encounter - use encounter tables via factory
             from src.encounter.encounter_factory import start_wilderness_encounter
 
             # Get hex data for region
-            hex_data = self._get_hex_data(hex_id)
             region = hex_data.region.lower().replace(" ", "_") if hex_data and hex_data.region else "tithelands"
 
             # Determine context for encounter
@@ -1098,6 +1106,461 @@ class HexCrawlEngine:
             return 0
         except (ValueError, IndexError):
             return 0
+
+    def _try_custom_encounter_table(
+        self,
+        hex_id: str,
+        hex_data: Optional["HexItem"],
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+    ) -> Optional["EncounterState"]:
+        """
+        Check if hex has a custom encounter table and roll on it.
+
+        If the result is "standard", returns None to fall back to normal
+        encounter generation. Otherwise creates an encounter from the
+        table result.
+
+        Args:
+            hex_id: The current hex ID
+            hex_data: The hex data (may be None)
+            terrain: Terrain type for the encounter
+            distance: Pre-rolled encounter distance
+            surprise: Pre-rolled surprise status
+
+        Returns:
+            EncounterState if custom table produces an encounter, None otherwise
+        """
+        if not hex_data or not hex_data.procedural:
+            return None
+
+        if not hex_data.procedural.encounter_table:
+            return None
+
+        # Roll on the custom encounter table
+        table_result = self.roll_hex_encounter_table(hex_id)
+        if not table_result.get("has_table"):
+            return None
+
+        result_id = table_result.get("result") or ""
+        description = table_result.get("description") or ""
+
+        # "standard" means fall back to regional encounter tables
+        if not result_id or result_id.lower() == "standard":
+            return None
+
+        # Check if result matches an NPC in this hex
+        npc = self._find_npc_by_id(hex_data, result_id)
+        if npc:
+            return self._create_npc_encounter(
+                hex_id=hex_id,
+                npc=npc,
+                terrain=terrain,
+                distance=distance,
+                surprise=surprise,
+                description=description,
+            )
+
+        # Check if it's a monster reference (could extend later)
+        # For now, treat unknown results as narrative events
+        return self._create_narrative_encounter(
+            result_id=result_id,
+            description=description,
+            terrain=terrain,
+            distance=distance,
+            surprise=surprise,
+        )
+
+    def _find_npc_by_id(
+        self,
+        hex_data: "HexItem",
+        result_id: str,
+    ) -> Optional["HexNPC"]:
+        """
+        Find an NPC in the hex data by ID or partial match.
+
+        Args:
+            hex_data: The hex data containing NPCs
+            result_id: The ID to match (can be partial, e.g., "murkins_soldiers")
+
+        Returns:
+            The matching HexNPC or None
+        """
+        for npc in hex_data.npcs:
+            # Exact match
+            if npc.npc_id == result_id:
+                return npc
+            # Partial match (e.g., "murkins_soldiers" matches "murkins_soldiers")
+            if result_id in npc.npc_id or npc.npc_id in result_id:
+                return npc
+        return None
+
+    def _create_npc_encounter(
+        self,
+        hex_id: str,
+        npc: "HexNPC",
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+        description: str,
+    ) -> "EncounterState":
+        """
+        Create an encounter from a hex NPC.
+
+        Handles group NPCs by rolling for group size and composition.
+
+        Args:
+            hex_id: The hex ID
+            npc: The NPC data
+            terrain: Terrain type
+            distance: Encounter distance
+            surprise: Surprise status
+            description: Encounter description from table
+
+        Returns:
+            EncounterState configured for this NPC encounter
+        """
+        combatants: list[Combatant] = []
+        group_info = None
+
+        # Roll group size if this is a group NPC
+        if npc.group_count:
+            group_info = self.get_npc_group_size(hex_id, npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+
+            # Create combatants for each member of the group
+            if npc.is_combatant:
+                for i in range(total_count):
+                    combatant = self._create_npc_combatant(npc, i + 1)
+                    if combatant:
+                        combatants.append(combatant)
+        elif npc.is_combatant:
+            # Single NPC combatant
+            combatant = self._create_npc_combatant(npc, 1)
+            if combatant:
+                combatants.append(combatant)
+
+        encounter = EncounterState(
+            encounter_type=EncounterType.MONSTER if npc.is_combatant else EncounterType.NPC,
+            distance=distance,
+            surprise_status=surprise,
+            terrain=terrain.value,
+            context=description,
+            actors=[npc.name],
+            combatants=combatants,
+        )
+
+        # Store group info and NPC data for later use
+        encounter.contextual_data = {
+            "source": "hex_encounter_table",
+            "hex_id": hex_id,
+            "npc_id": npc.npc_id,
+            "npc_name": npc.name,
+            "is_group": bool(npc.group_count),
+            "group_info": group_info,
+            "faction": npc.faction,
+        }
+
+        return encounter
+
+    def _create_npc_combatant(
+        self,
+        npc: "HexNPC",
+        index: int,
+    ) -> Optional[Combatant]:
+        """
+        Create a single combatant from NPC data.
+
+        Args:
+            npc: The NPC data
+            index: Index for naming (e.g., "Soldier 1")
+
+        Returns:
+            Combatant or None if creation fails
+        """
+        combatant_id = f"{npc.npc_id}_{index}"
+        name = f"{npc.name} #{index}" if npc.group_count else npc.name
+
+        # Try to create from hex NPC using registry
+        registry = get_monster_registry()
+        combatant = registry.create_combatant_from_hex_npc(
+            npc=npc,
+            combatant_id=combatant_id,
+            side="enemy",
+        )
+        if combatant:
+            combatant.name = name
+            return combatant
+
+        # Try to create from stat_reference as monster ID
+        if npc.stat_reference:
+            combatant = registry.create_combatant(
+                monster_id=npc.stat_reference.lower().replace(" ", "_"),
+                combatant_id=combatant_id,
+                side="enemy",
+            )
+            if combatant:
+                combatant.name = name
+                return combatant
+
+        # Fallback: create a basic combatant with generic stats
+        from src.data_models import Combatant, StatBlock
+
+        stat_block = StatBlock(
+            armor_class=10,
+            hit_dice="1d8",
+            hp_current=8,
+            hp_max=8,
+            movement=30,
+            attacks=[{"name": "Attack", "damage": "1d6", "bonus": 0}],
+            morale=7,
+        )
+
+        return Combatant(
+            combatant_id=combatant_id,
+            name=name,
+            stat_block=stat_block,
+            side="enemy",
+        )
+
+    def _create_combatants_for_hazard_npc(
+        self,
+        npc: "HexNPC",
+        hex_id: str,
+        group_info: Optional[dict[str, Any]] = None,
+    ) -> list[Combatant]:
+        """
+        Create combatants for a hazard-triggered NPC encounter.
+
+        Handles both individual NPCs and group NPCs. For group NPCs,
+        creates multiple combatants based on group_info.
+
+        Args:
+            npc: The HexNPC that triggered the hazard
+            hex_id: The hex where this occurred
+            group_info: Pre-rolled group info (from get_npc_group_size), or None
+
+        Returns:
+            List of Combatant objects ready for combat
+        """
+        combatants: list[Combatant] = []
+
+        # Determine how many combatants to create
+        if npc.group_count and group_info:
+            # Group NPC - create multiple combatants
+            total_count = group_info.get("total_count", 1)
+        elif npc.group_count:
+            # Group NPC but no pre-rolled info - roll now
+            group_info = self.get_npc_group_size(hex_id, npc.npc_id)
+            total_count = group_info.get("total_count", 1)
+        else:
+            # Single NPC
+            total_count = 1
+
+        # Create each combatant
+        for i in range(total_count):
+            combatant = self._create_npc_combatant(npc, i + 1)
+            if combatant:
+                combatants.append(combatant)
+
+        return combatants
+
+    def _serialize_npc_intelligence(self, npc: "HexNPC") -> dict[str, Any]:
+        """
+        Serialize a HexNPC's intelligence data for social context.
+
+        Extracts known_topics, secret_info, relationships, faction_profile,
+        vulnerabilities, and other roleplay-relevant data.
+
+        Args:
+            npc: The HexNPC to serialize
+
+        Returns:
+            Dictionary with serialized intelligence fields
+        """
+        result: dict[str, Any] = {
+            "npc_id": npc.npc_id,
+            "name": npc.name,
+            "description": npc.description,
+            "kindred": npc.kindred,
+            "alignment": npc.alignment,
+        }
+
+        # Core roleplay attributes
+        if npc.demeanor:
+            result["demeanor"] = list(npc.demeanor)
+        if npc.speech:
+            result["speech"] = npc.speech
+        if npc.languages:
+            result["languages"] = list(npc.languages)
+        if npc.desires:
+            result["desires"] = list(npc.desires)
+        if npc.possessions:
+            result["possessions"] = list(npc.possessions)
+
+        # Known topics - serialize to dicts for context transfer
+        if npc.known_topics:
+            result["known_topics"] = [
+                {
+                    "topic_id": t.topic_id,
+                    "content": t.content,
+                    "keywords": list(t.keywords) if t.keywords else [],
+                    "required_disposition": t.required_disposition,
+                    "category": t.category,
+                    "shared": t.shared,
+                    "priority": t.priority,
+                }
+                for t in npc.known_topics
+            ]
+
+        # Secret info - includes bribery hints
+        if npc.secret_info:
+            result["secret_info"] = [
+                {
+                    "secret_id": s.secret_id,
+                    "content": s.content,
+                    "hint": s.hint,
+                    "keywords": list(s.keywords) if s.keywords else [],
+                    "required_disposition": s.required_disposition,
+                    "required_trust": s.required_trust,
+                    "can_be_bribed": s.can_be_bribed,
+                    "bribe_amount": s.bribe_amount,
+                    "status": s.status.value if hasattr(s.status, "value") else str(s.status),
+                }
+                for s in npc.secret_info
+            ]
+
+        # Vulnerabilities (for DM to know what can sway the NPC)
+        if npc.vulnerabilities:
+            result["vulnerabilities"] = list(npc.vulnerabilities)
+
+        # Relationships - for cross-references and faction context
+        if npc.relationships:
+            result["relationships"] = [dict(r) for r in npc.relationships]
+
+        # Faction info
+        if npc.faction:
+            result["faction"] = npc.faction
+            result["loyalty"] = npc.loyalty
+            if npc.personal_feelings:
+                result["personal_feelings"] = npc.personal_feelings
+
+        # Faction profile - extended role info
+        if npc.faction_profile:
+            result["faction_profile"] = dict(npc.faction_profile)
+
+        # Combat reference (for context)
+        if npc.stat_reference:
+            result["stat_reference"] = npc.stat_reference
+        result["is_combatant"] = npc.is_combatant
+
+        # Group NPC info
+        if npc.group_count:
+            result["group_count"] = npc.group_count
+            if npc.group_composition:
+                result["group_composition"] = dict(npc.group_composition)
+
+        return result
+
+    def create_encounter_from_hazard(
+        self,
+        hazard_result: dict[str, Any],
+        context: dict[str, Any],
+    ) -> Optional["EncounterState"]:
+        """
+        Create a full EncounterState from a hazard result.
+
+        This method bridges hazard results to the encounter system, creating
+        proper combatants and EncounterState objects that can be used by
+        the encounter engine.
+
+        Args:
+            hazard_result: Result from check_investigation_hazard or similar
+            context: Context including hex_id, trigger_type, etc.
+
+        Returns:
+            EncounterState if hazard triggered an NPC encounter, None otherwise
+        """
+        if not hazard_result.get("triggered"):
+            return None
+
+        hex_id = context.get("hex_id") or self.get_current_hex_id() or "0000"
+        result_id = hazard_result.get("result", "")
+
+        # Find matching NPC
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return None
+
+        npc_match = self._find_npc_by_id(hex_data, result_id)
+        if not npc_match:
+            return None
+
+        # Get terrain and create encounter
+        terrain = TerrainType.FARMLAND  # Default, could be pulled from hex_data
+        if hex_data and hasattr(hex_data, "terrain_type"):
+            try:
+                terrain = TerrainType(hex_data.terrain_type)
+            except (ValueError, KeyError):
+                terrain = TerrainType.FARMLAND
+
+        # Roll surprise and distance
+        surprise = self._check_surprise()
+        distance = self._roll_encounter_distance(surprise)
+
+        # Create the encounter using existing method
+        encounter = self._create_npc_encounter(
+            hex_id=hex_id,
+            npc=npc_match,
+            terrain=terrain,
+            distance=distance,
+            surprise=surprise,
+            description=hazard_result.get("description", ""),
+        )
+
+        # Add source info
+        if encounter.contextual_data:
+            encounter.contextual_data["source"] = "hazard"
+            encounter.contextual_data["trigger_type"] = context.get("trigger_type", "unknown")
+
+        return encounter
+
+    def _create_narrative_encounter(
+        self,
+        result_id: str,
+        description: str,
+        terrain: "TerrainType",
+        distance: int,
+        surprise: "SurpriseStatus",
+    ) -> "EncounterState":
+        """
+        Create a narrative/event encounter that doesn't involve combat.
+
+        Args:
+            result_id: The event/creature ID from the table
+            description: Description of the encounter
+            terrain: Terrain type
+            distance: Encounter distance
+            surprise: Surprise status
+
+        Returns:
+            EncounterState configured as a narrative event
+        """
+        return EncounterState(
+            encounter_type=EncounterType.NPC,  # Non-combat narrative encounter
+            distance=distance,
+            surprise_status=surprise,
+            terrain=terrain.value,
+            context=description,
+            actors=[result_id.replace("_", " ").title()],
+            combatants=[],
+            contextual_data={
+                "source": "hex_encounter_table",
+                "event_id": result_id,
+                "is_narrative": True,
+            },
+        )
 
     def _create_contextual_combatants(
         self,
@@ -4258,20 +4721,27 @@ class HexCrawlEngine:
 
         # Trigger transition to SOCIAL_INTERACTION
         # P9.4: Include disposition in context so SocialContext can use it
+        transition_context = {
+            "npc_id": npc_id,
+            "npc_name": npc_name,
+            "hex_id": hex_id,
+            "poi_name": self._current_poi,
+            "return_to": "wilderness",
+            "first_meeting": first_meeting,
+            # P9.4: Pass disposition for SocialParticipant/SocialContext
+            "disposition": computed_disposition,
+            "base_disposition": base_disposition,
+            "npc_default_disposition": npc_default_disposition,
+        }
+
+        # Task 5: Include full NPC intelligence for social context
+        if npc_data:
+            npc_intelligence = self._serialize_npc_intelligence(npc_data)
+            transition_context["npc_intelligence"] = npc_intelligence
+
         self.controller.transition(
             "initiate_conversation",
-            context={
-                "npc_id": npc_id,
-                "npc_name": npc_name,
-                "hex_id": hex_id,
-                "poi_name": self._current_poi,
-                "return_to": "wilderness",
-                "first_meeting": first_meeting,
-                # P9.4: Pass disposition for SocialParticipant/SocialContext
-                "disposition": computed_disposition,
-                "base_disposition": base_disposition,
-                "npc_default_disposition": npc_default_disposition,
-            },
+            context=transition_context,
         )
 
         return result
@@ -8992,3 +9462,602 @@ class HexCrawlEngine:
         start_total = (start.year - 1) * 360 + (start.month - 1) * 30 + start.day
         end_total = (end.year - 1) * 360 + (end.month - 1) * 30 + end.day
         return end_total - start_total
+
+    # =========================================================================
+    # HEX 0108+ FEATURES: Investigation Hazards, Evening Hazards, Encounter Tables
+    # =========================================================================
+
+    def check_investigation_hazard(
+        self,
+        hex_id: str,
+        trigger: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an investigation hazard triggers when players investigate something.
+
+        Investigation hazards are hex-level hazards triggered by specific player
+        actions like "investigate_cabbages" in hex 0108.
+
+        Args:
+            hex_id: The hex being investigated
+            trigger: The investigation action (e.g., "investigate_cabbages")
+
+        Returns:
+            Dictionary with hazard result:
+            - triggered: bool - whether the hazard occurred
+            - description: str - what happens
+            - result: str - creature/event ID that appears
+            - chance: str - the probability that was rolled against
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.procedural:
+            return {"triggered": False, "description": "No hazards in this hex."}
+
+        investigation_hazard = hex_data.procedural.investigation_hazard
+        if not investigation_hazard:
+            return {"triggered": False, "description": "No investigation hazards."}
+
+        # Check if the trigger matches
+        hazard_trigger = investigation_hazard.get("trigger", "")
+        if hazard_trigger.lower() != trigger.lower():
+            return {"triggered": False, "description": f"No hazard for '{trigger}'."}
+
+        # Parse chance (e.g., "2-in-6")
+        chance_str = investigation_hazard.get("chance", "1-in-6")
+        triggered = self._check_chance(chance_str)
+
+        if triggered:
+            return {
+                "triggered": True,
+                "description": investigation_hazard.get("description", "A hazard occurs!"),
+                "result": investigation_hazard.get("result", "unknown"),
+                "chance": chance_str,
+            }
+        else:
+            return {
+                "triggered": False,
+                "description": "Nothing unusual happens.",
+                "chance": chance_str,
+            }
+
+    def check_evening_hazard(
+        self,
+        hex_id: str,
+        poi_name: str,
+    ) -> dict[str, Any]:
+        """
+        Check if an evening hazard triggers when staying at a POI.
+
+        Evening hazards are POI-level events that may occur when players
+        spend time at a location (e.g., Murkin's Soldiers visiting the inn).
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: The name of the POI being visited
+
+        Returns:
+            Dictionary with hazard result:
+            - triggered: bool - whether the hazard occurred
+            - description: str - what happens
+            - result: str - creature/event ID
+            - chance: str - the probability rolled against
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"triggered": False, "description": "Hex not found."}
+
+        # Find the POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi:
+            return {"triggered": False, "description": "POI not found."}
+
+        evening_hazard = poi.evening_hazard
+        if not evening_hazard:
+            return {"triggered": False, "description": "No evening hazards at this location."}
+
+        # Parse chance
+        chance_str = evening_hazard.get("chance", "1-in-6")
+        triggered = self._check_chance(chance_str)
+
+        if triggered:
+            return {
+                "triggered": True,
+                "description": evening_hazard.get("description", "Something happens!"),
+                "result": evening_hazard.get("result", "unknown"),
+                "trigger_type": evening_hazard.get("trigger", "evening_stay"),
+                "chance": chance_str,
+            }
+        else:
+            return {
+                "triggered": False,
+                "description": "The evening passes uneventfully.",
+                "chance": chance_str,
+            }
+
+    def roll_hex_encounter_table(
+        self,
+        hex_id: str,
+    ) -> dict[str, Any]:
+        """
+        Roll on a hex's custom encounter table if it has one.
+
+        Some hexes have embedded encounter tables in their procedural section
+        that override or supplement the standard regional encounter tables.
+
+        Args:
+            hex_id: The hex to roll encounters for
+
+        Returns:
+            Dictionary with encounter result:
+            - has_table: bool - whether the hex has a custom table
+            - roll: int - the die roll
+            - result: str - creature/event ID
+            - description: str - what the encounter entails
+            - table_name: str - name of the table rolled on
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data or not hex_data.procedural:
+            return {"has_table": False, "description": "No custom encounter table."}
+
+        encounter_table = hex_data.procedural.encounter_table
+        if not encounter_table:
+            return {"has_table": False, "description": "No custom encounter table."}
+
+        # Roll on the table
+        die_type = encounter_table.die_type  # e.g., "d6"
+        die_max = int(die_type.replace("d", ""))
+        roll_result = self.dice.roll(die_type, "hex_encounter").total
+
+        # Find matching entry
+        for entry in encounter_table.entries:
+            # Handle roll ranges like "2-6"
+            roll_str = str(entry.roll)
+            if "-" in roll_str and not roll_str.startswith("-"):
+                parts = roll_str.split("-")
+                low, high = int(parts[0]), int(parts[1])
+                if low <= roll_result <= high:
+                    return {
+                        "has_table": True,
+                        "roll": roll_result,
+                        "result": getattr(entry, "result", entry.title) if hasattr(entry, "result") else entry.title,
+                        "description": entry.description,
+                        "table_name": encounter_table.name,
+                    }
+            elif int(roll_str) == roll_result:
+                return {
+                    "has_table": True,
+                    "roll": roll_result,
+                    "result": getattr(entry, "result", entry.title) if hasattr(entry, "result") else entry.title,
+                    "description": entry.description,
+                    "table_name": encounter_table.name,
+                }
+
+        # No matching entry (shouldn't happen with valid table)
+        return {
+            "has_table": True,
+            "roll": roll_result,
+            "result": "standard",
+            "description": "Roll on standard regional table.",
+            "table_name": encounter_table.name,
+        }
+
+    def get_npc_group_size(
+        self,
+        hex_id: str,
+        npc_id: str,
+    ) -> dict[str, Any]:
+        """
+        Roll for NPC group size when the NPC represents multiple individuals.
+
+        Some NPCs (like "Murkin's Soldiers") represent variable-sized groups
+        with dice expressions for their count.
+
+        Args:
+            hex_id: The hex containing the NPC
+            npc_id: The NPC's identifier
+
+        Returns:
+            Dictionary with group information:
+            - is_group: bool - whether this NPC represents a group
+            - total_count: int - total number of individuals
+            - composition: dict - breakdown by type with counts
+            - group_count_expression: str - the original dice expression
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"is_group": False, "total_count": 1}
+
+        # Find the NPC
+        npc = None
+        for n in hex_data.npcs:
+            if n.npc_id == npc_id:
+                npc = n
+                break
+
+        if not npc:
+            return {"is_group": False, "total_count": 1}
+
+        if not npc.group_count:
+            return {"is_group": False, "total_count": 1}
+
+        # Roll the group count - handle complex expressions like "1d4+1d4"
+        total_count = self._roll_complex_dice(npc.group_count, "npc_group_size")
+
+        # Roll composition if available
+        composition = {}
+        if npc.group_composition:
+            for kind, dice_expr in npc.group_composition.items():
+                composition[kind] = self._roll_complex_dice(dice_expr, f"group_{kind}")
+
+        return {
+            "is_group": True,
+            "total_count": total_count,
+            "composition": composition,
+            "group_count_expression": npc.group_count,
+        }
+
+    def _roll_complex_dice(self, expression: str, reason: str) -> int:
+        """
+        Roll a complex dice expression that may contain multiple dice terms.
+
+        Handles expressions like "1d4+1d4" or "2d6+1d4+2".
+
+        Args:
+            expression: Dice expression (e.g., "1d4+1d4", "2d6+3")
+            reason: Logging reason
+
+        Returns:
+            Total rolled value
+        """
+        total = 0
+        # Split on + but keep track of signs
+        # For simplicity, only handle + for now
+        parts = expression.replace(" ", "").split("+")
+        for part in parts:
+            if "d" in part.lower():
+                # It's a dice expression
+                total += self.dice.roll(part, reason).total
+            else:
+                # It's a constant modifier
+                total += int(part)
+        return total
+
+    def _check_chance(self, chance_str: str) -> bool:
+        """
+        Check if a probability expressed as 'X-in-Y' succeeds.
+
+        Args:
+            chance_str: Probability string like "2-in-6" or "1-in-6"
+
+        Returns:
+            True if the check succeeds (hazard triggers)
+        """
+        # Parse "X-in-Y" format
+        try:
+            parts = chance_str.lower().replace(" ", "").split("-in-")
+            if len(parts) == 2:
+                threshold = int(parts[0])
+                die_size = int(parts[1])
+                roll = self.dice.roll(f"d{die_size}", "chance_check").total
+                return roll <= threshold
+        except (ValueError, IndexError):
+            pass
+
+        # Default: 1-in-6
+        roll = self.dice.roll("d6", "chance_check").total
+        return roll == 1
+
+    def _resolve_hex_hazard_result(
+        self,
+        hazard_result: dict[str, Any],
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Resolve a hazard result into a consistent narrative + encounter structure.
+
+        This is the central handler for hazard outcomes from check_investigation_hazard(),
+        check_evening_hazard(), and similar methods. It bridges hazard triggers to either:
+        - An encounter (if result references an NPC/monster)
+        - A narrative event (if result is descriptive only)
+
+        Args:
+            hazard_result: Result from check_investigation_hazard/check_evening_hazard
+                - triggered: bool
+                - description: str
+                - result: str (NPC/event ID)
+                - chance: str
+            context: Additional context for resolution
+                - hex_id: str (required)
+                - poi_name: str (optional, for POI-specific hazards)
+                - trigger_type: str (e.g., "investigation", "evening_stay")
+
+        Returns:
+            Structured dict with:
+            - resolved: bool - whether resolution completed
+            - hazard_triggered: bool - whether the original hazard fired
+            - encounter: Optional[dict] - encounter details if NPC encounter
+            - narrative: str - description of what happened
+            - rolls_made: list[dict] - any dice rolls made during resolution
+            - suggested_actions: list[str] - what the party might do next
+            - npc_group: Optional[dict] - group size info if NPC group encountered
+        """
+        hex_id = context.get("hex_id") or self.get_current_hex_id() or "0000"
+
+        # Base result structure
+        result: dict[str, Any] = {
+            "resolved": True,
+            "hazard_triggered": hazard_result.get("triggered", False),
+            "encounter": None,
+            "narrative": hazard_result.get("description", "Nothing happens."),
+            "rolls_made": [],
+            "suggested_actions": [],
+            "npc_group": None,
+        }
+
+        # If hazard didn't trigger, return early with safe suggestions
+        if not hazard_result.get("triggered", False):
+            result["suggested_actions"] = [
+                "Continue exploring",
+                "Rest here",
+                "Move to another location",
+            ]
+            return result
+
+        # Hazard triggered - determine what the result references
+        result_id = hazard_result.get("result", "unknown")
+
+        # Check if result references an NPC in this hex
+        hex_data = self._hex_data.get(hex_id)
+        npc_match = None
+        if hex_data:
+            for npc in hex_data.npcs:
+                # Match by npc_id or partial match (e.g., "murkins_soldiers" in "murkins_soldiers_arrive")
+                if npc.npc_id == result_id or npc.npc_id in result_id:
+                    npc_match = npc
+                    break
+
+        if npc_match:
+            # This is an NPC encounter
+            result["encounter"] = {
+                "type": "npc_arrival",
+                "npc_id": npc_match.npc_id,
+                "npc_name": npc_match.name,
+                "is_combatant": npc_match.is_combatant,
+                "faction": npc_match.faction,
+                "description": hazard_result.get("description", ""),
+            }
+
+            # If NPC is a group, roll group size
+            if npc_match.group_count:
+                group_info = self.get_npc_group_size(hex_id, npc_match.npc_id)
+                result["npc_group"] = group_info
+                result["rolls_made"].append({
+                    "type": "group_size",
+                    "expression": npc_match.group_count,
+                    "total": group_info.get("total_count", 1),
+                    "composition": group_info.get("composition", {}),
+                })
+
+                # Update narrative with group size
+                if group_info.get("composition"):
+                    comp_parts = [f"{v} {k}" for k, v in group_info["composition"].items()]
+                    result["narrative"] = (
+                        f"{hazard_result.get('description', '')} "
+                        f"({group_info['total_count']} total: {', '.join(comp_parts)})"
+                    )
+
+            # Set encounter-appropriate suggestions
+            if npc_match.is_combatant:
+                result["suggested_actions"] = [
+                    "Attempt to negotiate",
+                    "Prepare for combat",
+                    "Try to flee",
+                    "Hide and observe",
+                ]
+            else:
+                result["suggested_actions"] = [
+                    "Speak with them",
+                    "Observe from a distance",
+                    "Ignore and continue",
+                ]
+
+            # If combatant NPC, prepare encounter state transition
+            if npc_match.is_combatant and context.get("auto_start_encounter", False):
+                # Caller can request automatic encounter start
+                result["encounter"]["ready_for_combat"] = True
+                result["encounter"]["stat_reference"] = npc_match.stat_reference
+
+            # Create actual combatants if requested
+            if context.get("create_combatants", False):
+                combatants = self._create_combatants_for_hazard_npc(
+                    npc_match, hex_id, result.get("npc_group")
+                )
+                result["combatants"] = combatants
+                result["encounter"]["combatant_count"] = len(combatants)
+                result["encounter"]["combatant_ids"] = [c.combatant_id for c in combatants]
+
+        else:
+            # Not an NPC encounter - treat as narrative event
+            result["encounter"] = {
+                "type": "event",
+                "event_id": result_id,
+                "description": hazard_result.get("description", ""),
+            }
+            result["suggested_actions"] = [
+                "Investigate further",
+                "React to the event",
+                "Continue as planned",
+            ]
+
+        # Record the chance roll that triggered this
+        if hazard_result.get("chance"):
+            result["rolls_made"].insert(0, {
+                "type": "hazard_trigger",
+                "chance": hazard_result["chance"],
+                "succeeded": True,
+            })
+
+        return result
+
+    def sleep_at_poi(
+        self,
+        hex_id: str,
+        poi_name: str,
+        character_ids: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Sleep at a POI (inn, safe shelter) for the night.
+
+        This handles resting at established locations like The Crimson Bath inn.
+        Inn rest is comfortable - no Constitution check required (unlike camping).
+        However, evening hazards still apply before sleep.
+
+        The process:
+        1. Check for evening hazards (e.g., Murkin's Soldiers visiting)
+        2. If no hazard or hazard resolved peacefully, proceed to sleep
+        3. Apply rest effects respecting character conditions:
+           - can_recover_hp() checks for restless_sleep
+           - can_memorize_spells() checks for restless_sleep
+        4. Advance time by 8 hours
+
+        Args:
+            hex_id: The hex containing the POI
+            poi_name: Name of the POI to sleep at
+            character_ids: Specific characters (default: all party members)
+
+        Returns:
+            Dictionary with rest results:
+            - success: bool - whether rest was completed
+            - evening_hazard: Optional[dict] - any evening hazard that occurred
+            - rest_results: list[dict] - per-character rest outcomes
+            - time_advanced: int - hours passed
+            - message: str - narrative summary
+        """
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {
+                "success": False,
+                "message": f"Hex {hex_id} not found.",
+                "rest_results": [],
+            }
+
+        # Find the POI
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name.lower() == poi_name.lower():
+                poi = p
+                break
+
+        if not poi:
+            return {
+                "success": False,
+                "message": f"POI '{poi_name}' not found in hex {hex_id}.",
+                "rest_results": [],
+            }
+
+        result: dict[str, Any] = {
+            "success": True,
+            "evening_hazard": None,
+            "rest_results": [],
+            "time_advanced": 8,
+            "message": "",
+            "poi_name": poi_name,
+            "hex_id": hex_id,
+        }
+
+        # Step 1: Check for evening hazard
+        evening_check = self.check_evening_hazard(hex_id, poi_name)
+        if evening_check.get("triggered"):
+            # Hazard occurred - resolve it
+            hazard_resolution = self._resolve_hex_hazard_result(
+                evening_check,
+                {"hex_id": hex_id, "poi_name": poi_name, "trigger_type": "evening_stay"},
+            )
+            result["evening_hazard"] = hazard_resolution
+
+            # If hazard involves combat, rest may be interrupted
+            if hazard_resolution.get("encounter", {}).get("type") == "npc":
+                npc_info = hazard_resolution["encounter"]
+                if npc_info.get("is_combatant"):
+                    result["success"] = False
+                    result["message"] = (
+                        f"Rest interrupted! {hazard_resolution.get('narrative', 'Encounter occurred.')}"
+                    )
+                    result["rest_interrupted"] = True
+                    return result
+
+        # Step 2: Get characters to rest
+        if character_ids:
+            characters = [
+                self.controller.get_character(cid)
+                for cid in character_ids
+                if self.controller.get_character(cid)
+            ]
+        else:
+            characters = self.controller.get_all_characters()
+
+        if not characters:
+            result["message"] = "No characters to rest."
+            return result
+
+        # Step 3: Apply rest effects for each character
+        rest_messages = []
+        for character in characters:
+            if not character:
+                continue
+
+            char_result = {
+                "character_id": character.character_id,
+                "name": character.name,
+                "hp_recovered": 0,
+                "spells_recovered": False,
+                "conditions_blocking": [],
+            }
+
+            # Check if character can recover HP
+            if character.can_recover_hp():
+                # Inn rest heals 1 HP (Dolmenwood rules p159)
+                heal_result = self.controller.heal_character(character.character_id, 1)
+                char_result["hp_recovered"] = heal_result.get("healing_received", 0)
+                char_result["new_hp"] = heal_result.get("hp_current", character.hp_current)
+                if char_result["hp_recovered"] > 0:
+                    rest_messages.append(f"{character.name} recovers 1 HP")
+            else:
+                char_result["conditions_blocking"].append("restless_sleep")
+                rest_messages.append(f"{character.name} cannot recover HP (restless sleep)")
+
+            # Check if character can memorize spells
+            if character.can_memorize_spells():
+                # Recover cast spells
+                spells_recovered = 0
+                for spell in character.spells:
+                    if hasattr(spell, 'cast_today') and spell.cast_today:
+                        spell.cast_today = False
+                        spells_recovered += 1
+                if spells_recovered > 0:
+                    char_result["spells_recovered"] = True
+                    char_result["spells_count"] = spells_recovered
+                    rest_messages.append(f"{character.name} recovers {spells_recovered} spell(s)")
+            else:
+                if "restless_sleep" not in char_result["conditions_blocking"]:
+                    char_result["conditions_blocking"].append("restless_sleep")
+                rest_messages.append(f"{character.name} cannot memorize spells (restless sleep)")
+
+            result["rest_results"].append(char_result)
+
+        # Step 4: Advance time by 8 hours (48 turns)
+        self.controller.advance_time(48)
+
+        # Build summary message
+        if result.get("evening_hazard"):
+            hazard_msg = result["evening_hazard"].get("narrative", "An event occurred during the evening.")
+            result["message"] = f"{hazard_msg} After dealing with it, the party rests. {'. '.join(rest_messages)}."
+        else:
+            result["message"] = f"The party spends a peaceful night at {poi_name}. {'. '.join(rest_messages)}."
+
+        return result

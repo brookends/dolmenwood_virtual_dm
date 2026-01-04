@@ -372,6 +372,144 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_search_hex,
     ))
 
+    def _wilderness_investigate(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Investigate a specific feature in the current hex."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        trigger = p.get("trigger", "investigate")
+
+        # Check for investigation hazard
+        hazard_result = dm.hex_crawl.check_investigation_hazard(hex_id, trigger)
+
+        if not hazard_result.get("triggered"):
+            # No hazard triggered - return calm investigation result
+            return {
+                "success": True,
+                "hazard_triggered": False,
+                "message": hazard_result.get(
+                    "description", "Your investigation reveals nothing unusual."
+                ),
+            }
+
+        # Hazard triggered - resolve using the helper with combatant creation
+        context = {
+            "hex_id": hex_id,
+            "trigger_type": "investigation",
+            "trigger": trigger,
+            "create_combatants": True,  # Create actual combatants for group NPCs
+        }
+        resolution = dm.hex_crawl._resolve_hex_hazard_result(hazard_result, context)
+
+        # Build response message
+        lines = [resolution.get("narrative", "Something happens!")]
+        combatants = resolution.get("combatants", [])
+        if resolution.get("encounter"):
+            enc = resolution["encounter"]
+            if enc.get("type") == "npc_arrival":
+                npc_id = enc.get("npc_id", "unknown")
+                lines.append(f"Encounter: {npc_id.replace('_', ' ').title()}")
+                if resolution.get("npc_group", {}).get("is_group"):
+                    count = resolution["npc_group"].get("total_count", 1)
+                    lines.append(f"Group size: {count} combatants")
+                    # List individual combatants
+                    if combatants:
+                        for c in combatants[:5]:  # Show first 5
+                            lines.append(f"  - {c.name}")
+                        if len(combatants) > 5:
+                            lines.append(f"  ... and {len(combatants) - 5} more")
+            elif enc.get("type") == "event":
+                lines.append(f"Event: {enc.get('event_id', 'unknown')}")
+
+        return {
+            "success": True,
+            "hazard_triggered": True,
+            "encounter": resolution.get("encounter"),
+            "combatants": combatants,
+            "combatant_count": len(combatants),
+            "npc_group": resolution.get("npc_group"),
+            "rolls_made": resolution.get("rolls_made", []),
+            "suggested_actions": resolution.get("suggested_actions", []),
+            "message": "\n".join(lines),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:investigate",
+        label="Investigate the area",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        help="Investigate a specific feature, potentially triggering hazards.",
+        params_schema={"trigger": {"type": "string", "default": "investigate"}},
+        executor=_wilderness_investigate,
+    ))
+
+    def _wilderness_evening_stay(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Spend the evening at a POI, checking for evening hazards."""
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        poi_name = p.get("poi_name", "")
+
+        if not poi_name:
+            return {
+                "success": False,
+                "message": "You must specify a POI name to stay at.",
+            }
+
+        # Check for evening hazard
+        hazard_result = dm.hex_crawl.check_evening_hazard(hex_id, poi_name)
+
+        if not hazard_result.get("triggered"):
+            return {
+                "success": True,
+                "hazard_triggered": False,
+                "message": f"The evening at {poi_name} passes peacefully.",
+            }
+
+        # Hazard triggered - resolve with combatant creation
+        context = {
+            "hex_id": hex_id,
+            "trigger_type": "evening_stay",
+            "poi_name": poi_name,
+            "create_combatants": True,
+        }
+        resolution = dm.hex_crawl._resolve_hex_hazard_result(hazard_result, context)
+
+        # Build response message
+        lines = [resolution.get("narrative", "Something happens during the night!")]
+        combatants = resolution.get("combatants", [])
+        if resolution.get("encounter"):
+            enc = resolution["encounter"]
+            if enc.get("type") == "npc_arrival":
+                npc_id = enc.get("npc_id", "unknown")
+                lines.append(f"Visitors: {npc_id.replace('_', ' ').title()}")
+                if resolution.get("npc_group", {}).get("is_group"):
+                    count = resolution["npc_group"].get("total_count", 1)
+                    lines.append(f"Group size: {count}")
+                    if combatants:
+                        for c in combatants[:5]:
+                            lines.append(f"  - {c.name}")
+                        if len(combatants) > 5:
+                            lines.append(f"  ... and {len(combatants) - 5} more")
+
+        return {
+            "success": True,
+            "hazard_triggered": True,
+            "encounter": resolution.get("encounter"),
+            "combatants": combatants,
+            "combatant_count": len(combatants),
+            "npc_group": resolution.get("npc_group"),
+            "rolls_made": resolution.get("rolls_made", []),
+            "suggested_actions": resolution.get("suggested_actions", []),
+            "message": "\n".join(lines),
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:evening_stay",
+        label="Spend the evening",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        help="Spend the evening at a POI, checking for evening hazards.",
+        params_schema={"poi_name": {"type": "string", "required": True}},
+        executor=_wilderness_evening_stay,
+    ))
+
     def _wilderness_forage(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Forage for food/water."""
         character_id = p.get("character_id")
@@ -569,6 +707,84 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_roll_poi_table,
     ))
 
+    def _wilderness_roll_hex_encounter_table(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Roll on the hex's custom encounter table (debug/play aid).
+
+        Some hexes have custom encounter tables that override or supplement
+        the standard regional tables. This action lets players explicitly roll
+        on these tables for verification or play purposes.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+
+        result = dm.hex_crawl.roll_hex_encounter_table(hex_id)
+
+        if not result.get("has_table"):
+            return {
+                "success": True,
+                "message": f"Hex {hex_id} has no custom encounter table. Use the standard regional tables.",
+                "has_table": False,
+            }
+
+        # Build descriptive message
+        roll = result.get("roll", "?")
+        table_name = result.get("table_name", "Unknown Table")
+        result_id = result.get("result", "unknown")
+        description = result.get("description", "")
+
+        message = f"**{table_name}** (rolled {roll}): {description}"
+
+        # Build suggested actions based on result
+        suggested_actions = []
+
+        # Check if result implies an encounter (e.g., NPC id or creature)
+        # "standard" means use regional tables, not an encounter
+        if result_id and result_id != "standard":
+            # Check if this NPC/creature can be encountered
+            hex_data = dm.hex_crawl._hex_data.get(hex_id)
+            npc_match = None
+            if hex_data:
+                for npc in hex_data.npcs:
+                    if npc.npc_id == result_id or result_id in npc.npc_id:
+                        npc_match = npc
+                        break
+
+            if npc_match:
+                if npc_match.is_combatant:
+                    suggested_actions.append({
+                        "id": "wilderness:start_encounter",
+                        "label": f"Start encounter with {npc_match.name}",
+                        "params": {"hex_id": hex_id, "npc_id": npc_match.npc_id},
+                    })
+                suggested_actions.append({
+                    "id": "wilderness:talk_npc",
+                    "label": f"Talk to {npc_match.name}",
+                    "params": {"hex_id": hex_id, "npc_id": npc_match.npc_id},
+                })
+
+        return {
+            "success": True,
+            "message": message,
+            "has_table": True,
+            "roll": roll,
+            "result": result_id,
+            "description": description,
+            "table_name": table_name,
+            "suggested_actions": suggested_actions,
+        }
+
+    registry.register(ActionSpec(
+        id="wilderness:roll_hex_encounter_table",
+        label="Roll hex encounter table",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Roll on this hex's custom encounter table (for play verification or triggering encounters).",
+        executor=_wilderness_roll_hex_encounter_table,
+    ))
+
     def _wilderness_talk_npc(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """
         Talk to an NPC at the current POI - transitions to SOCIAL_INTERACTION.
@@ -681,6 +897,55 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Initiate combat with a combatant NPC at the current POI (e.g., confront the Dredger in hex 0104).",
         executor=_wilderness_start_encounter,
+    ))
+
+    def _wilderness_sleep_at_poi(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Sleep at a POI (inn, safe shelter) for the night.
+
+        This action allows the party to rest at established locations like inns.
+        Inn rest is comfortable (no Constitution check needed, unlike wilderness camping).
+        The action:
+        1. Checks for evening hazards first
+        2. If hazard triggers and involves combat, rest is interrupted
+        3. Otherwise, applies rest effects (HP recovery, spell recovery)
+        4. Respects conditions like restless_sleep that block recovery
+        5. Advances time by 8 hours
+
+        Per Dolmenwood rules (p159), a good night's rest heals 1 HP
+        and allows spell-casters to prepare spells.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
+        poi_name = p.get("poi_name", "")
+        character_ids = p.get("character_ids")
+
+        if not poi_name:
+            # Try to get current POI from context
+            current_poi = getattr(dm.hex_crawl, '_current_poi', None)
+            if current_poi:
+                poi_name = current_poi
+            else:
+                return {
+                    "success": False,
+                    "message": "No POI specified. Use poi_name parameter to specify where to rest.",
+                }
+
+        result = dm.hex_crawl.sleep_at_poi(hex_id, poi_name, character_ids)
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:sleep_at_poi",
+        label="Sleep at this location",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "poi_name": {"type": "string", "required": True},
+            "character_ids": {"type": "array", "required": False},
+        },
+        help="Rest overnight at a POI (inn, shelter). Checks for evening hazards, then applies rest effects. Heals 1 HP and recovers spells (unless conditions prevent it).",
+        executor=_wilderness_sleep_at_poi,
     ))
 
     # -------------------------------------------------------------------------

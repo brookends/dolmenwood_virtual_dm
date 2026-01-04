@@ -739,6 +739,21 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             )
         )
 
+        # Sleep at the location (inn rest)
+        # This is especially relevant for inns, taverns, and sheltered locations
+        out.append(
+            _Candidate(
+                SuggestedAction(
+                    id="wilderness:sleep_at_poi",
+                    label=f"Sleep at {poi_name} (rest overnight)",
+                    params={"hex_id": hex_id, "poi_name": poi_name},
+                    safe_to_execute=True,
+                    help="Rest overnight at this location. Checks for evening hazards, then applies rest effects (1 HP heal, spell recovery).",
+                ),
+                score=65,
+            )
+        )
+
         # Leave the location
         out.append(
             _Candidate(
@@ -784,6 +799,59 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
             score=75,
         )
     )
+
+    # Investigation hazard: show investigate action if hex has one
+    try:
+        hex_data = dm.hex_crawl.get_hex_data(hex_id)
+        if (
+            hex_data
+            and hasattr(hex_data, "procedural")
+            and hex_data.procedural
+            and getattr(hex_data.procedural, "investigation_hazard", None)
+        ):
+            hazard = hex_data.procedural.investigation_hazard
+            trigger = hazard.get("trigger", "investigate")
+            desc = hazard.get("description", "Investigate the area for hidden dangers")
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:investigate",
+                        label="Investigate the area",
+                        params={"hex_id": hex_id, "trigger": trigger},
+                        safe_to_execute=True,
+                        help=desc,
+                    ),
+                    score=72,
+                )
+            )
+    except Exception:
+        pass
+
+    # Custom encounter table: show roll action if hex has one
+    try:
+        hex_data = dm.hex_crawl.get_hex_data(hex_id)
+        if (
+            hex_data
+            and hasattr(hex_data, "procedural")
+            and hex_data.procedural
+            and getattr(hex_data.procedural, "encounter_table", None)
+        ):
+            table = hex_data.procedural.encounter_table
+            table_name = getattr(table, "name", "Hex Encounter Table")
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:roll_hex_encounter_table",
+                        label=f"Roll {table_name}",
+                        params={"hex_id": hex_id},
+                        safe_to_execute=True,
+                        help=f"Roll on this hex's custom encounter table ({table_name}).",
+                    ),
+                    score=68,
+                )
+            )
+    except Exception:
+        pass
 
     visible = dm.hex_crawl.get_visible_pois(hex_id)
     for idx, poi in enumerate(visible[:4]):

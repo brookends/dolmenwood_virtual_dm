@@ -322,6 +322,11 @@ class HexDataLoader:
         procedural = None
         proc_data = item.get("procedural")
         if proc_data:
+            # Parse embedded encounter table if present
+            encounter_table = None
+            if proc_data.get("encounter_table"):
+                encounter_table = self._parse_roll_table(proc_data["encounter_table"])
+
             procedural = HexProcedural(
                 lost_chance=proc_data.get("lost_chance", "1-in-6"),
                 encounter_chance=proc_data.get("encounter_chance", "1-in-6"),
@@ -331,6 +336,8 @@ class HexDataLoader:
                 encounter_modifiers=proc_data.get("encounter_modifiers", []),
                 lost_behavior=proc_data.get("lost_behavior"),
                 night_hazards=proc_data.get("night_hazards", []),
+                encounter_table=encounter_table,
+                investigation_hazard=proc_data.get("investigation_hazard"),
             )
 
         # Parse points of interest
@@ -438,6 +445,7 @@ class HexDataLoader:
             dungeon_levels=data.get("dungeon_levels"),
             hidden=is_hidden,
             treasure_hoard=data.get("treasure_hoard"),
+            evening_hazard=data.get("evening_hazard"),
         )
 
     def _parse_roll_table(self, data: dict[str, Any]) -> RollTable:
@@ -511,8 +519,12 @@ class HexDataLoader:
             stat_reference=data.get("stat_reference"),
             is_combatant=data.get("is_combatant", False),
             vulnerabilities=data.get("vulnerabilities", []),
+            group_count=data.get("group_count"),
+            group_composition=data.get("group_composition"),
             faction=data.get("faction"),
             loyalty=data.get("loyalty", "loyal"),
+            personal_feelings=data.get("personal_feelings"),
+            faction_profile=data.get("faction_profile"),
             known_topics=known_topics,
             secret_info=secret_info,
             relationships=data.get("relationships", []),
