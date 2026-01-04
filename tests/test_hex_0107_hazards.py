@@ -251,6 +251,7 @@ class TestDanceChainIntegration:
         # Create POI with the hazard chain from 0107
         poi = MagicMock(spec=PointOfInterest)
         poi.name = "The Weeping Woman"
+        poi.roll_tables = []  # No roll tables for this test
         poi.hazards = [
             {
                 "hazard_id": "enchanted_reverie",
@@ -632,3 +633,281 @@ class TestWaitUntilDawnAction:
         assert result.blocked_by_condition == "compelled_dancing"
         assert result.suggested_action == "wilderness:wait_until_dawn"
         assert result.suggested_action_label == "Wait until dawn"
+
+
+class TestFairyDanceVisionsAutoRoll:
+    """Tests for auto-rolling Fairy Dance Visions table when dancing begins."""
+
+    @pytest.fixture
+    def mock_session_manager(self):
+        """Create a mock session manager."""
+        mgr = MagicMock()
+        mgr.get_unfound_roll_table_entries.return_value = [1, 2, 3, 4, 5, 6]
+        return mgr
+
+    @pytest.fixture
+    def test_character(self):
+        """Create a test character."""
+        from src.data_models import CharacterState
+
+        return CharacterState(
+            character_id="test_dancer",
+            name="Test Dancer",
+            character_class="Fighter",
+            level=3,
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+            ability_scores={"STR": 14, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+        )
+
+    def test_roll_associated_tables_returns_fairy_dance_vision(
+        self, test_character, mock_session_manager
+    ):
+        """Verify _roll_associated_tables returns a Fairy Dance Visions entry."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import RollTable, RollTableEntry, HexLocation, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll.return_value = MagicMock(total=3)  # Roll a 3
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = mock_session_manager
+
+        engine._run_log = []
+        engine._emit_run_log_event = MagicMock()
+
+        # Create POI with Fairy Dance Visions table
+        vision_table = RollTable(
+            name="Fairy Dance Visions",
+            die_type="d6",
+            description="Roll for each dancer",
+            entries=[
+                RollTableEntry(roll=1, title="Elven Musicians", description="Pale elves playing pipes"),
+                RollTableEntry(roll=2, title="Dancing Fauns", description="Goat-legged fauns caper"),
+                RollTableEntry(roll=3, title="Sylphs of the Air", description="Translucent winged beings"),
+                RollTableEntry(roll=4, title="Water Nymphs", description="Figures rise from tears"),
+                RollTableEntry(roll=5, title="Crowned Shadow", description="A tall, shadowy figure"),
+                RollTableEntry(roll=6, title="The Weeping Woman Herself", description="Stone figure moves"),
+            ],
+            unique_entries=False,
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Weeping Woman"
+        mock_poi.roll_tables = [vision_table]
+
+        mock_hex = MagicMock(spec=HexLocation)
+        mock_hex.points_of_interest = [mock_poi]
+
+        engine._hex_data = {"0107": mock_hex}
+        engine._current_hex = "0107"
+        engine._current_poi = "The Weeping Woman"
+
+        result = engine._roll_associated_tables(test_character, "Fairy Dance Visions")
+
+        assert result is not None
+        assert result["table"] == "Fairy Dance Visions"
+        assert result["roll"] == 3
+        assert result["entry"]["title"] == "Sylphs of the Air"
+        assert "Translucent winged beings" in result["entry"]["description"]
+
+    def test_roll_associated_tables_emits_event(
+        self, test_character, mock_session_manager
+    ):
+        """Verify _roll_associated_tables emits a roll_table_result event."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import RollTable, RollTableEntry, HexLocation, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll.return_value = MagicMock(total=1)
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = mock_session_manager
+
+        emitted_events = []
+
+        def capture_event(event_type, data):
+            emitted_events.append({"type": event_type, "data": data})
+
+        engine._emit_run_log_event = capture_event
+
+        vision_table = RollTable(
+            name="Fairy Dance Visions",
+            die_type="d6",
+            entries=[
+                RollTableEntry(roll=1, title="Elven Musicians", description="Pale elves"),
+            ],
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Weeping Woman"
+        mock_poi.roll_tables = [vision_table]
+
+        mock_hex = MagicMock(spec=HexLocation)
+        mock_hex.points_of_interest = [mock_poi]
+
+        engine._hex_data = {"0107": mock_hex}
+        engine._current_hex = "0107"
+        engine._current_poi = "The Weeping Woman"
+
+        engine._roll_associated_tables(test_character, "Fairy Dance Visions")
+
+        assert len(emitted_events) == 1
+        assert emitted_events[0]["type"] == "roll_table_result"
+        assert emitted_events[0]["data"]["character_id"] == "test_dancer"
+        assert emitted_events[0]["data"]["table"] == "Fairy Dance Visions"
+        assert emitted_events[0]["data"]["roll"] == 1
+        assert emitted_events[0]["data"]["result"] == "Elven Musicians"
+
+    def test_roll_associated_tables_deduplicates_unique_entries(
+        self, test_character
+    ):
+        """Verify unique_entries tables skip already-found entries."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import RollTable, RollTableEntry, HexLocation, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        # Roll returns 1, but 1 is already found, so we expect re-roll
+        roll_attempts = []
+
+        def mock_roll(dice_str, reason):
+            roll_attempts.append(dice_str)
+            # First roll returns 1 (already found), second returns 2 (unfound)
+            total = 1 if len(roll_attempts) == 1 else 2
+            return MagicMock(total=total)
+
+        engine.dice = MagicMock()
+        engine.dice.roll = mock_roll
+
+        # Session manager says entry 1 has been found
+        session_mgr = MagicMock()
+        session_mgr.get_unfound_roll_table_entries.return_value = [2, 3]  # Only 2,3 unfound
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+
+        engine._emit_run_log_event = MagicMock()
+
+        vision_table = RollTable(
+            name="Unique Visions",
+            die_type="d6",
+            entries=[
+                RollTableEntry(roll=1, title="Found Entry", description="Already seen"),
+                RollTableEntry(roll=2, title="New Entry", description="Not seen yet"),
+                RollTableEntry(roll=3, title="Another New", description="Also not seen"),
+            ],
+            unique_entries=True,
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Test POI"
+        mock_poi.roll_tables = [vision_table]
+
+        mock_hex = MagicMock(spec=HexLocation)
+        mock_hex.points_of_interest = [mock_poi]
+
+        engine._hex_data = {"0107": mock_hex}
+        engine._current_hex = "0107"
+        engine._current_poi = "Test POI"
+
+        result = engine._roll_associated_tables(test_character, "Unique Visions")
+
+        # Should have re-rolled to get entry 2
+        assert result is not None
+        assert result["entry"]["title"] == "New Entry"
+        assert len(roll_attempts) == 2  # Had to roll twice
+
+    def test_roll_associated_tables_returns_exhausted_when_all_found(
+        self, test_character
+    ):
+        """Verify exhausted result when all unique entries have been found."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import RollTable, RollTableEntry, HexLocation, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+
+        # Session manager says all entries found
+        session_mgr = MagicMock()
+        session_mgr.get_unfound_roll_table_entries.return_value = []  # All found!
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+
+        vision_table = RollTable(
+            name="Exhausted Table",
+            die_type="d6",
+            entries=[
+                RollTableEntry(roll=1, title="Entry 1", description="Found"),
+                RollTableEntry(roll=2, title="Entry 2", description="Found"),
+            ],
+            unique_entries=True,
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Test POI"
+        mock_poi.roll_tables = [vision_table]
+
+        mock_hex = MagicMock(spec=HexLocation)
+        mock_hex.points_of_interest = [mock_poi]
+
+        engine._hex_data = {"0107": mock_hex}
+        engine._current_hex = "0107"
+        engine._current_poi = "Test POI"
+
+        result = engine._roll_associated_tables(test_character, "Exhausted Table")
+
+        assert result is not None
+        assert result["exhausted"] is True
+        assert "all entries" in result["message"].lower()
+
+    def test_roll_associated_tables_marks_entry_found_for_unique_table(
+        self, test_character
+    ):
+        """Verify unique table entries are marked as found in session manager."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import RollTable, RollTableEntry, HexLocation, PointOfInterest
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine.dice = MagicMock()
+        engine.dice.roll.return_value = MagicMock(total=1)
+
+        session_mgr = MagicMock()
+        session_mgr.get_unfound_roll_table_entries.return_value = [1, 2, 3]
+
+        engine.controller = MagicMock()
+        engine.controller.session_manager = session_mgr
+
+        engine._emit_run_log_event = MagicMock()
+
+        vision_table = RollTable(
+            name="Unique Table",
+            die_type="d6",
+            entries=[
+                RollTableEntry(roll=1, title="Entry 1", description="Test"),
+            ],
+            unique_entries=True,
+        )
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "Test POI"
+        mock_poi.roll_tables = [vision_table]
+
+        mock_hex = MagicMock(spec=HexLocation)
+        mock_hex.points_of_interest = [mock_poi]
+
+        engine._hex_data = {"0107": mock_hex}
+        engine._current_hex = "0107"
+        engine._current_poi = "Test POI"
+
+        engine._roll_associated_tables(test_character, "Unique Table")
+
+        # Verify mark_roll_table_entry_found was called
+        session_mgr.mark_roll_table_entry_found.assert_called_once_with(
+            "0107", "Test POI", "Unique Table", 1
+        )

@@ -6465,12 +6465,16 @@ class HexCrawlEngine:
         """
         Roll on a POI's roll table and store result for narration.
 
+        Supports unique_entries tables where each entry can only be rolled once.
+        Uses session_manager to track which entries have been found.
+
         Args:
             character: The character experiencing the effect
             table_name: Name of the roll table to use
 
         Returns:
-            Dict with roll result, or None if table not found
+            Dict with roll result, or None if table not found.
+            Returns {"exhausted": True} if all unique entries have been found.
         """
         if not self._current_poi or not self._current_hex:
             return None
@@ -6481,23 +6485,63 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                # Look for the roll table
-                for table in getattr(poi, "roll_tables", []) or []:
-                    if table.get("name") == table_name:
-                        # Roll on the table
-                        die_type = table.get("die_type", "1d6")
-                        roll = self.dice.roll(die_type, table_name)
+                # Look for the roll table (RollTable dataclass instances)
+                for table in poi.roll_tables or []:
+                    if table.name == table_name:
+                        # Handle unique_entries tables with deduplication
+                        session_mgr = self.controller.session_manager
+                        if table.unique_entries and session_mgr:
+                            all_roll_values = [e.roll for e in table.entries]
+                            unfound = session_mgr.get_unfound_roll_table_entries(
+                                self._current_hex,
+                                self._current_poi,
+                                table_name,
+                                all_roll_values,
+                            )
+                            if not unfound:
+                                return {
+                                    "exhausted": True,
+                                    "table": table_name,
+                                    "poi": self._current_poi,
+                                    "message": f"All entries in {table_name} have been found.",
+                                }
+                            # Roll until we get an unfound entry
+                            max_attempts = 20
+                            for _ in range(max_attempts):
+                                roll = self.dice.roll(
+                                    f"1{table.die_type}", f"roll on {table_name}"
+                                )
+                                if roll.total in unfound:
+                                    break
+                            else:
+                                # Fallback: pick first unfound
+                                roll_total = unfound[0]
+                                roll = type(
+                                    "MockRoll", (), {"total": roll_total}
+                                )()
+                        else:
+                            # Regular roll (no dedup needed)
+                            roll = self.dice.roll(
+                                f"1{table.die_type}", f"roll on {table_name}"
+                            )
 
-                        # Find matching entry
-                        entries = table.get("entries", [])
+                        # Find matching entry (RollTableEntry dataclass)
                         result_entry = None
-                        for entry in entries:
-                            roll_range = entry.get("roll", "")
-                            if self._matches_roll_range(roll.total, roll_range):
+                        for entry in table.entries:
+                            if entry.roll == roll.total:
                                 result_entry = entry
                                 break
 
                         if result_entry:
+                            # Mark entry as found for unique tables
+                            if table.unique_entries and session_mgr:
+                                session_mgr.mark_roll_table_entry_found(
+                                    self._current_hex,
+                                    self._current_poi,
+                                    table_name,
+                                    roll.total,
+                                )
+
                             # Store event for narration
                             self._emit_run_log_event(
                                 "roll_table_result",
@@ -6505,15 +6549,23 @@ class HexCrawlEngine:
                                     "character_id": character.character_id,
                                     "table": table_name,
                                     "roll": roll.total,
-                                    "result": result_entry.get("title", ""),
-                                    "description": result_entry.get("description", ""),
+                                    "result": result_entry.title or "",
+                                    "description": result_entry.description,
                                 },
                             )
 
                             return {
                                 "table": table_name,
                                 "roll": roll.total,
-                                "entry": result_entry,
+                                "entry": {
+                                    "roll": result_entry.roll,
+                                    "title": result_entry.title,
+                                    "description": result_entry.description,
+                                    "monsters": result_entry.monsters,
+                                    "npcs": result_entry.npcs,
+                                    "items": result_entry.items,
+                                    "mechanical_effect": result_entry.mechanical_effect,
+                                },
                             }
 
         return None
