@@ -616,6 +616,73 @@ def _create_default_registry() -> ActionRegistry:
         executor=_wilderness_talk_npc,
     ))
 
+    def _wilderness_start_encounter(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """
+        Start combat encounter with an NPC at the current POI.
+
+        Initiates combat with combatant NPCs like the Dredger in hex 0104.
+        Transitions to ENCOUNTER state.
+        """
+        hex_id = p.get("hex_id") or dm.hex_crawl.get_current_hex_id()
+        npc_id = p.get("npc_id", "")
+        npc_index = p.get("npc_index")
+
+        # Support both npc_id and npc_index
+        if npc_index is not None and not npc_id:
+            # Get NPC by index
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            if not npcs:
+                return {"success": False, "message": "No NPCs present at this location."}
+            if npc_index < 0 or npc_index >= len(npcs):
+                return {"success": False, "message": f"Invalid NPC index. Valid range: 0-{len(npcs) - 1}"}
+            npc_id = npcs[npc_index].get("npc_id") or npcs[npc_index].get("name", "")
+
+        if not npc_id:
+            # No NPC specified - return error with available combatant NPCs
+            npcs = dm.hex_crawl.get_npcs_at_poi(hex_id)
+            combatants = [n for n in npcs if n.get("is_combatant")]
+            if not combatants:
+                return {"success": False, "message": "No combatant NPCs present at this location."}
+            npc_list = ", ".join(n.get("name", "unknown") for n in combatants)
+            return {
+                "success": False,
+                "message": f"No NPC specified. Available combatants: {npc_list}",
+                "available_combatants": combatants,
+            }
+
+        result = dm.hex_crawl.engage_poi_npc(hex_id, npc_id)
+
+        # Normalize error -> message for consistent response format
+        if not result.get("success") and "error" in result and "message" not in result:
+            result["message"] = result["error"]
+        elif result.get("success"):
+            # Build combat initiation message
+            combatant = result.get("combatant", {})
+            parts = [
+                f"Combat initiated with {combatant.get('name', npc_id)}!",
+                f"Distance: {result.get('distance', 60)} feet",
+                f"Surprise: {result.get('surprise', 'none')}",
+            ]
+            if combatant.get("ac"):
+                parts.append(f"AC: {combatant['ac']}, HP: {combatant.get('hp', '?')}")
+            result["message"] = "\n".join(parts)
+
+        return result
+
+    registry.register(ActionSpec(
+        id="wilderness:start_encounter",
+        label="Attack NPC / Start Encounter",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "npc_id": {"type": "string", "required": False},
+            "npc_index": {"type": "integer", "required": False},
+        },
+        help="Initiate combat with a combatant NPC at the current POI (e.g., confront the Dredger in hex 0104).",
+        executor=_wilderness_start_encounter,
+    ))
+
     # -------------------------------------------------------------------------
     # Dungeon actions
     # -------------------------------------------------------------------------
