@@ -706,6 +706,8 @@ def _create_default_registry() -> ActionRegistry:
         """Enter a point of interest."""
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
         result = dm.hex_crawl.enter_poi(hex_id)
+        if result.get("is_dungeon"):
+            return {"success": False, "message": result["message"], "is_dungeon": True}
         if result.get("requires_entry_check"):
             return {"success": False, "message": result.get("message", "Entry requires conditions.")}
         return {"success": True, "message": result.get("message", "You enter.")}
