@@ -768,6 +768,27 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                 )
             )
 
+        # Roll tables at this POI (e.g., treasure leavings, oddities)
+        try:
+            roll_tables = dm.hex_crawl.get_poi_roll_tables(hex_id, poi_name=poi_name)
+        except Exception:
+            roll_tables = []
+        for table in roll_tables:
+            table_name = getattr(table, "name", None) or table.get("name") if isinstance(table, dict) else table.name
+            if table_name:
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:roll_poi_table",
+                            label=f"Roll on table: {table_name}",
+                            params={"hex_id": hex_id, "table_name": table_name},
+                            safe_to_execute=True,
+                            help="Roll on this location's table (e.g., treasure/oddities).",
+                        ),
+                        score=55,
+                    )
+                )
+
         # Generic exploratory prompts at a site
         out.append(
             _Candidate(
