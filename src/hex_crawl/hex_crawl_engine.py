@@ -2509,27 +2509,63 @@ class HexCrawlEngine:
                         should_trigger = True
 
             if should_trigger:
-                # Apply to all party members in the hex
-                for character in self.controller.get_all_characters():
-                    hazard_result = self._resolve_hazard(hazard, character)
-                    # Effects are now applied automatically in _resolve_hazard
-                    effects_applied = bool(
-                        hazard_result.apply_damage or hazard_result.apply_conditions
-                    )
+                # Check if hazard has a chance roll (e.g., "3-in-6")
+                chance_str = hazard.get("chance", "")
+                if chance_str and chance_str.lower() != "automatic":
+                    chance_target = self._parse_x_in_6_chance(chance_str)
+                    if chance_target > 0:
+                        roll = self.dice.roll_d6()
+                        if roll.total > chance_target:
+                            # Chance roll failed - hazard doesn't occur
+                            continue
+
+                # Check if this is an encounter-type hazard (no save, just encounter)
+                on_fail = hazard.get("on_fail", {})
+                save_type = hazard.get("save_type")
+                has_encounter = on_fail.get("encounter")
+
+                if has_encounter and not save_type:
+                    # Encounter hazard - this is party-wide, not per-character
+                    surprise_str = on_fail.get("surprise", "2-in-6")
+                    surprise_chance = self._parse_x_in_6_chance(surprise_str)
+                    party_surprised = False
+                    if surprise_chance > 0:
+                        surprise_roll = self.dice.roll_d6()
+                        party_surprised = surprise_roll.total <= surprise_chance
+
                     results.append({
-                        "character_id": character.character_id,
-                        "character_name": character.name,
                         "hazard_name": hazard.get("name", trigger),
                         "trigger": trigger,
                         "activity": activity,
                         "camp_location": camp_location,
                         "is_full_moon": is_full_moon,
-                        "success": hazard_result.success,
-                        "description": hazard_result.description,
-                        "damage_taken": hazard_result.damage_taken,
-                        "conditions_applied": hazard_result.conditions_applied,
-                        "effects_applied": effects_applied,
+                        "encounter": has_encounter,
+                        "encounter_description": on_fail.get("description", hazard.get("description", "")),
+                        "party_surprised": party_surprised,
+                        "is_combat": True,  # Encounter hazards interrupt rest
                     })
+                else:
+                    # Save-type hazard - apply to all party members
+                    for character in self.controller.get_all_characters():
+                        hazard_result = self._resolve_hazard(hazard, character)
+                        # Effects are now applied automatically in _resolve_hazard
+                        effects_applied = bool(
+                            hazard_result.apply_damage or hazard_result.apply_conditions
+                        )
+                        results.append({
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "hazard_name": hazard.get("name", trigger),
+                            "trigger": trigger,
+                            "activity": activity,
+                            "camp_location": camp_location,
+                            "is_full_moon": is_full_moon,
+                            "success": hazard_result.success,
+                            "description": hazard_result.description,
+                            "damage_taken": hazard_result.damage_taken,
+                            "conditions_applied": hazard_result.conditions_applied,
+                            "effects_applied": effects_applied,
+                        })
 
         return results
 
@@ -11291,6 +11327,30 @@ class HexCrawlEngine:
                     )
                     result["rest_interrupted"] = True
                     return result
+
+        # Step 1.5: Process hex night hazards (e.g., devil goats at hex 0110)
+        night_hazard_results = self.process_night_hazards(
+            hex_id, activity="sleeping", camp_location=poi_name
+        )
+        result["night_hazards"] = night_hazard_results
+
+        # Check if any night hazard produces combat/encounter
+        for night_hazard in night_hazard_results:
+            if night_hazard.get("is_combat") or night_hazard.get("encounter"):
+                encounter_desc = night_hazard.get(
+                    "encounter_description",
+                    night_hazard.get("description", "Creatures attack the sleeping party!")
+                )
+                result["success"] = False
+                result["message"] = f"Rest interrupted! {encounter_desc}"
+                result["rest_interrupted"] = True
+                result["night_encounter"] = {
+                    "type": "night_hazard",
+                    "encounter": night_hazard.get("encounter"),
+                    "description": encounter_desc,
+                    "party_surprised": night_hazard.get("party_surprised", False),
+                }
+                return result
 
         # Step 2: Get characters to rest
         if character_ids:

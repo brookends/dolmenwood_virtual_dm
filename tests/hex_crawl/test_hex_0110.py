@@ -738,3 +738,220 @@ class TestKindredRestrictedEntry:
         # Should succeed - one longhorn is enough
         assert result["success"] is True
         assert result.get("kindred_check_failed") is None
+
+
+# =============================================================================
+# POI SLEEP NIGHT HAZARD TESTS
+# =============================================================================
+
+
+class TestPOISleepNightHazards:
+    """Tests for night hazards when sleeping at a POI in hex 0110."""
+
+    def test_sleep_at_poi_processes_night_hazards(self, hex_0110):
+        """Sleeping at a POI should process hex night hazards."""
+        from unittest.mock import MagicMock, patch
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="test_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+        )
+        controller.add_character(char)
+
+        # Set time to night (MIDNIGHT)
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+
+        # Mock check_evening_hazard to return no hazard
+        with patch.object(engine, "check_evening_hazard", return_value={"triggered": False}):
+            # Mock dice to roll 1 (triggers 3-in-6 chance)
+            with patch.object(engine.dice, "roll_d6", return_value=MagicMock(total=1)):
+                result = engine.sleep_at_poi("0110", "Devil Goats' Glade")
+
+        # Should have night_hazards in result
+        assert "night_hazards" in result
+        # With dice roll of 1 (<=3), the devil goat hazard should trigger
+        assert len(result["night_hazards"]) > 0
+
+    def test_devil_goat_encounter_interrupts_sleep(self, hex_0110):
+        """Devil goat night encounter should interrupt rest."""
+        from unittest.mock import MagicMock, patch
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="test_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+        )
+        controller.add_character(char)
+
+        # Set time to night (MIDNIGHT)
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+
+        # Mock check_evening_hazard to return no hazard
+        with patch.object(engine, "check_evening_hazard", return_value={"triggered": False}):
+            # Mock dice to always roll 1 (triggers 3-in-6 chance)
+            with patch.object(engine.dice, "roll_d6", return_value=MagicMock(total=1)):
+                result = engine.sleep_at_poi("0110", "Devil Goats' Glade")
+
+        # Rest should be interrupted by encounter
+        assert result["success"] is False
+        assert result.get("rest_interrupted") is True
+        assert "night_encounter" in result
+        assert result["night_encounter"]["encounter"] == "devil_goats"
+        assert "devil goat" in result["message"].lower()
+
+    def test_no_encounter_when_chance_fails(self, hex_0110):
+        """No devil goat encounter when the 3-in-6 chance roll fails."""
+        from unittest.mock import MagicMock, patch
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="test_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=18,  # Slightly injured
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+            saving_throws={"doom": 14, "spell": 12, "ray": 14, "hold": 13, "blast": 16},
+        )
+        controller.add_character(char)
+
+        # Set time to night (MIDNIGHT) on a non-full-moon date
+        # to avoid the full moon hazard triggering
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+
+        # Mock check_evening_hazard to return no hazard
+        with patch.object(engine, "check_evening_hazard", return_value={"triggered": False}):
+            # Mock _is_full_moon to return False (avoid full moon hazard)
+            with patch.object(engine, "_is_full_moon", return_value=False):
+                # Mock dice to roll 5 (fails 3-in-6 chance since 5 > 3)
+                with patch.object(engine.dice, "roll_d6", return_value=MagicMock(total=5)):
+                    result = engine.sleep_at_poi("0110", "Devil Goats' Glade")
+
+        # Rest should succeed - no encounter (devil goat chance failed)
+        assert result["success"] is True
+        assert result.get("rest_interrupted") is None or result.get("rest_interrupted") is False
+        # No encounter-type hazards should have triggered
+        encounters = [h for h in result.get("night_hazards", []) if h.get("encounter")]
+        assert len(encounters) == 0
+
+    def test_party_surprised_by_devil_goats(self, hex_0110):
+        """Party can be surprised by devil goats (2-in-6 chance)."""
+        from unittest.mock import MagicMock, patch
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="test_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+        )
+        controller.add_character(char)
+
+        # Set time to night
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+
+        # Mock check_evening_hazard to return no hazard
+        with patch.object(engine, "check_evening_hazard", return_value={"triggered": False}):
+            # First roll for chance (1 = triggers), second roll for surprise (1 = surprised)
+            roll_sequence = [MagicMock(total=1), MagicMock(total=1)]
+            with patch.object(engine.dice, "roll_d6", side_effect=roll_sequence):
+                result = engine.sleep_at_poi("0110", "Devil Goats' Glade")
+
+        # Party should be surprised
+        assert result["success"] is False
+        assert result["night_encounter"]["party_surprised"] is True
+
+    def test_party_not_surprised_when_roll_fails(self, hex_0110):
+        """Party not surprised when surprise roll exceeds threshold."""
+        from unittest.mock import MagicMock, patch
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        char = CharacterState(
+            character_id="test_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=3,
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=20,
+            hp_max=20,
+            armor_class=14,
+            base_speed=40,
+        )
+        controller.add_character(char)
+
+        # Set time to night
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=0, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+
+        # Mock check_evening_hazard to return no hazard
+        with patch.object(engine, "check_evening_hazard", return_value={"triggered": False}):
+            # First roll for chance (1 = triggers), second roll for surprise (5 > 2, not surprised)
+            roll_sequence = [MagicMock(total=1), MagicMock(total=5)]
+            with patch.object(engine.dice, "roll_d6", side_effect=roll_sequence):
+                result = engine.sleep_at_poi("0110", "Devil Goats' Glade")
+
+        # Party should NOT be surprised
+        assert result["success"] is False
+        assert result["night_encounter"]["party_surprised"] is False
