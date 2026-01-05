@@ -608,6 +608,9 @@ def _create_default_registry() -> ActionRegistry:
 
         Advances time to dusk, processes night hazards (like 0102's dreamless
         sleep or full moon effects), then advances to dawn.
+
+        If a transported effect occurs (e.g., hex 0101's Spectral Manse dream),
+        the party is automatically moved to the destination POI.
         """
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
         activity = p.get("activity", "sleeping")
@@ -621,6 +624,8 @@ def _create_default_registry() -> ActionRegistry:
         parts = [result.get("narrative", "The party makes camp.")]
 
         hazard_results = result.get("hazard_results", [])
+        transported_to = None
+
         if hazard_results:
             failed = [h for h in hazard_results if not h.get("success", True)]
             if failed:
@@ -628,15 +633,42 @@ def _create_default_registry() -> ActionRegistry:
                 for h in failed:
                     char_name = h.get("character_name", "Unknown")
                     condition = h.get("condition_applied", h.get("effect", "unknown effect"))
-                    parts.append(f"- {char_name}: {condition}")
 
-        return {
+                    # Check for transported effect
+                    if h.get("transported_to"):
+                        transported_to = h.get("transported_to")
+                        parts.append(f"- {char_name}: Transported to {transported_to}!")
+                    elif h.get("conditions_applied"):
+                        parts.append(f"- {char_name}: {', '.join(h.get('conditions_applied', []))}")
+                    else:
+                        parts.append(f"- {char_name}: {condition}")
+
+        # Handle transported effect - auto-enter dungeon if destination is a dungeon POI
+        if transported_to:
+            parts.append(f"\nThe party awakens within {transported_to}!")
+            # Check if destination is a dungeon POI and enter it
+            try:
+                poi_config = dm.hex_crawl.get_poi_dungeon_config(hex_id, poi_name=transported_to)
+                if poi_config and poi_config.get("is_dungeon"):
+                    parts.append("You find yourselves inside an otherworldly location...")
+                    # Dungeon entry could be auto-triggered here if dungeon system is ready
+            except (AttributeError, Exception):
+                # No dungeon config method or destination isn't a dungeon
+                pass
+
+        response: dict[str, Any] = {
             "success": True,
             "message": "\n".join(parts),
             "hazard_results": hazard_results,
             "characters_affected": result.get("characters_affected", 0),
             "suggested_actions": result.get("suggested_actions", []),
         }
+
+        if transported_to:
+            response["transported_to"] = transported_to
+            response["current_poi"] = transported_to
+
+        return response
 
     registry.register(ActionSpec(
         id="wilderness:camp",

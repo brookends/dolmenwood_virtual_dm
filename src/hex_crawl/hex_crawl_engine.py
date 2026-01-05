@@ -2547,12 +2547,21 @@ class HexCrawlEngine:
                 else:
                     # Save-type hazard - apply to all party members
                     for character in self.controller.get_all_characters():
-                        hazard_result = self._resolve_hazard(hazard, character)
-                        # Effects are now applied automatically in _resolve_hazard
+                        # Apply effects=False so we can capture special effects
+                        hazard_result = self._resolve_hazard(hazard, character, apply_effects=False)
                         effects_applied = bool(
                             hazard_result.apply_damage or hazard_result.apply_conditions
                         )
-                        results.append({
+
+                        # Manually apply effects to capture special_effects (e.g., transported)
+                        special_effects: list[dict[str, Any]] = []
+                        if effects_applied:
+                            effect_result = self._apply_hazard_effects(
+                                hazard_result, character, hazard
+                            )
+                            special_effects = effect_result.get("special_effects", [])
+
+                        result_entry: dict[str, Any] = {
                             "character_id": character.character_id,
                             "character_name": character.name,
                             "hazard_name": hazard.get("name", trigger),
@@ -2565,7 +2574,17 @@ class HexCrawlEngine:
                             "damage_taken": hazard_result.damage_taken,
                             "conditions_applied": hazard_result.conditions_applied,
                             "effects_applied": effects_applied,
-                        })
+                        }
+
+                        # Add special effects if any (e.g., transported)
+                        if special_effects:
+                            result_entry["special_effects"] = special_effects
+                            # Track transported destination at top level for easy access
+                            for effect in special_effects:
+                                if effect.get("type") == "transported":
+                                    result_entry["transported_to"] = effect.get("destination")
+
+                        results.append(result_entry)
 
         return results
 
@@ -8540,15 +8559,33 @@ class HexCrawlEngine:
             "damage_applied": [],
             "conditions_applied": [],
             "roll_table_results": [],
+            "special_effects": [],
         }
 
-        # Apply damage
-        for target_id, damage in result.apply_damage:
+        # Apply damage (handle case where apply_damage may be bool/None in tests)
+        apply_damage_list = result.apply_damage if isinstance(result.apply_damage, list) else []
+        for target_id, damage in apply_damage_list:
             self.controller.apply_damage(target_id, damage, result.damage_type or "hazard")
             applied["damage_applied"].append({"target": target_id, "damage": damage})
 
-        # Apply conditions with rich metadata
-        for target_id, condition_str in result.apply_conditions:
+        # Apply conditions with rich metadata (handle case where apply_conditions may be bool/None)
+        apply_conditions_list = result.apply_conditions if isinstance(result.apply_conditions, list) else []
+        for target_id, condition_str in apply_conditions_list:
+            # Handle "transported" as a special effect, not a condition
+            if condition_str == "transported":
+                on_fail = (hazard_data or {}).get("on_fail", {})
+                destination = on_fail.get("destination")
+                if destination:
+                    # Update current POI to the transport destination
+                    self._current_poi = destination
+                    applied["special_effects"].append({
+                        "type": "transported",
+                        "destination": destination,
+                        "target": target_id,
+                        "description": result.description,
+                    })
+                continue
+
             # Create rich Condition with enchantment metadata
             condition = self._create_condition_from_hazard(
                 condition_str=condition_str,
