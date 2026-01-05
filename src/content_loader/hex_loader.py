@@ -584,6 +584,7 @@ class HexDataLoader:
             known_topics=known_topics,
             secret_info=secret_info,
             relationships=data.get("relationships", []),
+            time_presence=data.get("time_presence"),
         )
 
     def scan_directory(self, directory: Path) -> list[Path]:

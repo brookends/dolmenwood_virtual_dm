@@ -608,6 +608,9 @@ def _create_default_registry() -> ActionRegistry:
 
         Advances time to dusk, processes night hazards (like 0102's dreamless
         sleep or full moon effects), then advances to dawn.
+
+        If a transported effect occurs (e.g., hex 0101's Spectral Manse dream),
+        the party is automatically moved to the destination POI.
         """
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
         activity = p.get("activity", "sleeping")
@@ -621,6 +624,8 @@ def _create_default_registry() -> ActionRegistry:
         parts = [result.get("narrative", "The party makes camp.")]
 
         hazard_results = result.get("hazard_results", [])
+        transported_to = None
+
         if hazard_results:
             failed = [h for h in hazard_results if not h.get("success", True)]
             if failed:
@@ -628,15 +633,42 @@ def _create_default_registry() -> ActionRegistry:
                 for h in failed:
                     char_name = h.get("character_name", "Unknown")
                     condition = h.get("condition_applied", h.get("effect", "unknown effect"))
-                    parts.append(f"- {char_name}: {condition}")
 
-        return {
+                    # Check for transported effect
+                    if h.get("transported_to"):
+                        transported_to = h.get("transported_to")
+                        parts.append(f"- {char_name}: Transported to {transported_to}!")
+                    elif h.get("conditions_applied"):
+                        parts.append(f"- {char_name}: {', '.join(h.get('conditions_applied', []))}")
+                    else:
+                        parts.append(f"- {char_name}: {condition}")
+
+        # Handle transported effect - auto-enter dungeon if destination is a dungeon POI
+        if transported_to:
+            parts.append(f"\nThe party awakens within {transported_to}!")
+            # Check if destination is a dungeon POI and enter it
+            try:
+                poi_config = dm.hex_crawl.get_poi_dungeon_config(hex_id, poi_name=transported_to)
+                if poi_config and poi_config.get("is_dungeon"):
+                    parts.append("You find yourselves inside an otherworldly location...")
+                    # Dungeon entry could be auto-triggered here if dungeon system is ready
+            except (AttributeError, Exception):
+                # No dungeon config method or destination isn't a dungeon
+                pass
+
+        response: dict[str, Any] = {
             "success": True,
             "message": "\n".join(parts),
             "hazard_results": hazard_results,
             "characters_affected": result.get("characters_affected", 0),
             "suggested_actions": result.get("suggested_actions", []),
         }
+
+        if transported_to:
+            response["transported_to"] = transported_to
+            response["current_poi"] = transported_to
+
+        return response
 
     registry.register(ActionSpec(
         id="wilderness:camp",
@@ -674,6 +706,8 @@ def _create_default_registry() -> ActionRegistry:
         """Enter a point of interest."""
         hex_id = p.get("hex_id") or dm.hex_crawl.current_hex_id
         result = dm.hex_crawl.enter_poi(hex_id)
+        if result.get("is_dungeon"):
+            return {"success": False, "message": result["message"], "is_dungeon": True}
         if result.get("requires_entry_check"):
             return {"success": False, "message": result.get("message", "Entry requires conditions.")}
         return {"success": True, "message": result.get("message", "You enter.")}
@@ -2735,12 +2769,60 @@ def _create_default_registry() -> ActionRegistry:
         hazard_index = int(p.get("hazard_index", 0))
         character_id = p.get("character_id", "party")
         approach_method = p.get("approach_method", "careful")
+        trigger = p.get("trigger", "on_approach")
 
-        result = dm.hex_crawl.resolve_poi_hazard(hex_id, hazard_index, character_id, approach_method)
+        result = dm.hex_crawl.resolve_poi_hazard(
+            hex_id, hazard_index, character_id, approach_method, trigger
+        )
         msg = result.get("message", "Hazard resolved.")
         if result.get("description"):
             msg = f"{msg}\n{result['description']}"
         return {"success": result.get("success", True), "message": msg}
+
+    def _wilderness_poi_interact(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Interact with a POI feature (touch, drink, gaze, etc.)."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        character_id = p.get("character_id")
+        action_text = p.get("action_text", "")
+
+        if not character_id:
+            return {"success": False, "message": "No character specified."}
+        if not action_text:
+            return {"success": False, "message": "No action specified."}
+
+        try:
+            result = dm.hex_crawl.resolve_poi_action(action_text, character_id, hex_id)
+
+            if not result.get("triggered"):
+                reason = result.get("reason", "No hazard triggered.")
+                return {"success": True, "message": f"Action completed. {reason}"}
+
+            # Build response message from hazard results
+            hazard_results = result.get("hazard_results", [])
+            messages = []
+            overall_success = True
+
+            for hr in hazard_results:
+                hazard_name = hr.get("hazard_name", "hazard")
+                description = hr.get("description", "")
+                damage = hr.get("damage_taken", 0)
+                conditions = hr.get("conditions_applied", [])
+
+                if not hr.get("success"):
+                    overall_success = False
+                    msg_parts = [description] if description else [f"Failed against {hazard_name}!"]
+                    if damage > 0:
+                        msg_parts.append(f"Took {damage} damage.")
+                    if conditions:
+                        msg_parts.append(f"Afflicted with: {', '.join(conditions)}.")
+                    messages.append(" ".join(msg_parts))
+                else:
+                    messages.append(description or f"Resisted {hazard_name}.")
+
+            final_msg = "\n".join(messages) if messages else "Action completed."
+            return {"success": overall_success, "message": final_msg, "hazard_results": hazard_results}
+        except Exception as e:
+            return {"success": False, "message": f"Could not interact: {e}"}
 
     def _wilderness_take_item(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Take an item from a POI."""
@@ -2756,6 +2838,39 @@ def _create_default_registry() -> ActionRegistry:
             return {"success": result.get("success", True), "message": result.get("message", "Item taken.")}
         except Exception as e:
             return {"success": False, "message": f"Could not take item: {e}"}
+
+    def _wilderness_claim_treasure_hoard(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Claim the treasure hoard at the current POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+
+        try:
+            result = dm.hex_crawl.claim_treasure_hoard(hex_id)
+            if not result.get("success"):
+                return {"success": False, "message": result.get("error", "Could not claim treasure.")}
+
+            # Build a descriptive message
+            treasure = result.get("treasure", {})
+            coins = result.get("coin_description", "no coins")
+            items = treasure.get("items", [])
+            worthless = treasure.get("worthless", "")
+
+            parts = [result.get("message", "Treasure claimed!")]
+            parts.append(f"Coins: {coins}")
+
+            if items:
+                item_list = ", ".join(
+                    f"{i.get('quantity', 1)}x {i.get('name')}" for i in items
+                )
+                parts.append(f"Items: {item_list}")
+
+            if worthless:
+                parts.append(f"Also found (worthless): {worthless}")
+
+            parts.append(f"Total value: {result.get('total_value_gp', 0)} gp")
+
+            return {"success": True, "message": "\n".join(parts), "treasure": treasure}
+        except Exception as e:
+            return {"success": False, "message": f"Could not claim treasure: {e}"}
 
     def _wilderness_search_location(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Search a location within a POI."""
@@ -2856,9 +2971,24 @@ def _create_default_registry() -> ActionRegistry:
             "hazard_index": {"type": "integer", "required": False},
             "character_id": {"type": "string", "required": False},
             "approach_method": {"type": "string", "required": False},
+            "trigger": {"type": "string", "required": False},
         },
         help="Attempt to overcome a hazard at a point of interest.",
         executor=_wilderness_resolve_poi_hazard,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:poi_interact",
+        label="Interact with POI feature",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "action_text": {"type": "string", "required": True},
+        },
+        help="Interact with a POI feature (touch, drink, gaze, inspect, etc.) which may trigger hazards.",
+        executor=_wilderness_poi_interact,
     ))
 
     registry.register(ActionSpec(
@@ -2873,6 +3003,18 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Take an item from a point of interest.",
         executor=_wilderness_take_item,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:claim_treasure_hoard",
+        label="Claim treasure hoard",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Claim the treasure hoard at a point of interest (coins and items).",
+        executor=_wilderness_claim_treasure_hoard,
     ))
 
     registry.register(ActionSpec(

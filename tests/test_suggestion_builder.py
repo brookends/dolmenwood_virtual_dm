@@ -53,6 +53,12 @@ class MockVirtualDM:
         self.current_state = state
         self.controller = MockController()
         self.hex_crawl = MagicMock()
+        # Configure hex_crawl to return sensible defaults for POI state checks
+        self.hex_crawl.get_current_poi_state.return_value = {"at_poi": False}
+        self.hex_crawl.get_visible_pois.return_value = []
+        self.hex_crawl.get_travel_points_remaining.return_value = 4
+        self.hex_crawl.get_travel_points_total.return_value = 4
+        self.hex_crawl.get_hex_data.return_value = None
         self.dungeon = MagicMock()
         self.encounter = MagicMock()
         self.settlement = MagicMock()

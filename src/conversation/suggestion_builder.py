@@ -533,15 +533,16 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     poi_name = poi_state.get("poi_name")
     can_enter = bool(poi_state.get("can_enter"))
     requires_hazard = bool(poi_state.get("requires_hazard_resolution"))
+    hazard_trigger = poi_state.get("hazard_trigger", "on_approach")
 
     # ------------------------------------------------------------------
     # If at a POI, prioritize POI-native actions (hazards, enter, talk, loot)
     # ------------------------------------------------------------------
     if at_poi and poi_name:
-        # Resolve hazards first (approach challenges)
+        # Resolve hazards first (approach or entry challenges based on state)
         if requires_hazard:
             try:
-                hazards = dm.hex_crawl.get_poi_hazards(hex_id)
+                hazards = dm.hex_crawl.get_poi_hazards(hex_id, trigger=hazard_trigger)
             except Exception:
                 hazards = []
 
@@ -559,6 +560,7 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                                     "hazard_index": {"type": "integer"},
                                     "character_id": {"type": "string"},
                                     "approach_method": {"type": "string"},
+                                    "trigger": {"type": "string"},
                                 },
                                 "required": ["hex_id", "hazard_index", "character_id"],
                             },
@@ -567,6 +569,7 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                                 "hazard_index": i,
                                 "character_id": cid,
                                 "approach_method": "careful",
+                                "trigger": hazard_trigger,
                             },
                             safe_to_execute=True,
                             help="Runs HexCrawlEngine.resolve_poi_hazard; success may unlock entry.",
@@ -762,6 +765,47 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                         help="Transitions into Dungeon Exploration using POI-provided tables/config.",
                     ),
                     score=94,
+                )
+            )
+
+        # Roll tables at this POI (e.g., treasure leavings, oddities)
+        try:
+            roll_tables = dm.hex_crawl.get_poi_roll_tables(hex_id, poi_name=poi_name)
+        except Exception:
+            roll_tables = []
+        for table in roll_tables:
+            table_name = getattr(table, "name", None) or table.get("name") if isinstance(table, dict) else table.name
+            if table_name:
+                out.append(
+                    _Candidate(
+                        SuggestedAction(
+                            id="wilderness:roll_poi_table",
+                            label=f"Roll on table: {table_name}",
+                            params={"hex_id": hex_id, "table_name": table_name},
+                            safe_to_execute=True,
+                            help="Roll on this location's table (e.g., treasure/oddities).",
+                        ),
+                        score=55,
+                    )
+                )
+
+        # Treasure hoard at this POI (if unclaimed)
+        try:
+            has_treasure = dm.hex_crawl.has_unclaimed_treasure_hoard(hex_id)
+        except Exception:
+            has_treasure = False
+
+        if has_treasure:
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:claim_treasure_hoard",
+                        label="Claim the treasure hoard",
+                        params={"hex_id": hex_id},
+                        safe_to_execute=True,
+                        help="Claim the coins and items from this location's treasure hoard.",
+                    ),
+                    score=85,  # High priority - treasure is exciting!
                 )
             )
 

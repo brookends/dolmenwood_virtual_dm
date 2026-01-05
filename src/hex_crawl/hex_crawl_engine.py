@@ -122,6 +122,8 @@ class POIVisit:
     # Active mechanical effects from roll tables
     # Format: [{"type": "reaction_mod", "target": "murkin_soldiers", "value": -1, "source": "Camp Activities"}]
     active_effects: list[dict[str, Any]] = field(default_factory=list)
+    # Generic flags for tracking arbitrary state (e.g., treasure_claimed)
+    flags: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -873,6 +875,52 @@ class HexCrawlEngine:
         """
         # Get encumbrance-adjusted party speed from controller
         return self.controller.get_party_speed()
+
+    def _party_has_kindred_match(self, allowed_kindred: list[str]) -> bool:
+        """
+        Check if any party member matches an allowed kindred type.
+
+        Handles special cases:
+        - "longhorn breggle": Breggle at level >= 4
+        - "shorthorn breggle": Breggle at level 1-3
+        - Other kindred: Direct match on character.kindred
+
+        Args:
+            allowed_kindred: List of allowed kindred types (e.g., ["longhorn breggle"])
+
+        Returns:
+            True if any party member matches an allowed kindred
+        """
+        characters = self.controller.get_all_characters()
+        if not characters:
+            return False
+
+        for kindred_type in allowed_kindred:
+            kindred_lower = kindred_type.lower().strip()
+
+            for char in characters:
+                char_kindred = getattr(char, "kindred", "").lower().strip()
+                char_level = getattr(char, "level", 1)
+
+                # Handle special breggle sub-types
+                if kindred_lower == "longhorn breggle":
+                    # Longhorn status at level 4+
+                    if char_kindred == "breggle" and char_level >= 4:
+                        return True
+                elif kindred_lower == "shorthorn breggle":
+                    # Shorthorn is level 1-3
+                    if char_kindred == "breggle" and char_level < 4:
+                        return True
+                elif kindred_lower == "breggle":
+                    # Any breggle
+                    if char_kindred == "breggle":
+                        return True
+                else:
+                    # Direct kindred match
+                    if char_kindred == kindred_lower:
+                        return True
+
+        return False
 
     def _check_encounter(
         self,
@@ -2355,6 +2403,14 @@ class HexCrawlEngine:
             return False
         return self.controller.world_state.current_date.is_full_moon()
 
+    def _is_new_moon(self) -> bool:
+        """Check if it's currently a new moon."""
+        if not self.controller.world_state:
+            return False
+        if not self.controller.world_state.current_date:
+            return False
+        return self.controller.world_state.current_date.is_new_moon()
+
     def _is_winter(self) -> bool:
         """Check if it's currently winter season."""
         if not self.controller.world_state:
@@ -2455,27 +2511,82 @@ class HexCrawlEngine:
                         should_trigger = True
 
             if should_trigger:
-                # Apply to all party members in the hex
-                for character in self.controller.get_all_characters():
-                    hazard_result = self._resolve_hazard(hazard, character)
-                    # Effects are now applied automatically in _resolve_hazard
-                    effects_applied = bool(
-                        hazard_result.apply_damage or hazard_result.apply_conditions
-                    )
+                # Check if hazard has a chance roll (e.g., "3-in-6")
+                chance_str = hazard.get("chance", "")
+                if chance_str and chance_str.lower() != "automatic":
+                    chance_target = self._parse_x_in_6_chance(chance_str)
+                    if chance_target > 0:
+                        roll = self.dice.roll_d6()
+                        if roll.total > chance_target:
+                            # Chance roll failed - hazard doesn't occur
+                            continue
+
+                # Check if this is an encounter-type hazard (no save, just encounter)
+                on_fail = hazard.get("on_fail", {})
+                save_type = hazard.get("save_type")
+                has_encounter = on_fail.get("encounter")
+
+                if has_encounter and not save_type:
+                    # Encounter hazard - this is party-wide, not per-character
+                    surprise_str = on_fail.get("surprise", "2-in-6")
+                    surprise_chance = self._parse_x_in_6_chance(surprise_str)
+                    party_surprised = False
+                    if surprise_chance > 0:
+                        surprise_roll = self.dice.roll_d6()
+                        party_surprised = surprise_roll.total <= surprise_chance
+
                     results.append({
-                        "character_id": character.character_id,
-                        "character_name": character.name,
                         "hazard_name": hazard.get("name", trigger),
                         "trigger": trigger,
                         "activity": activity,
                         "camp_location": camp_location,
                         "is_full_moon": is_full_moon,
-                        "success": hazard_result.success,
-                        "description": hazard_result.description,
-                        "damage_taken": hazard_result.damage_taken,
-                        "conditions_applied": hazard_result.conditions_applied,
-                        "effects_applied": effects_applied,
+                        "encounter": has_encounter,
+                        "encounter_description": on_fail.get("description", hazard.get("description", "")),
+                        "party_surprised": party_surprised,
+                        "is_combat": True,  # Encounter hazards interrupt rest
                     })
+                else:
+                    # Save-type hazard - apply to all party members
+                    for character in self.controller.get_all_characters():
+                        # Apply effects=False so we can capture special effects
+                        hazard_result = self._resolve_hazard(hazard, character, apply_effects=False)
+                        effects_applied = bool(
+                            hazard_result.apply_damage or hazard_result.apply_conditions
+                        )
+
+                        # Manually apply effects to capture special_effects (e.g., transported)
+                        special_effects: list[dict[str, Any]] = []
+                        if effects_applied:
+                            effect_result = self._apply_hazard_effects(
+                                hazard_result, character, hazard
+                            )
+                            special_effects = effect_result.get("special_effects", [])
+
+                        result_entry: dict[str, Any] = {
+                            "character_id": character.character_id,
+                            "character_name": character.name,
+                            "hazard_name": hazard.get("name", trigger),
+                            "trigger": trigger,
+                            "activity": activity,
+                            "camp_location": camp_location,
+                            "is_full_moon": is_full_moon,
+                            "success": hazard_result.success,
+                            "description": hazard_result.description,
+                            "damage_taken": hazard_result.damage_taken,
+                            "conditions_applied": hazard_result.conditions_applied,
+                            "effects_applied": effects_applied,
+                        }
+
+                        # Add special effects if any (e.g., transported)
+                        if special_effects:
+                            result_entry["special_effects"] = special_effects
+                            # Track transported destination at top level for easy access
+                            for effect in special_effects:
+                                if effect.get("type") == "transported":
+                                    result_entry["transported_to"] = effect.get("destination")
+
+                        results.append(result_entry)
 
         return results
 
@@ -3271,6 +3382,7 @@ class HexCrawlEngine:
         hazard_index: int,
         character_id: str,
         approach_method: Optional[str] = None,
+        trigger: str = "on_approach",
     ) -> dict[str, Any]:
         """
         Resolve a hazard required to access a POI.
@@ -3284,9 +3396,10 @@ class HexCrawlEngine:
 
         Args:
             hex_id: The hex containing the POI
-            hazard_index: Index of the hazard in the approach_hazards list
+            hazard_index: Index of the hazard in the hazards list for the trigger
             character_id: Character attempting to overcome the hazard
             approach_method: Optional method being used (e.g., "rope", "flying")
+            trigger: The hazard trigger type (e.g., "on_approach", "on_enter")
 
         Returns:
             HazardResult-style dictionary with success/failure and consequences
@@ -3308,10 +3421,10 @@ class HexCrawlEngine:
         if not poi:
             return {"success": False, "error": "POI not found"}
 
-        # Get approach hazards
-        approach_hazards = poi.get_hazards_for_trigger("on_approach")
-        if hazard_index < 0 or hazard_index >= len(approach_hazards):
-            return {"success": False, "error": "Invalid hazard index"}
+        # Get hazards for the specified trigger
+        hazards = poi.get_hazards_for_trigger(trigger)
+        if hazard_index < 0 or hazard_index >= len(hazards):
+            return {"success": False, "error": f"Invalid hazard index for trigger '{trigger}'"}
 
         # P9.4: Check if hazard was already resolved (delta state)
         visit_key = f"{hex_id}:{self._current_poi}"
@@ -3328,7 +3441,7 @@ class HexCrawlEngine:
                 "can_proceed": True,
             }
 
-        hazard = approach_hazards[hazard_index]
+        hazard = hazards[hazard_index]
         hazard_type = hazard.get("hazard_type", "environmental")
         difficulty = hazard.get("difficulty", "moderate")
 
@@ -3484,13 +3597,46 @@ class HexCrawlEngine:
 
         # Check for entry conditions
         if poi.has_entry_conditions():
-            return {
-                "success": False,
-                "requires_entry_check": True,
-                "entry_condition_type": poi.get_entry_condition_type(),
-                "entry_conditions": poi.entry_conditions,
-                "message": "This location has entry requirements",
-            }
+            entry_type = poi.get_entry_condition_type()
+
+            # Handle kindred_restricted automatically
+            if entry_type == "kindred_restricted":
+                allowed_kindred = poi.entry_conditions.get("allowed_kindred", [])
+                outcomes = poi.entry_conditions.get("outcomes", {})
+
+                if self._party_has_kindred_match(allowed_kindred):
+                    # Party has matching kindred - allow entry with success message
+                    # Continue with normal entry flow below
+                    pass
+                else:
+                    # No matching kindred - trigger failure outcome (combat hazard)
+                    failure_msg = outcomes.get(
+                        "failure",
+                        "You are not permitted to enter this location."
+                    )
+                    # Get the combat hazard from POI hazards
+                    entry_hazards = poi.get_hazards_for_trigger("on_enter")
+                    combat_hazards = [h for h in entry_hazards if h.get("effect") == "combat"]
+
+                    return {
+                        "success": False,
+                        "kindred_restricted": True,
+                        "kindred_check_failed": True,
+                        "allowed_kindred": allowed_kindred,
+                        "message": failure_msg,
+                        "entry_hazards": combat_hazards if combat_hazards else entry_hazards,
+                        "requires_hazard_resolution": len(combat_hazards) > 0 or len(entry_hazards) > 0,
+                        "outcomes": outcomes,
+                    }
+            else:
+                # Other entry condition types require DM intervention
+                return {
+                    "success": False,
+                    "requires_entry_check": True,
+                    "entry_condition_type": entry_type,
+                    "entry_conditions": poi.entry_conditions,
+                    "message": "This location has entry requirements",
+                }
 
         # Update state
         self._poi_state = POIExplorationState.AT_ENTRANCE
@@ -3536,8 +3682,14 @@ class HexCrawlEngine:
         # Include relevant special features for exploration
         explorable_features = []
         for feature in poi.special_features:
+            # Handle both string and dict features
+            if isinstance(feature, dict):
+                feature_text = feature.get("name", "") + " " + feature.get("description", "")
+            else:
+                feature_text = str(feature) if feature else ""
+
             # Filter for features relevant to current time
-            feature_lower = feature.lower()
+            feature_lower = feature_text.lower()
             if is_night:
                 if "daytime" in feature_lower or "(daytime)" in feature_lower:
                     continue
@@ -4723,16 +4875,43 @@ class HexCrawlEngine:
         Get the current POI exploration state.
 
         Returns:
-            Dictionary with current POI info or None if not at a POI
+            Dictionary with current POI info and hazard status
         """
         if not self._current_poi:
             return {"at_poi": False}
 
-        return {
+        result = {
             "at_poi": True,
             "poi_name": self._current_poi,
             "state": self._poi_state.value,
         }
+
+        # Get POI data to check hazards and entry ability
+        hex_data = self._hex_data.get(self._current_hex) if self._current_hex else None
+        if hex_data:
+            poi = None
+            for p in hex_data.points_of_interest:
+                if p.name == self._current_poi:
+                    poi = p
+                    break
+
+            if poi:
+                # Determine trigger based on exploration state
+                if self._poi_state == POIExplorationState.APPROACHING:
+                    trigger = "on_approach"
+                    hazards = poi.get_hazards_for_trigger("on_approach")
+                elif self._poi_state == POIExplorationState.AT_ENTRANCE:
+                    trigger = "on_enter"
+                    hazards = poi.get_hazards_for_trigger("on_enter")
+                else:
+                    trigger = None
+                    hazards = []
+
+                result["hazard_trigger"] = trigger
+                result["requires_hazard_resolution"] = len(hazards) > 0
+                result["can_enter"] = poi.entering is not None or poi.interior is not None
+
+        return result
 
     # =========================================================================
     # SECRET DISCOVERY SYSTEM
@@ -5152,12 +5331,14 @@ class HexCrawlEngine:
 
     def _is_npc_present_at_time(self, npc: "HexNPC", is_night: bool) -> bool:
         """
-        Check if an NPC is present based on time-of-day conditions.
+        Check if an NPC is present based on time-of-day and time_presence conditions.
 
-        Parses the NPC's location field for time-based keywords:
-        - "(nighttime only)" or "(nighttime)" -> Only present at night
-        - "(daytime only)" or "(daytime)" -> Only present during day
-        - No time keyword -> Present at all times
+        Checks:
+        1. Location field for time-based keywords:
+           - "(nighttime only)" or "(nighttime)" -> Only present at night
+           - "(daytime only)" or "(daytime)" -> Only present during day
+        2. time_presence field for structured restrictions:
+           - {type: "moon_phase", phase: "full"} -> Only present on full moon nights
 
         Args:
             npc: The HexNPC to check
@@ -5166,6 +5347,35 @@ class HexCrawlEngine:
         Returns:
             True if the NPC is present at the current time
         """
+        # First check time_presence field (structured time restrictions)
+        time_presence = getattr(npc, "time_presence", None)
+        if time_presence:
+            presence_type = time_presence.get("type")
+
+            if presence_type == "moon_phase":
+                required_phase = time_presence.get("phase", "").lower()
+                if required_phase == "full":
+                    # Full moon NPCs only appear on full moon nights
+                    if not is_night:
+                        return False
+                    if not self._is_full_moon():
+                        return False
+                elif required_phase == "new":
+                    # New moon NPCs only appear on new moon nights
+                    if not is_night:
+                        return False
+                    if not self._is_new_moon():
+                        return False
+                # Other moon phases could be added here
+
+            elif presence_type == "time_of_day":
+                required_time = time_presence.get("required", "").lower()
+                if required_time == "night" and not is_night:
+                    return False
+                elif required_time == "day" and is_night:
+                    return False
+
+        # Then check location field for legacy time-based keywords
         location = getattr(npc, "location", "") or ""
         location_lower = location.lower()
 
@@ -5177,7 +5387,7 @@ class HexCrawlEngine:
         if "(daytime only)" in location_lower or "(daytime)" in location_lower:
             return not is_night
 
-        # No time restriction - NPC is always present
+        # No time restriction - NPC is present
         return True
 
     def get_poi_info(self, hex_id: str) -> Optional[dict[str, Any]]:
@@ -7193,6 +7403,198 @@ class HexCrawlEngine:
 
         return {"success": False, "error": "Current location not found"}
 
+    def claim_treasure_hoard(self, hex_id: str) -> dict[str, Any]:
+        """
+        Claim the treasure hoard at the current POI.
+
+        Adds coins to party gold (converted to gp equivalent) and items to
+        party inventory. Marks the hoard as claimed to prevent re-claiming.
+
+        Coin conversion: 10 cp = 1 sp, 10 sp = 1 gp
+        So: 1 cp = 0.01 gp, 1 sp = 0.1 gp
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            Dictionary with success status, treasure details, and messages
+        """
+        if not self._current_poi:
+            return {
+                "success": False,
+                "error": "Not at a point of interest",
+            }
+
+        # Get the POI
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": f"POI {self._current_poi} not found"}
+
+        # Check if treasure hoard exists
+        if not poi.treasure_hoard:
+            return {
+                "success": False,
+                "error": "No treasure hoard here.",
+            }
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
+        # Check if already claimed
+        if visit.flags.get("treasure_claimed"):
+            return {
+                "success": False,
+                "error": "Treasure already claimed.",
+            }
+
+        hoard = poi.treasure_hoard
+        claimed_items = []
+        total_gp_value = 0
+
+        # Process coins - convert to gp equivalent
+        coins = hoard.get("coins", {})
+        cp = coins.get("cp", 0)
+        sp = coins.get("sp", 0)
+        gp = coins.get("gp", 0)
+        pp = coins.get("pp", 0)
+
+        # Conversion: 10 cp = 1 sp, 10 sp = 1 gp, 1 pp = 10 gp
+        # Keep as precise gp value (may have fractional gp from cp/sp)
+        gp_from_coins = gp + (sp / 10.0) + (cp / 100.0) + (pp * 10)
+        total_gp_value += gp_from_coins
+
+        # Add coins to party gold (round down to avoid fractional gp in storage)
+        party_state = getattr(self.controller, "party_state", None)
+        if party_state:
+            party_state.gold_gp += int(gp_from_coins)
+
+        # Process items
+        items = hoard.get("items", [])
+        for item_data in items:
+            item_name = item_data.get("name", "Unknown item")
+            quantity = item_data.get("quantity", 1)
+            value_gp = item_data.get("value_gp")
+
+            # Add to party inventory
+            if party_state:
+                party_state.party_inventory.append({
+                    "item_id": item_data.get("item_id", item_name.lower().replace(" ", "_")),
+                    "name": item_name,
+                    "quantity": quantity,
+                    "value_gp": value_gp,
+                    "magical": item_data.get("magical", False),
+                    "notes": item_data.get("notes"),
+                    "page_reference": item_data.get("page_reference"),
+                    "source_hex": hex_id,
+                    "source_poi": poi.name,
+                })
+
+            claimed_items.append({
+                "name": item_name,
+                "quantity": quantity,
+                "value_gp": value_gp,
+                "magical": item_data.get("magical", False),
+            })
+
+            if value_gp:
+                total_gp_value += value_gp * quantity
+
+        # Mark as claimed
+        visit.flags["treasure_claimed"] = True
+
+        # Persist to session manager if available
+        if hasattr(self.controller, "session_manager") and self.controller.session_manager:
+            self.controller.session_manager.set_poi_flag(
+                hex_id, poi.name, "treasure_claimed", True
+            )
+
+        # Build response
+        coin_description_parts = []
+        if cp:
+            coin_description_parts.append(f"{cp} cp")
+        if sp:
+            coin_description_parts.append(f"{sp} sp")
+        if gp:
+            coin_description_parts.append(f"{gp} gp")
+        if pp:
+            coin_description_parts.append(f"{pp} pp")
+
+        coin_description = ", ".join(coin_description_parts) if coin_description_parts else "no coins"
+
+        worthless = hoard.get("worthless", "")
+
+        return {
+            "success": True,
+            "message": f"You claim the treasure hoard at {poi.name}!",
+            "treasure": {
+                "coins": {
+                    "cp": cp,
+                    "sp": sp,
+                    "gp": gp,
+                    "pp": pp,
+                    "total_gp_equivalent": int(gp_from_coins),
+                },
+                "items": claimed_items,
+                "worthless": worthless,
+            },
+            "coin_description": coin_description,
+            "total_value_gp": int(total_gp_value),
+            "items_count": len(claimed_items),
+        }
+
+    def has_unclaimed_treasure_hoard(self, hex_id: str) -> bool:
+        """
+        Check if the current POI has an unclaimed treasure hoard.
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            True if there's an unclaimed treasure hoard at the current POI
+        """
+        if not self._current_poi:
+            return False
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return False
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi or not poi.treasure_hoard:
+            return False
+
+        # Check if already claimed
+        visit_key = f"{hex_id}:{poi.name}"
+        visit = self._poi_visits.get(visit_key)
+        if visit and visit.flags.get("treasure_claimed"):
+            return False
+
+        # Also check session manager for persisted state
+        if hasattr(self.controller, "session_manager") and self.controller.session_manager:
+            if self.controller.session_manager.get_poi_flag(
+                hex_id, poi.name, "treasure_claimed"
+            ):
+                return False
+
+        return True
+
     def get_poi_visit_summary(self, hex_id: str) -> dict[str, Any]:
         """
         Get a summary of the current POI visit.
@@ -8001,12 +8403,15 @@ class HexCrawlEngine:
 
         return result
 
-    def get_poi_hazards(self, hex_id: str) -> list[dict[str, Any]]:
+    def get_poi_hazards(
+        self, hex_id: str, trigger: Optional[str] = None
+    ) -> list[dict[str, Any]]:
         """
-        Get all hazards at the current POI.
+        Get hazards at the current POI, optionally filtered by trigger.
 
         Args:
             hex_id: Current hex
+            trigger: Optional trigger to filter by (e.g., "on_approach", "on_enter")
 
         Returns:
             List of hazard definitions
@@ -8020,15 +8425,35 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                return [
-                    {
-                        "trigger": h.get("trigger", "always"),
-                        "type": h.get("hazard_type", "environmental"),
-                        "difficulty": h.get("difficulty", 10),
-                        "description": h.get("description", ""),
-                    }
-                    for h in poi.hazards
-                ]
+                if trigger:
+                    # Use the POI's get_hazards_for_trigger method for proper filtering
+                    filtered = poi.get_hazards_for_trigger(trigger)
+                    return [
+                        {
+                            "name": h.get("name", h.get("hazard_id", f"hazard")),
+                            "trigger": h.get("trigger", trigger),
+                            "type": h.get("hazard_type", "environmental"),
+                            "difficulty": h.get("difficulty", 10),
+                            "description": h.get("description", ""),
+                            "effect": h.get("effect", ""),
+                            "save_type": h.get("save_type", ""),
+                        }
+                        for h in filtered
+                    ]
+                else:
+                    # Return all hazards
+                    return [
+                        {
+                            "name": h.get("name", h.get("hazard_id", f"hazard")),
+                            "trigger": h.get("trigger", "always"),
+                            "type": h.get("hazard_type", "environmental"),
+                            "difficulty": h.get("difficulty", 10),
+                            "description": h.get("description", ""),
+                            "effect": h.get("effect", ""),
+                            "save_type": h.get("save_type", ""),
+                        }
+                        for h in poi.hazards
+                    ]
 
         return []
 
@@ -8328,15 +8753,33 @@ class HexCrawlEngine:
             "damage_applied": [],
             "conditions_applied": [],
             "roll_table_results": [],
+            "special_effects": [],
         }
 
-        # Apply damage
-        for target_id, damage in result.apply_damage:
+        # Apply damage (handle case where apply_damage may be bool/None in tests)
+        apply_damage_list = result.apply_damage if isinstance(result.apply_damage, list) else []
+        for target_id, damage in apply_damage_list:
             self.controller.apply_damage(target_id, damage, result.damage_type or "hazard")
             applied["damage_applied"].append({"target": target_id, "damage": damage})
 
-        # Apply conditions with rich metadata
-        for target_id, condition_str in result.apply_conditions:
+        # Apply conditions with rich metadata (handle case where apply_conditions may be bool/None)
+        apply_conditions_list = result.apply_conditions if isinstance(result.apply_conditions, list) else []
+        for target_id, condition_str in apply_conditions_list:
+            # Handle "transported" as a special effect, not a condition
+            if condition_str == "transported":
+                on_fail = (hazard_data or {}).get("on_fail", {})
+                destination = on_fail.get("destination")
+                if destination:
+                    # Update current POI to the transport destination
+                    self._current_poi = destination
+                    applied["special_effects"].append({
+                        "type": "transported",
+                        "destination": destination,
+                        "target": target_id,
+                        "description": result.description,
+                    })
+                continue
+
             # Create rich Condition with enchantment metadata
             condition = self._create_condition_from_hazard(
                 condition_str=condition_str,
@@ -11167,6 +11610,30 @@ class HexCrawlEngine:
                     )
                     result["rest_interrupted"] = True
                     return result
+
+        # Step 1.5: Process hex night hazards (e.g., devil goats at hex 0110)
+        night_hazard_results = self.process_night_hazards(
+            hex_id, activity="sleeping", camp_location=poi_name
+        )
+        result["night_hazards"] = night_hazard_results
+
+        # Check if any night hazard produces combat/encounter
+        for night_hazard in night_hazard_results:
+            if night_hazard.get("is_combat") or night_hazard.get("encounter"):
+                encounter_desc = night_hazard.get(
+                    "encounter_description",
+                    night_hazard.get("description", "Creatures attack the sleeping party!")
+                )
+                result["success"] = False
+                result["message"] = f"Rest interrupted! {encounter_desc}"
+                result["rest_interrupted"] = True
+                result["night_encounter"] = {
+                    "type": "night_hazard",
+                    "encounter": night_hazard.get("encounter"),
+                    "description": encounter_desc,
+                    "party_surprised": night_hazard.get("party_surprised", False),
+                }
+                return result
 
         # Step 2: Get characters to rest
         if character_ids:

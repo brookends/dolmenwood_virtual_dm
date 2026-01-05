@@ -205,6 +205,7 @@ class ConditionType(str, Enum):
     RESTLESS_SLEEP = "restless_sleep"  # No HP recovery, no spell memorization
     TERROR = "terror"  # Must flee, penalties to actions while fleeing
     COMPELLED = "compelled"  # Must move toward target, can be restrained
+    NAUSEATED = "nauseated"  # -1 to attacks and saves (e.g., charnel stench)
 
 
 # Condition-based action restrictions
@@ -338,6 +339,12 @@ CONDITION_ROLL_MODIFIERS: dict[str, dict[str, Any]] = {
         "forces_movement": True,  # Must move toward target
         "can_be_restrained": True,  # Physical restraint prevents movement
         "description": "An overwhelming compulsion draws you toward the monolith.",
+    },
+    "nauseated": {
+        "attack_rolls": -1,
+        "saving_throws": -1,
+        "removal": "leave_area",  # Removed when leaving the source area
+        "description": "Overwhelming stench or sickness causes nausea.",
     },
 }
 
@@ -4750,6 +4757,12 @@ class HexNPC:
     #          captor: "Prince Mallowheart", can_leave: False}
     # NPCs with binding cannot leave their bound location until condition is met
     binding: Optional[dict[str, Any]] = None
+
+    # Time-based presence restrictions
+    # Format: {type: "moon_phase", phase: "full", description: "Only appears on full moon"}
+    # type: "moon_phase", "time_of_day", "season", "weather"
+    # For spirits, fey, or creatures with temporal restrictions
+    time_presence: Optional[dict[str, Any]] = None
 
     def get_relationship(self, npc_id: str) -> Optional[dict[str, Any]]:
         """Get relationship to a specific NPC."""
