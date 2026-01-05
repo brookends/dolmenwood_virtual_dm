@@ -1311,6 +1311,60 @@ class SessionManager:
         taken_items = self.get_items_taken_from_poi(hex_id, poi_name)
         return item_name in taken_items
 
+    def set_poi_flag(
+        self,
+        hex_id: str,
+        poi_name: str,
+        flag_name: str,
+        value: Any,
+    ) -> None:
+        """
+        Set a custom flag on a POI's state delta.
+
+        Flags are stored in the POI's custom_state dict and persist across sessions.
+        Use for tracking arbitrary state like treasure_claimed, quest_completed, etc.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            flag_name: Name of the flag to set
+            value: Value to set (typically bool, but can be any JSON-serializable value)
+        """
+        delta = self.get_poi_delta(hex_id, poi_name)
+        delta.custom_state[flag_name] = value
+
+    def get_poi_flag(
+        self,
+        hex_id: str,
+        poi_name: str,
+        flag_name: str,
+        default: Any = None,
+    ) -> Any:
+        """
+        Get a custom flag from a POI's state delta.
+
+        Args:
+            hex_id: The hex ID
+            poi_name: The POI name
+            flag_name: Name of the flag to get
+            default: Default value if flag not set
+
+        Returns:
+            The flag value, or default if not set
+        """
+        if not self._current_session:
+            return default
+
+        hex_delta = self._current_session.hex_deltas.get(hex_id)
+        if not hex_delta:
+            return default
+
+        poi_delta = hex_delta.poi_deltas.get(poi_name)
+        if not poi_delta:
+            return default
+
+        return poi_delta.custom_state.get(flag_name, default)
+
     def mark_roll_table_entry_found(
         self,
         hex_id: str,

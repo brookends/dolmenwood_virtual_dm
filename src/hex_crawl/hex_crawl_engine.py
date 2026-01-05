@@ -122,6 +122,8 @@ class POIVisit:
     # Active mechanical effects from roll tables
     # Format: [{"type": "reaction_mod", "target": "murkin_soldiers", "value": -1, "source": "Camp Activities"}]
     active_effects: list[dict[str, Any]] = field(default_factory=list)
+    # Generic flags for tracking arbitrary state (e.g., treasure_claimed)
+    flags: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -7400,6 +7402,198 @@ class HexCrawlEngine:
                 return {"success": False, "error": f"Item '{item_name}' not found here"}
 
         return {"success": False, "error": "Current location not found"}
+
+    def claim_treasure_hoard(self, hex_id: str) -> dict[str, Any]:
+        """
+        Claim the treasure hoard at the current POI.
+
+        Adds coins to party gold (converted to gp equivalent) and items to
+        party inventory. Marks the hoard as claimed to prevent re-claiming.
+
+        Coin conversion: 10 cp = 1 sp, 10 sp = 1 gp
+        So: 1 cp = 0.01 gp, 1 sp = 0.1 gp
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            Dictionary with success status, treasure details, and messages
+        """
+        if not self._current_poi:
+            return {
+                "success": False,
+                "error": "Not at a point of interest",
+            }
+
+        # Get the POI
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return {"success": False, "error": f"Hex {hex_id} not found"}
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi:
+            return {"success": False, "error": f"POI {self._current_poi} not found"}
+
+        # Check if treasure hoard exists
+        if not poi.treasure_hoard:
+            return {
+                "success": False,
+                "error": "No treasure hoard here.",
+            }
+
+        # Get or create visit tracking
+        visit_key = f"{hex_id}:{poi.name}"
+        if visit_key not in self._poi_visits:
+            self._poi_visits[visit_key] = POIVisit(poi_name=poi.name)
+        visit = self._poi_visits[visit_key]
+
+        # Check if already claimed
+        if visit.flags.get("treasure_claimed"):
+            return {
+                "success": False,
+                "error": "Treasure already claimed.",
+            }
+
+        hoard = poi.treasure_hoard
+        claimed_items = []
+        total_gp_value = 0
+
+        # Process coins - convert to gp equivalent
+        coins = hoard.get("coins", {})
+        cp = coins.get("cp", 0)
+        sp = coins.get("sp", 0)
+        gp = coins.get("gp", 0)
+        pp = coins.get("pp", 0)
+
+        # Conversion: 10 cp = 1 sp, 10 sp = 1 gp, 1 pp = 10 gp
+        # Keep as precise gp value (may have fractional gp from cp/sp)
+        gp_from_coins = gp + (sp / 10.0) + (cp / 100.0) + (pp * 10)
+        total_gp_value += gp_from_coins
+
+        # Add coins to party gold (round down to avoid fractional gp in storage)
+        party_state = getattr(self.controller, "party_state", None)
+        if party_state:
+            party_state.gold_gp += int(gp_from_coins)
+
+        # Process items
+        items = hoard.get("items", [])
+        for item_data in items:
+            item_name = item_data.get("name", "Unknown item")
+            quantity = item_data.get("quantity", 1)
+            value_gp = item_data.get("value_gp")
+
+            # Add to party inventory
+            if party_state:
+                party_state.party_inventory.append({
+                    "item_id": item_data.get("item_id", item_name.lower().replace(" ", "_")),
+                    "name": item_name,
+                    "quantity": quantity,
+                    "value_gp": value_gp,
+                    "magical": item_data.get("magical", False),
+                    "notes": item_data.get("notes"),
+                    "page_reference": item_data.get("page_reference"),
+                    "source_hex": hex_id,
+                    "source_poi": poi.name,
+                })
+
+            claimed_items.append({
+                "name": item_name,
+                "quantity": quantity,
+                "value_gp": value_gp,
+                "magical": item_data.get("magical", False),
+            })
+
+            if value_gp:
+                total_gp_value += value_gp * quantity
+
+        # Mark as claimed
+        visit.flags["treasure_claimed"] = True
+
+        # Persist to session manager if available
+        if hasattr(self.controller, "session_manager") and self.controller.session_manager:
+            self.controller.session_manager.set_poi_flag(
+                hex_id, poi.name, "treasure_claimed", True
+            )
+
+        # Build response
+        coin_description_parts = []
+        if cp:
+            coin_description_parts.append(f"{cp} cp")
+        if sp:
+            coin_description_parts.append(f"{sp} sp")
+        if gp:
+            coin_description_parts.append(f"{gp} gp")
+        if pp:
+            coin_description_parts.append(f"{pp} pp")
+
+        coin_description = ", ".join(coin_description_parts) if coin_description_parts else "no coins"
+
+        worthless = hoard.get("worthless", "")
+
+        return {
+            "success": True,
+            "message": f"You claim the treasure hoard at {poi.name}!",
+            "treasure": {
+                "coins": {
+                    "cp": cp,
+                    "sp": sp,
+                    "gp": gp,
+                    "pp": pp,
+                    "total_gp_equivalent": int(gp_from_coins),
+                },
+                "items": claimed_items,
+                "worthless": worthless,
+            },
+            "coin_description": coin_description,
+            "total_value_gp": int(total_gp_value),
+            "items_count": len(claimed_items),
+        }
+
+    def has_unclaimed_treasure_hoard(self, hex_id: str) -> bool:
+        """
+        Check if the current POI has an unclaimed treasure hoard.
+
+        Args:
+            hex_id: The hex containing the POI
+
+        Returns:
+            True if there's an unclaimed treasure hoard at the current POI
+        """
+        if not self._current_poi:
+            return False
+
+        hex_data = self._hex_data.get(hex_id)
+        if not hex_data:
+            return False
+
+        poi = None
+        for p in hex_data.points_of_interest:
+            if p.name == self._current_poi:
+                poi = p
+                break
+
+        if not poi or not poi.treasure_hoard:
+            return False
+
+        # Check if already claimed
+        visit_key = f"{hex_id}:{poi.name}"
+        visit = self._poi_visits.get(visit_key)
+        if visit and visit.flags.get("treasure_claimed"):
+            return False
+
+        # Also check session manager for persisted state
+        if hasattr(self.controller, "session_manager") and self.controller.session_manager:
+            if self.controller.session_manager.get_poi_flag(
+                hex_id, poi.name, "treasure_claimed"
+            ):
+                return False
+
+        return True
 
     def get_poi_visit_summary(self, hex_id: str) -> dict[str, Any]:
         """

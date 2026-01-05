@@ -2837,6 +2837,39 @@ def _create_default_registry() -> ActionRegistry:
         except Exception as e:
             return {"success": False, "message": f"Could not take item: {e}"}
 
+    def _wilderness_claim_treasure_hoard(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Claim the treasure hoard at the current POI."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+
+        try:
+            result = dm.hex_crawl.claim_treasure_hoard(hex_id)
+            if not result.get("success"):
+                return {"success": False, "message": result.get("error", "Could not claim treasure.")}
+
+            # Build a descriptive message
+            treasure = result.get("treasure", {})
+            coins = result.get("coin_description", "no coins")
+            items = treasure.get("items", [])
+            worthless = treasure.get("worthless", "")
+
+            parts = [result.get("message", "Treasure claimed!")]
+            parts.append(f"Coins: {coins}")
+
+            if items:
+                item_list = ", ".join(
+                    f"{i.get('quantity', 1)}x {i.get('name')}" for i in items
+                )
+                parts.append(f"Items: {item_list}")
+
+            if worthless:
+                parts.append(f"Also found (worthless): {worthless}")
+
+            parts.append(f"Total value: {result.get('total_value_gp', 0)} gp")
+
+            return {"success": True, "message": "\n".join(parts), "treasure": treasure}
+        except Exception as e:
+            return {"success": False, "message": f"Could not claim treasure: {e}"}
+
     def _wilderness_search_location(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Search a location within a POI."""
         hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
@@ -2968,6 +3001,18 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Take an item from a point of interest.",
         executor=_wilderness_take_item,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:claim_treasure_hoard",
+        label="Claim treasure hoard",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+        },
+        help="Claim the treasure hoard at a point of interest (coins and items).",
+        executor=_wilderness_claim_treasure_hoard,
     ))
 
     registry.register(ActionSpec(

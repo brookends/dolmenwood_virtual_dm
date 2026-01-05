@@ -789,6 +789,26 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                     )
                 )
 
+        # Treasure hoard at this POI (if unclaimed)
+        try:
+            has_treasure = dm.hex_crawl.has_unclaimed_treasure_hoard(hex_id)
+        except Exception:
+            has_treasure = False
+
+        if has_treasure:
+            out.append(
+                _Candidate(
+                    SuggestedAction(
+                        id="wilderness:claim_treasure_hoard",
+                        label="Claim the treasure hoard",
+                        params={"hex_id": hex_id},
+                        safe_to_execute=True,
+                        help="Claim the coins and items from this location's treasure hoard.",
+                    ),
+                    score=85,  # High priority - treasure is exciting!
+                )
+            )
+
         # Generic exploratory prompts at a site
         out.append(
             _Candidate(
