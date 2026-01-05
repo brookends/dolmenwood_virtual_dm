@@ -126,6 +126,12 @@ def _extract_question(text: str) -> dict[str, Any]:
     return {"question": text.strip()} if text.strip() else {}
 
 
+def _extract_action_text(text: str) -> dict[str, Any]:
+    """Extract action text for POI interactions (touch, drink, gaze, etc.)."""
+    # Pass through the full text as action_text for the engine to parse
+    return {"action_text": text.strip()}
+
+
 # State-specific pattern tables
 # Each entry: (keywords, action_id, param_extractor_or_None, confidence)
 WILDERNESS_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]] = [
@@ -138,6 +144,12 @@ WILDERNESS_PATTERNS: list[tuple[tuple[str, ...], str, Optional[Callable], float]
     (("look around", "survey", "observe", "what do i see"), "wilderness:look_around", None, 0.9),
     (("enter", "go in", "enter the", "go inside"), "wilderness:enter_poi", None, 0.85),
     (("leave", "depart", "exit"), "wilderness:leave_poi", None, 0.85),
+
+    # POI interactions (may trigger hazards)
+    (("touch", "press", "push", "grab", "hold", "handle"), "wilderness:poi_interact", _extract_action_text, 0.9),
+    (("drink", "sip", "taste", "imbibe", "swallow", "quaff"), "wilderness:poi_interact", _extract_action_text, 0.9),
+    (("gaze", "stare", "view", "behold", "look upon"), "wilderness:poi_interact", _extract_action_text, 0.9),
+    (("inspect", "investigate", "study", "examine closely"), "wilderness:poi_interact", _extract_action_text, 0.85),
 
     # Survival
     (("forage", "gather food", "find food", "gather plants", "pick berries"), "wilderness:forage", None, 0.95),
@@ -715,6 +727,7 @@ class NarrativeResolver:
             "wilderness:enter_poi": ActionType.ENTER,
             "wilderness:leave_poi": ActionType.EXIT,
             "wilderness:approach_poi": ActionType.TRAVEL,
+            "wilderness:poi_interact": ActionType.EXAMINE,
 
             # Dungeon
             "dungeon:search": ActionType.SEARCH,

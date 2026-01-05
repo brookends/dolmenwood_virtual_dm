@@ -2745,6 +2745,51 @@ def _create_default_registry() -> ActionRegistry:
             msg = f"{msg}\n{result['description']}"
         return {"success": result.get("success", True), "message": msg}
 
+    def _wilderness_poi_interact(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
+        """Interact with a POI feature (touch, drink, gaze, etc.)."""
+        hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
+        character_id = p.get("character_id")
+        action_text = p.get("action_text", "")
+
+        if not character_id:
+            return {"success": False, "message": "No character specified."}
+        if not action_text:
+            return {"success": False, "message": "No action specified."}
+
+        try:
+            result = dm.hex_crawl.resolve_poi_action(action_text, character_id, hex_id)
+
+            if not result.get("triggered"):
+                reason = result.get("reason", "No hazard triggered.")
+                return {"success": True, "message": f"Action completed. {reason}"}
+
+            # Build response message from hazard results
+            hazard_results = result.get("hazard_results", [])
+            messages = []
+            overall_success = True
+
+            for hr in hazard_results:
+                hazard_name = hr.get("hazard_name", "hazard")
+                description = hr.get("description", "")
+                damage = hr.get("damage_taken", 0)
+                conditions = hr.get("conditions_applied", [])
+
+                if not hr.get("success"):
+                    overall_success = False
+                    msg_parts = [description] if description else [f"Failed against {hazard_name}!"]
+                    if damage > 0:
+                        msg_parts.append(f"Took {damage} damage.")
+                    if conditions:
+                        msg_parts.append(f"Afflicted with: {', '.join(conditions)}.")
+                    messages.append(" ".join(msg_parts))
+                else:
+                    messages.append(description or f"Resisted {hazard_name}.")
+
+            final_msg = "\n".join(messages) if messages else "Action completed."
+            return {"success": overall_success, "message": final_msg, "hazard_results": hazard_results}
+        except Exception as e:
+            return {"success": False, "message": f"Could not interact: {e}"}
+
     def _wilderness_take_item(dm: "VirtualDM", p: dict[str, Any]) -> dict[str, Any]:
         """Take an item from a POI."""
         hex_id = p.get("hex_id") or dm.controller.party_state.location.location_id
@@ -2863,6 +2908,20 @@ def _create_default_registry() -> ActionRegistry:
         },
         help="Attempt to overcome a hazard at a point of interest.",
         executor=_wilderness_resolve_poi_hazard,
+    ))
+
+    registry.register(ActionSpec(
+        id="wilderness:poi_interact",
+        label="Interact with POI feature",
+        category=ActionCategory.WILDERNESS,
+        requires_state="wilderness_travel",
+        params_schema={
+            "hex_id": {"type": "string", "required": False},
+            "character_id": {"type": "string", "required": True},
+            "action_text": {"type": "string", "required": True},
+        },
+        help="Interact with a POI feature (touch, drink, gaze, inspect, etc.) which may trigger hazards.",
+        executor=_wilderness_poi_interact,
     ))
 
     registry.register(ActionSpec(

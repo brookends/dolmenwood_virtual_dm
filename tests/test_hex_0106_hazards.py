@@ -1487,3 +1487,370 @@ class TestSpellPermanenceSystem:
         spells = engine.get_permanent_spells_at_location("0105")
         assert len(spells) == 1
         assert spells[0].spell_name == "Shadow Door"
+
+
+class TestViewMonolithHazardResolution:
+    """Tests for viewing monolith hazard detection and resolution via resolve_poi_action."""
+
+    def test_resolve_poi_action_triggers_terror_in_winter(self):
+        """Verify resolve_poi_action triggers monolith terror hazard when viewing in winter."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=5)
+        engine.narrative_resolver = MagicMock()
+
+        # Set winter season
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        # Create character that will fail the save
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_fighter"
+        char.character_class = "Fighter"
+        char.make_saving_throw = MagicMock(return_value=(5, False))  # Failed save
+
+        controller.get_character.return_value = char
+        controller.apply_condition = MagicMock(return_value={"applied": True})
+
+        # Create mock POI with monolith_viewing hazard
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "months": ["Grimvold", "Lymewald", "Haggryme"],
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+                "modifier_arcane_casters": 2,
+                "on_fail": {
+                    "condition": "terror",
+                    "effect": "Must flee the monolith's presence immediately",
+                    "duration": "1 Turn",
+                    "additional": "Suffer -2 to climbing checks while fleeing",
+                },
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Resolve the view action
+        result = engine.resolve_poi_action("I gaze upon the monolith", "test_fighter")
+
+        assert result["triggered"] is True
+        assert result["action_type"] == "view"
+        assert result["hazards_triggered"] == 1
+        assert result["hazard_results"][0]["hazard_name"] == "Monolith Terror (Winter)"
+        assert result["hazard_results"][0]["success"] is False
+        assert "terror" in result["hazard_results"][0]["conditions_applied"]
+
+    def test_resolve_poi_action_no_terror_in_summer(self):
+        """Verify resolve_poi_action does NOT trigger terror hazard outside winter."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.dice = MagicMock()
+        engine.narrative_resolver = MagicMock()
+
+        # Set summer season
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.SUMMER
+        engine.controller = controller
+
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_fighter"
+        char.character_class = "Fighter"
+
+        controller.get_character.return_value = char
+
+        # Create mock POI with monolith_viewing hazard (requires terror_aura)
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {
+                "effects_active": ["terror_aura", "spell_permanence"],
+            },
+            "non_winter": {
+                "effects_active": ["spectral_chill_only"],
+            },
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",  # Not active in summer
+                "save_type": "spell",
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Resolve the view action in summer
+        result = engine.resolve_poi_action("I gaze upon the monolith", "test_fighter")
+
+        # Should NOT trigger since terror_aura is not active in summer
+        assert result["triggered"] is False
+        assert result["reason"] == "No hazards match this action"
+
+    def test_resolve_poi_action_successful_save_against_terror(self):
+        """Verify resolve_poi_action handles successful saves against monolith terror."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=18)
+        engine.narrative_resolver = MagicMock()
+
+        # Set winter season
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        # Create character that will succeed the save
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_wizard"
+        char.character_class = "Magic-User"
+        char.make_saving_throw = MagicMock(return_value=(18, True))  # Passed save
+
+        controller.get_character.return_value = char
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {"effects_active": ["terror_aura", "spell_permanence"]},
+            "non_winter": {"effects_active": ["spectral_chill_only"]},
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+                "modifier_arcane_casters": 2,
+                "on_fail": {"condition": "terror"},
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        result = engine.resolve_poi_action("View the monolith", "test_wizard")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is True
+        assert len(result["hazard_results"][0]["conditions_applied"]) == 0
+
+    def test_resolve_poi_action_arcane_caster_gets_bonus(self):
+        """Verify arcane casters get +2 bonus to save against monolith terror."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=12)
+        engine.narrative_resolver = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        # Create magic-user character
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_wizard"
+        char.character_class = "Magic-User"
+        # The save will be called with modifier 2
+        char.make_saving_throw = MagicMock(return_value=(14, True))  # 12 + 2 = 14
+
+        controller.get_character.return_value = char
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {"effects_active": ["terror_aura"]},
+            "non_winter": {"effects_active": []},
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+                "modifier_arcane_casters": 2,
+                "on_fail": {"condition": "terror"},
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        engine.resolve_poi_action("Gaze upon the crimson monolith", "test_wizard")
+
+        # Verify make_saving_throw was called with the arcane caster bonus
+        char.make_saving_throw.assert_called_once()
+        call_args = char.make_saving_throw.call_args
+        # Second argument should be the modifier (2 for arcane casters)
+        assert call_args[0][1] == 2
+
+    def test_detect_poi_action_matches_view_variants(self):
+        """Verify detect_poi_action matches various view action phrasings."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+
+        test_cases = [
+            ("I gaze upon the monolith", ("view", "gaze")),
+            ("Gaze at the crimson light", ("view", "gaze")),
+            ("I want to stare at it", ("view", "stare")),
+            ("I view the ancient stone", ("view", "view")),
+            ("Look upon the red crystal", ("view", "look upon")),
+            ("Observe the monolith carefully", ("view", "observe")),
+        ]
+
+        for input_text, expected in test_cases:
+            result = engine.detect_poi_action(input_text)
+            assert result == expected, f"Failed for '{input_text}'"
+
+    def test_get_matching_poi_hazards_matches_viewing_trigger(self):
+        """Verify get_matching_poi_hazards matches hazard with 'viewing' trigger."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_poi = "The Red Vorpal Monolith"
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {"effects_active": ["terror_aura"]},
+            "non_winter": {"effects_active": []},
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+            }
+        ]
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        # Action type "view" should match trigger "viewing"
+        matching = engine.get_matching_poi_hazards("0106", "view")
+
+        assert len(matching) == 1
+        assert matching[0]["hazard_id"] == "monolith_viewing"
+
+    def test_resolve_poi_action_applies_terror_condition(self):
+        """Verify resolve_poi_action applies terror condition on failed save."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.data_models import CharacterState, PointOfInterest, Season
+
+        engine = HexCrawlEngine.__new__(HexCrawlEngine)
+        engine._current_hex = "0106"
+        engine._current_poi = "The Red Vorpal Monolith"
+        engine.dice = MagicMock()
+        engine.dice.roll_d20.return_value = MagicMock(total=3)
+        engine.narrative_resolver = MagicMock()
+
+        controller = MagicMock()
+        controller.world_state = MagicMock()
+        controller.world_state.current_date = MagicMock()
+        controller.world_state.current_date.get_season.return_value = Season.WINTER
+        engine.controller = controller
+
+        char = MagicMock(spec=CharacterState)
+        char.character_id = "test_fighter"
+        char.character_class = "Fighter"
+        char.make_saving_throw = MagicMock(return_value=(3, False))  # Failed
+
+        controller.get_character.return_value = char
+        controller.apply_condition = MagicMock(return_value={"applied": True})
+
+        mock_poi = MagicMock(spec=PointOfInterest)
+        mock_poi.name = "The Red Vorpal Monolith"
+        mock_poi.seasonal_behavior = {
+            "winter": {"effects_active": ["terror_aura"]},
+            "non_winter": {"effects_active": []},
+        }
+        mock_poi.hazards = [
+            {
+                "hazard_id": "monolith_viewing",
+                "name": "Monolith Terror (Winter)",
+                "trigger": "viewing the monolith in winter",
+                "effect_required": "terror_aura",
+                "save_type": "spell",
+                "description": "The crimson light pierces your mind with dread",
+                "on_fail": {
+                    "condition": "terror",
+                    "effect": "Must flee the monolith's presence immediately",
+                    "duration": "1 Turn",
+                },
+            }
+        ]
+        mock_poi.roll_tables = []
+
+        mock_hex = MagicMock()
+        mock_hex.points_of_interest = [mock_poi]
+        engine._hex_data = {"0106": mock_hex}
+
+        result = engine.resolve_poi_action("Stare at the monolith", "test_fighter")
+
+        assert result["triggered"] is True
+        assert result["hazard_results"][0]["success"] is False
+        assert "terror" in result["hazard_results"][0]["conditions_applied"]
+        # The effect description should be in the result
+        assert "flee" in result["hazard_results"][0]["description"].lower()
