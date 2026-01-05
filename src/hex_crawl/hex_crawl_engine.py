@@ -874,6 +874,52 @@ class HexCrawlEngine:
         # Get encumbrance-adjusted party speed from controller
         return self.controller.get_party_speed()
 
+    def _party_has_kindred_match(self, allowed_kindred: list[str]) -> bool:
+        """
+        Check if any party member matches an allowed kindred type.
+
+        Handles special cases:
+        - "longhorn breggle": Breggle at level >= 4
+        - "shorthorn breggle": Breggle at level 1-3
+        - Other kindred: Direct match on character.kindred
+
+        Args:
+            allowed_kindred: List of allowed kindred types (e.g., ["longhorn breggle"])
+
+        Returns:
+            True if any party member matches an allowed kindred
+        """
+        characters = self.controller.get_all_characters()
+        if not characters:
+            return False
+
+        for kindred_type in allowed_kindred:
+            kindred_lower = kindred_type.lower().strip()
+
+            for char in characters:
+                char_kindred = getattr(char, "kindred", "").lower().strip()
+                char_level = getattr(char, "level", 1)
+
+                # Handle special breggle sub-types
+                if kindred_lower == "longhorn breggle":
+                    # Longhorn status at level 4+
+                    if char_kindred == "breggle" and char_level >= 4:
+                        return True
+                elif kindred_lower == "shorthorn breggle":
+                    # Shorthorn is level 1-3
+                    if char_kindred == "breggle" and char_level < 4:
+                        return True
+                elif kindred_lower == "breggle":
+                    # Any breggle
+                    if char_kindred == "breggle":
+                        return True
+                else:
+                    # Direct kindred match
+                    if char_kindred == kindred_lower:
+                        return True
+
+        return False
+
     def _check_encounter(
         self,
         terrain_info: TerrainInfo,
@@ -3492,13 +3538,46 @@ class HexCrawlEngine:
 
         # Check for entry conditions
         if poi.has_entry_conditions():
-            return {
-                "success": False,
-                "requires_entry_check": True,
-                "entry_condition_type": poi.get_entry_condition_type(),
-                "entry_conditions": poi.entry_conditions,
-                "message": "This location has entry requirements",
-            }
+            entry_type = poi.get_entry_condition_type()
+
+            # Handle kindred_restricted automatically
+            if entry_type == "kindred_restricted":
+                allowed_kindred = poi.entry_conditions.get("allowed_kindred", [])
+                outcomes = poi.entry_conditions.get("outcomes", {})
+
+                if self._party_has_kindred_match(allowed_kindred):
+                    # Party has matching kindred - allow entry with success message
+                    # Continue with normal entry flow below
+                    pass
+                else:
+                    # No matching kindred - trigger failure outcome (combat hazard)
+                    failure_msg = outcomes.get(
+                        "failure",
+                        "You are not permitted to enter this location."
+                    )
+                    # Get the combat hazard from POI hazards
+                    entry_hazards = poi.get_hazards_for_trigger("on_enter")
+                    combat_hazards = [h for h in entry_hazards if h.get("effect") == "combat"]
+
+                    return {
+                        "success": False,
+                        "kindred_restricted": True,
+                        "kindred_check_failed": True,
+                        "allowed_kindred": allowed_kindred,
+                        "message": failure_msg,
+                        "entry_hazards": combat_hazards if combat_hazards else entry_hazards,
+                        "requires_hazard_resolution": len(combat_hazards) > 0 or len(entry_hazards) > 0,
+                        "outcomes": outcomes,
+                    }
+            else:
+                # Other entry condition types require DM intervention
+                return {
+                    "success": False,
+                    "requires_entry_check": True,
+                    "entry_condition_type": entry_type,
+                    "entry_conditions": poi.entry_conditions,
+                    "message": "This location has entry requirements",
+                }
 
         # Update state
         self._poi_state = POIExplorationState.AT_ENTRANCE
@@ -3544,8 +3623,14 @@ class HexCrawlEngine:
         # Include relevant special features for exploration
         explorable_features = []
         for feature in poi.special_features:
+            # Handle both string and dict features
+            if isinstance(feature, dict):
+                feature_text = feature.get("name", "") + " " + feature.get("description", "")
+            else:
+                feature_text = str(feature) if feature else ""
+
             # Filter for features relevant to current time
-            feature_lower = feature.lower()
+            feature_lower = feature_text.lower()
             if is_night:
                 if "daytime" in feature_lower or "(daytime)" in feature_lower:
                     continue

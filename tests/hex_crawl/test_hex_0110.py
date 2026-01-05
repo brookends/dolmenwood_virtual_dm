@@ -558,3 +558,183 @@ class TestTimePresenceEnforcement:
         gnarlgruff = [n for n in npcs if n.get("npc_id") == "lord_gnarlgruff_spirit"]
         assert len(gnarlgruff) == 1, "Gnarlgruff SHOULD appear on full moon night"
         assert gnarlgruff[0]["name"] == "Lord Gnarlgruff"
+
+
+# =============================================================================
+# KINDRED-RESTRICTED ENTRY TESTS
+# =============================================================================
+
+
+class TestKindredRestrictedEntry:
+    """Test kindred-restricted entry conditions for Devil Goats' Glade."""
+
+    def test_party_without_longhorn_triggers_combat(self, hex_0110):
+        """Party without longhorn breggle triggers combat hazard."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        # Add a human fighter (no breggle)
+        human = CharacterState(
+            character_id="human_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=5,
+            kindred="Human",
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=30,
+            hp_max=30,
+            armor_class=16,
+            base_speed=40,
+        )
+        controller.add_character(human)
+
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=12, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Try to enter
+        result = engine.enter_poi("0110")
+
+        # Should fail with kindred check
+        assert result["success"] is False
+        assert result.get("kindred_restricted") is True
+        assert result.get("kindred_check_failed") is True
+        assert "longhorn breggle" in result.get("allowed_kindred", [])
+        # Should have combat hazard
+        assert result.get("requires_hazard_resolution") is True
+        assert "attack" in result.get("message", "").lower()
+
+    def test_party_with_shorthorn_triggers_combat(self, hex_0110):
+        """Party with shorthorn breggle (level 3) still triggers combat."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        # Add a level 3 breggle (shorthorn, not longhorn)
+        shorthorn = CharacterState(
+            character_id="shorthorn_mage",
+            name="Bramblewick",
+            character_class="Magician",
+            level=3,  # Level 3 = shorthorn, not longhorn
+            kindred="Breggle",
+            ability_scores={"STR": 8, "INT": 16, "WIS": 12, "DEX": 10, "CON": 10, "CHA": 14},
+            hp_current=10,
+            hp_max=10,
+            armor_class=10,
+            base_speed=30,
+        )
+        controller.add_character(shorthorn)
+
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=12, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Try to enter
+        result = engine.enter_poi("0110")
+
+        # Should fail - shorthorn doesn't count as longhorn
+        assert result["success"] is False
+        assert result.get("kindred_restricted") is True
+        assert result.get("kindred_check_failed") is True
+
+    def test_party_with_longhorn_enters_safely(self, hex_0110):
+        """Party with longhorn breggle (level 4+) enters without combat."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        # Add a level 4 breggle (longhorn)
+        longhorn = CharacterState(
+            character_id="longhorn_knight",
+            name="Lord Thornwick",
+            character_class="Knight",
+            level=4,  # Level 4 = longhorn status
+            kindred="Breggle",
+            ability_scores={"STR": 14, "INT": 12, "WIS": 10, "DEX": 10, "CON": 14, "CHA": 16},
+            hp_current=25,
+            hp_max=25,
+            armor_class=16,
+            base_speed=30,
+        )
+        controller.add_character(longhorn)
+
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=12, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Try to enter
+        result = engine.enter_poi("0110")
+
+        # Should succeed - longhorn breggle bypasses combat
+        assert result["success"] is True
+        assert result.get("kindred_restricted") is None
+        assert result.get("kindred_check_failed") is None
+        assert "description" in result
+
+    def test_mixed_party_with_longhorn_enters_safely(self, hex_0110):
+        """Mixed party with one longhorn breggle enters without combat."""
+        from src.hex_crawl.hex_crawl_engine import HexCrawlEngine
+        from src.game_state.global_controller import GlobalController
+        from src.data_models import CharacterState, GameDate, GameTime
+
+        controller = GlobalController()
+        # Add a human fighter
+        human = CharacterState(
+            character_id="human_fighter",
+            name="Sir Galahad",
+            character_class="Fighter",
+            level=5,
+            kindred="Human",
+            ability_scores={"STR": 16, "INT": 10, "WIS": 10, "DEX": 12, "CON": 14, "CHA": 10},
+            hp_current=30,
+            hp_max=30,
+            armor_class=16,
+            base_speed=40,
+        )
+        controller.add_character(human)
+
+        # Add a level 4 breggle (longhorn)
+        longhorn = CharacterState(
+            character_id="longhorn_knight",
+            name="Lord Thornwick",
+            character_class="Knight",
+            level=4,
+            kindred="Breggle",
+            ability_scores={"STR": 14, "INT": 12, "WIS": 10, "DEX": 10, "CON": 14, "CHA": 16},
+            hp_current=25,
+            hp_max=25,
+            armor_class=16,
+            base_speed=30,
+        )
+        controller.add_character(longhorn)
+
+        controller.world_state.current_date = GameDate(year=1, month=3, day=15)
+        controller.world_state.current_time = GameTime(hour=12, minute=0)
+
+        engine = HexCrawlEngine(controller)
+        engine._hex_data["0110"] = hex_0110
+        engine._current_hex = "0110"
+        engine._current_poi = "Devil Goats' Glade"
+
+        # Try to enter
+        result = engine.enter_poi("0110")
+
+        # Should succeed - one longhorn is enough
+        assert result["success"] is True
+        assert result.get("kindred_check_failed") is None
