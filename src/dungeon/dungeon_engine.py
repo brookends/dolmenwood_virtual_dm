@@ -404,6 +404,10 @@ class DungeonEngine:
             # If dynamic layout, generate initial room
             if self._dungeon_state.dynamic_layout:
                 self._generate_dynamic_room(entry_room)
+            else:
+                # Micro-dungeon fallback: POI is marked as dungeon but has no
+                # dynamic layout - create a single-room with POI interior/exploring text
+                self._create_micro_dungeon_room(entry_room, poi_config)
 
         # Add entry room if not exists
         if entry_room not in self._dungeon_state.rooms:
@@ -448,6 +452,12 @@ class DungeonEngine:
         if self._dungeon_state.dynamic_layout:
             result["dynamic_layout"] = True
             result["exploring_description"] = poi_config.get("exploring") if poi_config else None
+        elif poi_config and entry_room in self._dungeon_state.rooms:
+            # Micro-dungeon: include room description from the POI
+            room = self._dungeon_state.rooms[entry_room]
+            result["micro_dungeon"] = True
+            result["room_description"] = room.description
+            result["message"] = f"You enter {room.name}."
 
         return result
 
@@ -2596,6 +2606,54 @@ class DungeonEngine:
             "down": "up",
         }
         return opposites.get(direction.lower())
+
+    def _create_micro_dungeon_room(
+        self,
+        room_id: str,
+        poi_config: dict[str, Any],
+    ) -> DungeonRoom:
+        """
+        Create a single-room dungeon for POIs without dynamic layout.
+
+        Used for "micro dungeons" like Crocus's Cave that are marked as
+        is_dungeon but have no structured layout. Creates one room with
+        the POI's interior/exploring text and a single exit back outside.
+
+        Args:
+            room_id: The room ID (usually "entrance")
+            poi_config: POI configuration with interior/exploring text
+
+        Returns:
+            The created DungeonRoom
+        """
+        poi_name = poi_config.get("poi_name", "Unknown Location")
+        interior = poi_config.get("interior", "")
+        exploring = poi_config.get("exploring", "")
+
+        # Combine interior and exploring descriptions
+        description_parts = []
+        if interior:
+            description_parts.append(interior)
+        if exploring:
+            description_parts.append(exploring)
+
+        description = "\n\n".join(description_parts) if description_parts else f"You are inside {poi_name}."
+
+        # Create the single room with an exit back to the wilderness
+        room = DungeonRoom(
+            room_id=room_id,
+            name=poi_name,
+            description=description,
+            light_level=LightLevel.DARK,  # Caves are dark by default
+            exits={"exit": "outside"},  # Single exit back outside
+            doors={"exit_door": DoorState.OPEN},  # Exit is always open
+            visited=True,  # Mark as visited since we just entered
+        )
+
+        # Store the room
+        self._dungeon_state.rooms[room_id] = room
+
+        return room
 
     def generate_room_encounter(self) -> Optional[dict[str, Any]]:
         """
