@@ -3361,6 +3361,7 @@ class HexCrawlEngine:
         hazard_index: int,
         character_id: str,
         approach_method: Optional[str] = None,
+        trigger: str = "on_approach",
     ) -> dict[str, Any]:
         """
         Resolve a hazard required to access a POI.
@@ -3374,9 +3375,10 @@ class HexCrawlEngine:
 
         Args:
             hex_id: The hex containing the POI
-            hazard_index: Index of the hazard in the approach_hazards list
+            hazard_index: Index of the hazard in the hazards list for the trigger
             character_id: Character attempting to overcome the hazard
             approach_method: Optional method being used (e.g., "rope", "flying")
+            trigger: The hazard trigger type (e.g., "on_approach", "on_enter")
 
         Returns:
             HazardResult-style dictionary with success/failure and consequences
@@ -3398,10 +3400,10 @@ class HexCrawlEngine:
         if not poi:
             return {"success": False, "error": "POI not found"}
 
-        # Get approach hazards
-        approach_hazards = poi.get_hazards_for_trigger("on_approach")
-        if hazard_index < 0 or hazard_index >= len(approach_hazards):
-            return {"success": False, "error": "Invalid hazard index"}
+        # Get hazards for the specified trigger
+        hazards = poi.get_hazards_for_trigger(trigger)
+        if hazard_index < 0 or hazard_index >= len(hazards):
+            return {"success": False, "error": f"Invalid hazard index for trigger '{trigger}'"}
 
         # P9.4: Check if hazard was already resolved (delta state)
         visit_key = f"{hex_id}:{self._current_poi}"
@@ -3418,7 +3420,7 @@ class HexCrawlEngine:
                 "can_proceed": True,
             }
 
-        hazard = approach_hazards[hazard_index]
+        hazard = hazards[hazard_index]
         hazard_type = hazard.get("hazard_type", "environmental")
         difficulty = hazard.get("difficulty", "moderate")
 
@@ -4852,16 +4854,43 @@ class HexCrawlEngine:
         Get the current POI exploration state.
 
         Returns:
-            Dictionary with current POI info or None if not at a POI
+            Dictionary with current POI info and hazard status
         """
         if not self._current_poi:
             return {"at_poi": False}
 
-        return {
+        result = {
             "at_poi": True,
             "poi_name": self._current_poi,
             "state": self._poi_state.value,
         }
+
+        # Get POI data to check hazards and entry ability
+        hex_data = self._hex_data.get(self._current_hex) if self._current_hex else None
+        if hex_data:
+            poi = None
+            for p in hex_data.points_of_interest:
+                if p.name == self._current_poi:
+                    poi = p
+                    break
+
+            if poi:
+                # Determine trigger based on exploration state
+                if self._poi_state == POIExplorationState.APPROACHING:
+                    trigger = "on_approach"
+                    hazards = poi.get_hazards_for_trigger("on_approach")
+                elif self._poi_state == POIExplorationState.AT_ENTRANCE:
+                    trigger = "on_enter"
+                    hazards = poi.get_hazards_for_trigger("on_enter")
+                else:
+                    trigger = None
+                    hazards = []
+
+                result["hazard_trigger"] = trigger
+                result["requires_hazard_resolution"] = len(hazards) > 0
+                result["can_enter"] = poi.entering is not None or poi.interior is not None
+
+        return result
 
     # =========================================================================
     # SECRET DISCOVERY SYSTEM
@@ -8161,12 +8190,15 @@ class HexCrawlEngine:
 
         return result
 
-    def get_poi_hazards(self, hex_id: str) -> list[dict[str, Any]]:
+    def get_poi_hazards(
+        self, hex_id: str, trigger: Optional[str] = None
+    ) -> list[dict[str, Any]]:
         """
-        Get all hazards at the current POI.
+        Get hazards at the current POI, optionally filtered by trigger.
 
         Args:
             hex_id: Current hex
+            trigger: Optional trigger to filter by (e.g., "on_approach", "on_enter")
 
         Returns:
             List of hazard definitions
@@ -8180,15 +8212,35 @@ class HexCrawlEngine:
 
         for poi in hex_data.points_of_interest:
             if poi.name == self._current_poi:
-                return [
-                    {
-                        "trigger": h.get("trigger", "always"),
-                        "type": h.get("hazard_type", "environmental"),
-                        "difficulty": h.get("difficulty", 10),
-                        "description": h.get("description", ""),
-                    }
-                    for h in poi.hazards
-                ]
+                if trigger:
+                    # Use the POI's get_hazards_for_trigger method for proper filtering
+                    filtered = poi.get_hazards_for_trigger(trigger)
+                    return [
+                        {
+                            "name": h.get("name", h.get("hazard_id", f"hazard")),
+                            "trigger": h.get("trigger", trigger),
+                            "type": h.get("hazard_type", "environmental"),
+                            "difficulty": h.get("difficulty", 10),
+                            "description": h.get("description", ""),
+                            "effect": h.get("effect", ""),
+                            "save_type": h.get("save_type", ""),
+                        }
+                        for h in filtered
+                    ]
+                else:
+                    # Return all hazards
+                    return [
+                        {
+                            "name": h.get("name", h.get("hazard_id", f"hazard")),
+                            "trigger": h.get("trigger", "always"),
+                            "type": h.get("hazard_type", "environmental"),
+                            "difficulty": h.get("difficulty", 10),
+                            "description": h.get("description", ""),
+                            "effect": h.get("effect", ""),
+                            "save_type": h.get("save_type", ""),
+                        }
+                        for h in poi.hazards
+                    ]
 
         return []
 

@@ -533,15 +533,16 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
     poi_name = poi_state.get("poi_name")
     can_enter = bool(poi_state.get("can_enter"))
     requires_hazard = bool(poi_state.get("requires_hazard_resolution"))
+    hazard_trigger = poi_state.get("hazard_trigger", "on_approach")
 
     # ------------------------------------------------------------------
     # If at a POI, prioritize POI-native actions (hazards, enter, talk, loot)
     # ------------------------------------------------------------------
     if at_poi and poi_name:
-        # Resolve hazards first (approach challenges)
+        # Resolve hazards first (approach or entry challenges based on state)
         if requires_hazard:
             try:
-                hazards = dm.hex_crawl.get_poi_hazards(hex_id)
+                hazards = dm.hex_crawl.get_poi_hazards(hex_id, trigger=hazard_trigger)
             except Exception:
                 hazards = []
 
@@ -559,6 +560,7 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                                     "hazard_index": {"type": "integer"},
                                     "character_id": {"type": "string"},
                                     "approach_method": {"type": "string"},
+                                    "trigger": {"type": "string"},
                                 },
                                 "required": ["hex_id", "hazard_index", "character_id"],
                             },
@@ -567,6 +569,7 @@ def _wilderness_suggestions(dm: VirtualDM, cid: str) -> list[_Candidate]:
                                 "hazard_index": i,
                                 "character_id": cid,
                                 "approach_method": "careful",
+                                "trigger": hazard_trigger,
                             },
                             safe_to_execute=True,
                             help="Runs HexCrawlEngine.resolve_poi_hazard; success may unlock entry.",

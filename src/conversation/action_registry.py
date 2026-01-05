@@ -2735,8 +2735,11 @@ def _create_default_registry() -> ActionRegistry:
         hazard_index = int(p.get("hazard_index", 0))
         character_id = p.get("character_id", "party")
         approach_method = p.get("approach_method", "careful")
+        trigger = p.get("trigger", "on_approach")
 
-        result = dm.hex_crawl.resolve_poi_hazard(hex_id, hazard_index, character_id, approach_method)
+        result = dm.hex_crawl.resolve_poi_hazard(
+            hex_id, hazard_index, character_id, approach_method, trigger
+        )
         msg = result.get("message", "Hazard resolved.")
         if result.get("description"):
             msg = f"{msg}\n{result['description']}"
@@ -2856,6 +2859,7 @@ def _create_default_registry() -> ActionRegistry:
             "hazard_index": {"type": "integer", "required": False},
             "character_id": {"type": "string", "required": False},
             "approach_method": {"type": "string", "required": False},
+            "trigger": {"type": "string", "required": False},
         },
         help="Attempt to overcome a hazard at a point of interest.",
         executor=_wilderness_resolve_poi_hazard,
